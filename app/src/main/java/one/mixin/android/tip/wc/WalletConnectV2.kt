@@ -474,7 +474,7 @@ object WalletConnectV2 : WalletConnect() {
             )
         } else {
             RawTransaction.createTransaction(
-                chain.chainReference.toLong(),
+                BigInteger.valueOf(chain.chainReference.toLong()),
                 nonce,
                 gasLimit,
                 transaction.to,
