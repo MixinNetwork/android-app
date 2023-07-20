@@ -31,6 +31,11 @@ abstract class FastLimitOffsetDataSource<T : Any, S>(
         }
     }
 
+    override fun invalidate() {
+        super.invalidate()
+        Timber.e("invalidate")
+    }
+
     /**
      * Count number of rows query can return
      */
@@ -67,6 +72,7 @@ abstract class FastLimitOffsetDataSource<T : Any, S>(
         params: LoadRangeParams,
         callback: LoadRangeCallback<T>,
     ) {
+        Timber.e("loadRange ${params.startPosition} ${params.loadSize}")
         val list = loadRange(params.startPosition, params.loadSize)
         callback.onResult(list)
     }

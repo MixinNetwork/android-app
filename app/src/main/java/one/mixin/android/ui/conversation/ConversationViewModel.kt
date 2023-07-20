@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation
 
+import MessageFetcher
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -29,6 +30,7 @@ import one.mixin.android.api.request.DisappearRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.datasource.FastComputableLiveData
 import one.mixin.android.db.datasource.FastLivePagedListBuilder
 import one.mixin.android.extension.copyFromInputStream
@@ -114,6 +116,7 @@ import javax.inject.Inject
 class ConversationViewModel
 @Inject
 internal constructor(
+    private val appDatabase: MixinDatabase,
     private val conversationRepository: ConversationRepository,
     private val userRepository: UserRepository,
     private val jobManager: MixinJobManager,
@@ -122,6 +125,8 @@ internal constructor(
     private val messenger: SendMessageHelper,
     private val cleanMessageHelper: CleanMessageHelper,
 ) : ViewModel() {
+
+    fun messageFetcher() = MessageFetcher(appDatabase)
 
     fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): FastComputableLiveData<PagedList<MessageItem>> {
         val pagedListConfig = PagedList.Config.Builder()

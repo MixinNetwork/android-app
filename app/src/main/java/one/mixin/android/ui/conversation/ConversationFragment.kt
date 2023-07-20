@@ -1425,6 +1425,7 @@ class ConversationFragment() :
         binding.chatRv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
         binding.chatRv.addItemDecoration(decoration)
         binding.chatRv.itemAnimator = null
+        binding.chatShadowRv.adapter = ShadowAdapter(onItemListener)
 
         binding.chatRv.addOnScrollListener(
             object : RecyclerView.OnScrollListener() {

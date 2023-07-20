@@ -54,6 +54,20 @@
                 app:stackFromEnd="true"
                 tools:listitem="@layout/item_chat_text" />
 
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/chat_shadow_rv"
+                android:layout_width="200dp"
+                android:layout_height="300dp"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:paddingBottom="6dp"
+                android:scrollbars="vertical"
+                app:layout_constraintBottom_toTopOf="@id/chat_control"
+                app:layout_constraintStart_toStartOf="parent"
+                app:over_direction="-1"
+                app:stackFromEnd="true"
+                tools:listitem="@layout/item_chat_text" />
+
             <include
                 layout="@layout/view_link_state"
                 app:layout_constraintTop_toTopOf="parent"
