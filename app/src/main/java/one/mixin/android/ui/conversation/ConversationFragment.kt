@@ -166,8 +166,10 @@ import one.mixin.android.ui.conversation.adapter.MentionAdapter
 import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListener
 import one.mixin.android.ui.conversation.adapter.Menu
 import one.mixin.android.ui.conversation.adapter.MenuType
+import one.mixin.android.ui.conversation.base.CompressedList
 import one.mixin.android.ui.conversation.chat.ChatItemCallback
 import one.mixin.android.ui.conversation.chat.ChatItemCallback.Companion.SWAP_SLOT
+import one.mixin.android.ui.conversation.chat.MessageAdapter
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity.Companion.JUMP_ID
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryContract
@@ -1425,7 +1427,11 @@ class ConversationFragment() :
         binding.chatRv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
         binding.chatRv.addItemDecoration(decoration)
         binding.chatRv.itemAnimator = null
-        binding.chatShadowRv.adapter = ShadowAdapter(onItemListener)
+        binding.chatShadowRv.layoutManager = LinearLayoutManager(requireContext())
+        lifecycleScope.launch {
+            val data = chatViewModel.initMessages(conversationId)
+            binding.chatShadowRv.adapter = MessageAdapter(CompressedList(data), onItemListener)
+        }
 
         binding.chatRv.addOnScrollListener(
             object : RecyclerView.OnScrollListener() {

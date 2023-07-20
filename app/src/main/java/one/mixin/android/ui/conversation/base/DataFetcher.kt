@@ -12,5 +12,5 @@ abstract class DataFetcher<T>(val db: RoomDatabase, val fetchDispatcher: Corouti
     abstract fun initData(): CompressedList<T>
 
     abstract fun loadRange(): List<T>
-
+    abstract fun loadData(position: Int, callback: (List<MessageItem>) -> Unit)
 }

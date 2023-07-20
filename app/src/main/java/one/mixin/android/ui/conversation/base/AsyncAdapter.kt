@@ -12,13 +12,16 @@ abstract class AsyncAdapter<V : Any, VH : RecyclerView.ViewHolder>(private val d
         if (position >= 0 && position < data.size) {
             val result = data[position]
             if (result == null){
-                // Todo load data
+                // Todo async load data
+                dataFetcher.loadData(position) {
+
+                }
                 return null
             }else{
                 return result
             }
         } else {
-            // Todo load data
+            // Todo jump data and load data
             return null
         }
     }
