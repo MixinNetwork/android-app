@@ -126,6 +126,7 @@ import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
 
+@Suppress("DEPRECATION")
 @AndroidEntryPoint
 class ConversationListFragment : LinkFragment() {
 

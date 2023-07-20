@@ -35,6 +35,7 @@ import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import java.util.concurrent.TimeUnit
 
+@Suppress("DEPRECATION")
 @AndroidEntryPoint
 class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     companion object {

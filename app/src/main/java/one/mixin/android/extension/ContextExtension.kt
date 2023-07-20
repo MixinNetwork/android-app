@@ -52,6 +52,7 @@ import android.view.WindowManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
+import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -619,6 +620,7 @@ private val maxVideoSize by lazy {
 
 fun getVideoModel(uri: Uri): VideoEditedInfo? {
     try {
+        @Suppress("DEPRECATION")
         val path = uri.getFilePath() ?: return null
         val m = MediaMetadataRetriever().apply {
             setDataSource(path)
@@ -685,7 +687,11 @@ fun Context.openUrl(url: String) {
         val actionIntent = Intent(this, ShareBroadcastReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(this, 0, actionIntent, PendingIntent.FLAG_IMMUTABLE)
         val customTabsIntent = CustomTabsIntent.Builder()
-            .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
+            .setDefaultColorSchemeParams(
+                CustomTabColorSchemeParams.Builder()
+                    .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
+                    .build(),
+            )
             .setShowTitle(true)
             .setActionButton(
                 BitmapFactory.decodeResource(this.resources, R.drawable.ic_share),
@@ -1159,6 +1165,7 @@ fun Context.shareMedia(isVideo: Boolean, url: String) {
         action = Intent.ACTION_SEND
         uri = Uri.parse(url)
         if (ContentResolver.SCHEME_FILE == uri.scheme) {
+            @Suppress("DEPRECATION")
             val path = uri.getFilePath(this@shareMedia)
             if (path == null) {
                 toast(R.string.File_does_not_exist)

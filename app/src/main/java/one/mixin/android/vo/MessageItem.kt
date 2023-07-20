@@ -1,3 +1,6 @@
+@file:Suppress("DEPRECATION")
+@file:UnstableApi
+
 package one.mixin.android.vo
 
 import android.annotation.SuppressLint
@@ -12,6 +15,7 @@ import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
 import androidx.paging.PositionalDataSource
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
@@ -147,7 +151,7 @@ data class MessageItem(
                     AttachmentExtra::class.java,
                 ).shareable
             }
-        } catch (e: Exception) {
+        } catch (ignore: Exception) {
         }
 
         return appCardShareable
@@ -194,12 +198,6 @@ fun create(type: String, createdAt: String? = null) = MessageItem(
     null, null, null, null, null, null, null, null,
     null, null, null, null, null, null, null, null, null, null,
 )
-
-fun MessageItem.canNotReply() =
-    this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
-        this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
-        (!mediaDownloaded(this.mediaStatus) && this.isMedia()) ||
-        isCallMessage() || isRecall() || isGroupCall()
 
 fun MessageItem.isCallMessage() =
     type == MessageCategory.WEBRTC_AUDIO_CANCEL.name ||

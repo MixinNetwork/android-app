@@ -97,7 +97,9 @@ import timber.log.Timber
 import java.io.FileInputStream
 import kotlin.math.min
 
-@UnstableApi @AndroidEntryPoint
+@Suppress("DEPRECATION")
+@UnstableApi
+@AndroidEntryPoint
 class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener, SensorOrientationChangeNotifier.Listener {
     private lateinit var colorDrawable: ColorDrawable
 

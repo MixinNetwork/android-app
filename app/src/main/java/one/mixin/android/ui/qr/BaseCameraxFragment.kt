@@ -256,6 +256,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             data?.data?.let {
+                @Suppress("DEPRECATION")
                 val path = it.getFilePath(MixinApplication.get())
                 if (path == null) {
                     toast(R.string.File_error)

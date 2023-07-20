@@ -79,6 +79,7 @@ class ImportChatUtil {
     }
 
     // Todo
+    @Suppress("UNUSED_PARAMETER")
     private fun generateTranscriptMessage(s: String, documentsMap: ArrayMap<String, Uri>): TranscriptMessage? {
         val dateEnd = s.indexOf(" - ")
         val nameEnd = s.indexOf(": ")
