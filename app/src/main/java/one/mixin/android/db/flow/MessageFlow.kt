@@ -1,4 +1,4 @@
-package one.mixin.android.db.invalidater
+package one.mixin.android.db.flow
 
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.FlowCollector
@@ -6,8 +6,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
-
-object InvalidateFlow {
+object MessageFlow {
     private val invalidateFlow by lazy {
         MutableSharedFlow<String>(0, 1, BufferOverflow.DROP_OLDEST)
     }

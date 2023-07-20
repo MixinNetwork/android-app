@@ -10,7 +10,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.db.deleteMessageByIds
-import one.mixin.android.db.invalidater.InvalidateFlow
+import one.mixin.android.db.flow.InvalidateFlow
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.deleteByMessageId
 import one.mixin.android.fts.deleteByMessageIds

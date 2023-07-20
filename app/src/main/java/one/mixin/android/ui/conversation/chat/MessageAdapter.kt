@@ -87,7 +87,7 @@ import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 
-class MessageAdapter(val data: CompressedList<MessageItem>, val miniMarkwon: Markwon, val onItemListener: ConversationAdapter.OnItemListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class MessageAdapter(val data: CompressedList<MessageItem>, private val miniMarkwon: Markwon, val onItemListener: ConversationAdapter.OnItemListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -589,7 +589,7 @@ class MessageAdapter(val data: CompressedList<MessageItem>, val miniMarkwon: Mar
         return false
     }
 
-    val selectSet = arraySetOf<MessageItem>()
+    private val selectSet = arraySetOf<MessageItem>()
 
     val keyword: String? = null
 

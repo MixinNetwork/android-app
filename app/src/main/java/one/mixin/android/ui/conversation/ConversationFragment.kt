@@ -81,7 +81,7 @@ import one.mixin.android.databinding.DialogForwardBinding
 import one.mixin.android.databinding.DialogImportMessageBinding
 import one.mixin.android.databinding.FragmentConversationBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
-import one.mixin.android.db.invalidater.InvalidateFlow
+import one.mixin.android.db.flow.InvalidateFlow
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.CallEvent
 import one.mixin.android.event.ExitEvent

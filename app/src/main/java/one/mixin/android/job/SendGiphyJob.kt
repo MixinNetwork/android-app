@@ -3,7 +3,7 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
 import one.mixin.android.MixinApplication
-import one.mixin.android.db.invalidater.InvalidateFlow
+import one.mixin.android.db.flow.InvalidateFlow
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.encodeBlurHash

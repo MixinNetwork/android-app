@@ -8,7 +8,7 @@ import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT_L
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT_OFFSET
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT
 import one.mixin.android.MixinApplication
-import one.mixin.android.db.invalidater.InvalidateFlow
+import one.mixin.android.db.flow.InvalidateFlow
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.createDocumentTemp
 import one.mixin.android.extension.createEmptyTemp
