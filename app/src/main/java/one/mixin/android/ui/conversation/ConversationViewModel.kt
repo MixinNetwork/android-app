@@ -1,6 +1,5 @@
 package one.mixin.android.ui.conversation
 
-import MessageFetcher
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -158,7 +157,7 @@ internal constructor(
     }
 
     suspend fun initMessages(conversationId: String): List<MessageItem> = withContext(Dispatchers.IO) {
-        val cursor= (appDatabase as RoomDatabase).query("$SQL WHERE m.conversation_id = ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT 60", arrayOf(conversationId))
+        val cursor = (appDatabase as RoomDatabase).query("$SQL WHERE m.conversation_id = ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT 60", arrayOf(conversationId))
         return@withContext convertToMessageItems(cursor)
     }
 
