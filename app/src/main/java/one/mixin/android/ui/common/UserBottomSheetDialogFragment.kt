@@ -189,8 +189,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     dismiss()
                     return@Observer
                 }
-                user = u
-                updateUserInfo(u)
+                // compare user info changes should refresh menu
                 if (menuListLayout == null ||
                     u.relationship != user.relationship ||
                     u.muteUntil != user.muteUntil ||
@@ -202,6 +201,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         initMenu(u, circleNames, conversation)
                     }
                 }
+
+                user = u
+                updateUserInfo(u)
 
                 contentView.doOnPreDraw {
                     if (!isAdded) return@doOnPreDraw
