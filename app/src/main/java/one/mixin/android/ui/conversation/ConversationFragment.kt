@@ -53,6 +53,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -82,6 +83,7 @@ import one.mixin.android.databinding.DialogImportMessageBinding
 import one.mixin.android.databinding.FragmentConversationBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
 import one.mixin.android.db.flow.InvalidateFlow
+import one.mixin.android.db.loadmanager.LoadManager
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.CallEvent
 import one.mixin.android.event.ExitEvent
@@ -277,6 +279,7 @@ import kotlin.math.abs
 
 @AndroidEntryPoint
 @SuppressLint("InvalidWakeLockTag")
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class ConversationFragment() :
     LinkFragment(),
     OnKeyboardShownListener,
@@ -506,7 +509,7 @@ class ConversationFragment() :
     }
 
     private val onItemListener: ConversationAdapter.OnItemListener by lazy {
-        object : ConversationAdapter.OnItemListener() {
+        @UnstableApi object : ConversationAdapter.OnItemListener() {
             @SuppressLint("NotifyDataSetChanged")
             override fun onSelect(isSelect: Boolean, messageItem: MessageItem, position: Int) {
                 if (isSelect) {
@@ -1394,6 +1397,9 @@ class ConversationFragment() :
 
     private var firstPosition = 0
 
+    @Inject
+    lateinit var loadManager: LoadManager
+
     private fun initView() {
         binding.inputLayout.backgroundImage = WallpaperManager.getWallpaper(requireContext())
         binding.chatRv.visibility = INVISIBLE
@@ -1430,8 +1436,28 @@ class ConversationFragment() :
         binding.chatRv.itemAnimator = null
         binding.chatShadowRv.layoutManager = LinearLayoutManager(requireContext())
         lifecycleScope.launch {
-            val data = chatViewModel.initMessages(conversationId)
-            binding.chatShadowRv.adapter = MessageAdapter(CompressedList(data), getMiniMarkwon(requireActivity()), onItemListener)
+            val data = loadManager.initMessages(conversationId)
+            binding.chatShadowRv.adapter = MessageAdapter(
+                CompressedList(data),
+                getMiniMarkwon(requireActivity()),
+                onItemListener,
+                { id ->
+                    lifecycleScope.launch {
+                        val data = loadManager.previousPage(conversationId, id)
+                        if (!data.isNullOrEmpty()) {
+                            (binding.chatShadowRv.adapter as MessageAdapter).submitPrevious(data)
+                        }
+                    }
+                },
+                { id ->
+                    lifecycleScope.launch {
+                        val data = loadManager.nextPage(conversationId, id)
+                        if (!data.isNullOrEmpty()) {
+                            (binding.chatShadowRv.adapter as MessageAdapter).submitNext(data)
+                        }
+                    }
+                },
+            )
         }
 
         binding.chatRv.addOnScrollListener(

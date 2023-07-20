@@ -17,10 +17,10 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.requestResendKey
 import one.mixin.android.crypto.vo.RatchetStatus
+import one.mixin.android.db.flow.InvalidateFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
-import one.mixin.android.db.flow.InvalidateFlow
 import one.mixin.android.db.pending.PendingMessage
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.CircleDeleteEvent

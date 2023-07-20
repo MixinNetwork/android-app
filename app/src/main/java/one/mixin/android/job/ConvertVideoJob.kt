@@ -4,8 +4,8 @@ import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
-import one.mixin.android.db.insertMessage
 import one.mixin.android.db.flow.InvalidateFlow
+import one.mixin.android.db.insertMessage
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.getFileNameNoEx
 import one.mixin.android.extension.getMimeType

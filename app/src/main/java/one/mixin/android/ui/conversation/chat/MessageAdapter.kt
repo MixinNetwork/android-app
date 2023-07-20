@@ -87,8 +87,13 @@ import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 
-class MessageAdapter(val data: CompressedList<MessageItem>, private val miniMarkwon: Markwon, val onItemListener: ConversationAdapter.OnItemListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
+class MessageAdapter(
+    val data: CompressedList<MessageItem>,
+    private val miniMarkwon: Markwon,
+    val onItemListener: ConversationAdapter.OnItemListener,
+    val previousPage: (String) -> Unit,
+    val nextPage: (String) -> Unit,
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
@@ -560,6 +565,15 @@ class MessageAdapter(val data: CompressedList<MessageItem>, private val miniMark
         )
     fun getItem(position: Int): MessageItem? {
         if (position >= 0 && position < data.size) {
+            if (position < 10) {
+                data.first()?.messageId?.let { id ->
+                    previousPage(id)
+                }
+            } else if (position > data.size - 11) {
+                data.last()?.messageId?.let { id ->
+                    nextPage(id)
+                }
+            }
             return data[position]
         } else {
             return null
@@ -601,4 +615,15 @@ class MessageAdapter(val data: CompressedList<MessageItem>, private val miniMark
     }
 
     override fun getItemViewType(position: Int): Int = getItemType(getItem(position))
+
+    fun submitNext(list: List<MessageItem>) {
+        val size = data.size
+        data.append(list)
+        notifyItemRangeInserted(size - 1, list.count())
+    }
+
+    fun submitPrevious(list: List<MessageItem>) {
+        data.prepend(list)
+        notifyItemRangeInserted(0, list.count())
+    }
 }

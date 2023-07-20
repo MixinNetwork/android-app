@@ -36,8 +36,8 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
-import one.mixin.android.db.insertMessage
 import one.mixin.android.db.flow.InvalidateFlow
+import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.joinStar

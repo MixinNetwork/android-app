@@ -2,7 +2,7 @@ package one.mixin.android.ui.conversation.base
 
 import java.util.AbstractList
 
-class CompressedList<E> : AbstractList<E?> {
+class CompressedList<E : Any> : AbstractList<E?> {
     private val wrapped: MutableList<E?>
 
     constructor(source: List<E>) {
@@ -30,4 +30,16 @@ class CompressedList<E> : AbstractList<E?> {
     override fun add(index: Int, element: E?) {
         wrapped.add(index, element)
     }
+
+    fun append(elements: Collection<E>) {
+        wrapped.addAll(elements)
+    }
+
+    fun prepend(elements: Collection<E>) {
+        wrapped.addAll(0, elements)
+    }
+
+    fun first(): E? = wrapped.first()
+
+    fun last(): E? = wrapped.last()
 }
