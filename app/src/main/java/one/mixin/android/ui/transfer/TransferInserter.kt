@@ -356,7 +356,7 @@ class TransferInserter {
 
     fun insertIgnore(user: User) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `users` (`user_id`, `identity_number`, `relationship`, `biography`, `full_name`, `avatar_url`, `phone`, `is_verified`, `created_at`, `mute_until`, `has_pin`, `app_id`, `is_scam`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `users` (`user_id`, `identity_number`, `relationship`, `biography`, `full_name`, `avatar_url`, `phone`, `is_verified`, `created_at`, `mute_until`, `has_pin`, `app_id`, `is_scam`, `is_deactivated`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
         try {
             stmt.bindString(1, user.userId)
             stmt.bindString(2, user.identityNumber)
@@ -412,6 +412,13 @@ class TransferInserter {
                 stmt.bindNull(13)
             } else {
                 stmt.bindLong(13, userIsScam.toLong())
+            }
+            val isDeactivated = user.isDeactivated
+            val userIsDeactivated = if (isDeactivated == null) null else if (isDeactivated) 1 else 0
+            if (userIsDeactivated == null) {
+                stmt.bindNull(14)
+            } else {
+                stmt.bindLong(14, userIsDeactivated.toLong())
             }
             stmt.executeInsert()
             primaryId = user.userId
