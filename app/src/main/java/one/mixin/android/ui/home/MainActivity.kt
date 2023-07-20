@@ -727,15 +727,13 @@ class MainActivity : BlazeBaseActivity() {
                     var user = userDao.findOwnerByConversationId(conversationId)
                     if (user == null) {
                         val response =
-                            userService.getUsers(arrayListOf(conversation!!.ownerId!!)).execute()
+                            userService.getUserById(conversation!!.ownerId!!).execute()
                                 .body()
                         if (response != null && response.isSuccess) {
-                            response.data?.let { data ->
-                                for (u in data) {
-                                    runBlocking { userRepo.upsert(u) }
-                                }
+                            response.data?.let { u ->
+                                runBlocking { userRepo.upsert(u) }
+                                user = u
                             }
-                            user = response.data?.get(0)
                         }
                     }
                     innerIntent = ConversationActivity.putIntent(this, conversationId, user?.userId)

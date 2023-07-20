@@ -98,7 +98,7 @@ data class User(
     @SerializedName("is_deactivated")
     @SerialName("is_deactivated")
     @ColumnInfo("is_deactivated")
-    val isDeactivated: Boolean? = null
+    val isDeactivated: Boolean? = null,
 ) : Parcelable {
     @SerializedName("app")
     @Ignore
