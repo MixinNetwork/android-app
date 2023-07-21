@@ -40,6 +40,7 @@ class MessageFetcher @Inject constructor(
         """
 
         private const val PAGE_SIZE = 20
+        private const val INIT_SIZE = 60 // PAGE_SIZE * 3
     }
 
     private val currentlyLoadingIds = mutableSetOf<String>()
@@ -47,11 +48,58 @@ class MessageFetcher @Inject constructor(
     private var canLoadAbove = true
     private var canLoadBelow = true
 
-    suspend fun initMessages(conversationId: String, messageId: String? = null): List<MessageItem> = withContext(SINGLE_FETCHER_THREAD) {
+    suspend fun initMessages(conversationId: String, messageId: String? = null): Pair<Int, List<MessageItem>> = withContext(SINGLE_FETCHER_THREAD) {
         // Todo Query contains the most data for messageId (max 60)
         // Judge whether it can scroll up and down according to the returned data
-        val cursor = db.query("$SQL WHERE m.conversation_id = ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?", arrayOf(conversationId, PAGE_SIZE * 3))
-        return@withContext convertToMessageItems(cursor)
+        var aroundId = messageId
+        if (aroundId == null) {
+            val idCursor = db.query("SELECT message_id FROM remote_messages_status WHERE conversation_id = ? AND status = 'DELIVERED' ORDER BY rowid ASC LIMIT 1", arrayOf(conversationId))
+            if (idCursor.moveToNext()) {
+                aroundId = idCursor.getString(0)
+            }
+            idCursor.close()
+        }
+        if (aroundId == null) {
+            // load the last 60 messages
+            val cursor = db.query(
+                "$SQL WHERE m.conversation_id = ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
+                arrayOf(conversationId, INIT_SIZE),
+            )
+            val result = convertToMessageItems(cursor).reversed()
+            canLoadBelow = false
+            canLoadAbove = result.size >= INIT_SIZE
+            return@withContext Pair(result.size - 1, result)
+        } else {
+            // Load data containing aroundId
+            val idCursor =
+                db.query("SELECT rowid FROM messages WHERE id = ?", arrayOf(aroundId))
+            val rowId = idCursor.use {
+                it.moveToNext()
+                it.getInt(0)
+            }
+            // load next page by aroundId
+            val nextCursor = db.query(
+                "$SQL WHERE m.conversation_id = ? AND rowid >= ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?",
+                arrayOf(conversationId, rowId, INIT_SIZE / 2),
+            )
+            val result = convertToMessageItems(nextCursor)
+            canLoadBelow = result.size >= INIT_SIZE / 2
+            val thresholdSize = INIT_SIZE - result.size
+            val previousCursor = db.query(
+                "$SQL WHERE m.conversation_id = ? AND rowid < ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
+                arrayOf(conversationId, rowId, thresholdSize),
+            )
+            val previous = convertToMessageItems(previousCursor).reversed()
+            canLoadAbove = previous.size >= thresholdSize
+            val position = if (previous.isNotEmpty()) {
+                previous.size
+            } else if (result.isNotEmpty()) {
+                0
+            } else {
+                -1
+            }
+            return@withContext Pair(position, previous + result)
+        }
     }
 
     suspend fun findMessageById(messageIds: List<String>) = withContext(SINGLE_FETCHER_THREAD) {
@@ -76,7 +124,7 @@ class MessageFetcher @Inject constructor(
                 arrayOf(conversationId, rowId, PAGE_SIZE),
             )
             return@withContext convertToMessageItems(cursor).also {
-                if (it.size < PAGE_SIZE){
+                if (it.size < PAGE_SIZE) {
                     canLoadBelow = false
                 }
             }
@@ -88,7 +136,7 @@ class MessageFetcher @Inject constructor(
 
     suspend fun previousPage(conversationId: String, messageId: String) =
         withContext(SINGLE_FETCHER_THREAD) {
-            if (!canLoadBelow || currentlyLoadingIds.contains(messageId) || loadedIds.contains(messageId)) {
+            if (!canLoadAbove || currentlyLoadingIds.contains(messageId) || loadedIds.contains(messageId)) {
                 return@withContext emptyList()
             }
             currentlyLoadingIds.add(messageId)
@@ -105,7 +153,7 @@ class MessageFetcher @Inject constructor(
                     arrayOf(conversationId, rowId, PAGE_SIZE),
                 )
                 return@withContext convertToMessageItems(cursor).reversed().also {
-                    if (it.size < PAGE_SIZE){
+                    if (it.size < PAGE_SIZE) {
                         canLoadAbove = false
                     }
                 }

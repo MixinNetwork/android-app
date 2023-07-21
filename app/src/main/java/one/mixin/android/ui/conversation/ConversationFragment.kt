@@ -82,9 +82,9 @@ import one.mixin.android.databinding.DialogForwardBinding
 import one.mixin.android.databinding.DialogImportMessageBinding
 import one.mixin.android.databinding.FragmentConversationBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
+import one.mixin.android.db.fetcher.MessageFetcher
 import one.mixin.android.db.flow.InvalidateFlow
 import one.mixin.android.db.flow.MessageFlow
-import one.mixin.android.db.fetcher.MessageFetcher
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.CallEvent
 import one.mixin.android.event.ExitEvent
@@ -1438,7 +1438,7 @@ class ConversationFragment() :
         binding.chatRv.itemAnimator = null
         binding.chatShadowRv.layoutManager = LinearLayoutManager(requireContext())
         lifecycleScope.launch {
-            val data = messageFetcher.initMessages(conversationId)
+            val (position, data) = messageFetcher.initMessages(conversationId)
             binding.chatShadowRv.adapter = MessageAdapter(
                 CompressedList(data),
                 getMiniMarkwon(requireActivity()),
@@ -1446,7 +1446,7 @@ class ConversationFragment() :
                 { id ->
                     lifecycleScope.launch {
                         val pageData = messageFetcher.previousPage(conversationId, id)
-                        if (!pageData.isNullOrEmpty()) {
+                        if (pageData.isNotEmpty()) {
                             (binding.chatShadowRv.adapter as MessageAdapter).submitPrevious(pageData)
                         }
                     }
@@ -1454,12 +1454,19 @@ class ConversationFragment() :
                 { id ->
                     lifecycleScope.launch {
                         val pageData = messageFetcher.nextPage(conversationId, id)
-                        if (!pageData.isNullOrEmpty()) {
+                        if (pageData.isNotEmpty()) {
                             (binding.chatShadowRv.adapter as MessageAdapter).submitNext(pageData)
                         }
                     }
                 },
             )
+            // Initialization RecyclerView position
+            if (position >= 0) {
+                (binding.chatShadowRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                    position,
+                    binding.chatShadowRv.height / 4,
+                )
+            }
             MessageFlow.collect({ event ->
                 event.conversationId == conversationId
             }, { event ->
