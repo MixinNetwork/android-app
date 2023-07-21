@@ -52,8 +52,7 @@ class LoadManager @Inject constructor(
     }
 
     suspend fun nextPage(conversationId: String, messageId: String) = withContext(Dispatchers.IO) {
-        if (status != LoadStatus.IDLE) return@withContext null
-        // if (messageId == currentBottomId) return@withContext null
+        if (status != LoadStatus.IDLE || messageId == currentBottomId) return@withContext null
         Timber.e("next $messageId")
         status = LoadStatus.LOADING
         val cursor = db.query("SELECT rowid FROM messages WHERE id = ?", arrayOf(messageId))
@@ -77,8 +76,7 @@ class LoadManager @Inject constructor(
 
     suspend fun previousPage(conversationId: String, messageId: String) =
         withContext(Dispatchers.IO) {
-            if (status != LoadStatus.IDLE) return@withContext null
-            // if (messageId == currentBottomId) return@withContext null
+            if (status != LoadStatus.IDLE || messageId == currentTopId) return@withContext null
             status = LoadStatus.LOADING
             val cursor = db.query("SELECT rowid FROM messages WHERE id = ?", arrayOf(messageId))
             val rowId = cursor.use {
