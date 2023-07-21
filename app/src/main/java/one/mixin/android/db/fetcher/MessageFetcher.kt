@@ -48,11 +48,11 @@ class MessageFetcher @Inject constructor(
     private var canLoadAbove = true
     private var canLoadBelow = true
 
-    suspend fun initMessages(conversationId: String, messageId: String? = null): Pair<Int, List<MessageItem>> = withContext(SINGLE_FETCHER_THREAD) {
+    suspend fun initMessages(conversationId: String, messageId: String? = null, forceBottom:Boolean = false): Triple<Int, List<MessageItem>,String?> = withContext(SINGLE_FETCHER_THREAD) {
         currentlyLoadingIds.clear()
         loadedIds.clear()
         var aroundId = messageId
-        if (aroundId == null) {
+        if (aroundId == null && !forceBottom) {
             val idCursor = db.query("SELECT message_id FROM remote_messages_status WHERE conversation_id = ? AND status = 'DELIVERED' ORDER BY rowid ASC LIMIT 1", arrayOf(conversationId))
             if (idCursor.moveToNext()) {
                 aroundId = idCursor.getString(0)
@@ -68,7 +68,7 @@ class MessageFetcher @Inject constructor(
             val result = convertToMessageItems(cursor).reversed()
             canLoadBelow = false
             canLoadAbove = result.size >= INIT_SIZE
-            return@withContext Pair(result.size - 1, result)
+            return@withContext Triple(result.size - 1, result, null)
         } else {
             // Load data containing aroundId
             val idCursor =
@@ -98,7 +98,7 @@ class MessageFetcher @Inject constructor(
             } else {
                 -1
             }
-            return@withContext Pair(position, previous + result)
+            return@withContext Triple(position, previous + result, aroundId)
         }
     }
 
@@ -106,6 +106,10 @@ class MessageFetcher @Inject constructor(
         val cursor = db.query("$SQL WHERE m.id IN ${messageIds.joinToString(", ", "(", ")", transform = { "'$it'" })}", arrayOf())
         return@withContext convertToMessageItems(cursor)
     }
+
+    fun isBottom() = !canLoadBelow
+
+    fun isTop() = !canLoadAbove
 
     suspend fun nextPage(conversationId: String, messageId: String) = withContext(SINGLE_FETCHER_THREAD) {
         if (!canLoadBelow || currentlyLoadingIds.contains(messageId) || loadedIds.contains(messageId)) {

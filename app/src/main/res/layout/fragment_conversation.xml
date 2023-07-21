@@ -67,7 +67,7 @@
                 android:clipToPadding="false"
                 android:padding="8dp"
                 android:translationY="130dp"
-                app:layout_constraintBottom_toBottomOf="@id/chat_rv"
+                app:layout_constraintBottom_toBottomOf="@id/message_rv"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="1"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -219,7 +219,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/chat_rv">
+                app:layout_constraintTop_toBottomOf="@id/message_rv">
 
                 <View
                     android:layout_width="match_parent"
@@ -263,7 +263,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/chat_rv" />
+                app:layout_constraintTop_toBottomOf="@id/message_rv" />
 
             <one.mixin.android.widget.RecordCircleView
                 android:id="@+id/record_circle"

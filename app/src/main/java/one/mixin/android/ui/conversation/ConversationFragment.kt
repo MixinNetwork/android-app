@@ -1310,10 +1310,8 @@ class ConversationFragment() :
     }
 
     private fun markRead() {
-        // Todo messageAdapter.markRead()
+        messageAdapter.markRead()
     }
-
-    private var firstPosition = 0
 
     @Inject
     lateinit var messageFetcher: MessageFetcher
@@ -1365,13 +1363,15 @@ class ConversationFragment() :
             },
         )
         lifecycleScope.launch {
-            val (position, data) = messageFetcher.initMessages(conversationId)
+            val (position, data, unreadMessageId) = messageFetcher.initMessages(conversationId)
             messageAdapter = MessageAdapter(
                 CompressedList(data),
                 getMiniMarkwon(requireActivity()),
                 onItemListener,
                 previousAction,
                 nextAction,
+                isGroup = isGroup,
+                unreadMessageId = unreadMessageId
             )
             binding.messageRv.adapter = messageAdapter
             binding.messageRv.addItemDecoration(decoration)
@@ -1389,10 +1389,15 @@ class ConversationFragment() :
             }, { event ->
                 when (event.action) {
                     MessageEventAction.INSERT -> {
-                        val message = messageFetcher.findMessageById(event.ids)
-                        Timber.e("insert ${event.ids} ${message.map { it.messageId }}")
-                        if (message.isNotEmpty()) {
-                            (binding.messageRv.adapter as MessageAdapter).insert(message)
+                        if (messageFetcher.isBottom()) {
+                            val message = messageFetcher.findMessageById(event.ids)
+                            Timber.e("insert ${event.ids} ${message.map { it.messageId }}")
+                            if (message.isNotEmpty()) {
+                                (binding.messageRv.adapter as MessageAdapter).insert(message)
+                            }
+                            scrollToDown()
+                        } else {
+                            binding.flagLayout.unreadCount += event.ids.size
                         }
                     }
                     MessageEventAction.UPDATE -> {
@@ -1410,26 +1415,24 @@ class ConversationFragment() :
             })
         }
 
-        // Todo
-        // binding.chatRv.addOnScrollListener(
-        //     object : RecyclerView.OnScrollListener() {
-        //
-        //         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-        //             firstPosition = (binding.chatRv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
-        //             if (firstPosition > 0) {
-        //                 if (isBottom) {
-        //                     isBottom = false
-        //                 }
-        //             } else {
-        //                 if (!isBottom) {
-        //                     isBottom = true
-        //                 }
-        //                 unreadTipCount = 0
-        //                 binding.flagLayout.bottomCountFlag = false
-        //             }
-        //         }
-        //     },
-        // )
+        binding.messageRv.addOnScrollListener(
+            object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    val lastPosition = (binding.messageRv.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
+                    if (lastPosition != messageAdapter.itemCount - 1) {
+                        if (isBottom) {
+                            isBottom = false
+                        }
+                    } else {
+                        if (!isBottom) {
+                            isBottom = true
+                        }
+                        unreadTipCount = 0
+                        binding.flagLayout.bottomCountFlag = false
+                    }
+                }
+            },
+        )
         binding.messageRv.callback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
                 val currentContainer = binding.chatControl.getDraggableContainer()
@@ -2581,8 +2584,18 @@ class ConversationFragment() :
     @SuppressLint("NotifyDataSetChanged")
     private fun scrollToDown() {
         if (viewDestroyed()) return
-        // todo test
-        binding.messageRv.layoutManager?.scrollToPosition(messageAdapter.itemCount)
+        if (messageFetcher.isBottom()){
+            binding.messageRv.layoutManager?.scrollToPosition(messageAdapter.itemCount - 1)
+        } else {
+            lifecycleScope.launch {
+                val (_, data) = messageFetcher.initMessages(conversationId,null, true)
+                messageAdapter.refreshData(data)
+                (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                    data.size - 1,
+                    binding.messageRv.measuredHeight / 4,
+                )
+            }
+        }
     }
 
     private fun scrollToMessage(

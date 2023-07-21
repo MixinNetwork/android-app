@@ -103,7 +103,8 @@ class MessageAdapter(
     val onItemListener: ConversationAdapter.OnItemListener,
     val previousPage: (String) -> Unit,
     val nextPage: (String) -> Unit,
-    val isGroup:Boolean = false, // Todo
+    val isGroup:Boolean,
+    var unreadMessageId:String?
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -642,14 +643,10 @@ class MessageAdapter(
 
     val keyword: String? = null
     var recipient: User? = null
-    var unreadMsgId: String? = null
-        @SuppressLint("NotifyDataSetChanged")
-        set(value) {
-            if (field != value) {
-                field = value
-                notifyDataSetChanged()
-            }
-        }
+    fun markRead() {
+        unreadMessageId = null
+        notifyDataSetChanged()
+    }
 
     // todo
     val isBot = false
@@ -686,11 +683,6 @@ class MessageAdapter(
         // Todo delete message
     }
 
-    fun jumpTo(messageId: String): Int {
-        // Todo Return position if it exists in the cache, otherwise refresh the data according to ID and return position
-        return 0
-    }
-
     fun indexMessage(messageId: String): Int {
         return data.indexOfFirst { messageItem -> messageItem?.messageId == messageId }
     }
@@ -721,13 +713,13 @@ class MessageAdapter(
     override fun onCreateAttach(parent: ViewGroup): View =
         LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unread, parent, false)
 
-    override fun hasAttachView(position: Int): Boolean = if (unreadMsgId != null) {
-        getItem(position)?.messageId == unreadMsgId
+    override fun hasAttachView(position: Int): Boolean = if (unreadMessageId != null) {
+        getItem(position)?.messageId == unreadMessageId
     } else {
         false
     }
     override fun onBindAttachView(view: View) {
-        unreadMsgId?.let {
+        unreadMessageId?.let {
             ItemChatUnreadBinding.bind(view).unreadTv.text = view.context.getString(R.string.Unread_messages)
         }
     }
