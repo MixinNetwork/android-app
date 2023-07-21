@@ -1372,7 +1372,9 @@ class ConversationFragment() :
                 nextAction,
                 isGroup = isGroup,
                 unreadMessageId = unreadMessageId,
-                isBot,
+                isBot = isBot,
+                isSecret = encryptCategory() != EncryptCategory.PLAIN,
+                keyword = keyword
             )
             binding.messageRv.adapter = messageAdapter
             binding.messageRv.addItemDecoration(decoration)

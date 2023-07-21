@@ -83,6 +83,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
+import one.mixin.android.vo.create
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isContact
@@ -111,6 +112,8 @@ class MessageAdapter(
     val isGroup: Boolean,
     var unreadMessageId: String?,
     private val isBot: Boolean = false,
+    private val isSecret: Boolean = true,
+    var keyword: String? = null,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -582,21 +585,27 @@ class MessageAdapter(
             ConversationAdapter.NULL_TYPE,
         )
     fun getItem(position: Int): MessageItem? {
-        if (position >= 0 && position < data.size) {
-            if (position < 10) {
-                data.first()?.messageId?.let { id ->
-                    previousPage(id)
-                }
-            } else if (position > data.size - 11) {
-                data.last()?.messageId?.let { id ->
-                    nextPage(id)
-                }
+        return if (position > itemCount - 1 || position < 0) {
+            null
+        } else if (isSecret) {
+            if (position == 0) {
+                create(
+                    MessageCategory.SECRET.name,
+                    if (itemCount > 0) {
+                        getItemInternal(0)?.createdAt
+                    } else {
+                        null
+                    },
+                )
+            } else {
+                getItemInternal(position - 1)
             }
-            return data[position]
         } else {
-            return null
+            getItemInternal(position)
         }
     }
+
+    private fun getItemInternal(position: Int) = data[position]
 
     override fun isListLast(position: Int): Boolean {
         return position == itemCount - 1
@@ -651,7 +660,6 @@ class MessageAdapter(
         return selectSet.remove(selectSet.find { it.messageId == messageItem.messageId })
     }
 
-    val keyword: String? = null
     var recipient: User? = null
     fun markRead() {
         unreadMessageId = null
@@ -659,7 +667,11 @@ class MessageAdapter(
     }
 
     override fun getItemCount(): Int {
-        return data.size
+        if (isSecret) {
+            return data.size + 1
+        } else {
+            return data.size
+        }
     }
 
     override fun getItemViewType(position: Int): Int = getItemType(getItem(position))
