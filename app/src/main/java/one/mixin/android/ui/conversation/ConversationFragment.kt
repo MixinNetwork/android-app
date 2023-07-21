@@ -1394,9 +1394,15 @@ class ConversationFragment() :
                             if (message.isNotEmpty()) {
                                 (binding.messageRv.adapter as MessageAdapter).insert(message)
                             }
-                            scrollToDown()
+                            if (isBottom) {
+                                scrollToDown()
+                            } else {
+                                binding.flagLayout.unreadCount += event.ids.size
+                                binding.flagLayout.bottomCountFlag = true
+                            }
                         } else {
                             binding.flagLayout.unreadCount += event.ids.size
+                            binding.flagLayout.bottomCountFlag = true
                         }
                         chatRoomHelper.markMessageRead(conversationId)
                     }
