@@ -1384,6 +1384,7 @@ class ConversationFragment() :
                     binding.messageRv.measuredHeight / 4,
                 )
             }
+            chatRoomHelper.markMessageRead(conversationId)
             MessageFlow.collect({ event ->
                 event.conversationId == conversationId
             }, { event ->
@@ -1399,6 +1400,7 @@ class ConversationFragment() :
                         } else {
                             binding.flagLayout.unreadCount += event.ids.size
                         }
+                        chatRoomHelper.markMessageRead(conversationId)
                     }
                     MessageEventAction.UPDATE -> {
                         val messages = messageFetcher.findMessageById(event.ids)
