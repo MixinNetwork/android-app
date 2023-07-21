@@ -4,7 +4,6 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.DB_DELETE_LIMIT
 import one.mixin.android.db.deleteMessageByIds
-import one.mixin.android.db.flow.InvalidateFlow
 import one.mixin.android.fts.deleteByMessageIds
 
 class MessageDeleteJob(
@@ -42,6 +41,6 @@ class MessageDeleteJob(
             conversationDao.refreshLastMessageId(conversationId)
             conversationExtDao.refreshCountByConversationId(conversationId)
         }
-        InvalidateFlow.emit(conversationId)
+        // todo message flow
     }
 }

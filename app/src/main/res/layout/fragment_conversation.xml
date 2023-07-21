@@ -51,6 +51,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:over_direction="-1"
+                app:stackFromEnd="true"
                 tools:listitem="@layout/item_chat_text" />
 
             <include

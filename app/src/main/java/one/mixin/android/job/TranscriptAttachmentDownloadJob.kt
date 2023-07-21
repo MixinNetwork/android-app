@@ -12,7 +12,6 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.AttachmentResponse
 import one.mixin.android.crypto.attachment.AttachmentCipherInputStream
-import one.mixin.android.db.flow.InvalidateFlow
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.copyFromInputStream
@@ -104,7 +103,6 @@ class TranscriptAttachmentDownloadJob(
         if (transcriptMessageDao.hasUploadedAttachment(transcriptMessage.transcriptId) == 0) {
             messageDao.findMessageById(transcriptMessage.transcriptId)?.let {
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, transcriptMessage.transcriptId)
-                InvalidateFlow.emit(it.conversationId)
                 MessageFlow.update(it.conversationId, it.messageId)
             }
         }

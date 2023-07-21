@@ -8,7 +8,6 @@ import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT_L
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT_OFFSET
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT
 import one.mixin.android.MixinApplication
-import one.mixin.android.db.flow.InvalidateFlow
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.createDocumentTemp
@@ -141,7 +140,6 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
             if (attachment.mediaUrl != toFile.name) {
                 messageDao.updateMediaMessageUrl(toFile.name, attachment.messageId)
                 MessageFlow.update(attachment.conversationId, attachment.messageId)
-                InvalidateFlow.emit(attachment.conversationId)
             }
         }
         propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT_OFFSET, (offset + list.size).toString(), nowInUtc()))

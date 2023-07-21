@@ -3,7 +3,6 @@ package one.mixin.android.job
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.MixinApplication
-import one.mixin.android.db.flow.InvalidateFlow
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.extension.copy
@@ -62,7 +61,6 @@ class SendTranscriptJob(
             }
             ftsDatabase.insertFts4(stringBuffer.toString(), message.conversationId, message.messageId, message.category, message.userId, message.createdAt)
             appDatabase.insertMessage(message)
-            InvalidateFlow.emit(message.conversationId)
             MessageFlow.insert(message.conversationId, message.messageId)
             transcriptMessages.forEach { transcript ->
                 if (transcript.isAttachment()) {
@@ -105,7 +103,6 @@ class SendTranscriptJob(
         if (transcripts.any { t -> t.isAttachment() }) {
             val mediaSize = transcripts.sumOf { t -> t.mediaSize ?: 0 }
             messageDao.updateMediaSize(mediaSize, message.messageId)
-            InvalidateFlow.emit(message.conversationId)
             MessageFlow.update(message.conversationId, message.messageId)
             transcripts.filter { t ->
                 t.isAttachment()
@@ -119,7 +116,6 @@ class SendTranscriptJob(
             }
         } else {
             messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
-            InvalidateFlow.emit(message.conversationId)
             MessageFlow.update(message.conversationId, message.messageId)
             message.mediaStatus = MediaStatus.DONE.name
             message.content = GsonHelper.customGson.toJson(transcripts)

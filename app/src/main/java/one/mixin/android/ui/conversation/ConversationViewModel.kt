@@ -12,7 +12,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagedList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -21,7 +20,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
-import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.ConversationRequest
@@ -30,8 +28,6 @@ import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.datasource.FastComputableLiveData
-import one.mixin.android.db.datasource.FastLivePagedListBuilder
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.deserialize
@@ -124,19 +120,6 @@ internal constructor(
     private val messenger: SendMessageHelper,
     private val cleanMessageHelper: CleanMessageHelper,
 ) : ViewModel() {
-
-    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): FastComputableLiveData<PagedList<MessageItem>> {
-        val pagedListConfig = PagedList.Config.Builder()
-            .setPrefetchDistance(PAGE_SIZE * 2)
-            .setPageSize(PAGE_SIZE)
-            .setEnablePlaceholders(true)
-            .build()
-
-        return FastLivePagedListBuilder(
-            conversationRepository.getMessages(conversationId),
-            pagedListConfig,
-        ).setInitialLoadKey(firstKeyToLoad).build()
-    }
 
     suspend fun indexUnread(conversationId: String) =
         conversationRepository.indexUnread(conversationId) ?: 0

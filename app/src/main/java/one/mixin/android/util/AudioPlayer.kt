@@ -15,7 +15,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.flow.InvalidateFlow
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.event.ProgressEvent.Companion.errorEvent
 import one.mixin.android.event.ProgressEvent.Companion.pauseEvent
@@ -332,7 +331,6 @@ import java.util.concurrent.TimeUnit
         val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
         if (currentMessage.mediaStatus == MediaStatus.DONE.name) {
             messageDao.updateMediaStatus(MediaStatus.READ.name, currentMessage.messageId)
-            InvalidateFlow.emit(currentMessage.conversationId)
             MessageFlow.update(currentMessage.conversationId, currentMessage.messageId)
         }
         val message = messageDao.findNextAudioMessage(

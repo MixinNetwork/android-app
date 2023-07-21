@@ -3,7 +3,6 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
 import one.mixin.android.MixinApplication
-import one.mixin.android.db.flow.InvalidateFlow
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
@@ -41,7 +40,6 @@ class SendGiphyJob(
             time, MediaStatus.PENDING, MessageStatus.SENDING.name,
         )
         conversationDao.updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
-        InvalidateFlow.emit(message.conversationId)
         // Todo check
         MessageFlow.update(message.conversationId, message.messageId)
     }
@@ -59,7 +57,6 @@ class SendGiphyJob(
             time, MediaStatus.PENDING, MessageStatus.SENDING.name,
         )
         messageDao.updateGiphyMessage(messageId, file.name, mediaSize, thumbnail)
-        InvalidateFlow.emit(message.conversationId)
         MessageFlow.update(message.conversationId, message.messageId)
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }

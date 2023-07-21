@@ -1,6 +1,5 @@
 package one.mixin.android.repository
 
-import android.annotation.SuppressLint
 import android.os.CancellationSignal
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
@@ -36,7 +35,6 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
-import one.mixin.android.db.flow.InvalidateFlow
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
@@ -99,9 +97,6 @@ internal constructor(
     private val jobManager: MixinJobManager,
     private val ftsDbHelper: FtsDatabase,
 ) {
-
-    @SuppressLint("RestrictedApi")
-    fun getMessages(conversationId: String) = DataProvider.getMessages(appDatabase, conversationId)
 
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
 
@@ -225,7 +220,6 @@ internal constructor(
 
     suspend fun updateMediaStatusSuspend(status: String, messageId: String, conversationId: String) {
         messageDao.updateMediaStatusSuspend(status, messageId)
-        InvalidateFlow.emit(conversationId)
         MessageFlow.update(conversationId, messageId)
     }
 
@@ -405,7 +399,6 @@ internal constructor(
     fun updateMediaStatus(status: String, id: String, conversationId: String) {
         messageDao.updateMediaStatus(status, id)
         MessageFlow.update(conversationId, id)
-        InvalidateFlow.emit(conversationId)
     }
 
     suspend fun getConversationNameById(cid: String) = conversationDao.getConversationNameById(cid)
@@ -416,7 +409,6 @@ internal constructor(
         repeat((count / DB_DELETE_LIMIT) + 1) {
             messageDao.deleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory, DB_DELETE_LIMIT)
         }
-        InvalidateFlow.emit(conversationId)
         // Todo delete message flow
         // MessageFlow.update(conversationId, messageId)
     }
@@ -550,7 +542,6 @@ internal constructor(
 
     fun insertMessage(message: Message) {
         appDatabase.insertMessage(message)
-        InvalidateFlow.emit(message.conversationId)
         MessageFlow.insert(message.conversationId, message.messageId)
     }
 

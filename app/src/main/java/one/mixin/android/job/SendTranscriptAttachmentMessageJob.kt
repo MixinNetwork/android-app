@@ -14,7 +14,6 @@ import one.mixin.android.crypto.Util
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStream
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
 import one.mixin.android.crypto.attachment.PushAttachmentData
-import one.mixin.android.db.flow.InvalidateFlow
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.getStackTraceString
@@ -200,7 +199,6 @@ class SendTranscriptAttachmentMessageJob(
                 getTranscripts(parentId ?: transcriptMessage.transcriptId, transcripts)
                 msg.content = GsonHelper.customGson.toJson(transcripts)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, parentId ?: transcriptMessage.transcriptId)
-                InvalidateFlow.emit(msg.conversationId)
                 MessageFlow.update(msg.conversationId, msg.messageId)
                 jobManager.addJob(SendMessageJob(msg))
             }
