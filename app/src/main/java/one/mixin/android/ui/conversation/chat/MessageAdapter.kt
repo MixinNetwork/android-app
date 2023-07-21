@@ -2,10 +2,12 @@ package one.mixin.android.ui.conversation.chat
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.collection.arraySetOf
 import androidx.recyclerview.widget.RecyclerView
 import io.noties.markwon.Markwon
+import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.databinding.ItemChatActionCardBinding
 import one.mixin.android.databinding.ItemChatAudioBinding
@@ -29,12 +31,16 @@ import one.mixin.android.databinding.ItemChatStrangerBinding
 import one.mixin.android.databinding.ItemChatSystemBinding
 import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.databinding.ItemChatTextQuoteBinding
+import one.mixin.android.databinding.ItemChatTimeBinding
 import one.mixin.android.databinding.ItemChatTranscriptBinding
 import one.mixin.android.databinding.ItemChatTransparentBinding
 import one.mixin.android.databinding.ItemChatUnknownBinding
+import one.mixin.android.databinding.ItemChatUnreadBinding
 import one.mixin.android.databinding.ItemChatVideoBinding
 import one.mixin.android.databinding.ItemChatVideoQuoteBinding
 import one.mixin.android.databinding.ItemChatWaitingBinding
+import one.mixin.android.extension.hashForDate
+import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
@@ -62,6 +68,7 @@ import one.mixin.android.ui.conversation.holder.StrangerHolder
 import one.mixin.android.ui.conversation.holder.SystemHolder
 import one.mixin.android.ui.conversation.holder.TextHolder
 import one.mixin.android.ui.conversation.holder.TextQuoteHolder
+import one.mixin.android.ui.conversation.holder.TimeHolder
 import one.mixin.android.ui.conversation.holder.TranscriptHolder
 import one.mixin.android.ui.conversation.holder.TransparentHolder
 import one.mixin.android.ui.conversation.holder.UnknownHolder
@@ -71,6 +78,7 @@ import one.mixin.android.ui.conversation.holder.WaitingHolder
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.User
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isContact
@@ -86,6 +94,8 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
+import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
+import kotlin.math.abs
 
 class MessageAdapter(
     val data: CompressedList<MessageItem>,
@@ -93,7 +103,8 @@ class MessageAdapter(
     val onItemListener: ConversationAdapter.OnItemListener,
     val previousPage: (String) -> Unit,
     val nextPage: (String) -> Unit,
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    val isGroup:Boolean = false, // Todo
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
@@ -584,13 +595,8 @@ class MessageAdapter(
         return false
     }
 
-    fun isListLast(position: Int): Boolean {
-        return position == 0
-    }
-
-    fun isLast(position: Int): Boolean {
-        // todo
-        return false
+    override fun isListLast(position: Int): Boolean {
+        return position == itemCount -1
     }
 
     fun isRepresentative(message: MessageItem): Boolean {
@@ -599,13 +605,51 @@ class MessageAdapter(
     }
 
     fun isFirst(position: Int): Boolean {
-        // todo
-        return false
+        return if (isGroup || recipient != null) {
+            val currentItem = getItem(position)
+            if (!isGroup && (recipient?.isBot() == false || recipient?.userId == currentItem?.userId)) {
+                return false
+            }
+            val previousItem = getItem(position-1)
+            when {
+                currentItem == null ->
+                    false
+                previousItem == null ->
+                    true
+                previousItem.type == MessageCategory.MESSAGE_PIN.name ->
+                    true
+                previousItem.type == MessageCategory.SYSTEM_CONVERSATION.name ->
+                    true
+                previousItem.userId != currentItem.userId ->
+                    true
+                !isSameDay(previousItem.createdAt, currentItem.createdAt) ->
+                    true
+                else -> false
+            }
+        } else {
+            false
+        }
     }
 
-    private val selectSet = arraySetOf<MessageItem>()
+    val selectSet = arraySetOf<MessageItem>()
+    fun addSelect(messageItem: MessageItem): Boolean {
+        return selectSet.add(messageItem)
+    }
+
+    fun removeSelect(messageItem: MessageItem): Boolean {
+        return selectSet.remove(selectSet.find { it.messageId == messageItem.messageId })
+    }
 
     val keyword: String? = null
+    var recipient: User? = null
+    var unreadMsgId: String? = null
+        @SuppressLint("NotifyDataSetChanged")
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
 
     // todo
     val isBot = false
@@ -652,9 +696,58 @@ class MessageAdapter(
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun refreshData(data:List<MessageItem>) {
+    fun refreshData(data: List<MessageItem>) {
         this.data.clear()
         this.data.addAll(data)
         notifyDataSetChanged()
+    }
+
+    override fun getHeaderId(position: Int): Long = getItem(position).notNullWithElse(
+        {
+            abs(it.createdAt.hashForDate())
+        },
+        0,
+    )
+
+    override fun onCreateHeaderViewHolder(parent: ViewGroup): TimeHolder =
+        TimeHolder(ItemChatTimeBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+
+    override fun onBindHeaderViewHolder(holder: TimeHolder, position: Int) {
+        getItem(position)?.let {
+            holder.bind(it.createdAt)
+        }
+    }
+
+    override fun onCreateAttach(parent: ViewGroup): View =
+        LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unread, parent, false)
+
+    override fun hasAttachView(position: Int): Boolean = if (unreadMsgId != null) {
+        getItem(position)?.messageId == unreadMsgId
+    } else {
+        false
+    }
+    override fun onBindAttachView(view: View) {
+        unreadMsgId?.let {
+            ItemChatUnreadBinding.bind(view).unreadTv.text = view.context.getString(R.string.Unread_messages)
+        }
+    }
+    override fun isLast(position: Int): Boolean {
+        val currentItem = getItem(position)
+        val nextItem = getItem(position + 1)
+        return when {
+            currentItem == null ->
+                false
+            nextItem == null ->
+                true
+            currentItem.type == MessageCategory.SYSTEM_CONVERSATION.name ->
+                true
+            nextItem.type == MessageCategory.SYSTEM_CONVERSATION.name ->
+                true
+            nextItem.userId != currentItem.userId ->
+                true
+            !isSameDay(nextItem.createdAt, currentItem.createdAt) ->
+                true
+            else -> false
+        }
     }
 }

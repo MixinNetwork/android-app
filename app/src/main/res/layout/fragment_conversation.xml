@@ -39,31 +39,17 @@
             android:layout_height="match_parent">
 
             <one.mixin.android.widget.DraggableRecyclerView
-                android:id="@+id/chat_rv"
+                android:id="@+id/message_rv"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
                 android:paddingBottom="6dp"
-                android:scrollbars="vertical"
+                android:scrollbars="none"
                 app:layout_constraintBottom_toTopOf="@id/chat_control"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:over_direction="-1"
-                app:stackFromEnd="true"
-                tools:listitem="@layout/item_chat_text" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/message_rv"
-                android:layout_width="200dp"
-                android:layout_height="300dp"
-                android:clipChildren="false"
-                android:clipToPadding="false"
-                android:paddingBottom="6dp"
-                android:scrollbars="none"
-                app:layout_constraintBottom_toTopOf="@id/chat_control"
-                app:layout_constraintStart_toStartOf="parent"
                 app:over_direction="-1"
                 tools:listitem="@layout/item_chat_text" />
 

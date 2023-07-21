@@ -49,8 +49,8 @@ class MessageFetcher @Inject constructor(
     private var canLoadBelow = true
 
     suspend fun initMessages(conversationId: String, messageId: String? = null): Pair<Int, List<MessageItem>> = withContext(SINGLE_FETCHER_THREAD) {
-        // Todo Query contains the most data for messageId (max 60)
-        // Judge whether it can scroll up and down according to the returned data
+        currentlyLoadingIds.clear()
+        loadedIds.clear()
         var aroundId = messageId
         if (aroundId == null) {
             val idCursor = db.query("SELECT message_id FROM remote_messages_status WHERE conversation_id = ? AND status = 'DELIVERED' ORDER BY rowid ASC LIMIT 1", arrayOf(conversationId))
