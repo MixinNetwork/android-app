@@ -291,33 +291,25 @@ class ConversationFragment() :
         const val CONVERSATION_ID = "conversation_id"
         const val RECIPIENT_ID = "recipient_id"
         const val RECIPIENT = "recipient"
-        const val MESSAGE_ID = "message_id"
-        const val INITIAL_POSITION_MESSAGE_ID = "initial_position_message_id"
-        const val UNREAD_COUNT = "unread_count"
+        const val MESSAGE_ID = "initial_position_message_id"
         const val TRANSCRIPT_DATA = "transcript_data"
         private const val KEY_WORD = "key_word"
 
         fun putBundle(
             conversationId: String?,
             recipientId: String?,
-            messageId: String?,
             keyword: String?,
-            unreadCount: Int? = null,
+            messageId: String? = null,
             transcriptData: TranscriptData? = null,
         ): Bundle =
             Bundle().apply {
                 require(!(conversationId == null && recipientId == null)) { "lose data" }
-                messageId?.let {
-                    putString(MESSAGE_ID, messageId)
-                }
                 keyword?.let {
                     putString(KEY_WORD, keyword)
                 }
                 putString(CONVERSATION_ID, conversationId)
                 putString(RECIPIENT_ID, recipientId)
-                unreadCount?.let {
-                    putInt(UNREAD_COUNT, unreadCount)
-                }
+                putString(MESSAGE_ID, messageId)
                 putParcelable(TRANSCRIPT_DATA, transcriptData)
             }
 
@@ -926,10 +918,8 @@ class ConversationFragment() :
         recipient?.isBot() == true
     }
 
-    private var messageId: String? = null
-
-    private val initialPositionMessageId: String? by lazy {
-        requireArguments().getString(INITIAL_POSITION_MESSAGE_ID, null)
+    private val initialMessageId: String? by lazy {
+        requireArguments().getString(MESSAGE_ID, null)
     }
 
     private var keyword: String? = null
@@ -1005,7 +995,6 @@ class ConversationFragment() :
             initAudioSwitch()
         }
         recipient = requireArguments().getParcelableCompat(RECIPIENT, User::class.java)
-        messageId = requireArguments().getString(MESSAGE_ID, null)
         keyword = requireArguments().getString(KEY_WORD, null)
     }
 
@@ -1363,7 +1352,7 @@ class ConversationFragment() :
             },
         )
         lifecycleScope.launch {
-            val (position, data, unreadMessageId) = messageFetcher.initMessages(conversationId)
+            val (position, data, unreadMessageId) = messageFetcher.initMessages(conversationId, initialMessageId)
             messageAdapter = MessageAdapter(
                 CompressedList(data),
                 getMiniMarkwon(requireActivity()),
@@ -1371,10 +1360,10 @@ class ConversationFragment() :
                 previousAction,
                 nextAction,
                 isGroup = isGroup,
-                unreadMessageId = unreadMessageId,
+                unreadMessageId = if (initialMessageId != null) null else unreadMessageId,
                 isBot = isBot,
                 isSecret = encryptCategory() != EncryptCategory.PLAIN,
-                keyword = keyword
+                keyword = keyword,
             )
             binding.messageRv.adapter = messageAdapter
             binding.messageRv.addItemDecoration(decoration)
@@ -1386,6 +1375,12 @@ class ConversationFragment() :
                     position,
                     binding.messageRv.measuredHeight / 4,
                 )
+                if (initialMessageId != null && unreadMessageId != null) {
+                    launch {
+                        delay(100)
+                        RxBus.publish(BlinkEvent(unreadMessageId))
+                    }
+                }
             }
             chatRoomHelper.markMessageRead(conversationId)
             MessageFlow.collect({ event ->
@@ -1831,79 +1826,7 @@ class ConversationFragment() :
         deleteDialog?.show()
     }
 
-    private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
-        // var oldCount: Int = -1
-        // var firstReturn = true
-        // chatViewModel.getMessages(conversationId, unreadCount)
-        //     .run {
-        //         val computableLiveData = this
-        //         lifecycleScope.launch {
-        //             InvalidateFlow.collect(
-        //                 { !viewDestroyed() && this@ConversationFragment.conversationId == conversationId },
-        //                 {
-        //                     computableLiveData.invalidate()
-        //                 },
-        //             )
-        //         }
-        //         this.liveData
-        //     }.observe(
-        //         viewLifecycleOwner,
-        //     ) { list ->
-        //         if (Session.getAccount() == null) return@observe
-        //
-        //         if (oldCount == -1) {
-        //             oldCount = list.size
-        //         } else if (!isFirstLoad && !isBottom && list.size > oldCount) {
-        //             if (firstReturn) {
-        //                 firstReturn = false
-        //             } else { // The size returned the second time is the real data.
-        //                 unreadTipCount += (list.size - oldCount)
-        //             }
-        //             oldCount = list.size
-        //         } else if (isBottom) {
-        //             unreadTipCount = 0
-        //             oldCount = list.size
-        //         }
-        //         chatViewModel.viewModelScope.launch {
-        //             conversationAdapter.hasBottomView =
-        //                 recipient?.relationship == UserRelationship.STRANGER.name && chatViewModel.isSilence(
-        //                     conversationId,
-        //                     sender.userId,
-        //                 )
-        //         }
-        //         if (isFirstLoad && messageId == null && unreadCount > 0) {
-        //             conversationAdapter.unreadMsgId = unreadMessageId
-        //         } else if (lastReadMessage != null) {
-        //             chatViewModel.viewModelScope.launch {
-        //                 lastReadMessage?.let { id ->
-        //                     val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
-        //                         conversationId,
-        //                         sender.userId,
-        //                         id,
-        //                     )
-        //                     if (unreadMsgId != null) {
-        //                         messageAdapter.unreadMsgId = unreadMsgId
-        //                         lastReadMessage = null
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //         if (list.size > 0) {
-        //             if (isFirstMessage) {
-        //                 isFirstMessage = false
-        //             }
-        //         }
-        //         conversationAdapter.submitList(list)
-        //         chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
-        //         chatRoomHelper.markMessageRead(conversationId)
-        //     }
-    }
-
-    private var unreadCount = 0
     private fun bindData() {
-        unreadCount = requireArguments().getInt(UNREAD_COUNT, 0)
-        liveDataMessage(unreadCount, initialPositionMessageId)
-
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(
             viewLifecycleOwner,
         ) { mentionMessages ->

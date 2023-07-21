@@ -333,21 +333,10 @@ class ConversationListFragment : LinkFragment() {
                             } else {
                                 null
                             }
-                            val messageId =
-                                if (item.unseenMessageCount != null && item.unseenMessageCount > 0) {
-                                    conversationListViewModel.findFirstUnreadMessageId(
-                                        item.conversationId,
-                                        item.unseenMessageCount - 1,
-                                    )
-                                } else {
-                                    null
-                                }
                             ConversationActivity.fastShow(
                                 requireContext(),
                                 conversationId = item.conversationId,
                                 recipient = user,
-                                initialPositionMessageId = messageId,
-                                unreadCount = item.unseenMessageCount ?: 0,
                             )
                         }
                     }
