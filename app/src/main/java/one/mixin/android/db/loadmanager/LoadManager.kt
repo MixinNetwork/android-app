@@ -50,6 +50,11 @@ class LoadManager @Inject constructor(
         return@withContext convertToMessageItems(cursor)
     }
 
+    suspend fun findMessageById(messageIds: List<String>) = withContext(SINGLE_THREAD) {
+        val cursor = db.query("$SQL WHERE m.id IN ${messageIds.joinToString(", ", "(", ")", transform = { "'$it'" })}", arrayOf())
+        return@withContext convertToMessageItems(cursor)
+    }
+
     suspend fun nextPage(conversationId: String, messageId: String) = withContext(SINGLE_THREAD) {
         if (status != LoadStatus.IDLE) return@withContext null
         Timber.e("next $messageId")

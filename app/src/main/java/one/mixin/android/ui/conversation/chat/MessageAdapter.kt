@@ -619,11 +619,26 @@ class MessageAdapter(
     fun submitNext(list: List<MessageItem>) {
         val size = data.size
         data.append(list)
-        notifyItemRangeInserted(size - 1, list.count())
+        notifyItemRangeInserted(size, list.count())
     }
 
     fun submitPrevious(list: List<MessageItem>) {
         data.prepend(list)
         notifyItemRangeInserted(0, list.count())
+    }
+
+    fun insert(list: List<MessageItem>) {
+        // Todo check is bottom
+        val size = data.size
+        data.append(list)
+        notifyItemRangeInserted(size, list.count())
+    }
+
+    fun update(list: List<MessageItem>) {
+        // Todo update message
+    }
+
+    fun delete(list: List<String>) {
+        // Todo delete message
     }
 }

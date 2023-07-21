@@ -83,12 +83,14 @@ import one.mixin.android.databinding.DialogImportMessageBinding
 import one.mixin.android.databinding.FragmentConversationBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
 import one.mixin.android.db.flow.InvalidateFlow
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.loadmanager.LoadManager
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.CallEvent
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.event.MentionReadEvent
+import one.mixin.android.event.MessageEventAction
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
@@ -1458,6 +1460,30 @@ class ConversationFragment() :
                     }
                 },
             )
+            MessageFlow.collect({ event ->
+                event.conversationId == conversationId
+            }, { event ->
+                when (event.action) {
+                    MessageEventAction.INSERT -> {
+                        val message = loadManager.findMessageById(event.ids)
+                        Timber.e("insert ${event.ids} ${message.map { it.messageId }}")
+                        if (message.isNotEmpty()) {
+                            (binding.chatShadowRv.adapter as MessageAdapter).insert(message)
+                        }
+                    }
+                    MessageEventAction.UPDATE -> {
+                        val messages = loadManager.findMessageById(event.ids)
+                        if (messages.isNotEmpty()) {
+                            (binding.chatShadowRv.adapter as MessageAdapter).update(messages)
+                        }
+                    }
+                    MessageEventAction.DELETE -> {
+                        if (event.ids.isNotEmpty()) {
+                            (binding.chatShadowRv.adapter as MessageAdapter).delete(event.ids)
+                        }
+                    }
+                }
+            })
         }
 
         binding.chatRv.addOnScrollListener(
