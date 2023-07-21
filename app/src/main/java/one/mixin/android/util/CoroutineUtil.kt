@@ -30,3 +30,8 @@ val FTS_THREAD by lazy {
 val SINGLE_SOCKET_THREAD by lazy {
     Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_SOCKET_THREAD") }.asCoroutineDispatcher()
 }
+
+val SINGLE_FETCHER_THREAD by lazy {
+    Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+}
+

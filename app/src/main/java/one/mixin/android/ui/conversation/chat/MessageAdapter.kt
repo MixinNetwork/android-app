@@ -36,7 +36,6 @@ import one.mixin.android.databinding.ItemChatVideoQuoteBinding
 import one.mixin.android.databinding.ItemChatWaitingBinding
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.ui.conversation.base.CompressedList
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
 import one.mixin.android.ui.conversation.holder.AudioHolder
@@ -640,5 +639,10 @@ class MessageAdapter(
 
     fun delete(list: List<String>) {
         // Todo delete message
+    }
+
+    fun jumpTo(messageId: String): Int {
+        // Todo Return position if it exists in the cache, otherwise refresh the data according to ID and return position
+        return 0
     }
 }

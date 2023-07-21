@@ -84,7 +84,7 @@ import one.mixin.android.databinding.FragmentConversationBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
 import one.mixin.android.db.flow.InvalidateFlow
 import one.mixin.android.db.flow.MessageFlow
-import one.mixin.android.db.loadmanager.LoadManager
+import one.mixin.android.db.fetcher.MessageFetcher
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.CallEvent
 import one.mixin.android.event.ExitEvent
@@ -170,9 +170,9 @@ import one.mixin.android.ui.conversation.adapter.MentionAdapter
 import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListener
 import one.mixin.android.ui.conversation.adapter.Menu
 import one.mixin.android.ui.conversation.adapter.MenuType
-import one.mixin.android.ui.conversation.base.CompressedList
 import one.mixin.android.ui.conversation.chat.ChatItemCallback
 import one.mixin.android.ui.conversation.chat.ChatItemCallback.Companion.SWAP_SLOT
+import one.mixin.android.ui.conversation.chat.CompressedList
 import one.mixin.android.ui.conversation.chat.MessageAdapter
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity.Companion.JUMP_ID
@@ -1400,7 +1400,7 @@ class ConversationFragment() :
     private var firstPosition = 0
 
     @Inject
-    lateinit var loadManager: LoadManager
+    lateinit var messageFetcher: MessageFetcher
 
     private fun initView() {
         binding.inputLayout.backgroundImage = WallpaperManager.getWallpaper(requireContext())
@@ -1438,24 +1438,24 @@ class ConversationFragment() :
         binding.chatRv.itemAnimator = null
         binding.chatShadowRv.layoutManager = LinearLayoutManager(requireContext())
         lifecycleScope.launch {
-            val data = loadManager.initMessages(conversationId)
+            val data = messageFetcher.initMessages(conversationId)
             binding.chatShadowRv.adapter = MessageAdapter(
                 CompressedList(data),
                 getMiniMarkwon(requireActivity()),
                 onItemListener,
                 { id ->
                     lifecycleScope.launch {
-                        val data = loadManager.previousPage(conversationId, id)
-                        if (!data.isNullOrEmpty()) {
-                            (binding.chatShadowRv.adapter as MessageAdapter).submitPrevious(data)
+                        val pageData = messageFetcher.previousPage(conversationId, id)
+                        if (!pageData.isNullOrEmpty()) {
+                            (binding.chatShadowRv.adapter as MessageAdapter).submitPrevious(pageData)
                         }
                     }
                 },
                 { id ->
                     lifecycleScope.launch {
-                        val data = loadManager.nextPage(conversationId, id)
-                        if (!data.isNullOrEmpty()) {
-                            (binding.chatShadowRv.adapter as MessageAdapter).submitNext(data)
+                        val pageData = messageFetcher.nextPage(conversationId, id)
+                        if (!pageData.isNullOrEmpty()) {
+                            (binding.chatShadowRv.adapter as MessageAdapter).submitNext(pageData)
                         }
                     }
                 },
@@ -1465,14 +1465,14 @@ class ConversationFragment() :
             }, { event ->
                 when (event.action) {
                     MessageEventAction.INSERT -> {
-                        val message = loadManager.findMessageById(event.ids)
+                        val message = messageFetcher.findMessageById(event.ids)
                         Timber.e("insert ${event.ids} ${message.map { it.messageId }}")
                         if (message.isNotEmpty()) {
                             (binding.chatShadowRv.adapter as MessageAdapter).insert(message)
                         }
                     }
                     MessageEventAction.UPDATE -> {
-                        val messages = loadManager.findMessageById(event.ids)
+                        val messages = messageFetcher.findMessageById(event.ids)
                         if (messages.isNotEmpty()) {
                             (binding.chatShadowRv.adapter as MessageAdapter).update(messages)
                         }

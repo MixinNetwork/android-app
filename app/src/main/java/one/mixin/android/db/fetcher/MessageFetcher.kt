@@ -1,14 +1,14 @@
-package one.mixin.android.db.loadmanager
+package one.mixin.android.db.fetcher
 
 import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.provider.convertToMessageItems
-import one.mixin.android.util.SINGLE_THREAD
+import one.mixin.android.util.SINGLE_FETCHER_THREAD
 import one.mixin.android.vo.MessageItem
 import timber.log.Timber
 import javax.inject.Inject
 
-class LoadManager @Inject constructor(
+class MessageFetcher @Inject constructor(
     val db: MixinDatabase,
 ) {
     companion object {
@@ -42,60 +42,76 @@ class LoadManager @Inject constructor(
         private const val PAGE_SIZE = 20
     }
 
-    private var currentTopId: String? = null
-    private var currentBottomId: String? = null
-    private var status: LoadStatus = LoadStatus.IDLE
-    suspend fun initMessages(conversationId: String): List<MessageItem> = withContext(SINGLE_THREAD) {
+    private val currentlyLoadingIds = mutableSetOf<String>()
+    private val loadedIds = mutableSetOf<String>()
+    private var canLoadAbove = true
+    private var canLoadBelow = true
+
+    suspend fun initMessages(conversationId: String, messageId: String? = null): List<MessageItem> = withContext(SINGLE_FETCHER_THREAD) {
+        // Todo Query contains the most data for messageId (max 60)
+        // Judge whether it can scroll up and down according to the returned data
         val cursor = db.query("$SQL WHERE m.conversation_id = ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?", arrayOf(conversationId, PAGE_SIZE * 3))
         return@withContext convertToMessageItems(cursor)
     }
 
-    suspend fun findMessageById(messageIds: List<String>) = withContext(SINGLE_THREAD) {
+    suspend fun findMessageById(messageIds: List<String>) = withContext(SINGLE_FETCHER_THREAD) {
         val cursor = db.query("$SQL WHERE m.id IN ${messageIds.joinToString(", ", "(", ")", transform = { "'$it'" })}", arrayOf())
         return@withContext convertToMessageItems(cursor)
     }
 
-    suspend fun nextPage(conversationId: String, messageId: String) = withContext(SINGLE_THREAD) {
-        if (status != LoadStatus.IDLE) return@withContext null
+    suspend fun nextPage(conversationId: String, messageId: String) = withContext(SINGLE_FETCHER_THREAD) {
+        if (!canLoadBelow || currentlyLoadingIds.contains(messageId) || loadedIds.contains(messageId)) {
+            return@withContext emptyList()
+        }
+        currentlyLoadingIds.add(messageId)
         Timber.e("next $messageId")
-        status = LoadStatus.LOADING
-        val cursor = db.query("SELECT rowid FROM messages WHERE id = ?", arrayOf(messageId))
-        val rowId = cursor.use {
-            it.moveToNext()
-            it.getInt(0)
-        }
-        return@withContext nextPage(conversationId, rowId).also {
-            status = LoadStatus.IDLE
-        }
-    }
-
-    private suspend fun nextPage(conversationId: String, rowId: Int) = withContext(SINGLE_THREAD) {
-        val cursor = db.query(
-            "$SQL WHERE m.conversation_id = ? AND m.rowid > ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?",
-            arrayOf(conversationId, rowId, PAGE_SIZE),
-        )
-        return@withContext convertToMessageItems(cursor)
-    }
-
-    suspend fun previousPage(conversationId: String, messageId: String) =
-        withContext(SINGLE_THREAD) {
-            if (status != LoadStatus.IDLE) return@withContext null
-            status = LoadStatus.LOADING
-            val cursor = db.query("SELECT rowid FROM messages WHERE id = ?", arrayOf(messageId))
-            val rowId = cursor.use {
+        try {
+            val idCursor = db.query("SELECT rowid FROM messages WHERE id = ?", arrayOf(messageId))
+            val rowId = idCursor.use {
                 it.moveToNext()
                 it.getInt(0)
             }
-            return@withContext previousPage(conversationId, rowId).also {
-                status = LoadStatus.IDLE
+            val cursor = db.query(
+                "$SQL WHERE m.conversation_id = ? AND m.rowid > ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?",
+                arrayOf(conversationId, rowId, PAGE_SIZE),
+            )
+            return@withContext convertToMessageItems(cursor).also {
+                if (it.size < PAGE_SIZE){
+                    canLoadBelow = false
+                }
+            }
+        } finally {
+            currentlyLoadingIds.remove(messageId)
+            loadedIds.add(messageId)
+        }
+    }
+
+    suspend fun previousPage(conversationId: String, messageId: String) =
+        withContext(SINGLE_FETCHER_THREAD) {
+            if (!canLoadBelow || currentlyLoadingIds.contains(messageId) || loadedIds.contains(messageId)) {
+                return@withContext emptyList()
+            }
+            currentlyLoadingIds.add(messageId)
+            Timber.e("previous $messageId")
+            try {
+                val idCursor =
+                    db.query("SELECT rowid FROM messages WHERE id = ?", arrayOf(messageId))
+                val rowId = idCursor.use {
+                    it.moveToNext()
+                    it.getInt(0)
+                }
+                val cursor = db.query(
+                    "$SQL WHERE m.conversation_id = ? AND m.rowid < ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
+                    arrayOf(conversationId, rowId, PAGE_SIZE),
+                )
+                return@withContext convertToMessageItems(cursor).reversed().also {
+                    if (it.size < PAGE_SIZE){
+                        canLoadAbove = false
+                    }
+                }
+            } finally {
+                currentlyLoadingIds.remove(messageId)
+                loadedIds.add(messageId)
             }
         }
-
-    private suspend fun previousPage(conversationId: String, rowId: Int) = withContext(SINGLE_THREAD) {
-        val cursor = db.query(
-            "$SQL WHERE m.conversation_id = ? AND m.rowid < ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
-            arrayOf(conversationId, rowId, PAGE_SIZE),
-        )
-        return@withContext convertToMessageItems(cursor).reversed()
-    }
 }

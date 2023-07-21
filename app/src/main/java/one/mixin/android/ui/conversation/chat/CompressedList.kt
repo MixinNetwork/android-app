@@ -1,4 +1,4 @@
-package one.mixin.android.ui.conversation.base
+package one.mixin.android.ui.conversation.chat
 
 import java.util.AbstractList
 
