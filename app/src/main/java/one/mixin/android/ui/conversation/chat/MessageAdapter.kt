@@ -86,7 +86,6 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
-import timber.log.Timber
 
 class MessageAdapter(
     val data: CompressedList<MessageItem>,
@@ -571,7 +570,6 @@ class MessageAdapter(
                     previousPage(id)
                 }
             } else if (position > data.size - 11) {
-                data.last()?.let { Timber.e("${it.messageId} ${it.content}") }
                 data.last()?.messageId?.let { id ->
                     nextPage(id)
                 }

@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.provider.convertToMessageItems
+import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.vo.MessageItem
 import timber.log.Timber
 import javax.inject.Inject
@@ -45,14 +46,15 @@ class LoadManager @Inject constructor(
     private var currentTopId: String? = null
     private var currentBottomId: String? = null
     private var status: LoadStatus = LoadStatus.IDLE
-    suspend fun initMessages(conversationId: String): List<MessageItem> = withContext(Dispatchers.IO) {
+    suspend fun initMessages(conversationId: String): List<MessageItem> = withContext(SINGLE_THREAD) {
         val cursor = db.query("$SQL WHERE m.conversation_id = ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?", arrayOf(conversationId, PAGE_SIZE * 3))
         return@withContext convertToMessageItems(cursor).also {
         }
     }
 
-    suspend fun nextPage(conversationId: String, messageId: String) = withContext(Dispatchers.IO) {
-        if (status != LoadStatus.IDLE || messageId == currentBottomId) return@withContext null
+    suspend fun nextPage(conversationId: String, messageId: String) = withContext(SINGLE_THREAD) {
+        Timber.e("$messageId $currentBottomId")
+        if (status != LoadStatus.IDLE) return@withContext null
         Timber.e("next $messageId")
         status = LoadStatus.LOADING
         val cursor = db.query("SELECT rowid FROM messages WHERE id = ?", arrayOf(messageId))
@@ -66,7 +68,7 @@ class LoadManager @Inject constructor(
         }
     }
 
-    private suspend fun nextPage(conversationId: String, rowId: Int) = withContext(Dispatchers.IO) {
+    private suspend fun nextPage(conversationId: String, rowId: Int) = withContext(SINGLE_THREAD) {
         val cursor = db.query(
             "$SQL WHERE m.conversation_id = ? AND m.rowid > ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?",
             arrayOf(conversationId, rowId, PAGE_SIZE),
@@ -75,8 +77,8 @@ class LoadManager @Inject constructor(
     }
 
     suspend fun previousPage(conversationId: String, messageId: String) =
-        withContext(Dispatchers.IO) {
-            if (status != LoadStatus.IDLE || messageId == currentTopId) return@withContext null
+        withContext(SINGLE_THREAD) {
+            if (status != LoadStatus.IDLE) return@withContext null
             status = LoadStatus.LOADING
             val cursor = db.query("SELECT rowid FROM messages WHERE id = ?", arrayOf(messageId))
             val rowId = cursor.use {
@@ -89,7 +91,7 @@ class LoadManager @Inject constructor(
                          }
         }
 
-    private suspend fun previousPage(conversationId: String, rowId: Int) = withContext(Dispatchers.IO) {
+    private suspend fun previousPage(conversationId: String, rowId: Int) = withContext(SINGLE_THREAD) {
         val cursor = db.query(
             "$SQL WHERE m.conversation_id = ? AND m.rowid < ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
             arrayOf(conversationId, rowId, PAGE_SIZE),
