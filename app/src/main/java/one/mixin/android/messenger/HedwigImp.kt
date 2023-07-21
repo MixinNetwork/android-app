@@ -9,6 +9,7 @@ import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.flow.InvalidateFlow
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.pending.PendingDatabase
@@ -210,6 +211,7 @@ class HedwigImp(
                     }
                     remoteMessageStatusDao.updateConversationUnseen(conversationId)
                     InvalidateFlow.emit(conversationId)
+                    MessageFlow.insert(conversationId, messages.map { it.messageId })
                 }
                 if (list.size == 100) {
                     runPendingJob()

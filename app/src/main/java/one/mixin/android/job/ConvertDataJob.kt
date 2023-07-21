@@ -4,6 +4,7 @@ import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.flow.InvalidateFlow
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createDocumentTemp
@@ -27,12 +28,14 @@ class ConvertDataJob(
     override fun onAdded() {
         appDatabase.insertMessage(message)
         InvalidateFlow.emit(message.conversationId)
+        MessageFlow.insert(message.conversationId, message.messageId)
     }
 
     override fun cancel() {
         isCancelled = true
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
         InvalidateFlow.emit(message.conversationId)
+        MessageFlow.update(message.conversationId, message.messageId)
         removeJob()
     }
 
@@ -51,6 +54,7 @@ class ConvertDataJob(
             file.copyFromInputStream(inputStream)
             messageDao.updateMediaMessageUrl(file.name, message.messageId)
             InvalidateFlow.emit(message.conversationId)
+            MessageFlow.update(message.conversationId, message.messageId)
 
             jobManager.addJobInBackground(
                 SendAttachmentMessageJob(

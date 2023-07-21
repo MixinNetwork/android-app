@@ -37,6 +37,7 @@ import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.flow.InvalidateFlow
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.event.GroupEvent
@@ -225,6 +226,7 @@ internal constructor(
     suspend fun updateMediaStatusSuspend(status: String, messageId: String, conversationId: String) {
         messageDao.updateMediaStatusSuspend(status, messageId)
         InvalidateFlow.emit(conversationId)
+        MessageFlow.update(conversationId, messageId)
     }
 
     suspend fun updateConversationPinTimeById(conversationId: String, circleId: String?, pinTime: String?) =
@@ -402,6 +404,7 @@ internal constructor(
 
     fun updateMediaStatus(status: String, id: String, conversationId: String) {
         messageDao.updateMediaStatus(status, id)
+        MessageFlow.update(conversationId, id)
         InvalidateFlow.emit(conversationId)
     }
 
@@ -414,6 +417,8 @@ internal constructor(
             messageDao.deleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory, DB_DELETE_LIMIT)
         }
         InvalidateFlow.emit(conversationId)
+        // Todo delete message flow
+        // MessageFlow.update(conversationId, messageId)
     }
 
     suspend fun findTranscriptIdByConversationId(conversationId: String) = messageDao.findTranscriptIdByConversationId(conversationId)
@@ -546,6 +551,7 @@ internal constructor(
     fun insertMessage(message: Message) {
         appDatabase.insertMessage(message)
         InvalidateFlow.emit(message.conversationId)
+        MessageFlow.insert(message.conversationId, message.messageId)
     }
 
     suspend fun findPinMessageById(messageId: String) = pinMessageDao.findPinMessageById(messageId)

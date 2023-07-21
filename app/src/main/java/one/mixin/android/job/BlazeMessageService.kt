@@ -46,6 +46,7 @@ import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.db.flow.InvalidateFlow
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.base64Encode
@@ -547,7 +548,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 pendingDatabase.deletePendingMessageById(messageId)
                 database.deleteMessageById(messageId)
                 ftsDatabase.deleteByMessageId(messageId)
+                // Todo conversation_id
+                MessageFlow.delete("", messageId)
             }
+
             cIds.forEach { id ->
                 conversationDao.refreshLastMessageId(id)
                 conversationExtDao.refreshCountByConversationId(id)

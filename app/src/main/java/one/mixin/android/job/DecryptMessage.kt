@@ -18,6 +18,7 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.requestResendKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.db.flow.InvalidateFlow
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
@@ -362,6 +363,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             ),
                         )
                         InvalidateFlow.emit(data.conversationId)
+                        MessageFlow.insert(message.conversationId, message.messageId)
                         if (message.category.endsWith("_TEXT")) {
                             messageMentionDao.findMessageMentionById(message.messageId)?.let { mention ->
                                 messageMentionDao.insert(
@@ -387,6 +389,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         // Locally generated messages are inserted directly
                         pendingMessagesDao.insert(PendingMessage(m))
                         InvalidateFlow.emit(data.conversationId)
+                        MessageFlow.insert(data.conversationId, mid)
                     }
                     if (index == transferPinData.messageIds.size - 1) {
                         RxBus.publish(PinMessageEvent(data.conversationId, messageId))
@@ -439,6 +442,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     notificationManager.cancel(msg.conversationId.hashCode())
                 }
                 InvalidateFlow.emit(msg.conversationId)
+                MessageFlow.insert(msg.conversationId, msg.messageId)
                 conversationDao.updateLastMessageId(
                     msg.messageId,
                     msg.createdAt,
@@ -496,6 +500,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             updateConversationList.forEach { cId ->
                                 remoteMessageStatusDao.updateConversationUnseen(cId)
                                 InvalidateFlow.emit(cId)
+                                MessageFlow.update(cId, updateMessageIds)
                                 notificationManager.cancel(cId.hashCode())
                             }
                         }
@@ -872,6 +877,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 ),
             )
             InvalidateFlow.emit(data.conversationId)
+            MessageFlow.insert(data.conversationId, data.messageId)
             return null
         }
         val stringBuilder = StringBuilder()
@@ -1225,6 +1231,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category, data.data, data.createdAt, MessageStatus.UNKNOWN.name)
         database.insertMessage(message)
         InvalidateFlow.emit(data.conversationId)
+        MessageFlow.insert(data.conversationId, data.messageId)
     }
 
     private fun insertFailedMessage(data: BlazeMessageData) {
@@ -1271,15 +1278,18 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             pendingMessagesDao.updateMessageContentAndStatus(plainText, data.status, messageId)
             messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
             InvalidateFlow.emit(data.conversationId)
+            MessageFlow.update(data.conversationId, data.messageId)
         } else if (data.category == MessageCategory.SIGNAL_POST.name) {
             messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
             pendingMessagesDao.updateMessageContentAndStatus(plainText, data.status, messageId)
             InvalidateFlow.emit(data.conversationId)
+            MessageFlow.update(data.conversationId, data.messageId)
         } else if (data.category == MessageCategory.SIGNAL_LOCATION.name) {
             if (checkLocationData(plainText)) {
                 messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
                 pendingMessagesDao.updateMessageContentAndStatus(plainText, data.status, messageId)
                 InvalidateFlow.emit(data.conversationId)
+                MessageFlow.update(data.conversationId, data.messageId)
             }
         } else if (data.category == MessageCategory.SIGNAL_IMAGE.name ||
             data.category == MessageCategory.SIGNAL_VIDEO.name ||
@@ -1300,6 +1310,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, data.status,
             )
             InvalidateFlow.emit(data.conversationId)
+            MessageFlow.update(data.conversationId, data.messageId)
             if (data.category == MessageCategory.SIGNAL_IMAGE.name || data.category == MessageCategory.SIGNAL_AUDIO.name) {
                 val message = messageDao.findMessageById(messageId)
                 if (message != null) {
@@ -1316,6 +1327,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             pendingMessagesDao.updateStickerMessage(stickerData.stickerId, data.status, messageId)
             messageDao.updateStickerMessage(stickerData.stickerId, data.status, messageId)
             InvalidateFlow.emit(data.conversationId)
+            MessageFlow.update(data.conversationId, data.messageId)
         } else if (data.category == MessageCategory.SIGNAL_CONTACT.name) {
             val decoded = Base64.decode(plainText)
             val contactData = gson.fromJson(String(decoded), ContactMessagePayload::class.java)
@@ -1323,18 +1335,21 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             messageDao.updateContactMessage(contactData.userId, data.status, messageId)
             syncUser(contactData.userId)
             InvalidateFlow.emit(data.conversationId)
+            MessageFlow.update(data.conversationId, data.messageId)
         } else if (data.category == MessageCategory.SIGNAL_LIVE.name) {
             val decoded = Base64.decode(plainText)
             val liveData = gson.fromJson(String(decoded), LiveMessagePayload::class.java)
             pendingMessagesDao.updateLiveMessage(liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, messageId)
             messageDao.updateLiveMessage(liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, messageId)
             InvalidateFlow.emit(data.conversationId)
+            MessageFlow.update(data.conversationId, data.messageId)
         } else if (data.category == MessageCategory.SIGNAL_TRANSCRIPT.name) {
             val decoded = Base64.decode(plainText)
             processTranscriptMessage(data, String(decoded))?.let { message ->
                 pendingMessagesDao.updateTranscriptMessage(message.content, message.mediaSize, message.mediaStatus, message.status, messageId)
                 messageDao.updateTranscriptMessage(message.content, message.mediaSize, message.mediaStatus, message.status, messageId)
                 InvalidateFlow.emit(data.conversationId)
+                MessageFlow.update(data.conversationId, data.messageId)
             }
         }
         if (pendingMessagesDao.countMessageByQuoteId(data.conversationId, messageId) > 0 || messageDao.countMessageByQuoteId(data.conversationId, messageId) > 0) {
@@ -1343,6 +1358,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 messageDao.updateQuoteContentByQuoteId(data.conversationId, messageId, quoteContent)
                 pendingMessagesDao.updateQuoteContentByQuoteId(data.conversationId, messageId, quoteContent)
                 InvalidateFlow.emit(data.conversationId)
+                MessageFlow.update(data.conversationId, data.messageId)
             }
         }
     }

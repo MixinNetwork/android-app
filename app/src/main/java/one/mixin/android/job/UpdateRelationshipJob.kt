@@ -65,6 +65,7 @@ class UpdateRelationshipJob(
                         val currentConversationId = MixinApplication.conversationId ?: return@let
                         val conversationId = generateConversationId(selfId, u.userId)
                         if (conversationId == currentConversationId) {
+                            // Todo
                             InvalidateFlow.emit(conversationId)
                         }
                     }

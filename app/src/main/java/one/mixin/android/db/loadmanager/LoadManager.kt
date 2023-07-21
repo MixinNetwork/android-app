@@ -1,6 +1,5 @@
 package one.mixin.android.db.loadmanager
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.provider.convertToMessageItems
@@ -48,12 +47,10 @@ class LoadManager @Inject constructor(
     private var status: LoadStatus = LoadStatus.IDLE
     suspend fun initMessages(conversationId: String): List<MessageItem> = withContext(SINGLE_THREAD) {
         val cursor = db.query("$SQL WHERE m.conversation_id = ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?", arrayOf(conversationId, PAGE_SIZE * 3))
-        return@withContext convertToMessageItems(cursor).also {
-        }
+        return@withContext convertToMessageItems(cursor)
     }
 
     suspend fun nextPage(conversationId: String, messageId: String) = withContext(SINGLE_THREAD) {
-        Timber.e("$messageId $currentBottomId")
         if (status != LoadStatus.IDLE) return@withContext null
         Timber.e("next $messageId")
         status = LoadStatus.LOADING
@@ -64,7 +61,6 @@ class LoadManager @Inject constructor(
         }
         return@withContext nextPage(conversationId, rowId).also {
             status = LoadStatus.IDLE
-            if (it.isNotEmpty()) currentBottomId = it.last().messageId
         }
     }
 
@@ -87,8 +83,7 @@ class LoadManager @Inject constructor(
             }
             return@withContext previousPage(conversationId, rowId).also {
                 status = LoadStatus.IDLE
-                if (it.isNotEmpty()) currentTopId = it.first().messageId
-                         }
+            }
         }
 
     private suspend fun previousPage(conversationId: String, rowId: Int) = withContext(SINGLE_THREAD) {

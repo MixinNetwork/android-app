@@ -1,6 +1,7 @@
 package one.mixin.android.db
 
 import one.mixin.android.db.flow.InvalidateFlow
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.session.Session
 import one.mixin.android.vo.App
@@ -219,6 +220,7 @@ fun MixinDatabase.makeMessageStatus(status: String, messageId: String, noExistCa
             conversationDao().forceRefreshConversationsByLastMessageId(message.conversationId, messageId)
         }
         InvalidateFlow.emit(message.conversationId) // Update and notify flow
+        MessageFlow.update(message.conversationId, messageId)
     }
 }
 
@@ -235,6 +237,7 @@ fun PendingDatabase.makeMessageStatus(status: String, messageId: String, noExist
     if (messageStatus.ordinal > message.status.ordinal) {
         pendingMessageDao().updateMessageStatus(status, messageId)
         InvalidateFlow.emit(message.conversationId) // Update and notify flow
+        MessageFlow.update(message.conversationId, messageId)
     }
 }
 
@@ -249,6 +252,7 @@ fun MixinDatabase.insertAndNotifyConversation(message: Message) {
         conversationDao().updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
         remoteMessageStatusDao().updateConversationUnseen(message.conversationId)
         InvalidateFlow.emit(message.conversationId)
+        MessageFlow.insert(message.conversationId, message.messageId)
     }
 }
 

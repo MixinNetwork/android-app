@@ -4,6 +4,7 @@ import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.db.flow.InvalidateFlow
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.fts.deleteByMessageId
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.absolutePath
@@ -35,6 +36,8 @@ class TranscriptDeleteJob(private val messageIds: List<String>) : BaseJob(Params
                     deleteTranscript(transcriptMessage)
                 }
             }
+            // Todo
+            MessageFlow.delete("", messageId)
         }
         cIds.forEach { id ->
             conversationDao.refreshLastMessageId(id)
