@@ -42,6 +42,7 @@ import one.mixin.android.databinding.ItemChatWaitingBinding
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
@@ -95,6 +96,7 @@ import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
+import timber.log.Timber
 import kotlin.math.abs
 
 class MessageAdapter(
@@ -103,8 +105,9 @@ class MessageAdapter(
     val onItemListener: ConversationAdapter.OnItemListener,
     val previousPage: (String) -> Unit,
     val nextPage: (String) -> Unit,
-    val isGroup:Boolean,
-    var unreadMessageId:String?
+    val isGroup: Boolean,
+    var unreadMessageId: String?,
+    private val isBot: Boolean = false,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -592,17 +595,12 @@ class MessageAdapter(
         }
     }
 
-    fun isSelect(position: Int): Boolean {
-        return false
-    }
-
     override fun isListLast(position: Int): Boolean {
-        return position == itemCount -1
+        return position == itemCount - 1
     }
 
-    fun isRepresentative(message: MessageItem): Boolean {
-        // todo
-        return false
+    fun isRepresentative(messageItem: MessageItem): Boolean {
+        return isBot && recipient?.userId != messageItem.userId && messageItem.userId != Session.getAccountId()
     }
 
     fun isFirst(position: Int): Boolean {
@@ -611,7 +609,7 @@ class MessageAdapter(
             if (!isGroup && (recipient?.isBot() == false || recipient?.userId == currentItem?.userId)) {
                 return false
             }
-            val previousItem = getItem(position-1)
+            val previousItem = getItem(position - 1)
             when {
                 currentItem == null ->
                     false
@@ -633,6 +631,15 @@ class MessageAdapter(
     }
 
     val selectSet = arraySetOf<MessageItem>()
+
+    fun isSelect(position: Int): Boolean {
+        return if (selectSet.isEmpty()) {
+            false
+        } else {
+            selectSet.find { it.messageId == getItem(position)?.messageId } != null
+        }
+    }
+
     fun addSelect(messageItem: MessageItem): Boolean {
         return selectSet.add(messageItem)
     }
@@ -647,9 +654,6 @@ class MessageAdapter(
         unreadMessageId = null
         notifyDataSetChanged()
     }
-
-    // todo
-    val isBot = false
 
     override fun getItemCount(): Int {
         return data.size
@@ -669,18 +673,29 @@ class MessageAdapter(
     }
 
     fun insert(list: List<MessageItem>) {
-        // Todo check is bottom
         val size = data.size
         data.append(list)
         notifyItemRangeInserted(size, list.count())
     }
 
     fun update(list: List<MessageItem>) {
-        // Todo update message
+        list.forEach { item ->
+            val index = data.indexOfFirst { it?.messageId == item.messageId }
+            if (index != -1) {
+                data.update(index, item)
+                notifyItemChanged(index)
+            }
+        }
     }
 
     fun delete(list: List<String>) {
-        // Todo delete message
+        list.mapNotNull { id ->
+            data.indexOfFirst { item -> id == item?.messageId }.takeIf { it != -1 }
+        }.reversed().forEach { p ->
+            data.deleteByPosition(p)
+            Timber.e("Removed $p")
+            notifyItemRemoved(p)
+        }
     }
 
     fun indexMessage(messageId: String): Int {

@@ -46,4 +46,16 @@ class CompressedList<E : Any> : AbstractList<E?> {
     override fun clear() {
         wrapped.clear()
     }
+
+    override fun indexOf(element: E?): Int {
+        return wrapped.indexOf(element)
+    }
+    fun update(index: Int, item: E) {
+        wrapped.removeAt(index)
+        wrapped.add(index, item)
+    }
+
+    fun deleteByPosition(p: Int) {
+        wrapped.removeAt(p)
+    }
 }

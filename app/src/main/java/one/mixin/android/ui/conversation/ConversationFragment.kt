@@ -1371,7 +1371,8 @@ class ConversationFragment() :
                 previousAction,
                 nextAction,
                 isGroup = isGroup,
-                unreadMessageId = unreadMessageId
+                unreadMessageId = unreadMessageId,
+                isBot,
             )
             binding.messageRv.adapter = messageAdapter
             binding.messageRv.addItemDecoration(decoration)
@@ -2586,11 +2587,11 @@ class ConversationFragment() :
     @SuppressLint("NotifyDataSetChanged")
     private fun scrollToDown() {
         if (viewDestroyed()) return
-        if (messageFetcher.isBottom()){
+        if (messageFetcher.isBottom()) {
             binding.messageRv.layoutManager?.scrollToPosition(messageAdapter.itemCount - 1)
         } else {
             lifecycleScope.launch {
-                val (_, data) = messageFetcher.initMessages(conversationId,null, true)
+                val (_, data) = messageFetcher.initMessages(conversationId, null, true)
                 messageAdapter.refreshData(data)
                 (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                     data.size - 1,

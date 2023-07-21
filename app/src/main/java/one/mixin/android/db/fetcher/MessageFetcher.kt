@@ -48,7 +48,7 @@ class MessageFetcher @Inject constructor(
     private var canLoadAbove = true
     private var canLoadBelow = true
 
-    suspend fun initMessages(conversationId: String, messageId: String? = null, forceBottom:Boolean = false): Triple<Int, List<MessageItem>,String?> = withContext(SINGLE_FETCHER_THREAD) {
+    suspend fun initMessages(conversationId: String, messageId: String? = null, forceBottom: Boolean = false): Triple<Int, List<MessageItem>, String?> = withContext(SINGLE_FETCHER_THREAD) {
         currentlyLoadingIds.clear()
         loadedIds.clear()
         var aroundId = messageId
