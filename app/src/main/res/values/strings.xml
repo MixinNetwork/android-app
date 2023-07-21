@@ -709,6 +709,7 @@
     <string name="permission_audio">Allow to record audio?</string>
     <string name="permission_camera">Allow to take pictures?</string>
     <string name="permission_video">Allow to record video?</string>
+    <string name="permission_location">Allow to access location?</string>
     <string name="Permissions">Permissions</string>
     <string name="Phone_call">Phone call</string>
     <string name="Phone_Contact">Phone Contacts</string>
