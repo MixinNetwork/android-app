@@ -76,6 +76,9 @@ import one.mixin.android.ui.conversation.holder.UnknownHolder
 import one.mixin.android.ui.conversation.holder.VideoHolder
 import one.mixin.android.ui.conversation.holder.VideoQuoteHolder
 import one.mixin.android.ui.conversation.holder.WaitingHolder
+import one.mixin.android.ui.conversation.holder.base.BaseMentionHolder
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
@@ -660,6 +663,22 @@ class MessageAdapter(
     }
 
     override fun getItemViewType(position: Int): Int = getItemType(getItem(position))
+
+    override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
+        getItem(holder.layoutPosition)?.let { messageItem ->
+            (holder as BaseViewHolder).listen(holder.itemView, messageItem.messageId)
+            if (holder is BaseMentionHolder) {
+                holder.onViewAttachedToWindow()
+            }
+            if (holder is Terminable) {
+                holder.onRead(messageItem.messageId, messageItem.expireIn, messageItem.expireAt)
+            }
+        }
+    }
+
+    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
+        (holder as BaseViewHolder).stopListen()
+    }
 
     fun submitNext(list: List<MessageItem>) {
         val size = data.size
