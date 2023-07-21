@@ -57,7 +57,7 @@ import java.io.File
 @Parcelize
 data class MessageItem(
     @PrimaryKey
-    val messageId: String,
+    var messageId: String,
     val conversationId: String,
     val userId: String,
     val userFullName: String,

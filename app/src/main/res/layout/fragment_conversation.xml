@@ -55,7 +55,7 @@
                 tools:listitem="@layout/item_chat_text" />
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/chat_shadow_rv"
+                android:id="@+id/message_rv"
                 android:layout_width="200dp"
                 android:layout_height="300dp"
                 android:clipChildren="false"

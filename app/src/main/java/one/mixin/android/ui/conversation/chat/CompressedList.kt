@@ -42,4 +42,8 @@ class CompressedList<E : Any> : AbstractList<E?> {
     fun first(): E? = wrapped.first()
 
     fun last(): E? = wrapped.last()
+
+    override fun clear() {
+        wrapped.clear()
+    }
 }

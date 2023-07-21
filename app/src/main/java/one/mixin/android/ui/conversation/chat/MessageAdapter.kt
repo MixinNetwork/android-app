@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.chat
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.collection.arraySetOf
@@ -644,5 +645,16 @@ class MessageAdapter(
     fun jumpTo(messageId: String): Int {
         // Todo Return position if it exists in the cache, otherwise refresh the data according to ID and return position
         return 0
+    }
+
+    fun indexMessage(messageId: String): Int {
+        return data.indexOfFirst { messageItem -> messageItem?.messageId == messageId }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun refreshData(data:List<MessageItem>) {
+        this.data.clear()
+        this.data.addAll(data)
+        notifyDataSetChanged()
     }
 }

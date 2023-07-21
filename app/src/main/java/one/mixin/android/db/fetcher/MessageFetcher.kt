@@ -79,14 +79,14 @@ class MessageFetcher @Inject constructor(
             }
             // load next page by aroundId
             val nextCursor = db.query(
-                "$SQL WHERE m.conversation_id = ? AND rowid >= ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?",
+                "$SQL WHERE m.conversation_id = ? AND m.rowid >= ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?",
                 arrayOf(conversationId, rowId, INIT_SIZE / 2),
             )
             val result = convertToMessageItems(nextCursor)
             canLoadBelow = result.size >= INIT_SIZE / 2
             val thresholdSize = INIT_SIZE - result.size
             val previousCursor = db.query(
-                "$SQL WHERE m.conversation_id = ? AND rowid < ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
+                "$SQL WHERE m.conversation_id = ? AND m.rowid < ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
                 arrayOf(conversationId, rowId, thresholdSize),
             )
             val previous = convertToMessageItems(previousCursor).reversed()

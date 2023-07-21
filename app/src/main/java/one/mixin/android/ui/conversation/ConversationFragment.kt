@@ -1402,6 +1402,26 @@ class ConversationFragment() :
     @Inject
     lateinit var messageFetcher: MessageFetcher
 
+    private lateinit var messageAdapter :MessageAdapter
+
+    private val previousAction = fun(id:String){
+        lifecycleScope.launch {
+            val pageData = messageFetcher.previousPage(conversationId, id)
+            if (pageData.isNotEmpty()) {
+                messageAdapter.submitPrevious(pageData)
+            }
+        }
+    }
+
+    private val nextAction = fun(id:String){
+        lifecycleScope.launch {
+            val pageData = messageFetcher.nextPage(conversationId, id)
+            if (pageData.isNotEmpty()) {
+                messageAdapter.submitNext(pageData)
+            }
+        }
+    }
+
     private fun initView() {
         binding.inputLayout.backgroundImage = WallpaperManager.getWallpaper(requireContext())
         binding.chatRv.visibility = INVISIBLE
@@ -1439,32 +1459,18 @@ class ConversationFragment() :
         binding.chatShadowRv.layoutManager = LinearLayoutManager(requireContext())
         lifecycleScope.launch {
             val (position, data) = messageFetcher.initMessages(conversationId)
-            binding.chatShadowRv.adapter = MessageAdapter(
-                CompressedList(data),
+            messageAdapter = MessageAdapter(                CompressedList(data),
                 getMiniMarkwon(requireActivity()),
                 onItemListener,
-                { id ->
-                    lifecycleScope.launch {
-                        val pageData = messageFetcher.previousPage(conversationId, id)
-                        if (pageData.isNotEmpty()) {
-                            (binding.chatShadowRv.adapter as MessageAdapter).submitPrevious(pageData)
-                        }
-                    }
-                },
-                { id ->
-                    lifecycleScope.launch {
-                        val pageData = messageFetcher.nextPage(conversationId, id)
-                        if (pageData.isNotEmpty()) {
-                            (binding.chatShadowRv.adapter as MessageAdapter).submitNext(pageData)
-                        }
-                    }
-                },
+                previousAction,
+                nextAction
             )
+            binding.chatShadowRv.adapter = messageAdapter
             // Initialization RecyclerView position
             if (position >= 0) {
                 (binding.chatShadowRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                     position,
-                    binding.chatShadowRv.height / 4,
+                    binding.chatShadowRv.measuredHeight / 4,
                 )
             }
             MessageFlow.collect({ event ->
@@ -2716,6 +2722,23 @@ class ConversationFragment() :
         findMessageAction: ((index: Int) -> Unit)? = null,
     ) = lifecycleScope.launch {
         if (viewDestroyed()) return@launch
+        // scroll new RecyclerView
+        // Return position if it exists in the cache, otherwise refresh the data according to ID and return position
+        val position = messageAdapter.indexMessage(messageId)
+        if (position >= 0) {
+            (binding.chatShadowRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                position,
+                binding.chatShadowRv.measuredHeight / 4,
+            )
+        } else {
+            // refresh to message Id
+            val (p, data) = messageFetcher.initMessages(conversationId, messageId)
+            messageAdapter.refreshData(data)
+            (binding.chatShadowRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                p,
+                binding.chatShadowRv.measuredHeight / 4,
+            )
+        }
 
         val index = chatViewModel.findMessageIndex(conversationId, messageId)
         if (index < 0) {
