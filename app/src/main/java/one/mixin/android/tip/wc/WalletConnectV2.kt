@@ -12,6 +12,7 @@ import com.walletconnect.web3.wallet.client.Wallet
 import com.walletconnect.web3.wallet.client.Web3Wallet
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
@@ -100,7 +101,25 @@ object WalletConnectV2 : WalletConnect() {
 
             override fun onSessionProposal(sessionProposal: Wallet.Model.SessionProposal, verifyContext: Wallet.Model.VerifyContext) {
                 Timber.d("$TAG onSessionProposal $sessionProposal")
-                RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionProposal, sessionProposal.pairingTopic))
+                val chains = supportChainList.map { c -> c.chainId }
+                val namespaces = (sessionProposal.requiredNamespaces.values + sessionProposal.optionalNamespaces.values)
+                    .filter { proposal -> proposal.chains != null }
+                val hasSupportChain = namespaces.any { proposal ->
+                        proposal.chains!!.any { chain ->
+                            chains.contains(chain)
+                        }
+                    }
+                if (hasSupportChain) {
+                    RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionProposal, sessionProposal.pairingTopic))
+                } else {
+                    val notSupportChainIds = namespaces.flatMap { proposal ->
+                        proposal.chains!!.filter { chain ->
+                            !chains.contains(chain)
+                        }
+                    }.toSet().joinToString()
+                    RxBus.publish(WCErrorEvent(WCError(IllegalArgumentException(
+                        MixinApplication.appContext.getString(R.string.not_support_network, notSupportChainIds)))))
+                }
             }
 
             override fun onSessionRequest(sessionRequest: Wallet.Model.SessionRequest, verifyContext: Wallet.Model.VerifyContext) {
