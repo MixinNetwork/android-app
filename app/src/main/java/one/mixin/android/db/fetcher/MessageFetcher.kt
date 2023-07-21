@@ -118,14 +118,14 @@ class MessageFetcher @Inject constructor(
         currentlyLoadingIds.add(messageId)
         Timber.e("next $messageId")
         try {
-            val idCursor = db.query("SELECT rowid FROM messages WHERE id = ?", arrayOf(messageId))
-            val rowId = idCursor.use {
+            val preCursor = db.query("SELECT rowid, created_at FROM messages WHERE id = ?", arrayOf(messageId))
+            val (rowId, createdAt) = preCursor.use {
                 it.moveToNext()
-                it.getInt(0)
+                Pair(it.getInt(0), it.getString(1))
             }
             val cursor = db.query(
-                "$SQL WHERE m.conversation_id = ? AND m.rowid > ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?",
-                arrayOf(conversationId, rowId, PAGE_SIZE),
+                "$SQL WHERE m.conversation_id = ? AND m.rowid > ? AND m.created_at >= ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?",
+                arrayOf(conversationId, rowId, createdAt, PAGE_SIZE),
             )
             return@withContext convertToMessageItems(cursor).also {
                 if (it.size < PAGE_SIZE) {
@@ -146,15 +146,15 @@ class MessageFetcher @Inject constructor(
             currentlyLoadingIds.add(messageId)
             Timber.e("previous $messageId")
             try {
-                val idCursor =
-                    db.query("SELECT rowid FROM messages WHERE id = ?", arrayOf(messageId))
-                val rowId = idCursor.use {
+                val preCursor =
+                    db.query("SELECT rowid, created_at FROM messages WHERE id = ?", arrayOf(messageId))
+                val (rowId, createdAt) = preCursor.use {
                     it.moveToNext()
-                    it.getInt(0)
+                    Pair(it.getInt(0), it.getString(1))
                 }
                 val cursor = db.query(
-                    "$SQL WHERE m.conversation_id = ? AND m.rowid < ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
-                    arrayOf(conversationId, rowId, PAGE_SIZE),
+                    "$SQL WHERE m.conversation_id = ? AND m.rowid < ? AND m.created_at <= ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
+                    arrayOf(conversationId, rowId, createdAt, PAGE_SIZE),
                 )
                 return@withContext convertToMessageItems(cursor).reversed().also {
                     if (it.size < PAGE_SIZE) {
