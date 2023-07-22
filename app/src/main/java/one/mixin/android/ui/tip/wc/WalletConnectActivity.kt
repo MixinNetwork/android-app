@@ -60,15 +60,20 @@ class WalletConnectActivity : BaseActivity() {
                 }
             }
         } else {
-            val wcBottom = supportFragmentManager.findFragmentByTag(WalletConnectBottomSheetDialogFragment.TAG)
-            if (wcBottom != null) return
+            val wcBottom = supportFragmentManager.findFragmentByTag(WalletConnectBottomSheetDialogFragment.TAG) as? WalletConnectBottomSheetDialogFragment
+            if (wcBottom != null) {
+                if (wcBottom.step != WalletConnectBottomSheetDialogFragment.Step.Connecting) {
+                    return
+                }
+                wcBottom.dismiss()
+            }
 
             val qrBottom = supportFragmentManager.findFragmentByTag(QrScanBottomSheetDialogFragment.TAG)
             if (qrBottom != null) return
 
             val error = intent.getParcelableExtraCompat(ARGS_WC_ERROR, WCError::class.java)
             if (error != null) {
-                QrScanBottomSheetDialogFragment.newInstance(error.toString()).apply {
+                QrScanBottomSheetDialogFragment.newInstance(error.throwable.toString()).apply {
                     enableFinishOnDetach = true
                 }.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
             } else {
