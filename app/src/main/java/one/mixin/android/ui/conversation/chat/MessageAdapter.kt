@@ -111,6 +111,7 @@ class MessageAdapter(
     val nextPage: (String) -> Unit,
     val isGroup: Boolean,
     var unreadMessageId: String?,
+    var recipient: User? = null,
     private val isBot: Boolean = false,
     private val isSecret: Boolean = true,
     var keyword: String? = null,
@@ -587,18 +588,53 @@ class MessageAdapter(
     fun getItem(position: Int): MessageItem? {
         return if (position > itemCount - 1 || position < 0) {
             null
+        } else if (isSecret && hasBottomView) {
+            when (position) {
+                itemCount - 1 -> create(
+                    MessageCategory.STRANGER.name,
+                    if (data.size > 0) {
+                        data.last()?.createdAt
+                    } else {
+                        null
+                    },
+                )
+
+                0 -> create(
+                    MessageCategory.SECRET.name,
+                    if (data.size > 0) {
+                        data.first()?.createdAt
+                    } else {
+                        null
+                    },
+                )
+
+                else -> getItemInternal(position - 1)
+            }
         } else if (isSecret) {
             if (position == 0) {
                 create(
                     MessageCategory.SECRET.name,
-                    if (itemCount > 0) {
-                        getItemInternal(0)?.createdAt
+                    if (data.size > 0) {
+                        data.first()?.createdAt
                     } else {
                         null
                     },
                 )
             } else {
                 getItemInternal(position - 1)
+            }
+        } else if (hasBottomView) {
+            if (position == itemCount - 1) {
+                create(
+                    MessageCategory.STRANGER.name,
+                    if (data.size > 0) {
+                        data.last()?.createdAt
+                    } else {
+                        null
+                    },
+                )
+            } else {
+                getItemInternal(position)
             }
         } else {
             getItemInternal(position)
@@ -660,17 +696,27 @@ class MessageAdapter(
         return selectSet.remove(selectSet.find { it.messageId == messageItem.messageId })
     }
 
-    var recipient: User? = null
     fun markRead() {
         unreadMessageId = null
         notifyDataSetChanged()
     }
 
+    var hasBottomView = false
+        @SuppressLint("NotifyDataSetChanged")
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+
     override fun getItemCount(): Int {
-        if (isSecret) {
-            return data.size + 1
+        return data.size + if (hasBottomView && isSecret) {
+            2
+        } else if (hasBottomView || isSecret) {
+            1
         } else {
-            return data.size
+            0
         }
     }
 

@@ -344,32 +344,17 @@ class ConversationFragment() :
         previewDialogFragment.show(parentFragmentManager, uri, okText, action)
     }
 
-    fun updateConversationInfo(messageId: String?, keyword: String?, unreadCount: Int) {
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateConversationInfo(messageId: String?, keyword: String?) {
         this.keyword = keyword
-        // Todo
-        // conversationAdapter.keyword = keyword
-        // val currentList = conversationAdapter.currentList
-        // if (currentList != null) {
-        // Todo
-        // (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPosition(unreadCount)
-        // lifecycleScope.launch {
-        //     delay(160)
-        //     (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-        //         unreadCount,
-        //         binding.chatRv.measuredHeight * 3 / 4,
-        //     )
-        //     messageId?.let { id ->
-        //         RxBus.publish(BlinkEvent(id))
-        //     }
-        // }
-        // } else {
-        //     this.messageId = messageId
-        //     this.unreadCount = unreadCount
-        //     isFirstLoad = true
-        //     liveDataMessage(unreadCount, messageId)
-        // }
+        messageAdapter.keyword = keyword
+        if (messageId != null) {
+            scrollToMessage(messageId)
+            messageAdapter.notifyDataSetChanged()
+        } else {
+            scrollToDown()
+        }
     }
-
     private fun voiceCall() {
         if (LinkState.isOnline(linkState.state)) {
             if (isGroup) {
@@ -1044,6 +1029,7 @@ class ConversationFragment() :
                     }
                 }
             }
+        initMessageRecyclerView()
         bindData()
         bindPinMessage()
         checkPeerIfNeeded()
@@ -1351,75 +1337,6 @@ class ConversationFragment() :
                 }
             },
         )
-        lifecycleScope.launch {
-            val (position, data, unreadMessageId) = messageFetcher.initMessages(conversationId, initialMessageId)
-            messageAdapter = MessageAdapter(
-                CompressedList(data),
-                getMiniMarkwon(requireActivity()),
-                onItemListener,
-                previousAction,
-                nextAction,
-                isGroup = isGroup,
-                unreadMessageId = if (initialMessageId != null) null else unreadMessageId,
-                isBot = isBot,
-                isSecret = encryptCategory() != EncryptCategory.PLAIN,
-                keyword = keyword,
-            )
-            binding.messageRv.adapter = messageAdapter
-            binding.messageRv.addItemDecoration(decoration)
-            binding.messageRv.itemAnimator = null
-            binding.messageRv.layoutManager = LinearLayoutManager(requireContext())
-            // Initialization RecyclerView position
-            if (position >= 0) {
-                (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                    position,
-                    binding.messageRv.measuredHeight / 4,
-                )
-                if (initialMessageId != null && unreadMessageId != null) {
-                    launch {
-                        delay(100)
-                        RxBus.publish(BlinkEvent(unreadMessageId))
-                    }
-                }
-            }
-            chatRoomHelper.markMessageRead(conversationId)
-            MessageFlow.collect({ event ->
-                event.conversationId == conversationId
-            }, { event ->
-                when (event.action) {
-                    MessageEventAction.INSERT -> {
-                        if (messageFetcher.isBottom()) {
-                            val message = messageFetcher.findMessageById(event.ids)
-                            Timber.e("insert ${event.ids} ${message.map { it.messageId }}")
-                            if (message.isNotEmpty()) {
-                                (binding.messageRv.adapter as MessageAdapter).insert(message)
-                            }
-                            if (isBottom) {
-                                scrollToDown()
-                            } else {
-                                binding.flagLayout.unreadCount += event.ids.size
-                                binding.flagLayout.bottomCountFlag = true
-                            }
-                        } else {
-                            binding.flagLayout.unreadCount += event.ids.size
-                            binding.flagLayout.bottomCountFlag = true
-                        }
-                        chatRoomHelper.markMessageRead(conversationId)
-                    }
-                    MessageEventAction.UPDATE -> {
-                        val messages = messageFetcher.findMessageById(event.ids)
-                        if (messages.isNotEmpty()) {
-                            (binding.messageRv.adapter as MessageAdapter).update(messages)
-                        }
-                    }
-                    MessageEventAction.DELETE -> {
-                        if (event.ids.isNotEmpty()) {
-                            (binding.messageRv.adapter as MessageAdapter).delete(event.ids)
-                        }
-                    }
-                }
-            })
-        }
 
         binding.messageRv.addOnScrollListener(
             object : RecyclerView.OnScrollListener() {
@@ -1832,6 +1749,89 @@ class ConversationFragment() :
         deleteDialog?.show()
     }
 
+    private fun initMessageRecyclerView() {
+        lifecycleScope.launch {
+            val (position, data, unreadMessageId) = messageFetcher.initMessages(conversationId, initialMessageId)
+            messageAdapter = MessageAdapter(
+                CompressedList(data),
+                getMiniMarkwon(requireActivity()),
+                onItemListener,
+                previousAction,
+                nextAction,
+                isGroup = isGroup,
+                unreadMessageId = if (initialMessageId != null) null else unreadMessageId,
+                recipient = recipient,
+                isBot = isBot,
+                isSecret = encryptCategory() != EncryptCategory.PLAIN,
+                keyword = keyword,
+            )
+            binding.messageRv.adapter = messageAdapter
+            binding.messageRv.addItemDecoration(decoration)
+            binding.messageRv.itemAnimator = null
+            binding.messageRv.layoutManager = LinearLayoutManager(requireContext())
+            // Initialization RecyclerView position
+            if (position >= 0) {
+                (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                    position,
+                    binding.messageRv.measuredHeight / 4,
+                )
+                if (initialMessageId != null && unreadMessageId != null) {
+                    launch {
+                        delay(100)
+                        RxBus.publish(BlinkEvent(unreadMessageId))
+                    }
+                }
+            }
+            chatRoomHelper.markMessageRead(conversationId)
+            MessageFlow.collect({ event ->
+                event.conversationId == conversationId
+            }, { event ->
+                when (event.action) {
+                    MessageEventAction.INSERT -> {
+                        if (messageFetcher.isBottom()) {
+                            val message = messageFetcher.findMessageById(event.ids)
+                            Timber.e("insert ${event.ids} ${message.map { it.messageId }}")
+                            if (message.isNotEmpty()) {
+                                (binding.messageRv.adapter as MessageAdapter).insert(message)
+                            }
+                            if (isBottom) {
+                                scrollToDown()
+                            } else {
+                                binding.flagLayout.unreadCount += event.ids.size
+                                binding.flagLayout.bottomCountFlag = true
+                            }
+                            if (message.any { it.userId == sender.userId }) {
+                                messageAdapter.hasBottomView = false
+                            }
+                        } else {
+                            binding.flagLayout.unreadCount += event.ids.size
+                            binding.flagLayout.bottomCountFlag = true
+                        }
+                        chatRoomHelper.markMessageRead(conversationId)
+                        chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
+                    }
+                    MessageEventAction.UPDATE -> {
+                        val messages = messageFetcher.findMessageById(event.ids)
+                        if (messages.isNotEmpty()) {
+                            (binding.messageRv.adapter as MessageAdapter).update(messages)
+                        }
+                    }
+                    MessageEventAction.DELETE -> {
+                        if (event.ids.isNotEmpty()) {
+                            (binding.messageRv.adapter as MessageAdapter).delete(event.ids)
+                        }
+                    }
+                }
+            })
+
+            messageAdapter.hasBottomView =
+                recipient?.relationship == UserRelationship.STRANGER.name && chatViewModel.isSilence(
+                    conversationId,
+                    sender.userId,
+                )
+        }
+    }
+
     private fun bindData() {
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(
             viewLifecycleOwner,
@@ -2176,8 +2176,7 @@ class ConversationFragment() :
     }
 
     private fun renderUser(user: User) {
-        // todo lazy
-        // messageAdapter.recipient = user
+        recipient = user
         renderUserInfo(user)
         chatViewModel.findUserById(user.userId).observe(
             viewLifecycleOwner,
@@ -2988,7 +2987,7 @@ class ConversationFragment() :
                 transcriptDialog?.dismiss()
                 val transcriptDialogLayoutBinding = generateTranscriptDialogLayout()
                 transcriptDialog = alertDialogBuilder()
-                    .setMessage(getString(R.string.chat_import_content, groupName ?: messageAdapter.recipient?.fullName ?: ""))
+                    .setMessage(getString(R.string.chat_import_content, groupName ?: recipient?.fullName ?: ""))
                     .setView(transcriptDialogLayoutBinding.root)
                     .create()
                 transcriptDialogLayoutBinding.importChat.setOnClickListener {
