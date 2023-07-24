@@ -39,7 +39,6 @@ import one.mixin.android.databinding.ItemChatUnreadBinding
 import one.mixin.android.databinding.ItemChatVideoBinding
 import one.mixin.android.databinding.ItemChatVideoQuoteBinding
 import one.mixin.android.databinding.ItemChatWaitingBinding
-import one.mixin.android.db.fetcher.MessageFetcher
 import one.mixin.android.db.fetcher.MessageFetcher.Companion.SCROLL_THRESHOLD
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
@@ -587,6 +586,8 @@ class MessageAdapter(
             },
             ConversationAdapter.NULL_TYPE,
         )
+
+    // Item and position
     fun getItem(position: Int): MessageItem? {
         return if (position > itemCount - 1 || position < 0) {
             null
@@ -644,27 +645,24 @@ class MessageAdapter(
     }
 
     private fun getItemInternal(position: Int): MessageItem? {
-        if (position < itemCount - 1 && position >= 0) {
-            if (position < SCROLL_THRESHOLD) {
-                data.first()?.messageId?.let { id ->
-                    previousPage(id)
-                }
-            } else if (position > data.size - SCROLL_THRESHOLD - 1) {
-                data.last()?.messageId?.let { id ->
-                    nextPage(id)
-                }
+        if (position < SCROLL_THRESHOLD) {
+            data.first()?.messageId?.let { id ->
+                previousPage(id)
             }
-            return data[position]
-        } else {
-            return null
+        } else if (position > data.size - SCROLL_THRESHOLD - 1) {
+            data.last()?.messageId?.let { id ->
+                nextPage(id)
+            }
+        }
+        return try {
+            data[position]
+        } catch (e: Exception) {
+            null
         }
     }
+
     override fun isListLast(position: Int): Boolean {
         return position == itemCount - 1
-    }
-
-    fun isRepresentative(messageItem: MessageItem): Boolean {
-        return isBot && recipient?.userId != messageItem.userId && messageItem.userId != Session.getAccountId()
     }
 
     fun isFirst(position: Int): Boolean {
@@ -694,6 +692,43 @@ class MessageAdapter(
         }
     }
 
+    override fun isLast(position: Int): Boolean {
+        val currentItem = getItem(position)
+        val nextItem = getItem(position + 1)
+        return when {
+            currentItem == null ->
+                false
+            nextItem == null ->
+                true
+            currentItem.type == MessageCategory.SYSTEM_CONVERSATION.name ->
+                true
+            nextItem.type == MessageCategory.SYSTEM_CONVERSATION.name ->
+                true
+            nextItem.userId != currentItem.userId ->
+                true
+            !isSameDay(nextItem.createdAt, currentItem.createdAt) ->
+                true
+            else -> false
+        }
+    }
+
+    override fun getItemCount(): Int {
+        return data.size + if (hasBottomView && isSecret) {
+            2
+        } else if (hasBottomView || isSecret) {
+            1
+        } else {
+            0
+        }
+    }
+
+    override fun getItemViewType(position: Int): Int = getItemType(getItem(position))
+
+    fun isRepresentative(messageItem: MessageItem): Boolean {
+        return isBot && recipient?.userId != messageItem.userId && messageItem.userId != Session.getAccountId()
+    }
+
+    // Select message logic
     val selectSet = arraySetOf<MessageItem>()
 
     fun isSelect(position: Int): Boolean {
@@ -726,18 +761,6 @@ class MessageAdapter(
             }
         }
 
-    override fun getItemCount(): Int {
-        return data.size + if (hasBottomView && isSecret) {
-            2
-        } else if (hasBottomView || isSecret) {
-            1
-        } else {
-            0
-        }
-    }
-
-    override fun getItemViewType(position: Int): Int = getItemType(getItem(position))
-
     override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
         getItem(holder.layoutPosition)?.let { messageItem ->
             (holder as BaseViewHolder).listen(holder.itemView, messageItem.messageId)
@@ -754,6 +777,45 @@ class MessageAdapter(
         (holder as BaseViewHolder).stopListen()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    fun refreshData(data: List<MessageItem>) {
+        this.data.clear()
+        this.data.addAll(data)
+        notifyDataSetChanged()
+    }
+
+    // Time header
+    override fun getHeaderId(position: Int): Long = getItem(position).notNullWithElse(
+        {
+            abs(it.createdAt.hashForDate())
+        },
+        0,
+    )
+
+    override fun onCreateHeaderViewHolder(parent: ViewGroup): TimeHolder =
+        TimeHolder(ItemChatTimeBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+
+    override fun onBindHeaderViewHolder(holder: TimeHolder, position: Int) {
+        getItem(position)?.let {
+            holder.bind(it.createdAt)
+        }
+    }
+
+    override fun onCreateAttach(parent: ViewGroup): View =
+        LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unread, parent, false)
+
+    override fun hasAttachView(position: Int): Boolean = if (unreadMessageId != null) {
+        getItem(position)?.messageId == unreadMessageId
+    } else {
+        false
+    }
+    override fun onBindAttachView(view: View) {
+        unreadMessageId?.let {
+            ItemChatUnreadBinding.bind(view).unreadTv.text = view.context.getString(R.string.Unread_messages)
+        }
+    }
+
+    // Data control
     fun submitNext(list: List<MessageItem>) {
         val size = data.size
         data.append(list)
@@ -793,61 +855,5 @@ class MessageAdapter(
 
     fun indexMessage(messageId: String): Int {
         return data.indexOfFirst { messageItem -> messageItem?.messageId == messageId }
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    fun refreshData(data: List<MessageItem>) {
-        this.data.clear()
-        this.data.addAll(data)
-        notifyDataSetChanged()
-    }
-
-    override fun getHeaderId(position: Int): Long = getItem(position).notNullWithElse(
-        {
-            abs(it.createdAt.hashForDate())
-        },
-        0,
-    )
-
-    override fun onCreateHeaderViewHolder(parent: ViewGroup): TimeHolder =
-        TimeHolder(ItemChatTimeBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-
-    override fun onBindHeaderViewHolder(holder: TimeHolder, position: Int) {
-        getItem(position)?.let {
-            holder.bind(it.createdAt)
-        }
-    }
-
-    override fun onCreateAttach(parent: ViewGroup): View =
-        LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unread, parent, false)
-
-    override fun hasAttachView(position: Int): Boolean = if (unreadMessageId != null) {
-        getItem(position)?.messageId == unreadMessageId
-    } else {
-        false
-    }
-    override fun onBindAttachView(view: View) {
-        unreadMessageId?.let {
-            ItemChatUnreadBinding.bind(view).unreadTv.text = view.context.getString(R.string.Unread_messages)
-        }
-    }
-    override fun isLast(position: Int): Boolean {
-        val currentItem = getItem(position)
-        val nextItem = getItem(position + 1)
-        return when {
-            currentItem == null ->
-                false
-            nextItem == null ->
-                true
-            currentItem.type == MessageCategory.SYSTEM_CONVERSATION.name ->
-                true
-            nextItem.type == MessageCategory.SYSTEM_CONVERSATION.name ->
-                true
-            nextItem.userId != currentItem.userId ->
-                true
-            !isSameDay(nextItem.createdAt, currentItem.createdAt) ->
-                true
-            else -> false
-        }
     }
 }

@@ -136,13 +136,13 @@ fun Throwable.getStackTraceInfo(): String {
     try {
         val writer = StringWriter()
         val pw = PrintWriter(writer)
-        this.printStackTrace(pw);
-        trace = writer.toString();
-        pw.close();
+        this.printStackTrace(pw)
+        trace = writer.toString()
+        pw.close()
     } catch (e: Exception) {
         return ""
     }
-    return trace;
+    return trace
 }
 
 fun Context.runOnUiThread(f: Context.() -> Unit) {
