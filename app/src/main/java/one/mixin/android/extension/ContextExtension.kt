@@ -88,6 +88,8 @@ import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
 import timber.log.Timber
 import java.io.File
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ExecutorService
@@ -127,6 +129,20 @@ fun Context.runOnUiThread(f: Context.() -> Unit, delay: Long = 0L) {
     } else {
         uiHandler.postDelayed({ f() }, delay)
     }
+}
+
+fun Throwable.getStackTraceInfo(): String {
+    val trace: String
+    try {
+        val writer = StringWriter()
+        val pw = PrintWriter(writer)
+        this.printStackTrace(pw);
+        trace = writer.toString();
+        pw.close();
+    } catch (e: Exception) {
+        return ""
+    }
+    return trace;
 }
 
 fun Context.runOnUiThread(f: Context.() -> Unit) {

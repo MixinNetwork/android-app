@@ -74,8 +74,11 @@ class MessageFetcher @Inject constructor(
             val idCursor =
                 db.query("SELECT rowid FROM messages WHERE id = ?", arrayOf(aroundId))
             val rowId = idCursor.use {
-                it.moveToNext()
-                it.getInt(0)
+                if (it.moveToNext()) {
+                    it.getInt(0)
+                } else {
+                    0
+                }
             }
             // load next page by aroundId
             val nextCursor = db.query(

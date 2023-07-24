@@ -768,7 +768,7 @@ class MessageAdapter(
     fun insert(list: List<MessageItem>) {
         val size = data.size
         data.append(list)
-        notifyItemRangeInserted(size, list.count())
+        notifyItemRangeInserted(size + 1, list.count())
     }
 
     fun update(list: List<MessageItem>) {
@@ -776,7 +776,7 @@ class MessageAdapter(
             val index = data.indexOfFirst { it?.messageId == item.messageId }
             if (index != -1) {
                 data.update(index, item)
-                notifyItemChanged(index)
+                notifyItemChanged(index + 1)
             }
         }
     }
@@ -784,7 +784,7 @@ class MessageAdapter(
     fun delete(list: List<String>) {
         list.mapNotNull { id ->
             data.indexOfFirst { item -> id == item?.messageId }.takeIf { it != -1 }
-        }.reversed().forEach { p ->
+        }.sortedDescending().forEach { p ->
             data.deleteByPosition(p)
             Timber.e("Removed $p")
             notifyItemRemoved(p)

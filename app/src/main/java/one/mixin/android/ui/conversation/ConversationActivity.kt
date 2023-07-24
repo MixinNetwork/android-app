@@ -155,6 +155,7 @@ class ConversationActivity : BlazeBaseActivity() {
             context: Context,
             conversationId: String? = null,
             recipientId: String? = null,
+            messageId: String? = null,
             keyword: String? = null,
         ): Intent {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
@@ -165,6 +166,7 @@ class ConversationActivity : BlazeBaseActivity() {
                         conversationId,
                         recipientId,
                         keyword,
+                        messageId
                     ),
                 )
             }
@@ -172,14 +174,14 @@ class ConversationActivity : BlazeBaseActivity() {
 
         fun showAndClear(
             context: Context,
-            conversationId: String? = null,
+            conversationId: String,
             messageId: String? = null,
             recipientId: String? = null,
             keyword: String? = null,
         ) {
             val mainIntent = Intent(context, ConversationActivity::class.java)
             mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            val conversationIntent = putIntent(context, conversationId, recipientId, keyword)
+            val conversationIntent = putIntent(context, conversationId, recipientId, messageId, keyword)
             context.startActivities(arrayOf(mainIntent, conversationIntent))
         }
     }
