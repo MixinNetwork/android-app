@@ -1769,7 +1769,9 @@ class ConversationFragment() :
             binding.messageRv.adapter = messageAdapter
             binding.messageRv.addItemDecoration(decoration)
             binding.messageRv.itemAnimator = null
-            binding.messageRv.layoutManager = LinearLayoutManager(requireContext())
+            binding.messageRv.layoutManager = LinearLayoutManager(requireContext()).apply {
+                stackFromEnd = true
+            }
             // Initialization RecyclerView position
             if (position >= 0) {
                 (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
