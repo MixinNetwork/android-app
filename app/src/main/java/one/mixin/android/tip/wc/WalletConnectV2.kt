@@ -20,6 +20,7 @@ import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.tip.wc.internal.ethTransactionSerializer
+import one.mixin.android.tip.wc.internal.getSupportedNamespaces
 import one.mixin.android.tip.wc.internal.supportChainList
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
@@ -105,10 +106,10 @@ object WalletConnectV2 : WalletConnect() {
                 val namespaces = (sessionProposal.requiredNamespaces.values + sessionProposal.optionalNamespaces.values)
                     .filter { proposal -> proposal.chains != null }
                 val hasSupportChain = namespaces.any { proposal ->
-                        proposal.chains!!.any { chain ->
-                            chains.contains(chain)
-                        }
+                    proposal.chains!!.any { chain ->
+                        chains.contains(chain)
                     }
+                }
                 if (hasSupportChain) {
                     RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionProposal, sessionProposal.pairingTopic))
                 } else {
@@ -117,8 +118,15 @@ object WalletConnectV2 : WalletConnect() {
                             !chains.contains(chain)
                         }
                     }.toSet().joinToString()
-                    RxBus.publish(WCErrorEvent(WCError(IllegalArgumentException(
-                        MixinApplication.appContext.getString(R.string.not_support_network, notSupportChainIds)))))
+                    RxBus.publish(
+                        WCErrorEvent(
+                            WCError(
+                                IllegalArgumentException(
+                                    MixinApplication.appContext.getString(R.string.not_support_network, notSupportChainIds),
+                                ),
+                            ),
+                        ),
+                    )
                 }
             }
 
@@ -161,84 +169,8 @@ object WalletConnectV2 : WalletConnect() {
 
         val pub = ECKeyPair.create(priv).publicKey
         val address = Keys.toChecksumAddress(Keys.getAddress(pub))
-        val chains = supportChainList.map { c -> c.chainId }
-        val supportAccounts = supportChainList.map { c -> c to address }
-
-        val selectedAccounts: Map<Chain, String> = chains.mapNotNull { namespaceChainId ->
-            supportAccounts.firstOrNull { (chain, _) -> chain.chainId == namespaceChainId }
-        }.toMap()
-        val sessionNamespacesIndexedByNamespace: Map<String, Wallet.Model.Namespace.Session> =
-            selectedAccounts.filter { (chain: Chain, _) ->
-                sessionProposal.requiredNamespaces
-                    .filter { (_, namespace) -> namespace.chains != null }
-                    .flatMap { (_, namespace) -> namespace.chains!! }
-                    .contains(chain.chainId)
-            }.toList().plus(
-                selectedAccounts.filter { (chain: Chain, _) ->
-                    sessionProposal.optionalNamespaces
-                        .filter { (_, namespace) -> namespace.chains != null }
-                        .flatMap { (_, namespace) -> namespace.chains!! }
-                        .contains(chain.chainId)
-                }.toList(),
-            )
-                .groupBy { (chain: Chain, _: String) -> chain.chainNamespace }
-                .asIterable()
-                .associate { (key: String, chainData: List<Pair<Chain, String>>) ->
-                    val accounts = chainData.map { (chain: Chain, accountAddress: String) ->
-                        "${chain.chainNamespace}:${chain.chainReference}:$accountAddress"
-                    }
-                    val values = sessionProposal.requiredNamespaces.values + sessionProposal.optionalNamespaces.values
-                    val methods = values
-                        .filter { namespace -> namespace.chains != null }
-                        .flatMap { it.methods }
-                    val events = values
-                        .filter { namespace -> namespace.chains != null }
-                        .flatMap { it.events }
-                    val chainList: List<String> = values
-                        .filter { namespace -> namespace.chains != null }
-                        .flatMap { namespace -> namespace.chains!! }
-
-                    key to Wallet.Model.Namespace.Session(
-                        accounts = accounts,
-                        methods = methods,
-                        events = events,
-                        chains = chainList.ifEmpty { null },
-                    )
-                }
-        Timber.d("$TAG $sessionNamespacesIndexedByNamespace")
-
-        val sessionNamespacesIndexedByChain: Map<String, Wallet.Model.Namespace.Session> =
-            selectedAccounts.filter { (chain: Chain, _) ->
-                sessionProposal.requiredNamespaces
-                    .filter { (namespaceKey, namespace) -> namespace.chains == null && namespaceKey == chain.chainId }
-                    .isNotEmpty()
-            }.toList().plus(
-                selectedAccounts.filter { (chain: Chain, _) ->
-                    sessionProposal.optionalNamespaces
-                        .filter { (namespaceKey, namespace) -> namespace.chains == null && namespaceKey == chain.chainId }
-                        .isNotEmpty()
-                }.toList(),
-            ).groupBy { (chain: Chain, _: String) -> chain.chainId }
-                .asIterable()
-                .associate { (key: String, chainData: List<Pair<Chain, String>>) ->
-                    val accounts = chainData.map { (chain: Chain, accountAddress: String) ->
-                        "${chain.chainNamespace}:${chain.chainReference}:$accountAddress"
-                    }
-                    val values = sessionProposal.requiredNamespaces.values + sessionProposal.optionalNamespaces.values
-                    val methods = values
-                        .filter { namespace -> namespace.chains == null }
-                        .flatMap { it.methods }
-                    val events = values
-                        .filter { namespace -> namespace.chains == null }
-                        .flatMap { it.events }
-
-                    key to Wallet.Model.Namespace.Session(
-                        accounts = accounts,
-                        methods = methods,
-                        events = events,
-                    )
-                }
-        val sessionNamespaces = sessionNamespacesIndexedByNamespace.plus(sessionNamespacesIndexedByChain)
+        val sessionNamespaces = Web3Wallet.generateApprovedNamespaces(sessionProposal, getSupportedNamespaces(address))
+        Timber.d("$TAG approveSession $sessionNamespaces")
         val approveParams: Wallet.Params.SessionApprove = Wallet.Params.SessionApprove(
             sessionProposal.proposerPublicKey,
             sessionNamespaces,
@@ -387,7 +319,6 @@ object WalletConnectV2 : WalletConnect() {
         Timber.d("$TAG getSessionProposal topic: $topic")
         return try {
             Web3Wallet.getSessionProposals().find { sp ->
-                Timber.d("$TAG getSessionProposal ${sp.pairingTopic}")
                 sp.pairingTopic == topic
             }
         } catch (e: IllegalStateException) {

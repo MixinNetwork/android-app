@@ -167,6 +167,9 @@ object Constants {
         const val Solana = "64692c23-8971-4cf4-84a7-4dd1271dd887"
         const val Polygon = "b7938396-3f94-4e0a-9179-d3440718156f"
         const val BinanceSmartChain = "1949e683-6a08-49e2-b087-d6b72398588f"
+        const val Avalanche = "cbc77539-0a20-4666-8c8a-4ded62b36f0a"
+        const val Arbitrum = "d0688ff7-6656-4a79-bd5f-d764bfa9bc46"
+        const val Optimism = "62d5b01f-24ee-4c96-8214-8e04981d05f2"
     }
 
     object AssetId {
