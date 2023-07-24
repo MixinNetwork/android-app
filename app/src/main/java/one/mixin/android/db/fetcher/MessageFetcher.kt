@@ -53,7 +53,7 @@ class MessageFetcher @Inject constructor(
         loadedIds.clear()
         var aroundId = messageId
         if (aroundId == null && !forceBottom) {
-            val idCursor = db.query("SELECT message_id FROM remote_messages_status WHERE conversation_id = ? AND status = 'DELIVERED' ORDER BY rowid ASC LIMIT 1", arrayOf(conversationId))
+            val idCursor = db.query("SELECT rm.message_id FROM remote_messages_status rm LEFT JOIN messages m ON m.id = rm.message_id WHERE rm.conversation_id = ? AND rm.status = 'DELIVERED' ORDER BY m.created_at ASC, m.rowid ASC LIMIT 1", arrayOf(conversationId))
             if (idCursor.moveToNext()) {
                 aroundId = idCursor.getString(0)
             }
