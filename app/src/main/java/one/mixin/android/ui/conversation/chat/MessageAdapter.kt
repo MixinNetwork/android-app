@@ -39,6 +39,8 @@ import one.mixin.android.databinding.ItemChatUnreadBinding
 import one.mixin.android.databinding.ItemChatVideoBinding
 import one.mixin.android.databinding.ItemChatVideoQuoteBinding
 import one.mixin.android.databinding.ItemChatWaitingBinding
+import one.mixin.android.db.fetcher.MessageFetcher
+import one.mixin.android.db.fetcher.MessageFetcher.Companion.SCROLL_THRESHOLD
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
@@ -641,8 +643,22 @@ class MessageAdapter(
         }
     }
 
-    private fun getItemInternal(position: Int) = data[position]
-
+    private fun getItemInternal(position: Int): MessageItem? {
+        if (position < itemCount - 1 && position >= 0) {
+            if (position < SCROLL_THRESHOLD) {
+                data.first()?.messageId?.let { id ->
+                    previousPage(id)
+                }
+            } else if (position > data.size - SCROLL_THRESHOLD - 1) {
+                data.last()?.messageId?.let { id ->
+                    nextPage(id)
+                }
+            }
+            return data[position]
+        } else {
+            return null
+        }
+    }
     override fun isListLast(position: Int): Boolean {
         return position == itemCount - 1
     }
