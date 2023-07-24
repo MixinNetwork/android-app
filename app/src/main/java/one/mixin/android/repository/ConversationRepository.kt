@@ -407,10 +407,10 @@ internal constructor(
     fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String) {
         val count = messageDao.countDeleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory)
         repeat((count / DB_DELETE_LIMIT) + 1) {
-            messageDao.deleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory, DB_DELETE_LIMIT)
+            val ids = messageDao.findMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory, DB_DELETE_LIMIT)
+            messageDao.deleteMessageById(ids)
+            MessageFlow.delete(conversationId, ids)
         }
-        // Todo delete message flow
-        // MessageFlow.update(conversationId, messageId)
     }
 
     suspend fun findTranscriptIdByConversationId(conversationId: String) = messageDao.findTranscriptIdByConversationId(conversationId)

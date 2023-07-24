@@ -11,6 +11,7 @@ import one.mixin.android.api.request.RelationshipAction.BLOCK
 import one.mixin.android.api.request.RelationshipAction.REMOVE
 import one.mixin.android.api.request.RelationshipAction.UNBLOCK
 import one.mixin.android.api.request.RelationshipRequest
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.session.Session
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
@@ -64,7 +65,7 @@ class UpdateRelationshipJob(
                         val currentConversationId = MixinApplication.conversationId ?: return@let
                         val conversationId = generateConversationId(selfId, u.userId)
                         if (conversationId == currentConversationId) {
-                            // Todo message flow
+                            MessageFlow.updateRelationship(conversationId)
                         }
                     }
                 },

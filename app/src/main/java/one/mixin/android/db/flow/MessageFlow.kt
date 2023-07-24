@@ -10,12 +10,17 @@ import one.mixin.android.event.MessageEvent
 import one.mixin.android.event.MessageEventAction
 
 object MessageFlow {
+    const val ANY_ID = ""
     private val messageEventFlow by lazy {
         MutableSharedFlow<MessageEvent>(0, 1, BufferOverflow.SUSPEND)
     }
 
     fun update(conversationId: String, messageId: String) {
         emit(MessageEvent(conversationId, MessageEventAction.UPDATE, listOf(messageId)))
+    }
+
+    fun updateRelationship(conversationId: String) {
+        emit(MessageEvent(conversationId, MessageEventAction.RELATIIONSHIP, listOf()))
     }
 
     fun update(conversationId: String, messageIds: List<String>) {

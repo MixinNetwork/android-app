@@ -105,10 +105,10 @@ object WalletConnectV2 : WalletConnect() {
                 val namespaces = (sessionProposal.requiredNamespaces.values + sessionProposal.optionalNamespaces.values)
                     .filter { proposal -> proposal.chains != null }
                 val hasSupportChain = namespaces.any { proposal ->
-                        proposal.chains!!.any { chain ->
-                            chains.contains(chain)
-                        }
+                    proposal.chains!!.any { chain ->
+                        chains.contains(chain)
                     }
+                }
                 if (hasSupportChain) {
                     RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionProposal, sessionProposal.pairingTopic))
                 } else {
@@ -117,8 +117,15 @@ object WalletConnectV2 : WalletConnect() {
                             !chains.contains(chain)
                         }
                     }.toSet().joinToString()
-                    RxBus.publish(WCErrorEvent(WCError(IllegalArgumentException(
-                        MixinApplication.appContext.getString(R.string.not_support_network, notSupportChainIds)))))
+                    RxBus.publish(
+                        WCErrorEvent(
+                            WCError(
+                                IllegalArgumentException(
+                                    MixinApplication.appContext.getString(R.string.not_support_network, notSupportChainIds),
+                                ),
+                            ),
+                        ),
+                    )
                 }
             }
 

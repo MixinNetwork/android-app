@@ -10,4 +10,5 @@ enum class MessageEventAction {
     UPDATE,
     DELETE,
     INSERT,
+    RELATIIONSHIP,
 }

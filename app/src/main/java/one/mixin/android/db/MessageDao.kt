@@ -621,12 +621,11 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        DELETE FROM messages WHERE id IN (
         SELECT id FROM messages WHERE  conversation_id = :conversationId AND (media_status = 'DONE' OR media_status ISNULL)
-        AND category IN (:signalCategory, :plainCategory, :encryptedCategory) LIMIT :limit)
+        AND category IN (:signalCategory, :plainCategory, :encryptedCategory) LIMIT :limit
         """,
     )
-    fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String, limit: Int)
+    fun findMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String, limit: Int): List<String>
 
     @Query("DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
     suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)

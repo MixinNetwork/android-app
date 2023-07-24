@@ -82,6 +82,7 @@ import one.mixin.android.databinding.FragmentConversationBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
 import one.mixin.android.db.fetcher.MessageFetcher
 import one.mixin.android.db.flow.MessageFlow
+import one.mixin.android.db.flow.MessageFlow.ANY_ID
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.CallEvent
 import one.mixin.android.event.ExitEvent
@@ -1784,7 +1785,7 @@ class ConversationFragment() :
             }
             chatRoomHelper.markMessageRead(conversationId)
             MessageFlow.collect({ event ->
-                event.conversationId == conversationId
+                event.conversationId == ANY_ID || event.conversationId == conversationId
             }, { event ->
                 when (event.action) {
                     MessageEventAction.INSERT -> {
@@ -1820,6 +1821,12 @@ class ConversationFragment() :
                         if (event.ids.isNotEmpty()) {
                             (binding.messageRv.adapter as MessageAdapter).delete(event.ids)
                         }
+                    }
+                    MessageEventAction.RELATIIONSHIP -> {
+                        messageAdapter.hasBottomView = recipient?.relationship == UserRelationship.STRANGER.name && chatViewModel.isSilence(
+                            conversationId,
+                            sender.userId,
+                        )
                     }
                 }
             })

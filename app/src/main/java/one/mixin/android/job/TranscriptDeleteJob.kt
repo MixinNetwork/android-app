@@ -35,13 +35,11 @@ class TranscriptDeleteJob(private val messageIds: List<String>) : BaseJob(Params
                     deleteTranscript(transcriptMessage)
                 }
             }
-            // Todo
-            MessageFlow.delete("", messageId)
         }
         cIds.forEach { id ->
             conversationDao.refreshLastMessageId(id)
             conversationExtDao.refreshCountByConversationId(id)
-            // Todo message flow
+            MessageFlow.delete(id, messageIds)
         }
     }
 

@@ -69,7 +69,7 @@ class CleanMessageHelper @Inject internal constructor(
             if (deleteConversation) {
                 conversationDao.deleteConversationById(conversationId)
                 conversationExtDao.deleteConversationById(conversationId)
-                // Todo message flow
+                // No message data, no notification
             }
         } else {
             val lastRowId = messageDao.findLastMessageRowId(conversationId) ?: return
@@ -94,7 +94,7 @@ class CleanMessageHelper @Inject internal constructor(
                     conversationDao.refreshLastMessageId(conversationId)
                     conversationExtDao.refreshCountByConversationId(conversationId)
                 }
-                // Todo message flow
+                MessageFlow.delete(conversationId, ids)
             }
         }
     }
