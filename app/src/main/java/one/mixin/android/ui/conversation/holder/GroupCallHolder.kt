@@ -54,7 +54,11 @@ class GroupCallHolder constructor(val binding: ItemChatSystemBinding) :
                 binding.chatInfo.text = context.getString(R.string.chat_group_call_invite, messageItem.userFullName)
             }
             MessageCategory.KRAKEN_CANCEL.name -> {
-                binding.chatInfo.text = context.getString(R.string.chat_group_call_cancel, name)
+                binding.chatInfo.text = if (isMe) {
+                    context.getString(R.string.chat_group_call_cancel, name)
+                } else {
+                    context.getString(R.string.chat_group_call_cancel_other, name)
+                }
             }
             MessageCategory.KRAKEN_DECLINE.name -> {
                 binding.chatInfo.text = context.getString(R.string.chat_group_call_decline, name)
