@@ -71,26 +71,23 @@ class MessageFetcher @Inject constructor(
             return@withContext Triple(result.size - 1, result, null)
         } else {
             // Load data containing aroundId
-            val idCursor =
-                db.query("SELECT rowid FROM messages WHERE id = ?", arrayOf(aroundId))
-            val rowId = idCursor.use {
-                if (it.moveToNext()) {
-                    it.getInt(0)
-                } else {
-                    0
-                }
+            val preCursor =
+                db.query("SELECT rowid, created_at FROM messages WHERE id = ?", arrayOf(aroundId))
+            val (rowId, createdAt) = preCursor.use {
+                it.moveToNext()
+                Pair(it.getInt(0), it.getString(1))
             }
             // load next page by aroundId
             val nextCursor = db.query(
-                "$SQL WHERE m.conversation_id = ? AND m.rowid >= ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?",
-                arrayOf(conversationId, rowId, INIT_SIZE / 2),
+                "$SQL WHERE m.conversation_id = ? AND m.rowid >= ? AND m.created_at >= ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?",
+                arrayOf(conversationId, rowId, createdAt, INIT_SIZE / 2),
             )
             val result = convertToMessageItems(nextCursor)
             canLoadBelow = result.size >= INIT_SIZE / 2
             val thresholdSize = INIT_SIZE - result.size
             val previousCursor = db.query(
-                "$SQL WHERE m.conversation_id = ? AND m.rowid < ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
-                arrayOf(conversationId, rowId, thresholdSize),
+                "$SQL WHERE m.conversation_id = ? AND m.rowid < ? AND m.created_at < ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
+                arrayOf(conversationId, rowId, createdAt, thresholdSize),
             )
             val previous = convertToMessageItems(previousCursor).reversed()
             canLoadAbove = previous.size >= thresholdSize
