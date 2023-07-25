@@ -354,7 +354,12 @@ class ConversationFragment() :
             scrollToMessage(messageId)
             messageAdapter.notifyDataSetChanged()
         } else {
-            scrollToDown()
+            // Force refresh of data
+            lifecycleScope.launch {
+                val (_, data) = messageFetcher.initMessages(conversationId, null, true)
+                messageAdapter.refreshData(data)
+                scrollTo(data.size - 1)
+            }
         }
     }
     private fun voiceCall() {
