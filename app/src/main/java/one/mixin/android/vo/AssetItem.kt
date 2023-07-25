@@ -31,6 +31,7 @@ data class AssetItem(
     var chainPriceUsd: String?,
     val assetKey: String?,
     val reserve: String?,
+    val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
 ) : Parcelable {
     fun fiat(): BigDecimal {
         return BigDecimal(balance).multiply(priceFiat())

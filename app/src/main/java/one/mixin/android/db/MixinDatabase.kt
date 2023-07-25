@@ -53,6 +53,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_48_49
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_49_50
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MessageStatusConverter
+import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.debug.getContent
@@ -136,7 +137,7 @@ import kotlin.math.min
     ],
     version = CURRENT_VERSION,
 )
-@TypeConverters(MessageStatusConverter::class, DepositEntryListConverter::class)
+@TypeConverters(MessageStatusConverter::class, DepositEntryListConverter::class, WithdrawalMemoPossibilityConverter::class)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun conversationExtDao(): ConversationExtDao
