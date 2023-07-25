@@ -277,6 +277,7 @@ import timber.log.Timber
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.math.max
 import kotlin.math.min
 
 @AndroidEntryPoint
@@ -1308,13 +1309,18 @@ class ConversationFragment() :
                 val linearSmoothScroller = LinearSmoothScroller(requireContext(), POSITION_TOP)
                 linearSmoothScroller.targetPosition = position
                 linearSmoothScroller.fast = true
-                linearSmoothScroller.setOffset(binding.messageRv.measuredHeight / 4)
+                linearSmoothScroller.setOffset(messageRvOffset)
                 startSmoothScroll(linearSmoothScroller)
             }
         }.apply {
             stackFromEnd = true
         }
     }
+
+    private val messageRvOffset: Int
+        get() {
+            return binding.messageRv.measuredHeight / 4
+        }
 
     private val previousAction = fun(id: String) {
         lifecycleScope.launch {
@@ -1794,7 +1800,7 @@ class ConversationFragment() :
             binding.messageRv.layoutManager = messageLayoutManager
             // Initialization RecyclerView position
             if (position >= 0) {
-                messageLayoutManager.scrollToPositionWithOffset(position, binding.messageRv.measuredHeight / 4)
+                messageLayoutManager.scrollToPositionWithOffset(position, messageRvOffset)
                 messageLayoutManager.scrollTo(position)
                 if (initialMessageId != null && unreadMessageId != null) {
                     launch {
@@ -2546,7 +2552,7 @@ class ConversationFragment() :
     private fun scrollToDown() {
         if (viewDestroyed()) return
         if (messageFetcher.isBottom()) {
-            binding.messageRv.layoutManager?.scrollToPosition(messageAdapter.itemCount - 1)
+            messageLayoutManager.scrollToPositionWithOffset(messageAdapter.itemCount - 1, messageRvOffset)
         } else {
             lifecycleScope.launch {
                 val (_, data) = messageFetcher.initMessages(conversationId, null, true)
@@ -2562,7 +2568,7 @@ class ConversationFragment() :
                 position + 1,
                 messageAdapter.itemCount - 1,
             ), // Move the next item of the target to offset
-            binding.messageRv.measuredHeight / 4,
+            messageRvOffset,
         )
     }
 
