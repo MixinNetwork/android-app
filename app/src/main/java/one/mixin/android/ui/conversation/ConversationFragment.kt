@@ -47,6 +47,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.children
 import androidx.core.view.inputmethod.InputContentInfoCompat
 import androidx.core.view.isGone
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.widget.PopupWindowCompat
 import androidx.fragment.app.viewModels
@@ -263,6 +264,8 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
+import one.mixin.android.widget.LinearSmoothScroller
+import one.mixin.android.widget.LinearSmoothScroller.Companion.POSITION_TOP
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.buildBottomSheetView
 import one.mixin.android.widget.gallery.internal.entity.Item
@@ -1300,7 +1303,15 @@ class ConversationFragment() :
 
     private lateinit var messageAdapter: MessageAdapter
     private val messageLayoutManager by lazy {
-        LinearLayoutManager(requireContext()).apply {
+        object : LinearLayoutManager(requireContext()) {
+            fun scrollTo(position: Int) {
+                val linearSmoothScroller = LinearSmoothScroller(requireContext(), POSITION_TOP)
+                linearSmoothScroller.targetPosition = position
+                linearSmoothScroller.fast = true
+                linearSmoothScroller.setOffset(binding.messageRv.measuredHeight / 4)
+                startSmoothScroll(linearSmoothScroller)
+            }
+        }.apply {
             stackFromEnd = true
         }
     }
@@ -1783,7 +1794,8 @@ class ConversationFragment() :
             binding.messageRv.layoutManager = messageLayoutManager
             // Initialization RecyclerView position
             if (position >= 0) {
-                scrollTo(position)
+                messageLayoutManager.scrollToPositionWithOffset(position, binding.messageRv.measuredHeight / 4)
+                messageLayoutManager.scrollTo(position)
                 if (initialMessageId != null && unreadMessageId != null) {
                     launch {
                         delay(100)
@@ -2550,7 +2562,7 @@ class ConversationFragment() :
                 position + 1,
                 messageAdapter.itemCount - 1,
             ), // Move the next item of the target to offset
-            binding.messageRv.measuredHeight / 3,
+            binding.messageRv.measuredHeight / 4,
         )
     }
 
@@ -2568,7 +2580,8 @@ class ConversationFragment() :
             // refresh to message Id
             val (p, data) = messageFetcher.initMessages(conversationId, messageId)
             messageAdapter.refreshData(data)
-            scrollTo(p)
+            messageLayoutManager.scrollToPositionWithOffset(p, binding.messageRv.measuredHeight / 4)
+            messageLayoutManager.scrollTo(p)
             findMessageAction?.invoke(p)
         }
         delay(100)
