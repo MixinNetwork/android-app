@@ -10,7 +10,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.db.deleteMessageByIds
-import one.mixin.android.db.invalidater.InvalidateFlow
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.deleteByMessageId
 import one.mixin.android.fts.deleteByMessageIds
@@ -69,7 +69,7 @@ class CleanMessageHelper @Inject internal constructor(
             if (deleteConversation) {
                 conversationDao.deleteConversationById(conversationId)
                 conversationExtDao.deleteConversationById(conversationId)
-                InvalidateFlow.emit(conversationId)
+                // No message data, no notification
             }
         } else {
             val lastRowId = messageDao.findLastMessageRowId(conversationId) ?: return
@@ -94,7 +94,7 @@ class CleanMessageHelper @Inject internal constructor(
                     conversationDao.refreshLastMessageId(conversationId)
                     conversationExtDao.refreshCountByConversationId(conversationId)
                 }
-                InvalidateFlow.emit(conversationId)
+                MessageFlow.delete(conversationId, ids)
             }
         }
     }
@@ -134,7 +134,7 @@ class CleanMessageHelper @Inject internal constructor(
         }
         appDatabase.deleteMessageById(messageId, conversationId)
         ftsDatabase.deleteByMessageId(messageId)
-        InvalidateFlow.emit(conversationId)
+        MessageFlow.delete(conversationId, messageId)
     }
 
     private fun deleteTranscriptByMessageId(messageId: String) {

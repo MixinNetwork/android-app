@@ -4,8 +4,8 @@ import com.birbit.android.jobqueue.Params
 import one.mixin.android.Constants.DEFAULT_THUMB_IMAGE
 import one.mixin.android.Constants.MAX_THUMB_IMAGE_LENGTH
 import one.mixin.android.RxBus
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
-import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
@@ -97,7 +97,7 @@ open class SendMessageJob(
                 }
                 if (!message.isTranscript()) {
                     mixinDatabase.insertMessage(message)
-                    InvalidateFlow.emit(message.conversationId)
+                    MessageFlow.insert(message.conversationId, message.messageId)
                     ftsDatabase.insertOrReplaceMessageFts4(message)
                 }
 
@@ -151,7 +151,7 @@ open class SendMessageJob(
             }
             jobManager.cancelJobByMixinJobId(msg.messageId)
         }
-        InvalidateFlow.emit(conversationId)
+        MessageFlow.update(conversationId, recallMessageId)
         ftsDatabase.deleteByMessageId(recallMessageId)
     }
 

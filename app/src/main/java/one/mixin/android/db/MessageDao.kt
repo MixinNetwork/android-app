@@ -61,10 +61,6 @@ interface MessageDao : BaseDao<Message> {
 
     // Read SQL
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId ORDER BY m.created_at DESC")
-    fun getMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
-
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND m.category IN $CHAT_CATEGORY ORDER BY m.created_at ASC LIMIT :limit OFFSET :offset")
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem>
 
@@ -625,12 +621,11 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        DELETE FROM messages WHERE id IN (
         SELECT id FROM messages WHERE  conversation_id = :conversationId AND (media_status = 'DONE' OR media_status ISNULL)
-        AND category IN (:signalCategory, :plainCategory, :encryptedCategory) LIMIT :limit)
+        AND category IN (:signalCategory, :plainCategory, :encryptedCategory) LIMIT :limit
         """,
     )
-    fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String, limit: Int)
+    fun findMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String, limit: Int): List<String>
 
     @Query("DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
     suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
