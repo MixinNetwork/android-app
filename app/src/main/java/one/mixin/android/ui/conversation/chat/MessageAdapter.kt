@@ -747,6 +747,7 @@ class MessageAdapter(
         return selectSet.remove(selectSet.find { it.messageId == messageItem.messageId })
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun markRead() {
         unreadMessageId = null
         notifyDataSetChanged()

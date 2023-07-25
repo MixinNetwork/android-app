@@ -274,6 +274,7 @@ import timber.log.Timber
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.math.min
 
 @AndroidEntryPoint
 @SuppressLint("InvalidWakeLockTag")
@@ -1293,6 +1294,11 @@ class ConversationFragment() :
     lateinit var messageFetcher: MessageFetcher
 
     private lateinit var messageAdapter: MessageAdapter
+    private val messageLayoutManager by lazy {
+        LinearLayoutManager(requireContext()).apply {
+            stackFromEnd = true
+        }
+    }
 
     private val previousAction = fun(id: String) {
         lifecycleScope.launch {
@@ -1769,15 +1775,10 @@ class ConversationFragment() :
             binding.messageRv.adapter = messageAdapter
             binding.messageRv.addItemDecoration(decoration)
             binding.messageRv.itemAnimator = null
-            binding.messageRv.layoutManager = LinearLayoutManager(requireContext()).apply {
-                stackFromEnd = true
-            }
+            binding.messageRv.layoutManager = messageLayoutManager
             // Initialization RecyclerView position
             if (position >= 0) {
-                (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                    position,
-                    binding.messageRv.measuredHeight / 4,
-                )
+                scrollTo(position)
                 if (initialMessageId != null && unreadMessageId != null) {
                     launch {
                         delay(100)
@@ -1785,7 +1786,9 @@ class ConversationFragment() :
                     }
                 }
             }
+            // The first time the load
             chatRoomHelper.markMessageRead(conversationId)
+            chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
             MessageFlow.collect({ event ->
                 event.conversationId == ANY_ID || event.conversationId == conversationId
             }, { event ->
@@ -1793,7 +1796,6 @@ class ConversationFragment() :
                     MessageEventAction.INSERT -> {
                         if (messageFetcher.isBottom()) {
                             val message = messageFetcher.findMessageById(event.ids)
-                            Timber.e("insert ${event.ids} ${message.map { it.messageId }}")
                             if (message.isNotEmpty()) {
                                 (binding.messageRv.adapter as MessageAdapter).insert(message)
                             }
@@ -2532,12 +2534,19 @@ class ConversationFragment() :
             lifecycleScope.launch {
                 val (_, data) = messageFetcher.initMessages(conversationId, null, true)
                 messageAdapter.refreshData(data)
-                (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                    data.size - 1,
-                    binding.messageRv.measuredHeight / 4,
-                )
+                scrollTo(data.size - 1)
             }
         }
+    }
+
+    private fun scrollTo(position: Int) {
+        messageLayoutManager.scrollToPositionWithOffset(
+            min(
+                position + 1,
+                messageAdapter.itemCount - 1,
+            ), // Move the next item of the target to offset
+            binding.messageRv.measuredHeight / 3,
+        )
     }
 
     private fun scrollToMessage(
@@ -2548,19 +2557,13 @@ class ConversationFragment() :
         // Return position if it exists in the cache, otherwise refresh the data according to ID and return position
         val position = messageAdapter.indexMessage(messageId)
         if (position >= 0) {
-            (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                position,
-                binding.messageRv.measuredHeight / 4,
-            )
+            scrollTo(position)
             findMessageAction?.invoke(position)
         } else {
             // refresh to message Id
             val (p, data) = messageFetcher.initMessages(conversationId, messageId)
             messageAdapter.refreshData(data)
-            (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                p,
-                binding.messageRv.measuredHeight / 4,
-            )
+            scrollTo(p)
             findMessageAction?.invoke(p)
         }
         delay(100)
