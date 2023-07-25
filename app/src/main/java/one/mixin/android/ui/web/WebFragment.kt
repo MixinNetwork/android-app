@@ -28,6 +28,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.webkit.GeolocationPermissions
 import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
@@ -690,6 +691,31 @@ class WebFragment : BaseFragment() {
                     },
                 )
                 return true
+            }
+
+            override fun onGeolocationPermissionsShowPrompt(
+                origin: String?,
+                callback: GeolocationPermissions.Callback?,
+            ) {
+                PermissionBottomSheetDialogFragment.requestLocation(
+                    binding.titleTv.text.toString(),
+                    app?.appNumber,
+                    app?.iconUrl,
+                )
+                    .setCancelAction {
+                        callback?.invoke(origin, false, false)
+                    }.setGrantedAction {
+                        RxPermissions(requireActivity())
+                            .request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+                            .autoDispose(stopScope)
+                            .subscribe { granted ->
+                                if (granted) {
+                                    callback?.invoke(origin, true, false)
+                                } else {
+                                    requireContext().openPermissionSetting()
+                                }
+                            }
+                    }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
             }
         }
 

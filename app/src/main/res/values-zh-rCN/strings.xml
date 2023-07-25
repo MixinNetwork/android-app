@@ -184,6 +184,7 @@
     </plurals>
     <string name="chat_group_add">%1$s添加了%2$s</string>
     <string name="chat_group_call_cancel">%1$s已取消群组语音</string>
+    <string name="chat_group_call_cancel_other">%1$s 未接听群组语音</string>
     <string name="chat_group_call_decline">%1$s已拒绝群组语音</string>
     <string name="chat_group_call_end">群组语音已结束</string>
     <string name="chat_group_call_invite">%1$s邀请你加入群组语音</string>
@@ -691,6 +692,7 @@
     <string name="permission_audio">要允许录制声音吗？</string>
     <string name="permission_camera">要允许拍摄照片吗？</string>
     <string name="permission_video">要允许拍摄视频吗？</string>
+    <string name="permission_location">要允许访问位置信息吗？</string>
     <string name="Permissions">权限列表</string>
     <string name="Phone_call">电话呼叫</string>
     <string name="Phone_Contact">手机联系人</string>
@@ -1171,7 +1173,7 @@
     <string name="preview_unavailable">预览不可用</string>
     <string name="preview_unavailable_description">无法预览资产变化。请确保你信任此 dapp。</string>
     <string name="sign_by_pin">使用 PIN 签名</string>
-    <string name="Discard">Discard</string>
+    <string name="Discard">放弃</string>
     <string name="send_signed_message_confirmation">此消息已被签名，点击下方按钮以发送或丢弃</string>
     <string name="network">网络</string>
     <string name="network_fee">网络费用</string>
@@ -1188,6 +1190,7 @@
     <string name="speed_up_transaction_tip">if the transaction is too far along cancellation may bot be possible.</string>
     <string name="blocked_action">Mixin 已经禁止了 WalletConnect 的 %1$s 行为</string>
     <string name="not_supported_wc_version">不支持该版本的 WalletConnect</string>
+    <string name="not_support_network">不支持该网络：%s</string>
     <string name="all_time">所有日期</string>
     <string name="designated_time_period">指定时间段</string>
     <string name="Year">年</string>

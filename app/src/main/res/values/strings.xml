@@ -188,6 +188,7 @@
     <string name="chat_delete_url">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
     <string name="chat_group_add">%1$s added %2$s</string>
     <string name="chat_group_call_cancel">%1$s has canceled group call</string>
+    <string name="chat_group_call_cancel_other">%1$s did not answer group call</string>
     <string name="chat_group_call_decline">%1$s has declined group call</string>
     <string name="chat_group_call_end">Group call has ended</string>
     <string name="chat_group_call_invite">%1$s has invited you to a group call</string>
@@ -709,6 +710,7 @@
     <string name="permission_audio">Allow to record audio?</string>
     <string name="permission_camera">Allow to take pictures?</string>
     <string name="permission_video">Allow to record video?</string>
+    <string name="permission_location">Allow to access location?</string>
     <string name="Permissions">Permissions</string>
     <string name="Phone_call">Phone call</string>
     <string name="Phone_Contact">Phone Contacts</string>
@@ -1213,6 +1215,7 @@
     <string name="speed_up_transaction_tip">if the transaction is too far along cancellation may bot be possible.</string>
     <string name="blocked_action">Mixin has blocked a WalletConnect action %1$s</string>
     <string name="not_supported_wc_version">Not supported WalletConnect version</string>
+    <string name="not_support_network">Not supported network: %s</string>
     <string name="all_time">All time</string>
     <string name="designated_time_period">Designated time period</string>
     <string name="Year">Year</string>
