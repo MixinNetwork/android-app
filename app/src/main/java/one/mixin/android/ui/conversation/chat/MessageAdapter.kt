@@ -587,6 +587,14 @@ class MessageAdapter(
             ConversationAdapter.NULL_TYPE,
         )
 
+    fun layoutPosition(position: Int): Int {
+        if (isSecret) {
+            return position + 1
+        } else {
+            return position
+        }
+    }
+
     // Item and position
     fun getItem(position: Int): MessageItem? {
         return if (position > itemCount - 1 || position < 0) {

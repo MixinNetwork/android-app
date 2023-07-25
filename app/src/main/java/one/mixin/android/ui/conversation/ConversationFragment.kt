@@ -30,6 +30,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
+import android.view.View.OnScrollChangeListener
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -47,7 +48,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.children
 import androidx.core.view.inputmethod.InputContentInfoCompat
 import androidx.core.view.isGone
-import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.widget.PopupWindowCompat
 import androidx.fragment.app.viewModels
@@ -264,8 +264,6 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
-import one.mixin.android.widget.LinearSmoothScroller
-import one.mixin.android.widget.LinearSmoothScroller.Companion.POSITION_TOP
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.buildBottomSheetView
 import one.mixin.android.widget.gallery.internal.entity.Item
@@ -277,8 +275,6 @@ import timber.log.Timber
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
-import kotlin.math.max
-import kotlin.math.min
 
 @AndroidEntryPoint
 @SuppressLint("InvalidWakeLockTag")
@@ -362,7 +358,7 @@ class ConversationFragment() :
             lifecycleScope.launch {
                 val (_, data) = messageFetcher.initMessages(conversationId, null, true)
                 messageAdapter.refreshData(data)
-                scrollTo(data.size - 1)
+                messageLayoutManager.scrollWithOffset(messageAdapter.itemCount - 1, messageRvOffset)
             }
         }
     }
@@ -1305,12 +1301,12 @@ class ConversationFragment() :
     private lateinit var messageAdapter: MessageAdapter
     private val messageLayoutManager by lazy {
         object : LinearLayoutManager(requireContext()) {
-            fun scrollTo(position: Int) {
-                val linearSmoothScroller = LinearSmoothScroller(requireContext(), POSITION_TOP)
-                linearSmoothScroller.targetPosition = position
-                linearSmoothScroller.fast = true
-                linearSmoothScroller.setOffset(messageRvOffset)
-                startSmoothScroll(linearSmoothScroller)
+            fun scrollWithOffset(position: Int, offset: Int) {
+                scrollToPositionWithOffset(messageAdapter.layoutPosition(position), offset)
+            }
+
+            fun scroll(position: Int) {
+                scrollToPositionWithOffset(messageAdapter.layoutPosition(position), 0)
             }
         }.apply {
             stackFromEnd = true
@@ -1800,8 +1796,7 @@ class ConversationFragment() :
             binding.messageRv.layoutManager = messageLayoutManager
             // Initialization RecyclerView position
             if (position >= 0) {
-                messageLayoutManager.scrollToPositionWithOffset(position, messageRvOffset)
-                messageLayoutManager.scrollTo(position)
+                messageLayoutManager.scrollWithOffset(position, messageRvOffset)
                 if (initialMessageId != null && unreadMessageId != null) {
                     launch {
                         delay(100)
@@ -2552,24 +2547,14 @@ class ConversationFragment() :
     private fun scrollToDown() {
         if (viewDestroyed()) return
         if (messageFetcher.isBottom()) {
-            messageLayoutManager.scrollToPositionWithOffset(messageAdapter.itemCount - 1, messageRvOffset)
+            messageLayoutManager.scroll(messageAdapter.itemCount - 1)
         } else {
             lifecycleScope.launch {
                 val (_, data) = messageFetcher.initMessages(conversationId, null, true)
                 messageAdapter.refreshData(data)
-                scrollTo(data.size - 1)
+                messageLayoutManager.scroll(messageAdapter.itemCount - 1)
             }
         }
-    }
-
-    private fun scrollTo(position: Int) {
-        messageLayoutManager.scrollToPositionWithOffset(
-            min(
-                position + 1,
-                messageAdapter.itemCount - 1,
-            ), // Move the next item of the target to offset
-            messageRvOffset,
-        )
     }
 
     private fun scrollToMessage(
@@ -2580,14 +2565,13 @@ class ConversationFragment() :
         // Return position if it exists in the cache, otherwise refresh the data according to ID and return position
         val position = messageAdapter.indexMessage(messageId)
         if (position >= 0) {
-            scrollTo(position)
+            messageLayoutManager.scrollWithOffset(position, messageRvOffset)
             findMessageAction?.invoke(position)
         } else {
             // refresh to message Id
             val (p, data) = messageFetcher.initMessages(conversationId, messageId)
             messageAdapter.refreshData(data)
-            messageLayoutManager.scrollToPositionWithOffset(p, binding.messageRv.measuredHeight / 4)
-            messageLayoutManager.scrollTo(p)
+            messageLayoutManager.scrollWithOffset(p, messageRvOffset)
             findMessageAction?.invoke(p)
         }
         delay(100)
