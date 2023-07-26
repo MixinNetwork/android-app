@@ -846,7 +846,7 @@ class MessageAdapter(
             val index = data.indexOfFirst { it?.messageId == item.messageId }
             if (index != -1) {
                 data.update(index, item)
-                notifyItemChanged(index + 1)
+                notifyItemChanged(layoutPosition(index))
             }
         }
     }
