@@ -37,9 +37,9 @@ class MessageFetcher @Inject constructor(
                LEFT JOIN pin_messages pm ON m.id = pm.message_id
                LEFT JOIN expired_messages em ON m.id = em.message_id
         """
-        const val SCROLL_THRESHOLD = 10
-        const val PAGE_SIZE = 20
-        private const val INIT_SIZE = 60 // PAGE_SIZE * 3
+        const val SCROLL_THRESHOLD = 15
+        const val PAGE_SIZE = 30
+        private const val INIT_SIZE = 90 // PAGE_SIZE * 3
     }
 
     private val currentlyLoadingIds = mutableSetOf<String>()

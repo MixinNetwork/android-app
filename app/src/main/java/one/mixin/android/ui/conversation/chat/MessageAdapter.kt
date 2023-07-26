@@ -836,9 +836,10 @@ class MessageAdapter(
     }
 
     fun insert(list: List<MessageItem>) {
-        val size = data.size
+        val position = layoutPosition(itemCount - 1)
         data.append(list)
-        notifyItemRangeInserted(size + 1, list.count())
+        notifyItemChanged(position) // change last holder background
+        notifyItemRangeInserted(position + 1, list.count())
     }
 
     fun update(list: List<MessageItem>) {
