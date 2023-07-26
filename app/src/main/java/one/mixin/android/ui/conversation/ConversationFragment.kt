@@ -1808,7 +1808,9 @@ class ConversationFragment() :
             binding.messageRv.layoutManager = messageLayoutManager
             // Initialization RecyclerView position
             if (position >= 0) {
-                messageLayoutManager.scrollWithOffset(position, messageRvOffset)
+                if (unreadMessageId != null) {
+                    messageLayoutManager.scrollWithOffset(position, messageRvOffset)
+                }
                 if (initialMessageId != null && unreadMessageId != null) {
                     launch {
                         delay(100)
