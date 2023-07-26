@@ -263,6 +263,7 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
+import one.mixin.android.widget.LinearSmoothScrollerCustom
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.buildBottomSheetView
 import one.mixin.android.widget.gallery.internal.entity.Item
@@ -274,6 +275,7 @@ import timber.log.Timber
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.math.abs
 
 @AndroidEntryPoint
 @SuppressLint("InvalidWakeLockTag")
@@ -1304,8 +1306,19 @@ class ConversationFragment() :
                 scrollToPositionWithOffset(messageAdapter.layoutPosition(position), offset)
             }
 
-            fun scroll(position: Int) {
-                smoothScrollToPosition(binding.messageRv, null, messageAdapter.itemCount)
+            fun scroll() {
+                val targetPosition = messageAdapter.itemCount
+                findFirstVisibleItemPosition().let { firstPosition ->
+                    if (abs(targetPosition - firstPosition) > MessageFetcher.PAGE_SIZE) {
+                        scrollToPositionWithOffset(targetPosition - MessageFetcher.PAGE_SIZE / 2, 0)
+                    }
+                }
+                val linearSmoothScroller = LinearSmoothScrollerCustom(
+                    requireContext(),
+                    LinearSmoothScrollerCustom.POSITION_END,
+                )
+                linearSmoothScroller.targetPosition = targetPosition
+                startSmoothScroll(linearSmoothScroller)
             }
         }.apply {
             stackFromEnd = true
@@ -2546,12 +2559,12 @@ class ConversationFragment() :
     private fun scrollToDown() {
         if (viewDestroyed()) return
         if (messageFetcher.isBottom()) {
-            messageLayoutManager.scroll(messageAdapter.itemCount - 1)
+            messageLayoutManager.scroll()
         } else {
             lifecycleScope.launch {
                 val (_, data) = messageFetcher.initMessages(conversationId, null, true)
                 messageAdapter.refreshData(data)
-                messageLayoutManager.scroll(messageAdapter.itemCount - 1)
+                messageLayoutManager.scroll()
             }
         }
     }
