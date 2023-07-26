@@ -340,8 +340,6 @@ class ConversationFragment() :
         requireArguments().getParcelableCompat(TRANSCRIPT_DATA, TranscriptData::class.java)
     }
 
-    private var unreadTipCount: Int = 0
-
     private fun showPreview(uri: Uri, okText: String? = null, isVideo: Boolean, action: (Uri) -> Unit) {
         val previewDialogFragment = PreviewDialogFragment.newInstance(isVideo)
         previewDialogFragment.show(parentFragmentManager, uri, okText, action)
@@ -1387,7 +1385,7 @@ class ConversationFragment() :
                         if (!isBottom) {
                             isBottom = true
                         }
-                        unreadTipCount = 0
+                        binding.flagLayout.unreadCount = 0
                         binding.flagLayout.bottomCountFlag = false
                     }
                 }
@@ -1441,7 +1439,7 @@ class ConversationFragment() :
                 }
             } else {
                 scrollToDown()
-                unreadTipCount = 0
+                binding.flagLayout.unreadCount = 0
                 binding.flagLayout.bottomCountFlag = false
             }
         }
