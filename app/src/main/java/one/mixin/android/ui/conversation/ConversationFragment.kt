@@ -1306,7 +1306,7 @@ class ConversationFragment() :
             }
 
             fun scroll(position: Int) {
-                scrollToPositionWithOffset(messageAdapter.layoutPosition(position), 0)
+                smoothScrollToPosition(binding.messageRv, null, messageAdapter.itemCount)
             }
         }.apply {
             stackFromEnd = true
