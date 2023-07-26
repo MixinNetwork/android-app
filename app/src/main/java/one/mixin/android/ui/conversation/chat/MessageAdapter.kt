@@ -852,13 +852,14 @@ class MessageAdapter(
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun delete(list: List<String>) {
         list.mapNotNull { id ->
             data.indexOfFirst { item -> id == item?.messageId }.takeIf { it != -1 }
         }.sortedDescending().forEach { p ->
             data.deleteByPosition(p)
             Timber.e("Removed $p")
-            notifyItemRemoved(p)
+            notifyDataSetChanged()
         }
     }
 
