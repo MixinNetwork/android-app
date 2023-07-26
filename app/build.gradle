@@ -316,6 +316,8 @@ dependencies {
     implementation "com.google.android.gms:play-services-maps:18.1.0"
     implementation "com.google.android.gms:play-services-location:21.0.1"
     implementation "com.google.android.gms:play-services-cronet:${googlePlayServicesVersion}"
+    implementation 'com.google.android.gms:play-services-auth:20.6.0'
+    implementation "com.google.android.gms:play-services-auth-api-phone:${googlePlayServicesVersion}"
     implementation "com.google.zxing:core:${zxingVersion}"
     implementation "com.github.tougee:sticky-headers-recyclerview:${stickyheadersrecyclerviewVersion}"
     implementation "org.whispersystems:signal-protocol-android:${signalVersion}"
