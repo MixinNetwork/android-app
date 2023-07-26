@@ -101,7 +101,6 @@ import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
-import timber.log.Timber
 import kotlin.math.abs
 
 class MessageAdapter(
@@ -858,7 +857,6 @@ class MessageAdapter(
             data.indexOfFirst { item -> id == item?.messageId }.takeIf { it != -1 }
         }.sortedDescending().forEach { p ->
             data.deleteByPosition(p)
-            Timber.e("Removed $p")
             notifyDataSetChanged()
         }
     }

@@ -1343,6 +1343,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 messageDao.updateQuoteContentByQuoteId(data.conversationId, messageId, quoteContent)
                 pendingMessagesDao.updateQuoteContentByQuoteId(data.conversationId, messageId, quoteContent)
                 MessageFlow.update(data.conversationId, data.messageId)
+                MessageFlow.update(data.conversationId, messageDao.findQuoteMessageIdByQuoteId(data.conversationId, messageId))
             }
         }
     }

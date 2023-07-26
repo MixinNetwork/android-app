@@ -2582,6 +2582,10 @@ class ConversationFragment() :
         } else {
             // refresh to message Id
             val (p, data) = messageFetcher.initMessages(conversationId, messageId)
+            if (p == -1) {
+                toast(R.string.Message_not_found)
+                return@launch
+            }
             messageAdapter.refreshData(data)
             messageLayoutManager.scrollWithOffset(p, messageRvOffset)
             findMessageAction?.invoke(p)

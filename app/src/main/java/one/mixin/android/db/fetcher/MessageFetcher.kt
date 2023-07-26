@@ -5,7 +5,6 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.provider.convertToMessageItems
 import one.mixin.android.util.SINGLE_FETCHER_THREAD
 import one.mixin.android.vo.MessageItem
-import timber.log.Timber
 import javax.inject.Inject
 
 class MessageFetcher @Inject constructor(
@@ -74,8 +73,11 @@ class MessageFetcher @Inject constructor(
             val preCursor =
                 db.query("SELECT rowid, created_at FROM messages WHERE id = ?", arrayOf(aroundId))
             val (rowId, createdAt) = preCursor.use {
-                it.moveToNext()
-                Pair(it.getInt(0), it.getString(1))
+                if (it.moveToNext()) {
+                    Pair(it.getInt(0), it.getString(1))
+                } else {
+                    return@withContext Triple(-1, emptyList(), null)
+                }
             }
             // load next page by aroundId
             val nextCursor = db.query(
@@ -116,7 +118,6 @@ class MessageFetcher @Inject constructor(
             return@withContext emptyList()
         }
         currentlyLoadingIds.add(messageId)
-        Timber.e("next $messageId")
         try {
             val preCursor = db.query("SELECT rowid, created_at FROM messages WHERE id = ?", arrayOf(messageId))
             val (rowId, createdAt) = preCursor.use {
@@ -144,7 +145,6 @@ class MessageFetcher @Inject constructor(
                 return@withContext emptyList()
             }
             currentlyLoadingIds.add(messageId)
-            Timber.e("previous $messageId")
             try {
                 val preCursor =
                     db.query("SELECT rowid, created_at FROM messages WHERE id = ?", arrayOf(messageId))

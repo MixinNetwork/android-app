@@ -149,6 +149,7 @@ open class SendMessageJob(
                     GsonHelper.customGson.toJson(quoteMsg),
                 )
             }
+            MessageFlow.update(conversationId, messageDao.findQuoteMessageIdByQuoteId(conversationId, recallMessageId))
             jobManager.cancelJobByMixinJobId(msg.messageId)
         }
         MessageFlow.update(conversationId, recallMessageId)

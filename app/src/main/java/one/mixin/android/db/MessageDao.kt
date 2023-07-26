@@ -517,6 +517,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT * FROM messages WHERE id = :messageId")
     fun findMessageMediaById(messageId: String): MessageMedia?
 
+    @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND quote_message_id = :quoteMessageId")
+    fun findQuoteMessageIdByQuoteId(conversationId: String, quoteMessageId: String): List<String>
+
     // Update SQL
     @Query("UPDATE messages SET quote_content = :content WHERE conversation_id = :conversationId AND quote_message_id = :quoteMessageId")
     fun updateQuoteContentByQuoteId(conversationId: String, quoteMessageId: String, content: String)
