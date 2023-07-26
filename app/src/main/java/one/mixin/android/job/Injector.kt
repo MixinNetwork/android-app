@@ -218,7 +218,7 @@ open class Injector {
         var status = conversation?.status ?: ConversationStatus.START.ordinal
         if (conversation == null) {
             conversation = createConversation(data.conversationId, null, data.userId, ConversationStatus.START.ordinal)
-            conversationDao.insert(conversation)
+            conversationDao.upsert(conversation)
             status = refreshConversation(data.conversationId)
         }
         if (status == ConversationStatus.START.ordinal) {
