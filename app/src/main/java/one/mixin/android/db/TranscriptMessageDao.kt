@@ -1,6 +1,5 @@
 package one.mixin.android.db
 
-import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
@@ -57,26 +56,6 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
 
     @Query("UPDATE transcript_messages SET media_status = :mediaStatus WHERE transcript_id = :transcriptId AND message_id = :messageId")
     fun updateMediaStatus(transcriptId: String, messageId: String, mediaStatus: String)
-
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query(
-        """
-        SELECT t.transcript_id AS transcriptId, t.message_id AS messageId, t.user_id AS userId , IFNULL(u.full_name, t.user_full_name) AS userFullName, u.app_id AS appId, u.identity_number AS userIdentityNumber,
-        t.category AS type, t.content, t.created_at AS createdAt, t.media_status AS mediaStatus, t.media_name AS mediaName, t.media_mime_type AS mediaMimeType, t.media_size AS mediaSize,
-        t.thumb_image AS thumbImage, t.thumb_url AS thumbUrl, t.media_url AS mediaUrl, t.media_width AS mediaWidth, t.media_height AS mediaHeight, st.asset_width AS assetWidth, 
-        st.asset_height AS assetHeight, st.asset_url AS assetUrl, st.asset_type AS assetType,t.media_duration AS mediaDuration, 
-        t.media_waveform AS mediaWaveform, su.user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.avatar_url AS sharedUserAvatarUrl, 
-        su.app_id AS sharedUserAppId, su.identity_number AS sharedUserIdentityNumber, su.is_verified AS sharedUserIsVerified, t.quote_id AS quoteId,
-        t.quote_content AS quoteContent, t.mentions AS mentions
-        FROM transcript_messages t
-        LEFT JOIN users u on t.user_id = u.user_id
-        LEFT JOIN users su ON t.shared_user_id = su.user_id
-        LEFT JOIN stickers st ON st.sticker_id = t.sticker_id
-        WHERE t.transcript_id = :transcriptId
-        ORDER BY t.created_at ASC, t.rowid ASC
-        """,
-    )
-    fun getTranscriptMessages(transcriptId: String): DataSource.Factory<Int, ChatHistoryMessageItem>
 
     @Query("SELECT count(1) FROM transcript_messages WHERE created_at < (SELECT created_at FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId) AND transcript_id = :transcriptId")
     suspend fun findTranscriptMessageIndex(transcriptId: String, messageId: String): Int

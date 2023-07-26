@@ -4,6 +4,7 @@ import android.app.Activity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.databinding.ItemChatActionCardBinding
@@ -27,10 +28,11 @@ import one.mixin.android.databinding.ItemChatTransparentBinding
 import one.mixin.android.databinding.ItemChatUnknownBinding
 import one.mixin.android.databinding.ItemChatVideoBinding
 import one.mixin.android.databinding.ItemChatVideoQuoteBinding
+import one.mixin.android.db.fetcher.PinMessageFetcher
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
+import one.mixin.android.ui.conversation.chat.CompressedList
 import one.mixin.android.ui.conversation.chathistory.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.chathistory.holder.ActionHolder
 import one.mixin.android.ui.conversation.chathistory.holder.AudioHolder
@@ -76,9 +78,11 @@ import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import kotlin.math.abs
 
 class ChatHistoryAdapter(
+    private val data: CompressedList<ChatHistoryMessageItem>,
     private val onItemListener: OnItemListener,
     private val context: Activity,
-) : SafePagedListAdapter<ChatHistoryMessageItem, BaseViewHolder>(ChatHistoryMessageItem.DIFF_CALLBACK),
+    private val previousPage: (String) -> Unit,
+) : RecyclerView.Adapter<BaseViewHolder>(),
     MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
         return when (viewType) {
@@ -405,6 +409,22 @@ class ChatHistoryAdapter(
             item.isAppButtonGroup() -> 14
             else -> -99
         }
+    }
+
+    override fun getItemCount(): Int = data.size
+
+    fun getItem(position: Int): ChatHistoryMessageItem? {
+        if (position < PinMessageFetcher.SCROLL_THRESHOLD) {
+            data.first()?.messageId?.let { id ->
+                previousPage(id)
+            }
+        }
+        return data[position]
+    }
+
+    fun submitPrevious(list: List<ChatHistoryMessageItem>) {
+        data.prepend(list)
+        notifyItemRangeInserted(0, list.count())
     }
 
     override fun onViewAttachedToWindow(holder: BaseViewHolder) {

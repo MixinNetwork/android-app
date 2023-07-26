@@ -10,12 +10,10 @@ import androidx.room.getQueryDispatcher
 import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.datasource.MixinLimitOffsetDataSource
-import one.mixin.android.db.datasource.NoCountLimitOffsetDataSource
 import one.mixin.android.fts.FtsDataSource
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.rawSearch
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.SearchMessageDetailItem
@@ -370,47 +368,6 @@ class DataProvider {
             object : DataSource.Factory<Int, SearchMessageDetailItem>() {
                 override fun create(): DataSource<Int, SearchMessageDetailItem> {
                     return FtsDataSource(ftsDatabase, database, query, conversationId, cancellationSignal)
-                }
-            }
-
-        fun getPinMessages(database: MixinDatabase, conversationId: String, count: Int) =
-            object : DataSource.Factory<Int, ChatHistoryMessageItem>() {
-                override fun create(): DataSource<Int, ChatHistoryMessageItem> {
-                    val sql =
-                        """
-                        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
-                        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, u.app_id AS appId, m.category AS type,
-                        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_waveform AS mediaWaveform,
-                        m.name AS mediaName, m.media_mime_type AS mediaMimeType, m.media_size AS mediaSize, m.media_width AS mediaWidth, m.media_height AS mediaHeight,
-                        m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl, m.media_url AS mediaUrl, m.media_duration AS mediaDuration, m.quote_message_id as quoteId,
-                        m.quote_content as quoteContent, m.caption as caption, u1.full_name AS participantFullName, m.action AS actionName, u1.user_id AS participantUserId,
-                        s.snapshot_id AS snapshotId, s.type AS snapshotType, s.amount AS snapshotAmount, a.symbol AS assetSymbol, s.asset_id AS assetId,
-                        a.icon_url AS assetIcon, st.asset_url AS assetUrl, st.asset_width AS assetWidth, st.asset_height AS assetHeight, st.sticker_id AS stickerId,
-                        st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
-                        h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
-                        su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead,
-                        c.name AS groupName
-                        FROM pin_messages pm
-                        LEFT JOIN messages m ON m.id = pm.message_id
-                        LEFT JOIN users u ON m.user_id = u.user_id
-                        LEFT JOIN users u1 ON m.participant_id = u1.user_id
-                        LEFT JOIN snapshots s ON m.snapshot_id = s.snapshot_id
-                        LEFT JOIN assets a ON s.asset_id = a.asset_id
-                        LEFT JOIN stickers st ON st.sticker_id = m.sticker_id
-                        LEFT JOIN hyperlinks h ON m.hyperlink = h.hyperlink
-                        LEFT JOIN users su ON m.shared_user_id = su.user_id
-                        LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
-                        LEFT JOIN message_mentions mm ON m.id = mm.message_id
-                        WHERE m.conversation_id = ? 
-                        ORDER BY m.created_at ASC
-                        """
-                    val statement = RoomSQLiteQuery.acquire(sql, 1)
-                    statement.bindString(1, conversationId)
-                    return object : NoCountLimitOffsetDataSource<ChatHistoryMessageItem>(database, statement, count, "pin_messages", "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
-                        override fun convertRows(cursor: Cursor?): List<ChatHistoryMessageItem> {
-                            return convertChatHistoryMessageItem(cursor)
-                        }
-                    }
                 }
             }
     }

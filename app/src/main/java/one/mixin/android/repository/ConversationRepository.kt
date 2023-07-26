@@ -422,10 +422,6 @@ internal constructor(
     fun participants(id: String, action: String, requests: List<ParticipantRequest>) =
         conversationService.participants(id, action, requests)
 
-    fun findTranscriptMessageItemById(transcriptId: String) = transcriptMessageDao.getTranscriptMessages(transcriptId)
-
-    fun getPinMessages(conversationId: String, count: Int) = DataProvider.getPinMessages(appDatabase, conversationId, count)
-
     suspend fun findTranscriptMessageIndex(transcriptId: String, messageId: String) = transcriptMessageDao.findTranscriptMessageIndex(transcriptId, messageId)
 
     suspend fun findPinMessageIndex(transcriptId: String, messageId: String) = pinMessageDao.findPinMessageIndex(transcriptId, messageId)
