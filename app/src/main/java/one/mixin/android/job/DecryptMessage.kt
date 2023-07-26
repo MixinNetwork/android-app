@@ -361,7 +361,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 MessageStatus.READ.name,
                             ),
                         )
-                        MessageFlow.insert(message.conversationId, message.messageId)
+                        MessageFlow.insert(message.conversationId, mid)
                         if (message.category.endsWith("_TEXT")) {
                             messageMentionDao.findMessageMentionById(message.messageId)?.let { mention ->
                                 messageMentionDao.insert(
@@ -386,7 +386,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         )
                         // Locally generated messages are inserted directly
                         pendingMessagesDao.insert(PendingMessage(m))
-                        MessageFlow.insert(data.conversationId, mid)
                     }
                     if (index == transferPinData.messageIds.size - 1) {
                         RxBus.publish(PinMessageEvent(data.conversationId, messageId))
