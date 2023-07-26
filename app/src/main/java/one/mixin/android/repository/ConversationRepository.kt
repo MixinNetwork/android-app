@@ -112,14 +112,14 @@ internal constructor(
     suspend fun insertConversation(conversation: Conversation, participants: List<Participant>) =
         withContext(SINGLE_DB_THREAD) {
             appDatabase.runInTransaction {
-                conversationDao.insert(conversation)
+                conversationDao.upsert(conversation)
                 participantDao.insertList(participants)
             }
         }
 
     fun syncInsertConversation(conversation: Conversation, participants: List<Participant>) {
         appDatabase.runInTransaction {
-            conversationDao.insert(conversation)
+            conversationDao.upsert(conversation)
             participantDao.insertList(participants)
         }
     }
@@ -314,7 +314,7 @@ internal constructor(
                 .setCodeUrl(data.codeUrl)
                 .setExpireIn(data.expireIn)
                 .build()
-            conversationDao.insert(c)
+            conversationDao.upsert(c)
             if (!c.announcement.isNullOrBlank()) {
                 RxBus.publish(GroupEvent(data.conversationId))
                 MixinApplication.appContext.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(data.conversationId, true)

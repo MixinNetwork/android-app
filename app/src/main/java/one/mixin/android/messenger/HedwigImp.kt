@@ -244,7 +244,7 @@ class HedwigImp(
                     } else if (conversationData.category == ConversationCategory.GROUP.name) {
                         jobManager.addJobInBackground(RefreshUserJob(listOf(conversationData.creatorId)))
                     }
-                    conversationDao.insert(
+                    conversationDao.upsert(
                         ConversationBuilder(conversationData.conversationId, conversationData.createdAt, status)
                             .setOwnerId(ownerId)
                             .setCategory(conversationData.category)
