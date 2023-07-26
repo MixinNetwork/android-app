@@ -391,8 +391,8 @@ class DataProvider {
                         su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead,
                         c.name AS groupName
                         FROM pin_messages pm
-                        INNER JOIN messages m ON m.id = pm.message_id
-                        INNER JOIN users u ON m.user_id = u.user_id
+                        LEFT JOIN messages m ON m.id = pm.message_id
+                        LEFT JOIN users u ON m.user_id = u.user_id
                         LEFT JOIN users u1 ON m.participant_id = u1.user_id
                         LEFT JOIN snapshots s ON m.snapshot_id = s.snapshot_id
                         LEFT JOIN assets a ON s.asset_id = a.asset_id

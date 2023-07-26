@@ -30,7 +30,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
-import android.view.View.OnScrollChangeListener
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.WindowManager
