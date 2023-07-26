@@ -115,7 +115,7 @@ constructor(
                 },
                 successBlock = { resp ->
                     resp.data?.let { c ->
-                        chainDao.upsert(c)
+                        chainDao.upsertSuspend(c)
                     }
                 },
             )
@@ -437,7 +437,7 @@ constructor(
             switchContext = Dispatchers.IO,
             successBlock = {
                 it.data?.let { a ->
-                    assetDao.upsert(a)
+                    assetDao.upsertSuspend(a)
                     return@handleMixinResponse a
                 }
             },

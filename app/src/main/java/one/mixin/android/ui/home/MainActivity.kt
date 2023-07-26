@@ -680,7 +680,7 @@ class MainActivity : BlazeBaseActivity() {
                                     null,
                                 )
                                 conversation = c
-                                conversationDao.insert(c)
+                                conversationDao.upsert(c)
                             } else {
                                 conversationDao.updateConversation(
                                     data.conversationId,
