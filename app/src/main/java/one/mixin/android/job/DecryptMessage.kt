@@ -362,6 +362,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             ),
                         )
                         MessageFlow.insert(message.conversationId, mid)
+                        // Notify pin message
+                        MessageFlow.update(message.conversationId, message.messageId)
                         if (message.category.endsWith("_TEXT")) {
                             messageMentionDao.findMessageMentionById(message.messageId)?.let { mention ->
                                 messageMentionDao.insert(
@@ -393,6 +395,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
             } else if (transferPinData.action == PinAction.UNPIN.name) {
                 pinMessageDao.deleteByIds(transferPinData.messageIds)
+                MessageFlow.update(data.conversationId, transferPinData.messageIds)
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
