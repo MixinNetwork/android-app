@@ -15,12 +15,8 @@ import android.view.View
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.children
 import androidx.core.view.isVisible
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MimeTypes
-import androidx.paging.DataSource
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -34,6 +30,8 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.ActivityChatHistoryBinding
 import one.mixin.android.databinding.ViewTranscriptBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
+import one.mixin.android.db.fetcher.PinMessageFetcher
+import one.mixin.android.db.fetcher.TranscriptMessageFetcher
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.callPhone
@@ -59,6 +57,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.ui.common.showUserBottom
+import one.mixin.android.ui.conversation.chat.CompressedList
 import one.mixin.android.ui.conversation.chathistory.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
@@ -114,6 +113,12 @@ class ChatHistoryActivity : BaseActivity() {
     lateinit var conversationRepository: ConversationRepository
 
     @Inject
+    lateinit var pinMessageFetcher: PinMessageFetcher
+
+    @Inject
+    lateinit var transcriptMessageFetcher: TranscriptMessageFetcher
+
+    @Inject
     lateinit var messenger: SendMessageHelper
 
     @Inject
@@ -154,7 +159,6 @@ class ChatHistoryActivity : BaseActivity() {
             ),
             "",
         )
-        binding.recyclerView.addItemDecoration(decoration)
         binding.recyclerView.itemAnimator = null
         binding.recyclerView.layoutManager = object : LinearLayoutManager(this) {
             override fun onLayoutChildren(
@@ -172,18 +176,21 @@ class ChatHistoryActivity : BaseActivity() {
             }
         }
         binding.recyclerView.setHasFixedSize(true)
-        binding.recyclerView.adapter = chatHistoryAdapter
         if (isTranscript) {
             binding.unpinTv.isVisible = false
-            buildLivePagedList(conversationRepository.findTranscriptMessageItemById(transcriptId))
-                .observe(this) { transcripts ->
-                    binding.titleView.rightIb.setOnClickListener {
-                        showBottomSheet()
-                    }
-                    chatHistoryAdapter.submitList(transcripts)
-                }
             binding.titleView.rightAnimator.isVisible = true
             binding.titleView.rightIb.setImageResource(R.drawable.ic_more)
+            lifecycleScope.launch {
+                val data = transcriptMessageFetcher.initMessages(transcriptId)
+                chatHistoryAdapter = ChatHistoryAdapter(
+                    CompressedList(data),
+                    onItemListener,
+                    this@ChatHistoryActivity,
+                ) { _ ->
+                }
+                binding.recyclerView.addItemDecoration(decoration)
+                binding.recyclerView.adapter = chatHistoryAdapter
+            }
         } else {
             lifecycleScope.launch {
                 if (isGroup) {
@@ -197,6 +204,19 @@ class ChatHistoryActivity : BaseActivity() {
                 } else {
                     binding.unpinTv.isVisible = true
                 }
+                val data = pinMessageFetcher.initMessages(conversationId)
+                chatHistoryAdapter = ChatHistoryAdapter(
+                    CompressedList(data),
+                    onItemListener,
+                    this@ChatHistoryActivity,
+                ) { messageId ->
+                    lifecycleScope.launch {
+                        val previousPage = pinMessageFetcher.previousPage(conversationId, messageId)
+                        if (previousPage.isNotEmpty()) chatHistoryAdapter.submitPrevious(previousPage)
+                    }
+                }
+                binding.recyclerView.addItemDecoration(decoration)
+                binding.recyclerView.adapter = chatHistoryAdapter
             }
             binding.unpinTv.setOnClickListener {
                 alert(getString(R.string.unpin_all_messages_confirmation))
@@ -227,10 +247,6 @@ class ChatHistoryActivity : BaseActivity() {
                 this@ChatHistoryActivity.resources.getQuantityString(R.plurals.pinned_message_title, count, count),
                 "",
             )
-            buildLivePagedList(conversationRepository.getPinMessages(conversationId, count))
-                .observe(this) { list ->
-                    chatHistoryAdapter.submitList(list)
-                }
         }
     }
 
@@ -247,21 +263,8 @@ class ChatHistoryActivity : BaseActivity() {
         AudioPlayer.pause()
     }
 
-    private fun buildLivePagedList(dataSource: DataSource.Factory<Int, ChatHistoryMessageItem>): LiveData<PagedList<ChatHistoryMessageItem>> {
-        val pagedListConfig = PagedList.Config.Builder()
-            .setPrefetchDistance(10 * 2)
-            .setPageSize(10)
-            .setEnablePlaceholders(true)
-            .build()
-        return LivePagedListBuilder(
-            dataSource,
-            pagedListConfig,
-        ).build()
-    }
+    private lateinit var chatHistoryAdapter: ChatHistoryAdapter
 
-    private val chatHistoryAdapter by lazy {
-        ChatHistoryAdapter(onItemListener, this)
-    }
     private val onItemListener by lazy {
         object : ChatHistoryAdapter.OnItemListener() {
             override fun onUrlClick(url: String) {
