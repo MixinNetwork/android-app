@@ -161,7 +161,6 @@ import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.message.ChatRoomHelper
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.adapter.GalleryCallback
 import one.mixin.android.ui.conversation.adapter.MentionAdapter
 import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListener
@@ -170,7 +169,7 @@ import one.mixin.android.ui.conversation.adapter.MenuType
 import one.mixin.android.ui.conversation.chat.ChatItemCallback
 import one.mixin.android.ui.conversation.chat.ChatItemCallback.Companion.SWAP_SLOT
 import one.mixin.android.ui.conversation.chat.CompressedList
-import one.mixin.android.ui.conversation.chat.MessageAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity.Companion.JUMP_ID
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryContract
@@ -413,8 +412,8 @@ class ConversationFragment() :
         }
     }
 
-    private val onItemListener: ConversationAdapter.OnItemListener by lazy {
-        @UnstableApi object : ConversationAdapter.OnItemListener() {
+    private val onItemListener: MessageAdapter.OnItemListener by lazy {
+        @UnstableApi object : MessageAdapter.OnItemListener() {
             @SuppressLint("NotifyDataSetChanged")
             override fun onSelect(isSelect: Boolean, messageItem: MessageItem, position: Int) {
                 if (isSelect) {

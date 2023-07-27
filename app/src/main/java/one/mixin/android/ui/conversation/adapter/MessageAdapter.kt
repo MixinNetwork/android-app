@@ -1,4 +1,4 @@
-package one.mixin.android.ui.conversation.chat
+package one.mixin.android.ui.conversation.adapter
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -44,7 +44,7 @@ import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.chat.CompressedList
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
 import one.mixin.android.ui.conversation.holder.AudioHolder
@@ -80,6 +80,7 @@ import one.mixin.android.ui.conversation.holder.WaitingHolder
 import one.mixin.android.ui.conversation.holder.base.BaseMentionHolder
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
@@ -106,7 +107,7 @@ import kotlin.math.abs
 class MessageAdapter(
     val data: CompressedList<MessageItem>,
     private val miniMarkwon: Markwon,
-    val onItemListener: ConversationAdapter.OnItemListener,
+    val onItemListener: MessageAdapter.OnItemListener,
     val previousPage: (String) -> Unit,
     val nextPage: (String) -> Unit,
     val isGroup: Boolean,
@@ -121,94 +122,94 @@ class MessageAdapter(
         viewType: Int,
     ): RecyclerView.ViewHolder =
         when (viewType) {
-            ConversationAdapter.TEXT_TYPE -> {
+            MessageAdapter.TEXT_TYPE -> {
                 TextHolder(ItemChatTextBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.TEXT_QUOTE_TYPE -> {
+            MessageAdapter.TEXT_QUOTE_TYPE -> {
                 TextQuoteHolder(ItemChatTextQuoteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.POST_TYPE -> {
+            MessageAdapter.POST_TYPE -> {
                 PostHolder(ItemChatPostBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.IMAGE_TYPE -> {
+            MessageAdapter.IMAGE_TYPE -> {
                 ImageHolder(ItemChatImageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.IMAGE_QUOTE_TYPE -> {
+            MessageAdapter.IMAGE_QUOTE_TYPE -> {
                 ImageQuoteHolder(ItemChatImageQuoteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.SYSTEM_TYPE -> {
+            MessageAdapter.SYSTEM_TYPE -> {
                 SystemHolder(ItemChatSystemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.CARD_TYPE -> {
+            MessageAdapter.CARD_TYPE -> {
                 CardHolder(ItemChatCardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.SNAPSHOT_TYPE -> {
+            MessageAdapter.SNAPSHOT_TYPE -> {
                 SnapshotHolder(ItemChatSnapshotBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.WAITING_TYPE -> {
+            MessageAdapter.WAITING_TYPE -> {
                 WaitingHolder(ItemChatWaitingBinding.inflate(LayoutInflater.from(parent.context), parent, false), onItemListener)
             }
-            ConversationAdapter.STRANGER_TYPE -> {
+            MessageAdapter.STRANGER_TYPE -> {
                 StrangerHolder(ItemChatStrangerBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.UNKNOWN_TYPE -> {
+            MessageAdapter.UNKNOWN_TYPE -> {
                 UnknownHolder(ItemChatUnknownBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.FILE_TYPE -> {
+            MessageAdapter.FILE_TYPE -> {
                 FileHolder(ItemChatFileBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.FILE_QUOTE_TYPE -> {
+            MessageAdapter.FILE_QUOTE_TYPE -> {
                 FileQuoteHolder(ItemChatFileQuoteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.AUDIO_TYPE -> {
+            MessageAdapter.AUDIO_TYPE -> {
                 AudioHolder(ItemChatAudioBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.AUDIO_QUOTE_TYPE -> {
+            MessageAdapter.AUDIO_QUOTE_TYPE -> {
                 AudioQuoteHolder(ItemChatAudioQuoteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.STICKER_TYPE -> {
+            MessageAdapter.STICKER_TYPE -> {
                 StickerHolder(ItemChatStickerBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.ACTION_TYPE -> {
+            MessageAdapter.ACTION_TYPE -> {
                 ActionHolder(ItemChatActionBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.ACTION_CARD_TYPE -> {
+            MessageAdapter.ACTION_CARD_TYPE -> {
                 ActionCardHolder(ItemChatActionCardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.LINK_TYPE -> {
+            MessageAdapter.LINK_TYPE -> {
                 HyperlinkHolder(ItemChatHyperlinkBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.CONTACT_CARD_TYPE -> {
+            MessageAdapter.CONTACT_CARD_TYPE -> {
                 ContactCardHolder(ItemChatContactCardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.CONTACT_CARD_QUOTE_TYPE -> {
+            MessageAdapter.CONTACT_CARD_QUOTE_TYPE -> {
                 ContactCardQuoteHolder(ItemChatContactCardQuoteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.VIDEO_TYPE -> {
+            MessageAdapter.VIDEO_TYPE -> {
                 VideoHolder(ItemChatVideoBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.VIDEO_QUOTE_TYPE -> {
+            MessageAdapter.VIDEO_QUOTE_TYPE -> {
                 VideoQuoteHolder(ItemChatVideoQuoteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.SECRET_TYPE -> {
+            MessageAdapter.SECRET_TYPE -> {
                 SecretHolder(ItemChatSecretBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.CALL_TYPE -> {
+            MessageAdapter.CALL_TYPE -> {
                 CallHolder(ItemChatCallBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.RECALL_TYPE -> {
+            MessageAdapter.RECALL_TYPE -> {
                 RecallHolder(ItemChatRecallBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.LOCATION_TYPE -> {
+            MessageAdapter.LOCATION_TYPE -> {
                 LocationHolder(ItemChatLocationBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.GROUP_CALL_TYPE -> {
+            MessageAdapter.GROUP_CALL_TYPE -> {
                 GroupCallHolder(ItemChatSystemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.TRANSCRIPT_TYPE -> {
+            MessageAdapter.TRANSCRIPT_TYPE -> {
                 TranscriptHolder(ItemChatTranscriptBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            ConversationAdapter.PIN_TYPE -> {
+            MessageAdapter.PIN_TYPE -> {
                 PinMessageHolder(ItemChatSystemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             else -> {
@@ -219,7 +220,7 @@ class MessageAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         getItem(position)?.let {
             when (getItemViewType(position)) {
-                ConversationAdapter.TEXT_TYPE -> {
+                MessageAdapter.TEXT_TYPE -> {
                     (holder as TextHolder).bind(
                         it,
                         keyword,
@@ -231,7 +232,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.TEXT_QUOTE_TYPE -> {
+                MessageAdapter.TEXT_QUOTE_TYPE -> {
                     (holder as TextQuoteHolder).bind(
                         it,
                         keyword,
@@ -243,7 +244,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.POST_TYPE -> {
+                MessageAdapter.POST_TYPE -> {
                     (holder as PostHolder).bind(
                         it,
                         isLast(position),
@@ -255,7 +256,7 @@ class MessageAdapter(
                         miniMarkwon,
                     )
                 }
-                ConversationAdapter.IMAGE_TYPE -> {
+                MessageAdapter.IMAGE_TYPE -> {
                     (holder as ImageHolder).bind(
                         it,
                         isLast(position),
@@ -266,7 +267,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.IMAGE_QUOTE_TYPE -> {
+                MessageAdapter.IMAGE_QUOTE_TYPE -> {
                     (holder as ImageQuoteHolder).bind(
                         it,
                         isLast(position),
@@ -277,7 +278,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.VIDEO_TYPE -> {
+                MessageAdapter.VIDEO_TYPE -> {
                     (holder as VideoHolder).bind(
                         it,
                         isLast(position),
@@ -288,7 +289,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.VIDEO_QUOTE_TYPE -> {
+                MessageAdapter.VIDEO_QUOTE_TYPE -> {
                     (holder as VideoQuoteHolder).bind(
                         it,
                         isLast(position),
@@ -299,7 +300,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.AUDIO_TYPE -> {
+                MessageAdapter.AUDIO_TYPE -> {
                     (holder as AudioHolder).bind(
                         it,
                         isFirst(position),
@@ -310,7 +311,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.AUDIO_QUOTE_TYPE -> {
+                MessageAdapter.AUDIO_QUOTE_TYPE -> {
                     (holder as AudioQuoteHolder).bind(
                         it,
                         isFirst(position),
@@ -321,7 +322,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.SYSTEM_TYPE -> {
+                MessageAdapter.SYSTEM_TYPE -> {
                     (holder as SystemHolder).bind(
                         it,
                         selectSet.size > 0,
@@ -329,10 +330,10 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.CARD_TYPE -> {
+                MessageAdapter.CARD_TYPE -> {
                     (holder as CardHolder).bind(it)
                 }
-                ConversationAdapter.SNAPSHOT_TYPE -> {
+                MessageAdapter.SNAPSHOT_TYPE -> {
                     (holder as SnapshotHolder).bind(
                         it,
                         isLast(position),
@@ -341,7 +342,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.FILE_TYPE -> {
+                MessageAdapter.FILE_TYPE -> {
                     (holder as FileHolder).bind(
                         it,
                         keyword,
@@ -353,7 +354,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.FILE_QUOTE_TYPE -> {
+                MessageAdapter.FILE_QUOTE_TYPE -> {
                     (holder as FileQuoteHolder).bind(
                         it,
                         keyword,
@@ -365,7 +366,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.WAITING_TYPE -> {
+                MessageAdapter.WAITING_TYPE -> {
                     (holder as WaitingHolder).bind(
                         it,
                         isLast(position),
@@ -373,10 +374,10 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.STRANGER_TYPE -> {
+                MessageAdapter.STRANGER_TYPE -> {
                     (holder as StrangerHolder).bind(onItemListener, isBot)
                 }
-                ConversationAdapter.UNKNOWN_TYPE -> {
+                MessageAdapter.UNKNOWN_TYPE -> {
                     (holder as UnknownHolder).bind(
                         it,
                         isLast(position),
@@ -386,7 +387,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.STICKER_TYPE -> {
+                MessageAdapter.STICKER_TYPE -> {
                     (holder as StickerHolder).bind(
                         it,
                         isFirst(position),
@@ -396,7 +397,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.LINK_TYPE -> {
+                MessageAdapter.LINK_TYPE -> {
                     (holder as HyperlinkHolder).bind(
                         it,
                         keyword,
@@ -408,7 +409,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.ACTION_TYPE -> {
+                MessageAdapter.ACTION_TYPE -> {
                     (holder as ActionHolder).bind(
                         it,
                         isFirst(position),
@@ -417,7 +418,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.ACTION_CARD_TYPE -> {
+                MessageAdapter.ACTION_CARD_TYPE -> {
                     (holder as ActionCardHolder).bind(
                         it,
                         isFirst(position),
@@ -428,7 +429,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.CONTACT_CARD_TYPE -> {
+                MessageAdapter.CONTACT_CARD_TYPE -> {
                     (holder as ContactCardHolder).bind(
                         it,
                         isFirst(position),
@@ -439,7 +440,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.CONTACT_CARD_QUOTE_TYPE -> {
+                MessageAdapter.CONTACT_CARD_QUOTE_TYPE -> {
                     (holder as ContactCardQuoteHolder).bind(
                         it,
                         isFirst(position),
@@ -450,10 +451,10 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.SECRET_TYPE -> {
+                MessageAdapter.SECRET_TYPE -> {
                     (holder as SecretHolder).bind(onItemListener)
                 }
-                ConversationAdapter.CALL_TYPE -> {
+                MessageAdapter.CALL_TYPE -> {
                     (holder as CallHolder).bind(
                         it,
                         isFirst(position),
@@ -462,7 +463,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.RECALL_TYPE -> {
+                MessageAdapter.RECALL_TYPE -> {
                     (holder as RecallHolder).bind(
                         it,
                         isFirst(position),
@@ -472,7 +473,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.LOCATION_TYPE -> {
+                MessageAdapter.LOCATION_TYPE -> {
                     (holder as LocationHolder).bind(
                         it,
                         isLast(position),
@@ -483,7 +484,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.GROUP_CALL_TYPE -> {
+                MessageAdapter.GROUP_CALL_TYPE -> {
                     (holder as GroupCallHolder).bind(
                         it,
                         selectSet.size > 0,
@@ -491,7 +492,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.TRANSCRIPT_TYPE -> {
+                MessageAdapter.TRANSCRIPT_TYPE -> {
                     (holder as TranscriptHolder).bind(
                         it,
                         isLast(position),
@@ -502,7 +503,7 @@ class MessageAdapter(
                         onItemListener,
                     )
                 }
-                ConversationAdapter.PIN_TYPE -> {
+                MessageAdapter.PIN_TYPE -> {
                     (holder as PinMessageHolder).bind(
                         it,
                         selectSet.size > 0,
@@ -520,70 +521,70 @@ class MessageAdapter(
         messageItem.notNullWithElse(
             { item ->
                 when {
-                    item.status == MessageStatus.UNKNOWN.name -> ConversationAdapter.UNKNOWN_TYPE
-                    item.type == MessageCategory.STRANGER.name -> ConversationAdapter.STRANGER_TYPE
-                    item.type == MessageCategory.SECRET.name -> ConversationAdapter.SECRET_TYPE
-                    item.status == MessageStatus.FAILED.name -> ConversationAdapter.WAITING_TYPE
+                    item.status == MessageStatus.UNKNOWN.name -> MessageAdapter.UNKNOWN_TYPE
+                    item.type == MessageCategory.STRANGER.name -> MessageAdapter.STRANGER_TYPE
+                    item.type == MessageCategory.SECRET.name -> MessageAdapter.SECRET_TYPE
+                    item.status == MessageStatus.FAILED.name -> MessageAdapter.WAITING_TYPE
                     item.isText() -> {
                         if (!item.quoteId.isNullOrEmpty()) {
-                            ConversationAdapter.TEXT_QUOTE_TYPE
+                            MessageAdapter.TEXT_QUOTE_TYPE
                         } else if (!item.siteName.isNullOrBlank() || !item.siteDescription.isNullOrBlank()) {
-                            ConversationAdapter.LINK_TYPE
+                            MessageAdapter.LINK_TYPE
                         } else {
-                            ConversationAdapter.TEXT_TYPE
+                            MessageAdapter.TEXT_TYPE
                         }
                     }
                     item.isImage() -> {
                         if (!item.quoteId.isNullOrEmpty()) {
-                            ConversationAdapter.IMAGE_QUOTE_TYPE
+                            MessageAdapter.IMAGE_QUOTE_TYPE
                         } else {
-                            ConversationAdapter.IMAGE_TYPE
+                            MessageAdapter.IMAGE_TYPE
                         }
                     }
-                    item.isSticker() -> ConversationAdapter.STICKER_TYPE
+                    item.isSticker() -> MessageAdapter.STICKER_TYPE
                     item.isData() -> {
                         if (!item.quoteId.isNullOrEmpty()) {
-                            ConversationAdapter.FILE_QUOTE_TYPE
+                            MessageAdapter.FILE_QUOTE_TYPE
                         } else {
-                            ConversationAdapter.FILE_TYPE
+                            MessageAdapter.FILE_TYPE
                         }
                     }
-                    item.type == MessageCategory.SYSTEM_CONVERSATION.name -> ConversationAdapter.SYSTEM_TYPE
-                    item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> ConversationAdapter.SNAPSHOT_TYPE
-                    item.type == MessageCategory.APP_BUTTON_GROUP.name -> ConversationAdapter.ACTION_TYPE
-                    item.type == MessageCategory.APP_CARD.name -> ConversationAdapter.ACTION_CARD_TYPE
+                    item.type == MessageCategory.SYSTEM_CONVERSATION.name -> MessageAdapter.SYSTEM_TYPE
+                    item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> MessageAdapter.SNAPSHOT_TYPE
+                    item.type == MessageCategory.APP_BUTTON_GROUP.name -> MessageAdapter.ACTION_TYPE
+                    item.type == MessageCategory.APP_CARD.name -> MessageAdapter.ACTION_CARD_TYPE
                     item.isContact() -> {
                         if (!item.quoteId.isNullOrEmpty()) {
-                            ConversationAdapter.CONTACT_CARD_QUOTE_TYPE
+                            MessageAdapter.CONTACT_CARD_QUOTE_TYPE
                         } else {
-                            ConversationAdapter.CONTACT_CARD_TYPE
+                            MessageAdapter.CONTACT_CARD_TYPE
                         }
                     }
                     item.isVideo() or item.isLive() -> {
                         if (!item.quoteId.isNullOrEmpty()) {
-                            ConversationAdapter.VIDEO_QUOTE_TYPE
+                            MessageAdapter.VIDEO_QUOTE_TYPE
                         } else {
-                            ConversationAdapter.VIDEO_TYPE
+                            MessageAdapter.VIDEO_TYPE
                         }
                     }
                     item.isAudio() -> {
                         if (!item.quoteId.isNullOrEmpty()) {
-                            ConversationAdapter.AUDIO_QUOTE_TYPE
+                            MessageAdapter.AUDIO_QUOTE_TYPE
                         } else {
-                            ConversationAdapter.AUDIO_TYPE
+                            MessageAdapter.AUDIO_TYPE
                         }
                     }
-                    item.isPost() -> ConversationAdapter.POST_TYPE
-                    item.isCallMessage() -> ConversationAdapter.CALL_TYPE
-                    item.isRecall() -> ConversationAdapter.RECALL_TYPE
-                    item.isLocation() -> ConversationAdapter.LOCATION_TYPE
-                    item.isGroupCall() -> ConversationAdapter.GROUP_CALL_TYPE
-                    item.isTranscript() -> ConversationAdapter.TRANSCRIPT_TYPE
-                    item.isPin() -> ConversationAdapter.PIN_TYPE
-                    else -> ConversationAdapter.UNKNOWN_TYPE
+                    item.isPost() -> MessageAdapter.POST_TYPE
+                    item.isCallMessage() -> MessageAdapter.CALL_TYPE
+                    item.isRecall() -> MessageAdapter.RECALL_TYPE
+                    item.isLocation() -> MessageAdapter.LOCATION_TYPE
+                    item.isGroupCall() -> MessageAdapter.GROUP_CALL_TYPE
+                    item.isTranscript() -> MessageAdapter.TRANSCRIPT_TYPE
+                    item.isPin() -> MessageAdapter.PIN_TYPE
+                    else -> MessageAdapter.UNKNOWN_TYPE
                 }
             },
-            ConversationAdapter.NULL_TYPE,
+            MessageAdapter.NULL_TYPE,
         )
 
     fun layoutPosition(position: Int): Int {
@@ -864,5 +865,104 @@ class MessageAdapter(
 
     fun indexMessage(messageId: String): Int {
         return data.indexOfFirst { messageItem -> messageItem?.messageId == messageId }
+    }
+
+    open class OnItemListener {
+
+        open fun onSelect(isSelect: Boolean, messageItem: MessageItem, position: Int) {}
+
+        open fun onLongClick(messageItem: MessageItem, position: Int): Boolean = true
+
+        open fun onImageClick(messageItem: MessageItem, view: View) {}
+
+        open fun onStickerClick(messageItem: MessageItem) {}
+
+        open fun onFileClick(messageItem: MessageItem) {}
+
+        open fun onAudioFileClick(messageItem: MessageItem) {}
+
+        open fun onCancel(id: String) {}
+
+        open fun onRetryUpload(messageId: String) {}
+
+        open fun onRetryDownload(messageId: String) {}
+
+        open fun onUserClick(userId: String) {}
+
+        open fun onMentionClick(identityNumber: String) {}
+
+        open fun onPhoneClick(phoneNumber: String) {}
+
+        open fun onEmailClick(email: String) {}
+
+        open fun onUrlClick(url: String) {}
+
+        open fun onUrlLongClick(url: String) {}
+
+        open fun onAddClick() {}
+
+        open fun onBlockClick() {}
+
+        open fun onActionClick(action: String, userId: String) {}
+
+        open fun onAppCardClick(appCard: AppCardData, userId: String) {}
+
+        open fun onAudioClick(messageItem: MessageItem) {}
+
+        open fun onBillClick(messageItem: MessageItem) {}
+
+        open fun onContactCardClick(userId: String) {}
+
+        open fun onTransferClick(userId: String) {}
+
+        open fun onQuoteMessageClick(messageId: String, quoteMessageId: String?) {}
+
+        open fun onCallClick(messageItem: MessageItem) {}
+
+        open fun onPostClick(view: View, messageItem: MessageItem) {}
+
+        open fun onOpenHomePage() {}
+
+        open fun onSayHi() {}
+
+        open fun onLocationClick(messageItem: MessageItem) {}
+
+        open fun onTextDoubleClick(messageItem: MessageItem) {}
+
+        open fun onTranscriptClick(messageItem: MessageItem) {}
+    }
+
+    companion object {
+        const val NULL_TYPE = 99
+        const val UNKNOWN_TYPE = 0
+        const val TEXT_TYPE = 1
+        const val TEXT_QUOTE_TYPE = -1
+        const val IMAGE_TYPE = 2
+        const val IMAGE_QUOTE_TYPE = -2
+        const val LINK_TYPE = 3
+        const val VIDEO_TYPE = 4
+        const val VIDEO_QUOTE_TYPE = -4
+        const val AUDIO_TYPE = 5
+        const val AUDIO_QUOTE_TYPE = -5
+        const val FILE_TYPE = 6
+        const val FILE_QUOTE_TYPE = -6
+        const val STICKER_TYPE = 7
+        const val CONTACT_CARD_TYPE = 8
+        const val CONTACT_CARD_QUOTE_TYPE = -8
+        const val CARD_TYPE = 9
+        const val SNAPSHOT_TYPE = 10
+        const val POST_TYPE = 11
+        const val ACTION_TYPE = 12
+        const val ACTION_CARD_TYPE = 13
+        const val SYSTEM_TYPE = 14
+        const val WAITING_TYPE = 15
+        const val STRANGER_TYPE = 16
+        const val SECRET_TYPE = 17
+        const val CALL_TYPE = 18
+        const val RECALL_TYPE = 19
+        const val LOCATION_TYPE = 20
+        const val GROUP_CALL_TYPE = 21
+        const val TRANSCRIPT_TYPE = 22
+        const val PIN_TYPE = 23
     }
 }
