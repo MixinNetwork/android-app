@@ -53,7 +53,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         failedSigners: List<TipSigner>? = null,
         forRecover: Boolean = false,
         callback: Callback? = null,
-    ): ByteArray {
+    ): Pair<ByteArray, Long> {
         val suite = Tip.newSuiteBn256()
         val userSk = suite.scalar()
         userSk.setBytes(identityPriv)
@@ -112,7 +112,12 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
         val hexSigs = partials.joinToString(",") { it.toHex() }
         val commitments = tipConfig.commitments.joinToString(",")
-        return Tip.recoverSignature(hexSigs, commitments, assignor, nodeCount.toLong())
+        val signature = Tip.recoverSignature(hexSigs, commitments, assignor, nodeCount.toLong())
+        val maxCounter = requireNotNull(data.maxByOrNull { it.counter }?.counter) {
+            "required max counter can not be null"
+        }
+        Timber.e("sign maxCounter: $maxCounter")
+        return Pair(signature, maxCounter)
     }
 
     suspend fun watch(watcher: ByteArray, callback: Callback? = null): Pair<List<TipNodeCounter>, String> {
@@ -303,7 +308,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         val time = buffer.readLong()
         buffer.write(counterBytes)
         val counter = buffer.readLong()
-        Timber.d("tip sign node ${signer.index} counter $counter")
+        Timber.e("tip sign node ${signer.index} counter $counter")
         return TipSignRespData(partial, assignor.toHex(), counter)
     }
 

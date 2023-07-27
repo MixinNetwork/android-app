@@ -211,7 +211,7 @@ class Tip @Inject internal constructor(
                     observers.forEach { it.onNodeFailed(info) }
                 }
             },
-        ).sha3Sum256() // use sha3-256(recover-signature) as priv
+        ).first.sha3Sum256() // use sha3-256(recover-signature) as priv
 
         observers.forEach { it.onSyncingComplete() }
 
@@ -255,8 +255,9 @@ class Tip @Inject internal constructor(
                 observers.forEach { it.onNodeFailed(info) }
             }
         }
-        val aggSig = tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners, callback = callback)
-            .sha3Sum256() // use sha3-256(recover-signature) as priv
+        val pair = tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners, callback = callback)
+        val aggSig = pair.first.sha3Sum256() // use sha3-256(recover-signature) as priv
+        val counter = pair.second
 
         observers.forEach { it.onSyncingComplete() }
         Timber.e("updatePriv after sign")
@@ -269,7 +270,7 @@ class Tip @Inject internal constructor(
         clearTipPriv(context)
         Timber.e("updatePriv after clear tip priv")
 
-        replaceEncryptedPin(aggSig)
+        replaceEncryptedPin(aggSig, counter)
         Timber.e("updatePriv replaceEncryptedPin")
         encryptAndSaveTipPriv(context, newPin, aggSig, aesKey)
         Timber.e("updatePriv encryptAndSaveTipPriv")
@@ -291,17 +292,16 @@ class Tip @Inject internal constructor(
     }
 
     @Throws(IOException::class, TipNetworkException::class)
-    private suspend fun replaceEncryptedPin(aggSig: ByteArray) {
+    private suspend fun replaceEncryptedPin(aggSig: ByteArray, counter: Long) {
         val keyPair = newKeyPairFromSeed(aggSig.copyOf())
         val pub = keyPair.publicKey
         val pinToken = requireNotNull(Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token"))
-        val counter = requireNotNull(Session.getTipCounter()).toLong()
-        val timestamp = TipBody.forVerify(counter)
+        val timestamp = TipBody.forVerify(counter - 1)
         val oldPin = encryptTipPinInternal(pinToken, aggSig, timestamp)
         val newEncryptPin = encryptPinInternal(
             pinToken,
-            pub + (counter + 1).toBeByteArray(),
-        ) // TODO should use tip node counter?
+            pub + (counter).toBeByteArray(),
+        )
         val pinRequest = PinRequest(newEncryptPin, oldPin)
         val account = tipNetwork { accountService.updatePinSuspend(pinRequest) }.getOrThrow()
         Session.storeAccount(account)
