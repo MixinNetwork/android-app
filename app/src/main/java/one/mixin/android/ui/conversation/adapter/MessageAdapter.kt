@@ -757,8 +757,10 @@ class MessageAdapter(
 
     @SuppressLint("NotifyDataSetChanged")
     fun markRead() {
-        unreadMessageId = null
-        notifyDataSetChanged()
+        if (unreadMessageId != null) {
+            unreadMessageId = null
+            notifyDataSetChanged()
+        }
     }
 
     var hasBottomView = false
