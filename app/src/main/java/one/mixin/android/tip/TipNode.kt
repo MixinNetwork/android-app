@@ -134,6 +134,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
                     while (retryCount < maxRequestCount) {
                         val (counter, code) = watchTipNode(signer, watcher)
+                        Timber.e("watch tip node ${signer.index} counter: $counter, code: $code")
                         if (code == 429 || code == 500) {
                             Timber.e("watch tip node failed, ${signer.index} ${signer.api} meet $code")
                             nodeFailedInfo.append("[${signer.index}, $code] ")
