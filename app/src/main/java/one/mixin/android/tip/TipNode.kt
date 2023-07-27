@@ -69,7 +69,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         }
 
         Timber.e("tip get node sig failedSigners size ${failedSigners?.size}, assigneeSk != null: ${assigneeSk != null}")
-        val pair = if (!failedSigners.isNullOrEmpty() && assigneeSk != null) {
+        val pair = if (!failedSigners.isNullOrEmpty() && failedSigners.size != tipConfig.signers.size && assigneeSk != null) {
             // should sign successful signers before failed signers,
             // prevent signing failed signers with different identities.
             val successfulSigners = tipConfig.signers - failedSigners
@@ -308,7 +308,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         val time = buffer.readLong()
         buffer.write(counterBytes)
         val counter = buffer.readLong()
-        Timber.e("tip sign node ${signer.index} counter $counter")
+        Timber.e("sign tip node ${signer.index} counter $counter")
         return TipSignRespData(partial, assignor.toHex(), counter)
     }
 

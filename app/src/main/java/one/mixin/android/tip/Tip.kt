@@ -31,7 +31,6 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.PinIncorrectException
-import one.mixin.android.tip.exception.TipCounterExceedsNodeCounter
 import one.mixin.android.tip.exception.TipCounterNotSyncedException
 import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.exception.TipInvalidCounterGroups
@@ -139,7 +138,7 @@ class Tip @Inject internal constructor(
 
     suspend fun checkCounter(
         tipCounter: Int,
-        onNodeCounterGreaterThanServer: suspend (Int) -> Unit,
+        onNodeCounterNotEqualServer: suspend (Int, List<TipSigner>?) -> Unit,
         onNodeCounterInconsistency: suspend (Int, List<TipSigner>?) -> Unit,
     ) = kotlin.runCatching {
         val (counters, nodeErrorInfo) = watchTipNodeCounters()
@@ -160,10 +159,15 @@ class Tip @Inject internal constructor(
                 return@runCatching
             }
             if (nodeCounter < tipCounter) {
-                throw TipCounterExceedsNodeCounter("watch tip node node counter $nodeCounter < tipCounter $tipCounter")
+                Timber.e("watch tip node node counter $nodeCounter < tipCounter $tipCounter")
+                // should balance node counter, so see all nodes as failed node
+                val signers = mutableListOf<TipSigner>()
+                counters.mapTo(signers) { it.tipSigner }
+                onNodeCounterNotEqualServer(nodeCounter, signers)
+                return@runCatching
             }
 
-            onNodeCounterGreaterThanServer(nodeCounter)
+            onNodeCounterNotEqualServer(nodeCounter, null)
             return@runCatching
         }
         if (group.size > 2) {
@@ -192,7 +196,7 @@ class Tip @Inject internal constructor(
         return tipNode.watch(watcher)
     }
 
-    private fun tipNodeCount() = tipNode.nodeCount
+    fun tipNodeCount() = tipNode.nodeCount
 
     @Throws(TipException::class, TipNodeException::class)
     private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): ByteArray {
@@ -292,15 +296,20 @@ class Tip @Inject internal constructor(
     }
 
     @Throws(IOException::class, TipNetworkException::class)
-    private suspend fun replaceEncryptedPin(aggSig: ByteArray, counter: Long) {
+    private suspend fun replaceEncryptedPin(aggSig: ByteArray, nodeCounter: Long) {
+        val tipCounter = requireNotNull(Session.getTipCounter()).toLong()
+        if (tipCounter == nodeCounter) {
+            Timber.e("replaceEncryptedPin tipCounter $tipCounter == nodeCounter $nodeCounter")
+            return
+        }
         val keyPair = newKeyPairFromSeed(aggSig.copyOf())
         val pub = keyPair.publicKey
         val pinToken = requireNotNull(Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token"))
-        val timestamp = TipBody.forVerify(counter - 1)
+        val timestamp = TipBody.forVerify(tipCounter)
         val oldPin = encryptTipPinInternal(pinToken, aggSig, timestamp)
         val newEncryptPin = encryptPinInternal(
             pinToken,
-            pub + (counter).toBeByteArray(),
+            pub + (nodeCounter).toBeByteArray(),
         )
         val pinRequest = PinRequest(newEncryptPin, oldPin)
         val account = tipNetwork { accountService.updatePinSuspend(pinRequest) }.getOrThrow()
@@ -405,8 +414,8 @@ class Tip @Inject internal constructor(
         if (!tipCounterSynced.synced) {
             checkCounter(
                 Session.getTipCounter(),
-                onNodeCounterGreaterThanServer = {
-                    RxBus.publish(TipEvent(it))
+                onNodeCounterNotEqualServer = { nodeMaxCounter, failedSigners ->
+                    RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
                     throw TipCounterNotSyncedException()
                 },
                 onNodeCounterInconsistency = { nodeMaxCounter, failedSigners ->
