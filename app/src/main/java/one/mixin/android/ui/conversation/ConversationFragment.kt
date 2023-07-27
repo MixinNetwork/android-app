@@ -919,7 +919,6 @@ class ConversationFragment() :
     private var app: App? = null
 
     private var isFirstMessage = false
-    private var isFirstLoad = true
     private var isBottom = true
         set(value) {
             field = value
@@ -1786,7 +1785,11 @@ class ConversationFragment() :
 
     private fun initMessageRecyclerView() {
         lifecycleScope.launch {
+            // init message data
             val (position, data, unreadMessageId) = messageFetcher.initMessages(conversationId, initialMessageId)
+            if (isFirstMessage && data.isNotEmpty()) {
+                isFirstMessage = false
+            }
             messageAdapter = MessageAdapter(
                 CompressedList(data),
                 getMiniMarkwon(requireActivity()),
