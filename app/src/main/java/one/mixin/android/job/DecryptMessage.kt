@@ -440,7 +440,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 if (messageDao.findLastMessageId(msg.conversationId) == msg.messageId) {
                     notificationManager.cancel(msg.conversationId.hashCode())
                 }
-                MessageFlow.insert(msg.conversationId, msg.messageId)
+                MessageFlow.update(msg.conversationId, msg.messageId)
                 conversationDao.updateLastMessageId(
                     msg.messageId,
                     msg.createdAt,
