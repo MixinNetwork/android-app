@@ -206,7 +206,15 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     private suspend fun watchTipNode(tipSigner: TipSigner, watcher: ByteArray): Pair<Int, Int> {
         val tipWatchRequest = TipWatchRequest(watcher.toHex())
         return try {
-            val tipWatchResponse = tipNodeService.watch(tipWatchRequest, tipNodeApi2Path(tipSigner.api))
+            val response = tipNodeService.watch(tipWatchRequest, tipNodeApi2Path(tipSigner.api))
+            val requestId = response.headers()["x-request-id"] ?: ""
+            Timber.e("watch tip node requestId: $requestId to ${tipSigner.info()}")
+            if (response.isSuccessful.not()) {
+                return Pair(-1, response.code())
+            }
+            val tipWatchResponse = requireNotNull(response.body()) {
+                "watch tip node response success but body is null"
+            }
             return Pair(tipWatchResponse.counter, -1)
         } catch (e: Exception) {
             Timber.d(e)

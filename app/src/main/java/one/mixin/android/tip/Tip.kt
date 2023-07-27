@@ -167,7 +167,7 @@ class Tip @Inject internal constructor(
             return@runCatching
         }
         if (group.size > 2) {
-            Timber.e("watch tip node group size is ${group.size} > 2")
+            Timber.e("watch tip node group size is ${group.size} > 2, counters: ${counters.joinToString()}")
             throw TipInvalidCounterGroups()
         }
 
@@ -175,11 +175,14 @@ class Tip @Inject internal constructor(
         val failedNodes = group[group.keys.minBy { it }]
         val failedSigners = if (failedNodes != null) {
             val signers = mutableListOf<TipSigner>()
-            failedNodes.mapTo(signers) { it.tipSigner }
+            failedNodes.mapTo(signers) {
+                Timber.e("watch tip node need update node $it")
+                it.tipSigner
+            }
         } else {
             null
         }
-        Timber.e("watch tip node counter maxCounter $maxCounter, need update nodes: $failedSigners")
+        Timber.e("watch tip node counter maxCounter $maxCounter")
         onNodeCounterInconsistency(maxCounter, failedSigners)
     }
 
