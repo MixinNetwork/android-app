@@ -246,7 +246,7 @@ internal constructor(
         messenger.sendVideoMessage(conversationId, senderId, uri, encryptCategory, messageId, createdAt, replyMessage)
     }
 
-    fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
+    fun sendRecallMessage(conversationId: String, sender: User, list: Collection<MessageItem>) {
         messenger.sendRecallMessage(conversationId, sender, list)
     }
 
@@ -432,7 +432,7 @@ internal constructor(
         MixinApplication.appContext.getSystemService(Activity.NOTIFICATION_SERVICE) as NotificationManager
     }
 
-    fun deleteMessages(list: List<MessageItem>) {
+    fun deleteMessages(list: Collection<MessageItem>) {
         viewModelScope.launch(SINGLE_DB_THREAD) {
             cleanMessageHelper.deleteMessageItems(list)
         }

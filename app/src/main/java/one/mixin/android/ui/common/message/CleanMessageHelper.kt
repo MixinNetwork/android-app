@@ -99,7 +99,7 @@ class CleanMessageHelper @Inject internal constructor(
         }
     }
 
-    fun deleteMessageItems(messageItems: List<MessageItem>) {
+    fun deleteMessageItems(messageItems: Collection<MessageItem>) {
         messageItems.forEach { item ->
             deleteMessage(
                 item.messageId,

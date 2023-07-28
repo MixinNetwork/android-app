@@ -13,10 +13,20 @@ import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.collection.arraySetOf
 import androidx.core.widget.PopupWindowCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewToolBinding
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.fadeOut
+import one.mixin.android.session.Session
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.ParticipantRole
+import one.mixin.android.vo.isData
+import one.mixin.android.vo.isText
+import one.mixin.android.vo.supportSticker
 import one.mixin.android.websocket.PinAction
 
 class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
@@ -32,7 +42,9 @@ class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayo
     val pinIv = binding.pinIv
 
     // Select message logic
-    val selectSet = arraySetOf<MessageItem>()
+    private val selectSet = arraySetOf<MessageItem>()
+
+    fun selectItem() = selectSet
 
     fun isSelect(messageId: String?): Boolean {
         return if (selectSet.isEmpty()) {
@@ -45,16 +57,104 @@ class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayo
     fun hasSelect() = selectSet.isNotEmpty()
 
     fun addSelect(messageItem: MessageItem): Boolean {
-        return selectSet.add(messageItem)
+        return selectSet.add(messageItem).also {
+            update()
+        }
     }
 
     fun removeSelect(messageItem: MessageItem): Boolean {
-        return selectSet.remove(selectSet.find { it.messageId == messageItem.messageId })
+        return selectSet.remove(selectSet.find { it.messageId == messageItem.messageId }).also {
+            update()
+        }
     }
 
     fun firstItem(): MessageItem? = selectSet.firstOrNull()
 
     fun clear() = selectSet.clear()
+
+    fun <R>mapItem(transform: (MessageItem) -> R) = selectSet.map(transform)
+
+    private fun update(){
+        countTv.text = selectSet.size.toString()
+        when {
+            !hasSelect() -> fadeOut()
+            selectSet.size == 1 -> {
+                try {
+                    if (firstItem()?.isText() == true) {
+                        copyIv.visibility = VISIBLE
+                    } else {
+                        copyIv.visibility = GONE
+                    }
+                } catch (e: ArrayIndexOutOfBoundsException) {
+                    copyIv.visibility = GONE
+                }
+                if (firstItem()?.isData() == true) {
+                    shareIv.visibility = VISIBLE
+                } else {
+                    shareIv.visibility = GONE
+                }
+                if (firstItem()?.supportSticker() == true) {
+                    addStickerIv.visibility = VISIBLE
+                } else {
+                    addStickerIv.visibility = GONE
+                }
+                if (firstItem()?.canNotReply() == true) {
+                    replyIv.visibility = GONE
+                } else {
+                    replyIv.visibility = VISIBLE
+                }
+                checkPinMessage()
+            }
+            else -> {
+                forwardIv.visibility = VISIBLE
+                replyIv.visibility = GONE
+                copyIv.visibility = GONE
+                addStickerIv.visibility = GONE
+                shareIv.visibility = GONE
+                pinIv.visibility = GONE
+            }
+        }
+        if (selectSet.size > 99 || selectSet.any { it.canNotForward() }) {
+            forwardIv.visibility = GONE
+        } else {
+            forwardIv.visibility = VISIBLE
+        }
+    }
+
+    private fun checkPinMessage() {
+        if (firstItem()?.canNotPin() == true) {
+            pinIv.visibility = GONE
+        } else {
+            firstItem()?.messageId?.let { messageId ->
+            // Todo
+            //     lifecycleScope.launch {
+            //         if (isGroup) {
+            //             val role = withContext(Dispatchers.IO) {
+            //                 chatViewModel.findParticipantById(
+            //                     conversationId,
+            //                     Session.getAccountId()!!,
+            //                 )?.role
+            //             }
+            //             if (role != ParticipantRole.OWNER.name && role != ParticipantRole.ADMIN.name) {
+            //                 pinIv.visibility = GONE
+            //                 return@launch
+            //             }
+            //         }
+            //         val pinMessage = chatViewModel.findPinMessageById(messageId)
+            //         if (pinMessage == null) {
+            //             pinIv.tag = PinAction.PIN
+            //             pinIv.setImageResource(R.drawable.ic_message_pin)
+            //             pinIv.visibility = VISIBLE
+            //         } else {
+            //             pinIv.tag = PinAction.UNPIN
+            //             pinIv.setImageResource(R.drawable.ic_message_unpin)
+            //             pinIv.visibility = VISIBLE
+            //         }
+            //     }
+            }
+        }
+    }
+
 
     init {
         closeIv.setOnLongClickListener {

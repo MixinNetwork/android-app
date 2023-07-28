@@ -362,7 +362,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, encryptCategory, mid, createdAt, replyMessage))
     }
 
-    fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
+    fun sendRecallMessage(conversationId: String, sender: User, list: Collection<MessageItem>) {
         list.forEach { messageItem ->
             val transferRecallData = RecallMessagePayload(messageItem.messageId)
             val encoded = GsonHelper.customGson.toJson(transferRecallData).base64Encode()
