@@ -17,10 +17,8 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSATION_ID
-import one.mixin.android.ui.conversation.ConversationFragment.Companion.MESSAGE_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
-import one.mixin.android.vo.generateConversationId
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -68,14 +66,10 @@ class BubbleActivity : BlazeBaseActivity() {
                 )
             },
         ) {
-            val messageId = bundle.getString(MESSAGE_ID)
             val conversationId = bundle.getString(CONVERSATION_ID)
             val userId = bundle.getString(RECIPIENT_ID)
-            val cid: String
             if (userId != null) {
                 val user = userRepository.suspendFindUserById(userId)
-                val accountId = Session.getAccountId() ?: return@launch
-                cid = conversationId ?: generateConversationId(accountId, userId)
                 require(user != null && userId != Session.getAccountId()) {
                     "error data userId: $userId"
                 }
@@ -85,7 +79,6 @@ class BubbleActivity : BlazeBaseActivity() {
                 require(user?.userId != Session.getAccountId()) {
                     "error data conversationId: $conversationId"
                 }
-                cid = conversationId
                 bundle.putParcelable(RECIPIENT, user)
             }
 

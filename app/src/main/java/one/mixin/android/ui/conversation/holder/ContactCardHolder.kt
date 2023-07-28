@@ -9,7 +9,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatContactCardBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.MessageItem
@@ -25,7 +25,7 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         if (hasSelect && isSelect) {
