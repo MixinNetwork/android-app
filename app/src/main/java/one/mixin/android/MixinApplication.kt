@@ -38,6 +38,7 @@ import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getStackTraceInfo
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.putBoolean
@@ -152,7 +153,7 @@ open class MixinApplication :
 
         registerComponentCallbacks(MemoryCallback())
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-            Timber.e("${thread.name}-${throwable.message}")
+            Timber.e("${thread.name}-${throwable.getStackTraceInfo()}")
             exitProcess(2)
         }
 

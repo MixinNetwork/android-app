@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.event.PinMessageEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.copyFromInputStream
@@ -450,6 +451,8 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 }
             }
         }
+        // Notify pin message
+        MessageFlow.update(conversationId, list.map { it.messageId })
         jobManager.addJobInBackground(
             SendMessageJob(
                 message,

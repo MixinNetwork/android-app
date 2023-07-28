@@ -4,8 +4,8 @@ import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
-import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.getFileNameNoEx
 import one.mixin.android.extension.getMimeType
@@ -71,7 +71,7 @@ class ConvertVideoJob(
         val mId = messageDao.findMessageIdById(message.messageId)
         if (mId == null) {
             database.insertMessage(message)
-            InvalidateFlow.emit(message.conversationId)
+            MessageFlow.insert(message.conversationId, message.messageId)
         }
     }
 
@@ -117,7 +117,7 @@ class ConvertVideoJob(
         )
         if (!error) {
             messageDao.updateMediaMessageUrl(videoFile.name, messageId)
-            InvalidateFlow.emit(conversationId)
+            MessageFlow.update(message.conversationId, message.messageId)
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
         }
 
@@ -127,7 +127,7 @@ class ConvertVideoJob(
     override fun cancel() {
         isCancelled = true
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, messageId)
-        InvalidateFlow.emit(conversationId)
+        MessageFlow.update(conversationId, messageId)
         removeJob()
     }
 }

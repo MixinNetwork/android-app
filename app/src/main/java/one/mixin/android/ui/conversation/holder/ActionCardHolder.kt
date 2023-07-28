@@ -9,7 +9,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionCardBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadRoundImage
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
@@ -29,7 +29,7 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         val isMe = meId == messageItem.userId

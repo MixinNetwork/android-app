@@ -13,8 +13,8 @@ import one.mixin.android.crypto.Util
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStream
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
 import one.mixin.android.crypto.attachment.PushAttachmentData
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
-import one.mixin.android.db.invalidater.InvalidateFlow
 import one.mixin.android.event.ProgressEvent.Companion.loadingEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.getStackTraceString
@@ -48,7 +48,7 @@ class SendAttachmentMessageJob(
     override fun cancel() {
         isCancelled = true
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-        InvalidateFlow.emit(message.conversationId)
+        MessageFlow.update(message.conversationId, message.messageId)
         attachmentProcess.remove(message.messageId)
         disposable?.let {
             if (!it.isDisposed) {
@@ -64,16 +64,16 @@ class SendAttachmentMessageJob(
             val mId = messageDao.findMessageIdById(message.messageId)
             if (mId != null) {
                 messageDao.updateMediaSize(message.mediaSize ?: 0, mId)
-                InvalidateFlow.emit(message.conversationId)
+                MessageFlow.update(message.conversationId, message.messageId)
             } else {
                 mixinDatabase.insertMessage(message)
-                InvalidateFlow.emit(message.conversationId)
+                MessageFlow.insert(message.conversationId, message.messageId)
             }
         } else {
             val mId = messageDao.findMessageIdById(message.messageId)
             if (mId == null) {
                 mixinDatabase.insertMessage(message)
-                InvalidateFlow.emit(message.conversationId)
+                MessageFlow.insert(message.conversationId, message.messageId)
             }
         }
         val conversation = conversationDao.findConversationById(message.conversationId)
@@ -93,7 +93,7 @@ class SendAttachmentMessageJob(
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {
         super.onCancel(cancelReason, throwable)
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-        InvalidateFlow.emit(message.conversationId)
+        MessageFlow.update(message.conversationId, message.messageId)
         attachmentProcess.remove(message.messageId)
         removeJob()
     }
@@ -120,12 +120,12 @@ class SendAttachmentMessageJob(
             {
                 if (it) {
                     messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
-                    InvalidateFlow.emit(message.conversationId)
+                    MessageFlow.update(message.conversationId, message.messageId)
                     attachmentProcess.remove(message.messageId)
                     removeJob()
                 } else {
                     messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-                    InvalidateFlow.emit(message.conversationId)
+                    MessageFlow.update(message.conversationId, message.messageId)
                     attachmentProcess.remove(message.messageId)
                     removeJob()
                 }
@@ -134,7 +134,7 @@ class SendAttachmentMessageJob(
                 Timber.e("upload attachment error, ${it.getStackTraceString()}")
                 reportException(it)
                 messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-                InvalidateFlow.emit(message.conversationId)
+                MessageFlow.update(message.conversationId, message.messageId)
                 attachmentProcess.remove(message.messageId)
                 removeJob()
             },
@@ -197,7 +197,7 @@ class SendAttachmentMessageJob(
                 }
             }
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-            InvalidateFlow.emit(message.conversationId)
+            MessageFlow.update(message.conversationId, message.messageId)
             attachmentProcess.remove(message.messageId)
             removeJob()
             reportException(e)
