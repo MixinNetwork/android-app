@@ -179,17 +179,18 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         binding.addrIv.setOnClickListener { handleClick(true) }
         when (asset.withdrawalMemoPossibility) {
             WithdrawalMemoPossibility.NEGATIVE -> {
-                binding.tipTv.isVisible = false
+                binding.info.isVisible = false
                 binding.tagRl.isVisible = false
                 memoEnabled = false
             }
             WithdrawalMemoPossibility.POSITIVE -> {
-                binding.tipTv.isVisible = false
+                binding.info.isVisible = false
                 binding.tagRl.isVisible = true
+                binding.tagIv.setOnClickListener { handleClick(false) }
                 memoEnabled = true
             }
             else -> {
-                binding.tipTv.isVisible = true
+                binding.info.isVisible = true
                 handleMemo()
             }
         }
