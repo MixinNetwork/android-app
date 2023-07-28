@@ -380,10 +380,10 @@ class ConversationFragment() :
     }
 
     private fun checkPinMessage() {
-        if (messageAdapter.selectSet.valueAt(0)?.canNotPin() == true) {
+        if (binding.toolView.firstItem()?.canNotPin() == true) {
             binding.toolView.pinIv.visibility = GONE
         } else {
-            messageAdapter.selectSet.valueAt(0)?.messageId?.let { messageId ->
+            binding.toolView.firstItem()?.messageId?.let { messageId ->
                 lifecycleScope.launch {
                     if (isGroup) {
                         val role = withContext(Dispatchers.IO) {
@@ -417,16 +417,16 @@ class ConversationFragment() :
             @SuppressLint("NotifyDataSetChanged")
             override fun onSelect(isSelect: Boolean, messageItem: MessageItem, position: Int) {
                 if (isSelect) {
-                    messageAdapter.addSelect(messageItem)
+                    binding.toolView.addSelect(messageItem)
                 } else {
-                    messageAdapter.removeSelect(messageItem)
+                    binding.toolView.removeSelect(messageItem)
                 }
-                binding.toolView.countTv.text = messageAdapter.selectSet.size.toString()
+                binding.toolView.countTv.text = binding.toolView.selectSet.size.toString()
                 when {
-                    messageAdapter.selectSet.isEmpty() -> binding.toolView.fadeOut()
-                    messageAdapter.selectSet.size == 1 -> {
+                    !binding.toolView.hasSelect() -> binding.toolView.fadeOut()
+                    binding.toolView.selectSet.size == 1 -> {
                         try {
-                            if (messageAdapter.selectSet.valueAt(0)?.isText() == true) {
+                            if (binding.toolView.firstItem()?.isText() == true) {
                                 binding.toolView.copyIv.visibility = VISIBLE
                             } else {
                                 binding.toolView.copyIv.visibility = GONE
@@ -434,17 +434,17 @@ class ConversationFragment() :
                         } catch (e: ArrayIndexOutOfBoundsException) {
                             binding.toolView.copyIv.visibility = GONE
                         }
-                        if (messageAdapter.selectSet.valueAt(0)?.isData() == true) {
+                        if (binding.toolView.firstItem()?.isData() == true) {
                             binding.toolView.shareIv.visibility = VISIBLE
                         } else {
                             binding.toolView.shareIv.visibility = GONE
                         }
-                        if (messageAdapter.selectSet.valueAt(0)?.supportSticker() == true) {
+                        if (binding.toolView.firstItem()?.supportSticker() == true) {
                             binding.toolView.addStickerIv.visibility = VISIBLE
                         } else {
                             binding.toolView.addStickerIv.visibility = GONE
                         }
-                        if (messageAdapter.selectSet.valueAt(0)?.canNotReply() == true) {
+                        if (binding.toolView.firstItem()?.canNotReply() == true) {
                             binding.toolView.replyIv.visibility = GONE
                         } else {
                             binding.toolView.replyIv.visibility = VISIBLE
@@ -460,7 +460,7 @@ class ConversationFragment() :
                         binding.toolView.pinIv.visibility = GONE
                     }
                 }
-                if (messageAdapter.selectSet.size > 99 || messageAdapter.selectSet.any { it.canNotForward() }) {
+                if (binding.toolView.selectSet.size > 99 || binding.toolView.selectSet.any { it.canNotForward() }) {
                     binding.toolView.forwardIv.visibility = GONE
                 } else {
                     binding.toolView.forwardIv.visibility = VISIBLE
@@ -470,8 +470,8 @@ class ConversationFragment() :
 
             @SuppressLint("NotifyDataSetChanged")
             override fun onLongClick(messageItem: MessageItem, position: Int): Boolean {
-                val b = messageAdapter.addSelect(messageItem)
-                binding.toolView.countTv.text = messageAdapter.selectSet.size.toString()
+                val b = binding.toolView.addSelect(messageItem)
+                binding.toolView.countTv.text = binding.toolView.selectSet.size.toString()
                 if (b) {
                     if (messageItem.isText()) {
                         binding.toolView.copyIv.visibility = VISIBLE
@@ -490,12 +490,12 @@ class ConversationFragment() :
                         binding.toolView.addStickerIv.visibility = GONE
                     }
 
-                    if (messageAdapter.selectSet.any { it.canNotForward() }) {
+                    if (binding.toolView.selectSet.any { it.canNotForward() }) {
                         binding.toolView.forwardIv.visibility = GONE
                     } else {
                         binding.toolView.forwardIv.visibility = VISIBLE
                     }
-                    if (messageAdapter.selectSet.any { it.canNotReply() }) {
+                    if (binding.toolView.selectSet.any { it.canNotReply() }) {
                         binding.toolView.replyIv.visibility = GONE
                     } else {
                         binding.toolView.replyIv.visibility = VISIBLE
@@ -1087,7 +1087,7 @@ class ConversationFragment() :
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(pauseScope)
             .subscribe { event ->
-                if (messageAdapter.selectSet.any { it.messageId == event.messageId }) {
+                if (binding.toolView.selectSet.any { it.messageId == event.messageId }) {
                     closeTool()
                 }
                 binding.chatControl.replyView.messageItem?.let {
@@ -1281,7 +1281,7 @@ class ConversationFragment() :
 
     @SuppressLint("NotifyDataSetChanged")
     private fun closeTool() {
-        messageAdapter.selectSet.clear()
+        binding.toolView.clear()
         if (!binding.messageRv.isComputingLayout) {
             messageAdapter.notifyDataSetChanged()
         }
@@ -1457,12 +1457,12 @@ class ConversationFragment() :
             }
         }
         binding.toolView.deleteIv.setOnClickListener {
-            messageAdapter.selectSet.filter { it.isAudio() }.forEach {
+            binding.toolView.selectSet.filter { it.isAudio() }.forEach {
                 if (AudioPlayer.isPlay(it.messageId)) {
                     AudioPlayer.pause()
                 }
             }
-            deleteMessage(messageAdapter.selectSet.toList())
+            deleteMessage(binding.toolView.selectSet.toList())
             closeTool()
         }
         binding.chatControl.replyView.replyCloseIv.setOnClickListener {
@@ -1472,7 +1472,7 @@ class ConversationFragment() :
         binding.toolView.copyIv.setOnClickListener {
             try {
                 context?.getClipboardManager()?.setPrimaryClip(
-                    ClipData.newPlainText(null, messageAdapter.selectSet.valueAt(0)?.content),
+                    ClipData.newPlainText(null, binding.toolView.firstItem()?.content),
                 )
                 toast(R.string.copied_to_clipboard)
             } catch (_: ArrayIndexOutOfBoundsException) {
@@ -1483,10 +1483,10 @@ class ConversationFragment() :
             showForwardDialog()
         }
         binding.toolView.addStickerIv.setOnClickListener {
-            if (messageAdapter.selectSet.isEmpty()) {
+            if (!binding.toolView.hasSelect()) {
                 return@setOnClickListener
             }
-            val messageItem = messageAdapter.selectSet.valueAt(0)
+            val messageItem = binding.toolView.firstItem()
             messageItem?.let { m ->
                 if (messageItem.isSticker() && m.stickerId != null) {
                     addSticker(m)
@@ -1507,10 +1507,10 @@ class ConversationFragment() :
         }
 
         binding.toolView.replyIv.setOnClickListener {
-            if (messageAdapter.selectSet.isEmpty()) {
+            if (!binding.toolView.hasSelect()) {
                 return@setOnClickListener
             }
-            messageAdapter.selectSet.valueAt(0)?.let {
+            binding.toolView.firstItem()?.let {
                 binding.chatControl.replyView.bind(it)
             }
             displayReplyView()
@@ -1518,7 +1518,7 @@ class ConversationFragment() :
         }
 
         binding.toolView.pinIv.setOnClickListener {
-            val pinMessages = messageAdapter.selectSet.map {
+            val pinMessages = binding.toolView.selectSet.map {
                 PinMessageData(it.messageId, it.conversationId, requireNotNull(it.type), it.content, nowInUtc())
             }
             val action = (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN
@@ -1543,7 +1543,7 @@ class ConversationFragment() :
             }
         }
         binding.toolView.shareIv.setOnClickListener {
-            val messageItem = messageAdapter.selectSet.valueAt(0)
+            val messageItem = binding.toolView.firstItem()
             Intent().apply {
                 var uri: Uri? = try {
                     messageItem?.absolutePath()?.toUri()
@@ -1795,6 +1795,12 @@ class ConversationFragment() :
                 onItemListener,
                 previousAction,
                 nextAction,
+                { id ->
+                    binding.toolView.isSelect(id)
+                },
+                {
+                    binding.toolView.hasSelect()
+                },
                 isGroup = isGroup,
                 unreadMessageId = if (initialMessageId != null) null else unreadMessageId,
                 recipient = recipient,
@@ -3066,7 +3072,7 @@ class ConversationFragment() :
 
     private fun showForwardDialog() {
         forwardDialog?.dismiss()
-        val unShareable = messageAdapter.selectSet.find { it.isShareable() == false }
+        val unShareable = binding.toolView.selectSet.find { it.isShareable() == false }
         if (unShareable != null) {
             toast(
                 when {
@@ -3077,7 +3083,7 @@ class ConversationFragment() :
             )
             return
         }
-        if (messageAdapter.selectSet.size == 1) {
+        if (binding.toolView.selectSet.size == 1) {
             forward()
         } else {
             val forwardDialogLayoutBinding = generateForwardDialogLayout()
@@ -3090,7 +3096,7 @@ class ConversationFragment() :
                 forwardDialog?.dismiss()
             }
             // disable combine transcript
-            forwardDialogLayoutBinding.combineForward.isVisible = !messageAdapter.selectSet.any { it.isTranscript() }
+            forwardDialogLayoutBinding.combineForward.isVisible = !binding.toolView.selectSet.any { it.isTranscript() }
             forwardDialogLayoutBinding.combineForward.setOnClickListener {
                 combineForward()
                 forwardDialog?.dismiss()
@@ -3101,7 +3107,7 @@ class ConversationFragment() :
 
     private fun forward() {
         lifecycleScope.launch {
-            val list = chatViewModel.getSortMessagesByIds(messageAdapter.selectSet)
+            val list = chatViewModel.getSortMessagesByIds(binding.toolView.selectSet)
             getForwardResult.launch(Pair(list, null))
             closeTool()
         }
@@ -3110,7 +3116,7 @@ class ConversationFragment() :
     private fun combineForward() {
         lifecycleScope.launch {
             val transcriptId = UUID.randomUUID().toString()
-            val messages = messageAdapter.selectSet.filter { m -> !m.canNotForward() }
+            val messages = binding.toolView.selectSet.filter { m -> !m.canNotForward() }
                 .sortedWith(compareBy { it.createdAt })
                 .map { it.toTranscript(transcriptId) }
             val nonExistent = withContext(Dispatchers.IO) {

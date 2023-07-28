@@ -11,10 +11,12 @@ import android.widget.PopupWindow
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.annotation.StringRes
+import androidx.collection.arraySetOf
 import androidx.core.widget.PopupWindowCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewToolBinding
 import one.mixin.android.extension.dp
+import one.mixin.android.vo.MessageItem
 import one.mixin.android.websocket.PinAction
 
 class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
@@ -28,6 +30,31 @@ class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayo
     val forwardIv = binding.forwardIv
     val shareIv = binding.shareIv
     val pinIv = binding.pinIv
+
+    // Select message logic
+    val selectSet = arraySetOf<MessageItem>()
+
+    fun isSelect(messageId: String?): Boolean {
+        return if (selectSet.isEmpty()) {
+            false
+        } else {
+            selectSet.find { it.messageId == messageId } != null
+        }
+    }
+
+    fun hasSelect() = selectSet.isNotEmpty()
+
+    fun addSelect(messageItem: MessageItem): Boolean {
+        return selectSet.add(messageItem)
+    }
+
+    fun removeSelect(messageItem: MessageItem): Boolean {
+        return selectSet.remove(selectSet.find { it.messageId == messageItem.messageId })
+    }
+
+    fun firstItem(): MessageItem? = selectSet.firstOrNull()
+
+    fun clear() = selectSet.clear()
 
     init {
         closeIv.setOnLongClickListener {
