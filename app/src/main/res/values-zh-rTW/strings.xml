@@ -166,7 +166,8 @@
         <item quantity="other">刪除 %1$d 條訊息嗎？</item>
     </plurals>
     <string name="chat_group_add">%1$s添加了%2$s</string>
-    <string name="chat_group_call_cancel">%1$s已取消群組語音</string>
+    <string name="chat_group_call_did_not_answer">%1$s未接聽群組語音</string>
+    <string name="chat_group_call_self_did_not_answer">你未接聽群組語音</string>
     <string name="chat_group_call_decline">%1$s已拒絕群組語音</string>
     <string name="chat_group_call_end">群組語音已結束</string>
     <string name="chat_group_call_invite">%1$s邀請你加入群組語音</string>
