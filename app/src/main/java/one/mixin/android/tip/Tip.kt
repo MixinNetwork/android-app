@@ -31,7 +31,6 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.PinIncorrectException
-import one.mixin.android.tip.exception.TipCounterExceedsNodeCounter
 import one.mixin.android.tip.exception.TipCounterNotSyncedException
 import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.exception.TipInvalidCounterGroups
@@ -139,7 +138,7 @@ class Tip @Inject internal constructor(
 
     suspend fun checkCounter(
         tipCounter: Int,
-        onNodeCounterGreaterThanServer: suspend (Int) -> Unit,
+        onNodeCounterNotEqualServer: suspend (Int, List<TipSigner>?) -> Unit,
         onNodeCounterInconsistency: suspend (Int, List<TipSigner>?) -> Unit,
     ) = kotlin.runCatching {
         val (counters, nodeErrorInfo) = watchTipNodeCounters()
@@ -160,14 +159,19 @@ class Tip @Inject internal constructor(
                 return@runCatching
             }
             if (nodeCounter < tipCounter) {
-                throw TipCounterExceedsNodeCounter("watch tip node node counter $nodeCounter < tipCounter $tipCounter")
+                Timber.e("watch tip node node counter $nodeCounter < tipCounter $tipCounter")
+                // should balance node counter, so see all nodes as failed node
+                val signers = mutableListOf<TipSigner>()
+                counters.mapTo(signers) { it.tipSigner }
+                onNodeCounterNotEqualServer(nodeCounter, signers)
+                return@runCatching
             }
 
-            onNodeCounterGreaterThanServer(nodeCounter)
+            onNodeCounterNotEqualServer(nodeCounter, null)
             return@runCatching
         }
         if (group.size > 2) {
-            Timber.e("watch tip node group size is ${group.size} > 2")
+            Timber.e("watch tip node group size is ${group.size} > 2, counters: ${counters.joinToString()}")
             throw TipInvalidCounterGroups()
         }
 
@@ -175,11 +179,14 @@ class Tip @Inject internal constructor(
         val failedNodes = group[group.keys.minBy { it }]
         val failedSigners = if (failedNodes != null) {
             val signers = mutableListOf<TipSigner>()
-            failedNodes.mapTo(signers) { it.tipSigner }
+            failedNodes.mapTo(signers) {
+                Timber.e("watch tip node need update node $it")
+                it.tipSigner
+            }
         } else {
             null
         }
-        Timber.e("watch tip node counter maxCounter $maxCounter, need update nodes: $failedSigners")
+        Timber.e("watch tip node counter maxCounter $maxCounter")
         onNodeCounterInconsistency(maxCounter, failedSigners)
     }
 
@@ -189,7 +196,7 @@ class Tip @Inject internal constructor(
         return tipNode.watch(watcher)
     }
 
-    private fun tipNodeCount() = tipNode.nodeCount
+    fun tipNodeCount() = tipNode.nodeCount
 
     @Throws(TipException::class, TipNodeException::class)
     private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): ByteArray {
@@ -208,7 +215,7 @@ class Tip @Inject internal constructor(
                     observers.forEach { it.onNodeFailed(info) }
                 }
             },
-        ).sha3Sum256() // use sha3-256(recover-signature) as priv
+        ).first.sha3Sum256() // use sha3-256(recover-signature) as priv
 
         observers.forEach { it.onSyncingComplete() }
 
@@ -252,8 +259,9 @@ class Tip @Inject internal constructor(
                 observers.forEach { it.onNodeFailed(info) }
             }
         }
-        val aggSig = tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners, callback = callback)
-            .sha3Sum256() // use sha3-256(recover-signature) as priv
+        val pair = tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners, callback = callback)
+        val aggSig = pair.first.sha3Sum256() // use sha3-256(recover-signature) as priv
+        val counter = pair.second
 
         observers.forEach { it.onSyncingComplete() }
         Timber.e("updatePriv after sign")
@@ -266,7 +274,7 @@ class Tip @Inject internal constructor(
         clearTipPriv(context)
         Timber.e("updatePriv after clear tip priv")
 
-        replaceEncryptedPin(aggSig)
+        replaceEncryptedPin(aggSig, counter)
         Timber.e("updatePriv replaceEncryptedPin")
         encryptAndSaveTipPriv(context, newPin, aggSig, aesKey)
         Timber.e("updatePriv encryptAndSaveTipPriv")
@@ -288,17 +296,21 @@ class Tip @Inject internal constructor(
     }
 
     @Throws(IOException::class, TipNetworkException::class)
-    private suspend fun replaceEncryptedPin(aggSig: ByteArray) {
+    private suspend fun replaceEncryptedPin(aggSig: ByteArray, nodeCounter: Long) {
+        val tipCounter = requireNotNull(Session.getTipCounter()).toLong()
+        if (tipCounter == nodeCounter) {
+            Timber.e("replaceEncryptedPin tipCounter $tipCounter == nodeCounter $nodeCounter")
+            return
+        }
         val keyPair = newKeyPairFromSeed(aggSig.copyOf())
         val pub = keyPair.publicKey
         val pinToken = requireNotNull(Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token"))
-        val counter = requireNotNull(Session.getTipCounter()).toLong()
-        val timestamp = TipBody.forVerify(counter)
+        val timestamp = TipBody.forVerify(tipCounter)
         val oldPin = encryptTipPinInternal(pinToken, aggSig, timestamp)
         val newEncryptPin = encryptPinInternal(
             pinToken,
-            pub + (counter + 1).toBeByteArray(),
-        ) // TODO should use tip node counter?
+            pub + (nodeCounter).toBeByteArray(),
+        )
         val pinRequest = PinRequest(newEncryptPin, oldPin)
         val account = tipNetwork { accountService.updatePinSuspend(pinRequest) }.getOrThrow()
         Session.storeAccount(account)
@@ -402,8 +414,8 @@ class Tip @Inject internal constructor(
         if (!tipCounterSynced.synced) {
             checkCounter(
                 Session.getTipCounter(),
-                onNodeCounterGreaterThanServer = {
-                    RxBus.publish(TipEvent(it))
+                onNodeCounterNotEqualServer = { nodeMaxCounter, failedSigners ->
+                    RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
                     throw TipCounterNotSyncedException()
                 },
                 onNodeCounterInconsistency = { nodeMaxCounter, failedSigners ->

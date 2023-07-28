@@ -83,7 +83,9 @@ class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requir
 
             tip.checkCounter(
                 account.tipCounter,
-                onNodeCounterGreaterThanServer = { RxBus.publish(TipEvent(it)) },
+                onNodeCounterNotEqualServer = { nodeMaxCounter, failedSigners ->
+                    RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
+                },
                 onNodeCounterInconsistency = { nodeMaxCounter, failedSigners ->
                     RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
                 },
