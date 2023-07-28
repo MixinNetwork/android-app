@@ -46,6 +46,7 @@ import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.WithdrawalMemoPossibility
 
 @AndroidEntryPoint
 class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
@@ -176,7 +177,23 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         binding.addrEt.addTextChangedListener(mWatcher)
         binding.tagEt.addTextChangedListener(mWatcher)
         binding.addrIv.setOnClickListener { handleClick(true) }
-        handleMemo()
+        when (asset.withdrawalMemoPossibility) {
+            WithdrawalMemoPossibility.NEGATIVE -> {
+                binding.info.isVisible = false
+                binding.tagRl.isVisible = false
+                memoEnabled = false
+            }
+            WithdrawalMemoPossibility.POSITIVE -> {
+                binding.info.isVisible = false
+                binding.tagRl.isVisible = true
+                binding.tagIv.setOnClickListener { handleClick(false) }
+                memoEnabled = true
+            }
+            else -> {
+                binding.info.isVisible = true
+                handleMemo()
+            }
+        }
         binding.labelEt.showKeyboard()
     }
 

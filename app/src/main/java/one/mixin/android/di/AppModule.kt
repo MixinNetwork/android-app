@@ -262,13 +262,13 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideHttpService(okHttp: OkHttpClient): Retrofit {
+    fun provideHttpService(okHttp: OkHttpClient, gson: Gson): Retrofit {
         val builder = Retrofit.Builder()
             .baseUrl(URL)
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addCallAdapterFactory(LiveDataCallAdapterFactory())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .client(okHttp)
         return builder.build()
     }

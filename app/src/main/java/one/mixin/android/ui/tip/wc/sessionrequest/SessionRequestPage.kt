@@ -53,6 +53,7 @@ import one.mixin.android.ui.tip.wc.connections.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.DAppInfo
 import one.mixin.android.ui.tip.wc.sessionproposal.WCPinBoard
 import one.mixin.android.vo.Asset
+import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.priceUSD
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
@@ -561,7 +562,7 @@ private fun GasItemPreview() {
             "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "BTC", "Bitcoin",
             "https://mixin-images.zeromesh.net/HvYGJsV5TGeZ-X9Ek3FEQohQZ3fE9LBEBGcOcn4c4BNHovP4fW4YB97Dg5LcXoQ1hUjMEgjbl1DPlKg1TW7kK6XP=s128",
             "1", "", "", "1", "30000", "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "0",
-            "0", 3, "", "0", null,
+            "0", 3, "", "0", null, WithdrawalMemoPossibility.POSITIVE
         ),
     ) {}
 }
