@@ -14,5 +14,4 @@ class WithdrawalMemoPossibilityConverter {
     fun converterDate(status: WithdrawalMemoPossibility?): String? {
         return status?.value
     }
-
 }
