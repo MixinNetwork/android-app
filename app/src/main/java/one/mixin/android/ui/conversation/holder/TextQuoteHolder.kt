@@ -19,7 +19,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.initChatMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseMentionHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.util.GsonHelper
@@ -87,7 +87,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
         }
     }
 
-    private var onItemListener: ConversationAdapter.OnItemListener? = null
+    private var onItemListener: MessageAdapter.OnItemListener? = null
 
     fun bind(
         messageItem: MessageItem,
@@ -97,7 +97,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         this.onItemListener = onItemListener
@@ -262,7 +262,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
 
     private class TextQuoteGestureListener(
         var messageItem: MessageItem,
-        var onItemListener: ConversationAdapter.OnItemListener,
+        var onItemListener: MessageAdapter.OnItemListener,
     ) : GestureDetector.SimpleOnGestureListener() {
         override fun onDoubleTap(e: MotionEvent): Boolean {
             onItemListener.onTextDoubleClick(messageItem)

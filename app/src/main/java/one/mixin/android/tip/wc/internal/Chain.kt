@@ -1,5 +1,6 @@
 package one.mixin.android.tip.wc.internal
 
+import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.Constants
 
 sealed class Chain(
@@ -13,17 +14,19 @@ sealed class Chain(
     object Ethereum : Chain("eip155", 1, "Ethereum Mainnet", "ETH", listOf("https://cloudflare-eth.com"))
     object BinanceSmartChain : Chain("eip155", 56, "Binance Smart Chain Mainnet", "BSC", listOf("https://bsc-dataseed4.ninicoin.io"))
     object Polygon : Chain("eip155", 137, "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
-    object AvalancheCChain : Chain("eip155", 43114, "Avalanche C-Chain", "AVAX", listOf("https://1rpc.io/avax/c"))
+    object ArbitrumOne : Chain("eip155", 42161, "Arbitrum One", "ETH", listOf("https://arb1.arbitrum.io/rpc"))
+    object OPMainnet : Chain("eip155", 10, "OP Mainnet", "ETH", listOf("https://mainnet.optimism.io"))
 }
 
-internal val supportChainList = listOf(Chain.Ethereum, Chain.BinanceSmartChain, Chain.Polygon) // three for now
+internal val supportChainList = listOf(Chain.Ethereum, Chain.BinanceSmartChain, Chain.Polygon, Chain.ArbitrumOne, Chain.OPMainnet)
 
 internal fun String.getChain(): Chain? {
     return when (this) {
         Chain.Ethereum.chainId -> Chain.Ethereum
         Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain
         Chain.Polygon.chainId -> Chain.Polygon
-        Chain.AvalancheCChain.chainId -> Chain.AvalancheCChain
+        Chain.ArbitrumOne.chainId -> Chain.ArbitrumOne
+        Chain.OPMainnet.chainId -> Chain.OPMainnet
         else -> null
     }
 }
@@ -33,7 +36,8 @@ internal fun Int.getChain(): Chain? {
         Chain.Ethereum.chainReference -> Chain.Ethereum
         Chain.BinanceSmartChain.chainReference -> Chain.BinanceSmartChain
         Chain.Polygon.chainReference -> Chain.Polygon
-        Chain.AvalancheCChain.chainReference -> Chain.AvalancheCChain
+        Chain.ArbitrumOne.chainReference -> Chain.ArbitrumOne
+        Chain.OPMainnet.chainReference -> Chain.OPMainnet
         else -> null
     }
 }
@@ -45,7 +49,8 @@ internal fun String?.getChainName(): String? {
         Chain.Ethereum.chainId -> Chain.Ethereum.name
         Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain.name
         Chain.Polygon.chainId -> Chain.Polygon.name
-        Chain.AvalancheCChain.chainId -> Chain.AvalancheCChain.name
+        Chain.ArbitrumOne.chainId -> Chain.ArbitrumOne.name
+        Chain.OPMainnet.chainId -> Chain.OPMainnet.name
         else -> null
     }
 }
@@ -57,7 +62,8 @@ internal fun String?.getChainSymbol(): String? {
         Chain.Ethereum.chainId -> Chain.Ethereum.symbol
         Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain.symbol
         Chain.Polygon.chainId -> Chain.Polygon.symbol
-        Chain.AvalancheCChain.chainId -> Chain.AvalancheCChain.symbol
+        Chain.ArbitrumOne.chainId -> Chain.ArbitrumOne.symbol
+        Chain.OPMainnet.chainId -> Chain.OPMainnet.symbol
         else -> null
     }
 }
@@ -66,4 +72,19 @@ val walletConnectChainIdMap = mapOf(
     Chain.Ethereum.symbol to Constants.ChainId.ETHEREUM_CHAIN_ID,
     Chain.Polygon.symbol to Constants.ChainId.Polygon,
     Chain.BinanceSmartChain.symbol to Constants.ChainId.BinanceSmartChain,
+    Chain.ArbitrumOne.symbol to Constants.ChainId.Arbitrum,
+    Chain.OPMainnet.symbol to Constants.ChainId.Optimism,
 )
+
+fun getSupportedNamespaces(address: String): Map<String, Wallet.Model.Namespace.Session> {
+    val chainIds = supportChainList.map { chain -> chain.chainId }
+    val accounts = supportChainList.map { chain -> "${chain.chainNamespace}:${chain.chainReference}:$address" }
+    return mapOf(
+        "eip155" to Wallet.Model.Namespace.Session(
+            chains = chainIds,
+            methods = supportedMethods,
+            events = listOf("chainChanged", "accountsChanged"),
+            accounts = accounts,
+        ),
+    )
+}

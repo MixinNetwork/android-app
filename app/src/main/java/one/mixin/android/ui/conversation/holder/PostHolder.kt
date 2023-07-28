@@ -13,7 +13,7 @@ import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.postLengthOptimize
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.round
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.MessageItem
@@ -87,7 +87,7 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
         miniMarkwon: Markwon,
     ) {
         super.bind(messageItem)

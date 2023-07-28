@@ -16,4 +16,6 @@ data class TipSigner(
     val identity: String,
     val index: Int,
     val api: String,
-) : Parcelable
+) : Parcelable {
+    fun info() = "TipSigner(index: $index, api: $api)"
+}

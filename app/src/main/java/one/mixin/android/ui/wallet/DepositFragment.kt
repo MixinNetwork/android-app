@@ -112,7 +112,8 @@ class DepositFragment : BaseFragment() {
             if (notSupport) {
                 notSupportLl.isVisible = true
                 sv.isVisible = false
-                val info = getString(R.string.not_supported_deposit, asset.symbol, asset.symbol)
+                val symbol = if (asset.assetId == OMNI_USDT_ASSET_ID) "OMNI-USDT" else asset.symbol
+                val info = getString(R.string.not_supported_deposit, symbol, symbol)
                 val url = Constants.HelpLink.DEPOSIT_NOT_SUPPORT
                 notSupportTv.highlightStarTag(info, arrayOf(url))
             } else {

@@ -11,7 +11,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.MediaHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.MediaStatus
@@ -66,7 +66,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         }
     }
 
-    private var onItemListener: ConversationAdapter.OnItemListener? = null
+    private var onItemListener: MessageAdapter.OnItemListener? = null
 
     fun bind(
         messageItem: MessageItem,
@@ -75,7 +75,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         this.onItemListener = onItemListener

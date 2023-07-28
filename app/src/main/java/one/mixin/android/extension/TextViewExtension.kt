@@ -17,7 +17,7 @@ import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import one.mixin.android.R
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.util.mention.MentionRenderContext
 import one.mixin.android.util.mention.MentionTextView
 import one.mixin.android.widget.NoUnderLineSpan
@@ -28,7 +28,7 @@ fun TextView.highlightStarTag(
     source: String,
     links: Array<String>,
     @ColorInt color: Int = ContextCompat.getColor(context, R.color.colorBlue),
-    onItemListener: ConversationAdapter.OnItemListener? = null,
+    onItemListener: MessageAdapter.OnItemListener? = null,
 ) {
     val spannableStringBuilder = try {
         var start: Int
@@ -64,7 +64,7 @@ fun TextView.highlightLinkText(
     texts: Array<String>,
     links: Array<String>,
     color: Int = ContextCompat.getColor(context, R.color.colorBlue),
-    onItemListener: ConversationAdapter.OnItemListener? = null,
+    onItemListener: MessageAdapter.OnItemListener? = null,
 ) {
     require(texts.size == links.size) { "texts's length should equals with links" }
     val sp = SpannableString(source)

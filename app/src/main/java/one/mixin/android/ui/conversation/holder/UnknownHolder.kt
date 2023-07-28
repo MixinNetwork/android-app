@@ -11,7 +11,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatUnknownBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.highlightStarTag
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
 
@@ -58,7 +58,7 @@ class UnknownHolder constructor(val binding: ItemChatUnknownBinding) : BaseViewH
         isFirst: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)

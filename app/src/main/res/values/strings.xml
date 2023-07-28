@@ -673,7 +673,7 @@
     <string name="Not_logged_in">Not logged in</string>
     <string name="Not_recognized">Not recognized</string>
     <string name="Not_support">Not support</string>
-    <string name="not_supported_deposit">Mixin Wallet does not support the deposit for %1$s. Please note that you can continue to transfer or withdraw the deposited %2$s. Read the document to **learn more**.</string>
+    <string name="not_supported_deposit">Mixin ceases support for deposit service on the %1$s. You can continue to withdraw and transfer %2$s in the wallet balance. Read the document to **learn more**.</string>
     <string name="Notice">Notice</string>
     <string name="Notification_and_Confirmation">Notification and Confirmation</string>
     <string name="notification_channel_description">Shows what music is currently playing in Mixin Messenger</string>
