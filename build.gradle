@@ -142,6 +142,7 @@ allprojects {
         google()
         mavenCentral()
         maven { url "https://jitpack.io" }
+        maven { url "https://maven.sumsub.com/repository/maven-public/" }
         maven {
             url 'https://api.mapbox.com/downloads/v2/releases/maven'
             authentication {

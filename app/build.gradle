@@ -451,7 +451,8 @@ dependencies {
     implementation("com.sumsub.sns:idensic-mobile-sdk:1.26.0") {
         exclude group: 'com.twilio.audioswitch', module: 'AudioDevice'
     }
-//    implementation "com.sumsub.sns:idensic-mobile-sdk-videoident:1.26.0"
+    // checkout
+    implementation 'com.github.checkout:frames-android:v4.0.2'
 }
 
 secrets {
