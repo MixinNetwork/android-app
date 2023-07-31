@@ -43,7 +43,7 @@ object GsonHelper {
         override fun deserialize(
             json: JsonElement?,
             typeOfT: Type?,
-            context: JsonDeserializationContext?
+            context: JsonDeserializationContext?,
         ): WithdrawalMemoPossibility? {
             return when (json?.asString) {
                 WithdrawalMemoPossibility.NEGATIVE.value -> WithdrawalMemoPossibility.NEGATIVE
