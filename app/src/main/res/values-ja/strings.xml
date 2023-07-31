@@ -170,7 +170,6 @@
     </plurals>
     <string name="chat_delete_url">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
     <string name="chat_group_add">%1$sが%2$sを追加しました</string>
-    <string name="chat_group_call_cancel">%1$sがグループ通話をキャンセルしました</string>
     <string name="chat_group_call_decline">%1$sグループ通話が終了しました</string>
     <string name="chat_group_call_end">グループ通話が終了しました </string>
     <string name="chat_group_call_invite">%1$sからグループ通話の招待がきています</string>

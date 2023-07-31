@@ -183,7 +183,6 @@
     </plurals>
     <string name="chat_delete_url">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
     <string name="chat_group_add">%1$s ha añadido %2$s</string>
-    <string name="chat_group_call_cancel">%1$s ha cancelado una llamada de grupo</string>
     <string name="chat_group_call_decline">%1$s ha rechazado una llamada de grupo</string>
     <string name="chat_group_call_end">La llamada de grupo ha finalizado.</string>
     <string name="chat_group_call_invite">%1$s te ha invitado a una llamada de grupo</string>
