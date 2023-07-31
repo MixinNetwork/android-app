@@ -55,9 +55,9 @@ class GroupCallHolder constructor(val binding: ItemChatSystemBinding) :
             }
             MessageCategory.KRAKEN_CANCEL.name -> {
                 binding.chatInfo.text = if (isMe) {
-                    context.getString(R.string.chat_group_call_cancel, name)
+                    context.getString(R.string.chat_group_call_self_did_not_answer)
                 } else {
-                    context.getString(R.string.chat_group_call_cancel_other, name)
+                    context.getString(R.string.chat_group_call_did_not_answer, name)
                 }
             }
             MessageCategory.KRAKEN_DECLINE.name -> {
