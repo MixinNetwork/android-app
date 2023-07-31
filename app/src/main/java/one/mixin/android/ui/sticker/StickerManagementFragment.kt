@@ -41,7 +41,7 @@ import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Sticker
-import one.mixin.android.widget.RLottieImageView
+import one.mixin.android.widget.lottie.RLottieImageView
 
 @AndroidEntryPoint
 class StickerManagementFragment : BaseFragment() {

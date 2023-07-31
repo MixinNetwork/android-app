@@ -13,7 +13,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.extension.textColorResource
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.util.GsonHelper
@@ -104,7 +104,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         if (hasSelect && isSelect) {

@@ -8,3 +8,12 @@ sealed class Method(val name: String) {
     object ETHSignTransaction : Method("eth_signTransaction")
     object ETHSendTransaction : Method("eth_sendTransaction")
 }
+
+val supportedMethods = listOf(
+    Method.ETHSign.name,
+    Method.ETHPersonalSign.name,
+    Method.ETHSignTypedData.name,
+    Method.ETHSignTypedDataV4.name,
+    Method.ETHSignTransaction.name,
+    Method.ETHSendTransaction.name,
+)

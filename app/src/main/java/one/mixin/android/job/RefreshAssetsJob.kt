@@ -70,7 +70,7 @@ class RefreshAssetsJob(
         if (resp.isSuccess) {
             resp.data?.let { chain ->
                 val isExits = chainDao.isExits(chain.chainId, chain.name, chain.symbol, chain.iconUrl, chain.threshold) != null
-                if (!isExits) chainDao.upsert(chain)
+                if (!isExits) chainDao.upsertSuspend(chain)
             }
         }
     }

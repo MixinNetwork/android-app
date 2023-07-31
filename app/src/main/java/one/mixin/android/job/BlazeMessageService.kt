@@ -45,7 +45,8 @@ import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.deleteMessageById
-import one.mixin.android.db.invalidater.InvalidateFlow
+import one.mixin.android.db.flow.MessageFlow
+import one.mixin.android.db.flow.MessageFlow.ANY_ID
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.base64Encode
@@ -227,7 +228,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         if (intent == null) return START_STICKY
 
         if (intent.action == ACTION_TO_BACKGROUND) {
-            stopForeground(true)
+            stopForeground(STOP_FOREGROUND_REMOVE)
             if (!isIgnoringBatteryOptimizations) {
                 BatteryOptimizationDialogActivity.show(this, true)
             }
@@ -547,11 +548,12 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 pendingDatabase.deletePendingMessageById(messageId)
                 database.deleteMessageById(messageId)
                 ftsDatabase.deleteByMessageId(messageId)
+                MessageFlow.delete(ANY_ID, messageId)
             }
+
             cIds.forEach { id ->
                 conversationDao.refreshLastMessageId(id)
                 conversationExtDao.refreshCountByConversationId(id)
-                InvalidateFlow.emit(id)
             }
             nextExpirationTime = null
             expiredJob?.ensureActive()

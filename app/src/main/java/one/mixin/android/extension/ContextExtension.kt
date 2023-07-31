@@ -7,6 +7,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.BUBBLE_PREFERENCE_NONE
 import android.app.PendingIntent
+import android.app.UiModeManager
 import android.content.ActivityNotFoundException
 import android.content.ClipboardManager
 import android.content.ComponentName
@@ -51,6 +52,7 @@ import android.view.WindowManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
+import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -86,6 +88,8 @@ import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
 import timber.log.Timber
 import java.io.File
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ExecutorService
@@ -125,6 +129,20 @@ fun Context.runOnUiThread(f: Context.() -> Unit, delay: Long = 0L) {
     } else {
         uiHandler.postDelayed({ f() }, delay)
     }
+}
+
+fun Throwable.getStackTraceInfo(): String {
+    val trace: String
+    try {
+        val writer = StringWriter()
+        val pw = PrintWriter(writer)
+        this.printStackTrace(pw)
+        trace = writer.toString()
+        pw.close()
+    } catch (e: Exception) {
+        return ""
+    }
+    return trace
 }
 
 fun Context.runOnUiThread(f: Context.() -> Unit) {
@@ -618,6 +636,7 @@ private val maxVideoSize by lazy {
 
 fun getVideoModel(uri: Uri): VideoEditedInfo? {
     try {
+        @Suppress("DEPRECATION")
         val path = uri.getFilePath() ?: return null
         val m = MediaMetadataRetriever().apply {
             setDataSource(path)
@@ -684,7 +703,11 @@ fun Context.openUrl(url: String) {
         val actionIntent = Intent(this, ShareBroadcastReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(this, 0, actionIntent, PendingIntent.FLAG_IMMUTABLE)
         val customTabsIntent = CustomTabsIntent.Builder()
-            .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
+            .setDefaultColorSchemeParams(
+                CustomTabColorSchemeParams.Builder()
+                    .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
+                    .build(),
+            )
             .setShowTitle(true)
             .setActionButton(
                 BitmapFactory.decodeResource(this.resources, R.drawable.ic_share),
@@ -1158,6 +1181,7 @@ fun Context.shareMedia(isVideo: Boolean, url: String) {
         action = Intent.ACTION_SEND
         uri = Uri.parse(url)
         if (ContentResolver.SCHEME_FILE == uri.scheme) {
+            @Suppress("DEPRECATION")
             val path = uri.getFilePath(this@shareMedia)
             if (path == null) {
                 toast(R.string.File_does_not_exist)
@@ -1212,4 +1236,9 @@ fun Context.findFragmentActivityOrNull(): FragmentActivity? {
         ctx = ctx.baseContext
     }
     return null
+}
+
+fun Context.isAuto(): Boolean {
+    val uiModeManager = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+    return uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_CAR
 }

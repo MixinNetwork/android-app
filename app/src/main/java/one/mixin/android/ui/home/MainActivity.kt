@@ -419,10 +419,7 @@ class MainActivity : BlazeBaseActivity() {
         } catch (e: Exception) {
             0
         }
-        if (currentVersion > MINI_VERSION && CURRENT_VERSION != currentVersion) {
-            return true
-        }
-        return false
+        return currentVersion > MINI_VERSION && CURRENT_VERSION != currentVersion
     }
 
     @SuppressLint("BatteryLife")
@@ -683,7 +680,7 @@ class MainActivity : BlazeBaseActivity() {
                                     null,
                                 )
                                 conversation = c
-                                conversationDao.insert(c)
+                                conversationDao.upsert(c)
                             } else {
                                 conversationDao.updateConversation(
                                     data.conversationId,

@@ -43,6 +43,7 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.notNullWithElse
@@ -795,7 +796,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     }
 
     private fun callbackEditor(data: Intent?) {
-        val uri = data?.getParcelableExtra<Uri>(ImageEditorActivity.ARGS_EDITOR_RESULT)
+        val uri = data?.getParcelableExtraCompat(ImageEditorActivity.ARGS_EDITOR_RESULT, Uri::class.java)
         if (uri != null) {
             lifecycleScope.launch {
                 sendImageByUri(uri)

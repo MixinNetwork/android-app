@@ -11,7 +11,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.textResource
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.util.AudioPlayer
@@ -42,7 +42,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         if (hasSelect && isSelect) {
@@ -197,7 +197,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
         isSelect: Boolean,
         isMe: Boolean,
         messageItem: MessageItem,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         if (hasSelect) {
             onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)

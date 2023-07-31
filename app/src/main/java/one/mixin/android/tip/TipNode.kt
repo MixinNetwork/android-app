@@ -53,7 +53,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         failedSigners: List<TipSigner>? = null,
         forRecover: Boolean = false,
         callback: Callback? = null,
-    ): ByteArray {
+    ): Pair<ByteArray, Long> {
         val suite = Tip.newSuiteBn256()
         val userSk = suite.scalar()
         userSk.setBytes(identityPriv)
@@ -69,7 +69,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         }
 
         Timber.e("tip get node sig failedSigners size ${failedSigners?.size}, assigneeSk != null: ${assigneeSk != null}")
-        val pair = if (!failedSigners.isNullOrEmpty() && assigneeSk != null) {
+        val pair = if (!failedSigners.isNullOrEmpty() && failedSigners.size != tipConfig.signers.size && assigneeSk != null) {
             // should sign successful signers before failed signers,
             // prevent signing failed signers with different identities.
             val successfulSigners = tipConfig.signers - failedSigners
@@ -112,7 +112,12 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
         val hexSigs = partials.joinToString(",") { it.toHex() }
         val commitments = tipConfig.commitments.joinToString(",")
-        return Tip.recoverSignature(hexSigs, commitments, assignor, nodeCount.toLong())
+        val signature = Tip.recoverSignature(hexSigs, commitments, assignor, nodeCount.toLong())
+        val maxCounter = requireNotNull(data.maxByOrNull { it.counter }?.counter) {
+            "required max counter can not be null"
+        }
+        Timber.e("sign maxCounter: $maxCounter")
+        return Pair(signature, maxCounter)
     }
 
     suspend fun watch(watcher: ByteArray, callback: Callback? = null): Pair<List<TipNodeCounter>, String> {
@@ -129,6 +134,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
                     while (retryCount < maxRequestCount) {
                         val (counter, code) = watchTipNode(signer, watcher)
+                        Timber.e("watch tip node ${signer.index} counter: $counter, code: $code")
                         if (code == 429 || code == 500) {
                             Timber.e("watch tip node failed, ${signer.index} ${signer.api} meet $code")
                             nodeFailedInfo.append("[${signer.index}, $code] ")
@@ -206,7 +212,15 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     private suspend fun watchTipNode(tipSigner: TipSigner, watcher: ByteArray): Pair<Int, Int> {
         val tipWatchRequest = TipWatchRequest(watcher.toHex())
         return try {
-            val tipWatchResponse = tipNodeService.watch(tipWatchRequest, tipNodeApi2Path(tipSigner.api))
+            val response = tipNodeService.watch(tipWatchRequest, tipNodeApi2Path(tipSigner.api))
+            val requestId = response.headers()["x-request-id"] ?: ""
+            Timber.e("watch tip node requestId: $requestId to ${tipSigner.info()}")
+            if (response.isSuccessful.not()) {
+                return Pair(-1, response.code())
+            }
+            val tipWatchResponse = requireNotNull(response.body()) {
+                "watch tip node response success but body is null"
+            }
             return Pair(tipWatchResponse.counter, -1)
         } catch (e: Exception) {
             Timber.d(e)
@@ -295,7 +309,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         val time = buffer.readLong()
         buffer.write(counterBytes)
         val counter = buffer.readLong()
-        Timber.d("tip sign node ${signer.index} counter $counter")
+        Timber.e("sign tip node ${signer.index} counter $counter")
         return TipSignRespData(partial, assignor.toHex(), counter)
     }
 

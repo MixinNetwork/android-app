@@ -33,7 +33,7 @@ import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.and
 import kotlin.experimental.or
 
-private val secureRandom: SecureRandom = SecureRandom()
+val secureRandom: SecureRandom = SecureRandom()
 private const val GCM_IV_LENGTH = 12
 
 // https://github.com/google/tink/issues/403

@@ -9,7 +9,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CAMERA"
+        tools:ignore="PermissionImpliesUnsupportedChromeOsHardware" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
@@ -525,9 +526,9 @@
         <meta-data
             android:name="google_analytics_adid_collection_enabled"
             android:value="false" />
-        <meta-data
-            android:name="com.google.android.gms.car.application"
-            android:resource="@xml/automotive_app_desc" />
+<!--        <meta-data-->
+<!--            android:name="com.google.android.gms.car.application"-->
+<!--            android:resource="@xml/automotive_app_desc" />-->
     </application>
 
     <queries>

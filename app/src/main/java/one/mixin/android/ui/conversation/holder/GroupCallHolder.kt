@@ -6,7 +6,7 @@ import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSystemBinding
 import one.mixin.android.extension.formatMillis
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.MessageCategory
@@ -22,7 +22,7 @@ class GroupCallHolder constructor(val binding: ItemChatSystemBinding) :
         messageItem: MessageItem,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         if (hasSelect && isSelect) {
@@ -54,7 +54,11 @@ class GroupCallHolder constructor(val binding: ItemChatSystemBinding) :
                 binding.chatInfo.text = context.getString(R.string.chat_group_call_invite, messageItem.userFullName)
             }
             MessageCategory.KRAKEN_CANCEL.name -> {
-                binding.chatInfo.text = context.getString(R.string.chat_group_call_cancel, name)
+                binding.chatInfo.text = if (isMe) {
+                    context.getString(R.string.chat_group_call_cancel, name)
+                } else {
+                    context.getString(R.string.chat_group_call_cancel_other, name)
+                }
             }
             MessageCategory.KRAKEN_DECLINE.name -> {
                 binding.chatInfo.text = context.getString(R.string.chat_group_call_decline, name)

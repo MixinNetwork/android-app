@@ -41,7 +41,10 @@ interface BaseDao<T> {
     fun deleteList(obj: List<T>)
 
     @Upsert
-    suspend fun upsert(entity: T)
+    fun upsert(entity: T)
+
+    @Upsert
+    suspend fun upsertSuspend(entity: T)
 
     @Upsert
     suspend fun upsertList(obj: List<T>)

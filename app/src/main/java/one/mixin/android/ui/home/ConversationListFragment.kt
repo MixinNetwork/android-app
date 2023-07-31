@@ -126,6 +126,7 @@ import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
 
+@Suppress("DEPRECATION")
 @AndroidEntryPoint
 class ConversationListFragment : LinkFragment() {
 
@@ -332,21 +333,10 @@ class ConversationListFragment : LinkFragment() {
                             } else {
                                 null
                             }
-                            val messageId =
-                                if (item.unseenMessageCount != null && item.unseenMessageCount > 0) {
-                                    conversationListViewModel.findFirstUnreadMessageId(
-                                        item.conversationId,
-                                        item.unseenMessageCount - 1,
-                                    )
-                                } else {
-                                    null
-                                }
                             ConversationActivity.fastShow(
                                 requireContext(),
                                 conversationId = item.conversationId,
                                 recipient = user,
-                                initialPositionMessageId = messageId,
-                                unreadCount = item.unseenMessageCount ?: 0,
                             )
                         }
                     }

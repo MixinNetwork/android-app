@@ -35,6 +35,7 @@ import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import java.util.concurrent.TimeUnit
 
+@Suppress("DEPRECATION")
 @AndroidEntryPoint
 class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     companion object {
@@ -100,14 +101,13 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
                         val conversationFragment = activity.supportFragmentManager.findFragmentByTag(ConversationFragment.TAG) as? ConversationFragment
                         if (activity is ConversationActivity && conversationFragment != null) {
                             lifecycleScope.launch {
-                                val unreadCount = searchViewModel.findMessageIndex(searchMessageItem.conversationId, item.messageId)
                                 activity.supportFragmentManager.inTransaction {
                                     setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
                                     show(conversationFragment)
                                     hide(this@SearchMessageFragment)
                                     addToBackStack(null)
                                 }
-                                conversationFragment.updateConversationInfo(item.messageId, binding.searchEt.text.toString(), unreadCount)
+                                conversationFragment.updateConversationInfo(item.messageId, binding.searchEt.text.toString())
                             }
                         } else {
                             ConversationActivity.show(
@@ -164,7 +164,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
             val conversationFragment = requireActivity().supportFragmentManager.findFragmentByTag(ConversationFragment.TAG) as? ConversationFragment
             if (conversationFragment != null) {
                 requireActivity().supportFragmentManager.inTransaction {
-                    conversationFragment.updateConversationInfo(null, null, 0)
+                    conversationFragment.updateConversationInfo(null, null)
                     show(conversationFragment)
                 }
             }
