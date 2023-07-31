@@ -209,12 +209,12 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                 updateSaveButton()
                 handleMemo()
             }
-            binding.info.setText(
-                if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    R.string.withdrawal_addr_tag
+            binding.info.text = getString(
+                R.string.withdrawal_addr_has_memo_or_tag, if (asset.assetId == RIPPLE_CHAIN_ID) {
+                    getString(R.string.No_tag)
                 } else {
-                    R.string.withdrawal_addr_memo
-                },
+                    getString(R.string.withdrawal_no_memo)
+                }
             )
             binding.info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
@@ -234,12 +234,12 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                 handleMemo()
                 binding.tagEt.showKeyboard()
             }
-            binding.info.setText(
-                if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    R.string.withdrawal_addr_no_tag
+            binding.info.text = getString(
+                R.string.withdrawal_addr_no_memo_or_tag, if (asset.assetId == RIPPLE_CHAIN_ID) {
+                    getString(R.string.Add_Tag)
                 } else {
-                    R.string.withdrawal_addr_no_memo
-                },
+                    getString(R.string.Add_memo)
+                }
             )
             binding.info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {

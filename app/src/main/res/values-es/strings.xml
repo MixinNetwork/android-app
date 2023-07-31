@@ -1083,14 +1083,12 @@
     <string name="When_roaming">Con roaming</string>
     <string name="withdraw_Address">Dirección</string>
     <string name="Withdrawal">Retirar</string>
-    <string name="withdrawal_addr_memo">Etiqueta de destino o número de identificación o notas. De lo contrario, puedes configurarlo como Sin Nota.</string>
+    <string name="withdrawal_addr_has_memo_or_tag">Etiqueta de destino o número de ID o notas. Si no, puedes configurarlo %1$s</string>
     <string name="withdrawal_addr_new">Nueva dirección de %1$s</string>
-    <string name="withdrawal_addr_no_memo">Si debes completar la etiqueta de destino, el número de identificación o las notas, puedes añadir una nota.</string>
-    <string name="withdrawal_addr_no_tag">Si debes completar la etiqueta de destino, el número de identificación o las notas, puedes añadir una etiqueta.</string>
+    <string name="withdrawal_addr_no_memo_or_tag">Si se requiere que llenes la Etiqueta de destino o número de ID o notas, puedes %1$s.</string>
     <string name="withdrawal_addr_pin_add">Introduce el PIN para guardar la dirección</string>
     <string name="withdrawal_addr_pin_delete">Introduce el PIN para eliminar la dirección</string>
     <string name="withdrawal_addr_pin_modify">Introduce el PIN para modificar la dirección</string>
-    <string name="withdrawal_addr_tag">Etiqueta de destino o número de identificación o notas. Si no, puedes configurarlo establécelo como Sin etiqueta.</string>
     <string name="withdrawal_address_tips">Para el primer retiro a una nueva dirección, ¡prueba con cantidades pequeñas! Si retiras los activos a la dirección incorrecta, ¡no se recuperarán!</string>
     <string name="withdrawal_label">Etiqueta (por ejemplo, intercambios, carteras, etc.)</string>
     <string name="withdrawal_memo">Nota</string>
