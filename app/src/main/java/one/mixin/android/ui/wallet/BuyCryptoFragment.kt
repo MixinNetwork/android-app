@@ -41,6 +41,9 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
             titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
+            continueTv.setOnClickListener {
+                // Todo
+            }
         }
     }
 }

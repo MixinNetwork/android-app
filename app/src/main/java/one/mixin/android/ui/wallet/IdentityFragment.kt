@@ -15,8 +15,10 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentIdentityBinding
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.sumsub.State
 import timber.log.Timber
 import java.util.Locale
 
@@ -48,7 +50,17 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
     private fun startVerification() = lifecycleScope.launch {
         binding.innerVa.displayedChild = 1
         val tokenResponse = walletViewModel.token()
-        presentSDK(tokenResponse.token!!)
+        when(tokenResponse.state){
+            State.PENDING.name -> presentSDK(requireNotNull(tokenResponse.token))
+            State.SUCCESS.name -> {
+                // Todo
+                toast("Success")
+                binding.innerVa.displayedChild = 0
+            }
+            else -> {
+                Timber.e("Unknown")
+            }
+        }
     }
 
     private fun presentSDK(accessToken:String) {
