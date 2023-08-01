@@ -6,7 +6,7 @@ class TokenResponse(
     @SerializedName("token")
     val token: String? = null,
     @SerializedName("state")
-    val state: State
+    val state: String
 )
 
 enum class State {

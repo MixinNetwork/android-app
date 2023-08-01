@@ -446,6 +446,12 @@ dependencies {
     implementation "com.squareup.leakcanary:leakcanary-android-process:$leakcanaryVerison"
     releaseImplementation "com.squareup.leakcanary:leakcanary-android-release:$leakcanaryVerison"
     releaseImplementation "com.squareup.leakcanary:leakcanary-object-watcher-android:$leakcanaryVerison"
+
+    // SumSub
+    implementation("com.sumsub.sns:idensic-mobile-sdk:1.26.0") {
+        exclude group: 'com.twilio.audioswitch', module: 'AudioDevice'
+    }
+//    implementation "com.sumsub.sns:idensic-mobile-sdk-videoident:1.26.0"
 }
 
 secrets {

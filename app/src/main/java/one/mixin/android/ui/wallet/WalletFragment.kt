@@ -107,9 +107,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                             )
                         }
                         onUnverifiedClick = {
-                            // todo replace
                             view.navigate(
-                                R.id.action_wallet_to_identity
+                                R.id.action_wallet_to_buy,
                             )
                         }
                     }.show(parentFragmentManager, BuyBottomSheetDialogFragment.TAG)

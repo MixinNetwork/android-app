@@ -113,6 +113,7 @@ buildscript {
         google()
         mavenCentral()
         maven { url "https://jitpack.io" }
+        maven { url "https://maven.sumsub.com/repository/maven-public/" }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.1.0'
@@ -151,6 +152,7 @@ allprojects {
                 password = project.properties['MAPBOX_DOWNLOADS_TOKEN'] ?: ""
             }
         }
+        maven { url "https://maven.sumsub.com/repository/maven-public/" }
 
         //noinspection JcenterRepositoryObsolete
         jcenter() {

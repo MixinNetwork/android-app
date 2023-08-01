@@ -1238,6 +1238,8 @@
     <string name="identity_tip_1">Prepare a valid government-issued ID</string>
     <string name="identity_tip_2">Check if your device’s camera is uncovered and working</string>
     <string name="identity_tip_3">Be prepared to take a selfie and photos of your ID</string>
+    <string name="identity_info">By proceeding, you agree to the Privacy Policy and Terms of Service.</string>
+    <string name="Start_Verification">Start Verification</string>
     <plurals name="last_month">
         <item quantity="one">Last %1$d month</item>
         <item quantity="other">Last %1$d months</item>

@@ -11,6 +11,8 @@ import androidx.paging.liveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.service.SumsubService
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.Pin
@@ -29,6 +31,7 @@ import one.mixin.android.db.TraceDao
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
@@ -41,6 +44,8 @@ import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
+import one.mixin.android.vo.sumsub.TokenRequest
+import one.mixin.android.vo.sumsub.TokenResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
 import javax.inject.Inject
@@ -52,6 +57,7 @@ class AssetRepository
 constructor(
     private val appDatabase: MixinDatabase,
     private val assetService: AssetService,
+    private val sumsubService: SumsubService,
     private val assetDao: AssetDao,
     private val assetsExtraDao: AssetsExtraDao,
     private val snapshotDao: SnapshotDao,
@@ -442,4 +448,7 @@ constructor(
                 }
             },
         )
+
+    suspend fun token(): TokenResponse =
+        sumsubService.token(TokenRequest(requireNotNull(Session.getAccountId())))
 }

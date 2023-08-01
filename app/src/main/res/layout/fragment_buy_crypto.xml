@@ -85,35 +85,7 @@
                     android:textColor="?attr/text_minor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
-
             </LinearLayout>
-
-            <TextView
-                android:layout_gravity="center_horizontal"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="@dimen/margin16"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_marginBottom="24dp"
-                android:text="@string/identity_info"
-                android:textColor="?attr/text_minor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-            <TextView
-                android:id="@+id/start"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="100dp"
-                android:background="@drawable/bg_round_blue_btn_solid"
-                android:gravity="center"
-                android:layout_gravity="center_horizontal"
-                android:minWidth="146dp"
-                android:minHeight="40dp"
-                android:paddingStart="@dimen/margin12"
-                android:paddingEnd="@dimen/margin12"
-                android:text="@string/Start_Verification"
-                android:textColor="@color/white"
-                android:textSize="16sp" />
 
         </LinearLayout>
     </ScrollView>
