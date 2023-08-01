@@ -107,10 +107,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                             )
                         }
                         onUnverifiedClick = {
-                            // todo replace
-                            view.navigate(
-                                R.id.action_wallet_to_identity
-                            )
+                            IdentityVerificationStateBottomSheetDialogFragment.newInstance()
+                                .showNow(parentFragmentManager, IdentityVerificationStateBottomSheetDialogFragment.TAG)
                         }
                     }.show(parentFragmentManager, BuyBottomSheetDialogFragment.TAG)
                 }
