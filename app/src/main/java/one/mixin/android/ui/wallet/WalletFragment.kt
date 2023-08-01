@@ -32,7 +32,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -110,6 +109,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                             view.navigate(
                                 R.id.action_wallet_to_buy,
                             )
+                            // Todo check user status
+                            // IdentityVerificationStateBottomSheetDialogFragment.newInstance()
+                            //     .showNow(parentFragmentManager, IdentityVerificationStateBottomSheetDialogFragment.TAG)
                         }
                     }.show(parentFragmentManager, BuyBottomSheetDialogFragment.TAG)
                 }

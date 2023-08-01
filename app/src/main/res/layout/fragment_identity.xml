@@ -99,21 +99,43 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
-            <TextView
-                android:id="@+id/start"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="100dp"
-                android:background="@drawable/bg_round_blue_btn_solid"
-                android:gravity="center"
+            <ViewAnimator
+                android:id="@+id/inner_va"
+                android:layout_width="116dp"
+                android:layout_height="40dp"
+                android:enabled="false"
                 android:layout_gravity="center_horizontal"
-                android:minWidth="146dp"
-                android:minHeight="40dp"
-                android:paddingStart="@dimen/margin12"
-                android:paddingEnd="@dimen/margin12"
-                android:text="@string/Start_Verification"
-                android:textColor="@color/white"
-                android:textSize="16sp" />
+                android:layout_marginTop="50dp"
+                android:layout_marginBottom="20dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:inAnimation="@anim/fade_in"
+                android:outAnimation="@anim/fade_out"
+                android:background="@drawable/bg_round_blue_btn">
+
+                <TextView
+                    android:id="@+id/start"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="100dp"
+                    android:background="@drawable/bg_round_blue_btn_solid"
+                    android:gravity="center"
+                    android:layout_gravity="center_horizontal"
+                    android:minWidth="146dp"
+                    android:minHeight="40dp"
+                    android:paddingStart="@dimen/margin12"
+                    android:paddingEnd="@dimen/margin12"
+                    android:text="@string/Start_Verification"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
+
+                <ProgressBar
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:theme="@style/AppTheme.WhiteAccent" />
+            </ViewAnimator>
 
         </LinearLayout>
     </ScrollView>
