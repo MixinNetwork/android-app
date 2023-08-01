@@ -9,10 +9,8 @@ class TokenResponse(
     val state: String
 )
 
-enum class State {
-    @SerializedName("pending")
-    PENDING,
+enum class State(val value:String) {
+    PENDING("pending"),
 
-    @SerializedName("success")
-    SUCCESS
+    SUCCESS("success")
 }

@@ -32,6 +32,8 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.checkout.TraceRequest
+import one.mixin.android.vo.checkout.TraceResponse
 import one.mixin.android.vo.sumsub.TokenResponse
 import javax.inject.Inject
 
@@ -257,4 +259,6 @@ internal constructor(
         accountRepository.getExternalAddressFee(assetId, destination, tag)
 
     suspend fun token():TokenResponse = assetRepository.token()
+
+    suspend fun payment(traceRequest: TraceRequest): TraceResponse = assetRepository.payment(traceRequest)
 }

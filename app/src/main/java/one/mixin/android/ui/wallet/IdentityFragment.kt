@@ -51,9 +51,8 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
         binding.innerVa.displayedChild = 1
         val tokenResponse = walletViewModel.token()
         when(tokenResponse.state){
-            State.PENDING.name -> presentSDK(requireNotNull(tokenResponse.token))
-            State.SUCCESS.name -> {
-                // Todo
+            State.PENDING.value -> presentSDK(requireNotNull(tokenResponse.token))
+            State.SUCCESS.value -> {
                 toast("Success")
                 binding.innerVa.displayedChild = 0
             }

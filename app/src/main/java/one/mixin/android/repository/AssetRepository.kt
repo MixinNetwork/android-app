@@ -20,6 +20,7 @@ import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
+import one.mixin.android.api.service.CheckoutService
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.AssetsExtraDao
@@ -44,6 +45,8 @@ import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
+import one.mixin.android.vo.checkout.TraceRequest
+import one.mixin.android.vo.checkout.TraceResponse
 import one.mixin.android.vo.sumsub.TokenRequest
 import one.mixin.android.vo.sumsub.TokenResponse
 import one.mixin.android.vo.toAssetItem
@@ -58,6 +61,7 @@ constructor(
     private val appDatabase: MixinDatabase,
     private val assetService: AssetService,
     private val sumsubService: SumsubService,
+    private val checkoutService: CheckoutService,
     private val assetDao: AssetDao,
     private val assetsExtraDao: AssetsExtraDao,
     private val snapshotDao: SnapshotDao,
@@ -451,4 +455,6 @@ constructor(
 
     suspend fun token(): TokenResponse =
         sumsubService.token(TokenRequest(requireNotNull(Session.getAccountId())))
+
+    suspend fun payment(traceRequest:TraceRequest): TraceResponse = checkoutService.payment(traceRequest)
 }
