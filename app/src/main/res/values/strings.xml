@@ -1227,6 +1227,7 @@
     <string name="All_chat">All chat</string>
     <string name="Chats">%1$d chats</string>
     <string name="Buy">Buy</string>
+    <string name="Buy_asset">Buy %1$s</string>
     <string name="Buy_Limits">Buy Limits</string>
     <string name="Unverified">Unverified</string>
     <string name="Unverified_content">Buy a little crypto as gas fee or for web3 dapps by Apple Pay.</string>
@@ -1260,4 +1261,9 @@
     <string name="identity_service_unavailable_tip">Your account has been temporarily blocked. Due to legal constraints, we are not able to give you any more information at this time. We would like to thank you for your patience, understanding and interest in cryptocurrency.</string>
     <string name="Additional_Verification">Additional Verification</string>
     <string name="identity_additional_verification_tip">We need you to submit additional information to meet regulatory requirements, thank you for your understanding and support.</string>
+    <string name="Price">Price</string>
+    <string name="Gateway_fee">Gateway fee</string>
+    <string name="Gateway_fee_price">Gateway fee: %1$s</string>
+    <string name="Google_Pay" translatable="false">Google Pay</string>
+    <string name="Visa_Mastercard">Visa / Mastercard</string>
 </resources>

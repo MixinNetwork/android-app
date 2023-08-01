@@ -42,6 +42,8 @@ import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
+import one.mixin.android.ui.setting.getCurrencyData
+import one.mixin.android.ui.wallet.BuyCryptoFragment.Companion.ARGS_CURRENCY
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
@@ -108,6 +110,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                         onUnverifiedClick = {
                             view.navigate(
                                 R.id.action_wallet_to_buy,
+                                Bundle().apply {
+                                    putParcelable(ARGS_ASSET, assets[0])
+                                    putParcelable(ARGS_CURRENCY, getCurrencyData(requireContext().resources)[0])
+                                }
                             )
                             // Todo check user status
                             // IdentityVerificationStateBottomSheetDialogFragment.newInstance()

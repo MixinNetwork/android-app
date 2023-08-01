@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/bg_white"
@@ -10,8 +11,272 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:need_divider="false"
-        app:leftIcon="@drawable/ic_close" />
+        app:rightIcon="@drawable/ic_transaction"
+        app:need_divider="false" />
+
+    <RelativeLayout
+        android:id="@+id/asset_rl"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:layout_marginStart="@dimen/margin20"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginEnd="@dimen/margin20"
+        android:background="@drawable/bg_round_8_solid_gray">
+
+        <androidx.legacy.widget.Space
+            android:id="@+id/center_place_holder"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerVertical="true" />
+
+        <one.mixin.android.widget.BadgeCircleImageView
+            android:id="@+id/asset_avatar"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/margin16"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/asset_name"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/center_place_holder"
+            android:layout_toStartOf="@id/expand_iv"
+            android:layout_toEndOf="@+id/asset_avatar"
+            android:ellipsize="end"
+            android:lines="1" />
+
+        <TextView
+            android:id="@+id/asset_desc"
+            style="@style/DescTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/center_place_holder"
+            android:layout_toEndOf="@+id/asset_avatar"
+            android:ellipsize="end"
+            android:maxWidth="150dp"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/desc_end"
+            style="@style/DescTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/asset_desc"
+            android:layout_marginStart="8dp"
+            android:layout_toEndOf="@+id/asset_desc" />
+
+        <ImageView
+            android:id="@+id/expand_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:src="@drawable/ic_keyboard_arrow_down"
+            tools:ignore="ContentDescription" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/pay_rl"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:layout_marginStart="@dimen/margin20"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="@dimen/margin20"
+        android:background="@drawable/bg_round_8_solid_gray">
+
+        <androidx.legacy.widget.Space
+            android:id="@+id/pay_center_place_holder"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerVertical="true" />
+
+        <one.mixin.android.widget.CircleImageView
+            android:id="@+id/pay_avatar"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/margin16"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/pay_name"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/pay_center_place_holder"
+            android:layout_toEndOf="@+id/pay_avatar"
+            android:text="@string/Visa_Mastercard"
+            android:ellipsize="end"
+            android:lines="1" />
+
+        <TextView
+            android:id="@+id/pay_desc"
+            style="@style/DescTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/pay_center_place_holder"
+            android:layout_toEndOf="@+id/pay_avatar"
+            android:ellipsize="end"
+            android:maxWidth="150dp"
+            android:maxLines="1" />
+
+        <ImageView
+            android:id="@+id/pay_expand_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:src="@drawable/ic_keyboard_arrow_down"
+            tools:ignore="ContentDescription" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:layout_marginTop="10dp">
+
+        <androidx.appcompat.widget.AppCompatAutoCompleteTextView
+            android:id="@+id/amount_et"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/margin16"
+            android:layout_marginEnd="10dp"
+            android:paddingStart="@dimen/margin16"
+            android:paddingEnd="@dimen/margin16"
+            android:layout_toStartOf="@id/fiat_rl"
+            android:background="@drawable/bg_round_8_solid_gray"
+            android:completionThreshold="4"
+            android:dropDownWidth="100dp"
+            android:dropDownHorizontalOffset="-12dp"
+            android:ellipsize="end"
+            android:hint="@string/Amount"
+            android:inputType="numberDecimal"
+            android:popupBackground="@android:color/transparent"
+            android:singleLine="true"
+            android:textColor="?attr/text_primary"
+            android:textColorHint="?attr/text_minor"
+            android:textSize="16sp"/>
+
+
+        <RelativeLayout
+            android:id="@+id/fiat_rl"
+            android:layout_width="136dp"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="@dimen/margin20"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/bg_round_8_solid_gray">
+
+            <one.mixin.android.widget.CircleImageView
+                android:id="@+id/fiat_avatar"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/margin16"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/fiat_name"
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@id/fiat_expand_iv"
+                android:layout_toEndOf="@+id/fiat_avatar"
+                android:ellipsize="end"
+                android:lines="1" />
+
+            <ImageView
+                android:id="@+id/fiat_expand_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:src="@drawable/ic_keyboard_arrow_down"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginEnd="36dp"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:textSize="14sp"
+            android:textColor="?attr/text_assist"
+            android:text="@string/Price"/>
+
+        <TextView
+            android:id="@+id/price_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:textSize="14sp"
+            android:textColor="?attr/text_assist"
+            tools:text="0.995 USD / USDC" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginEnd="36dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:textSize="14sp"
+            android:textColor="?attr/text_assist"
+            android:text="@string/Gateway_fee"/>
+
+        <TextView
+            android:id="@+id/gateway_fee_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:textSize="14sp"
+            android:textColor="?attr/text_assist"
+            tools:text="1.123 USD" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginEnd="36dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:textSize="14sp"
+            android:textColor="?attr/text_assist"
+            android:text="@string/network_fee"/>
+
+        <TextView
+            android:id="@+id/network_fee_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:textSize="14sp"
+            android:textColor="?attr/text_assist"
+            tools:text="0 USD" />
+    </RelativeLayout>
 
     <ViewAnimator
         android:id="@+id/inner_va"

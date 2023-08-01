@@ -1,6 +1,7 @@
 package one.mixin.android.ui.setting
 
 import android.content.res.Resources
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isInvisible
@@ -8,6 +9,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.parcelize.Parcelize
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemCurrencyBinding
 import one.mixin.android.session.Session
@@ -42,11 +44,12 @@ interface OnCurrencyListener {
     fun onClick(currency: Currency)
 }
 
+@Parcelize
 data class Currency(
     val name: String,
     val symbol: String,
     val flag: Int,
-) {
+): Parcelable {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Currency>() {
             override fun areItemsTheSame(oldItem: Currency, newItem: Currency) =
