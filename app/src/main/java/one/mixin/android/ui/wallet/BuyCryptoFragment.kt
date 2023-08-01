@@ -98,7 +98,12 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
     private fun checkToken() = lifecycleScope.launch {
         binding.innerVa.displayedChild = 1
         // Todo
-        navTo(PaymentFragment(), PaymentFragment.TAG)
+        navTo(PaymentFragment().apply {
+            onSuccess = { token->
+                parentFragmentManager.beginTransaction().remove(this).commitNow()
+                placeOrder(token)
+            }
+        }, PaymentFragment.TAG)
     }
 
     private fun placeOrder(token: String) = lifecycleScope.launch {
