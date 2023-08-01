@@ -1084,14 +1084,12 @@
     <string name="When_roaming">当漫游时</string>
     <string name="withdraw_Address">提现地址</string>
     <string name="Withdrawal">提现</string>
-    <string name="withdrawal_addr_memo">地址标签、数字 ID 或备注。如果没有，点击不使用 Memo（备注）。</string>
+    <string name="withdrawal_addr_has_memo_or_tag">地址标签、数字 ID 或备注。如果没有，%1$s。</string>
     <string name="withdrawal_addr_new">新 %1$s 地址</string>
-    <string name="withdrawal_addr_no_memo">如果你需要填写地址标签、数字 ID 或备注，点击添加 Memo（备注）。</string>
-    <string name="withdrawal_addr_no_tag">如果你需要填写地址标签、数字 ID 或备注，点击添加 Tag（标签）。</string>
+    <string name="withdrawal_addr_no_memo_or_tag">如果你需要填写地址标签、数字 ID 或备注，%1$s。</string>
     <string name="withdrawal_addr_pin_add">请输入 PIN 来完成添加</string>
     <string name="withdrawal_addr_pin_delete">请输入 PIN 来完成删除</string>
     <string name="withdrawal_addr_pin_modify">请输入 PIN 来完成修改</string>
-    <string name="withdrawal_addr_tag">地址标签、数字 ID 或备注。如果没有，点击不使用 Tag（标签）。</string>
     <string name="withdrawal_address_tips">首次提现到新地址，建议小额尝试！如果您提现到错误的地址资产将无法找回！</string>
     <string name="withdrawal_label">地址名称，例如 OceanOne</string>
     <string name="withdrawal_memo">Memo（备注）</string>
@@ -1213,4 +1211,5 @@
         <item quantity="one">已选择 %1$d 个</item>
         <item quantity="other">已选择 %1$d 个</item>
     </plurals>
+    <string name="user_deleted_hint">该用户已经删除了账号。</string>
 </resources>

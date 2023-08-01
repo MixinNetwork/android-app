@@ -1109,14 +1109,12 @@
     <string name="When_roaming">When roaming</string>
     <string name="withdraw_Address">Address</string>
     <string name="Withdrawal">Withdraw</string>
-    <string name="withdrawal_addr_memo">Destination Tag or ID Number or notes. If not, you can set it No Memo.</string>
+    <string name="withdrawal_addr_has_memo_or_tag">Destination Tag or ID Number or notes. If not, you can set it %1$s.</string>
     <string name="withdrawal_addr_new">New %1$s Address</string>
-    <string name="withdrawal_addr_no_memo">If you are required to fill in Destination Tag or ID Number or notes, you can Add Memo.</string>
-    <string name="withdrawal_addr_no_tag">If you are required to fill in Destination Tag or ID Number or notes, you can Add Tag.</string>
+    <string name="withdrawal_addr_no_memo_or_tag">If you are required to fill in Destination Tag or ID Number or notes, you can %1$s.</string>
     <string name="withdrawal_addr_pin_add">Enter PIN to save address</string>
     <string name="withdrawal_addr_pin_delete">Enter PIN to delete address</string>
     <string name="withdrawal_addr_pin_modify">Enter PIN to modify address</string>
-    <string name="withdrawal_addr_tag">Destination Tag or ID Number or notes. If not, you can set it No Tag.</string>
     <string name="withdrawal_address_tips">For the first withdrawal to a new address, please try small amounts! If you withdraw the assets to the wrong address, that would not be recovered!</string>
     <string name="withdrawal_label">Label (e.g. exchanges, wallets, etc.)</string>
     <string name="withdrawal_memo">Memo</string>
@@ -1238,4 +1236,5 @@
         <item quantity="one">%1$d Item Selected</item>
         <item quantity="other">%1$d Items Selected</item>
     </plurals>
+    <string name="user_deleted_hint">The user has deleted his own account.</string>
 </resources>

@@ -1023,14 +1023,12 @@
     <string name="When_roaming">Когда в роуминге</string>
     <string name="withdraw_Address">Адрес</string>
     <string name="Withdrawal">Вывести</string>
-    <string name="withdrawal_addr_memo">Тег назначения или идентификационный номер или примечания. Если нет, вы можете установить Нет памятки.</string>
+    <string name="withdrawal_addr_has_memo_or_tag">Тег назначения или номер ID или заметки. Если нет, вы можете установить это %1$s.</string>
     <string name="withdrawal_addr_new">Новый адрес %1$s</string>
-    <string name="withdrawal_addr_no_memo">Если вам необходимо заполнить тег назначения или идентификационный номер или примечания, вы можете добавить памятку.</string>
-    <string name="withdrawal_addr_no_tag">Если вам необходимо заполнить тег назначения, идентификационный номер или примечания, вы можете Добавить тега.</string>
+    <string name="withdrawal_addr_no_memo_or_tag">Если вам требуется заполнить тег назначения или номер ID или заметки, вы можете %1$s.</string>
     <string name="withdrawal_addr_pin_add">Введите PIN-код, чтобы сохранить адрес</string>
     <string name="withdrawal_addr_pin_delete">Введите PIN-код, чтобы удалить адрес</string>
     <string name="withdrawal_addr_pin_modify">Введите PIN-код, чтобы изменить адрес</string>
-    <string name="withdrawal_addr_tag">Тег назначения или идентификационный номер или примечания. Если нет, вы можете установить его Нет тега.</string>
     <string name="withdrawal_address_tips">Для первого вывода на новый адрес попробуйте небольшие суммы! Если вы выведете активы не на тот адрес, они не будут восстановлены!</string>
     <string name="withdrawal_label">Ярлык (например, биржи, кошельки и т.д.)</string>
     <string name="withdrawal_memo">Памятка</string>

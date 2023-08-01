@@ -17,7 +17,8 @@ interface AssetDao : BaseDao<Asset> {
             "a1.balance, a1.destination AS destination, a1.deposit_entries as depositEntries ,a1.tag AS tag, a1.price_btc AS priceBtc, a1.price_usd AS priceUsd, " +
             "a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden, a2.price_usd as chainPriceUsd," +
             "a1.confirmations, a1.reserve as reserve, c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName, " +
-            "a1.asset_key AS assetKey FROM assets a1 " +
+            "a1.asset_key AS assetKey, a1.withdrawal_memo_possibility AS withdrawalMemoPossibility " +
+            "FROM assets a1 " +
             "LEFT JOIN assets a2 ON a1.chain_id = a2.asset_id " +
             "LEFT JOIN chains c ON a1.chain_id = c.chain_id " +
             "LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id "

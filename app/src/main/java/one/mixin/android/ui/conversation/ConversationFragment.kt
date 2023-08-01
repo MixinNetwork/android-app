@@ -166,10 +166,10 @@ import one.mixin.android.ui.conversation.adapter.MentionAdapter
 import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListener
 import one.mixin.android.ui.conversation.adapter.Menu
 import one.mixin.android.ui.conversation.adapter.MenuType
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.chat.ChatItemCallback
 import one.mixin.android.ui.conversation.chat.ChatItemCallback.Companion.SWAP_SLOT
 import one.mixin.android.ui.conversation.chat.CompressedList
-import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity.Companion.JUMP_ID
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryContract
