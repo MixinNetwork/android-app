@@ -113,7 +113,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 Bundle().apply {
                                     putParcelable(ARGS_ASSET, assets[0])
                                     putParcelable(ARGS_CURRENCY, getCurrencyData(requireContext().resources)[0])
-                                }
+                                },
                             )
                             // Todo check user status
                             // IdentityVerificationStateBottomSheetDialogFragment.newInstance()

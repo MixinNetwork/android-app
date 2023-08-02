@@ -24,7 +24,7 @@ class SendReceiveView : LinearLayoutCompat {
     val receive get() = binding.receiveTv
     val receiveProgress get() = binding.receiveProgress
 
-    fun enableBuy(){
+    fun enableBuy() {
         buy.isVisible = true
         binding.buyDelimiter.isVisible = true
         send.foreground = ContextCompat.getDrawable(context, R.drawable.mixin_ripple_rect)

@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
-import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
@@ -258,7 +257,7 @@ internal constructor(
     suspend fun getExternalAddressFee(assetId: String, destination: String, tag: String?) =
         accountRepository.getExternalAddressFee(assetId, destination, tag)
 
-    suspend fun token():TokenResponse = assetRepository.token()
+    suspend fun token(): TokenResponse = assetRepository.token()
 
     suspend fun payment(traceRequest: TraceRequest): TraceResponse = assetRepository.payment(traceRequest)
 }

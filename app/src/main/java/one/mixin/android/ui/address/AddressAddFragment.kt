@@ -46,6 +46,7 @@ import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.WithdrawalMemoPossibility
 
 @AndroidEntryPoint
 class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
@@ -176,7 +177,23 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         binding.addrEt.addTextChangedListener(mWatcher)
         binding.tagEt.addTextChangedListener(mWatcher)
         binding.addrIv.setOnClickListener { handleClick(true) }
-        handleMemo()
+        when (asset.withdrawalMemoPossibility) {
+            WithdrawalMemoPossibility.NEGATIVE -> {
+                binding.info.isVisible = false
+                binding.tagRl.isVisible = false
+                memoEnabled = false
+            }
+            WithdrawalMemoPossibility.POSITIVE -> {
+                binding.info.isVisible = false
+                binding.tagRl.isVisible = true
+                binding.tagIv.setOnClickListener { handleClick(false) }
+                memoEnabled = true
+            }
+            else -> {
+                binding.info.isVisible = true
+                handleMemo()
+            }
+        }
         binding.labelEt.showKeyboard()
     }
 
@@ -192,11 +209,12 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                 updateSaveButton()
                 handleMemo()
             }
-            binding.info.setText(
+            binding.info.text = getString(
+                R.string.withdrawal_addr_has_memo_or_tag,
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    R.string.withdrawal_addr_tag
+                    getString(R.string.No_tag)
                 } else {
-                    R.string.withdrawal_addr_memo
+                    getString(R.string.withdrawal_no_memo)
                 },
             )
             binding.info.highLight(
@@ -217,11 +235,12 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                 handleMemo()
                 binding.tagEt.showKeyboard()
             }
-            binding.info.setText(
+            binding.info.text = getString(
+                R.string.withdrawal_addr_no_memo_or_tag,
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    R.string.withdrawal_addr_no_tag
+                    getString(R.string.Add_Tag)
                 } else {
-                    R.string.withdrawal_addr_no_memo
+                    getString(R.string.Add_memo)
                 },
             )
             binding.info.highLight(

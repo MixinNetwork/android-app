@@ -49,7 +49,7 @@ data class Currency(
     val name: String,
     val symbol: String,
     val flag: Int,
-): Parcelable {
+) : Parcelable {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Currency>() {
             override fun areItemsTheSame(oldItem: Currency, newItem: Currency) =

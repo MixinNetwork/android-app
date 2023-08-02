@@ -1,12 +1,15 @@
-package one.mixin.android.vo;
+package one.mixin.android.vo
 
 import com.google.gson.annotations.SerializedName
 
 enum class BuyLimit {
     @SerializedName("unverified")
     UNVERIFIED,
+
     @SerializedName("verified")
-    VERIFIED;
+    VERIFIED,
+
+    ;
 
     val title: String
         get() {

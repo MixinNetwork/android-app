@@ -11,8 +11,6 @@ import androidx.paging.liveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
-import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.service.SumsubService
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.Pin
@@ -21,6 +19,7 @@ import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.CheckoutService
+import one.mixin.android.api.service.SumsubService
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.AssetsExtraDao
@@ -456,5 +455,5 @@ constructor(
     suspend fun token(): TokenResponse =
         sumsubService.token(TokenRequest(requireNotNull(Session.getAccountId())))
 
-    suspend fun payment(traceRequest:TraceRequest): TraceResponse = checkoutService.payment(traceRequest)
+    suspend fun payment(traceRequest: TraceRequest): TraceResponse = checkoutService.payment(traceRequest)
 }

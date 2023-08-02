@@ -8,5 +8,5 @@ import retrofit2.http.Url
 interface CheckoutService {
 
     @POST
-    suspend fun payment(request: TraceRequest,@Url url:String = "https://wallet.touge.fun/checkout/payment"): TraceResponse
+    suspend fun payment(request: TraceRequest, @Url url: String = "https://wallet.touge.fun/checkout/payment"): TraceResponse
 }

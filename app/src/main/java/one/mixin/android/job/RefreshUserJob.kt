@@ -38,11 +38,21 @@ class RefreshUserJob(
     }
 
     private suspend fun refreshUsers(userIds: List<String>) {
-        val response = userService.getUsers(userIds).execute().body()
-        if (response != null && response.isSuccess) {
-            response.data?.let { data ->
-                userRepo.upsertList(data)
-                refreshConversationAvatar()
+        if (userIds.size == 1) {
+            val response = userService.getUserById(userIds[0]).execute().body()
+            if (response != null && response.isSuccess) {
+                response.data?.let { data ->
+                    userRepo.upsert(data)
+                    refreshConversationAvatar()
+                }
+            }
+        } else {
+            val response = userService.getUsers(userIds).execute().body()
+            if (response != null && response.isSuccess) {
+                response.data?.let { data ->
+                    userRepo.upsertList(data)
+                    refreshConversationAvatar()
+                }
             }
         }
     }

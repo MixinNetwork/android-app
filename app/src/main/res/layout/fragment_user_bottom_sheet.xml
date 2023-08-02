@@ -84,6 +84,23 @@
                 android:textColor="?attr/text_minor" />
 
             <TextView
+                android:id="@+id/deleted_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="@dimen/margin20"
+                android:layout_marginEnd="@dimen/margin20"
+                android:background="@drawable/bg_round_8_solid_gray"
+                android:text="@string/user_deleted_hint"
+                android:gravity="center"
+                android:paddingStart="@dimen/margin20"
+                android:paddingTop="@dimen/margin12"
+                android:paddingEnd="@dimen/margin20"
+                android:paddingBottom="@dimen/margin12"
+                android:visibility="gone"
+                android:textColor="@color/text_color_error_tip" />
+
+            <TextView
                 android:id="@+id/add_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="28dp"
@@ -176,6 +193,21 @@
                         android:background="@drawable/mixin_ripple"
                         android:contentDescription="@string/Share"
                         android:src="@drawable/ic_user_bot" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:id="@+id/share_fl"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="@drawable/mixin_ripple"
+                        android:contentDescription="@string/Share"
+                        android:src="@drawable/ic_share_arrow" />
                 </FrameLayout>
 
                 <FrameLayout

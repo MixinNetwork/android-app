@@ -12,5 +12,5 @@ class TraceRequest(
     @SerializedName("amount")
     val amount: Long,
     @SerializedName("asset_id")
-    val assetID: String
+    val assetID: String,
 )

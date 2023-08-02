@@ -3,6 +3,7 @@ package one.mixin.android.ui.transfer
 import android.database.SQLException
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.converter.DepositEntryListConverter
+import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
 import one.mixin.android.vo.App
 import one.mixin.android.vo.ArrayConverters
 import one.mixin.android.vo.Asset
@@ -356,7 +357,7 @@ class TransferInserter {
 
     fun insertIgnore(user: User) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `users` (`user_id`, `identity_number`, `relationship`, `biography`, `full_name`, `avatar_url`, `phone`, `is_verified`, `created_at`, `mute_until`, `has_pin`, `app_id`, `is_scam`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `users` (`user_id`, `identity_number`, `relationship`, `biography`, `full_name`, `avatar_url`, `phone`, `is_verified`, `created_at`, `mute_until`, `has_pin`, `app_id`, `is_scam`, `is_deactivated`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
         try {
             stmt.bindString(1, user.userId)
             stmt.bindString(2, user.identityNumber)
@@ -412,6 +413,13 @@ class TransferInserter {
                 stmt.bindNull(13)
             } else {
                 stmt.bindLong(13, userIsScam.toLong())
+            }
+            val isDeactivated = user.isDeactivated
+            val userIsDeactivated = if (isDeactivated == null) null else if (isDeactivated) 1 else 0
+            if (userIsDeactivated == null) {
+                stmt.bindNull(14)
+            } else {
+                stmt.bindLong(14, userIsDeactivated.toLong())
             }
             stmt.executeInsert()
             primaryId = user.userId
@@ -469,10 +477,11 @@ class TransferInserter {
     }
 
     private val depositEntryListConverter by lazy { DepositEntryListConverter() }
+    private val withdrawalMemoPossibilityConverter by lazy { WithdrawalMemoPossibilityConverter() }
 
     fun insertIgnore(asset: Asset) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `assets` (`asset_id`, `symbol`, `name`, `icon_url`, `balance`, `destination`, `tag`, `price_btc`, `price_usd`, `chain_id`, `change_usd`, `change_btc`, `confirmations`, `asset_key`, `reserve`, `deposit_entries`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `assets` (`asset_id`, `symbol`, `name`, `icon_url`, `balance`, `destination`, `tag`, `price_btc`, `price_usd`, `chain_id`, `change_usd`, `change_btc`, `confirmations`, `asset_key`, `reserve`, `deposit_entries`, `withdrawal_memo_possibility`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
         try {
             stmt.bindString(1, asset.assetId)
             stmt.bindString(2, asset.symbol)
@@ -506,6 +515,17 @@ class TransferInserter {
                 stmt.bindNull(16)
             } else {
                 stmt.bindString(16, depositEntryListConverter.converterDate(depositEntries))
+            }
+            val withdrawalMemoPossibility = asset.withdrawalMemoPossibility
+            if (depositEntries == null) {
+                stmt.bindNull(17)
+            } else {
+                val withdrawalMemoPossibilityString = withdrawalMemoPossibilityConverter.converterDate(withdrawalMemoPossibility)
+                if (withdrawalMemoPossibilityString == null) {
+                    stmt.bindNull(17)
+                } else {
+                    stmt.bindString(17, withdrawalMemoPossibilityString)
+                }
             }
             stmt.executeInsert()
             primaryId = asset.assetId

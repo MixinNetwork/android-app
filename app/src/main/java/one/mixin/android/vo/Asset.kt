@@ -96,6 +96,11 @@ data class Asset(
     @SerializedName("deposit_entries")
     @SerialName("deposit_entries")
     val depositEntries: List<DepositEntry>?,
+
+    @ColumnInfo(name = "withdrawal_memo_possibility")
+    @SerializedName("withdrawal_memo_possibility")
+    @SerialName("withdrawal_memo_possibility")
+    val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
 ) : Parcelable
 
 data class PriceAndChange(
@@ -113,7 +118,7 @@ data class PriceAndChange(
 
 fun Asset.toAssetItem(chainIconUrl: String? = null): AssetItem = AssetItem(
     assetId, symbol, name, iconUrl, balance, destination, depositEntries, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, false,
-    confirmations, chainIconUrl, null, null, null, assetKey, reserve,
+    confirmations, chainIconUrl, null, null, null, assetKey, reserve, withdrawalMemoPossibility,
 )
 
 fun Asset.toTopAssetItem(chainIconUrl: String?) = TopAssetItem(assetId, symbol, name, iconUrl, chainId, chainIconUrl, assetKey, priceUsd, changeUsd)

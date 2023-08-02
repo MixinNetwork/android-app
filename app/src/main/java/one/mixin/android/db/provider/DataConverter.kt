@@ -8,6 +8,7 @@ import androidx.room.util.getColumnIndexOrThrow
 import androidx.room.util.query
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.converter.DepositEntryListConverter
+import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
@@ -16,6 +17,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.WithdrawalMemoPossibility
 import java.util.concurrent.Callable
 
 @SuppressLint("RestrictedApi")
@@ -560,6 +562,7 @@ fun callableAssetItem(
             val cursorIndexOfChainName = 18
             val cursorIndexOfAssetKey = 19
             val cursorIndexOfDepositEntries = 20
+            val cursorIndexOfWithdrawalMemoPossibility = 21
             val result: MutableList<AssetItem> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
                 val item: AssetItem
@@ -666,6 +669,13 @@ fun callableAssetItem(
                 } else {
                     cursor.getString(cursorIndexOfDepositEntries)
                 }
+
+                val tmpDepositWithdrawalMemoPossibility: WithdrawalMemoPossibility? = if (cursor.isNull(cursorIndexOfWithdrawalMemoPossibility)) {
+                    null
+                } else {
+                    WithdrawalMemoPossibilityConverter().revertDate(cursor.getString(cursorIndexOfWithdrawalMemoPossibility))
+                }
+
                 item = AssetItem(
                     tmpAssetId!!,
                     tmpSymbol!!,
@@ -688,6 +698,7 @@ fun callableAssetItem(
                     tmpChainPriceUsd,
                     tmpAssetKey,
                     tmpReserve,
+                    tmpDepositWithdrawalMemoPossibility,
                 )
                 result.add(item)
             }

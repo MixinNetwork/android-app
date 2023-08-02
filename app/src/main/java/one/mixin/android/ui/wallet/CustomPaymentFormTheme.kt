@@ -1,7 +1,5 @@
 package one.mixin.android.ui.wallet
 
-import com.checkout.frames.style.theme.PaymentFormComponentBuilder
-import com.checkout.frames.style.theme.PaymentFormComponentField
 import com.checkout.frames.style.theme.PaymentFormTheme
 import com.checkout.frames.style.theme.PaymentFormThemeColors
 
@@ -13,7 +11,7 @@ object CustomPaymentFormTheme {
         backgroundColor = 0xFF17201E,
         fieldBackgroundColor = 0XFF24302D,
         enabledButtonColor = 0xFFFFFFFF,
-        disabledButtonColor = 0XFF003300
+        disabledButtonColor = 0XFF003300,
     )
 
     fun providePaymentFormTheme(): PaymentFormTheme {

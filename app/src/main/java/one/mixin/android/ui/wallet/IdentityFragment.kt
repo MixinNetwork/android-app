@@ -50,7 +50,7 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
     private fun startVerification() = lifecycleScope.launch {
         binding.innerVa.displayedChild = 1
         val tokenResponse = walletViewModel.token()
-        when(tokenResponse.state){
+        when (tokenResponse.state) {
             State.PENDING.value -> presentSDK(requireNotNull(tokenResponse.token))
             State.SUCCESS.value -> {
                 toast("Success")
@@ -62,7 +62,7 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
         }
     }
 
-    private fun presentSDK(accessToken:String) {
+    private fun presentSDK(accessToken: String) {
         val tokenExpirationHandler = object : TokenExpirationHandler {
             override fun onTokenExpired(): String {
                 // Access token expired
@@ -82,23 +82,23 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
                         is SNSSDKState.Failed.ApplicantMisconfigured -> Timber.e(newState.message)
                         is SNSSDKState.Failed.InitialLoadingFailed -> Timber.e(
                             newState.exception,
-                            "Initial loading error"
+                            "Initial loading error",
                         )
 
                         is SNSSDKState.Failed.InvalidParameters -> Timber.e(newState.message)
                         is SNSSDKState.Failed.NetworkError -> Timber.e(
                             newState.exception,
-                            newState.message
+                            newState.message,
                         )
 
                         is SNSSDKState.Failed.Unauthorized -> Timber.e(
                             newState.exception,
-                            "Invalid token or a token can't be refreshed by the SDK. Please, check your token expiration handler"
+                            "Invalid token or a token can't be refreshed by the SDK. Please, check your token expiration handler",
                         )
 
                         is SNSSDKState.Failed.Unknown -> Timber.e(
                             newState.exception,
-                            "Unknown error"
+                            "Unknown error",
                         )
                     }
                 }
@@ -127,7 +127,7 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
             when (result) {
                 is SNSCompletionResult.SuccessTermination -> Timber.d("The SDK finished successfully")
                 is SNSCompletionResult.AbnormalTermination -> Timber.e(result.exception, "The SDK got closed because of errors")
-                else-> Timber.e("Unknown")
+                else -> Timber.e("Unknown")
             }
         }
 

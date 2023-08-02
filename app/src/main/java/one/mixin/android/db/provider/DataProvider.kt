@@ -145,7 +145,7 @@ class DataProvider {
             cancellationSignal: CancellationSignal,
         ): List<AssetItem> {
             val _sql =
-                """SELECT a1.asset_id AS assetId, a1.symbol, a1.name, a1.icon_url AS iconUrl, a1.balance, a1.destination AS destination, a1.tag AS tag, a1.price_btc AS priceBtc, a1.price_usd AS priceUsd, a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden, a2.price_usd as chainPriceUsd,a1.confirmations, a1.reserve as reserve, a2.icon_url AS chainIconUrl, a2.symbol as chainSymbol, a2.name as chainName, a1.asset_key AS assetKey, a1.deposit_entries AS depositEntries  
+                """SELECT a1.asset_id AS assetId, a1.symbol, a1.name, a1.icon_url AS iconUrl, a1.balance, a1.destination AS destination, a1.tag AS tag, a1.price_btc AS priceBtc, a1.price_usd AS priceUsd, a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden, a2.price_usd as chainPriceUsd,a1.confirmations, a1.reserve as reserve, a2.icon_url AS chainIconUrl, a2.symbol as chainSymbol, a2.name as chainName, a1.asset_key AS assetKey, a1.deposit_entries AS depositEntries, a1.withdrawal_memo_possibility AS withdrawalMemoPossibility    
         FROM assets a1 
         LEFT JOIN assets a2 ON a1.chain_id = a2.asset_id 
         LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id  

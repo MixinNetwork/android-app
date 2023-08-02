@@ -34,18 +34,17 @@ import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
 import one.mixin.android.MixinApplication
-import one.mixin.android.api.service.CheckoutService
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
-import one.mixin.android.api.service.SumsubService
 import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.AuthorizationService
+import one.mixin.android.api.service.CheckoutService
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.api.service.ConversationService
@@ -55,6 +54,7 @@ import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.ProvisioningService
 import one.mixin.android.api.service.SignalKeyService
+import one.mixin.android.api.service.SumsubService
 import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.UserService
@@ -264,13 +264,13 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideHttpService(okHttp: OkHttpClient): Retrofit {
+    fun provideHttpService(okHttp: OkHttpClient, gson: Gson): Retrofit {
         val builder = Retrofit.Builder()
             .baseUrl(URL)
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addCallAdapterFactory(LiveDataCallAdapterFactory())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .client(okHttp)
         return builder.build()
     }

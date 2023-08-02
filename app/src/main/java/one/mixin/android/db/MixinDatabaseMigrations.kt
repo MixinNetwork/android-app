@@ -366,6 +366,13 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
+        val MIGRATION_49_50: Migration = object : Migration(49, 50) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `users` ADD COLUMN `is_deactivated` INTEGER")
+                database.execSQL("ALTER TABLE `assets` ADD COLUMN `withdrawal_memo_possibility` text")
+            }
+        }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }

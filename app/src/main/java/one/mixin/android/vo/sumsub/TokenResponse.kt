@@ -6,11 +6,11 @@ class TokenResponse(
     @SerializedName("token")
     val token: String? = null,
     @SerializedName("state")
-    val state: String
+    val state: String,
 )
 
-enum class State(val value:String) {
+enum class State(val value: String) {
     PENDING("pending"),
 
-    SUCCESS("success")
+    SUCCESS("success"),
 }
