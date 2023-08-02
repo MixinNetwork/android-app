@@ -7,13 +7,19 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
+import androidx.media3.transformer.ProgressHolder
 import androidx.media3.transformer.TransformationRequest
 import androidx.media3.transformer.Transformer
+import androidx.media3.transformer.Transformer.PROGRESS_STATE_NOT_STARTED
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
+import one.mixin.android.RxBus
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.extension.createVideoTemp
@@ -23,6 +29,7 @@ import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.NotificationGenerator.database
+import one.mixin.android.util.tickerFlow
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.MediaStatus
@@ -32,9 +39,10 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.toCategory
 import one.mixin.android.vo.toQuoteMessageItem
+import one.mixin.android.widget.ConvertEvent
 import timber.log.Timber
 import java.io.File
-import java.util.concurrent.CountDownLatch
+import kotlin.time.Duration.Companion.milliseconds
 
 @UnstableApi
 class ConvertVideoJob(
@@ -102,12 +110,18 @@ class ConvertVideoJob(
             .setAudioMimeType(MimeTypes.AUDIO_AAC)
             .setVideoMimeType(MimeTypes.VIDEO_H264)
             .build()
-        val latch = CountDownLatch(1)
-        var error: ExportException? = null
+        var error: ExportException?
+        val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp(conversationId, messageId, "mp4")
+        val transformer = Transformer.Builder(MixinApplication.get())
+            .setTransformationRequest(transformationRequest)
+            .build()
+
         val listener = object : Transformer.Listener {
             override fun onCompleted(composition: Composition, exportResult: ExportResult) {
                 error = exportResult.exportException
-                latch.countDown()
+                launch {
+                    doAfterConvert(transformer, videoFile, video, error)
+                }
             }
 
             override fun onError(
@@ -116,26 +130,37 @@ class ConvertVideoJob(
                 exportException: ExportException,
             ) {
                 error = exportException
-                latch.countDown()
+                launch {
+                    doAfterConvert(transformer, videoFile, video, error)
+                }
             }
         }
-        val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp(conversationId, messageId, "mp4")
-        val transformer = Transformer.Builder(MixinApplication.get())
-            .setTransformationRequest(transformationRequest)
-            .addListener(listener)
-            .build()
         withContext(Dispatchers.Main) {
+            transformer.addListener(listener)
             transformer.start(mediaItem, videoFile.absolutePath)
         }
-        latch.await()
 
+        val progressHolder = ProgressHolder()
+        tickerFlow(100.milliseconds)
+            .onEach {
+                withContext(Dispatchers.Main) {
+                    if (transformer.getProgress(progressHolder) != PROGRESS_STATE_NOT_STARTED) {
+                        RxBus.publish(ConvertEvent(messageId, progressHolder.progress.toFloat()))
+                    }
+                }
+            }.launchIn(this)
+    }
+
+    private suspend fun doAfterConvert(transformer: Transformer, videoFile: File, video: VideoEditedInfo, error: ExportException?) = withContext(Dispatchers.IO) {
         if (error != null) {
             Timber.e("ConvertVideo error: $error")
         }
         if (isCancelled) {
-            transformer.cancel()
+            withContext(Dispatchers.Main) {
+                transformer.cancel()
+            }
             removeJob()
-            return@runBlocking
+            return@withContext
         }
         val message = createVideoMessage(
             messageId, conversationId, senderId, category, null,
