@@ -184,6 +184,7 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
         } else {
             binding.authTv.text = getString(R.string.Scan_QR_Code)
             binding.descTv.text = getString(R.string.Scan_QR_Code)
+            binding.authTv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
         }
     }
 
@@ -197,8 +198,10 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
     }
 
     private fun confirm(url: String) {
-        ConfirmBottomFragment.show(requireContext(), childFragmentManager, url) {
-            updateUI(true)
+        ConfirmBottomFragment.show(requireContext(), childFragmentManager, url) { success, _ ->
+            if (success) {
+                updateUI(true)
+            }
         }
     }
 }
