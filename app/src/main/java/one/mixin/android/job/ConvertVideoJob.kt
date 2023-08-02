@@ -1,9 +1,19 @@
 package one.mixin.android.job
 
 import android.net.Uri
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.transformer.Composition
+import androidx.media3.transformer.ExportException
+import androidx.media3.transformer.ExportResult
+import androidx.media3.transformer.TransformationRequest
+import androidx.media3.transformer.Transformer
 import com.birbit.android.jobqueue.Params
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
-import one.mixin.android.RxBus
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.extension.createVideoTemp
@@ -13,7 +23,6 @@ import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.NotificationGenerator.database
-import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.MediaStatus
@@ -23,9 +32,11 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.toCategory
 import one.mixin.android.vo.toQuoteMessageItem
-import one.mixin.android.widget.ConvertEvent
+import timber.log.Timber
 import java.io.File
+import java.util.concurrent.CountDownLatch
 
+@UnstableApi
 class ConvertVideoJob(
     private val conversationId: String,
     private val senderId: String,
@@ -48,6 +59,7 @@ class ConvertVideoJob(
         MessageCategory.ENCRYPTED_VIDEO,
     )
     private val createdAt: String = createdAt ?: nowInUtc()
+
     override fun onAdded() {
         val mimeType = getMimeType(uri)
         if (video == null) {
@@ -75,47 +87,65 @@ class ConvertVideoJob(
         }
     }
 
-    override fun onRun() {
+    override fun onRun() = runBlocking {
         if (isCancelled) {
             removeJob()
-            return
+            return@runBlocking
         }
         if (video == null) {
-            return
+            return@runBlocking
         }
-        jobManager.saveJob(this)
-        val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp(conversationId, messageId, "mp4")
-        val error = MediaController.getInstance().convertVideo(
-            video.originalPath,
-            video.bitrate,
-            video.resultWidth,
-            video.resultHeight,
-            videoFile,
-            video.needChange,
-            video.duration,
-            object : MediaController.VideoConvertorListener {
-                override fun didWriteData(availableSize: Long, progress: Float) {
-                    RxBus.publish(ConvertEvent(messageId, progress / 10f))
-                }
+        jobManager.saveJob(this@ConvertVideoJob)
 
-                override fun checkConversionCanceled(): Boolean {
-                    return isCancelled
-                }
-            },
-        )
+        val mediaItem = MediaItem.fromUri(uri)
+        val transformationRequest = TransformationRequest.Builder()
+            .setAudioMimeType(MimeTypes.AUDIO_AAC)
+            .setVideoMimeType(MimeTypes.VIDEO_H264)
+            .build()
+        val latch = CountDownLatch(1)
+        var error: ExportException? = null
+        val listener = object : Transformer.Listener {
+            override fun onCompleted(composition: Composition, exportResult: ExportResult) {
+                error = exportResult.exportException
+                latch.countDown()
+            }
+
+            override fun onError(
+                composition: Composition,
+                exportResult: ExportResult,
+                exportException: ExportException,
+            ) {
+                error = exportException
+                latch.countDown()
+            }
+        }
+        val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp(conversationId, messageId, "mp4")
+        val transformer = Transformer.Builder(MixinApplication.get())
+            .setTransformationRequest(transformationRequest)
+            .addListener(listener)
+            .build()
+        withContext(Dispatchers.Main) {
+            transformer.start(mediaItem, videoFile.absolutePath)
+        }
+        latch.await()
+
+        if (error != null) {
+            Timber.e("ConvertVideo error: $error")
+        }
         if (isCancelled) {
+            transformer.cancel()
             removeJob()
-            return
+            return@runBlocking
         }
         val message = createVideoMessage(
             messageId, conversationId, senderId, category, null,
             video.fileName, videoFile.name, video.duration, video.resultWidth,
             video.resultHeight, video.thumbnail, "video/mp4",
             videoFile.length(), createdAt, null, null,
-            if (error) MediaStatus.CANCELED else MediaStatus.PENDING,
-            if (error) MessageStatus.FAILED.name else MessageStatus.SENDING.name,
+            if (error != null) MediaStatus.CANCELED else MediaStatus.PENDING,
+            if (error != null) MessageStatus.FAILED.name else MessageStatus.SENDING.name,
         )
-        if (!error) {
+        if (error == null) {
             messageDao.updateMediaMessageUrl(videoFile.name, messageId)
             MessageFlow.update(message.conversationId, message.messageId)
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
