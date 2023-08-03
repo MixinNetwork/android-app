@@ -1,15 +1,24 @@
 package one.mixin.android.ui.wallet
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.ActivityResultRegistry
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.checkout.CheckoutApiServiceFactory
+import com.checkout.base.model.Environment
+import com.checkout.tokenization.model.GooglePayTokenRequest
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.CommonStatusCodes
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.wallet.PaymentData
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBuyCryptoBinding
@@ -23,7 +32,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
-import one.mixin.android.ui.wallet.demo.CheckoutActivity
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
@@ -113,15 +121,6 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         }
     }
 
-    private lateinit var getScanResult: ActivityResultLauncher<String>
-    private lateinit var resultRegistry: ActivityResultRegistry
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
-
-        getScanResult = registerForActivityResult(CheckoutActivity.PayContract(), resultRegistry, ::callbackPay)
-    }
-
     private fun callbackPay(data: Intent?) {
         val token = data?.getStringExtra("Token") ?: return
         Timber.e("Return $token")
@@ -144,7 +143,36 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
     }
 
     private fun payWithGoogle() {
-        getScanResult.launch("")
+        binding.payTv.isEnabled = false
+        val task = walletViewModel.getLoadPaymentDataTask()
+
+        task.addOnCompleteListener { completedTask ->
+            if (completedTask.isSuccessful) {
+                completedTask.result.let(::handlePaymentSuccess)
+            } else {
+                when (val exception = completedTask.exception) {
+                    is ResolvableApiException -> {
+                        resolvePaymentForResult.launch(
+                            IntentSenderRequest.Builder(exception.resolution).build(),
+                        )
+                    }
+
+                    is ApiException -> {
+                        handleError(exception.statusCode, exception.message)
+                    }
+
+                    else -> {
+                        handleError(
+                            CommonStatusCodes.INTERNAL_ERROR,
+                            "Unexpected non API" +
+                                " exception when trying to deliver the task result to an activity!",
+                        )
+                    }
+                }
+            }
+
+            binding.payTv.isEnabled = true
+        }
     }
 
     private fun placeOrder(token: String) = lifecycleScope.launch {
@@ -159,5 +187,48 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         )
         binding.innerVa.displayedChild = 0
         Timber.e(response.traceID)
+        // Todo show trace
+    }
+
+    private fun handlePaymentSuccess(paymentData: PaymentData) {
+        try {
+            val tokenJsonPayload = paymentData.paymentMethodToken?.token
+            if (tokenJsonPayload != null) {
+                Timber.e("Pay token $tokenJsonPayload")
+                CheckoutApiServiceFactory.create(
+                    BuildConfig.CHCEKOUT_ID,
+                    Environment.SANDBOX,
+                    requireContext(),
+                ).createToken(
+                    GooglePayTokenRequest(tokenJsonPayload, { tokenDetails ->
+                        placeOrder(tokenDetails.token)
+                    }, {
+                        Timber.e("failure $it")
+                    }),
+                )
+            } else {
+                // todo failed
+            }
+        } catch (error: Exception) {
+            Timber.e("Error", "Error: $error")
+        }
+    }
+
+    private val resolvePaymentForResult =
+        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result: ActivityResult ->
+            when (result.resultCode) {
+                ComponentActivity.RESULT_OK ->
+                    result.data?.let { intent ->
+                        PaymentData.getFromIntent(intent)?.let(::handlePaymentSuccess)
+                    }
+
+                ComponentActivity.RESULT_CANCELED -> {
+                    // The user cancelled the payment attempt
+                }
+            }
+        }
+
+    private fun handleError(statusCode: Int, message: String?) {
+        Timber.e("Google Pay API error", "Error code: $statusCode, Message: $message")
     }
 }
