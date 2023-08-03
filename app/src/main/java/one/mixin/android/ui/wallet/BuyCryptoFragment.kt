@@ -38,7 +38,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
-import one.mixin.android.ui.wallet.demo.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.demo.CheckoutActivity
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding

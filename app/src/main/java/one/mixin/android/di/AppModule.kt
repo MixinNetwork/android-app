@@ -34,7 +34,7 @@ import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
 import one.mixin.android.MixinApplication
-import one.mixin.android.api.CheckoutPayService
+import one.mixin.android.api.service.CheckoutPayService
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.MixinResponse

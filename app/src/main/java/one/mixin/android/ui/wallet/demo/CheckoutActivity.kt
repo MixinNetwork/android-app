@@ -21,11 +21,10 @@ import com.google.android.gms.wallet.PaymentData
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.api.CheckoutPayService
+import one.mixin.android.api.service.CheckoutPayService
 import one.mixin.android.api.request.PayTokenRequest
 import one.mixin.android.api.request.TokenData
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.sumsub.TokenRequest
 import timber.log.Timber
 import javax.inject.Inject
 

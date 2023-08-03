@@ -1,4 +1,4 @@
-package one.mixin.android.api
+package one.mixin.android.api.service
 
 import one.mixin.android.BuildConfig
 import one.mixin.android.api.request.PayTokenRequest
