@@ -19,7 +19,6 @@ import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.CheckoutService
-import one.mixin.android.api.service.SumsubService
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.AssetsExtraDao
@@ -59,7 +58,6 @@ class AssetRepository
 constructor(
     private val appDatabase: MixinDatabase,
     private val assetService: AssetService,
-    private val sumsubService: SumsubService,
     private val checkoutService: CheckoutService,
     private val assetDao: AssetDao,
     private val assetsExtraDao: AssetsExtraDao,
@@ -453,7 +451,7 @@ constructor(
         )
 
     suspend fun token(): TokenResponse =
-        sumsubService.token(TokenRequest(requireNotNull(Session.getAccountId())))
+        checkoutService.sumsubToken(TokenRequest(requireNotNull(Session.getAccountId())))
 
     suspend fun payment(traceRequest: TraceRequest): TraceResponse = checkoutService.payment(traceRequest)
 }

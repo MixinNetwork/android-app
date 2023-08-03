@@ -32,6 +32,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBuyCryptoBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.withArgs
@@ -82,8 +83,11 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
             titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
-            continueTv.setOnClickListener {
+            innerVa.setOnClickListener {
                 checkToken()
+            }
+            payTv.setOnClickListener {
+                payWithGoogle()
             }
             titleView.rightAnimator.setOnClickListener { }
             updateUI()
@@ -105,7 +109,6 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                 }.showNow(parentFragmentManager, FiatListBottomSheetDialogFragment.TAG)
             }
         }
-        fetchCanUseGooglePay()
     }
 
     private fun updateUI() {
@@ -127,7 +130,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         }
     }
 
-    lateinit var getScanResult: ActivityResultLauncher<String>
+    private lateinit var getScanResult: ActivityResultLauncher<String>
     private lateinit var resultRegistry: ActivityResultRegistry
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -145,100 +148,20 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
     }
 
     private fun checkToken() = lifecycleScope.launch {
-        if (!googlePayAvailable)return@launch
         binding.innerVa.displayedChild = 1
-        // Todo
-        // navTo(
-        //     PaymentFragment().apply {
-        //         onSuccess = { token ->
-        //             parentFragmentManager.beginTransaction().remove(this).commitNow()
-        //             placeOrder(token)
-        //         }
-        //     },
-        //     PaymentFragment.TAG,
-        // )
-
-        // val task = getLoadPaymentDataTask()
-        // task.addOnCompleteListener { completedTask ->
-        //     if (completedTask.isSuccessful) {
-        //         completedTask.result.let(::handlePaymentSuccess)
-        //         Timber.e("Success")
-        //         requireActivity().onBackPressedDispatcher.onBackPressed()
-        //     } else {
-        //         val exception = completedTask.exception
-        //         Timber.e(exception)
-        //     }
-        // }
-
-        getScanResult.launch("")
-    }
-
-    private fun handlePaymentSuccess(paymentData: PaymentData) {
-        val paymentInformation = paymentData.toJson()
-        Timber.e(paymentInformation)
-    }
-
-    private val paymentsClient: PaymentsClient = PaymentsUtil.createPaymentsClient(MixinApplication.appContext)
-    private var googlePayAvailable = false
-    private fun fetchCanUseGooglePay() {
-        val isReadyToPayJson = PaymentsUtil.isReadyToPayRequest()
-        val request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString())
-        val task = paymentsClient.isReadyToPay(request)
-
-        task.addOnCompleteListener { completedTask ->
-            try {
-                googlePayAvailable = completedTask.getResult(ApiException::class.java)
-                Log.w("isReadyToPay ", "$googlePayAvailable")
-            } catch (exception: ApiException) {
-                Log.w("isReadyToPay failed", exception)
-            }
-        }
-    }
-
-    private val resolvePaymentForResult =
-        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result: ActivityResult ->
-            when (result.resultCode) {
-                ComponentActivity.RESULT_OK ->
-                    result.data?.let { intent ->
-                        PaymentData.getFromIntent(intent)?.let(::handlePaymentSuccess)
-                    }
-
-                ComponentActivity.RESULT_CANCELED -> {
-                    // The user cancelled the payment attempt
+        navTo(
+            PaymentFragment().apply {
+                onSuccess = { token ->
+                    parentFragmentManager.beginTransaction().remove(this).commitNow()
+                    placeOrder(token)
                 }
-            }
-        }
+            },
+            PaymentFragment.TAG,
+        )
+    }
 
-    private fun getLoadPaymentDataTask(): Task<PaymentData> {
-        val request = PaymentDataRequest.newBuilder()
-            .setTransactionInfo(
-                TransactionInfo.newBuilder()
-                    .setTotalPriceStatus(WalletConstants.TOTAL_PRICE_STATUS_FINAL)
-                    .setTotalPrice("10.00")
-                    .setCurrencyCode("USD")
-                    .build(),
-            )
-            .addAllowedPaymentMethod(WalletConstants.PAYMENT_METHOD_CARD)
-            .addAllowedPaymentMethod(WalletConstants.PAYMENT_METHOD_TOKENIZED_CARD)
-            .setCardRequirements(
-                CardRequirements.newBuilder()
-                    .addAllowedCardNetworks(
-                        listOf(
-                            WalletConstants.CARD_NETWORK_VISA,
-                            WalletConstants.CARD_NETWORK_MASTERCARD,
-                        ),
-                    )
-                    .build(),
-            )
-        val params = PaymentMethodTokenizationParameters.newBuilder()
-            .setPaymentMethodTokenizationType(
-                WalletConstants.PAYMENT_METHOD_TOKENIZATION_TYPE_PAYMENT_GATEWAY,
-            )
-            .addParameter("gateway", "checkoutltd")
-            .addParameter("gatewayMerchantId", BuildConfig.MERCHANT_ID)
-            .build()
-        request.setPaymentMethodTokenizationParameters(params)
-        return paymentsClient.loadPaymentData(request.build())
+    private fun payWithGoogle() {
+        getScanResult.launch("")
     }
 
     private fun placeOrder(token: String) = lifecycleScope.launch {

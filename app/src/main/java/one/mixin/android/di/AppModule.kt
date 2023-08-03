@@ -34,7 +34,6 @@ import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
 import one.mixin.android.MixinApplication
-import one.mixin.android.api.service.CheckoutPayService
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.MixinResponse
@@ -55,7 +54,6 @@ import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.ProvisioningService
 import one.mixin.android.api.service.SignalKeyService
-import one.mixin.android.api.service.SumsubService
 import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.UserService
@@ -427,24 +425,6 @@ object AppModule {
             .build()
         return retrofit.create(FoursquareService::class.java)
     }
-
-    @Singleton
-    @Provides
-    fun provideSumsubService(httpLoggingInterceptor: HttpLoggingInterceptor?): SumsubService {
-        val client = OkHttpClient.Builder().apply {
-            httpLoggingInterceptor?.let { interceptor ->
-                addNetworkInterceptor(interceptor)
-            }
-        }.build()
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://wallet.touge.fun")
-            .addConverterFactory(GsonConverterFactory.create())
-            .addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .client(client)
-            .build()
-        return retrofit.create(SumsubService::class.java)
-    }
-
     @Singleton
     @Provides
     fun provideCheckoutService(httpLoggingInterceptor: HttpLoggingInterceptor?): CheckoutService {
@@ -454,35 +434,12 @@ object AppModule {
             }
         }.build()
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://wallet.touge.fun")
+            .baseUrl("https://wallet.touge.fun") // Todo
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .client(client)
             .build()
         return retrofit.create(CheckoutService::class.java)
-    }
-
-    @Singleton
-    @Provides
-    fun provideCheckoutTokenService(httpLoggingInterceptor: HttpLoggingInterceptor?): CheckoutPayService {
-        val client = OkHttpClient.Builder().apply {
-            httpLoggingInterceptor?.let { interceptor ->
-                addNetworkInterceptor(interceptor)
-            }
-        }.build()
-        val retrofit = Retrofit.Builder()
-            .baseUrl(
-                if (BuildConfig.DEBUG) {
-                    "https://api.sandbox.checkout.com/"
-                } else {
-                    "https://api.checkout.com/"
-                },
-            )
-            .addConverterFactory(GsonConverterFactory.create())
-            .addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .client(client)
-            .build()
-        return retrofit.create(CheckoutPayService::class.java)
     }
 
     @Provides

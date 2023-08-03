@@ -12,31 +12,18 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.checkout.CheckoutApiServiceFactory
-import com.checkout.api.CheckoutApiService
 import com.checkout.base.model.Environment
-import com.checkout.frames.api.PaymentFlowHandler
-import com.checkout.frames.api.PaymentFormMediator
-import com.checkout.frames.screen.paymentform.PaymentFormConfig
-import com.checkout.frames.style.theme.paymentform.PaymentFormStyleProvider
 import com.checkout.tokenization.model.GooglePayTokenRequest
-import com.checkout.tokenization.model.TokenDetails
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.pay.PayClient
 import com.google.android.gms.wallet.PaymentData
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.api.service.CheckoutPayService
-import one.mixin.android.api.request.PayTokenRequest
-import one.mixin.android.api.request.TokenData
-import one.mixin.android.ui.wallet.CustomPaymentFormTheme
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.api.service.CheckoutService
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -111,7 +98,7 @@ class CheckoutActivity : ComponentActivity() {
         }
 
     @Inject
-    lateinit var checkoutPayService: CheckoutPayService
+    lateinit var checkoutPayService: CheckoutService
 
     private fun handlePaymentSuccess(paymentData: PaymentData) {
         try {
