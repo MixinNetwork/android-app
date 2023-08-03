@@ -107,6 +107,12 @@ buildscript {
         ext.composeVersion = '1.4.3'
         ext.accompanistVersion = '0.30.1'
         ext.web3jVersion = '4.8.7-android'
+
+        ext.sumsubVersion = '1.26.0'
+        ext.checkoutFramesVersion = 'v4.0.2'
+        ext.checkoutSecureVersion = '3.1.0'
+        ext.playWalletVersion = '19.2.0'
+        ext.playPayVersion = '16.1.0'
     }
 
     repositories {

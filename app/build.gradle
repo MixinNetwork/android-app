@@ -448,16 +448,16 @@ dependencies {
     releaseImplementation "com.squareup.leakcanary:leakcanary-object-watcher-android:$leakcanaryVerison"
 
     // SumSub
-    implementation("com.sumsub.sns:idensic-mobile-sdk:1.26.0") {
+    implementation("com.sumsub.sns:idensic-mobile-sdk:$sumsubVersion") {
         exclude group: 'com.twilio.audioswitch', module: 'AudioDevice'
     }
     // checkout
-    implementation 'com.github.checkout:frames-android:v4.0.2'
-    implementation "com.checkout:checkout-sdk-3ds-android:3.1.0"
+    implementation "com.github.checkout:frames-android:$checkoutFramesVersion"
+    implementation "com.checkout:checkout-sdk-3ds-android:$checkoutSecureVersion"
 
     // google pay
-    implementation "com.google.android.gms:play-services-wallet:19.2.0"
-    implementation "com.google.android.gms:play-services-pay:16.1.0"
+    implementation "com.google.android.gms:play-services-wallet:$playWalletVersion"
+    implementation "com.google.android.gms:play-services-pay:$playPayVersion"
 }
 
 secrets {
@@ -485,6 +485,16 @@ task ktlintFormat(type: JavaExec, group: "formatting") {
 
 configurations.all {
     exclude group: 'org.jetbrains', module: 'annotations-java5'
+}
+
+configurations.all {
+    c -> c.resolutionStrategy.dependencySubstitution {
+        all { DependencySubstitution dependency ->
+            if (dependency.requested.group == 'org.bouncycastle') {
+                dependency.useTarget "org.bouncycastle:bcprov-jdk15on:${bcVersion}"
+            }
+        }
+    }
 }
 
 apply plugin: 'com.google.gms.google-services'
