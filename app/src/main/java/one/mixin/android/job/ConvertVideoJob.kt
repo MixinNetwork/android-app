@@ -5,15 +5,18 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.transformer.Composition
+import androidx.media3.transformer.DefaultEncoderFactory
+import androidx.media3.transformer.EditedMediaItem
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.ProgressHolder
 import androidx.media3.transformer.TransformationRequest
 import androidx.media3.transformer.Transformer
 import androidx.media3.transformer.Transformer.PROGRESS_STATE_NOT_STARTED
+import androidx.media3.transformer.VideoEncoderSettings
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -105,20 +108,44 @@ class ConvertVideoJob(
         }
         jobManager.saveJob(this@ConvertVideoJob)
 
+        Timber.d("$TAG videoEditedInfo: $video")
         val mediaItem = MediaItem.fromUri(uri)
+        val editedMediaItem = EditedMediaItem.Builder(mediaItem)
+            .setFrameRate(25)
+            .build()
         val transformationRequest = TransformationRequest.Builder()
             .setAudioMimeType(MimeTypes.AUDIO_AAC)
             .setVideoMimeType(MimeTypes.VIDEO_H264)
             .build()
         var error: ExportException?
         val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp(conversationId, messageId, "mp4")
+        val videoEncoderSettings = VideoEncoderSettings.Builder()
+            .setBitrate(video.bitrate)
+            .build()
+        val encoderFactory = DefaultEncoderFactory.Builder(MixinApplication.get())
+            .setRequestedVideoEncoderSettings(videoEncoderSettings)
+            .build()
         val transformer = Transformer.Builder(MixinApplication.get())
+            .setEncoderFactory(encoderFactory)
             .setTransformationRequest(transformationRequest)
             .build()
+
+        val progressHolder = ProgressHolder()
+        val tickerJob = launch {
+            tickerFlow(100.milliseconds)
+                .onEach {
+                    withContext(Dispatchers.Main) {
+                        if (transformer.getProgress(progressHolder) != PROGRESS_STATE_NOT_STARTED) {
+                            RxBus.publish(ConvertEvent(messageId, progressHolder.progress.toFloat()))
+                        }
+                    }
+                }.collect()
+        }
 
         val listener = object : Transformer.Listener {
             override fun onCompleted(composition: Composition, exportResult: ExportResult) {
                 error = exportResult.exportException
+                tickerJob.cancel()
                 launch {
                     doAfterConvert(transformer, videoFile, video, error)
                 }
@@ -130,6 +157,7 @@ class ConvertVideoJob(
                 exportException: ExportException,
             ) {
                 error = exportException
+                tickerJob.cancel()
                 launch {
                     doAfterConvert(transformer, videoFile, video, error)
                 }
@@ -137,18 +165,8 @@ class ConvertVideoJob(
         }
         withContext(Dispatchers.Main) {
             transformer.addListener(listener)
-            transformer.start(mediaItem, videoFile.absolutePath)
+            transformer.start(editedMediaItem, videoFile.absolutePath)
         }
-
-        val progressHolder = ProgressHolder()
-        tickerFlow(100.milliseconds)
-            .onEach {
-                withContext(Dispatchers.Main) {
-                    if (transformer.getProgress(progressHolder) != PROGRESS_STATE_NOT_STARTED) {
-                        RxBus.publish(ConvertEvent(messageId, progressHolder.progress.toFloat()))
-                    }
-                }
-            }.launchIn(this)
     }
 
     private suspend fun doAfterConvert(transformer: Transformer, videoFile: File, video: VideoEditedInfo, error: ExportException?) = withContext(Dispatchers.IO) {
