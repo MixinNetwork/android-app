@@ -1,6 +1,7 @@
 package one.mixin.android
 
 import android.graphics.Color
+import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
 import one.mixin.android.net.CustomDns
 import one.mixin.android.net.SequentialDns
@@ -298,4 +299,24 @@ object Constants {
     // Only for third-party messenger user
     const val TEAM_BOT_ID = ""
     const val TEAM_BOT_NAME = ""
+
+    val SUPPORTED_METHODS = listOf(
+        "PAN_ONLY",
+        "CRYPTOGRAM_3DS",
+    )
+
+    val SUPPORTED_NETWORKS = listOf(
+        "AMEX",
+        "DISCOVER",
+        "JCB",
+        "MASTERCARD",
+        "VISA",
+    )
+
+    val PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS = mapOf(
+        "gateway" to "checkoutltd",
+        "gatewayMerchantId" to BuildConfig.MERCHANT_ID,
+    )
+
+    const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_TEST
 }
