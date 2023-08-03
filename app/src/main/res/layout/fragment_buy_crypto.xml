@@ -99,6 +99,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_centerVertical="true"
+            android:src="@drawable/ic_visa"
             android:layout_marginStart="@dimen/margin16"
             android:layout_marginEnd="8dp" />
 
@@ -225,6 +226,7 @@
             android:layout_alignParentEnd="true"
             android:textSize="14sp"
             android:textColor="?attr/text_assist"
+            android:text="0.995 USD / USDC"
             tools:text="0.995 USD / USDC" />
     </RelativeLayout>
 
@@ -250,6 +252,7 @@
             android:layout_alignParentEnd="true"
             android:textSize="14sp"
             android:textColor="?attr/text_assist"
+            android:text="1.123 USD"
             tools:text="1.123 USD" />
     </RelativeLayout>
 
@@ -275,6 +278,7 @@
             android:layout_alignParentEnd="true"
             android:textSize="14sp"
             android:textColor="?attr/text_assist"
+            android:text="0 USD"
             tools:text="0 USD" />
     </RelativeLayout>
 
@@ -290,6 +294,8 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="100dp"
         android:text="Pay with google"
+        android:drawableLeft="@drawable/ic_google_pay_smail"
+        android:drawablePadding="8dp"
         android:textColor="@color/white"
         android:textSize="14sp"
         android:background="@drawable/bg_round_blue_btn"
