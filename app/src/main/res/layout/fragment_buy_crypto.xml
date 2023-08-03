@@ -203,84 +203,29 @@
         </RelativeLayout>
     </RelativeLayout>
 
-    <RelativeLayout
+    <one.mixin.android.widget.HeadTailView
+        android:id="@+id/price"
         android:layout_width="match_parent"
         android:layout_height="32dp"
         android:layout_marginStart="36dp"
         android:layout_marginEnd="36dp"
-        android:layout_marginTop="10dp">
+        app:head="@string/Price" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:textSize="14sp"
-            android:textColor="?attr/text_assist"
-            android:text="@string/Price"/>
-
-        <TextView
-            android:id="@+id/price_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"
-            android:textSize="14sp"
-            android:textColor="?attr/text_assist"
-            android:text="0.995 USD / USDC"
-            tools:text="0.995 USD / USDC" />
-    </RelativeLayout>
-
-    <RelativeLayout
+    <one.mixin.android.widget.HeadTailView
+        android:id="@+id/gateway_fee"
         android:layout_width="match_parent"
         android:layout_height="32dp"
         android:layout_marginStart="36dp"
-        android:layout_marginEnd="36dp">
+        android:layout_marginEnd="36dp"
+        app:head="@string/Gateway_fee" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:textSize="14sp"
-            android:textColor="?attr/text_assist"
-            android:text="@string/Gateway_fee"/>
-
-        <TextView
-            android:id="@+id/gateway_fee_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"
-            android:textSize="14sp"
-            android:textColor="?attr/text_assist"
-            android:text="1.123 USD"
-            tools:text="1.123 USD" />
-    </RelativeLayout>
-
-    <RelativeLayout
+    <one.mixin.android.widget.HeadTailView
+        android:id="@+id/network_fee"
         android:layout_width="match_parent"
         android:layout_height="32dp"
         android:layout_marginStart="36dp"
-        android:layout_marginEnd="36dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:textSize="14sp"
-            android:textColor="?attr/text_assist"
-            android:text="@string/network_fee"/>
-
-        <TextView
-            android:id="@+id/network_fee_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"
-            android:textSize="14sp"
-            android:textColor="?attr/text_assist"
-            android:text="0 USD"
-            tools:text="0 USD" />
-    </RelativeLayout>
+        android:layout_marginEnd="36dp"
+        app:head="@string/network_fee" />
 
     <TextView
         android:id="@+id/pay_tv"

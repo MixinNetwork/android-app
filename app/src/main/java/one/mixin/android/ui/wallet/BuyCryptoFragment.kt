@@ -118,6 +118,10 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             payDesc.text = getString(R.string.Gateway_fee_price, "1.99%")
             fiatAvatar.setImageResource(currency.flag)
             fiatName.text = currency.name
+
+            price.tail.text = "0.995 USD / USDC"
+            gatewayFee.tail.text = "1.123 USD"
+            networkFee.tail.text = "0 USD"
         }
     }
 
