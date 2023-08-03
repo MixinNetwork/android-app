@@ -85,7 +85,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
                 WalletConstants.PAYMENT_METHOD_TOKENIZATION_TYPE_PAYMENT_GATEWAY,
             )
             .addParameter("gateway", "checkoutltd")
-            .addParameter("gatewayMerchantId", BuildConfig.MERCHANT_ID)
+            .addParameter("gatewayMerchantId", BuildConfig.CHCEKOUT_ID)
             .build()
         request.setPaymentMethodTokenizationParameters(params)
         return paymentsClient.loadPaymentData(request.build())

@@ -12,6 +12,7 @@ import androidx.activity.result.ActivityResultRegistry
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.checkout.tokenization.model.GooglePayTokenRequest
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wallet.CardRequirements
@@ -136,8 +137,11 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
     }
 
     private fun callbackPay(data: Intent?) {
-        val token = data?.getStringExtra("Token")
-        Timber.e(token)
+        val token = data?.getStringExtra("Token")?:return
+        Timber.e("Return $token")
+        lifecycleScope.launch {
+            placeOrder(token)
+        }
     }
 
     private fun checkToken() = lifecycleScope.launch {
