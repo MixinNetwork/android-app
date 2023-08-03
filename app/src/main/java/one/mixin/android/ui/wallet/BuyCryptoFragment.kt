@@ -1,11 +1,14 @@
 package one.mixin.android.ui.wallet
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.ActivityResultRegistry
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -35,6 +38,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.ui.wallet.demo.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.demo.CheckoutActivity
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
@@ -123,6 +127,20 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         }
     }
 
+    lateinit var getScanResult: ActivityResultLauncher<String>
+    private lateinit var resultRegistry: ActivityResultRegistry
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
+
+        getScanResult = registerForActivityResult(CheckoutActivity.PayContract(), resultRegistry, ::callbackPay)
+    }
+
+    private fun callbackPay(data: Intent?) {
+        val token = data?.getStringExtra("Token")
+        Timber.e(token)
+    }
+
     private fun checkToken() = lifecycleScope.launch {
         if (!googlePayAvailable)return@launch
         binding.innerVa.displayedChild = 1
@@ -149,12 +167,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         //     }
         // }
 
-        requireActivity().startActivity(
-            Intent(
-                requireContext(),
-                CheckoutActivity::class.java,
-            ),
-        )
+        getScanResult.launch("")
     }
 
     private fun handlePaymentSuccess(paymentData: PaymentData) {

@@ -1,40 +1,35 @@
-/*
- * Copyright 2023 Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package one.mixin.android.ui.wallet.demo
 
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.pay.PayClient
 import com.google.android.gms.wallet.PaymentData
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
-import org.json.JSONObject
+import one.mixin.android.api.CheckoutPayService
+import one.mixin.android.api.request.PayTokenRequest
+import one.mixin.android.api.request.TokenData
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.sumsub.TokenRequest
 import timber.log.Timber
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class CheckoutActivity : ComponentActivity() {
 
     private val addToGoogleWalletRequestCode = 1000
@@ -45,10 +40,6 @@ class CheckoutActivity : ComponentActivity() {
 
         setContent {
             ProductScreen(
-                title = "Men's Tech Shell Full-Zip",
-                description = "A versatile full-zip that you can wear all day long and even...",
-                price = "$50.20",
-                image = R.drawable.default_avatar,
                 viewModel = model,
                 googlePayButtonOnClick = { requestPayment() },
             )
@@ -59,10 +50,6 @@ class CheckoutActivity : ComponentActivity() {
         // Disables the button to prevent multiple clicks.
         model.setGooglePayButtonClickable(false)
 
-        // The price provided to the API should include taxes and shipping.
-        // This price is not displayed to the user.
-        val dummyPriceCents = 100L
-        val shippingCostCents = 900L
         val task = model.getLoadPaymentDataTask()
 
         task.addOnCompleteListener { completedTask ->
@@ -101,6 +88,8 @@ class CheckoutActivity : ComponentActivity() {
             when (result.resultCode) {
                 RESULT_OK ->
                     result.data?.let { intent ->
+                        Timber.e(intent.getStringExtra("paymentMethodToken"))
+                        Timber.e(intent.getStringExtra("com.google.android.gms.wallet.PaymentData"))
                         PaymentData.getFromIntent(intent)?.let(::handlePaymentSuccess)
                     }
 
@@ -109,6 +98,9 @@ class CheckoutActivity : ComponentActivity() {
                 }
             }
         }
+
+    @Inject
+    lateinit var checkoutPayService: CheckoutPayService
 
     /**
      * PaymentData response object contains the payment information, as well as any additional
@@ -120,46 +112,36 @@ class CheckoutActivity : ComponentActivity() {
      */
     private fun handlePaymentSuccess(paymentData: PaymentData) {
         try {
-            val paymentInformation = paymentData.toJson()
-            // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
-            val paymentMethodData =
-                JSONObject(paymentInformation).getJSONObject("paymentMethodData")
-            val billingName = paymentMethodData.getJSONObject("info")
-                .getJSONObject("billingAddress").getString("name")
-            Timber.e("BillingName", billingName)
-
-            Toast.makeText(
-                this,
-                getString(R.string.my_mixin_id, billingName),
-                Toast.LENGTH_LONG,
-            ).show()
-
-            // Logging token string.
-            Timber.e(
-                "Google Pay token",
-                paymentMethodData
-                    .getJSONObject("tokenizationData")
-                    .getString("token"),
-            )
-
-            model.checkoutSuccess()
+            val token = paymentData.paymentMethodToken?.token
+            if (token != null) {
+                model.checkoutSuccess()
+                lifecycleScope.launch {
+                    Timber.e("Pay token $token")
+                    val tokenData = GsonHelper.customGson.fromJson(token, TokenData::class.java)
+                    Timber.e("${tokenData.signature} ${tokenData.signedMessage}")
+                    try {
+                        val response =
+                            checkoutPayService.token(PayTokenRequest("googlepay", tokenData))
+                        Timber.e("${response.token} ${response.type} ${response.expiresOn}")
+                        val result = Intent().apply {
+                            putExtra("Token", response.token)
+                        }
+                        setResult(Activity.RESULT_OK, result)
+                        finish()
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                    }
+                }
+            } else {
+                model.checkoutFaild()
+            }
         } catch (error: Exception) {
-            Timber.e("$paymentData")
-            Timber.e("handlePaymentSuccess", "Error: $error")
+            Timber.e("Error", "Error: $error")
         }
     }
 
-    /**
-     * At this stage, the user has already seen a popup informing them an error occurred. Normally,
-     * only logging is required.
-     *
-     * @param statusCode will hold the value of any constant from CommonStatusCode or one of the
-     * WalletConstants.ERROR_CODE_* constants.
-     * @see [
-     * Wallet Constants Library](https://developers.google.com/android/reference/com/google/android/gms/wallet/WalletConstants.constant-summary)
-     */
     private fun handleError(statusCode: Int, message: String?) {
-        Log.e("Google Pay API error", "Error code: $statusCode, Message: $message")
+        Timber.e("Google Pay API error", "Error code: $statusCode, Message: $message")
     }
 
     @Deprecated("Deprecated and in use by Google Pay")
@@ -195,6 +177,17 @@ class CheckoutActivity : ComponentActivity() {
             }
 
             // Re-enables the Google Pay payment button.
+        }
+    }
+
+    class PayContract : ActivityResultContract<String, Intent?>() {
+        override fun createIntent(context: Context, input: String): Intent {
+            return Intent(context, CheckoutActivity::class.java)
+        }
+
+        override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
+            if (intent == null || resultCode != Activity.RESULT_OK) return null
+            return intent
         }
     }
 }

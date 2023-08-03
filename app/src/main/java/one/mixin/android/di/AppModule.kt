@@ -34,6 +34,7 @@ import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.CheckoutPayService
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.MixinResponse
@@ -459,6 +460,29 @@ object AppModule {
             .client(client)
             .build()
         return retrofit.create(CheckoutService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideCheckoutTokenService(httpLoggingInterceptor: HttpLoggingInterceptor?): CheckoutPayService {
+        val client = OkHttpClient.Builder().apply {
+            httpLoggingInterceptor?.let { interceptor ->
+                addNetworkInterceptor(interceptor)
+            }
+        }.build()
+        val retrofit = Retrofit.Builder()
+            .baseUrl(
+                if (BuildConfig.DEBUG) {
+                    "https://api.sandbox.checkout.com/"
+                } else {
+                    "https://api.checkout.com/"
+                },
+            )
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .client(client)
+            .build()
+        return retrofit.create(CheckoutPayService::class.java)
     }
 
     @Provides

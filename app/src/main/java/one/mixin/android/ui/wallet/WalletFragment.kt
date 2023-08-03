@@ -47,6 +47,7 @@ import one.mixin.android.ui.wallet.BuyCryptoFragment.Companion.ARGS_CURRENCY
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
+import one.mixin.android.ui.wallet.demo.AssetListBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats

@@ -313,10 +313,5 @@ object Constants {
         "VISA",
     )
 
-    val PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS = mapOf(
-        "gateway" to "checkoutltd",
-        "gatewayMerchantId" to BuildConfig.MERCHANT_ID,
-    )
-
     const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_TEST
 }
