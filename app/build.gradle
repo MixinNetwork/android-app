@@ -453,6 +453,7 @@ dependencies {
     }
     // checkout
     implementation 'com.github.checkout:frames-android:v4.0.2'
+    implementation "com.checkout:checkout-sdk-3ds-android:3.1.0"
 
     // google pay
     implementation "com.google.android.gms:play-services-wallet:19.2.0"

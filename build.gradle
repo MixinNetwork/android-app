@@ -155,6 +155,15 @@ allprojects {
         }
         maven { url "https://maven.sumsub.com/repository/maven-public/" }
 
+        maven {
+            url = "https://maven.pkg.github.com/checkout/checkout-3ds-sdk-android"
+            credentials {
+                username = project.properties['GITHUB_ID']
+                password = project.properties['GITHUB_PACKAGES_TOKEN']
+
+            }
+        }
+
         //noinspection JcenterRepositoryObsolete
         jcenter() {
             content {

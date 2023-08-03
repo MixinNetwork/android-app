@@ -5,15 +5,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.checkout.api.CheckoutApiService
 import com.checkout.base.model.Environment
 import com.checkout.frames.api.PaymentFlowHandler
 import com.checkout.frames.api.PaymentFormMediator
 import com.checkout.frames.screen.paymentform.PaymentFormConfig
 import com.checkout.frames.style.theme.paymentform.PaymentFormStyleProvider
+import com.checkout.threedsecure.model.ThreeDSRequest
+import com.checkout.threedsecure.model.ThreeDSResult
+import com.checkout.threedsecure.model.ThreeDSResultHandler
 import com.checkout.tokenization.model.TokenDetails
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import timber.log.Timber
 
 class PaymentFragment : Fragment() {
@@ -38,6 +41,19 @@ class PaymentFragment : Fragment() {
         }
     }
 
+    private val threeDSResultHandler: ThreeDSResultHandler = { threeDSResult: ThreeDSResult ->
+        when (threeDSResult) {
+            is ThreeDSResult.Success -> {
+                threeDSResult.token
+            }
+            is ThreeDSResult.Failure -> {
+            }
+            is ThreeDSResult.Error -> {
+                threeDSResult.error
+            }
+        }
+    }
+
     private val paymentFormConfig = PaymentFormConfig(
         publicKey = BuildConfig.CHCEKOUT_ID, // set your public key
         context = MixinApplication.appContext, // set context
@@ -57,6 +73,17 @@ class PaymentFragment : Fragment() {
         return paymentFormMediator.provideFragmentContent(this).apply {
             setBackgroundColor(0xFFF)
         }
+    }
+
+    private fun request3DS(view: View) {
+        val request = ThreeDSRequest(
+            container = view.findViewById(R.id.content), // Provide a ViewGroup container for 3DS WebView
+            challengeUrl = "",                     // Provide a 3D Secure URL
+            successUrl = "http://example.com/success",
+            failureUrl = "http://example.com/failure",
+            resultHandler = threeDSResultHandler
+        )
+        paymentFormMediator.handleThreeDS(request)
     }
 
     var onSuccess: ((String) -> Unit)? = null
