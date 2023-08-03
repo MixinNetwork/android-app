@@ -425,6 +425,7 @@ object AppModule {
             .build()
         return retrofit.create(FoursquareService::class.java)
     }
+
     @Singleton
     @Provides
     fun provideCheckoutService(httpLoggingInterceptor: HttpLoggingInterceptor?): CheckoutService {

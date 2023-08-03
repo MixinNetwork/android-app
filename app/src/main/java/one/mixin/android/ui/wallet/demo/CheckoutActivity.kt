@@ -105,36 +105,36 @@ class CheckoutActivity : ComponentActivity() {
             val tokenJsonPayload = paymentData.paymentMethodToken?.token
             if (tokenJsonPayload != null) {
                 model.checkoutSuccess()
-                    Timber.e("Pay token $tokenJsonPayload")
-                    // val tokenData = GsonHelper.customGson.fromJson(tokenJsonPayload, TokenData::class.java)
-                    // Timber.e("${tokenData.signature} ${tokenData.signedMessage}")
-                    CheckoutApiServiceFactory.create(
-                        BuildConfig.CHCEKOUT_ID,
-                        Environment.SANDBOX,
-                        this@CheckoutActivity
-                    ).createToken(
-                        GooglePayTokenRequest(tokenJsonPayload, { tokenDetails ->
-                            val result = Intent().apply {
-                                putExtra("Token", tokenDetails.token)
-                            }
-                            setResult(Activity.RESULT_OK, result)
-                            finish()
-                        }, {
-                            Timber.e("failure $it")
-                        })
-                    )
-                    // try {
-                    //     val response =
-                    //         checkoutPayService.token(PayTokenRequest("googlepay", tokenData))
-                    //     Timber.e("${response.token} ${response.type} ${response.expiresOn}")
-                    //     val result = Intent().apply {
-                    //         putExtra("Token", response.token)
-                    //     }
-                    //     setResult(Activity.RESULT_OK, result)
-                    //     finish()
-                    // } catch (e: Exception) {
-                    //     Timber.e(e)
-                    // }
+                Timber.e("Pay token $tokenJsonPayload")
+                // val tokenData = GsonHelper.customGson.fromJson(tokenJsonPayload, TokenData::class.java)
+                // Timber.e("${tokenData.signature} ${tokenData.signedMessage}")
+                CheckoutApiServiceFactory.create(
+                    BuildConfig.CHCEKOUT_ID,
+                    Environment.SANDBOX,
+                    this@CheckoutActivity,
+                ).createToken(
+                    GooglePayTokenRequest(tokenJsonPayload, { tokenDetails ->
+                        val result = Intent().apply {
+                            putExtra("Token", tokenDetails.token)
+                        }
+                        setResult(Activity.RESULT_OK, result)
+                        finish()
+                    }, {
+                        Timber.e("failure $it")
+                    }),
+                )
+                // try {
+                //     val response =
+                //         checkoutPayService.token(PayTokenRequest("googlepay", tokenData))
+                //     Timber.e("${response.token} ${response.type} ${response.expiresOn}")
+                //     val result = Intent().apply {
+                //         putExtra("Token", response.token)
+                //     }
+                //     setResult(Activity.RESULT_OK, result)
+                //     finish()
+                // } catch (e: Exception) {
+                //     Timber.e(e)
+                // }
             } else {
                 model.checkoutFaild()
             }

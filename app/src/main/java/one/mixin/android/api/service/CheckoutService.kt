@@ -21,12 +21,12 @@ interface CheckoutService {
     suspend fun sumsubToken(request: TokenRequest, @Url url: String = "https://wallet.touge.fun/kyc/token"): TokenResponse
 
     /**
-        if (BuildConfig.DEBUG) {
-            "https://api.sandbox.checkout.com/"
-        } else {
-            "https://api.checkout.com/"
-        }
+     if (BuildConfig.DEBUG) {
+     "https://api.sandbox.checkout.com/"
+     } else {
+     "https://api.checkout.com/"
+     }
      */
     @POST("tokens")
-    suspend fun token(@Body request: PayTokenRequest, @Url url: String = "https://api.sandbox.checkout.com/",@Header("Authorization") authorization: String = BuildConfig.CHCEKOUT_ID): PayTokenResponse
+    suspend fun token(@Body request: PayTokenRequest, @Url url: String = "https://api.sandbox.checkout.com/", @Header("Authorization") authorization: String = BuildConfig.CHCEKOUT_ID): PayTokenResponse
 }

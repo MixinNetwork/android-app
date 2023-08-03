@@ -78,10 +78,10 @@ class PaymentFragment : Fragment() {
     private fun request3DS(view: View) {
         val request = ThreeDSRequest(
             container = view.findViewById(R.id.content), // Provide a ViewGroup container for 3DS WebView
-            challengeUrl = "",                     // Provide a 3D Secure URL
+            challengeUrl = "", // Provide a 3D Secure URL
             successUrl = "http://example.com/success",
             failureUrl = "http://example.com/failure",
-            resultHandler = threeDSResultHandler
+            resultHandler = threeDSResultHandler,
         )
         paymentFormMediator.handleThreeDS(request)
     }
