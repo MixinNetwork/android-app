@@ -1,6 +1,7 @@
 package one.mixin.android.ui.conversation.preview
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.app.Dialog
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
@@ -13,14 +14,19 @@ import android.view.WindowManager
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.android.lifecycle.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPreviewBinding
 import one.mixin.android.databinding.FragmentPreviewVideoBinding
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.screenWidth
@@ -73,6 +79,8 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
         mediaDialogView = null
         _binding = null
         _videoBinding = null
+        alertDialog?.dismiss()
+        alertDialog = null
         mixinPlayer?.setOnVideoPlayerListener(null)
         mixinPlayer?.release()
         mixinPlayer = null
@@ -84,6 +92,8 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
     private val videoBinding get() = requireNotNull(_videoBinding)
     private var _binding: FragmentPreviewBinding? = null
     private val binding get() = requireNotNull(_binding)
+
+    private var alertDialog: AlertDialog? = null
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -115,8 +125,16 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                         }
                     okText?.let { videoBinding.dialogOk.text = it }
                     videoBinding.dialogOk.setOnClickListener {
-                        action!!(uri)
-                        dismiss()
+                        lifecycleScope.launch {
+                            alertDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                show()
+                            }
+                            withContext(Dispatchers.IO) {
+                                action!!(uri)
+                            }
+                            alertDialog?.dismiss()
+                            dismiss()
+                        }
                     }
                 }
             } else {
