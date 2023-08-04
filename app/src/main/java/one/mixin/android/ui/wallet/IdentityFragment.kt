@@ -41,7 +41,7 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
             }
             titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
             binding.innerVa.displayedChild = 0
-            start.setOnClickListener {
+            binding.innerVa.setOnClickListener {
                 startVerification()
             }
         }
