@@ -9,10 +9,10 @@ object Constants {
 
     object API {
         const val DOMAIN = "https://mixin.one"
-        const val URL = "https://mixin-api.zeromesh.net/"
-        const val WS_URL = "wss://mixin-blaze.zeromesh.net"
-        const val Mixin_URL = "https://api.mixin.one/"
-        const val Mixin_WS_URL = "wss://blaze.mixin.one"
+        const val URL = "https://api.mixin.one/"
+        const val WS_URL = "wss://blaze.mixin.one"
+        const val Mixin_URL = "https://mixin-api.zeromesh.net/"
+        const val Mixin_WS_URL = "wss://mixin-blaze.zeromesh.net"
 
         const val GIPHY_URL = "https://api.giphy.com/v1/"
         const val FOURSQUARE_URL = "https://api.foursquare.com/v2/"
