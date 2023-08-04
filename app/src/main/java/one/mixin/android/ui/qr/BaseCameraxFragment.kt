@@ -483,8 +483,10 @@ abstract class BaseCameraxFragment : VisionFragment() {
             return
         }
         if (analysisResult.startsWith(Constants.Scheme.DEVICE)) {
-            ConfirmBottomFragment.show(requireContext(), parentFragmentManager, analysisResult) {
-                activity?.finish()
+            ConfirmBottomFragment.show(requireContext(), parentFragmentManager, analysisResult) { _, complete ->
+                if (complete) {
+                    activity?.finish()
+                }
             }
             // } else if (analysisResult.startsWith(Constants.Scheme.DEVICE_TRANSFER)) {
             //     val uri = analysisResult.toUri()

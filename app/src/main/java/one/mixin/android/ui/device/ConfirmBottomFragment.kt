@@ -14,6 +14,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.ResponseError
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.ProvisioningRequest
 import one.mixin.android.api.service.ProvisioningService
 import one.mixin.android.crypto.Base64
@@ -27,11 +29,14 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.tip.TipBody
+import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.AvatarActivity
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.common.biometric.BiometricLayout
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.UnescapeIgnorePlusUrlQuerySanitizer
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import org.whispersystems.libsignal.ecc.Curve
@@ -46,12 +51,12 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
 
         private fun newInstance(
             url: String,
-            action: (() -> Unit)? = null,
+            action: ((Boolean, Boolean) -> Unit)? = null,
         ) = ConfirmBottomFragment().withArgs {
             putString(AvatarActivity.ARGS_URL, url)
         }.apply {
             action?.let {
-                setCallBack(it)
+                setCallback(it)
             }
         }
 
@@ -59,7 +64,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
             context: Context,
             fragmentManager: FragmentManager,
             url: String,
-            action: (() -> Unit)? = null,
+            action: ((Boolean, Boolean) -> Unit)? = null,
         ) {
             val uri = Uri.parse(url)
             val ephemeralId = uri.getQueryParameter("id")
@@ -81,46 +86,42 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
     lateinit var provisioningService: ProvisioningService
 
     private val url: String by lazy {
-        requireArguments().getString(AvatarActivity.ARGS_URL)!!
+        requireNotNull(requireArguments().getString(AvatarActivity.ARGS_URL)) { "required url must not be null" }
     }
 
     private fun authDevice(ephemeralId: String, pubKey: String, pin: String) = lifecycleScope.launch {
-        val response = try {
-            withContext(Dispatchers.IO) {
-                provisioningService.provisionCodeAsync().await()
-            }
-        } catch (t: Throwable) {
-            toast(R.string.Link_desktop_failed)
-            ErrorHandler.handleError(t)
-            dismiss()
-            return@launch
-        }
-        if (response.isSuccess) {
-            val success = try {
+        handleMixinResponse(
+            invokeNetwork = { provisioningService.provisionCodeAsync() },
+            successBlock = { response ->
                 withContext(Dispatchers.IO) {
                     encryptKey(requireContext(), ephemeralId, pubKey, response.data!!.code, pin)
                 }
-            } catch (t: Throwable) {
-                toast(R.string.Link_desktop_failed)
-                ErrorHandler.handleError(t)
-                dismiss()
-                return@launch
-            }
-            confirmCallback?.invoke()
-            if (success) {
-                toast(R.string.Link_desktop_success)
-            } else {
-                toast(R.string.Link_desktop_failed)
-            }
-            dismiss()
+            },
+            failureBlock = {
+                handleError(requireNotNull(it.error))
+                return@handleMixinResponse true
+            },
+            exceptionBlock = {
+                handleThrowable(it)
+                return@handleMixinResponse true
+            },
+        )
+    }
+
+    private fun handleThrowable(t: Throwable) {
+        if (t is TipNetworkException) {
+            handleError(requireNotNull(t.error))
         } else {
-            ErrorHandler.handleMixinError(
-                response.errorCode,
-                response.errorDescription,
-                getString(R.string.Link_desktop_failed),
-            )
-            dismiss()
+            showErrorInfo(t.stackTraceToString(), true, errorAction = BiometricLayout.ErrorAction.Close)
+            ErrorHandler.handleError(t)
         }
+    }
+
+    private fun handleError(error: ResponseError) {
+        val errorCode = error.code
+        val errorDescription = error.description
+        val errorInfo = requireContext().getMixinErrorStringByCode(errorCode, errorDescription)
+        showErrorInfo(errorInfo, true, errorAction = BiometricLayout.ErrorAction.Close)
     }
 
     private val binding by viewBinding(FragmentConfirmBinding::inflate)
@@ -146,14 +147,18 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
             val uri = Uri.parse(url)
             val ephemeralId = uri.getQueryParameter("id")
             if (ephemeralId == null) {
-                toast(R.string.Link_desktop_failed)
-                dismiss()
+                showErrorInfo("ephemeralId == null", true, errorAction = BiometricLayout.ErrorAction.Close)
                 return@let
             }
             sanitizer.parseUrl(url)
             val publicKeyEncoded = sanitizer.getValue("pub_key")
             authDevice(ephemeralId, publicKeyEncoded, pin)
         }
+        return false
+    }
+
+    override fun onClickBiometricLayoutClose(): Boolean {
+        confirmCallback?.invoke(false, true)
         return false
     }
 
@@ -169,10 +174,10 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         publicKeyEncoded: String,
         verificationCode: String,
         pin: String,
-    ): Boolean {
-        val account = Session.getAccount() ?: return false
+    ) {
+        val account = Session.getAccount() ?: return
         if (TextUtils.isEmpty(ephemeralId) || TextUtils.isEmpty(publicKeyEncoded)) {
-            return false
+            return
         }
 
         val publicKey = Curve.decodePoint(Base64.decode(publicKeyEncoded), 0)
@@ -187,10 +192,37 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         )
         val cipherText = cipher.encrypt(message.toByteArray())
         val encoded = cipherText.base64Encode()
-        val response =
-            provisioningService.updateProvisioningAsync(ephemeralId, ProvisioningRequest(encoded, pinCipher.encryptPin(pin, TipBody.forProvisioningCreate(ephemeralId, encoded))))
-                .await()
-        return response.isSuccess
+        withContext(Dispatchers.Main) {
+            handleMixinResponse(
+                invokeNetwork = {
+                    provisioningService.updateProvisioningAsync(
+                        ephemeralId,
+                        ProvisioningRequest(
+                            encoded,
+                            pinCipher.encryptPin(
+                                pin,
+                                TipBody.forProvisioningCreate(ephemeralId, encoded),
+                            ),
+                        ),
+                    )
+                },
+                successBlock = {
+                    confirmCallback?.invoke(true, true)
+                    toast(R.string.Link_desktop_success)
+                    dismiss()
+                },
+                failureBlock = {
+                    confirmCallback?.invoke(false, false)
+                    handleWithErrorCodeAndDesc(pin, requireNotNull(it.error))
+                    return@handleMixinResponse true
+                },
+                exceptionBlock = { t ->
+                    confirmCallback?.invoke(false, false)
+                    handleThrowableWithPin(t, pin)
+                    return@handleMixinResponse true
+                },
+            )
+        }
     }
 
     private val sanitizer = UnescapeIgnorePlusUrlQuerySanitizer().apply {
@@ -200,8 +232,10 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         )
     }
 
-    private var confirmCallback: (() -> Unit)? = null
-    fun setCallBack(action: () -> Unit) {
+    private var confirmCallback: ((Boolean, Boolean) -> Unit)? = null
+
+    // Boolean, Boolean --- success, complete
+    fun setCallback(action: (Boolean, Boolean) -> Unit) {
         confirmCallback = action
     }
 }
