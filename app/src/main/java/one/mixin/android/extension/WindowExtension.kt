@@ -14,7 +14,7 @@ fun WindowInsets.getSystemWindowTop(): Int {
 
 fun WindowInsets.getSystemWindowBottom(): Int {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        getInsetsIgnoringVisibility(WindowInsets.Type.systemBars()).bottom
+        getInsetsIgnoringVisibility(WindowInsets.Type.systemBars()).bottom + getInsets(WindowInsets.Type.ime()).bottom
     } else {
         @Suppress("DEPRECATION")
         systemWindowInsetBottom

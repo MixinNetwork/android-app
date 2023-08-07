@@ -29,8 +29,6 @@ import com.google.gson.GsonBuilder
 import com.walletconnect.web3.wallet.client.Wallet
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -66,9 +64,9 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
+import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.Asset
 import timber.log.Timber
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
@@ -324,14 +322,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
             .launchIn(lifecycleScope)
-    }
-
-    private fun tickerFlow(period: Duration, initialDelay: Duration = Duration.ZERO) = flow {
-        delay(initialDelay)
-        while (true) {
-            emit(Unit)
-            delay(period)
-        }
     }
 
     private fun doAfterPinComplete(pin: String) = lifecycleScope.launch {
