@@ -2,7 +2,9 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBuyBottomBinding
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -10,11 +12,13 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
-class BuyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class ChoosePaymentBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
-        const val TAG = "BuyBottomSheetDialogFragment"
+        const val TAG = "ChoosePaymentBottomSheetDialogFragment"
+        const val ARGS_IS_GOOGLE_PAY = "args_is_google_pay"
 
-        fun newInstance() = BuyBottomSheetDialogFragment().withArgs {
+        fun newInstance(isGooglePay: Boolean) = ChoosePaymentBottomSheetDialogFragment().withArgs {
+            putBoolean(ARGS_IS_GOOGLE_PAY, isGooglePay)
         }
     }
 
@@ -26,21 +30,25 @@ class BuyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
+        val isGooglePay = requireArguments().getBoolean(ARGS_IS_GOOGLE_PAY)
         binding.apply {
+            payCheckIv.isVisible = isGooglePay
+            creditCheckIv.isVisible = !isGooglePay
+            payDesc.text = getString(R.string.Gateway_fee_price, "1.99%")
+            creditDesc.text = getString(R.string.Gateway_fee_price, "1.99%")
             titleView.apply {
                 rightIv.setOnClickListener { dismiss() }
             }
-            verifiedRl.setOnClickListener {
+            payRl.setOnClickListener {
                 dismiss()
-                onVerifiedClick?.invoke()
+                onPaymentClick?.invoke(true)
             }
-            unverifiedRl.setOnClickListener {
+            creditRl.setOnClickListener {
                 dismiss()
-                onUnverifiedClick?.invoke()
+                onPaymentClick?.invoke(false)
             }
         }
     }
 
-    var onUnverifiedClick: (() -> Unit)? = null
-    var onVerifiedClick: (() -> Unit)? = null
+    var onPaymentClick: ((Boolean) -> Unit)? = null
 }

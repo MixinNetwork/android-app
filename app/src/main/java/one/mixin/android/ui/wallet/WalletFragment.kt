@@ -101,25 +101,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                 sendReceiveView.enableBuy()
                 sendReceiveView.buy.setOnClickListener {
-                    BuyBottomSheetDialogFragment.newInstance().apply {
-                        onVerifiedClick = {
-                            view.navigate(
-                                R.id.action_wallet_to_identity,
-                            )
-                        }
-                        onUnverifiedClick = {
-                            view.navigate(
-                                R.id.action_wallet_to_buy,
-                                Bundle().apply {
-                                    putParcelable(ARGS_ASSET, assets[0])
-                                    putParcelable(ARGS_CURRENCY, getCurrencyData(requireContext().resources)[0])
-                                },
-                            )
-                            // Todo check user status
-                            // IdentityVerificationStateBottomSheetDialogFragment.newInstance()
-                            //     .showNow(parentFragmentManager, IdentityVerificationStateBottomSheetDialogFragment.TAG)
-                        }
-                    }.show(parentFragmentManager, BuyBottomSheetDialogFragment.TAG)
+                    view.navigate(
+                        R.id.action_wallet_to_buy,
+                        Bundle().apply {
+                            putParcelable(ARGS_ASSET, assets[0])
+                            putParcelable(ARGS_CURRENCY, getCurrencyData(requireContext().resources)[0])
+                        },
+                    )
                 }
                 sendReceiveView.send.setOnClickListener {
                     AssetListBottomSheetDialogFragment.newInstance(true)

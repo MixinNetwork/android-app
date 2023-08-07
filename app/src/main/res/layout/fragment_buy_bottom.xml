@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical">
 
     <one.mixin.android.widget.RoundTitleView
@@ -11,92 +12,128 @@
         android:layout_height="wrap_content"
         android:background="@drawable/bg_upper_round"
         app:leftIcon="@drawable/ic_close_black"
-        app:title_text="@string/Buy_Limits"
+        app:title_text="@string/Payment_Services"
         app:need_divider="false" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/bg_white"
+        android:paddingBottom="40dp"
         android:orientation="vertical">
-
         <RelativeLayout
-            android:id="@+id/unverified_rl"
-            android:padding="8dp"
-            android:layout_marginTop="32dp"
-            android:layout_marginBottom="32dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
+            android:id="@+id/pay_rl"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_round_window_8dp"
-            android:foreground="?android:attr/selectableItemBackground">
+            android:layout_height="64dp"
+            android:layout_marginStart="@dimen/margin20"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="@dimen/margin20"
+            android:background="@drawable/bg_round_8_solid_gray">
+
+            <androidx.legacy.widget.Space
+                android:id="@+id/pay_center_place_holder"
+                android:layout_width="1dp"
+                android:layout_height="1dp"
+                android:layout_centerVertical="true" />
+
+            <one.mixin.android.widget.CircleImageView
+                android:id="@+id/pay_avatar"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_google_pay"
+                android:layout_marginStart="@dimen/margin16"
+                android:layout_marginEnd="12dp" />
 
             <TextView
-                android:id="@+id/unverified_title"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentStart="true"
-                android:text="@string/Unverified"
+                android:id="@+id/pay_name"
+                style="@style/NormalTextStyle"
                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/pay_center_place_holder"
+                android:layout_toEndOf="@+id/pay_avatar"
                 android:textSize="16sp"
-                android:textColor="?attr/text_primary"
-                android:layout_height="wrap_content" />
+                android:text="@string/Google_Pay"
+                android:ellipsize="end"
+                android:lines="1" />
 
             <TextView
-                android:layout_alignParentTop="true"
+                android:id="@+id/pay_desc"
+                style="@style/DescTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/pay_center_place_holder"
+                android:layout_toEndOf="@+id/pay_avatar"
+                android:maxLines="1" />
+
+            <ImageView
+                android:id="@+id/pay_check_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:text="@string/Unverified_price"
-                android:layout_width="wrap_content"
-                android:textColor="?attr/text_primary"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:layout_below="@id/unverified_title"
-                android:text="@string/Unverified_content"
-                android:layout_width="wrap_content"
-                android:textColor="?attr/text_minor"
-                android:layout_marginTop="6dp"
-                android:layout_height="wrap_content" />
-
-
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:src="@drawable/ic_check_blue_24dp"
+                android:visibility="gone"
+                tools:ignore="ContentDescription" />
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/verified_rl"
-            android:padding="8dp"
-            android:layout_marginBottom="32dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
+            android:id="@+id/credit_rl"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/bg_round_window_8dp"
-            android:foreground="?android:attr/selectableItemBackground">
+            android:layout_height="64dp"
+            android:layout_marginStart="@dimen/margin20"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="@dimen/margin20"
+            android:background="@drawable/bg_round_8_solid_gray">
+
+            <androidx.legacy.widget.Space
+                android:id="@+id/credit_center_place_holder"
+                android:layout_width="1dp"
+                android:layout_height="1dp"
+                android:layout_centerVertical="true" />
+
+            <one.mixin.android.widget.CircleImageView
+                android:id="@+id/credit_avatar"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_visa"
+                android:layout_marginStart="@dimen/margin16"
+                android:layout_marginEnd="12dp" />
 
             <TextView
-                android:id="@+id/identity_title"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentStart="true"
-                android:text="@string/Identity_Verification"
+                android:id="@+id/credit_name"
+                style="@style/NormalTextStyle"
                 android:layout_width="wrap_content"
-                android:textColor="?attr/text_primary"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/credit_center_place_holder"
+                android:layout_toEndOf="@+id/credit_avatar"
                 android:textSize="16sp"
-                android:layout_height="wrap_content" />
+                android:text="@string/Visa_Mastercard"
+                android:ellipsize="end"
+                android:lines="1" />
 
             <TextView
-                android:layout_alignParentTop="true"
+                android:id="@+id/credit_desc"
+                style="@style/DescTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/credit_center_place_holder"
+                android:layout_toEndOf="@+id/credit_avatar"
+                android:textSize="12sp"
+                android:maxLines="1" />
+
+            <ImageView
+                android:id="@+id/credit_check_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:text="@string/identity_price"
-                android:layout_width="wrap_content"
-                android:textColor="?attr/text_primary"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:layout_below="@id/identity_title"
-                android:text="@string/identity_content"
-                android:layout_width="wrap_content"
-                android:textColor="?attr/text_minor"
-                android:layout_marginTop="6dp"
-                android:layout_height="wrap_content" />
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:src="@drawable/ic_check_blue_24dp"
+                android:visibility="gone"
+                tools:ignore="ContentDescription" />
         </RelativeLayout>
     </LinearLayout>
 </LinearLayout>

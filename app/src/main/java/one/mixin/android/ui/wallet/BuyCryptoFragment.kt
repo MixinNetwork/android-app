@@ -62,6 +62,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
     private val walletViewModel by viewModels<WalletViewModel>()
     private lateinit var asset: AssetItem
     private lateinit var currency: Currency
+    private var isGooglePay: Boolean = true
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -96,6 +97,14 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                         this@BuyCryptoFragment.asset = asset
                         updateUI()
                     }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+            }
+            payRl.setOnClickListener {
+                ChoosePaymentBottomSheetDialogFragment.newInstance(isGooglePay).apply {
+                    onPaymentClick = { isGooglePay ->
+                        this@BuyCryptoFragment.isGooglePay = isGooglePay
+                        updateUI()
+                    }
+                }.show(parentFragmentManager, ChoosePaymentBottomSheetDialogFragment.TAG)
             }
             fiatRl.setOnClickListener {
                 FiatListBottomSheetDialogFragment.newInstance(currency).apply {
@@ -157,6 +166,8 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             assetName.text = asset.name
             assetDesc.text = asset.balance.numberFormat()
             descEnd.text = asset.symbol
+            payName.text = if (isGooglePay) getString(R.string.Google_Pay) else getString(R.string.Visa_Mastercard)
+            payAvatar.setImageResource(if (isGooglePay) R.drawable.ic_google_pay else R.drawable.ic_visa)
             payDesc.text = getString(R.string.Gateway_fee_price, "1.99%")
             fiatAvatar.setImageResource(currency.flag)
             fiatName.text = currency.name
