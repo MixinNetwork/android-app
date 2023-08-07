@@ -314,4 +314,6 @@ object Constants {
     )
 
     const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_TEST
+
+    const val PAYMENTS_GATEWAY = "checkoutltd"
 }

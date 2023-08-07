@@ -24,6 +24,8 @@ class PaymentFragment : Fragment() {
 
         override fun onSuccess(tokenDetails: TokenDetails) {
             Timber.e("token:${tokenDetails.token}")
+            Timber.e("token:${tokenDetails.issuerCountry}")
+            Timber.e("token:${tokenDetails.scheme}")
             onSuccess?.invoke(tokenDetails.token)
         }
 

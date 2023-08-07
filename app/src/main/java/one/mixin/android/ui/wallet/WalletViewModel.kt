@@ -30,6 +30,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
+import one.mixin.android.Constants.PAYMENTS_GATEWAY
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
@@ -315,13 +316,13 @@ internal constructor(
         }
     }
 
-    fun getLoadPaymentDataTask(): Task<PaymentData> {
+    fun getLoadPaymentDataTask(totalPrice: String, currencyCode: String): Task<PaymentData> {
         val request = PaymentDataRequest.newBuilder()
             .setTransactionInfo(
                 TransactionInfo.newBuilder()
                     .setTotalPriceStatus(WalletConstants.TOTAL_PRICE_STATUS_FINAL)
-                    .setTotalPrice("10.00")
-                    .setCurrencyCode("USD")
+                    .setTotalPrice(totalPrice)
+                    .setCurrencyCode(currencyCode)
                     .build(),
             )
             .addAllowedPaymentMethod(WalletConstants.PAYMENT_METHOD_CARD)
@@ -340,7 +341,7 @@ internal constructor(
             .setPaymentMethodTokenizationType(
                 WalletConstants.PAYMENT_METHOD_TOKENIZATION_TYPE_PAYMENT_GATEWAY,
             )
-            .addParameter("gateway", "checkoutltd")
+            .addParameter("gateway", PAYMENTS_GATEWAY)
             .addParameter("gatewayMerchantId", BuildConfig.CHCEKOUT_ID)
             .build()
         request.setPaymentMethodTokenizationParameters(params)

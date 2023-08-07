@@ -5,7 +5,7 @@ import android.app.Dialog
 import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
-import one.mixin.android.databinding.FragmentBuyBottomBinding
+import one.mixin.android.databinding.FragmentBottomChoosePaymenmtBinding
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
@@ -22,7 +22,7 @@ class ChoosePaymentBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
     }
 
-    private val binding by viewBinding(FragmentBuyBottomBinding::inflate)
+    private val binding by viewBinding(FragmentBottomChoosePaymenmtBinding::inflate)
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -34,6 +34,7 @@ class ChoosePaymentBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         binding.apply {
             payCheckIv.isVisible = isGooglePay
             creditCheckIv.isVisible = !isGooglePay
+            // Todo real data
             payDesc.text = getString(R.string.Gateway_fee_price, "1.99%")
             creditDesc.text = getString(R.string.Gateway_fee_price, "1.99%")
             titleView.apply {

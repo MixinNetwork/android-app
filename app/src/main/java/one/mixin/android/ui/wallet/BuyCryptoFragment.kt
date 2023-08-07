@@ -1,12 +1,12 @@
 package one.mixin.android.ui.wallet
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.checkout.CheckoutApiServiceFactory
@@ -34,6 +34,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
@@ -99,6 +100,10 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
             }
             payRl.setOnClickListener {
+                // Todo check kyc
+                // view.navigate(
+                //     R.id.action_wallet_to_identity,
+                // )
                 ChoosePaymentBottomSheetDialogFragment.newInstance(isGooglePay).apply {
                     onPaymentClick = { isGooglePay ->
                         this@BuyCryptoFragment.isGooglePay = isGooglePay
@@ -148,6 +153,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
 
                     // Handle error based on fine grained error code or simply log the error
                     val errorCode: String = (result as AuthenticationError).errorCode
+                    // Todo display Error page
                 }
             }
         }
@@ -172,17 +178,13 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             fiatAvatar.setImageResource(currency.flag)
             fiatName.text = currency.name
 
+            binding.payTv.isVisible = isGooglePay
+            binding.innerVa.isVisible = !isGooglePay
+
+            // Todo real data
             price.tail.text = "0.995 USD / USDC"
             gatewayFee.tail.text = "1.123 USD"
             networkFee.tail.text = "0 USD"
-        }
-    }
-
-    private fun callbackPay(data: Intent?) {
-        val token = data?.getStringExtra("Token") ?: return
-        Timber.e("Return $token")
-        lifecycleScope.launch {
-            placeOrder(token)
         }
     }
 
@@ -201,7 +203,8 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
 
     private fun payWithGoogle() {
         binding.payTv.isEnabled = false
-        val task = walletViewModel.getLoadPaymentDataTask()
+        // Todo real data
+        val task = walletViewModel.getLoadPaymentDataTask("1.00", "USD")
 
         task.addOnCompleteListener { completedTask ->
             if (completedTask.isSuccessful) {
@@ -233,6 +236,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
     }
 
     private fun placeOrder(token: String) = lifecycleScope.launch {
+        // todo real data
         val response = walletViewModel.payment(
             TraceRequest(
                 token,
@@ -244,14 +248,13 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         )
         binding.innerVa.displayedChild = 0
         Timber.e(response.traceID)
-        // Todo show trace
+        // Todo show trace page
     }
 
     private fun handlePaymentSuccess(paymentData: PaymentData) {
         try {
             val tokenJsonPayload = paymentData.paymentMethodToken?.token
             if (tokenJsonPayload != null) {
-                Timber.e("Pay token $tokenJsonPayload")
                 CheckoutApiServiceFactory.create(
                     BuildConfig.CHCEKOUT_ID,
                     Environment.SANDBOX,
@@ -260,14 +263,14 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     GooglePayTokenRequest(tokenJsonPayload, { tokenDetails ->
                         placeOrder(tokenDetails.token)
                     }, {
-                        Timber.e("failure $it")
+                        // Todo display Error page
                     }),
                 )
             } else {
-                // todo failed
+                // Todo display Error page
             }
         } catch (error: Exception) {
-            Timber.e("Error", "Error: $error")
+            // Todo display Error page
         }
     }
 
@@ -280,12 +283,13 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     }
 
                 ComponentActivity.RESULT_CANCELED -> {
-                    // The user cancelled the payment attempt
+                    toast(R.string.Cancel)
+                    // Todo display Error page
                 }
             }
         }
 
     private fun handleError(statusCode: Int, message: String?) {
-        Timber.e("Google Pay API error", "Error code: $statusCode, Message: $message")
+        // Todo display Error page
     }
 }
