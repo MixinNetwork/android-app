@@ -11,6 +11,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.checkout.CheckoutApiServiceFactory
 import com.checkout.base.model.Environment
+import com.checkout.threeds.Checkout3DSService
+import com.checkout.threeds.domain.model.AuthenticationError
+import com.checkout.threeds.domain.model.AuthenticationErrorType
+import com.checkout.threeds.domain.model.AuthenticationParameters
+import com.checkout.threeds.domain.model.AuthenticationResult
+import com.checkout.threeds.domain.model.ResultType
 import com.checkout.tokenization.model.GooglePayTokenRequest
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
@@ -20,6 +26,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBuyCryptoBinding
 import one.mixin.android.extension.getParcelableCompat
@@ -37,6 +44,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.checkout.TraceRequest
 import timber.log.Timber
+import java.util.Locale
 
 @AndroidEntryPoint
 class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
@@ -98,6 +106,40 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                         }
                     }
                 }.showNow(parentFragmentManager, FiatListBottomSheetDialogFragment.TAG)
+            }
+        }
+    }
+
+    // Todo 3DS
+    private fun init3DS() {
+        val checkout3DS = Checkout3DSService(
+            MixinApplication.appContext,
+            com.checkout.threeds.Environment.SANDBOX,
+            Locale.UK,
+            null,
+            null, // mixin://
+        )
+
+        val authenticationParameters = AuthenticationParameters(
+            "", //   sessionId,
+            "", // sessionSecret,
+            "",
+        ) // scheme)
+
+        checkout3DS.authenticate(authenticationParameters) { result: AuthenticationResult ->
+            when (result.resultType) {
+                ResultType.Completed -> {
+                    // continue with payment, show √
+                }
+                ResultType.Error -> {
+                    // handle error (result as AuthenticationError)
+
+                    // handle error based on error type category
+                    val errorType: AuthenticationErrorType = (result as AuthenticationError).errorType
+
+                    // Handle error based on fine grained error code or simply log the error
+                    val errorCode: String = (result as AuthenticationError).errorCode
+                }
             }
         }
     }
