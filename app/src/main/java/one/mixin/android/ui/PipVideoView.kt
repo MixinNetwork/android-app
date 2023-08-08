@@ -41,6 +41,7 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.round
 import one.mixin.android.extension.safeAddView
+import one.mixin.android.extension.safeRemoveView
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.RomUtil
@@ -172,7 +173,7 @@ class PipVideoView {
         mediaSource: MediaPagerActivity.MediaSource,
         mediaUrl: String?,
     ): TextureView {
-        windowView?.let { windowManager.removeView(it) }
+        windowView?.let { windowManager.safeRemoveView(it) }
         this.mediaUrl = mediaUrl
         val isLandscape = appContext.isLandscape()
         val realSize = appContext.realSize()
@@ -451,8 +452,8 @@ class PipVideoView {
             if (aodWakeLock.isHeld) {
                 aodWakeLock.release()
             }
-            windowView?.let { windowManager.removeView(it) }
-        } catch (e: Exception) {
+            windowView?.let { windowManager.safeRemoveView(it) }
+        } catch (ignored: Exception) {
         }
         windowView = null
         playView = null

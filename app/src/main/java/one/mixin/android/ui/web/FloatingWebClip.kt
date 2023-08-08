@@ -27,6 +27,7 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.safeAddView
+import one.mixin.android.extension.safeRemoveView
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.widget.FloatingAvatarsView
 import kotlin.math.abs
@@ -93,7 +94,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         if (!appContext.checkInlinePermissions()) return
 
         if (isNightMode != appContext.isNightMode()) {
-            windowView?.let { windowManager.removeView(it) }
+            windowView?.let { windowManager.safeRemoveView(it) }
             recreate(appContext.isNightMode()).show()
         } else {
             if (!isShown) {
@@ -129,7 +130,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
     private fun init() {
         val wv = windowView
         if (wv != null) {
-            windowManager.removeView(wv)
+            windowManager.safeRemoveView(wv)
         }
         initWindowView()
         if (!::windowLayoutParams.isInitialized) {
@@ -235,7 +236,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
     fun hide() {
         if (!isShown) return
         isShown = false
-        windowView?.let { windowManager.removeView(it) }
+        windowView?.let { windowManager.safeRemoveView(it) }
         windowView = null
         avatarsView = null
     }
