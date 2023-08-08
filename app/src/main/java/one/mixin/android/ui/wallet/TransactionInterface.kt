@@ -33,6 +33,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
+import one.mixin.android.vo.Ticker
 import one.mixin.android.widget.DebugClickListener
 import java.math.BigDecimal
 
@@ -147,48 +148,7 @@ interface TransactionInterface {
 
                 val ticker = it.data
                 if (ticker != null) {
-                    contentBinding.thatVa.displayedChild = POS_TEXT
-                    contentBinding.thatTv.apply {
-                        text = if (ticker.priceUsd == "0") {
-                            fragment.getString(R.string.value_then, fragment.getString(R.string.NA))
-                        } else {
-                            val amount =
-                                (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).numberFormat2()
-                            val pricePerUnit = if (BuildConfig.DEBUG) {
-                                "(${Fiats.getSymbol()}${
-                                    ticker.priceFiat().priceFormat2()
-                                }/${snapshot.assetSymbol})"
-                            } else {
-                                ""
-                            }
-                            fragment.getString(
-                                R.string.value_then,
-                                "${Fiats.getSymbol()}$amount $pricePerUnit",
-                            )
-                        }
-                        fragment.context?.let { c ->
-                            setTextColor(c.colorFromAttribute(R.attr.text_minor))
-                            setOnClickListener {
-                                if (checkDestroyed(fragment)) return@setOnClickListener
-
-                                val balloon = createBalloon(c) {
-                                    setArrowSize(10)
-                                    setHeight(45)
-                                    setCornerRadius(4f)
-                                    setAlpha(0.9f)
-                                    setAutoDismissDuration(3000L)
-                                    setBalloonAnimation(BalloonAnimation.FADE)
-                                    setText(fragment.getString(R.string.wallet_transaction_that_time_value_tip))
-                                    setTextColorResource(R.color.white)
-                                    setPaddingLeft(10)
-                                    setPaddingRight(10)
-                                    setBackgroundColorResource(R.color.colorLightBlue)
-                                    setLifecycleOwner(fragment.viewLifecycleOwner)
-                                }
-                                balloon.showAlignTop(this)
-                            }
-                        }
-                    }
+                    updateTickerText(contentBinding, ticker, fragment, snapshot)
                 } else {
                     showRetry(
                         fragment,
@@ -223,6 +183,58 @@ interface TransactionInterface {
                 return@handleMixinResponse false
             },
         )
+    }
+
+    fun updateTickerText(
+        contentBinding: FragmentTransactionBinding,
+        ticker: Ticker,
+        fragment: Fragment,
+        snapshot: SnapshotItem,
+    ) {
+        if (checkDestroyed(fragment)) return
+
+        contentBinding.thatVa.displayedChild = POS_TEXT
+        contentBinding.thatTv.apply {
+            text = if (ticker.priceUsd == "0") {
+                fragment.getString(R.string.value_then, fragment.getString(R.string.NA))
+            } else {
+                val amount =
+                    (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).numberFormat2()
+                val pricePerUnit = if (BuildConfig.DEBUG) {
+                    "(${Fiats.getSymbol()}${
+                        ticker.priceFiat().priceFormat2()
+                    }/${snapshot.assetSymbol})"
+                } else {
+                    ""
+                }
+                fragment.getString(
+                    R.string.value_then,
+                    "${Fiats.getSymbol()}$amount $pricePerUnit",
+                )
+            }
+            fragment.context?.let { c ->
+                setTextColor(c.colorFromAttribute(R.attr.text_minor))
+                setOnClickListener {
+                    if (checkDestroyed(fragment)) return@setOnClickListener
+
+                    val balloon = createBalloon(c) {
+                        setArrowSize(10)
+                        setHeight(45)
+                        setCornerRadius(4f)
+                        setAlpha(0.9f)
+                        setAutoDismissDuration(3000L)
+                        setBalloonAnimation(BalloonAnimation.FADE)
+                        setText(fragment.getString(R.string.wallet_transaction_that_time_value_tip))
+                        setTextColorResource(R.color.white)
+                        setPaddingLeft(10)
+                        setPaddingRight(10)
+                        setBackgroundColorResource(R.color.colorLightBlue)
+                        setLifecycleOwner(fragment.viewLifecycleOwner)
+                    }
+                    balloon.showAlignTop(this)
+                }
+            }
+        }
     }
 
     private fun showRetry(

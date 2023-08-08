@@ -110,6 +110,7 @@ import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getUriForFile
