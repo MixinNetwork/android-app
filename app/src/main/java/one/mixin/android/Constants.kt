@@ -1,6 +1,7 @@
 package one.mixin.android
 
 import android.graphics.Color
+import com.checkout.base.model.Environment
 import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
 import one.mixin.android.net.CustomDns
@@ -316,4 +317,6 @@ object Constants {
     const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_TEST
 
     const val PAYMENTS_GATEWAY = "checkoutltd"
+    
+    val CHECKOUT_ENVIRONMENT:Environment = Environment.SANDBOX
 }

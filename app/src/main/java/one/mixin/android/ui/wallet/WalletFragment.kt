@@ -101,6 +101,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                 sendReceiveView.enableBuy()
                 sendReceiveView.buy.setOnClickListener {
+                    // Todo check kyc
+                    // view.navigate(
+                    //     R.id.action_wallet_to_identity,
+                    // )
                     view.navigate(
                         R.id.action_wallet_to_buy,
                         Bundle().apply {

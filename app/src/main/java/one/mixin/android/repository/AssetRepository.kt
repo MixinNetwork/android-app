@@ -454,4 +454,6 @@ constructor(
         checkoutService.sumsubToken(TokenRequest(requireNotNull(Session.getAccountId())))
 
     suspend fun payment(traceRequest: TraceRequest): TraceResponse = checkoutService.payment(traceRequest)
+
+    suspend fun paymentState(traceId: String): String = checkoutService.paymentState(traceId)
 }

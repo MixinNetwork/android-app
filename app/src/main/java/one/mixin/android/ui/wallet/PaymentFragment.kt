@@ -12,6 +12,7 @@ import com.checkout.frames.screen.paymentform.PaymentFormConfig
 import com.checkout.frames.style.theme.paymentform.PaymentFormStyleProvider
 import com.checkout.tokenization.model.TokenDetails
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants.CHECKOUT_ENVIRONMENT
 import one.mixin.android.MixinApplication
 import timber.log.Timber
 
@@ -42,7 +43,7 @@ class PaymentFragment : Fragment() {
     private val paymentFormConfig = PaymentFormConfig(
         publicKey = BuildConfig.CHCEKOUT_ID, // set your public key
         context = MixinApplication.appContext, // set context
-        environment = Environment.SANDBOX, // todo replace set the environment
+        environment = CHECKOUT_ENVIRONMENT, // todo replace set the environment
         paymentFlowHandler = paymentFlowHandler, // set the callback
         style = PaymentFormStyleProvider.provide(
             CustomPaymentFormTheme.providePaymentFormTheme(),

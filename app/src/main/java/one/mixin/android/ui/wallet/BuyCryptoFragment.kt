@@ -6,11 +6,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.checkout.CheckoutApiServiceFactory
-import com.checkout.base.model.Environment
+import com.checkout.threeds.Environment
 import com.checkout.threeds.Checkout3DSService
 import com.checkout.threeds.domain.model.AuthenticationError
 import com.checkout.threeds.domain.model.AuthenticationErrorType
@@ -26,6 +27,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.Constants.CHECKOUT_ENVIRONMENT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBuyCryptoBinding
@@ -100,10 +102,6 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
             }
             payRl.setOnClickListener {
-                // Todo check kyc
-                // view.navigate(
-                //     R.id.action_wallet_to_identity,
-                // )
                 ChoosePaymentBottomSheetDialogFragment.newInstance(isGooglePay).apply {
                     onPaymentClick = { isGooglePay ->
                         this@BuyCryptoFragment.isGooglePay = isGooglePay
@@ -128,7 +126,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
     private fun init3DS() {
         val checkout3DS = Checkout3DSService(
             MixinApplication.appContext,
-            com.checkout.threeds.Environment.SANDBOX,
+            Environment.SANDBOX,
             Locale.UK,
             null,
             null, // mixin://
@@ -152,8 +150,8 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     val errorType: AuthenticationErrorType = (result as AuthenticationError).errorType
 
                     // Handle error based on fine grained error code or simply log the error
-                    val errorCode: String = (result as AuthenticationError).errorCode
-                    // Todo display Error page
+                    val errorCode: String = result.errorCode
+                    showError(errorCode)
                 }
             }
         }
@@ -194,7 +192,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             PaymentFragment().apply {
                 onSuccess = { token ->
                     parentFragmentManager.beginTransaction().remove(this).commitNow()
-                    placeOrder(token)
+                    placeOrder(token, "") //todo
                 }
             },
             PaymentFragment.TAG,
@@ -235,7 +233,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         }
     }
 
-    private fun placeOrder(token: String) = lifecycleScope.launch {
+    private fun placeOrder(token: String, sessionId:String) = lifecycleScope.launch {
         // todo real data
         val response = walletViewModel.payment(
             TraceRequest(
@@ -244,11 +242,14 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                 requireNotNull(Session.getAccountId()),
                 1,
                 "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+                sessionId,
+                ""
             ),
         )
+        walletViewModel.paymentState(response.traceID).let {
+            Timber.e(it)
+        }
         binding.innerVa.displayedChild = 0
-        Timber.e(response.traceID)
-        // Todo show trace page
     }
 
     private fun handlePaymentSuccess(paymentData: PaymentData) {
@@ -257,20 +258,21 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             if (tokenJsonPayload != null) {
                 CheckoutApiServiceFactory.create(
                     BuildConfig.CHCEKOUT_ID,
-                    Environment.SANDBOX,
+                    CHECKOUT_ENVIRONMENT,
                     requireContext(),
                 ).createToken(
                     GooglePayTokenRequest(tokenJsonPayload, { tokenDetails ->
-                        placeOrder(tokenDetails.token)
+                        // todo create session and 3ds
+                        placeOrder(tokenDetails.token, sessionId = "")
                     }, {
-                        // Todo display Error page
+                        showError(it)
                     }),
                 )
             } else {
-                // Todo display Error page
+                showError("Token null")
             }
         } catch (error: Exception) {
-            // Todo display Error page
+            showError(error.message)
         }
     }
 
@@ -284,12 +286,20 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
 
                 ComponentActivity.RESULT_CANCELED -> {
                     toast(R.string.Cancel)
-                    // Todo display Error page
+                    showError()
                 }
             }
         }
 
     private fun handleError(statusCode: Int, message: String?) {
+        showError(message)
+    }
+
+    private fun showError(message: String?) {
+        if (!isAdded) return
         // Todo display Error page
+    }
+    private fun showError(@StringRes errorRes: Int = R.string.Unknown) {
+        showError(getString(errorRes))
     }
 }

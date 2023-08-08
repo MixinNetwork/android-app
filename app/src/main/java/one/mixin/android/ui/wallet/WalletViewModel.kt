@@ -279,6 +279,8 @@ internal constructor(
 
     suspend fun payment(traceRequest: TraceRequest): TraceResponse = assetRepository.payment(traceRequest)
 
+    suspend fun paymentState(traceId: String): String = assetRepository.paymentState(traceId)
+
     data class State(
         val googlePayAvailable: Boolean? = false,
         val googleWalletAvailable: Boolean? = false,

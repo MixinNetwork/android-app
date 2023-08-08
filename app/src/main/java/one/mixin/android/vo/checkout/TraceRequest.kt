@@ -13,4 +13,9 @@ class TraceRequest(
     val amount: Long,
     @SerializedName("asset_id")
     val assetID: String,
+    @SerializedName("session_id")
+    val sessionID: String,
+    @SerializedName("session_secret")
+    val sessionSecret: String,
 )
+

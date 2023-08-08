@@ -8,6 +8,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 import retrofit2.http.Url
 
 interface CheckoutService {
@@ -18,6 +19,12 @@ interface CheckoutService {
     @POST
     suspend fun sumsubToken(@Body request: TokenRequest, @Url url: String = "https://wallet.touge.fun/kyc/token"): TokenResponse
 
-    @GET("/state?id={id}")
-    suspend fun paymentState(@Path("id") traceId: String): Any
+    @GET("/checkout/payment/state")
+    suspend fun paymentState(@Query("id") traceId: String): String
+
+    @POST("/checkout/sessions")
+    suspend fun createSession(): Any
+
+    @GET("/checkout/seesions/{id}")
+    suspend fun getSession(@Path("id") id: String): Any
 }
