@@ -120,7 +120,6 @@ class ConvertVideoJob(
             val duration = video.duration
             val startPos = (start * duration).toLong()
             val endPos = (end * duration).toLong()
-            Timber.d("@@@ startPos: $startPos, endPos: $endPos")
             val clippingConfiguration = ClippingConfiguration.Builder()
                 .setStartPositionMs(startPos)
                 .setEndPositionMs(endPos)
