@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import android.net.Uri
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaItem.ClippingConfiguration
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.transformer.Composition
@@ -39,8 +40,10 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.VideoClip
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.toCategory
+import one.mixin.android.vo.toJson
 import one.mixin.android.vo.toQuoteMessageItem
 import one.mixin.android.widget.ConvertEvent
 import timber.log.Timber
@@ -52,6 +55,8 @@ class ConvertVideoJob(
     private val conversationId: String,
     private val senderId: String,
     private val uri: Uri,
+    private val start: Float,
+    private val end: Float,
     encryptCategory: EncryptCategory,
     private val messageId: String,
     createdAt: String? = null,
@@ -83,7 +88,8 @@ class ConvertVideoJob(
             video.fileName = "${video.fileName.getFileNameNoEx()}.mp4"
         }
         val message = createVideoMessage(
-            messageId, conversationId, senderId, category, null,
+            messageId, conversationId, senderId, category,
+            VideoClip(uri.toString(), start, end).toJson(),
             video.fileName, uri.toString(), video.duration, video.resultWidth,
             video.resultHeight, video.thumbnail, "video/mp4",
             0L, createdAt, null, null, MediaStatus.PENDING, MessageStatus.SENDING.name,
@@ -109,7 +115,19 @@ class ConvertVideoJob(
         jobManager.saveJob(this@ConvertVideoJob)
 
         Timber.d("$TAG videoEditedInfo: $video")
-        val mediaItem = MediaItem.fromUri(uri)
+        val mediaItemBuilder = MediaItem.Builder().setUri(uri)
+        if (!(start == 0f && end == 1f)) {
+            val duration = video.duration
+            val startPos = (start * duration).toLong()
+            val endPos = (end * duration).toLong()
+            Timber.d("@@@ startPos: $startPos, endPos: $endPos")
+            val clippingConfiguration = ClippingConfiguration.Builder()
+                .setStartPositionMs(startPos)
+                .setEndPositionMs(endPos)
+                .build()
+            mediaItemBuilder.setClippingConfiguration(clippingConfiguration)
+        }
+        val mediaItem = mediaItemBuilder.build()
         val editedMediaItem = EditedMediaItem.Builder(mediaItem)
             .setFrameRate(25)
             .build()
@@ -180,9 +198,10 @@ class ConvertVideoJob(
             removeJob()
             return@withContext
         }
+        val duration = (video.duration * (end - start)).toLong()
         val message = createVideoMessage(
             messageId, conversationId, senderId, category, null,
-            video.fileName, videoFile.name, video.duration, video.resultWidth,
+            video.fileName, videoFile.name, duration, video.resultWidth,
             video.resultHeight, video.thumbnail, "video/mp4",
             videoFile.length(), createdAt, null, null,
             if (error != null) MediaStatus.CANCELED else MediaStatus.PENDING,
@@ -190,6 +209,8 @@ class ConvertVideoJob(
         )
         if (error == null) {
             messageDao.updateMediaMessageUrl(videoFile.name, messageId)
+            messageDao.updateMessageContent(null, messageId)
+            messageDao.updateMediaDuration(duration.toString(), messageId)
             MessageFlow.update(message.conversationId, message.messageId)
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
         }

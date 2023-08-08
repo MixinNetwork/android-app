@@ -558,6 +558,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET media_url = :mediaUrl WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateMediaMessageUrl(mediaUrl: String, id: String)
 
+    @Query("UPDATE messages SET media_duration = :mediaDuration WHERE id = :id AND category != 'MESSAGE_RECALL'")
+    fun updateMediaDuration(mediaDuration: String, id: String)
+
     @Query("UPDATE messages SET media_url = :mediaUrl, media_size = :mediaSize, media_status = :mediaStatus WHERE id = :messageId AND category != 'MESSAGE_RECALL'")
     fun updateMedia(messageId: String, mediaUrl: String, mediaSize: Long, mediaStatus: String)
 
@@ -604,7 +607,7 @@ interface MessageDao : BaseDao<Message> {
     fun updateMessageContentAndStatus(content: String, status: String, id: String)
 
     @Query("UPDATE messages SET content = :content WHERE id = :id")
-    fun updateMessageContent(content: String, id: String)
+    fun updateMessageContent(content: String?, id: String)
 
     @Query("UPDATE messages SET media_url = :mediaUrl, media_size = :mediaSize, thumb_image = :thumbImage WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateGiphyMessage(id: String, mediaUrl: String, mediaSize: Long, thumbImage: String?)
