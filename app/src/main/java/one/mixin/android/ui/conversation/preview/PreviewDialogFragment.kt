@@ -82,6 +82,8 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelinePlayView.VideoTimel
         mediaDialogView = null
         _binding = null
         _videoBinding = null
+        alertDialog?.dismiss()
+        alertDialog = null
         mixinPlayer?.setOnVideoPlayerListener(null)
         mixinPlayer?.release()
         mixinPlayer = null
