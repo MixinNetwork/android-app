@@ -2,17 +2,15 @@ package one.mixin.android.api.request
 
 import com.google.gson.annotations.SerializedName
 
-class CreateSessionRequest (
+class CreateSessionRequest(
     @SerializedName("source")
-    val source:Source,
+    val source: Source,
     @SerializedName("currency")
-    val currency:String,
+    val currency: String,
     @SerializedName("completion")
-    val completion:CompletionInfo,
+    val completion: CompletionInfo,
 )
 
-class Source(
-
-)
+class Source()
 
 class CompletionInfo()

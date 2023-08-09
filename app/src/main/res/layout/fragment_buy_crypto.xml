@@ -227,44 +227,37 @@
         android:layout_marginEnd="36dp"
         app:head="@string/network_fee" />
 
-    <TextView
-        android:id="@+id/pay_tv"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="100dp"
-        android:text="Pay with google"
-        android:drawableLeft="@drawable/ic_google_pay_smail"
-        android:drawablePadding="8dp"
-        android:textColor="@color/white"
-        android:textSize="14sp"
-        android:background="@drawable/bg_round_blue_btn"
-        />
-
     <ViewAnimator
-        android:id="@+id/inner_va"
+        android:id="@+id/buy_va"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
         android:enabled="false"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="20dp"
         android:clickable="true"
         android:focusable="true"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:layout_marginTop="100dp"
         android:inAnimation="@anim/fade_in"
         android:outAnimation="@anim/fade_out"
         android:background="@drawable/bg_round_blue_btn">
 
         <TextView
+            android:id="@+id/pay_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:text="Pay with google"
+            android:drawableLeft="@drawable/ic_google_pay_smail"
+            android:drawablePadding="8dp"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_gravity="center"
             android:id="@+id/continue_tv"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -279,6 +272,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:theme="@style/AppTheme.WhiteAccent" />
+
     </ViewAnimator>
 
 

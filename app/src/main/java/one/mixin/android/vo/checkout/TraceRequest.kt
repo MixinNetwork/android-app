@@ -18,4 +18,3 @@ class TraceRequest(
     @SerializedName("session_secret")
     val sessionSecret: String,
 )
-

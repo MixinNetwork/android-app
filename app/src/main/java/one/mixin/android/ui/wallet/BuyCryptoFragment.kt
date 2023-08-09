@@ -7,12 +7,11 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
-import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.checkout.CheckoutApiServiceFactory
-import com.checkout.threeds.Environment
 import com.checkout.threeds.Checkout3DSService
+import com.checkout.threeds.Environment
 import com.checkout.threeds.domain.model.AuthenticationError
 import com.checkout.threeds.domain.model.AuthenticationErrorType
 import com.checkout.threeds.domain.model.AuthenticationParameters
@@ -45,6 +44,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.checkout.TraceRequest
 import timber.log.Timber
 import java.util.Locale
@@ -86,11 +86,18 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
             titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
-            innerVa.setOnClickListener {
-                checkToken()
-            }
-            payTv.setOnClickListener {
-                payWithGoogle()
+            buyVa.setOnClickListener {
+                when (buyVa.displayedChild) {
+                    0 -> {
+                        payWithGoogle()
+                    }
+                    1 -> {
+                        payWithCheckout()
+                    }
+                    else -> {
+                        // do noting
+                    }
+                }
             }
             titleView.rightAnimator.setOnClickListener { }
             updateUI()
@@ -143,11 +150,13 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                 ResultType.Completed -> {
                     // continue with payment, show √
                 }
+
                 ResultType.Error -> {
                     // handle error (result as AuthenticationError)
 
                     // handle error based on error type category
-                    val errorType: AuthenticationErrorType = (result as AuthenticationError).errorType
+                    val errorType: AuthenticationErrorType =
+                        (result as AuthenticationError).errorType
 
                     // Handle error based on fine grained error code or simply log the error
                     val errorCode: String = result.errorCode
@@ -170,14 +179,18 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             assetName.text = asset.name
             assetDesc.text = asset.balance.numberFormat()
             descEnd.text = asset.symbol
-            payName.text = if (isGooglePay) getString(R.string.Google_Pay) else getString(R.string.Visa_Mastercard)
+            payName.text =
+                if (isGooglePay) getString(R.string.Google_Pay) else getString(R.string.Visa_Mastercard)
             payAvatar.setImageResource(if (isGooglePay) R.drawable.ic_google_pay else R.drawable.ic_visa)
             payDesc.text = getString(R.string.Gateway_fee_price, "1.99%")
             fiatAvatar.setImageResource(currency.flag)
             fiatName.text = currency.name
 
-            binding.payTv.isVisible = isGooglePay
-            binding.innerVa.isVisible = !isGooglePay
+            binding.buyVa.displayedChild = if (isGooglePay) {
+                0
+            } else {
+                1
+            }
 
             // Todo real data
             price.tail.text = "0.995 USD / USDC"
@@ -186,13 +199,21 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         }
     }
 
-    private fun checkToken() = lifecycleScope.launch {
-        binding.innerVa.displayedChild = 1
+    private fun payWithCheckout() = lifecycleScope.launch {
+        binding.buyVa.displayedChild = 3
         navTo(
             PaymentFragment().apply {
                 onSuccess = { token ->
-                    parentFragmentManager.beginTransaction().remove(this).commitNow()
-                    placeOrder(token, "") //todo
+                    parentFragmentManager.beginTransaction()
+                        .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
+                        .remove(this).commitNow()
+                    placeOrder(token, "") // todo
+                }
+                onFailure = {
+                    parentFragmentManager.beginTransaction()
+                        .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
+                        .remove(this).commitNow()
+                    showError(it)
                 }
             },
             PaymentFragment.TAG,
@@ -200,7 +221,6 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
     }
 
     private fun payWithGoogle() {
-        binding.payTv.isEnabled = false
         // Todo real data
         val task = walletViewModel.getLoadPaymentDataTask("1.00", "USD")
 
@@ -233,7 +253,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         }
     }
 
-    private fun placeOrder(token: String, sessionId:String) = lifecycleScope.launch {
+    private fun placeOrder(token: String, sessionId: String) = lifecycleScope.launch {
         // todo real data
         val response = walletViewModel.payment(
             TraceRequest(
@@ -243,13 +263,39 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                 1,
                 "965e5c6e-434c-3fa9-b780-c50f43cd955c",
                 sessionId,
-                ""
+                "",
             ),
         )
         walletViewModel.paymentState(response.traceID).let {
             Timber.e(it)
         }
-        binding.innerVa.displayedChild = 0
+        OrderPreviewBottomSheetDialogFragment.newInstance(
+            AssetItem(
+                assetId = "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+                assetKey = "0xec2a0550a2e4da2a027b3fc06f70ba15a94a6dac",
+                balance = "18.6818173",
+                chainIconUrl = "https://mixin-images.zeromesh.net/zVDjOxNTQvVsA8h2B4ZVxuHoCF3DJszufYKWpd9duXUSbSapoZadC7_13cnWBqg0EmwmRcKGbJaUpA8wFfpgZA\u003ds128",
+                chainId = "43d61dcd-e413-450d-80b8-101d5e903357",
+                chainName = "Ethereum",
+                chainPriceUsd = "1854.39",
+                chainSymbol = "ETH",
+                changeBtc = "-0.025177743202846662",
+                changeUsd = "0.0040655737704918034",
+                confirmations = 32,
+                depositEntries = null,
+                destination = "0x45315C1Fd776AF95898C77829f027AFc578f9C2B",
+                hidden = false,
+                iconUrl = "https://mixin-images.zeromesh.net/0sQY63dDMkWTURkJVjowWY6Le4ICjAFuu3ANVyZA4uI3UdkbuOT5fjJUT82ArNYmZvVcxDXyNjxoOv0TAYbQTNKS\u003ds128",
+                name = "Chui Niu Bi",
+                priceBtc = "0",
+                priceUsd = "0",
+                reserve = "0",
+                symbol = "CNB",
+                tag = "",
+                withdrawalMemoPossibility = WithdrawalMemoPossibility.NEGATIVE,
+            ),
+        ).show(parentFragmentManager, OrderPreviewBottomSheetDialogFragment.TAG)
+        updateUI()
     }
 
     private fun handlePaymentSuccess(paymentData: PaymentData) {

@@ -4,8 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import com.checkout.base.model.Environment
 import com.checkout.frames.api.PaymentFlowHandler
 import com.checkout.frames.api.PaymentFormMediator
 import com.checkout.frames.screen.paymentform.PaymentFormConfig
@@ -14,9 +12,11 @@ import com.checkout.tokenization.model.TokenDetails
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.CHECKOUT_ENVIRONMENT
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
+import one.mixin.android.ui.common.BaseFragment
 import timber.log.Timber
 
-class PaymentFragment : Fragment() {
+class PaymentFragment : BaseFragment() {
 
     private val paymentFlowHandler = object : PaymentFlowHandler {
         override fun onSubmit() {
@@ -32,11 +32,15 @@ class PaymentFragment : Fragment() {
 
         override fun onFailure(errorMessage: String) {
             // token request error
+            onFailure?.invoke(errorMessage)
         }
 
         override fun onBackPressed() {
             // the user decided to leave the payment page
-            parentFragmentManager.beginTransaction().remove(this@PaymentFragment).commitNow()
+            Timber.e("onBackPressed")
+            parentFragmentManager.beginTransaction()
+                .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
+                .remove(this@PaymentFragment).commitNow()
         }
     }
 
@@ -60,6 +64,12 @@ class PaymentFragment : Fragment() {
     }
 
     var onSuccess: ((String) -> Unit)? = null
+    var onFailure: ((String) -> Unit)? = null
+
+    override fun onBackPressed(): Boolean {
+        paymentFlowHandler.onBackPressed()
+        return true
+    }
 
     companion object {
         val TAG: String = "PaymentFragment"
