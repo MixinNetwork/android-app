@@ -13,6 +13,9 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.CHECKOUT_ENVIRONMENT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.request.CompletionInfo
+import one.mixin.android.api.request.CreateSessionRequest
+import one.mixin.android.api.request.Source
 import one.mixin.android.ui.common.BaseFragment
 import timber.log.Timber
 
@@ -27,7 +30,11 @@ class PaymentFragment : BaseFragment() {
             Timber.e("token:${tokenDetails.token}")
             Timber.e("token:${tokenDetails.issuerCountry}")
             Timber.e("token:${tokenDetails.scheme}")
-            onSuccess?.invoke(tokenDetails.token)
+            onSuccess?.invoke(
+                CreateSessionRequest(
+                    Source("token", tokenDetails.token), "USD",
+                ),
+            )
         }
 
         override fun onFailure(errorMessage: String) {
@@ -63,7 +70,7 @@ class PaymentFragment : BaseFragment() {
         return paymentFormMediator.provideFragmentContent(this)
     }
 
-    var onSuccess: ((String) -> Unit)? = null
+    var onSuccess: ((CreateSessionRequest) -> Unit)? = null
     var onFailure: ((String) -> Unit)? = null
 
     override fun onBackPressed(): Boolean {

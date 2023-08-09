@@ -13,6 +13,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
+import one.mixin.android.api.request.CreateSessionRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
@@ -43,7 +44,7 @@ import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
-import one.mixin.android.vo.checkout.TraceRequest
+import one.mixin.android.vo.checkout.PaymentRequest
 import one.mixin.android.vo.checkout.TraceResponse
 import one.mixin.android.vo.sumsub.TokenRequest
 import one.mixin.android.vo.sumsub.TokenResponse
@@ -453,7 +454,8 @@ constructor(
     suspend fun token(): TokenResponse =
         checkoutService.sumsubToken(TokenRequest(requireNotNull(Session.getAccountId())))
 
-    suspend fun payment(traceRequest: TraceRequest): TraceResponse = checkoutService.payment(traceRequest)
+    suspend fun payment(traceRequest: PaymentRequest): TraceResponse = checkoutService.payment(traceRequest)
 
     suspend fun paymentState(traceId: String): String = checkoutService.paymentState(traceId)
+    suspend fun createSession(createSession: CreateSessionRequest): String = checkoutService.createSession(createSession)
 }

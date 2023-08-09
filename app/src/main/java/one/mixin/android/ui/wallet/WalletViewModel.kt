@@ -32,6 +32,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.Constants.PAYMENTS_GATEWAY
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.request.CreateSessionRequest
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
@@ -48,7 +49,7 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
-import one.mixin.android.vo.checkout.TraceRequest
+import one.mixin.android.vo.checkout.PaymentRequest
 import one.mixin.android.vo.checkout.TraceResponse
 import one.mixin.android.vo.sumsub.TokenResponse
 import timber.log.Timber
@@ -277,9 +278,11 @@ internal constructor(
 
     suspend fun token(): TokenResponse = assetRepository.token()
 
-    suspend fun payment(traceRequest: TraceRequest): TraceResponse = assetRepository.payment(traceRequest)
+    suspend fun payment(traceRequest: PaymentRequest): TraceResponse = assetRepository.payment(traceRequest)
 
     suspend fun paymentState(traceId: String): String = assetRepository.paymentState(traceId)
+
+    suspend fun createSession(createSession: CreateSessionRequest): String = assetRepository.createSession(createSession)
 
     data class State(
         val googlePayAvailable: Boolean? = false,

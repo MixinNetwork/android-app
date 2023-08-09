@@ -435,7 +435,7 @@ object AppModule {
             }
         }.build()
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://wallet.touge.fun") // Todo
+            .baseUrl("https://mixin.one") // Todo
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .client(client)

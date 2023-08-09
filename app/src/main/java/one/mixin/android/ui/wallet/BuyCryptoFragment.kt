@@ -37,7 +37,6 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -45,7 +44,7 @@ import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.WithdrawalMemoPossibility
-import one.mixin.android.vo.checkout.TraceRequest
+import one.mixin.android.vo.checkout.PaymentRequest
 import timber.log.Timber
 import java.util.Locale
 
@@ -207,7 +206,11 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     parentFragmentManager.beginTransaction()
                         .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
                         .remove(this).commitNow()
-                    placeOrder(token, "") // todo
+                    lifecycleScope.launch {
+                        val response = walletViewModel.createSession(token)
+                        Timber.e(response)
+                    }
+                    // placeOrder(token, "", "") // todo
                 }
                 onFailure = {
                     parentFragmentManager.beginTransaction()
@@ -253,17 +256,16 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         }
     }
 
-    private fun placeOrder(token: String, sessionId: String) = lifecycleScope.launch {
+    private fun placeOrder(token: String, sessionId: String, sessionSecret: String) = lifecycleScope.launch {
         // todo real data
         val response = walletViewModel.payment(
-            TraceRequest(
+            PaymentRequest(
                 token,
-                "USD",
-                requireNotNull(Session.getAccountId()),
-                1,
                 "965e5c6e-434c-3fa9-b780-c50f43cd955c",
                 sessionId,
-                "",
+                sessionSecret,
+                1,
+                "USD",
             ),
         )
         walletViewModel.paymentState(response.traceID).let {
@@ -309,7 +311,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                 ).createToken(
                     GooglePayTokenRequest(tokenJsonPayload, { tokenDetails ->
                         // todo create session and 3ds
-                        placeOrder(tokenDetails.token, sessionId = "")
+                        placeOrder(tokenDetails.token, sessionId = "", sessionSecret = "")
                     }, {
                         showError(it)
                     }),
