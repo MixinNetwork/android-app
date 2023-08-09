@@ -16,4 +16,10 @@
         <ActivityFilter
             window:activityName="one.mixin.android.ui.home.MainActivity"/>
     </SplitPlaceholderRule>
+    <ActivityRule
+        window:alwaysExpand="true">
+        <ActivityFilter window:activityName="one.mixin.android.ui.contacts.ContactsActivity"/>
+        <ActivityFilter window:activityName="one.mixin.android.ui.setting.SettingActivity"/>
+        <ActivityFilter window:activityName="one.mixin.android.ui.wallet.WalletActivity"/>
+    </ActivityRule>
 </resources>
