@@ -174,7 +174,7 @@ class ConversationActivity : BlazeBaseActivity() {
 
         fun showAndClear(
             context: Context,
-            conversationId: String,
+            conversationId: String?,
             messageId: String? = null,
             recipientId: String? = null,
             keyword: String? = null,
