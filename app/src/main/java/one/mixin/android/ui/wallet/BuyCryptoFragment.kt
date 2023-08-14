@@ -1,6 +1,8 @@
 package one.mixin.android.ui.wallet
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
@@ -64,7 +66,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
     private val walletViewModel by viewModels<WalletViewModel>()
     private lateinit var asset: AssetItem
     private lateinit var currency: Currency
-    private var isGooglePay: Boolean = true
+    private var isGooglePay: Boolean = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -185,11 +187,27 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             fiatAvatar.setImageResource(currency.flag)
             fiatName.text = currency.name
 
-            binding.buyVa.displayedChild = if (isGooglePay) {
+            buyVa.displayedChild = if (isGooglePay) {
                 0
             } else {
                 1
             }
+
+            amountEt.addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                }
+
+                override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                    if (p0.isNullOrBlank()) {
+                        buyVa.isEnabled = false
+                    } else {
+                        buyVa.isEnabled = true
+                    }
+                }
+
+                override fun afterTextChanged(p0: Editable?) {
+                }
+            })
 
             // Todo real data
             price.tail.text = "0.995 USD / USDC"
@@ -207,8 +225,12 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                         .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
                         .remove(this).commitNow()
                     lifecycleScope.launch {
-                        val response = walletViewModel.createSession(token)
-                        Timber.e(response)
+                        try {
+                            val response = walletViewModel.createSession(token)
+                            Timber.e(response)
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
                     }
                     // placeOrder(token, "", "") // todo
                 }

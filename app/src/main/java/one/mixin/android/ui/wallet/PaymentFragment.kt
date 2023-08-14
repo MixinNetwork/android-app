@@ -13,9 +13,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.CHECKOUT_ENVIRONMENT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.api.request.CompletionInfo
 import one.mixin.android.api.request.CreateSessionRequest
-import one.mixin.android.api.request.Source
 import one.mixin.android.ui.common.BaseFragment
 import timber.log.Timber
 
@@ -32,7 +30,11 @@ class PaymentFragment : BaseFragment() {
             Timber.e("token:${tokenDetails.scheme}")
             onSuccess?.invoke(
                 CreateSessionRequest(
-                    Source("token", tokenDetails.token), "USD",
+                    tokenDetails.token,
+                    "USD",
+                    tokenDetails.scheme,
+                    "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+                    100,
                 ),
             )
         }
