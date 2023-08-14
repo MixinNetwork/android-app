@@ -31,6 +31,9 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.CHECKOUT_ENVIRONMENT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.CreateSessionRequest
+import one.mixin.android.api.response.CreateSessionResponse
 import one.mixin.android.databinding.FragmentBuyCryptoBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
@@ -131,28 +134,30 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
     }
 
     // Todo 3DS
-    private fun init3DS() {
+    private fun init3DS(c:CreateSessionResponse) {
         val checkout3DS = Checkout3DSService(
             MixinApplication.appContext,
             Environment.SANDBOX,
-            Locale.UK,
+            Locale.US,
             null,
             null, // mixin://
         )
 
         val authenticationParameters = AuthenticationParameters(
-            "", //   sessionId,
-            "", // sessionSecret,
-            "",
+            c.sessionId, //   sessionId,
+            c.sessionSecret, // sessionSecret,
+            "VISA", //  todo replace real data
         ) // scheme)
 
         checkout3DS.authenticate(authenticationParameters) { result: AuthenticationResult ->
             when (result.resultType) {
                 ResultType.Completed -> {
                     // continue with payment, show √
+                    Timber.e("Completed")
                 }
 
                 ResultType.Error -> {
+                    Timber.e("Error")
                     // handle error (result as AuthenticationError)
 
                     // handle error based on error type category
@@ -198,11 +203,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                 }
 
                 override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                    if (p0.isNullOrBlank()) {
-                        buyVa.isEnabled = false
-                    } else {
-                        buyVa.isEnabled = true
-                    }
+                    buyVa.isEnabled = !p0.isNullOrBlank()
                 }
 
                 override fun afterTextChanged(p0: Editable?) {
@@ -225,12 +226,18 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                         .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
                         .remove(this).commitNow()
                     lifecycleScope.launch {
-                        try {
-                            val response = walletViewModel.createSession(token)
-                            Timber.e(response)
-                        } catch (e: Exception) {
-                            Timber.e(e)
-                        }
+                        handleMixinResponse(
+                            invokeNetwork = {
+                                walletViewModel.createSession(token)
+                            },
+                            successBlock = { response ->
+                               if (response.isSuccess){
+                                   init3DS(response.data!!)
+                               }else{
+                                   // todo
+                               }
+                            },
+                        )
                     }
                     // placeOrder(token, "", "") // todo
                 }
@@ -333,7 +340,27 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                 ).createToken(
                     GooglePayTokenRequest(tokenJsonPayload, { tokenDetails ->
                         // todo create session and 3ds
-                        placeOrder(tokenDetails.token, sessionId = "", sessionSecret = "")
+                        lifecycleScope.launch {
+                            handleMixinResponse(
+                                invokeNetwork = {
+                                    walletViewModel.createSession(CreateSessionRequest(
+                                        tokenDetails.token,
+                                        "USD",
+                                        tokenDetails.scheme,
+                                        "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+                                        100,
+                                    ))
+                                },
+                                successBlock = { response ->
+                                    if (response.isSuccess){
+                                        init3DS(response.data!!)
+                                    }else{
+                                        // todo
+                                    }
+                                },
+                            )
+                        }
+                        // placeOrder(tokenDetails.token, sessionId = "", sessionSecret = "")
                     }, {
                         showError(it)
                     }),

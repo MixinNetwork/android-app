@@ -1,6 +1,8 @@
 package one.mixin.android.api.service
 
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.CreateSessionRequest
+import one.mixin.android.api.response.CreateSessionResponse
 import one.mixin.android.vo.checkout.PaymentRequest
 import one.mixin.android.vo.checkout.TraceResponse
 import one.mixin.android.vo.sumsub.TokenRequest
@@ -22,7 +24,7 @@ interface CheckoutService {
     suspend fun paymentState(@Query("id") traceId: String): String
 
     @POST("/checkout/sessions")
-    suspend fun createSession(@Body session: CreateSessionRequest): String
+    suspend fun createSession(@Body session: CreateSessionRequest): MixinResponse<CreateSessionResponse>
 
     @GET("/checkout/seesions/{id}")
     suspend fun getSession(@Path("id") id: String): Any

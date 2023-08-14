@@ -32,7 +32,9 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.Constants.PAYMENTS_GATEWAY
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.CreateSessionRequest
+import one.mixin.android.api.response.CreateSessionResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
@@ -282,7 +284,7 @@ internal constructor(
 
     suspend fun paymentState(traceId: String): String = assetRepository.paymentState(traceId)
 
-    suspend fun createSession(createSession: CreateSessionRequest): String = assetRepository.createSession(createSession)
+    suspend fun createSession(createSession: CreateSessionRequest): MixinResponse<CreateSessionResponse> = assetRepository.createSession(createSession)
 
     data class State(
         val googlePayAvailable: Boolean? = false,
