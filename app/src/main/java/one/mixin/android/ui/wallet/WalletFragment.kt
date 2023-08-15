@@ -105,11 +105,15 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     // view.navigate(
                     //     R.id.action_wallet_to_identity,
                     // )
+                    val currencyList = getCurrencyData(requireContext().resources)
+                    val currency = currencyList.find { c ->
+                        Session.getFiatCurrency() == c.name
+                    } ?: currencyList.find { c -> c.name == "USD" }
                     view.navigate(
                         R.id.action_wallet_to_buy,
                         Bundle().apply {
                             putParcelable(ARGS_ASSET, assets[0])
-                            putParcelable(ARGS_CURRENCY, getCurrencyData(requireContext().resources)[0])
+                            putParcelable(ARGS_CURRENCY, currency)
                         },
                     )
                 }
