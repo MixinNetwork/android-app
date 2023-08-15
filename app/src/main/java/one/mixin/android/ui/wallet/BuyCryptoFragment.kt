@@ -146,7 +146,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         val authenticationParameters = AuthenticationParameters(
             c.sessionId, //   sessionId,
             c.sessionSecret, // sessionSecret,
-            "VISA", //  todo replace real data
+            c.scheme, //  todo replace real data
         ) // scheme)
 
         checkout3DS.authenticate(authenticationParameters) { result: AuthenticationResult ->
@@ -157,7 +157,6 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                 }
 
                 ResultType.Error -> {
-                    Timber.e("Error")
                     // handle error (result as AuthenticationError)
 
                     // handle error based on error type category
@@ -166,6 +165,8 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
 
                     // Handle error based on fine grained error code or simply log the error
                     val errorCode: String = result.errorCode
+
+                    Timber.e("Error $errorType $errorCode")
                     showError(errorCode)
                 }
             }
@@ -346,7 +347,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                                     walletViewModel.createSession(CreateSessionRequest(
                                         tokenDetails.token,
                                         "USD",
-                                        tokenDetails.scheme,
+                                        tokenDetails.scheme?.lowercase(),
                                         "965e5c6e-434c-3fa9-b780-c50f43cd955c",
                                         100,
                                     ))

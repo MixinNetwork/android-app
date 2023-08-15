@@ -9,6 +9,8 @@ class CreateSessionResponse(
     val sessionSecret:String,
     @SerializedName("instrument_id")
     val instrumentId:String,
+    @SerializedName("scheme")
+    val scheme:String,
     @SerializedName("amount")
     val amount:Int,
     @SerializedName("currency")
