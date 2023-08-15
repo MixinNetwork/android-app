@@ -21,7 +21,7 @@ class PaymentFragment : BaseFragment() {
 
     private val paymentFlowHandler = object : PaymentFlowHandler {
         override fun onSubmit() {
-            // form submit initiated; you can choose to display a loader here
+            onLoading?.invoke()
         }
 
         override fun onSuccess(tokenDetails: TokenDetails) {
@@ -74,6 +74,7 @@ class PaymentFragment : BaseFragment() {
 
     var onSuccess: ((CreateSessionRequest) -> Unit)? = null
     var onFailure: ((String) -> Unit)? = null
+    var onLoading: (() -> Unit)? = null
 
     override fun onBackPressed(): Boolean {
         paymentFlowHandler.onBackPressed()
@@ -81,6 +82,6 @@ class PaymentFragment : BaseFragment() {
     }
 
     companion object {
-        val TAG: String = "PaymentFragment"
+        const val TAG: String = "PaymentFragment"
     }
 }

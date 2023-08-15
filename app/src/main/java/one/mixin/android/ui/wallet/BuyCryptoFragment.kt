@@ -35,7 +35,9 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CreateSessionRequest
 import one.mixin.android.api.response.CreateSessionResponse
 import one.mixin.android.databinding.FragmentBuyCryptoBinding
+import one.mixin.android.extension.alert
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat
@@ -134,7 +136,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
     }
 
     // Todo 3DS
-    private fun init3DS(c:CreateSessionResponse) {
+    private fun init3DS(c: CreateSessionResponse, token: String) {
         val checkout3DS = Checkout3DSService(
             MixinApplication.appContext,
             Environment.SANDBOX,
@@ -154,6 +156,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                 ResultType.Completed -> {
                     // continue with payment, show √
                     Timber.e("Completed")
+                    placeOrder(token, sessionId = c.sessionId, c.sessionSecret)
                 }
 
                 ResultType.Error -> {
@@ -218,6 +221,12 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         }
     }
 
+    private val dialog by lazy {
+        indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+            setCancelable(false)
+        }
+    }
+
     private fun payWithCheckout() = lifecycleScope.launch {
         binding.buyVa.displayedChild = 3
         navTo(
@@ -232,17 +241,20 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                                 walletViewModel.createSession(token)
                             },
                             successBlock = { response ->
-                               if (response.isSuccess){
-                                   init3DS(response.data!!)
-                               }else{
-                                   // todo
-                               }
+                                if (response.isSuccess) {
+                                    init3DS(response.data!!, token.token)
+                                } else {
+                                    // todo
+                                }
                             },
                         )
                     }
-                    // placeOrder(token, "", "") // todo
+                }
+                onLoading = {
+                    dialog.show()
                 }
                 onFailure = {
+                    dialog.dismiss()
                     parentFragmentManager.beginTransaction()
                         .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
                         .remove(this).commitNow()
@@ -256,11 +268,12 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
     private fun payWithGoogle() {
         // Todo real data
         val task = walletViewModel.getLoadPaymentDataTask("1.00", "USD")
-
+        dialog.show()
         task.addOnCompleteListener { completedTask ->
             if (completedTask.isSuccessful) {
                 completedTask.result.let(::handlePaymentSuccess)
             } else {
+                dialog.dismiss()
                 when (val exception = completedTask.exception) {
                     is ResolvableApiException -> {
                         resolvePaymentForResult.launch(
@@ -353,24 +366,29 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                                     ))
                                 },
                                 successBlock = { response ->
+                                    dialog.dismiss()
                                     if (response.isSuccess){
-                                        init3DS(response.data!!)
+                                        init3DS(response.data!!, tokenDetails.token)
                                     }else{
                                         // todo
                                     }
                                 },
                             )
                         }
-                        // placeOrder(tokenDetails.token, sessionId = "", sessionSecret = "")
                     }, {
                         showError(it)
+                        dialog.dismiss()
                     }),
                 )
             } else {
                 showError("Token null")
+                dialog.dismiss()
+
             }
         } catch (error: Exception) {
             showError(error.message)
+            dialog.dismiss()
+
         }
     }
 
@@ -395,7 +413,9 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
 
     private fun showError(message: String?) {
         if (!isAdded) return
-        // Todo display Error page
+        alert(message ?: "Unknown")
+            .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .show()
     }
     private fun showError(@StringRes errorRes: Int = R.string.Unknown) {
         showError(getString(errorRes))
