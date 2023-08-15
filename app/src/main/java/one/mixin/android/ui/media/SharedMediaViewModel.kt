@@ -134,6 +134,8 @@ class SharedMediaViewModel @Inject constructor(
                             it.conversationId,
                             it.userId,
                             Uri.parse(it.mediaUrl),
+                            0f,
+                            1f,
                             when {
                                 it.isSignal() -> EncryptCategory.SIGNAL
                                 it.isEncrypted() -> EncryptCategory.ENCRYPTED

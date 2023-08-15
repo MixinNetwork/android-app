@@ -15,6 +15,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.util.UnstableApi
 import com.uber.autodispose.android.lifecycle.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -32,10 +33,12 @@ import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.util.video.MixinPlayer
-import one.mixin.android.widget.VideoTimelineView
+import one.mixin.android.widget.VideoTimelinePlayView
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
-class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineViewDelegate {
+@UnstableApi
+class PreviewDialogFragment : DialogFragment(), VideoTimelinePlayView.VideoTimelineViewDelegate {
 
     companion object {
         const val IS_VIDEO: String = "IS_VIDEO"
@@ -115,12 +118,22 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                     setOnVideoPlayerListener(videoListener)
                     loadVideo(uri.toString())
                     setVideoTextureView(videoBinding.dialogVideoTexture)
-                    uri.getFilePath(requireContext())?.let { videoBinding.time.setVideoPath(it) }
+                    videoBinding.time.setVideoPath(uri.getFilePath(requireContext()), 0f, 1f)
                     Observable.interval(0, 100, TimeUnit.MILLISECONDS)
                         .observeOn(AndroidSchedulers.mainThread())
                         .autoDispose(this@PreviewDialogFragment).subscribe {
                             if (duration() != 0 && isPlaying()) {
-                                videoBinding.time.progress = getCurrentPos().toFloat() / duration()
+                                val currentProgress = getCurrentPos().toFloat() / duration()
+                                if (currentProgress >= videoBinding.time.rightProgress) {
+                                    videoBinding.time.progress = videoBinding.time.leftProgress
+                                    mixinPlayer?.let { player ->
+                                        player.seekTo((videoBinding.time.leftProgress * player.duration()).toInt())
+                                        videoBinding.dialogPlay.isChecked = true
+                                        player.pause()
+                                    }
+                                } else {
+                                    videoBinding.time.progress = currentProgress
+                                }
                             }
                         }
                     okText?.let { videoBinding.dialogOk.text = it }
@@ -130,7 +143,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                                 show()
                             }
                             withContext(Dispatchers.IO) {
-                                action!!(uri)
+                                action?.invoke(uri, videoBinding.time.leftProgress, videoBinding.time.rightProgress)
                             }
                             alertDialog?.dismiss()
                             dismiss()
@@ -139,7 +152,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                 }
             } else {
                 binding.dialogSendIb.setOnClickListener {
-                    action?.invoke(uri)
+                    action?.invoke(uri, -1f, -1f)
                     dismiss()
                 }
                 binding.dialogIv.loadImage(uri)
@@ -180,8 +193,8 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
 
     private var uri: Uri? = null
     private var okText: String? = null
-    private var action: ((Uri) -> Unit)? = null
-    fun show(fragmentManager: FragmentManager, uri: Uri, okText: String? = null, action: (Uri) -> Unit) {
+    private var action: ((Uri, Float, Float) -> Unit)? = null
+    fun show(fragmentManager: FragmentManager, uri: Uri, okText: String? = null, action: (Uri, Float, Float) -> Unit) {
         try {
             super.showNow(
                 fragmentManager,
@@ -215,20 +228,28 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
         }
     }
 
-    override fun didStopDragging() {
-        if (currentState) {
-            mixinPlayer?.start()
-        }
+    override fun onLeftProgressChanged(progress: Float) {
+        Timber.e("onLeftProgressChanged $progress")
     }
 
-    override fun didStartDragging() {
-        currentState = mixinPlayer?.isPlaying() == true
-        mixinPlayer?.pause()
+    override fun onRightProgressChanged(progress: Float) {
+        Timber.e("onRightProgressChanged $progress")
     }
 
     override fun onPlayProgressChanged(progress: Float) {
         mixinPlayer?.let {
-            it.seekTo((progress * it.duration()).toInt())
+            it.seekTo((videoBinding.time.progress * it.duration()).toInt())
+        }
+    }
+
+    override fun didStartDragging(type: Int) {
+        currentState = mixinPlayer?.isPlaying() == true
+        mixinPlayer?.pause()
+    }
+
+    override fun didStopDragging(type: Int) {
+        mixinPlayer?.let {
+            it.seekTo((videoBinding.time.progress * it.duration()).toInt())
         }
     }
 }

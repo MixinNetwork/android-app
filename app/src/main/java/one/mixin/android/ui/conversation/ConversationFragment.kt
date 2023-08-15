@@ -339,7 +339,7 @@ class ConversationFragment() :
         requireArguments().getParcelableCompat(TRANSCRIPT_DATA, TranscriptData::class.java)
     }
 
-    private fun showPreview(uri: Uri, okText: String? = null, isVideo: Boolean, action: (Uri) -> Unit) {
+    private fun showPreview(uri: Uri, okText: String? = null, isVideo: Boolean, action: (Uri, Float, Float) -> Unit) {
         val previewDialogFragment = PreviewDialogFragment.newInstance(isVideo)
         previewDialogFragment.show(parentFragmentManager, uri, okText, action)
     }
@@ -2042,12 +2042,14 @@ class ConversationFragment() :
         }
     }
 
-    private fun sendVideoMessage(uri: Uri) {
+    private fun sendVideoMessage(uri: Uri, start: Float, end: Float) {
         createConversation {
             chatViewModel.sendVideoMessage(
                 conversationId,
                 sender.userId,
                 uri,
+                start,
+                end,
                 encryptCategory(),
                 replyMessage = getRelyMessage(),
             )
@@ -2347,15 +2349,15 @@ class ConversationFragment() :
                 val uri = item.uri
                 if (item.isVideo) {
                     if (send) {
-                        sendVideoMessage(uri)
+                        sendVideoMessage(uri, 0f, 1f)
                     } else {
-                        showPreview(uri, getString(R.string.Send), true) { sendVideoMessage(uri) }
+                        showPreview(uri, getString(R.string.Send), true) { uri, start, end -> sendVideoMessage(uri, start, end) }
                     }
                 } else if (item.isGif || item.isWebp) {
                     if (send) {
                         sendImageMessage(uri)
                     } else {
-                        showPreview(uri, getString(R.string.Send), false) { sendImageMessage(uri) }
+                        showPreview(uri, getString(R.string.Send), false) { uri, _, _ -> sendImageMessage(uri) }
                     }
                 } else {
                     if (send) {
@@ -2600,7 +2602,7 @@ class ConversationFragment() :
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             data?.data?.let {
                 if (data.hasExtra(IS_VIDEO)) {
-                    sendVideoMessage(it)
+                    sendVideoMessage(it, 0f, 1f)
                 } else {
                     getEditorResult.launch(Pair(it, getString(R.string.Send)))
                 }
