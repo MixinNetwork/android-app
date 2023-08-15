@@ -242,7 +242,7 @@
         android:layout_marginTop="100dp"
         android:inAnimation="@anim/fade_in"
         android:outAnimation="@anim/fade_out"
-        android:background="@drawable/bg_round_blue_btn">
+        android:background="@drawable/bg_round_blue_btn_40">
 
         <TextView
             android:layout_gravity="center"

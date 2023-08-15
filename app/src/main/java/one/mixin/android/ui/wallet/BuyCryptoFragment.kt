@@ -25,6 +25,7 @@ import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.wallet.PaymentData
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
@@ -70,7 +71,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
     private lateinit var asset: AssetItem
     private lateinit var currency: Currency
     private var isGooglePay: Boolean = false
-
+    private var amount = 0L
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         asset = requireNotNull(
@@ -93,9 +94,12 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             buyVa.setOnClickListener {
                 when (buyVa.displayedChild) {
                     0 -> {
+                        amount = (amountEt.text.toString().toLongOrNull() ?: 0) * 100
                         payWithCheckout()
                     }
+
                     1 -> {
+                        amount = (amountEt.text.toString().toLongOrNull() ?: 0) * 100
                         payWithGoogle()
                     }
                     else -> {
@@ -156,7 +160,10 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     // continue with payment, show √
                     Timber.e("Completed")
                     dialog.show()
-                    placeOrder(token, sessionId = c.sessionId, c.sessionSecret)
+                    lifecycleScope.launch {
+                        // delay(10000)
+                        // placeOrder(token, sessionId = c.sessionId, c.sessionSecret)
+                    }
                 }
 
                 ResultType.Error -> {
@@ -231,18 +238,24 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         binding.buyVa.displayedChild = 3
         navTo(
             PaymentFragment().apply {
-                onSuccess = { token ->
+                onSuccess = { token, scheme ->
                     parentFragmentManager.beginTransaction()
                         .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
                         .remove(this).commitNow()
                     lifecycleScope.launch {
                         handleMixinResponse(
                             invokeNetwork = {
-                                walletViewModel.createSession(token)
+                                walletViewModel.createSession( CreateSessionRequest(
+                                    token,
+                                    "USD",
+                                    scheme,
+                                    "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+                                    amount.toInt()
+                                ))
                             },
                             successBlock = { response ->
                                 if (response.isSuccess) {
-                                    init3DS(response.data!!, token.token)
+                                    init3DS(response.data!!, token)
                                 } else {
                                     // todo
                                 }
@@ -294,8 +307,6 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     }
                 }
             }
-
-            binding.payTv.isEnabled = true
         }
     }
 
@@ -308,7 +319,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     "965e5c6e-434c-3fa9-b780-c50f43cd955c",
                     sessionId,
                     sessionSecret,
-                    1,
+                    amount,
                     "USD",
                 ),
             )
@@ -367,7 +378,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                                             "USD",
                                             tokenDetails.scheme?.lowercase(),
                                             "965e5c6e-434c-3fa9-b780-c50f43cd955c",
-                                            100,
+                                            amount.toInt()
                                         ),
                                     )
                                 },

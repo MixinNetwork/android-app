@@ -12,5 +12,5 @@ class CreateSessionRequest(
     @SerializedName("asset_id")
     val assetId: String,
     @SerializedName("amount")
-    val amount: Int,
+    var amount: Int,
 )

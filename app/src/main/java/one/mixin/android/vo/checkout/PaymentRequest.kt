@@ -3,7 +3,7 @@ package one.mixin.android.vo.checkout
 import com.google.gson.annotations.SerializedName
 
 class PaymentRequest(
-    @SerializedName("card_token")
+    @SerializedName("token")
     val token: String,
     @SerializedName("asset_id")
     val assetId: String,

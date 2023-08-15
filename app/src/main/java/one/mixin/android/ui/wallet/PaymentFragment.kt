@@ -28,15 +28,7 @@ class PaymentFragment : BaseFragment() {
             Timber.e("token:${tokenDetails.token}")
             Timber.e("token:${tokenDetails.issuerCountry}")
             Timber.e("token:${tokenDetails.scheme}")
-            onSuccess?.invoke(
-                CreateSessionRequest(
-                    tokenDetails.token,
-                    "USD",
-                    tokenDetails.scheme?.lowercase(),
-                    "965e5c6e-434c-3fa9-b780-c50f43cd955c",
-                    100,
-                ),
-            )
+            onSuccess?.invoke(tokenDetails.token, tokenDetails.scheme?.lowercase())
         }
 
         override fun onFailure(errorMessage: String) {
@@ -72,7 +64,7 @@ class PaymentFragment : BaseFragment() {
         return paymentFormMediator.provideFragmentContent(this)
     }
 
-    var onSuccess: ((CreateSessionRequest) -> Unit)? = null
+    var onSuccess: ((String, String?) -> Unit)? = null
     var onFailure: ((String) -> Unit)? = null
     var onLoading: (() -> Unit)? = null
 
