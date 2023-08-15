@@ -93,10 +93,10 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             buyVa.setOnClickListener {
                 when (buyVa.displayedChild) {
                     0 -> {
-                        payWithGoogle()
+                        payWithCheckout()
                     }
                     1 -> {
-                        payWithCheckout()
+                        payWithGoogle()
                     }
                     else -> {
                         // do noting
@@ -197,9 +197,9 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             fiatName.text = currency.name
 
             buyVa.displayedChild = if (isGooglePay) {
-                0
-            } else {
                 1
+            } else {
+                0
             }
 
             amountEt.addTextChangedListener(object : TextWatcher {

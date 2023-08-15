@@ -245,6 +245,16 @@
         android:background="@drawable/bg_round_blue_btn">
 
         <TextView
+            android:layout_gravity="center"
+            android:id="@+id/continue_tv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/Continue"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+
+        <TextView
             android:id="@+id/pay_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -253,16 +263,6 @@
             android:text="Pay with google"
             android:drawableLeft="@drawable/ic_google_pay_smail"
             android:drawablePadding="8dp"
-            android:textColor="@color/white"
-            android:textSize="14sp" />
-
-        <TextView
-            android:layout_gravity="center"
-            android:id="@+id/continue_tv"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="@string/Continue"
             android:textColor="@color/white"
             android:textSize="14sp" />
 
