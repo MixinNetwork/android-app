@@ -35,7 +35,6 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CreateSessionRequest
 import one.mixin.android.api.response.CreateSessionResponse
 import one.mixin.android.databinding.FragmentBuyCryptoBinding
-import one.mixin.android.extension.alert
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
@@ -50,7 +49,6 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.checkout.PaymentRequest
 import timber.log.Timber
 import java.util.Locale
@@ -151,11 +149,13 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             c.scheme, //  todo replace real data
         ) // scheme)
 
+        dialog.dismiss()
         checkout3DS.authenticate(authenticationParameters) { result: AuthenticationResult ->
             when (result.resultType) {
                 ResultType.Completed -> {
                     // continue with payment, show √
                     Timber.e("Completed")
+                    dialog.show()
                     placeOrder(token, sessionId = c.sessionId, c.sessionSecret)
                 }
 
@@ -301,46 +301,50 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
 
     private fun placeOrder(token: String, sessionId: String, sessionSecret: String) = lifecycleScope.launch {
         // todo real data
-        val response = walletViewModel.payment(
-            PaymentRequest(
-                token,
-                "965e5c6e-434c-3fa9-b780-c50f43cd955c",
-                sessionId,
-                sessionSecret,
-                1,
-                "USD",
-            ),
-        )
-        walletViewModel.paymentState(response.traceID).let {
-            Timber.e(it)
+        try {
+            val response = walletViewModel.payment(
+                PaymentRequest(
+                    token,
+                    "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+                    sessionId,
+                    sessionSecret,
+                    1,
+                    "USD",
+                ),
+            )
+        } catch (e: Exception) {
+            showError(e.message)
         }
-        OrderPreviewBottomSheetDialogFragment.newInstance(
-            AssetItem(
-                assetId = "965e5c6e-434c-3fa9-b780-c50f43cd955c",
-                assetKey = "0xec2a0550a2e4da2a027b3fc06f70ba15a94a6dac",
-                balance = "18.6818173",
-                chainIconUrl = "https://mixin-images.zeromesh.net/zVDjOxNTQvVsA8h2B4ZVxuHoCF3DJszufYKWpd9duXUSbSapoZadC7_13cnWBqg0EmwmRcKGbJaUpA8wFfpgZA\u003ds128",
-                chainId = "43d61dcd-e413-450d-80b8-101d5e903357",
-                chainName = "Ethereum",
-                chainPriceUsd = "1854.39",
-                chainSymbol = "ETH",
-                changeBtc = "-0.025177743202846662",
-                changeUsd = "0.0040655737704918034",
-                confirmations = 32,
-                depositEntries = null,
-                destination = "0x45315C1Fd776AF95898C77829f027AFc578f9C2B",
-                hidden = false,
-                iconUrl = "https://mixin-images.zeromesh.net/0sQY63dDMkWTURkJVjowWY6Le4ICjAFuu3ANVyZA4uI3UdkbuOT5fjJUT82ArNYmZvVcxDXyNjxoOv0TAYbQTNKS\u003ds128",
-                name = "Chui Niu Bi",
-                priceBtc = "0",
-                priceUsd = "0",
-                reserve = "0",
-                symbol = "CNB",
-                tag = "",
-                withdrawalMemoPossibility = WithdrawalMemoPossibility.NEGATIVE,
-            ),
-        ).show(parentFragmentManager, OrderPreviewBottomSheetDialogFragment.TAG)
-        updateUI()
+        // walletViewModel.paymentState(response.traceID).let {
+        //     Timber.e(it)
+        // }
+        // OrderPreviewBottomSheetDialogFragment.newInstance(
+        //     AssetItem(
+        //         assetId = "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+        //         assetKey = "0xec2a0550a2e4da2a027b3fc06f70ba15a94a6dac",
+        //         balance = "18.6818173",
+        //         chainIconUrl = "https://mixin-images.zeromesh.net/zVDjOxNTQvVsA8h2B4ZVxuHoCF3DJszufYKWpd9duXUSbSapoZadC7_13cnWBqg0EmwmRcKGbJaUpA8wFfpgZA\u003ds128",
+        //         chainId = "43d61dcd-e413-450d-80b8-101d5e903357",
+        //         chainName = "Ethereum",
+        //         chainPriceUsd = "1854.39",
+        //         chainSymbol = "ETH",
+        //         changeBtc = "-0.025177743202846662",
+        //         changeUsd = "0.0040655737704918034",
+        //         confirmations = 32,
+        //         depositEntries = null,
+        //         destination = "0x45315C1Fd776AF95898C77829f027AFc578f9C2B",
+        //         hidden = false,
+        //         iconUrl = "https://mixin-images.zeromesh.net/0sQY63dDMkWTURkJVjowWY6Le4ICjAFuu3ANVyZA4uI3UdkbuOT5fjJUT82ArNYmZvVcxDXyNjxoOv0TAYbQTNKS\u003ds128",
+        //         name = "Chui Niu Bi",
+        //         priceBtc = "0",
+        //         priceUsd = "0",
+        //         reserve = "0",
+        //         symbol = "CNB",
+        //         tag = "",
+        //         withdrawalMemoPossibility = WithdrawalMemoPossibility.NEGATIVE,
+        //     ),
+        // ).show(parentFragmentManager, OrderPreviewBottomSheetDialogFragment.TAG)
+        // updateUI()
     }
 
     private fun handlePaymentSuccess(paymentData: PaymentData) {
@@ -357,19 +361,21 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                         lifecycleScope.launch {
                             handleMixinResponse(
                                 invokeNetwork = {
-                                    walletViewModel.createSession(CreateSessionRequest(
-                                        tokenDetails.token,
-                                        "USD",
-                                        tokenDetails.scheme?.lowercase(),
-                                        "965e5c6e-434c-3fa9-b780-c50f43cd955c",
-                                        100,
-                                    ))
+                                    walletViewModel.createSession(
+                                        CreateSessionRequest(
+                                            tokenDetails.token,
+                                            "USD",
+                                            tokenDetails.scheme?.lowercase(),
+                                            "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+                                            100,
+                                        ),
+                                    )
                                 },
                                 successBlock = { response ->
                                     dialog.dismiss()
-                                    if (response.isSuccess){
+                                    if (response.isSuccess) {
                                         init3DS(response.data!!, tokenDetails.token)
-                                    }else{
+                                    } else {
                                         // todo
                                     }
                                 },
@@ -383,12 +389,10 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             } else {
                 showError("Token null")
                 dialog.dismiss()
-
             }
         } catch (error: Exception) {
             showError(error.message)
             dialog.dismiss()
-
         }
     }
 
@@ -413,9 +417,8 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
 
     private fun showError(message: String?) {
         if (!isAdded) return
-        alert(message ?: "Unknown")
-            .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .show()
+        ErrorFragment.newInstance(message ?: getString(R.string.Unknown)).showNow(parentFragmentManager, ErrorFragment.TAG)
+        dialog.dismiss()
     }
     private fun showError(@StringRes errorRes: Int = R.string.Unknown) {
         showError(getString(errorRes))

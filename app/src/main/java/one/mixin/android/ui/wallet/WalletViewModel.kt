@@ -52,7 +52,6 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.checkout.PaymentRequest
-import one.mixin.android.vo.checkout.TraceResponse
 import one.mixin.android.vo.sumsub.TokenResponse
 import timber.log.Timber
 import javax.inject.Inject
@@ -280,7 +279,7 @@ internal constructor(
 
     suspend fun token(): TokenResponse = assetRepository.token()
 
-    suspend fun payment(traceRequest: PaymentRequest): TraceResponse = assetRepository.payment(traceRequest)
+    suspend fun payment(traceRequest: PaymentRequest): String = assetRepository.payment(traceRequest)
 
     suspend fun paymentState(traceId: String): String = assetRepository.paymentState(traceId)
 

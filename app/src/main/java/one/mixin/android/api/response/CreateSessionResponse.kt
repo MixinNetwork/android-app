@@ -4,15 +4,15 @@ import com.google.gson.annotations.SerializedName
 
 class CreateSessionResponse(
     @SerializedName("session_id")
-    val sessionId:String,
+    val sessionId: String,
     @SerializedName("session_secret")
-    val sessionSecret:String,
+    val sessionSecret: String,
     @SerializedName("instrument_id")
-    val instrumentId:String,
+    val instrumentId: String,
     @SerializedName("scheme")
-    val scheme:String,
+    val scheme: String,
     @SerializedName("amount")
-    val amount:Int,
+    val amount: Int,
     @SerializedName("currency")
-    val currency:String,
+    val currency: String,
 )
