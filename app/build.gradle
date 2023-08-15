@@ -196,6 +196,8 @@ android {
             force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10"
             force "com.github.mixinnetwork:tink-eddsa:0.0.13"
             exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
+            exclude group: 'org.bouncycastle', module: 'bcutil-jdk18on'
+            exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
         }
     }
 }
@@ -368,7 +370,7 @@ dependencies {
     implementation "com.mapbox.plugin:maps-lifecycle:${mapboxSdkVersion}"
     implementation "com.mattprecious.swirl:swirl:$swirlVersion"
     implementation "com.github.warkiz.widget:indicatorseekbar:$indicatorseekbarVersion"
-    implementation "org.bouncycastle:bcprov-jdk15on:${bcVersion}"
+//    implementation "org.bouncycastle:bcprov-jdk15on:${bcVersion}"
     implementation "org.jetbrains:markdown:${markdownVersion}"
     implementation "io.github.java-diff-utils:java-diff-utils:${diffUtilsVersion}"
     implementation "com.lambdapioneer.argon2kt:argon2kt:${argon2ktVersion}"
@@ -487,16 +489,6 @@ task ktlintFormat(type: JavaExec, group: "formatting") {
 
 configurations.all {
     exclude group: 'org.jetbrains', module: 'annotations-java5'
-}
-
-configurations.all {
-    c -> c.resolutionStrategy.dependencySubstitution {
-        all { DependencySubstitution dependency ->
-            if (dependency.requested.group == 'org.bouncycastle') {
-                dependency.useTarget "org.bouncycastle:bcprov-jdk15on:${bcVersion}"
-            }
-        }
-    }
 }
 
 apply plugin: 'com.google.gms.google-services'
