@@ -138,7 +138,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
     }
 
     // Todo 3DS
-    private fun init3DS(c: CreateSessionResponse, token: String) {
+    private fun init3DS(sessionResponse: CreateSessionResponse, token: String) {
         val checkout3DS = Checkout3DSService(
             MixinApplication.appContext,
             Environment.SANDBOX,
@@ -148,10 +148,10 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         )
 
         val authenticationParameters = AuthenticationParameters(
-            c.sessionId, //   sessionId,
-            c.sessionSecret, // sessionSecret,
-            c.scheme, //  todo replace real data
-        ) // scheme)
+            sessionResponse.sessionId,
+            sessionResponse.sessionSecret,
+            sessionResponse.scheme,
+        )
 
         dialog.dismiss()
         checkout3DS.authenticate(authenticationParameters) { result: AuthenticationResult ->
@@ -161,8 +161,8 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     Timber.e("Completed")
                     dialog.show()
                     lifecycleScope.launch {
-                        // delay(10000)
-                        // placeOrder(token, sessionId = c.sessionId, c.sessionSecret)
+                        delay(10000)
+                        placeOrder(token, sessionId = sessionResponse.sessionId, sessionResponse.instrumentId)
                     }
                 }
 
@@ -310,7 +310,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         }
     }
 
-    private fun placeOrder(token: String, sessionId: String, sessionSecret: String) = lifecycleScope.launch {
+    private fun placeOrder(token: String, sessionId: String, instrumentId: String) = lifecycleScope.launch {
         // todo real data
         try {
             val response = walletViewModel.payment(
@@ -318,7 +318,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     token,
                     "965e5c6e-434c-3fa9-b780-c50f43cd955c",
                     sessionId,
-                    sessionSecret,
+                    instrumentId,
                     amount,
                     "USD",
                 ),
@@ -368,7 +368,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     requireContext(),
                 ).createToken(
                     GooglePayTokenRequest(tokenJsonPayload, { tokenDetails ->
-                        // todo create session and 3ds
+                        dialog.show()
                         lifecycleScope.launch {
                             handleMixinResponse(
                                 invokeNetwork = {
@@ -383,7 +383,6 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                                     )
                                 },
                                 successBlock = { response ->
-                                    dialog.dismiss()
                                     if (response.isSuccess) {
                                         init3DS(response.data!!, tokenDetails.token)
                                     } else {

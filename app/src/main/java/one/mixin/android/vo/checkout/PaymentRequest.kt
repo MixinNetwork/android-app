@@ -9,8 +9,8 @@ class PaymentRequest(
     val assetId: String,
     @SerializedName("session_id")
     val sessionId: String,
-    @SerializedName("session_secret")
-    val sessionSecret: String,
+    @SerializedName("instrument_id")
+    val instrumentId: String,
     @SerializedName("amount")
     val amount: Long,
     @SerializedName("currency")
