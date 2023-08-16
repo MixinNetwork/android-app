@@ -231,7 +231,6 @@
         android:id="@+id/buy_va"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:enabled="false"
         android:layout_gravity="center_horizontal"
         android:clickable="true"
         android:focusable="true"

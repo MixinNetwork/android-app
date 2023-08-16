@@ -19,7 +19,7 @@ class LoadingProgressDialogFragment : AppCompatDialogFragment() {
             layoutParams.width = 300.dp
             layoutParams.height = 180.dp
             window.attributes = layoutParams
-            window.setBackgroundDrawableResource(R.drawable.bg_round_window_16dp)
+            window.setBackgroundDrawableResource(R.drawable.bg_round_window_12dp)
         }
         isCancelable = false
         return dialog

@@ -34,6 +34,7 @@ import one.mixin.android.Constants.PAYMENTS_GATEWAY
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.CreateSessionRequest
+import one.mixin.android.api.response.CheckoutPaymentResponse
 import one.mixin.android.api.response.CreateSessionResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
@@ -279,7 +280,7 @@ internal constructor(
 
     suspend fun token(): TokenResponse = assetRepository.token()
 
-    suspend fun payment(traceRequest: PaymentRequest): String = assetRepository.payment(traceRequest)
+    suspend fun payment(traceRequest: PaymentRequest): MixinResponse<CheckoutPaymentResponse> = assetRepository.payment(traceRequest)
 
     suspend fun paymentState(traceId: String): String = assetRepository.paymentState(traceId)
 

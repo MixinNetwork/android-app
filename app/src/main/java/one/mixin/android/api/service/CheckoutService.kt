@@ -2,6 +2,7 @@ package one.mixin.android.api.service
 
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.CreateSessionRequest
+import one.mixin.android.api.response.CheckoutPaymentResponse
 import one.mixin.android.api.response.CreateSessionResponse
 import one.mixin.android.vo.checkout.PaymentRequest
 import one.mixin.android.vo.sumsub.TokenRequest
@@ -14,7 +15,7 @@ import retrofit2.http.Query
 
 interface CheckoutService {
     @POST("/checkout/payments")
-    suspend fun payment(@Body request: PaymentRequest): String
+    suspend fun payment(@Body request: PaymentRequest): MixinResponse<CheckoutPaymentResponse>
 
     @POST("/checkout/sessions")
     suspend fun createSession(@Body session: CreateSessionRequest): MixinResponse<CreateSessionResponse>

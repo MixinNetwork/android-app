@@ -18,6 +18,7 @@ import one.mixin.android.api.request.CreateSessionRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
+import one.mixin.android.api.response.CheckoutPaymentResponse
 import one.mixin.android.api.response.CreateSessionResponse
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
@@ -455,7 +456,7 @@ constructor(
     suspend fun token(): TokenResponse =
         checkoutService.sumsubToken(TokenRequest(requireNotNull(Session.getAccountId())))
 
-    suspend fun payment(traceRequest: PaymentRequest): String = checkoutService.payment(traceRequest)
+    suspend fun payment(traceRequest: PaymentRequest): MixinResponse<CheckoutPaymentResponse> = checkoutService.payment(traceRequest)
 
     suspend fun paymentState(traceId: String): String = checkoutService.paymentState(traceId)
     suspend fun createSession(createSession: CreateSessionRequest): MixinResponse<CreateSessionResponse> = checkoutService.createSession(createSession)

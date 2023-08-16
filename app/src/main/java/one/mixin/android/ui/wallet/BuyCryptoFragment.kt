@@ -49,6 +49,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.checkout.PaymentRequest
 import timber.log.Timber
 import java.util.Locale
@@ -86,6 +87,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             ),
         )
         binding.apply {
+            buyVa.isEnabled = false
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
@@ -93,13 +95,25 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             buyVa.setOnClickListener {
                 when (buyVa.displayedChild) {
                     0 -> {
-                        amount = (amountEt.text.toString().toLongOrNull() ?: 0) * 100
-                        payWithCheckout()
+                        amountEt.text.toString().toLongOrNull().let {
+                            if (it != null) {
+                                amount = it * 100
+                                payWithCheckout()
+                            } else {
+                                toast(R.string.error_input_amount)
+                            }
+                        }
                     }
 
                     1 -> {
-                        amount = (amountEt.text.toString().toLongOrNull() ?: 0) * 100
-                        payWithGoogle()
+                        amountEt.text.toString().toLongOrNull().let {
+                            if (it != null) {
+                                amount = it * 100
+                                payWithCheckout()
+                            } else {
+                                payWithGoogle()
+                            }
+                        }
                     }
                     else -> {
                         // do noting
@@ -209,14 +223,14 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             }
 
             amountEt.addTextChangedListener(object : TextWatcher {
-                override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 }
 
-                override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                    buyVa.isEnabled = !p0.isNullOrBlank()
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    buyVa.isEnabled = !s.isNullOrBlank()
                 }
 
-                override fun afterTextChanged(p0: Editable?) {
+                override fun afterTextChanged(s: Editable?) {
                 }
             })
 
@@ -245,7 +259,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                                 walletViewModel.createSession(
                                     CreateSessionRequest(
                                         token,
-                                        "USD",
+                                        currency.name,
                                         scheme,
                                         "965e5c6e-434c-3fa9-b780-c50f43cd955c",
                                         amount.toInt(),
@@ -279,7 +293,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
 
     private fun payWithGoogle() {
         // Todo real data
-        val task = walletViewModel.getLoadPaymentDataTask("1.00", "USD")
+        val task = walletViewModel.getLoadPaymentDataTask("${amount / 100f}", currency.name)
         loadingProgress.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
         task.addOnCompleteListener { completedTask ->
             if (completedTask.isSuccessful) {
@@ -319,42 +333,44 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     sessionId,
                     instrumentId,
                     amount,
-                    "USD",
+                    currency.name,
                 ),
             )
+            if (response.isSuccess) {
+                loadingProgress.dismiss()
+                OrderPreviewBottomSheetDialogFragment.newInstance(
+                    AssetItem(
+                        assetId = "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+                        assetKey = "0xec2a0550a2e4da2a027b3fc06f70ba15a94a6dac",
+                        balance = "18.6818173",
+                        chainIconUrl = "https://mixin-images.zeromesh.net/zVDjOxNTQvVsA8h2B4ZVxuHoCF3DJszufYKWpd9duXUSbSapoZadC7_13cnWBqg0EmwmRcKGbJaUpA8wFfpgZA\u003ds128",
+                        chainId = "43d61dcd-e413-450d-80b8-101d5e903357",
+                        chainName = "Ethereum",
+                        chainPriceUsd = "1854.39",
+                        chainSymbol = "ETH",
+                        changeBtc = "-0.025177743202846662",
+                        changeUsd = "0.0040655737704918034",
+                        confirmations = 32,
+                        depositEntries = null,
+                        destination = "0x45315C1Fd776AF95898C77829f027AFc578f9C2B",
+                        hidden = false,
+                        iconUrl = "https://mixin-images.zeromesh.net/0sQY63dDMkWTURkJVjowWY6Le4ICjAFuu3ANVyZA4uI3UdkbuOT5fjJUT82ArNYmZvVcxDXyNjxoOv0TAYbQTNKS\u003ds128",
+                        name = "Chui Niu Bi",
+                        priceBtc = "0",
+                        priceUsd = "0",
+                        reserve = "0",
+                        symbol = "CNB",
+                        tag = "",
+                        withdrawalMemoPossibility = WithdrawalMemoPossibility.NEGATIVE,
+                    ),
+                ).show(parentFragmentManager, OrderPreviewBottomSheetDialogFragment.TAG)
+                updateUI()
+            } else {
+                showError(response.errorDescription)
+            }
         } catch (e: Exception) {
             showError(e.message)
         }
-        // walletViewModel.paymentState(response.traceID).let {
-        //     Timber.e(it)
-        // }
-        // OrderPreviewBottomSheetDialogFragment.newInstance(
-        //     AssetItem(
-        //         assetId = "965e5c6e-434c-3fa9-b780-c50f43cd955c",
-        //         assetKey = "0xec2a0550a2e4da2a027b3fc06f70ba15a94a6dac",
-        //         balance = "18.6818173",
-        //         chainIconUrl = "https://mixin-images.zeromesh.net/zVDjOxNTQvVsA8h2B4ZVxuHoCF3DJszufYKWpd9duXUSbSapoZadC7_13cnWBqg0EmwmRcKGbJaUpA8wFfpgZA\u003ds128",
-        //         chainId = "43d61dcd-e413-450d-80b8-101d5e903357",
-        //         chainName = "Ethereum",
-        //         chainPriceUsd = "1854.39",
-        //         chainSymbol = "ETH",
-        //         changeBtc = "-0.025177743202846662",
-        //         changeUsd = "0.0040655737704918034",
-        //         confirmations = 32,
-        //         depositEntries = null,
-        //         destination = "0x45315C1Fd776AF95898C77829f027AFc578f9C2B",
-        //         hidden = false,
-        //         iconUrl = "https://mixin-images.zeromesh.net/0sQY63dDMkWTURkJVjowWY6Le4ICjAFuu3ANVyZA4uI3UdkbuOT5fjJUT82ArNYmZvVcxDXyNjxoOv0TAYbQTNKS\u003ds128",
-        //         name = "Chui Niu Bi",
-        //         priceBtc = "0",
-        //         priceUsd = "0",
-        //         reserve = "0",
-        //         symbol = "CNB",
-        //         tag = "",
-        //         withdrawalMemoPossibility = WithdrawalMemoPossibility.NEGATIVE,
-        //     ),
-        // ).show(parentFragmentManager, OrderPreviewBottomSheetDialogFragment.TAG)
-        // updateUI()
     }
 
     private fun handlePaymentSuccess(paymentData: PaymentData) {
@@ -374,7 +390,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                                     walletViewModel.createSession(
                                         CreateSessionRequest(
                                             tokenDetails.token,
-                                            "USD",
+                                            currency.name,
                                             tokenDetails.scheme?.lowercase(),
                                             "965e5c6e-434c-3fa9-b780-c50f43cd955c",
                                             amount.toInt(),

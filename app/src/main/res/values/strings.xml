@@ -1265,4 +1265,5 @@
     <string name="Pay_with">Pay with</string>
     <string name="Buy_now">Buy now</string>
     <string name="Payment_Services">Payment Services</string>
+    <string name="error_input_amount">Please enter the amount</string>
 </resources>
