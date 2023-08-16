@@ -35,7 +35,6 @@ import one.mixin.android.api.request.CreateSessionRequest
 import one.mixin.android.api.request.SessionStatus
 import one.mixin.android.api.response.CreateSessionResponse
 import one.mixin.android.databinding.FragmentBuyCryptoBinding
-import one.mixin.android.extension.circularReveal
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
@@ -177,7 +176,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     Timber.e("Completed")
                     loadingProgress.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
                     lifecycleScope.launch {
-                        while (true){
+                        while (true) {
                             delay(1000)
                             val session = try {
                                 walletViewModel.getSession(sessionResponse.sessionId)

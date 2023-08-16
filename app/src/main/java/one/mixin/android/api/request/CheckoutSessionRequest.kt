@@ -10,7 +10,7 @@ class CheckoutSessionRequest(
     @SerializedName("instrument_id")
     val instrumentId: String?,
     @SerializedName("amount")
-    val amount:Int,
+    val amount: Int,
     @SerializedName("currency")
     val currency: String,
     @SerializedName("scheme")
@@ -20,5 +20,14 @@ class CheckoutSessionRequest(
 )
 
 enum class SessionStatus {
-    pending, processing, challenged, challenge_abandoned, expired, approved, attempted, unavailable, declined, rejected
+    pending,
+    processing,
+    challenged,
+    challenge_abandoned,
+    expired,
+    approved,
+    attempted,
+    unavailable,
+    declined,
+    rejected
 }

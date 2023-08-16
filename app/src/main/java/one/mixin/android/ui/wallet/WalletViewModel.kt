@@ -354,5 +354,4 @@ internal constructor(
         request.setPaymentMethodTokenizationParameters(params)
         return paymentsClient.loadPaymentData(request.build())
     }
-
 }

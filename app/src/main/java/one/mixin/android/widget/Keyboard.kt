@@ -96,8 +96,8 @@ class Keyboard @JvmOverloads constructor(
         this.onClickKeyboardListener = onClickKeyboardListener
     }
 
-    fun initPinKeys(context: Context? = null, key: List<String>? = null) {
-        if (context?.defaultSharedPreferences?.getBoolean(Constants.Account.PREF_RANDOM, false) == true) {
+    fun initPinKeys(context: Context? = null, key: List<String>? = null, force: Boolean = false) {
+        if (!force && context?.defaultSharedPreferences?.getBoolean(Constants.Account.PREF_RANDOM, false) == true) {
             val list = mutableListOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
             list.shuffle()
             list.add(9, "")

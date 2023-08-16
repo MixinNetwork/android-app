@@ -5,7 +5,6 @@ import one.mixin.android.api.request.CheckoutSessionRequest
 import one.mixin.android.api.request.CreateSessionRequest
 import one.mixin.android.api.response.CheckoutPaymentResponse
 import one.mixin.android.api.response.CreateSessionResponse
-import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.checkout.PaymentRequest
 import one.mixin.android.vo.sumsub.TokenRequest
 import one.mixin.android.vo.sumsub.TokenResponse
@@ -13,7 +12,6 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
-import retrofit2.http.Query
 
 interface CheckoutService {
     @POST("/checkout/payments")
@@ -27,5 +25,4 @@ interface CheckoutService {
 
     @POST("/kyc/token")
     suspend fun sumsubToken(@Body request: TokenRequest): TokenResponse
-
 }

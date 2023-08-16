@@ -104,7 +104,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 sendReceiveView.buy.setOnClickListener {
                     lifecycleScope.launch {
                         sendReceiveView.buy.displayedChild = 1
-                        delay(1500) // Todo check kyc
+                        delay(500) // Todo check kyc
                         sendReceiveView.buy.isEnabled = false
                         // view.navigate(
                         //     R.id.action_wallet_to_identity,
@@ -114,6 +114,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                             Session.getFiatCurrency() == c.name
                         } ?: currencyList.find { c -> c.name == "USD" }
                         view.navigate(
+                            // R.id.action_wallet_to_calculate,
                             R.id.action_wallet_to_buy,
                             Bundle().apply {
                                 putParcelable(ARGS_ASSET, assets[0])

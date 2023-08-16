@@ -1,6 +1,5 @@
 package one.mixin.android.extension
 
-import android.R.attr
 import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
@@ -233,7 +232,7 @@ fun View.circularReveal() {
     val centerX = width / 2
     val centerY: Int = height / 2
     val startRadius = 0f
-    val endRadius = hypot(width / 2f, height / 2f);
+    val endRadius = hypot(width / 2f, height / 2f)
 
     val circularReveal: Animator =
         ViewAnimationUtils.createCircularReveal(this, centerX, centerY, startRadius, endRadius)
