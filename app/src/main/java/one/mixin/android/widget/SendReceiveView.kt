@@ -20,11 +20,12 @@ class SendReceiveView : LinearLayoutCompat {
 
     private val binding: ViewSendReceiveBinding
     val send get() = binding.sendTv
-    val buy get() = binding.buyTv
+    val buy get() = binding.buyVa
     val receive get() = binding.receiveTv
     val receiveProgress get() = binding.receiveProgress
 
     fun enableBuy() {
+        buy.displayedChild = 0
         buy.isVisible = true
         binding.buyDelimiter.isVisible = true
         send.foreground = ContextCompat.getDrawable(context, R.drawable.mixin_ripple_rect)

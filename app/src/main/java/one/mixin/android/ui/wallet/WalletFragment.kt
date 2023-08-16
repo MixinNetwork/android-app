@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -101,21 +102,27 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                 sendReceiveView.enableBuy()
                 sendReceiveView.buy.setOnClickListener {
-                    // Todo check kyc
-                    // view.navigate(
-                    //     R.id.action_wallet_to_identity,
-                    // )
-                    val currencyList = getCurrencyData(requireContext().resources)
-                    val currency = currencyList.find { c ->
-                        Session.getFiatCurrency() == c.name
-                    } ?: currencyList.find { c -> c.name == "USD" }
-                    view.navigate(
-                        R.id.action_wallet_to_buy,
-                        Bundle().apply {
-                            putParcelable(ARGS_ASSET, assets[0])
-                            putParcelable(ARGS_CURRENCY, currency)
-                        },
-                    )
+                    lifecycleScope.launch {
+                        sendReceiveView.buy.displayedChild = 1
+                        delay(1500) // Todo check kyc
+                        sendReceiveView.buy.isEnabled = false
+                        // view.navigate(
+                        //     R.id.action_wallet_to_identity,
+                        // )
+                        val currencyList = getCurrencyData(requireContext().resources)
+                        val currency = currencyList.find { c ->
+                            Session.getFiatCurrency() == c.name
+                        } ?: currencyList.find { c -> c.name == "USD" }
+                        view.navigate(
+                            R.id.action_wallet_to_buy,
+                            Bundle().apply {
+                                putParcelable(ARGS_ASSET, assets[0])
+                                putParcelable(ARGS_CURRENCY, currency)
+                            },
+                        )
+                        sendReceiveView.buy.displayedChild = 0
+                        sendReceiveView.buy.isEnabled = true
+                    }
                 }
                 sendReceiveView.send.setOnClickListener {
                     AssetListBottomSheetDialogFragment.newInstance(true)
