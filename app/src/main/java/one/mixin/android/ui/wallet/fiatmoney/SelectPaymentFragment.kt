@@ -46,7 +46,17 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
             titleView.setSubTitle(getString(R.string.Select_Payment), "")
-            continueTv.setOnClickListener {
+            firstRl.setOnClickListener {
+                view.navigate(
+                    R.id.action_wallet_payment_to_order_confirm,
+                    Bundle().apply {
+                        putParcelable(TransactionsFragment.ARGS_ASSET, asset)
+                        putParcelable(BuyCryptoFragment.ARGS_CURRENCY, currency)
+                        putBoolean(OrderConfirmFragment.ARGS_GOOGLE_PAY, true)
+                    },
+                )
+            }
+            secondRl.setOnClickListener {
                 view.navigate(
                     R.id.action_wallet_payment_to_card,
                     Bundle().apply {

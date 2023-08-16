@@ -66,6 +66,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     companion object {
         const val TAG = "OrderConfirmFragment"
         const val ARGS_CURRENCY = "args_currency"
+        const val ARGS_GOOGLE_PAY = "args_google_pay"
 
         fun newInstance(assetItem: AssetItem, currency: Currency) = OrderConfirmFragment().withArgs {
             putParcelable(TransactionsFragment.ARGS_ASSET, assetItem)
@@ -92,6 +93,10 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                 ARGS_CURRENCY,
                 Currency::class.java,
             ),
+        )
+        isGooglePay = requireArguments().getBoolean(
+            ARGS_GOOGLE_PAY,
+            false
         )
         binding.apply {
             titleView.leftIb.setOnClickListener {

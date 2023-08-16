@@ -339,6 +339,9 @@
         <argument
             android:name="args_currency"
             app:argType="one.mixin.android.ui.setting.Currency"/>
+        <argument
+            android:name="args_google_pay"
+            app:argType="boolean"/>
     </fragment>
 
 </navigation>
