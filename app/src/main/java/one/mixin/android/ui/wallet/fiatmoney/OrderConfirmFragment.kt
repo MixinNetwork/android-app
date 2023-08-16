@@ -190,10 +190,10 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                                 showError(e.message)
                                 break
                             }
-                            if (session.data?.status == SessionStatus.approved.name) {
+                            if (session.data?.status == SessionStatus.Approved.value) {
                                 placeOrder(token, sessionId = sessionResponse.sessionId, sessionResponse.instrumentId)
                                 break
-                            } else if (session.data?.status != SessionStatus.pending.name || session.data?.status != SessionStatus.processing.name) {
+                            } else if (session.data?.status != SessionStatus.Pending.value || session.data?.status != SessionStatus.Processing.value) {
                                 showError(session.data?.status ?: session.errorDescription)
                                 break
                             }

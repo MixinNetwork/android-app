@@ -19,15 +19,15 @@ class CheckoutSessionRequest(
     var status: String,
 )
 
-enum class SessionStatus {
-    pending,
-    processing,
-    challenged,
-    challenge_abandoned,
-    expired,
-    approved,
-    attempted,
-    unavailable,
-    declined,
-    rejected,
+enum class SessionStatus(val value: String) {
+    Pending("pending"),
+    Processing("processing"),
+    Challenged("challenged"),
+    ChallengeAbandoned("challenge_abandoned"),
+    Expired("expired"),
+    Approved("approved"),
+    Attempted("attempted"),
+    Unavailable("unavailable"),
+    Declined("declined"),
+    Rejected("rejected"),
 }
