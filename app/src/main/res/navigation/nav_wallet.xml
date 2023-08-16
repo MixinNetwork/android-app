@@ -290,6 +290,14 @@
         android:id="@+id/wallet_select_payment"
         android:name="one.mixin.android.ui.wallet.fiatmoney.SelectPaymentFragment">
 
+        <argument
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.AssetItem"/>
+
+        <argument
+            android:name="args_currency"
+            app:argType="one.mixin.android.ui.setting.Currency"/>
+
         <action
             android:id="@+id/action_wallet_payment_to_card"
             app:destination="@id/wallet_select_card"
@@ -308,6 +316,13 @@
         android:id="@+id/wallet_select_card"
         android:name="one.mixin.android.ui.wallet.fiatmoney.SelectCardFragment">
 
+        <argument
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.AssetItem"/>
+        <argument
+            android:name="args_currency"
+            app:argType="one.mixin.android.ui.setting.Currency"/>
+
         <action
             android:id="@+id/action_wallet_card_to_order_confirm"
             app:destination="@id/wallet_order_confirm"
@@ -318,7 +333,12 @@
     <fragment
         android:id="@+id/wallet_order_confirm"
         android:name="one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment">
-
+        <argument
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.AssetItem"/>
+        <argument
+            android:name="args_currency"
+            app:argType="one.mixin.android.ui.setting.Currency"/>
     </fragment>
 
 </navigation>

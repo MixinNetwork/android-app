@@ -14,5 +14,5 @@ enum class State(val value: String) {
     PENDING("pending"),
     SUCCESS("success"),
     RETRY("retry"),
-    BLOCKED("blocked")
+    BLOCKED("blocked"),
 }

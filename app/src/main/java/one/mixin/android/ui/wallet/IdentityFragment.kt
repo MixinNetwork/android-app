@@ -76,7 +76,7 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
                         Timber.e("Unknown")
                     }
                 }
-            }
+            },
         )
     }
 

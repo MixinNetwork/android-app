@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentCalculateBinding
@@ -15,7 +14,6 @@ import one.mixin.android.extension.navigate
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.shaking
 import one.mixin.android.extension.tickVibrate
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
@@ -127,7 +125,13 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 // view.navigate(
                 //     R.id.action_wallet_to_identity,
                 // )
-                view.navigate(R.id.action_wallet_calculate_to_payment)
+                view.navigate(
+                    R.id.action_wallet_calculate_to_payment,
+                    Bundle().apply {
+                        putParcelable(ARGS_ASSET, asset)
+                        putParcelable(BuyCryptoFragment.ARGS_CURRENCY, currency)
+                    },
+                )
             }
         }
     }
