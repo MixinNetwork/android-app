@@ -4,12 +4,14 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentCalculateBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.shaking
 import one.mixin.android.extension.tickVibrate
@@ -18,6 +20,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.BuyCryptoFragment
 import one.mixin.android.ui.wallet.FiatListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.viewBinding
@@ -120,7 +123,11 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 force = true,
             )
             continueTv.setOnClickListener {
-                toast("Todo")
+                // Todo check kyc
+                // view.navigate(
+                //     R.id.action_wallet_to_identity,
+                // )
+                view.navigate(R.id.action_wallet_calculate_to_payment)
             }
         }
     }

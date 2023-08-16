@@ -276,5 +276,49 @@
 
     <fragment
         android:id="@+id/wallet_calculate"
-        android:name="one.mixin.android.ui.wallet.fiatmoney.CalculateFragment"/>
+        android:name="one.mixin.android.ui.wallet.fiatmoney.CalculateFragment">
+
+        <action
+            android:id="@+id/action_wallet_calculate_to_payment"
+            app:destination="@id/wallet_select_payment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"/>
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/wallet_select_payment"
+        android:name="one.mixin.android.ui.wallet.fiatmoney.SelectPaymentFragment">
+
+        <action
+            android:id="@+id/action_wallet_payment_to_card"
+            app:destination="@id/wallet_select_card"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"/>
+
+        <action
+            android:id="@+id/action_wallet_payment_to_order_confirm"
+            app:destination="@id/wallet_order_confirm"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"/>
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/wallet_select_card"
+        android:name="one.mixin.android.ui.wallet.fiatmoney.SelectCardFragment">
+
+        <action
+            android:id="@+id/action_wallet_card_to_order_confirm"
+            app:destination="@id/wallet_order_confirm"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"/>
+
+    </fragment>
+    <fragment
+        android:id="@+id/wallet_order_confirm"
+        android:name="one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment">
+
+    </fragment>
+
 </navigation>

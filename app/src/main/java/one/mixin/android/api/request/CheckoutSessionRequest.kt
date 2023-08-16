@@ -29,5 +29,5 @@ enum class SessionStatus {
     attempted,
     unavailable,
     declined,
-    rejected
+    rejected,
 }
