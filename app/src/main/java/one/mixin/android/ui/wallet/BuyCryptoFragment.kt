@@ -1,8 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
@@ -34,8 +32,10 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CreateSessionRequest
+import one.mixin.android.api.request.SessionStatus
 import one.mixin.android.api.response.CreateSessionResponse
 import one.mixin.android.databinding.FragmentBuyCryptoBinding
+import one.mixin.android.extension.circularReveal
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
@@ -44,6 +44,7 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -176,8 +177,22 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     Timber.e("Completed")
                     loadingProgress.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
                     lifecycleScope.launch {
-                        delay(10000)
-                        placeOrder(token, sessionId = sessionResponse.sessionId, sessionResponse.instrumentId)
+                        while (true){
+                            delay(1000)
+                            val session = try {
+                                walletViewModel.getSession(sessionResponse.sessionId)
+                            } catch (e: Exception) {
+                                showError(e.message)
+                                break
+                            }
+                            if (session.data?.status == SessionStatus.approved.name) {
+                                placeOrder(token, sessionId = sessionResponse.sessionId, sessionResponse.instrumentId)
+                                break
+                            } else if (session.data?.status != SessionStatus.pending.name || session.data?.status != SessionStatus.processing.name) {
+                                showError(session.data?.status ?: session.errorDescription)
+                                break
+                            }
+                        }
                     }
                 }
 
@@ -218,17 +233,26 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             fiatAvatar.setImageResource(currency.flag)
             fiatName.text = currency.name
 
-            buyVa.displayedChild = if (isGooglePay) {
+            val toValue = if (isGooglePay) {
                 1
             } else {
                 0
             }
+            if (buyVa.displayedChild != toValue) {
+                buyVa.displayedChild = if (isGooglePay) {
+                    1
+                } else {
+                    0
+                }
 
-            buyVa.setBackgroundResource (if (isGooglePay) {
-                R.drawable.bg_round_black_btn_40
-            } else {
-                R.drawable.bg_round_blue_btn_40
-            })
+                buyVa.setBackgroundResource(
+                    if (isGooglePay) {
+                        R.drawable.bg_round_black_btn_40
+                    } else {
+                        R.drawable.bg_round_blue_btn_40
+                    },
+                )
+            }
 
             // Todo real data
             price.tail.text = "0.995 USD / USDC"
@@ -257,6 +281,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                                         token,
                                         currency.name,
                                         scheme,
+                                        Session.getAccountId()!!,
                                         "965e5c6e-434c-3fa9-b780-c50f43cd955c",
                                         amount.toInt(),
                                     ),
@@ -266,7 +291,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                                 if (response.isSuccess) {
                                     init3DS(response.data!!, token)
                                 } else {
-                                    // todo
+                                    showError(response.errorDescription)
                                 }
                             },
                         )
@@ -326,6 +351,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                 PaymentRequest(
                     token,
                     "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+                    Session.getAccountId()!!,
                     sessionId,
                     instrumentId,
                     amount,
@@ -334,6 +360,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             )
             if (response.isSuccess) {
                 loadingProgress.dismiss()
+                updateUI()
                 OrderPreviewBottomSheetDialogFragment.newInstance(
                     AssetItem(
                         assetId = "965e5c6e-434c-3fa9-b780-c50f43cd955c",
@@ -360,7 +387,6 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                         withdrawalMemoPossibility = WithdrawalMemoPossibility.NEGATIVE,
                     ),
                 ).show(parentFragmentManager, OrderPreviewBottomSheetDialogFragment.TAG)
-                updateUI()
             } else {
                 showError(response.errorDescription)
             }
@@ -388,6 +414,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                                             tokenDetails.token,
                                             currency.name,
                                             tokenDetails.scheme?.lowercase(),
+                                            Session.getAccountId()!!,
                                             "965e5c6e-434c-3fa9-b780-c50f43cd955c",
                                             amount.toInt(),
                                         ),

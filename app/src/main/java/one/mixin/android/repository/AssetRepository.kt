@@ -14,6 +14,7 @@ import one.mixin.android.Constants
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
+import one.mixin.android.api.request.CheckoutSessionRequest
 import one.mixin.android.api.request.CreateSessionRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.TransferRequest
@@ -458,6 +459,7 @@ constructor(
 
     suspend fun payment(traceRequest: PaymentRequest): MixinResponse<CheckoutPaymentResponse> = checkoutService.payment(traceRequest)
 
-    suspend fun paymentState(traceId: String): String = checkoutService.paymentState(traceId)
     suspend fun createSession(createSession: CreateSessionRequest): MixinResponse<CreateSessionResponse> = checkoutService.createSession(createSession)
+
+    suspend fun getSession(sessionId: String): MixinResponse<CheckoutSessionRequest> = checkoutService.getSession(sessionId)
 }

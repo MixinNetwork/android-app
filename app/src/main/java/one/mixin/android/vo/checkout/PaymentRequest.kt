@@ -7,6 +7,8 @@ class PaymentRequest(
     val token: String,
     @SerializedName("asset_id")
     val assetId: String,
+    @SerializedName("user_id")
+    val userId: String,
     @SerializedName("session_id")
     val sessionId: String,
     @SerializedName("instrument_id")

@@ -9,6 +9,8 @@ class CreateSessionRequest(
     val currency: String,
     @SerializedName("scheme")
     val scheme: String?,
+    @SerializedName("user_id")
+    val userId:String,
     @SerializedName("asset_id")
     val assetId: String,
     @SerializedName("amount")

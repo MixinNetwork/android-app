@@ -282,9 +282,9 @@ internal constructor(
 
     suspend fun payment(traceRequest: PaymentRequest): MixinResponse<CheckoutPaymentResponse> = assetRepository.payment(traceRequest)
 
-    suspend fun paymentState(traceId: String): String = assetRepository.paymentState(traceId)
-
     suspend fun createSession(createSession: CreateSessionRequest): MixinResponse<CreateSessionResponse> = assetRepository.createSession(createSession)
+
+    suspend fun getSession(sessionId: String) = assetRepository.getSession(sessionId)
 
     data class State(
         val googlePayAvailable: Boolean? = false,
@@ -355,23 +355,4 @@ internal constructor(
         return paymentsClient.loadPaymentData(request.build())
     }
 
-    /**
-     * Determine whether the API to save passes to Google Pay is available on the device.
-     */
-
-    fun setGooglePayButtonClickable(clickable: Boolean) {
-        _state.update { currentState ->
-            currentState.copy(googlePayButtonClickable = clickable)
-        }
-    }
-
-    fun checkoutSuccess() {
-        _state.update { currentState ->
-            currentState.copy(checkoutSuccess = true)
-        }
-    }
-
-    fun checkoutFaild() {
-        // Todo
-    }
 }
