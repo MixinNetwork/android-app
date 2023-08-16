@@ -37,6 +37,7 @@ import one.mixin.android.api.request.CreateSessionRequest
 import one.mixin.android.api.response.CreateSessionResponse
 import one.mixin.android.databinding.FragmentBuyCryptoBinding
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat
@@ -87,7 +88,6 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             ),
         )
         binding.apply {
-            buyVa.isEnabled = false
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
@@ -99,6 +99,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                             if (it != null) {
                                 amount = it * 100
                                 payWithCheckout()
+                                amountEt.hideKeyboard()
                             } else {
                                 toast(R.string.error_input_amount)
                             }
@@ -109,9 +110,10 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                         amountEt.text.toString().toLongOrNull().let {
                             if (it != null) {
                                 amount = it * 100
-                                payWithCheckout()
-                            } else {
                                 payWithGoogle()
+                                amountEt.hideKeyboard()
+                            } else {
+                                toast(R.string.error_input_amount)
                             }
                         }
                     }
@@ -211,7 +213,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             descEnd.text = asset.symbol
             payName.text =
                 if (isGooglePay) getString(R.string.Google_Pay) else getString(R.string.Visa_Mastercard)
-            payAvatar.setImageResource(if (isGooglePay) R.drawable.ic_google_pay else R.drawable.ic_visa)
+            payAvatar.setImageResource(if (isGooglePay) R.drawable.ic_google_pay else R.drawable.ic_bank_card)
             payDesc.text = getString(R.string.Gateway_fee_price, "1.99%")
             fiatAvatar.setImageResource(currency.flag)
             fiatName.text = currency.name
@@ -222,16 +224,10 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                 0
             }
 
-            amountEt.addTextChangedListener(object : TextWatcher {
-                override fun beforeTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                }
-
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    buyVa.isEnabled = !s.isNullOrBlank()
-                }
-
-                override fun afterTextChanged(s: Editable?) {
-                }
+            buyVa.setBackgroundResource (if (isGooglePay) {
+                R.drawable.bg_round_black_btn_40
+            } else {
+                R.drawable.bg_round_blue_btn_40
             })
 
             // Todo real data
@@ -401,7 +397,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                                     if (response.isSuccess) {
                                         init3DS(response.data!!, tokenDetails.token)
                                     } else {
-                                        // todo
+                                        showError(response.errorDescription)
                                     }
                                 },
                             )
@@ -431,7 +427,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
 
                 ComponentActivity.RESULT_CANCELED -> {
                     toast(R.string.Cancel)
-                    showError()
+                    loadingProgress.dismiss()
                 }
             }
         }

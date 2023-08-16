@@ -99,7 +99,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_centerVertical="true"
-            android:src="@drawable/ic_visa"
+            android:src="@drawable/ic_bank_card"
             android:layout_marginStart="@dimen/margin16"
             android:layout_marginEnd="8dp" />
 
@@ -253,17 +253,9 @@
             android:textColor="@color/white"
             android:textSize="14sp" />
 
-        <TextView
-            android:id="@+id/pay_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layout_gravity="center_horizontal"
-            android:text="Pay with google"
-            android:drawableLeft="@drawable/ic_google_pay_smail"
-            android:drawablePadding="8dp"
-            android:textColor="@color/white"
-            android:textSize="14sp" />
+       <one.mixin.android.widget.GooglePayButton
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"/>
 
         <ProgressBar
             style="?android:attr/progressBarStyleSmall"
