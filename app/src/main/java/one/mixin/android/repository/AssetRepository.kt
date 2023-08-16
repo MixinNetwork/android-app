@@ -454,7 +454,7 @@ constructor(
             },
         )
 
-    suspend fun token(): TokenResponse =
+    suspend fun token(): MixinResponse<TokenResponse> =
         checkoutService.sumsubToken(TokenRequest(requireNotNull(Session.getAccountId())))
 
     suspend fun payment(traceRequest: PaymentRequest): MixinResponse<CheckoutPaymentResponse> = checkoutService.payment(traceRequest)

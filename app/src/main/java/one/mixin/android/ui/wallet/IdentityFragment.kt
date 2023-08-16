@@ -13,6 +13,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentIdentityBinding
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
@@ -49,17 +50,34 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
 
     private fun startVerification() = lifecycleScope.launch {
         binding.innerVa.displayedChild = 1
-        val tokenResponse = walletViewModel.token()
-        when (tokenResponse.state) {
-            State.PENDING.value -> presentSDK(requireNotNull(tokenResponse.token))
-            State.SUCCESS.value -> {
-                toast("Success")
+        handleMixinResponse(
+            invokeNetwork = {
+                walletViewModel.token()
+            },
+            doAfterNetworkSuccess = {
                 binding.innerVa.displayedChild = 0
+            },
+            successBlock = { resp ->
+                val tokenResponse = requireNotNull(resp.data)
+                Timber.d("state ${tokenResponse.state}")
+                when (tokenResponse.state) {
+                    State.INITIAL.value -> presentSDK(requireNotNull(tokenResponse.token))
+                    State.RETRY.value -> presentSDK(requireNotNull(tokenResponse.token))
+                    State.PENDING.value -> {
+                        toast("pending state, just wait")
+                    }
+                    State.SUCCESS.value -> {
+                        toast("Success")
+                    }
+                    State.BLOCKED.value -> {
+                        toast("blocked")
+                    }
+                    else -> {
+                        Timber.e("Unknown")
+                    }
+                }
             }
-            else -> {
-                Timber.e("Unknown")
-            }
-        }
+        )
     }
 
     private fun presentSDK(accessToken: String) {

@@ -278,7 +278,7 @@ internal constructor(
     suspend fun getExternalAddressFee(assetId: String, destination: String, tag: String?) =
         accountRepository.getExternalAddressFee(assetId, destination, tag)
 
-    suspend fun token(): TokenResponse = assetRepository.token()
+    suspend fun token(): MixinResponse<TokenResponse> = assetRepository.token()
 
     suspend fun payment(traceRequest: PaymentRequest): MixinResponse<CheckoutPaymentResponse> = assetRepository.payment(traceRequest)
 

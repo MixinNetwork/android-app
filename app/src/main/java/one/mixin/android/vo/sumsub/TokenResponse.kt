@@ -10,7 +10,9 @@ class TokenResponse(
 )
 
 enum class State(val value: String) {
+    INITIAL("initial"),
     PENDING("pending"),
-
     SUCCESS("success"),
+    RETRY("retry"),
+    BLOCKED("blocked")
 }

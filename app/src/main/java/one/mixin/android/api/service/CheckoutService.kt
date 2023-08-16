@@ -24,5 +24,5 @@ interface CheckoutService {
     suspend fun getSession(@Path("id") id: String): MixinResponse<CheckoutSessionRequest>
 
     @POST("/kyc/token")
-    suspend fun sumsubToken(@Body request: TokenRequest): TokenResponse
+    suspend fun sumsubToken(@Body request: TokenRequest): MixinResponse<TokenResponse>
 }
