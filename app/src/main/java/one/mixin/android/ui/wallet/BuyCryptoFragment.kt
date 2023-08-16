@@ -37,7 +37,6 @@ import one.mixin.android.api.request.CreateSessionRequest
 import one.mixin.android.api.response.CreateSessionResponse
 import one.mixin.android.databinding.FragmentBuyCryptoBinding
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat
@@ -153,13 +152,13 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
             sessionResponse.scheme,
         )
 
-        dialog.dismiss()
+        loadingProgress.dismiss()
         checkout3DS.authenticate(authenticationParameters) { result: AuthenticationResult ->
             when (result.resultType) {
                 ResultType.Completed -> {
                     // continue with payment, show √
                     Timber.e("Completed")
-                    dialog.show()
+                    loadingProgress.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
                     lifecycleScope.launch {
                         delay(10000)
                         placeOrder(token, sessionId = sessionResponse.sessionId, sessionResponse.instrumentId)
@@ -228,10 +227,8 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         }
     }
 
-    private val dialog by lazy {
-        indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-            setCancelable(false)
-        }
+    private val loadingProgress by lazy {
+        LoadingProgressDialogFragment()
     }
 
     private fun payWithCheckout() = lifecycleScope.launch {
@@ -245,13 +242,15 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     lifecycleScope.launch {
                         handleMixinResponse(
                             invokeNetwork = {
-                                walletViewModel.createSession( CreateSessionRequest(
-                                    token,
-                                    "USD",
-                                    scheme,
-                                    "965e5c6e-434c-3fa9-b780-c50f43cd955c",
-                                    amount.toInt()
-                                ))
+                                walletViewModel.createSession(
+                                    CreateSessionRequest(
+                                        token,
+                                        "USD",
+                                        scheme,
+                                        "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+                                        amount.toInt(),
+                                    ),
+                                )
                             },
                             successBlock = { response ->
                                 if (response.isSuccess) {
@@ -264,10 +263,10 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     }
                 }
                 onLoading = {
-                    dialog.show()
+                    loadingProgress.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
                 }
                 onFailure = {
-                    dialog.dismiss()
+                    loadingProgress.dismiss()
                     parentFragmentManager.beginTransaction()
                         .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
                         .remove(this).commitNow()
@@ -281,12 +280,12 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
     private fun payWithGoogle() {
         // Todo real data
         val task = walletViewModel.getLoadPaymentDataTask("1.00", "USD")
-        dialog.show()
+        loadingProgress.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
         task.addOnCompleteListener { completedTask ->
             if (completedTask.isSuccessful) {
                 completedTask.result.let(::handlePaymentSuccess)
             } else {
-                dialog.dismiss()
+                loadingProgress.dismiss()
                 when (val exception = completedTask.exception) {
                     is ResolvableApiException -> {
                         resolvePaymentForResult.launch(
@@ -368,7 +367,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                     requireContext(),
                 ).createToken(
                     GooglePayTokenRequest(tokenJsonPayload, { tokenDetails ->
-                        dialog.show()
+                        loadingProgress.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
                         lifecycleScope.launch {
                             handleMixinResponse(
                                 invokeNetwork = {
@@ -378,7 +377,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                                             "USD",
                                             tokenDetails.scheme?.lowercase(),
                                             "965e5c6e-434c-3fa9-b780-c50f43cd955c",
-                                            amount.toInt()
+                                            amount.toInt(),
                                         ),
                                     )
                                 },
@@ -393,16 +392,16 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                         }
                     }, {
                         showError(it)
-                        dialog.dismiss()
+                        loadingProgress.dismiss()
                     }),
                 )
             } else {
                 showError("Token null")
-                dialog.dismiss()
+                loadingProgress.dismiss()
             }
         } catch (error: Exception) {
             showError(error.message)
-            dialog.dismiss()
+            loadingProgress.dismiss()
         }
     }
 
@@ -428,7 +427,7 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
     private fun showError(message: String?) {
         if (!isAdded) return
         ErrorFragment.newInstance(message ?: getString(R.string.Unknown)).showNow(parentFragmentManager, ErrorFragment.TAG)
-        dialog.dismiss()
+        loadingProgress.dismiss()
     }
     private fun showError(@StringRes errorRes: Int = R.string.Unknown) {
         showError(getString(errorRes))

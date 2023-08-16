@@ -13,7 +13,6 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.CHECKOUT_ENVIRONMENT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.api.request.CreateSessionRequest
 import one.mixin.android.ui.common.BaseFragment
 import timber.log.Timber
 

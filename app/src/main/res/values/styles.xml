@@ -337,4 +337,14 @@
         <item name="android:textColor">?attr/bg_white</item>
         <item name="android:textSize">14sp</item>
     </style>
+
+    <style name="LoadingProgressDialog" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="LoadingProgressDialog.FadeInOut">
+        <item name="android:windowEnterAnimation">@anim/fade_in</item>
+        <item name="android:windowExitAnimation">@anim/fade_out</item>
+    </style>
 </resources>
