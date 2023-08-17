@@ -185,6 +185,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     minorTv.text =
                         "≈ ${String.format("%.2f", currentValue)} ${currency.name}"
                 }
+                continueTv.isEnabled = currentValue >= mininum && currentValue <= maxinum
                 if (currentValue > maxinum) {
                     info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
                 } else {
