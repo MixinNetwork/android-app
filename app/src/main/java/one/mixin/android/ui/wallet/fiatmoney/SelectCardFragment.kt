@@ -22,14 +22,12 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.PaymentFragment
-import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_AMOUNT
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_CURRENCY
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
-import timber.log.Timber
 
 @AndroidEntryPoint
 class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
@@ -109,18 +107,20 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                             parentFragmentManager.beginTransaction()
                                                 .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
                                                 .remove(paymentFragment).commitNow()
-                                            view.navigate(R.id.action_wallet_card_to_payment, Bundle().apply {
-                                                putInt(ARGS_AMOUNT, amount)
-                                                putParcelable(ARGS_ASSET, asset)
-                                                putParcelable(ARGS_CURRENCY, currency)
-                                            })
+                                            view.navigate(
+                                                R.id.action_wallet_card_to_payment,
+                                                Bundle().apply {
+                                                    putInt(ARGS_AMOUNT, amount)
+                                                    putParcelable(ARGS_ASSET, asset)
+                                                    putParcelable(ARGS_CURRENCY, currency)
+                                                },
+                                            )
                                         }
                                     },
                                 )
                             }
                         }
                         onLoading = {
-
                         }
                         onFailure = {
                             // Todo
@@ -128,11 +128,14 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                             parentFragmentManager.beginTransaction()
                                 .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
                                 .remove(paymentFragment).commitNow()
-                            view.navigate(R.id.action_wallet_card_to_payment, Bundle().apply {
-                                putInt(ARGS_AMOUNT, amount)
-                                putParcelable(ARGS_ASSET, asset)
-                                putParcelable(ARGS_CURRENCY, currency)
-                            })
+                            view.navigate(
+                                R.id.action_wallet_card_to_payment,
+                                Bundle().apply {
+                                    putInt(ARGS_AMOUNT, amount)
+                                    putParcelable(ARGS_ASSET, asset)
+                                    putParcelable(ARGS_CURRENCY, currency)
+                                },
+                            )
                         }
                     },
                     PaymentFragment.TAG,

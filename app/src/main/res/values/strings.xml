@@ -1282,4 +1282,9 @@
     <string name="Failed">Failed</string>
     <string name="Processing_desc">Payment request has been submitted, your payment and order information is being checked, please wait patiently</string>
     <string name="Success_desc">Successful purchase of USDC! Your USDC will be transferred directly to Mixin wallet later. Please wait patiently.</string>
+    <string name="Price_Expired">Price Expired</string>
+    <string name="New_price">New price</string>
+    <string name="New_Price">New Price</string>
+    <string name="Old_Price">Old Price</string>
+    <string name="Fee_desc">You may be charged in addition to the order by your bank, please contact your bank for more information.</string>
 </resources>
