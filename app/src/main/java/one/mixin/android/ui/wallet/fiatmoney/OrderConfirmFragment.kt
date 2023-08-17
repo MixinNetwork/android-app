@@ -3,7 +3,10 @@ package one.mixin.android.ui.wallet.fiatmoney
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentOrderConfirmBinding
@@ -110,6 +113,17 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     }
 
     private fun refresh() {
-        // Todo refresh price
+        lifecycleScope.launch {
+            while (true) {
+                // Todo refresh price
+                walletViewModel
+                if (isAdded) {
+                    // updateUI()
+                } else {
+                    return@launch
+                }
+                delay(10000L) // 10s
+            }
+        }
     }
 }

@@ -17,14 +17,19 @@ import one.mixin.android.databinding.ItemCardBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
+import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.PaymentFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
+import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.WalletViewModel
+import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_AMOUNT
+import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_CURRENCY
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
+import timber.log.Timber
 
 @AndroidEntryPoint
 class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
@@ -45,17 +50,17 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
         super.onViewCreated(view, savedInstanceState)
         val asset = requireNotNull(
             requireArguments().getParcelableCompat(
-                TransactionsFragment.ARGS_ASSET,
+                ARGS_ASSET,
                 AssetItem::class.java,
             ),
         )
         val currency = requireNotNull(
             requireArguments().getParcelableCompat(
-                OrderConfirmFragment.ARGS_CURRENCY,
+                ARGS_CURRENCY,
                 Currency::class.java,
             ),
         )
-        val amount = requireArguments().getInt(OrderConfirmFragment.ARGS_AMOUNT)
+        val amount = requireArguments().getInt(ARGS_AMOUNT)
         binding.apply {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
@@ -64,6 +69,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                 addVa.displayedChild = 1
                 navTo(
                     PaymentFragment().apply {
+                        val paymentFragment = this
                         onSuccess = { token, scheme ->
                             parentFragmentManager.beginTransaction()
                                 .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
@@ -99,20 +105,34 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                             )
                                         } else {
                                             // Todo
-                                            // showError(response.errorDescription)
+                                            toast(response.errorDescription)
+                                            parentFragmentManager.beginTransaction()
+                                                .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
+                                                .remove(paymentFragment).commitNow()
+                                            view.navigate(R.id.action_wallet_card_to_payment, Bundle().apply {
+                                                putInt(ARGS_AMOUNT, amount)
+                                                putParcelable(ARGS_ASSET, asset)
+                                                putParcelable(ARGS_CURRENCY, currency)
+                                            })
                                         }
                                     },
                                 )
                             }
                         }
                         onLoading = {
+
                         }
                         onFailure = {
+                            // Todo
+                            toast(it)
                             parentFragmentManager.beginTransaction()
                                 .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
-                                .remove(this).commitNow()
-                            // Todo
-                            // showError(it)
+                                .remove(paymentFragment).commitNow()
+                            view.navigate(R.id.action_wallet_card_to_payment, Bundle().apply {
+                                putInt(ARGS_AMOUNT, amount)
+                                putParcelable(ARGS_ASSET, asset)
+                                putParcelable(ARGS_CURRENCY, currency)
+                            })
                         }
                     },
                     PaymentFragment.TAG,

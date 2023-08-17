@@ -56,12 +56,7 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
             secondRl.setOnClickListener {
                 view.navigate(
                     R.id.action_wallet_payment_to_select_card,
-                    requireArguments().apply {
-                        Bundle().apply {
-                            putParcelable(TransactionsFragment.ARGS_ASSET, asset)
-                            putParcelable(CalculateFragment.ARGS_CURRENCY, currency)
-                        }
-                    },
+                    requireArguments(),
                 )
             }
         }

@@ -21,7 +21,8 @@
         android:id="@+id/card_rv"
         android:padding="16dp"
         android:layout_width="match_parent"
-        android:layout_height="170dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:itemCount="3"
         tools:listitem="@layout/item_card" />
