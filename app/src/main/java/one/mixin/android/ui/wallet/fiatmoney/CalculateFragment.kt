@@ -18,13 +18,16 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
+import one.mixin.android.ui.setting.ui.compose.rememberComposeScope
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.FiatListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_AMOUNT
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.Keyboard
+import timber.log.Timber
 
 @AndroidEntryPoint
 class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
@@ -99,13 +102,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 v = value
                             } else if (value == "." && v.contains(".")) {
                                 // do noting
+                                return
                             } else {
-                                val c = v + value
-                                if (c.toFloat() <= maxinum) {
-                                    v = c
-                                } else {
-                                    info.shaking()
-                                }
+                                v += value
                             }
                         }
                         updateValue()
@@ -141,40 +140,71 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 }
             }
             switchIv.setOnClickListener {
-                toast("todo")
+                isReverse = !isReverse
+                updateUI()
             }
         }
     }
+    private var isReverse = false
 
-    private var rate = 0.9f
+    private var fiatPrice = 1f
     private var v = "0"
     private var mininum = 1
     private var maxinum = 1000
     private fun updateUI() {
-        binding.apply {
-            assetName.text = asset.symbol
-            fiatName.text = currency.name
-            primaryUnit.text = currency.name
+        if (isReverse) {
+            binding.apply {
+                fiatName.text = currency.name
+                assetName.text = asset.symbol
+                primaryUnit.text = asset.symbol
+            }
+        } else {
+            binding.apply {
+                fiatName.text = currency.name
+                assetName.text = asset.symbol
+                primaryUnit.text = currency.name
+            }
         }
+        fiatPrice = (Fiats.getRate(currency.name) * (asset.priceUsd.toDoubleOrNull() ?: 0.toDouble())).toFloat()
+        Timber.e("${Fiats.getRate(currency.name)}")
+        Timber.e(asset.priceUsd)
+        Timber.e("$fiatPrice")
         updateValue()
     }
 
     @SuppressLint("SetTextI18n")
     private fun updateValue() {
         binding.apply {
-            val currentValue = v.toFloat()
-            if (v == "0") {
-                primaryTv.text = "0"
-                minorTv.text = "0 ${currency.symbol}"
+            if (isReverse) {
+                val currentValue = v.toFloat() * fiatPrice
+                if (v == "0") {
+                    primaryTv.text = "0"
+                    minorTv.text = "0 ${currency.name}"
+                } else {
+                    primaryTv.text = v
+                    minorTv.text =
+                        "≈ ${String.format("%.2f", currentValue)} ${currency.name}"
+                }
+                if (currentValue > maxinum) {
+                    info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
+                } else {
+                    info.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
+                }
             } else {
-                primaryTv.text = v
-                minorTv.text = "≈ ${String.format("%.2f", currentValue * rate)} ${asset.symbol}"
-            }
-            continueTv.isEnabled = currentValue >= mininum && currentValue <= maxinum
-            if (currentValue > maxinum) {
-                info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
-            } else {
-                info.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
+                val currentValue = v.toFloat()
+                if (v == "0") {
+                    primaryTv.text = "0"
+                    minorTv.text = "0 ${asset.symbol}"
+                } else {
+                    primaryTv.text = v
+                    minorTv.text = "≈ ${String.format("%.2f", currentValue / fiatPrice)} ${asset.symbol}"
+                }
+                continueTv.isEnabled = currentValue >= mininum && currentValue <= maxinum
+                if (currentValue > maxinum) {
+                    info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
+                } else {
+                    info.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
+                }
             }
         }
     }
