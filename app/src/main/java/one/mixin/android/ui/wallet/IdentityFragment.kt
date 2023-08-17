@@ -2,24 +2,19 @@ package one.mixin.android.ui.wallet
 
 import android.os.Bundle
 import android.view.View
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.sumsub.sns.core.SNSMobileSDK
 import com.sumsub.sns.core.data.listener.TokenExpirationHandler
 import com.sumsub.sns.core.data.model.SNSCompletionResult
 import com.sumsub.sns.core.data.model.SNSException
 import com.sumsub.sns.core.data.model.SNSSDKState
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentIdentityBinding
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.wallet.IdentityVerificationStateBottomSheetDialogFragment.Companion.ARGS_TOKEN
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.sumsub.State
 import timber.log.Timber
 import java.util.Locale
 
@@ -27,57 +22,31 @@ import java.util.Locale
 class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
     companion object {
         const val TAG = "IdentityFragment"
-
-        fun newInstance() = IdentityFragment()
+        const val ARGS_IS_RETRY = "args_is_retry"
     }
 
     private val binding by viewBinding(FragmentIdentityBinding::bind)
-    private val walletViewModel by viewModels<WalletViewModel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val token = requireNotNull(requireArguments().getString(ARGS_TOKEN)) { "required token can not be null" }
+        val isRetry = requireArguments().getBoolean(ARGS_IS_RETRY)
         binding.apply {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
             titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
-            binding.innerVa.displayedChild = 0
-            binding.innerVa.setOnClickListener {
-                startVerification()
+            if (isRetry) {
+                innerVa.displayedChild = 1
+                presentSDK(token)
+            } else {
+                innerVa.displayedChild = 0
+                innerVa.setOnClickListener {
+                    innerVa.displayedChild = 1
+                    presentSDK(token)
+                }
             }
         }
-    }
-
-    private fun startVerification() = lifecycleScope.launch {
-        binding.innerVa.displayedChild = 1
-        handleMixinResponse(
-            invokeNetwork = {
-                walletViewModel.token()
-            },
-            doAfterNetworkSuccess = {
-                binding.innerVa.displayedChild = 0
-            },
-            successBlock = { resp ->
-                val tokenResponse = requireNotNull(resp.data)
-                Timber.d("state ${tokenResponse.state}")
-                when (tokenResponse.state) {
-                    State.INITIAL.value -> presentSDK(requireNotNull(tokenResponse.token))
-                    State.RETRY.value -> presentSDK(requireNotNull(tokenResponse.token))
-                    State.PENDING.value -> {
-                        toast("pending state, just wait")
-                    }
-                    State.SUCCESS.value -> {
-                        toast("Success")
-                    }
-                    State.BLOCKED.value -> {
-                        toast("blocked")
-                    }
-                    else -> {
-                        Timber.e("Unknown")
-                    }
-                }
-            },
-        )
     }
 
     private fun presentSDK(accessToken: String) {

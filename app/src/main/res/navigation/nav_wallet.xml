@@ -269,7 +269,14 @@
 
     <fragment
         android:id="@+id/wallet_identity"
-        android:name="one.mixin.android.ui.wallet.IdentityFragment" />
+        android:name="one.mixin.android.ui.wallet.IdentityFragment" >
+        <argument
+            android:name="args_token"
+            app:argType="string" />
+        <argument
+            android:name="args_is_retry"
+            app:argType="boolean" />
+    </fragment>
 
     <fragment
         android:id="@+id/wallet_buy"
@@ -285,6 +292,11 @@
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right" />
 
+        <action
+            android:id="@+id/action_wallet_calculate_to_identity"
+            app:destination="@id/wallet_identity"
+            app:enterAnim="@anim/slide_in_bottom"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment

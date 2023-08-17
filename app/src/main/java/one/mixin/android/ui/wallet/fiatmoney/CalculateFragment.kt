@@ -3,9 +3,13 @@ package one.mixin.android.ui.wallet.fiatmoney
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentCalculateBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
@@ -19,11 +23,16 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.FiatListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.IdentityFragment.Companion.ARGS_IS_RETRY
+import one.mixin.android.ui.wallet.IdentityVerificationStateBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.IdentityVerificationStateBottomSheetDialogFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_AMOUNT
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.sumsub.KycState
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
 
@@ -40,6 +49,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     }
 
     private val binding by viewBinding(FragmentCalculateBinding::bind)
+    private val walletViewModel by viewModels<WalletViewModel>()
     private lateinit var asset: AssetItem
     private lateinit var currency: Currency
 
@@ -119,22 +129,20 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 force = true,
             )
             continueTv.setOnClickListener {
-                // Todo check kyc
-                // view.navigate(
-                //     R.id.action_wallet_to_identity,
-                // )
-                val amount = AmountUtil.toAmount(v, currency.name)
-                if (amount == null) {
-                    toast("number error")
-                } else {
-                    view.navigate(
-                        R.id.action_wallet_calculate_to_payment,
-                        Bundle().apply {
-                            putParcelable(ARGS_ASSET, asset)
-                            putParcelable(ARGS_CURRENCY, currency)
-                            putInt(ARGS_AMOUNT, amount)
-                        },
-                    )
+                checkKyc {
+                    val amount = AmountUtil.toAmount(v, currency.name)
+                    if (amount == null) {
+                        toast("number error")
+                    } else {
+                        view.navigate(
+                            R.id.action_wallet_calculate_to_payment,
+                            Bundle().apply {
+                                putParcelable(ARGS_ASSET, asset)
+                                putParcelable(ARGS_CURRENCY, currency)
+                                putInt(ARGS_AMOUNT, amount)
+                            },
+                        )
+                    }
                 }
             }
             switchIv.setOnClickListener {
@@ -206,5 +214,47 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 }
             }
         }
+    }
+
+    private fun checkKyc(onSuccess: () -> Unit) = lifecycleScope.launch {
+        handleMixinResponse(
+            invokeNetwork = {
+                walletViewModel.token()
+            },
+            successBlock = { resp ->
+                val tokenResponse = requireNotNull(resp.data)
+                when (tokenResponse.state) {
+                    KycState.INITIAL.value -> {
+                        val token = requireNotNull(tokenResponse.token) { "required token can not be null" }
+                         view?.navigate(
+                             R.id.action_wallet_calculate_to_identity,
+                             Bundle().apply {
+                                 putString(ARGS_TOKEN, token)
+                                 putBoolean(ARGS_IS_RETRY, false)
+                             }
+                         )
+                    }
+                    KycState.PENDING.value, KycState.RETRY.value, KycState.BLOCKED.value -> {
+                        IdentityVerificationStateBottomSheetDialogFragment.newInstance(tokenResponse.state, tokenResponse.token).apply {
+                            onRetry = { token ->
+                                binding.root.navigate(
+                                    R.id.action_wallet_calculate_to_identity,
+                                    Bundle().apply {
+                                        putString(ARGS_TOKEN, token)
+                                        putBoolean(ARGS_IS_RETRY, true)
+                                    }
+                                )
+                            }
+                        }.showNow(parentFragmentManager, IdentityVerificationStateBottomSheetDialogFragment.TAG)
+                    }
+                    KycState.SUCCESS.value -> {
+                        onSuccess()
+                    }
+                    else -> {
+                        toast("Unknown kyc state: ${tokenResponse.state}")
+                    }
+                }
+            }
+        )
     }
 }

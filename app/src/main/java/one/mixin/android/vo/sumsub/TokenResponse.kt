@@ -9,7 +9,7 @@ class TokenResponse(
     val state: String,
 )
 
-enum class State(val value: String) {
+enum class KycState(val value: String) {
     INITIAL("initial"),
     PENDING("pending"),
     SUCCESS("success"),
