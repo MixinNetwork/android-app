@@ -126,14 +126,19 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 // view.navigate(
                 //     R.id.action_wallet_to_identity,
                 // )
-                view.navigate(
-                    R.id.action_wallet_calculate_to_payment,
-                    Bundle().apply {
-                        putParcelable(ARGS_ASSET, asset)
-                        putParcelable(ARGS_CURRENCY, currency)
-                        putInt(ARGS_AMOUNT, v.toIntOrNull() ?: 0)
-                    },
-                )
+                val amount = AmountUtil.toAmount(v, currency.name)
+                if (amount == null) {
+                    toast("number error")
+                } else {
+                    view.navigate(
+                        R.id.action_wallet_calculate_to_payment,
+                        Bundle().apply {
+                            putParcelable(ARGS_ASSET, asset)
+                            putParcelable(ARGS_CURRENCY, currency)
+                            putInt(ARGS_AMOUNT, amount)
+                        },
+                    )
+                }
             }
             switchIv.setOnClickListener {
                 toast("todo")
@@ -143,8 +148,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     private var rate = 0.9f
     private var v = "0"
-    private var mininum = 60
-    private var maxinum = 50000
+    private var mininum = 1
+    private var maxinum = 1000
     private fun updateUI() {
         binding.apply {
             assetName.text = asset.symbol
