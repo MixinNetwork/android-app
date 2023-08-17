@@ -10,7 +10,6 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navigate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
-import one.mixin.android.ui.wallet.BuyCryptoFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
@@ -49,21 +48,23 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
             firstRl.setOnClickListener {
                 view.navigate(
                     R.id.action_wallet_payment_to_order_confirm,
-                    Bundle().apply {
-                        putParcelable(TransactionsFragment.ARGS_ASSET, asset)
-                        putParcelable(BuyCryptoFragment.ARGS_CURRENCY, currency)
+                    requireArguments().apply {
                         putBoolean(OrderConfirmFragment.ARGS_GOOGLE_PAY, true)
                     },
                 )
             }
             secondRl.setOnClickListener {
-                view.navigate(
-                    R.id.action_wallet_payment_to_card,
-                    Bundle().apply {
-                        putParcelable(TransactionsFragment.ARGS_ASSET, asset)
-                        putParcelable(BuyCryptoFragment.ARGS_CURRENCY, currency)
-                    },
-                )
+                SelectCardBottomSheetDialogFragment.newInstance(requireArguments()).apply {
+                    callback = { instrumentId, scheme ->
+                        view.navigate(
+                            R.id.action_wallet_payment_to_order_confirm,
+                            requireArguments().apply {
+                                putString(OrderConfirmFragment.ARGS_INSTRUMENT_ID, instrumentId)
+                                putString(OrderConfirmFragment.ARGS_SCHEME, scheme)
+                            },
+                        )
+                    }
+                }.show(parentFragmentManager, SelectCardBottomSheetDialogFragment.TAG)
             }
         }
     }

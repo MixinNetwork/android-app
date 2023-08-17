@@ -14,13 +14,14 @@ import one.mixin.android.extension.navigate
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.shaking
 import one.mixin.android.extension.tickVibrate
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.BuyCryptoFragment
 import one.mixin.android.ui.wallet.FiatListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_AMOUNT
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.Keyboard
@@ -129,9 +130,13 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     R.id.action_wallet_calculate_to_payment,
                     Bundle().apply {
                         putParcelable(ARGS_ASSET, asset)
-                        putParcelable(BuyCryptoFragment.ARGS_CURRENCY, currency)
+                        putParcelable(ARGS_CURRENCY, currency)
+                        putInt(ARGS_AMOUNT, v.toIntOrNull() ?: 0)
                     },
                 )
+            }
+            switchIv.setOnClickListener {
+                toast("todo")
             }
         }
     }

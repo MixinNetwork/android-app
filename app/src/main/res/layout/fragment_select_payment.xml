@@ -23,7 +23,7 @@
         android:layout_marginTop="16dp"
         android:padding="12dp"
         android:foreground="?android:attr/selectableItemBackground"
-        android:background="?attr/bg_window"
+        android:background="@drawable/bg_round_window_8dp"
         app:layout_constraintTop_toBottomOf="@id/title_view">
 
         <ImageView
@@ -62,7 +62,7 @@
         android:layout_marginTop="16dp"
         android:padding="12dp"
         android:foreground="?android:attr/selectableItemBackground"
-        android:background="?attr/bg_window"
+        android:background="@drawable/bg_round_window_8dp"
         app:layout_constraintTop_toBottomOf="@id/first_rl">
 
         <ImageView
@@ -91,26 +91,5 @@
             android:layout_centerVertical="true"/>
 
     </RelativeLayout>
-
-    <TextView
-        android:id="@+id/continue_tv"
-        android:layout_gravity="center_horizontal"
-        android:clickable="true"
-        android:focusable="true"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        android:layout_marginBottom="16dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/Continue"
-        android:textColor="@drawable/selector_tv_white"
-        android:textSize="14sp"
-        android:background="@drawable/bg_round_blue_btn_40"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

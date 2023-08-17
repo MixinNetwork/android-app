@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 class CreateSessionRequest(
     @SerializedName("token")
-    val token: String,
+    val token: String?,
     @SerializedName("currency")
     val currency: String,
     @SerializedName("scheme")
@@ -15,4 +15,6 @@ class CreateSessionRequest(
     val assetId: String,
     @SerializedName("amount")
     var amount: Int,
+    @SerializedName("instrument_id")
+    val instrumentId: String? = null,
 )

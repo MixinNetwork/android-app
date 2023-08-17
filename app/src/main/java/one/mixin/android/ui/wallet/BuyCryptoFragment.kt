@@ -348,7 +348,6 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
         try {
             val response = walletViewModel.payment(
                 PaymentRequest(
-                    token,
                     "965e5c6e-434c-3fa9-b780-c50f43cd955c",
                     Session.getAccountId()!!,
                     sessionId,
@@ -421,7 +420,19 @@ class BuyCryptoFragment : BaseFragment(R.layout.fragment_buy_crypto) {
                                 },
                                 successBlock = { response ->
                                     if (response.isSuccess) {
-                                        init3DS(response.data!!, tokenDetails.token)
+                                        // init3DS(response.data!!, tokenDetails.token)
+                                        Timber.e("----------")
+                                        walletViewModel.createSession(
+                                            CreateSessionRequest(
+                                                null,
+                                                currency.name,
+                                                tokenDetails.scheme?.lowercase(),
+                                                Session.getAccountId()!!,
+                                                "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+                                                amount.toInt(),
+                                                response.data?.instrumentId,
+                                            ),
+                                        )
                                     } else {
                                         showError(response.errorDescription)
                                     }

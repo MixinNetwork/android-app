@@ -14,43 +14,43 @@
             android:id="@+id/action_wallet_fragment_to_all_transactions_fragment"
             app:destination="@id/all_transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_wallet_fragment_to_hidden_assets_fragment"
             app:destination="@id/hidden_assets_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_wallet_fragment_to_transactions_fragment"
             app:destination="@id/transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_wallet_to_deposit"
             app:destination="@id/deposit_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_wallet_to_wallet_search"
             app:destination="@id/wallet_search_fragment"
             app:enterAnim="@anim/fade_in"
-            app:popExitAnim="@anim/fade_out"/>
+            app:popExitAnim="@anim/fade_out" />
 
         <action
             android:id="@+id/action_wallet_to_single_friend_select"
             app:destination="@id/single_friend_select_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_wallet_to_address_management"
             app:destination="@id/address_management_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_wallet_to_wallet_connect"
@@ -83,37 +83,37 @@
         tools:layout="@layout/fragment_transactions">
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
+            app:argType="one.mixin.android.vo.AssetItem" />
 
         <action
             android:id="@+id/action_transactions_fragment_to_transaction_fragment"
             app:destination="@id/transaction_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_transactions_to_deposit"
             app:destination="@id/deposit_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_transactions_to_single_friend_select"
             app:destination="@id/single_friend_select_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_transactions_to_user_transactions"
             app:destination="@id/user_transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_transactions_to_address_management"
             app:destination="@id/address_management_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -126,13 +126,13 @@
             android:id="@+id/action_all_transactions_fragment_to_transaction_fragment"
             app:destination="@id/transaction_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_all_transactions_to_user_transactions"
             app:destination="@id/user_transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
 
     </fragment>
 
@@ -143,19 +143,19 @@
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
+            app:argType="one.mixin.android.vo.AssetItem" />
 
         <argument
             android:name="args_snapshot"
-            app:argType="one.mixin.android.vo.SnapshotItem"/>
+            app:argType="one.mixin.android.vo.SnapshotItem" />
 
         <argument
             android:name="args_asset_id"
-            app:argType="string"/>
+            app:argType="string" />
 
         <argument
             android:name="args_snapshot_id"
-            app:argType="string"/>
+            app:argType="string" />
 
         <action
             android:id="@+id/action_transaction_fragment_to_transactions"
@@ -171,13 +171,13 @@
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
+            app:argType="one.mixin.android.vo.AssetItem" />
 
         <action
             android:id="@+id/action_hidden_assets_to_transactions"
             app:destination="@id/transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -187,19 +187,19 @@
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
+            app:argType="one.mixin.android.vo.AssetItem" />
 
         <action
             android:id="@+id/action_wallet_fragment_to_all_transactions_fragment"
             app:destination="@id/all_transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
         android:id="@+id/single_friend_select_fragment"
         android:name="one.mixin.android.ui.wallet.SingleFriendSelectFragment"
-        tools:layout="@layout/fragment_friends"/>
+        tools:layout="@layout/fragment_friends" />
 
     <fragment
         android:id="@+id/user_transactions_fragment"
@@ -208,12 +208,13 @@
 
         <argument
             android:name="args_user_id"
-            app:argType="string"/>
+            app:argType="string" />
 
-        <action android:id="@+id/action_user_transactions_to_transaction"
+        <action
+            android:id="@+id/action_user_transactions_to_transaction"
             app:destination="@id/transaction_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -223,13 +224,13 @@
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
+            app:argType="one.mixin.android.vo.AssetItem" />
 
         <action
             android:id="@+id/action_address_management_to_address_add"
             app:destination="@id/address_add_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_address_management_to_transactions"
@@ -237,7 +238,7 @@
             app:enterAnim="@null"
             app:popExitAnim="@anim/slide_out_right"
             app:popUpTo="@id/transactions_fragment"
-            app:popUpToInclusive="true"/>
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -247,7 +248,7 @@
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
+            app:argType="one.mixin.android.vo.AssetItem" />
     </fragment>
 
     <fragment
@@ -259,20 +260,20 @@
             android:id="@+id/action_wallet_search_to_transactions"
             app:destination="@id/transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
         android:id="@+id/wallet_connect_fragment"
-        android:name="one.mixin.android.ui.tip.wc.WalletConnectFragment"/>
+        android:name="one.mixin.android.ui.tip.wc.WalletConnectFragment" />
 
     <fragment
         android:id="@+id/wallet_identity"
-        android:name="one.mixin.android.ui.wallet.IdentityFragment"/>
+        android:name="one.mixin.android.ui.wallet.IdentityFragment" />
 
     <fragment
         android:id="@+id/wallet_buy"
-        android:name="one.mixin.android.ui.wallet.BuyCryptoFragment"/>
+        android:name="one.mixin.android.ui.wallet.BuyCryptoFragment" />
 
     <fragment
         android:id="@+id/wallet_calculate"
@@ -282,7 +283,7 @@
             android:id="@+id/action_wallet_calculate_to_payment"
             app:destination="@id/wallet_select_payment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
 
     </fragment>
 
@@ -292,56 +293,45 @@
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
+            app:argType="one.mixin.android.vo.AssetItem" />
 
         <argument
             android:name="args_currency"
-            app:argType="one.mixin.android.ui.setting.Currency"/>
+            app:argType="one.mixin.android.ui.setting.Currency" />
 
-        <action
-            android:id="@+id/action_wallet_payment_to_card"
-            app:destination="@id/wallet_select_card"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+        <argument
+            android:name="args_amount"
+            app:argType="integer" />
 
         <action
             android:id="@+id/action_wallet_payment_to_order_confirm"
             app:destination="@id/wallet_order_confirm"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
 
     </fragment>
 
-    <fragment
-        android:id="@+id/wallet_select_card"
-        android:name="one.mixin.android.ui.wallet.fiatmoney.SelectCardFragment">
-
-        <argument
-            android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
-        <argument
-            android:name="args_currency"
-            app:argType="one.mixin.android.ui.setting.Currency"/>
-
-        <action
-            android:id="@+id/action_wallet_card_to_order_confirm"
-            app:destination="@id/wallet_order_confirm"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
-
-    </fragment>
     <fragment
         android:id="@+id/wallet_order_confirm"
         android:name="one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment">
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
+            app:argType="one.mixin.android.vo.AssetItem" />
         <argument
             android:name="args_currency"
-            app:argType="one.mixin.android.ui.setting.Currency"/>
+            app:argType="one.mixin.android.ui.setting.Currency" />
         <argument
             android:name="args_google_pay"
-            app:argType="boolean"/>
+            app:argType="boolean" />
+        <argument
+            android:name="args_amount"
+            app:argType="integer" />
+        <argument
+            android:name="args_instrument_id"
+            app:argType="string" />
+        <argument
+            android:name="args_scheme"
+            app:argType="string" />
     </fragment>
 
 </navigation>

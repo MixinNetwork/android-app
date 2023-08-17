@@ -35,23 +35,16 @@ import one.mixin.android.api.request.SessionStatus
 import one.mixin.android.api.response.CreateSessionResponse
 import one.mixin.android.databinding.FragmentOrderConfirmBinding
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.navTo
-import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.ChoosePaymentBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.ErrorFragment
-import one.mixin.android.ui.wallet.FiatListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.wallet.OrderPreviewBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.PaymentFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.viewBinding
@@ -67,6 +60,9 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
         const val TAG = "OrderConfirmFragment"
         const val ARGS_CURRENCY = "args_currency"
         const val ARGS_GOOGLE_PAY = "args_google_pay"
+        const val ARGS_SCHEME = "args_scheme"
+        const val ARGS_INSTRUMENT_ID = "args_instrument_id"
+        const val ARGS_AMOUNT = "args_amount"
 
         fun newInstance(assetItem: AssetItem, currency: Currency) = OrderConfirmFragment().withArgs {
             putParcelable(TransactionsFragment.ARGS_ASSET, assetItem)
@@ -79,7 +75,19 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     private lateinit var asset: AssetItem
     private lateinit var currency: Currency
     private var isGooglePay: Boolean = false
-    private var amount = 0L
+
+    private val amount by lazy {
+        requireArguments().getInt(ARGS_AMOUNT, 0)
+    }
+
+    private val instrumentId by lazy {
+        requireArguments().getString(ARGS_INSTRUMENT_ID)
+    }
+
+    private val scheme by lazy {
+        requireArguments().getString(ARGS_SCHEME)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         asset = requireNotNull(
@@ -96,7 +104,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
         )
         isGooglePay = requireArguments().getBoolean(
             ARGS_GOOGLE_PAY,
-            false
+            false,
         )
         binding.apply {
             titleView.leftIb.setOnClickListener {
@@ -106,27 +114,11 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             buyVa.setOnClickListener {
                 when (buyVa.displayedChild) {
                     0 -> {
-                        amountEt.text.toString().toLongOrNull().let {
-                            if (it != null) {
-                                amount = it * 100
-                                payWithCheckout()
-                                amountEt.hideKeyboard()
-                            } else {
-                                toast(R.string.error_input_amount)
-                            }
-                        }
+                        payWithCheckout()
                     }
 
                     1 -> {
-                        amountEt.text.toString().toLongOrNull().let {
-                            if (it != null) {
-                                amount = it * 100
-                                payWithGoogle()
-                                amountEt.hideKeyboard()
-                            } else {
-                                toast(R.string.error_input_amount)
-                            }
-                        }
+                        payWithGoogle()
                     }
                     else -> {
                         // do noting
@@ -135,36 +127,11 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             }
             titleView.rightAnimator.setOnClickListener { }
             updateUI()
-            assetRl.setOnClickListener {
-                AssetListBottomSheetDialogFragment.newInstance(false)
-                    .setOnAssetClick { asset ->
-                        this@OrderConfirmFragment.asset = asset
-                        updateUI()
-                    }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
-            }
-            payRl.setOnClickListener {
-                ChoosePaymentBottomSheetDialogFragment.newInstance(isGooglePay).apply {
-                    onPaymentClick = { isGooglePay ->
-                        this@OrderConfirmFragment.isGooglePay = isGooglePay
-                        updateUI()
-                    }
-                }.show(parentFragmentManager, ChoosePaymentBottomSheetDialogFragment.TAG)
-            }
-            fiatRl.setOnClickListener {
-                FiatListBottomSheetDialogFragment.newInstance(currency).apply {
-                    callback = object : FiatListBottomSheetDialogFragment.Callback {
-                        override fun onCurrencyClick(currency: Currency) {
-                            this@OrderConfirmFragment.currency = currency
-                            updateUI()
-                        }
-                    }
-                }.showNow(parentFragmentManager, FiatListBottomSheetDialogFragment.TAG)
-            }
         }
     }
 
     // Todo 3DS
-    private fun init3DS(sessionResponse: CreateSessionResponse, token: String) {
+    private fun init3DS(sessionResponse: CreateSessionResponse) {
         val checkout3DS = Checkout3DSService(
             MixinApplication.appContext,
             Environment.SANDBOX,
@@ -196,7 +163,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                                 break
                             }
                             if (session.data?.status == SessionStatus.Approved.value) {
-                                placeOrder(token, sessionId = sessionResponse.sessionId, sessionResponse.instrumentId)
+                                placeOrder(sessionId = sessionResponse.sessionId, sessionResponse.instrumentId)
                                 break
                             } else if (session.data?.status != SessionStatus.Pending.value || session.data?.status != SessionStatus.Processing.value) {
                                 showError(session.data?.status ?: session.errorDescription)
@@ -226,17 +193,6 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     private fun updateUI() {
         binding.apply {
             titleView.setSubTitle(getString(R.string.Order_Confirm), "")
-            assetAvatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-            assetAvatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            assetName.text = asset.name
-            assetDesc.text = asset.balance.numberFormat()
-            descEnd.text = asset.symbol
-            payName.text =
-                if (isGooglePay) getString(R.string.Google_Pay) else getString(R.string.Visa_Mastercard)
-            payAvatar.setImageResource(if (isGooglePay) R.drawable.ic_google_pay else R.drawable.ic_bank_card)
-            payDesc.text = getString(R.string.Gateway_fee_price, "1.99%")
-            fiatAvatar.setImageResource(currency.flag)
-            fiatName.text = currency.name
 
             val toValue = if (isGooglePay) {
                 1
@@ -258,11 +214,16 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                     },
                 )
             }
+            assetAvatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
+            assetAvatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
 
             // Todo real data
-            price.tail.text = "0.995 USD / USDC"
-            gatewayFee.tail.text = "1.123 USD"
-            networkFee.tail.text = "0 USD"
+            assetName.text = "+51.23 USDC"
+            cardNumber.text = "Visa .... 4242"
+            priceTv.text = "1 USD = 0.995 USDC"
+            purchaseTv.text = "48.78 USD"
+            feeTv.text = "1.23 USD"
+            totalTv.text = "50 USD"
         }
     }
 
@@ -271,50 +232,32 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     }
 
     private fun payWithCheckout() = lifecycleScope.launch {
-        binding.buyVa.displayedChild = 3
-        navTo(
-            PaymentFragment().apply {
-                onSuccess = { token, scheme ->
-                    parentFragmentManager.beginTransaction()
-                        .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
-                        .remove(this).commitNow()
-                    lifecycleScope.launch {
-                        handleMixinResponse(
-                            invokeNetwork = {
-                                walletViewModel.createSession(
-                                    CreateSessionRequest(
-                                        token,
-                                        currency.name,
-                                        scheme,
-                                        Session.getAccountId()!!,
-                                        "965e5c6e-434c-3fa9-b780-c50f43cd955c",
-                                        amount.toInt(),
-                                    ),
-                                )
-                            },
-                            successBlock = { response ->
-                                if (response.isSuccess) {
-                                    init3DS(response.data!!, token)
-                                } else {
-                                    showError(response.errorDescription)
-                                }
-                            },
-                        )
+        binding.buyVa.displayedChild = 2
+        loadingProgress.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
+        lifecycleScope.launch {
+            handleMixinResponse(
+                invokeNetwork = {
+                    walletViewModel.createSession(
+                        CreateSessionRequest(
+                            null,
+                            currency.name,
+                            scheme,
+                            Session.getAccountId()!!,
+                            "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+                            amount,
+                            instrumentId,
+                        ),
+                    )
+                },
+                successBlock = { response ->
+                    if (response.isSuccess) {
+                        init3DS(response.data!!)
+                    } else {
+                        showError(response.errorDescription)
                     }
-                }
-                onLoading = {
-                    loadingProgress.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
-                }
-                onFailure = {
-                    loadingProgress.dismiss()
-                    parentFragmentManager.beginTransaction()
-                        .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
-                        .remove(this).commitNow()
-                    showError(it)
-                }
-            },
-            PaymentFragment.TAG,
-        )
+                },
+            )
+        }
     }
 
     private fun payWithGoogle() {
@@ -349,17 +292,16 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
         }
     }
 
-    private fun placeOrder(token: String, sessionId: String, instrumentId: String) = lifecycleScope.launch {
+    private fun placeOrder(sessionId: String, instrumentId: String) = lifecycleScope.launch {
         // todo real data
         try {
             val response = walletViewModel.payment(
                 PaymentRequest(
-                    token,
                     "965e5c6e-434c-3fa9-b780-c50f43cd955c",
                     Session.getAccountId()!!,
                     sessionId,
                     instrumentId,
-                    amount,
+                    amount.toLong(),
                     currency.name,
                 ),
             )
@@ -421,13 +363,13 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                                             tokenDetails.scheme?.lowercase(),
                                             Session.getAccountId()!!,
                                             "965e5c6e-434c-3fa9-b780-c50f43cd955c",
-                                            amount.toInt(),
+                                            amount,
                                         ),
                                     )
                                 },
                                 successBlock = { response ->
                                     if (response.isSuccess) {
-                                        init3DS(response.data!!, tokenDetails.token)
+                                        init3DS(response.data!!)
                                     } else {
                                         showError(response.errorDescription)
                                     }
