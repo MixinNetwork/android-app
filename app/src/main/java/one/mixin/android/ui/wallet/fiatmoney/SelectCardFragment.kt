@@ -13,10 +13,10 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CreateSessionRequest
 import one.mixin.android.databinding.FragmentSelectCardBinding
-import one.mixin.android.databinding.FragmentSelectPaymentBinding
 import one.mixin.android.databinding.ItemCardBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.navigate
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
@@ -84,11 +84,21 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                     },
                                     successBlock = { response ->
                                         if (response.isSuccess) {
-                                            callback?.invoke(
-                                                response.data?.instrumentId,
-                                                response.data?.scheme
+                                            root.navigate(
+                                                R.id.action_wallet_card_to_order,
+                                                requireArguments().apply {
+                                                    putString(
+                                                        OrderConfirmFragment.ARGS_INSTRUMENT_ID,
+                                                        response.data!!.instrumentId,
+                                                    )
+                                                    putString(
+                                                        OrderConfirmFragment.ARGS_SCHEME,
+                                                        scheme,
+                                                    )
+                                                },
                                             )
                                         } else {
+                                            // Todo
                                             // showError(response.errorDescription)
                                         }
                                     },
@@ -101,6 +111,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                             parentFragmentManager.beginTransaction()
                                 .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
                                 .remove(this).commitNow()
+                            // Todo
                             // showError(it)
                         }
                     },
@@ -108,13 +119,18 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                 )
             }
             cardRv.adapter = CardAdapter { instrumentId, scheme ->
-                callback?.invoke(instrumentId, scheme)
+                root.navigate(
+                    R.id.action_wallet_card_to_order,
+                    requireArguments().apply {
+                        putString(OrderConfirmFragment.ARGS_INSTRUMENT_ID, instrumentId)
+                        putString(OrderConfirmFragment.ARGS_SCHEME, scheme)
+                    },
+                )
             }
         }
     }
 
-    class CardAdapter(val callback: (String, String) -> Unit) :
-        RecyclerView.Adapter<CardViewHolder>() {
+    class CardAdapter(val callback: (String, String) -> Unit) : RecyclerView.Adapter<CardViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
             val binding =
                 ItemCardBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -128,12 +144,11 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
         override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
             holder.bind()
             holder.itemView.setOnClickListener {
+                // todo real data
                 callback.invoke("src_gbk4fsgbflyujn5hkw6ij2dptm", "visa")
             }
         }
     }
-
-    var callback: ((String?, String?) -> Unit)? = null
 
     class CardViewHolder(val binding: ItemCardBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind() {

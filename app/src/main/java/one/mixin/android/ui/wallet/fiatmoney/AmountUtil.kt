@@ -1,11 +1,9 @@
 package one.mixin.android.ui.wallet.fiatmoney
 
-import one.mixin.android.ui.setting.Currency
-
 object AmountUtil {
     private val full_currency = listOf(
         "JPY",
-        "KRW"
+        "KRW",
     )
 
     fun toAmount(value: String, currency: String): Int? {

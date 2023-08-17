@@ -1,207 +1,193 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/bg_white">
+    android:background="?attr/bg_white"
+    android:orientation="vertical">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:need_divider="false" />
+
+    <one.mixin.android.widget.BadgeCircleImageView
+        android:id="@+id/asset_avatar"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="72dp" />
+
+    <TextView
+        android:id="@+id/asset_name"
+        style="@style/NormalTextStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:lines="1"
+        android:layout_marginBottom="48dp"
+        tools:text="+51.23 USDC" />
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/bg_white"
-        android:orientation="vertical">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="24dp"
+        android:padding="24dp"
+        android:background="@drawable/bg_round_window_8dp">
 
-        <one.mixin.android.widget.TitleView
-            android:id="@+id/title_view"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:need_divider="false" />
-
-        <one.mixin.android.widget.BadgeCircleImageView
-            android:id="@+id/asset_avatar"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="72dp" />
-
-        <TextView
-            android:id="@+id/asset_name"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:lines="1"
-            android:layout_marginBottom="48dp"
-            tools:text="+51.23 USDC" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_margin="24dp"
-            android:padding="24dp"
-            android:background="@drawable/bg_round_window_8dp">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:text="@string/Pay_with"
-                    android:textColor="?attr/text_minor"
-                    android:layout_width="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:id="@+id/card_number"
-                    android:textColor="?attr/text_minor"
-                    tools:text="Visa...4242"
-                    android:layout_alignParentEnd="true"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_marginTop="16dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:text="@string/Price"
-                    android:textColor="?attr/text_minor"
-                    android:layout_width="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:id="@+id/price_tv"
-                    android:textColor="?attr/text_minor"
-                    tools:text="1 USD = 0.996USDC"
-                    android:layout_alignParentEnd="true"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </RelativeLayout>
-
-
-            <RelativeLayout
-                android:layout_marginTop="16dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:text="@string/Purchase"
-                    android:textColor="?attr/text_minor"
-                    android:layout_width="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:id="@+id/purchase_tv"
-                    tools:text="48.68 USD"
-                    android:textColor="?attr/text_minor"
-                    android:layout_alignParentEnd="true"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_marginTop="16dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:text="@string/Fees"
-                    android:textColor="?attr/text_minor"
-                    android:layout_width="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:id="@+id/fee_tv"
-                    tools:text="1.23 USD"
-                    android:textColor="?attr/text_minor"
-                    android:layout_alignParentEnd="true"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_marginTop="16dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:text="@string/Total"
-                    android:textColor="?attr/text_minor"
-                    android:layout_width="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:id="@+id/total_tv"
-                    tools:text="50 USD"
-                    android:textColor="?attr/text_minor"
-                    android:layout_alignParentEnd="true"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </RelativeLayout>
-
-        </LinearLayout>
-
-        <ViewAnimator
-            android:id="@+id/buy_va"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:clickable="true"
-            android:focusable="true"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:layout_marginTop="140dp"
-            android:inAnimation="@anim/fade_in"
-            android:outAnimation="@anim/fade_out"
-            android:background="@drawable/bg_round_blue_btn_40">
+            android:layout_height="wrap_content">
 
             <TextView
-                android:layout_gravity="center"
-                android:id="@+id/continue_tv"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="@string/Continue"
-                android:textColor="@color/white"
-                android:textSize="14sp" />
+                android:text="@string/Pay_with"
+                android:textColor="?attr/text_minor"
+                android:layout_width="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_height="wrap_content" />
 
-            <one.mixin.android.widget.GooglePayButton
+            <TextView
+                android:id="@+id/card_number"
+                android:textColor="?attr/text_minor"
+                tools:text="Visa...4242"
+                android:layout_alignParentEnd="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
-            <ProgressBar
-                style="?android:attr/progressBarStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:theme="@style/AppTheme.WhiteAccent" />
+        </RelativeLayout>
 
-        </ViewAnimator>
+        <RelativeLayout
+            android:layout_marginTop="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="@string/Price"
+                android:textColor="?attr/text_minor"
+                android:layout_width="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/price_tv"
+                android:textColor="?attr/text_minor"
+                tools:text="1 USD = 0.996USDC"
+                android:layout_alignParentEnd="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </RelativeLayout>
+
+
+        <RelativeLayout
+            android:layout_marginTop="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="@string/Purchase"
+                android:textColor="?attr/text_minor"
+                android:layout_width="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/purchase_tv"
+                tools:text="48.68 USD"
+                android:textColor="?attr/text_minor"
+                android:layout_alignParentEnd="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_marginTop="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="@string/Fees"
+                android:textColor="?attr/text_minor"
+                android:layout_width="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/fee_tv"
+                tools:text="1.23 USD"
+                android:textColor="?attr/text_minor"
+                android:layout_alignParentEnd="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_marginTop="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="@string/Total"
+                android:textColor="?attr/text_minor"
+                android:layout_width="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/total_tv"
+                tools:text="50 USD"
+                android:textColor="?attr/text_minor"
+                android:layout_alignParentEnd="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </RelativeLayout>
 
     </LinearLayout>
 
-    <View
-        android:id="@+id/transparent_mask"
+    <ViewAnimator
+        android:id="@+id/buy_va"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:clickable="true"
         android:focusable="true"
-        android:background="#01010101"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:layout_marginTop="140dp"
+        android:inAnimation="@anim/fade_in"
+        android:outAnimation="@anim/fade_out"
+        android:background="@drawable/bg_round_blue_btn_40">
 
-</FrameLayout>
+        <TextView
+            android:layout_gravity="center"
+            android:id="@+id/continue_tv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/Continue"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+
+        <one.mixin.android.widget.GooglePayButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:theme="@style/AppTheme.WhiteAccent" />
+
+    </ViewAnimator>
+
+</LinearLayout>
+

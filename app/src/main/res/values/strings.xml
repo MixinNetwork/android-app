@@ -1268,12 +1268,18 @@
     <string name="error_input_amount">Please enter the amount</string>
     <string name="Pay" translatable="false">Pay</string>
     <string name="Buy_with" translatable="false">Buy with</string>
-    <string name="Value_info">Minimum 60 USD, Maximum 50,000 USD</string>
+    <string name="Value_info">Minimum 1 USD, Maximum 1,000 USD</string>
     <string name="Select_Payment">Select Payment</string>
     <string name="Select_Card">Select Card</string>
     <string name="Order_Confirm">Order Confirm</string>
     <string name="Fees">Fees</string>
     <string name="Select_a_Card">Select a Card</string>
-    <string name="Empty_card">Empty card</string>
     <string name="Add_New_Card">Add New Card</string>
+    <string name="Empty_card">You haven\'t added any card yet.</string>
+    <string name="cancel_order">Cancel order</string>
+    <string name="use_other">Use other methods of payment</string>
+    <string name="Processing">Processing</string>
+    <string name="Failed">Failed</string>
+    <string name="Processing_desc">Payment request has been submitted, your payment and order information is being checked, please wait patiently</string>
+    <string name="Success_desc">Successful purchase of USDC! Your USDC will be transferred directly to Mixin wallet later. Please wait patiently.</string>
 </resources>

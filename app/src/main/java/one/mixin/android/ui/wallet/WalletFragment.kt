@@ -100,26 +100,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
 
             _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                 sendReceiveView.enableBuy()
-                sendReceiveView.buy.setOnLongClickListener {
-                    lifecycleScope.launch {
-                        sendReceiveView.buy.displayedChild = 1
-                        sendReceiveView.buy.isEnabled = false
-                        val currencyList = getCurrencyData(requireContext().resources)
-                        val currency = currencyList.find { c ->
-                            Session.getFiatCurrency() == c.name
-                        } ?: currencyList.find { c -> c.name == "USD" }
-                        view.navigate(
-                            R.id.action_wallet_to_calculate,
-                            Bundle().apply {
-                                putParcelable(ARGS_ASSET, assets[0])
-                                putParcelable(ARGS_CURRENCY, currency)
-                            },
-                        )
-                        sendReceiveView.buy.displayedChild = 0
-                        sendReceiveView.buy.isEnabled = true
-                    }
-                    true
-                }
                 sendReceiveView.buy.setOnClickListener {
                     lifecycleScope.launch {
                         sendReceiveView.buy.displayedChild = 1
@@ -129,7 +109,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                             Session.getFiatCurrency() == c.name
                         } ?: currencyList.find { c -> c.name == "USD" }
                         view.navigate(
-                            R.id.action_wallet_to_buy,
+                            R.id.action_wallet_to_calculate,
                             Bundle().apply {
                                 putParcelable(ARGS_ASSET, assets[0])
                                 putParcelable(ARGS_CURRENCY, currency)

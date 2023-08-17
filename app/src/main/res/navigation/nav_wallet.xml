@@ -317,6 +317,22 @@
     </fragment>
 
     <fragment
+        android:id="@+id/wallet_select_card"
+        android:name="one.mixin.android.ui.wallet.fiatmoney.SelectCardFragment">
+        <argument
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.AssetItem" />
+        <argument
+            android:name="args_currency"
+            app:argType="one.mixin.android.ui.setting.Currency" />
+        <action
+            android:id="@+id/action_wallet_card_to_order"
+            app:destination="@id/wallet_order_confirm"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
         android:id="@+id/wallet_order_confirm"
         android:name="one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment">
         <argument
@@ -337,17 +353,47 @@
         <argument
             android:name="args_scheme"
             app:argType="string" />
+
+        <action
+            android:id="@+id/action_wallet_confirm_to_status"
+            app:destination="@id/wallet_order_status"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right" />
+
     </fragment>
 
-
     <fragment
-        android:id="@+id/wallet_select_card"
-        android:name="one.mixin.android.ui.wallet.fiatmoney.SelectCardFragment" >
+        android:id="@+id/wallet_order_status"
+        android:name="one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment">
         <argument
             android:name="args_asset"
             app:argType="one.mixin.android.vo.AssetItem" />
         <argument
             android:name="args_currency"
             app:argType="one.mixin.android.ui.setting.Currency" />
+        <argument
+            android:name="args_google_pay"
+            app:argType="boolean" />
+        <argument
+            android:name="args_amount"
+            app:argType="integer" />
+        <argument
+            android:name="args_instrument_id"
+            app:argType="string" />
+        <argument
+            android:name="args_scheme"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_wallet_status_to_wallet"
+            app:destination="@id/wallet_fragment"
+            app:popUpTo="@+id/a"
+            app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/action_wallet_status_to_select"
+            app:destination="@id/wallet_select_payment"
+            app:popUpTo="@id/wallet_select_payment"
+            app:popUpToInclusive="true" />
     </fragment>
+
 </navigation>
