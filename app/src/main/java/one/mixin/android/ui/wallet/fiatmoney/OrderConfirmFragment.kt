@@ -7,6 +7,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.checkout.CheckoutApiServiceFactory
@@ -107,6 +108,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             false,
         )
         binding.apply {
+            transparentMask.isVisible = false
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
@@ -146,13 +148,12 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             sessionResponse.scheme,
         )
 
-        loadingProgress.dismiss()
+
         checkout3DS.authenticate(authenticationParameters) { result: AuthenticationResult ->
             when (result.resultType) {
                 ResultType.Completed -> {
                     // continue with payment, show √
                     Timber.e("Completed")
-                    loadingProgress.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
                     lifecycleScope.launch {
                         while (true) {
                             delay(1000)
@@ -227,13 +228,16 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
         }
     }
 
-    private val loadingProgress by lazy {
-        LoadingProgressDialogFragment()
+    override fun onBackPressed(): Boolean {
+        if (binding.transparentMask.isVisible) {
+            return true
+        }
+        return super.onBackPressed()
     }
 
     private fun payWithCheckout() = lifecycleScope.launch {
         binding.buyVa.displayedChild = 2
-        loadingProgress.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
+        binding.transparentMask.isVisible = true
         lifecycleScope.launch {
             handleMixinResponse(
                 invokeNetwork = {
@@ -261,14 +265,13 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     }
 
     private fun payWithGoogle() {
-        // Todo real data
+        binding.buyVa.displayedChild = 2
+        binding.transparentMask.isVisible = true
         val task = walletViewModel.getLoadPaymentDataTask("${amount / 100f}", currency.name)
-        loadingProgress.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
         task.addOnCompleteListener { completedTask ->
             if (completedTask.isSuccessful) {
                 completedTask.result.let(::handlePaymentSuccess)
             } else {
-                loadingProgress.dismiss()
                 when (val exception = completedTask.exception) {
                     is ResolvableApiException -> {
                         resolvePaymentForResult.launch(
@@ -306,7 +309,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                 ),
             )
             if (response.isSuccess) {
-                loadingProgress.dismiss()
+                binding.transparentMask.isVisible = false
                 updateUI()
                 OrderPreviewBottomSheetDialogFragment.newInstance(
                     AssetItem(
@@ -352,7 +355,6 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                     requireContext(),
                 ).createToken(
                     GooglePayTokenRequest(tokenJsonPayload, { tokenDetails ->
-                        loadingProgress.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
                         lifecycleScope.launch {
                             handleMixinResponse(
                                 invokeNetwork = {
@@ -378,16 +380,16 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                         }
                     }, {
                         showError(it)
-                        loadingProgress.dismiss()
+                        binding.transparentMask.isVisible = false
                     }),
                 )
             } else {
                 showError("Token null")
-                loadingProgress.dismiss()
+                binding.transparentMask.isVisible = false
             }
         } catch (error: Exception) {
             showError(error.message)
-            loadingProgress.dismiss()
+            binding.transparentMask.isVisible = false
         }
     }
 
@@ -400,8 +402,8 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                     }
 
                 ComponentActivity.RESULT_CANCELED -> {
-                    toast(R.string.Cancel)
-                    loadingProgress.dismiss()
+                    binding.transparentMask.isVisible = false
+                    binding.buyVa.displayedChild = 1
                 }
             }
         }
@@ -413,7 +415,12 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     private fun showError(message: String?) {
         if (!isAdded) return
         ErrorFragment.newInstance(message ?: getString(R.string.Unknown)).showNow(parentFragmentManager, ErrorFragment.TAG)
-        loadingProgress.dismiss()
+        binding.transparentMask.isVisible = false
+        binding.buyVa.displayedChild = if (isGooglePay) {
+            1
+        } else {
+            0
+        }
     }
     private fun showError(@StringRes errorRes: Int = R.string.Unknown) {
         showError(getString(errorRes))

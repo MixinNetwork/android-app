@@ -77,9 +77,9 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
         dialog.setContentView(contentView)
         val behavior = ((contentView.parent as View).layoutParams as? CoordinatorLayout.LayoutParams)?.behavior
         if (behavior != null && behavior is BottomSheetBehavior<*>) {
-            behavior.peekHeight = requireContext().dpToPx(300f)
+            behavior.peekHeight = requireContext().dpToPx(340f)
             behavior.addBottomSheetCallback(mBottomSheetBehaviorCallback)
-            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, requireContext().dpToPx(300f))
+            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, requireContext().dpToPx(340f))
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
         val asset = requireNotNull(

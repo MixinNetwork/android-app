@@ -21,7 +21,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="16dp"
-        android:padding="12dp"
+        android:padding="16dp"
         android:foreground="?android:attr/selectableItemBackground"
         android:background="@drawable/bg_round_window_8dp"
         app:layout_constraintTop_toBottomOf="@id/title_view">
@@ -39,8 +39,9 @@
             android:layout_toEndOf="@id/google_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="16dp"
             android:textColor="?attr/text_primary"
+            android:textSize="16sp"
             android:layout_centerVertical="true"/>
 
         <ImageView
@@ -60,7 +61,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="16dp"
-        android:padding="12dp"
+        android:padding="16dp"
         android:foreground="?android:attr/selectableItemBackground"
         android:background="@drawable/bg_round_window_8dp"
         app:layout_constraintTop_toBottomOf="@id/first_rl">
@@ -78,8 +79,9 @@
             android:layout_toEndOf="@id/bank_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="16dp"
             android:textColor="?attr/text_primary"
+            android:textSize="16sp"
             android:layout_centerVertical="true"/>
 
         <ImageView
