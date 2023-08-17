@@ -54,6 +54,7 @@
         android:layout_height="170dp"
         android:gravity="center"
         android:layout_width="match_parent"
+        android:textColor="?attr/text_minor"
         android:visibility="gone" />
 
     <ViewAnimator

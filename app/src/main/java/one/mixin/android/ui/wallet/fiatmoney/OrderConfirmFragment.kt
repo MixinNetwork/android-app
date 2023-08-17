@@ -1,8 +1,11 @@
 package one.mixin.android.ui.wallet.fiatmoney
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,13 +41,11 @@ import one.mixin.android.databinding.FragmentOrderConfirmBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.ErrorFragment
-import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.wallet.OrderPreviewBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.WalletViewModel
@@ -65,10 +66,11 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
         const val ARGS_INSTRUMENT_ID = "args_instrument_id"
         const val ARGS_AMOUNT = "args_amount"
 
-        fun newInstance(assetItem: AssetItem, currency: Currency) = OrderConfirmFragment().withArgs {
-            putParcelable(TransactionsFragment.ARGS_ASSET, assetItem)
-            putParcelable(ARGS_CURRENCY, currency)
-        }
+        fun newInstance(assetItem: AssetItem, currency: Currency) =
+            OrderConfirmFragment().withArgs {
+                putParcelable(TransactionsFragment.ARGS_ASSET, assetItem)
+                putParcelable(ARGS_CURRENCY, currency)
+            }
     }
 
     private val binding by viewBinding(FragmentOrderConfirmBinding::bind)
@@ -122,6 +124,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                     1 -> {
                         payWithGoogle()
                     }
+
                     else -> {
                         // do noting
                     }
@@ -164,7 +167,10 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                                 break
                             }
                             if (session.data?.status == SessionStatus.Approved.value) {
-                                placeOrder(sessionId = sessionResponse.sessionId, sessionResponse.instrumentId)
+                                placeOrder(
+                                    sessionId = sessionResponse.sessionId,
+                                    sessionResponse.instrumentId
+                                )
                                 break
                             } else if (session.data?.status != SessionStatus.Pending.value || session.data?.status != SessionStatus.Processing.value) {
                                 showError(session.data?.status ?: session.errorDescription)
@@ -187,6 +193,22 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                     Timber.e("Error $errorType $errorCode")
                     showError(errorCode)
                 }
+            }
+        }
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        activity?.onBackPressedDispatcher?.addCallback(this, onBackPressedCallback)
+    }
+
+    private val onBackPressedCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            if (binding.transparentMask.isVisible) {
+                // do noting
+            } else {
+                isEnabled = false
+                activity?.onBackPressedDispatcher?.onBackPressed()
             }
         }
     }
@@ -226,13 +248,6 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             feeTv.text = "1.23 USD"
             totalTv.text = "50 USD"
         }
-    }
-
-    override fun onBackPressed(): Boolean {
-        if (binding.transparentMask.isVisible) {
-            return true
-        }
-        return super.onBackPressed()
     }
 
     private fun payWithCheckout() = lifecycleScope.launch {
@@ -414,7 +429,8 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
 
     private fun showError(message: String?) {
         if (!isAdded) return
-        ErrorFragment.newInstance(message ?: getString(R.string.Unknown)).showNow(parentFragmentManager, ErrorFragment.TAG)
+        ErrorFragment.newInstance(message ?: getString(R.string.Unknown))
+            .showNow(parentFragmentManager, ErrorFragment.TAG)
         binding.transparentMask.isVisible = false
         binding.buyVa.displayedChild = if (isGooglePay) {
             1
@@ -422,6 +438,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             0
         }
     }
+
     private fun showError(@StringRes errorRes: Int = R.string.Unknown) {
         showError(getString(errorRes))
     }

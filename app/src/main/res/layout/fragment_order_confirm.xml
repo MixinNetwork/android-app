@@ -49,12 +49,14 @@
 
                 <TextView
                     android:text="@string/Pay_with"
+                    android:textColor="?attr/text_minor"
                     android:layout_width="wrap_content"
                     android:layout_alignParentStart="true"
                     android:layout_height="wrap_content" />
 
                 <TextView
                     android:id="@+id/card_number"
+                    android:textColor="?attr/text_minor"
                     tools:text="Visa...4242"
                     android:layout_alignParentEnd="true"
                     android:layout_width="wrap_content"
@@ -69,12 +71,14 @@
 
                 <TextView
                     android:text="@string/Price"
+                    android:textColor="?attr/text_minor"
                     android:layout_width="wrap_content"
                     android:layout_alignParentStart="true"
                     android:layout_height="wrap_content" />
 
                 <TextView
                     android:id="@+id/price_tv"
+                    android:textColor="?attr/text_minor"
                     tools:text="1 USD = 0.996USDC"
                     android:layout_alignParentEnd="true"
                     android:layout_width="wrap_content"
@@ -90,6 +94,7 @@
 
                 <TextView
                     android:text="@string/Purchase"
+                    android:textColor="?attr/text_minor"
                     android:layout_width="wrap_content"
                     android:layout_alignParentStart="true"
                     android:layout_height="wrap_content" />
@@ -97,6 +102,7 @@
                 <TextView
                     android:id="@+id/purchase_tv"
                     tools:text="48.68 USD"
+                    android:textColor="?attr/text_minor"
                     android:layout_alignParentEnd="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -110,6 +116,7 @@
 
                 <TextView
                     android:text="@string/Fees"
+                    android:textColor="?attr/text_minor"
                     android:layout_width="wrap_content"
                     android:layout_alignParentStart="true"
                     android:layout_height="wrap_content" />
@@ -117,6 +124,7 @@
                 <TextView
                     android:id="@+id/fee_tv"
                     tools:text="1.23 USD"
+                    android:textColor="?attr/text_minor"
                     android:layout_alignParentEnd="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -130,6 +138,7 @@
 
                 <TextView
                     android:text="@string/Total"
+                    android:textColor="?attr/text_minor"
                     android:layout_width="wrap_content"
                     android:layout_alignParentStart="true"
                     android:layout_height="wrap_content" />
@@ -137,6 +146,7 @@
                 <TextView
                     android:id="@+id/total_tv"
                     tools:text="50 USD"
+                    android:textColor="?attr/text_minor"
                     android:layout_alignParentEnd="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -190,7 +200,7 @@
         android:id="@+id/transparent_mask"
         android:clickable="true"
         android:focusable="true"
-        android:background="#33000000"
+        android:background="#01010101"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

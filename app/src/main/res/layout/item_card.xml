@@ -6,7 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@drawable/bg_round_window_8dp"
     android:foreground="?android:attr/selectableItemBackground"
-    android:padding="12dp">
+    android:padding="16dp">
 
     <ImageView
         android:id="@+id/logo"
@@ -25,6 +25,7 @@
         android:layout_marginStart="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/logo"
+        android:textColor="?attr/text_primary"
         tools:text="Visa....4242"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
