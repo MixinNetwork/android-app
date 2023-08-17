@@ -309,6 +309,11 @@
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right" />
 
+        <action
+            android:id="@+id/action_wallet_payment_to_select_card"
+            app:destination="@id/wallet_select_card"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -334,4 +339,15 @@
             app:argType="string" />
     </fragment>
 
+
+    <fragment
+        android:id="@+id/wallet_select_card"
+        android:name="one.mixin.android.ui.wallet.fiatmoney.SelectCardFragment" >
+        <argument
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.AssetItem" />
+        <argument
+            android:name="args_currency"
+            app:argType="one.mixin.android.ui.setting.Currency" />
+    </fragment>
 </navigation>

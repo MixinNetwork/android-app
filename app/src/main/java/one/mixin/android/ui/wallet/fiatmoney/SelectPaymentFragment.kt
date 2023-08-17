@@ -54,17 +54,26 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
                 )
             }
             secondRl.setOnClickListener {
-                SelectCardBottomSheetDialogFragment.newInstance(requireArguments()).apply {
-                    callback = { instrumentId, scheme ->
-                        view.navigate(
-                            R.id.action_wallet_payment_to_order_confirm,
-                            requireArguments().apply {
-                                putString(OrderConfirmFragment.ARGS_INSTRUMENT_ID, instrumentId)
-                                putString(OrderConfirmFragment.ARGS_SCHEME, scheme)
-                            },
-                        )
-                    }
-                }.show(parentFragmentManager, SelectCardBottomSheetDialogFragment.TAG)
+                view.navigate(
+                    R.id.action_wallet_payment_to_select_card,
+                    requireArguments().apply {
+                        Bundle().apply {
+                            putParcelable(TransactionsFragment.ARGS_ASSET, asset)
+                            putParcelable(CalculateFragment.ARGS_CURRENCY, currency)
+                        }
+                    },
+                )
+//                SelectCardBottomSheetDialogFragment.newInstance(requireArguments()).apply {
+//                    callback = { instrumentId, scheme ->
+//                        view.navigate(
+//                            R.id.action_wallet_payment_to_order_confirm,
+//                            requireArguments().apply {
+//                                putString(OrderConfirmFragment.ARGS_INSTRUMENT_ID, instrumentId)
+//                                putString(OrderConfirmFragment.ARGS_SCHEME, scheme)
+//                            },
+//                        )
+//                    }
+//                }.show(parentFragmentManager, SelectCardBottomSheetDialogFragment.TAG)
             }
         }
     }

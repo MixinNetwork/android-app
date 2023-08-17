@@ -1272,4 +1272,8 @@
     <string name="Select_Payment">Select Payment</string>
     <string name="Select_Card">Select Card</string>
     <string name="Order_Confirm">Order Confirm</string>
+    <string name="Fees">Fees</string>
+    <string name="Select_a_Card">Select a Card</string>
+    <string name="Empty_card">Empty card</string>
+    <string name="Add_New_Card">Add New Card</string>
 </resources>
