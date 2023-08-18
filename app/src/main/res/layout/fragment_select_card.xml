@@ -28,9 +28,11 @@
         tools:listitem="@layout/item_card" />
 
     <TextView
+        android:id="@+id/empty"
         android:text="@string/Empty_card"
-        android:layout_height="170dp"
+        android:layout_height="0dp"
         android:gravity="center"
+        android:layout_weight="1"
         android:layout_width="match_parent"
         android:visibility="gone" />
 

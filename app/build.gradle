@@ -438,7 +438,6 @@ dependencies {
     // ML Kit
     implementation 'com.google.mlkit:entity-extraction:16.0.0-beta4'
 
-    testImplementation "org.bitcoinj:bitcoinj-core:0.16.2"
     testImplementation("com.google.protobuf:protobuf-javalite") {
         version {
             strictly '3.11.0'
@@ -462,6 +461,10 @@ dependencies {
     // google pay
     implementation "com.google.android.gms:play-services-wallet:$playWalletVersion"
     implementation "com.google.android.gms:play-services-pay:$playPayVersion"
+
+    // No sql
+    implementation 'com.snappydb:snappydb-lib:0.5.2'
+    implementation 'com.esotericsoftware.kryo:kryo:2.24.0'
 }
 
 secrets {

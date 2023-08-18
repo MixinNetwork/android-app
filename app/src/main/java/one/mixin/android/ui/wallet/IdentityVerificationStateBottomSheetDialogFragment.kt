@@ -39,7 +39,7 @@ class IdentityVerificationStateBottomSheetDialogFragment : MixinBottomSheetDialo
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
-        kycState = requireNotNull(requireArguments().getString(ARGS_KYC_STATE)) { "required kycState can no be null"}
+        kycState = requireNotNull(requireArguments().getString(ARGS_KYC_STATE)) { "required kycState can no be null" }
         token = requireArguments().getString(ARGS_TOKEN)
         binding.apply {
             when (kycState) {

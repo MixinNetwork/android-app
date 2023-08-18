@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet.fiatmoney
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +8,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.annotations.SerializedName
+import com.snappydb.SnappyDB
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -28,6 +31,7 @@ import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_CURRENCY
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
+import timber.log.Timber
 
 @AndroidEntryPoint
 class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
@@ -44,6 +48,10 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
 
     private val walletViewModel by viewModels<WalletViewModel>()
 
+    private val snappyDB by lazy {
+        SnappyDB.Builder(context).build()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val asset = requireNotNull(
@@ -59,6 +67,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
             ),
         )
         val amount = requireArguments().getInt(ARGS_AMOUNT)
+        initCards()
         binding.apply {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
@@ -87,20 +96,16 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                         )
                                     },
                                     successBlock = { response ->
+                                        addVa.displayedChild = 0
                                         if (response.isSuccess) {
-                                            root.navigate(
-                                                R.id.action_wallet_card_to_order,
-                                                requireArguments().apply {
-                                                    putString(
-                                                        OrderConfirmFragment.ARGS_INSTRUMENT_ID,
-                                                        response.data!!.instrumentId,
-                                                    )
-                                                    putString(
-                                                        OrderConfirmFragment.ARGS_SCHEME,
-                                                        scheme,
-                                                    )
-                                                },
-                                            )
+                                            val currency = response.data?.currency
+                                            val instrumentId = response.data?.instrumentId
+                                            val scheme = response.data?.scheme
+                                            if (currency != null && instrumentId != null && scheme != null) {
+                                                saveCards(Card(currency, instrumentId, scheme))
+                                            } else {
+                                                toast(R.string.error_bad_data)
+                                            }
                                         } else {
                                             // Todo
                                             toast(response.errorDescription)
@@ -121,10 +126,12 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                             }
                         }
                         onLoading = {
+                            addVa.displayedChild = 1
                         }
                         onFailure = {
                             // Todo
                             toast(it)
+                            addVa.displayedChild = 0
                             parentFragmentManager.beginTransaction()
                                 .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
                                 .remove(paymentFragment).commitNow()
@@ -141,10 +148,14 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                     PaymentFragment.TAG,
                 )
             }
-            cardRv.adapter = CardAdapter { instrumentId, scheme ->
+
+            cardRv.adapter = CardAdapter(cards) { instrumentId, scheme ->
                 root.navigate(
                     R.id.action_wallet_card_to_order,
-                    requireArguments().apply {
+                    Bundle().apply {
+                        putInt(ARGS_AMOUNT, amount)
+                        putParcelable(ARGS_ASSET, asset)
+                        putParcelable(ARGS_CURRENCY, currency)
                         putString(OrderConfirmFragment.ARGS_INSTRUMENT_ID, instrumentId)
                         putString(OrderConfirmFragment.ARGS_SCHEME, scheme)
                     },
@@ -153,7 +164,44 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
         }
     }
 
-    class CardAdapter(val callback: (String, String) -> Unit) : RecyclerView.Adapter<CardViewHolder>() {
+    private fun initCards() {
+        try {
+            cards.clear()
+            val local = snappyDB.getObjectArray("cards", Card::class.java)
+            if (local.isNotEmpty()) {
+                cards.addAll(local)
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+        if (cards.isEmpty()) {
+            binding.cardRv.visibility = View.GONE
+            binding.empty.visibility = View.VISIBLE
+        } else {
+            binding.cardRv.visibility = View.VISIBLE
+            binding.empty.visibility = View.GONE
+        }
+    }
+
+    private fun saveCards(card: Card) {
+        cards.add(card)
+        binding.cardRv.visibility = View.VISIBLE
+        (binding.cardRv.adapter as CardAdapter).apply {
+            data = cards
+            notifyDataSetChanged()
+        }
+        snappyDB.put("cards", cards.toTypedArray())
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        snappyDB.close()
+    }
+
+    private val cards: MutableList<Card> = mutableListOf()
+
+    class CardAdapter(var data: MutableList<Card>, val callback: (String, String) -> Unit) : RecyclerView.Adapter<CardViewHolder>() {
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
             val binding =
                 ItemCardBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -161,22 +209,32 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
         }
 
         override fun getItemCount(): Int {
-            return 1
+            return data.size
         }
 
         override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
-            holder.bind()
+            val card = data[position]
+            holder.bind(data[position])
             holder.itemView.setOnClickListener {
-                // todo real data
-                callback.invoke("src_gbk4fsgbflyujn5hkw6ij2dptm", "visa")
+                callback.invoke(card.instrumentId, card.scheme)
             }
         }
     }
 
     class CardViewHolder(val binding: ItemCardBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind() {
-            // Todo real data
-            binding.cardNumber.text = "Visa...4242"
+        @SuppressLint("SetTextI18n")
+        fun bind(card: Card) {
+            binding.cardNumber.text = "${card.scheme}${card.number}"
+            // todo icon
         }
+    }
+
+    class Card(
+        val number: String,
+        val scheme: String,
+        @SerializedName("instrument_id")
+        val instrumentId: String,
+    ) {
+        constructor() : this("", "", "")
     }
 }
