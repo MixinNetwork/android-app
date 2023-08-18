@@ -60,6 +60,7 @@
         </RelativeLayout>
 
         <RelativeLayout
+            android:id="@+id/price_rl"
             android:layout_marginTop="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">

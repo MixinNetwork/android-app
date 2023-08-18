@@ -4,41 +4,32 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:background="@drawable/bg_upper_round"
     android:gravity="center_horizontal"
     tools:ignore="UseCompoundDrawables">
+    
+    <ImageView
+        android:layout_width="76dp"
+        android:layout_height="76dp"
+        android:layout_marginTop="70dp"
+        android:src="@drawable/ic_price_expired"
+        android:contentDescription="@string/Price_Expired"/>
 
-    <RelativeLayout
-        android:id="@+id/title_rl"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:textSize="18sp"
+        android:textColor="?attr/text_primary"
+        android:text="@string/Price_Expired"/>
 
-        <TextView
-            android:id="@+id/bot_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="24dp"
-            android:text="@string/Fees"
-            android:textColor="?attr/text_primary"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            tools:ignore="RelativeOverlap" />
-
-        <ImageView
-            android:id="@+id/close_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_margin="24dp"
-            android:foreground="@drawable/mixin_ripple"
-            android:padding="8dp"
-            android:src="@drawable/ic_circle_close"
-            android:contentDescription="@string/Close" />
-
-    </RelativeLayout>
-
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="26dp"
+        android:textSize="14sp"
+        android:textColor="?attr/text_assist"
+        android:text="@string/New_price"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -86,19 +77,29 @@
                 android:layout_alignParentEnd="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
-
         </RelativeLayout>
-
     </LinearLayout>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:padding="24dp"
-        android:textColor="?attr/text_minor"
-        android:text="@string/Fee_desc" />
+    <Button
+        style="@style/AppTheme.MaterialButton"
+        android:id="@+id/refresh_tv"
+        android:layout_width="152dp"
+        android:layout_height="42dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/Use_New_Price"
+        android:textColor="@color/white"
+        android:layout_marginTop="32dp"
+        android:textSize="14sp" />
 
+    <TextView
+        android:id="@+id/cancel_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:padding="12dp"
+        android:layout_marginBottom="30dp"
+        android:text="@string/Cancel"
+        android:textColor="@color/colorBlue"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:textSize="14sp" />
 </LinearLayout>

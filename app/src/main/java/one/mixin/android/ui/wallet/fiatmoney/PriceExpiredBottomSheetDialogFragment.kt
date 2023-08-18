@@ -16,24 +16,21 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
+import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 @AndroidEntryPoint
-class PriceExpiredBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "PriceExpiredBottomSheetDialogFragment"
 
-        fun newInstance() = PriceExpiredBottomSheetDialogFragment().withArgs {
-        }
+        fun newInstance() = PriceExpiredBottomSheetDialogFragment()
     }
 
-    override fun getTheme() = R.style.AppTheme_Dialog
-
     private val binding by viewBinding(FragmentPriceExpiredBottomSheetBinding::inflate)
-
-    private lateinit var contentView: View
 
     override fun onStart() {
         try {
@@ -51,19 +48,17 @@ class PriceExpiredBottomSheetDialogFragment : BottomSheetDialogFragment() {
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        dialog.window?.let { window ->
-            SystemUIManager.lightUI(window, requireContext().isNightMode())
-        }
         contentView = binding.root
-        dialog.setContentView(contentView)
-        val behavior = ((contentView.parent as View).layoutParams as? CoordinatorLayout.LayoutParams)?.behavior
-        if (behavior != null && behavior is BottomSheetBehavior<*>) {
-            behavior.peekHeight = requireContext().dpToPx(300f)
-            behavior.addBottomSheetCallback(mBottomSheetBehaviorCallback)
-            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, requireContext().dpToPx(300f))
-            dialog.window?.setGravity(Gravity.BOTTOM)
-        }
+        (dialog as BottomSheet).setCustomView(contentView)
         binding.apply {
+            refreshTv.setOnClickListener {
+                // TODO refresh
+                dismiss()
+            }
+            cancelTv.setOnClickListener { dismiss() }
+
+            oldPrice.text = "1 USDC = 1.005 USD"
+            newPrice.text = "1 USDC = 1.006 USD"
         }
     }
 

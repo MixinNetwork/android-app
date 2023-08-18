@@ -105,6 +105,10 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             }
             assetAvatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             assetAvatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            priceRl.setOnClickListener {
+                PriceExpiredBottomSheetDialogFragment.newInstance()
+                    .showNow(parentFragmentManager, PriceExpiredBottomSheetDialogFragment.TAG)
+            }
             feeRl.setOnClickListener {
                 FeeBottomSheetDialogFragment.newInstance()
                     .showNow(parentFragmentManager, FeeBottomSheetDialogFragment.TAG)
