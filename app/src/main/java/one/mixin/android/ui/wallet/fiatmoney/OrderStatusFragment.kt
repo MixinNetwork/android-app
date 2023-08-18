@@ -33,9 +33,12 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CreateSessionRequest
 import one.mixin.android.api.request.SessionStatus
+import one.mixin.android.api.response.CheckoutPaymentResponse
+import one.mixin.android.api.response.CheckoutPaymentStatus
 import one.mixin.android.api.response.CreateSessionResponse
 import one.mixin.android.databinding.FragmentOrderStatusBinding
 import one.mixin.android.extension.getParcelableCompat
@@ -266,7 +269,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                             currency.name,
                             scheme,
                             Session.getAccountId()!!,
-                            "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+                            "4d8c508b-91c5-375b-92b0-ee702ed2dac5",
                             amount,
                             instrumentId,
                         ),
@@ -319,7 +322,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         try {
             val response = walletViewModel.payment(
                 PaymentRequest(
-                    "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+                    // todo real data
+                    "4d8c508b-91c5-375b-92b0-ee702ed2dac5",
                     Session.getAccountId()!!,
                     sessionId,
                     instrumentId,
@@ -329,8 +333,24 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             )
             if (response.isSuccess) {
                 binding.transparentMask.isVisible = false
-                status = OrderStatus.SUCCESS
+                if (response.data?.status == CheckoutPaymentStatus.Captured.name) {
+                    status = OrderStatus.SUCCESS
+                } else {
+                    val paymentId = response.data?.paymentId
+                    if (paymentId == null) {
+                        status = OrderStatus.FAILED
+                        showError(response.errorDescription)
+                    }
+                    while (true) {
+                        val payment = walletViewModel.payment(paymentId!!)
+                        if (payment.data?.status == CheckoutPaymentStatus.Captured.name) {
+                            status = OrderStatus.SUCCESS
+                            break
+                        }
+                    }
+                }
             } else {
+                status = OrderStatus.FAILED
                 showError(response.errorDescription)
             }
         } catch (e: Exception) {
@@ -357,7 +377,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                                             currency.name,
                                             tokenDetails.scheme?.lowercase(),
                                             Session.getAccountId()!!,
-                                            "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+                                            "4d8c508b-91c5-375b-92b0-ee702ed2dac5",
                                             amount,
                                         ),
                                     )

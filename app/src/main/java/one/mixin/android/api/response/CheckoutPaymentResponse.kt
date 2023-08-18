@@ -3,12 +3,16 @@ package one.mixin.android.api.response
 import com.google.gson.annotations.SerializedName
 
 class CheckoutPaymentResponse(
-    @SerializedName("pay_id")
-    val payId: String,
+    @SerializedName("payment_id")
+    val paymentId: String,
     @SerializedName("amount")
     val amount: Int,
     @SerializedName("currency")
     val currency: String,
     @SerializedName("session_id")
     val sessionId: String,
+    @SerializedName("status")
+    val status: String
 )
+
+enum class CheckoutPaymentStatus { Authorized, Captured}

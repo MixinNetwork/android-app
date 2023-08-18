@@ -287,6 +287,8 @@ internal constructor(
 
     suspend fun payment(traceRequest: PaymentRequest): MixinResponse<CheckoutPaymentResponse> = assetRepository.payment(traceRequest)
 
+    suspend fun payment(paymentId: String): MixinResponse<CheckoutPaymentResponse> = assetRepository.payment(paymentId)
+
     suspend fun createSession(createSession: CreateSessionRequest): MixinResponse<CreateSessionResponse> = assetRepository.createSession(createSession)
 
     suspend fun getSession(sessionId: String) = assetRepository.getSession(sessionId)

@@ -463,6 +463,8 @@ constructor(
 
     suspend fun payment(traceRequest: PaymentRequest): MixinResponse<CheckoutPaymentResponse> = checkoutService.payment(traceRequest)
 
+    suspend fun payment(paymentId: String): MixinResponse<CheckoutPaymentResponse> = checkoutService.payment(paymentId)
+
     suspend fun createSession(createSession: CreateSessionRequest): MixinResponse<CreateSessionResponse> = checkoutService.createSession(createSession)
 
     suspend fun getSession(sessionId: String): MixinResponse<CheckoutSessionRequest> = checkoutService.getSession(sessionId)

@@ -90,7 +90,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                                 currency.name,
                                                 scheme,
                                                 Session.getAccountId()!!,
-                                                "965e5c6e-434c-3fa9-b780-c50f43cd955c",
+                                                "4d8c508b-91c5-375b-92b0-ee702ed2dac5",
                                                 amount,
                                             ),
                                         )
