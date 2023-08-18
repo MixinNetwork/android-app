@@ -274,6 +274,10 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         override fun handleOnBackPressed() {
             if (binding.transparentMask.isVisible) {
                 // do noting
+            } else if (status == OrderStatus.SUCCESS){
+                view?.navigate(R.id.action_wallet_status_to_wallet)
+            } else if (status == OrderStatus.FAILED) {
+                view?.navigate(R.id.action_wallet_status_to_select)
             } else {
                 isEnabled = false
                 activity?.onBackPressedDispatcher?.onBackPressed()

@@ -146,18 +146,17 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
         refresh()
     }
 
-    // Todo real data
     private var info = OrderInfo(
-        "1 USD = 0.995 USDC",
-        "48.78 USD",
-        "1.23 USD",
-        "50 USD",
+        "loading...",
+        "loading..",
+        "loading...",
+        "loading...",
     )
 
     @SuppressLint("SetTextI18n")
     private fun refresh() {
         lifecycleScope.launch {
-            var time = 0
+            var time = 10
             while (true) {
                 if (time == 10) {
                     val response = try {
