@@ -2,20 +2,13 @@ package one.mixin.android.ui.wallet.fiatmoney
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPriceExpiredBottomSheetBinding
 import one.mixin.android.extension.booleanFromAttribute
-import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding

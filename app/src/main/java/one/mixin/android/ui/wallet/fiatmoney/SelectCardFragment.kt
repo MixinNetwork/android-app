@@ -12,6 +12,7 @@ import com.google.gson.annotations.SerializedName
 import com.snappydb.SnappyDB
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.TEST_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CreateSessionRequest
@@ -29,6 +30,8 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_AMOUNT
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_CURRENCY
+import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_INSTRUMENT_ID
+import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_SCHEME
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import timber.log.Timber
@@ -90,7 +93,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                                 currency.name,
                                                 scheme,
                                                 Session.getAccountId()!!,
-                                                "4d8c508b-91c5-375b-92b0-ee702ed2dac5",
+                                                TEST_ASSET_ID,
                                                 amount,
                                             ),
                                         )
@@ -156,8 +159,8 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                         putInt(ARGS_AMOUNT, amount)
                         putParcelable(ARGS_ASSET, asset)
                         putParcelable(ARGS_CURRENCY, currency)
-                        putString(OrderConfirmFragment.ARGS_INSTRUMENT_ID, instrumentId)
-                        putString(OrderConfirmFragment.ARGS_SCHEME, scheme)
+                        putString(ARGS_INSTRUMENT_ID, instrumentId)
+                        putString(ARGS_SCHEME, scheme)
                     },
                 )
             }

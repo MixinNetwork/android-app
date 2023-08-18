@@ -60,7 +60,9 @@
             android:gravity="center_horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:lines="2"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
+            android:lines="3"
             android:ellipsize="end"/>
 
         <LinearLayout
@@ -83,9 +85,10 @@
                     android:layout_height="wrap_content" />
 
                 <TextView
-                    android:id="@+id/card_number"
+                    android:id="@+id/pay_with"
                     android:textColor="?attr/text_minor"
                     tools:text="Visa...4242"
+                    android:drawablePadding="3dp"
                     android:layout_alignParentEnd="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />

@@ -408,6 +408,9 @@
         <argument
             android:name="args_scheme"
             app:argType="string" />
+        <argument
+            android:name="args_info"
+            app:argType="one.mixin.android.ui.wallet.fiatmoney.OrderInfo" />
         <action
             android:id="@+id/action_wallet_status_to_wallet"
             app:destination="@id/wallet_fragment"

@@ -4,16 +4,15 @@ import com.google.gson.annotations.SerializedName
 
 class TickerResponse(
     @SerializedName("currency")
-    val currency:String,
+    val currency: String,
     @SerializedName("total_amount")
-    val totalAmount:String,
+    val totalAmount: String,
     @SerializedName("purchase")
-    val purchase:String,
+    val purchase: String,
     @SerializedName("fee")
-    val fee:String,
+    val fee: String,
     @SerializedName("price")
-    val price:String,
+    val price: String,
     @SerializedName("asset_amount")
-    val assetAmount:String,
+    val assetAmount: String,
 )
-

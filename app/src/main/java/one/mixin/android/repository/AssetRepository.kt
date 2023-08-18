@@ -431,7 +431,7 @@ constructor(
 
     suspend fun ticker(assetId: String, offset: String?) = assetService.ticker(assetId, offset)
 
-    suspend fun ticker(tickerRequest: TickerRequest):MixinResponse<TickerResponse> = checkoutService.ticker(tickerRequest)
+    suspend fun ticker(tickerRequest: TickerRequest): MixinResponse<TickerResponse> = checkoutService.ticker(tickerRequest)
 
     suspend fun findSnapshotByTransactionHashList(assetId: String, hashList: List<String>): List<String> =
         snapshotDao.findSnapshotIdsByTransactionHashList(assetId, hashList)

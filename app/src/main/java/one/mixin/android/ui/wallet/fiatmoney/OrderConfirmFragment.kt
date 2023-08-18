@@ -3,16 +3,18 @@ package one.mixin.android.ui.wallet.fiatmoney
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.TEST_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.api.request.TickerRequest
-import one.mixin.android.api.response.TickerResponse
 import one.mixin.android.databinding.FragmentOrderConfirmBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigate
@@ -22,6 +24,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.WalletViewModel
+import one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment.Companion.ARGS_INFO
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import timber.log.Timber
@@ -48,8 +51,10 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     private lateinit var asset: AssetItem
     private var amount: Int = 0
     private lateinit var currency: Currency
+    private var scheme: String? = null
     private var isGooglePay: Boolean = false
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         asset = requireNotNull(
@@ -69,6 +74,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             ARGS_GOOGLE_PAY,
             false,
         )
+        scheme = requireArguments().getString(ARGS_SCHEME)
         binding.apply {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
@@ -78,7 +84,9 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                 if (buyVa.displayedChild != 3) {
                     it.navigate(
                         R.id.action_wallet_confirm_to_status,
-                        requireArguments(),
+                        requireArguments().apply {
+                            putParcelable(ARGS_INFO, info)
+                        },
                     )
                 }
             }
@@ -117,14 +125,34 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             }
 
             // Todo real data
-            cardNumber.text = "Visa .... 4242"
-            priceTv.text = "1 USD = 0.995 USDC"
-            purchaseTv.text = "48.78 USD"
-            feeTv.text = "1.23 USD"
-            totalTv.text = "50 USD"
+            payWith.text = if (isGooglePay) {
+                "Google Pay"
+            } else {
+                "Visa .... 4242"
+            }
+            val logo = when {
+                isGooglePay -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_google_pay_small)
+                scheme == "mastercard" -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_mastercard)
+                else -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_visa)
+            }.also {
+                it?.setBounds(0, 0, 28.dp, 14.dp)
+            }
+            payWith.setCompoundDrawables(logo, null, null, null)
+            priceTv.text = info.price
+            purchaseTv.text = info.purchase
+            feeTv.text = info.fee
+            totalTv.text = info.total
         }
         refresh()
     }
+
+    // Todo real data
+    private var info = OrderInfo(
+        "1 USD = 0.995 USDC",
+        "48.78 USD",
+        "1.23 USD",
+        "50 USD",
+    )
 
     @SuppressLint("SetTextI18n")
     private fun refresh() {
@@ -132,17 +160,26 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             var time = 0
             while (true) {
                 if (time == 10) {
-                    val response =
-                        walletViewModel.ticker(TickerRequest(amount, currency.name, "4d8c508b-91c5-375b-92b0-ee702ed2dac5"))
+                    val response = try {
+                        walletViewModel.ticker(TickerRequest(amount, currency.name, TEST_ASSET_ID))
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                        return@launch
+                    }
                     if (isAdded) {
                         if (response.isSuccess) {
                             val ticker = response.data
+                            info = OrderInfo(
+                                "1 ${ticker?.currency} = ${ticker?.price} ${asset.symbol}",
+                                "${ticker?.purchase} ${ticker?.currency}",
+                                "${ticker?.fee} ${ticker?.currency}",
+                                "${ticker?.totalAmount} ${ticker?.currency}",
+                            )
                             binding.apply {
-                                cardNumber.text = "Visa .... 4242"
-                                priceTv.text = "1 ${ticker?.currency} = ${ticker?.price} ${asset.symbol}"
-                                purchaseTv.text = "${ticker?.purchase} ${ticker?.currency}"
-                                feeTv.text = "${ticker?.fee} ${ticker?.currency}"
-                                totalTv.text = "${ticker?.totalAmount} ${ticker?.currency}"
+                                priceTv.text = info.price
+                                purchaseTv.text = info.purchase
+                                feeTv.text = info.fee
+                                totalTv.text = info.total
                             }
                         }
                     } else {
@@ -152,7 +189,9 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                 } else {
                     delay(1000L)
                     time++
-                    binding.timeTv.text = "${10 - time}s"
+                    if (isAdded) {
+                        binding.timeTv.text = "${10 - time}s"
+                    }
                 }
             }
         }

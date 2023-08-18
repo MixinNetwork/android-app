@@ -12,7 +12,7 @@ class CheckoutPaymentResponse(
     @SerializedName("session_id")
     val sessionId: String,
     @SerializedName("status")
-    val status: String
+    val status: String,
 )
 
-enum class CheckoutPaymentStatus { Authorized, Captured}
+enum class CheckoutPaymentStatus { Authorized, Captured }

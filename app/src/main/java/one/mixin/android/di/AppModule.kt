@@ -435,7 +435,7 @@ object AppModule {
             }
         }.build()
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://mixin.one") // Todo
+            .baseUrl("https://api.sandbox.route.mixin.zone") // Todo
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .client(client)

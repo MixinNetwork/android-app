@@ -18,11 +18,13 @@ import retrofit2.http.Path
 interface CheckoutService {
     @POST("/checkout/payments")
     suspend fun payment(@Body request: PaymentRequest): MixinResponse<CheckoutPaymentResponse>
+
     @GET("/checkout/payments/{id}")
     suspend fun payment(@Path("id") id: String): MixinResponse<CheckoutPaymentResponse>
 
     @POST("/checkout/sessions")
     suspend fun createSession(@Body session: CreateSessionRequest): MixinResponse<CreateSessionResponse>
+
     @POST("/checkout/ticker")
     suspend fun ticker(@Body ticker: TickerRequest): MixinResponse<TickerResponse>
 

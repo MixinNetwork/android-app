@@ -226,13 +226,13 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 when (tokenResponse.state) {
                     KycState.INITIAL.value -> {
                         val token = requireNotNull(tokenResponse.token) { "required token can not be null" }
-                         view?.navigate(
-                             R.id.action_wallet_calculate_to_identity,
-                             Bundle().apply {
-                                 putString(ARGS_TOKEN, token)
-                                 putBoolean(ARGS_IS_RETRY, false)
-                             }
-                         )
+                        view?.navigate(
+                            R.id.action_wallet_calculate_to_identity,
+                            Bundle().apply {
+                                putString(ARGS_TOKEN, token)
+                                putBoolean(ARGS_IS_RETRY, false)
+                            },
+                        )
                     }
                     KycState.PENDING.value, KycState.RETRY.value, KycState.BLOCKED.value -> {
                         IdentityVerificationStateBottomSheetDialogFragment.newInstance(tokenResponse.state, tokenResponse.token).apply {
@@ -242,7 +242,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                     Bundle().apply {
                                         putString(ARGS_TOKEN, token)
                                         putBoolean(ARGS_IS_RETRY, true)
-                                    }
+                                    },
                                 )
                             }
                         }.showNow(parentFragmentManager, IdentityVerificationStateBottomSheetDialogFragment.TAG)
@@ -254,7 +254,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         toast("Unknown kyc state: ${tokenResponse.state}")
                     }
                 }
-            }
+            },
         )
     }
 }

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet.fiatmoney
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.view.View
@@ -10,6 +11,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -31,16 +33,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.Constants.TEST_ASSET_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CreateSessionRequest
 import one.mixin.android.api.request.SessionStatus
-import one.mixin.android.api.response.CheckoutPaymentResponse
 import one.mixin.android.api.response.CheckoutPaymentStatus
 import one.mixin.android.api.response.CreateSessionResponse
 import one.mixin.android.databinding.FragmentOrderStatusBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.withArgs
@@ -64,6 +66,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         const val ARGS_SCHEME = "args_scheme"
         const val ARGS_INSTRUMENT_ID = "args_instrument_id"
         const val ARGS_AMOUNT = "args_amount"
+        const val ARGS_INFO = "args_info"
 
         fun newInstance(assetItem: AssetItem, currency: Currency) =
             OrderStatusFragment().withArgs {
@@ -128,6 +131,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         binding.content.setText(R.string.Processing_desc)
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         asset = requireNotNull(
@@ -145,6 +149,14 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         isGooglePay = requireArguments().getBoolean(
             ARGS_GOOGLE_PAY,
             false,
+        )
+
+        val scheme = requireArguments().getString(OrderConfirmFragment.ARGS_SCHEME)
+        val info = requireNotNull(
+            requireArguments().getParcelableCompat(
+                ARGS_INFO,
+                OrderInfo::class.java,
+            ),
         )
         binding.apply {
             transparentMask.isVisible = false
@@ -168,11 +180,23 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             }
 
             // Todo real data
-            cardNumber.text = "Visa .... 4242"
-            priceTv.text = "1 USD = 0.995 USDC"
-            purchaseTv.text = "48.78 USD"
-            feeTv.text = "1.23 USD"
-            totalTv.text = "50 USD"
+            payWith.text = if (isGooglePay) {
+                "Google Pay"
+            } else {
+                "Visa .... 4242"
+            }
+            val logo = when {
+                isGooglePay -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_google_pay_small)
+                scheme == "mastercard" -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_mastercard)
+                else -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_visa)
+            }.also {
+                it?.setBounds(0, 0, 28.dp, 14.dp)
+            }
+            payWith.setCompoundDrawables(logo, null, null, null)
+            priceTv.text = info.price
+            purchaseTv.text = info.purchase
+            feeTv.text = info.fee
+            totalTv.text = info.total
         }
         if (isGooglePay) {
             payWithGoogle()
@@ -269,7 +293,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                             currency.name,
                             scheme,
                             Session.getAccountId()!!,
-                            "4d8c508b-91c5-375b-92b0-ee702ed2dac5",
+                            TEST_ASSET_ID,
                             amount,
                             instrumentId,
                         ),
@@ -323,7 +347,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             val response = walletViewModel.payment(
                 PaymentRequest(
                     // todo real data
-                    "4d8c508b-91c5-375b-92b0-ee702ed2dac5",
+                    TEST_ASSET_ID,
                     Session.getAccountId()!!,
                     sessionId,
                     instrumentId,
@@ -377,7 +401,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                                             currency.name,
                                             tokenDetails.scheme?.lowercase(),
                                             Session.getAccountId()!!,
-                                            "4d8c508b-91c5-375b-92b0-ee702ed2dac5",
+                                            TEST_ASSET_ID,
                                             amount,
                                         ),
                                     )
@@ -423,6 +447,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         }
 
     private fun handleError(statusCode: Int, message: String?) {
+        // Todo handle status statusCode
         showError(message)
     }
 

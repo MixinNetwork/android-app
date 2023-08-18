@@ -6,7 +6,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@drawable/bg_round_window_8dp"
     android:foreground="?android:attr/selectableItemBackground"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:layout_marginTop="8dp">
 
     <ImageView
         android:id="@+id/logo"
