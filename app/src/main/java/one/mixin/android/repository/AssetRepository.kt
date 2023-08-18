@@ -17,10 +17,12 @@ import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.CheckoutSessionRequest
 import one.mixin.android.api.request.CreateSessionRequest
 import one.mixin.android.api.request.Pin
+import one.mixin.android.api.request.TickerRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.CheckoutPaymentResponse
 import one.mixin.android.api.response.CreateSessionResponse
+import one.mixin.android.api.response.TickerResponse
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.CheckoutService
@@ -428,6 +430,8 @@ constructor(
     suspend fun suspendDeleteTraceById(traceId: String) = traceDao.suspendDeleteById(traceId)
 
     suspend fun ticker(assetId: String, offset: String?) = assetService.ticker(assetId, offset)
+
+    suspend fun ticker(tickerRequest: TickerRequest):MixinResponse<TickerResponse> = checkoutService.ticker(tickerRequest)
 
     suspend fun findSnapshotByTransactionHashList(assetId: String, hashList: List<String>): List<String> =
         snapshotDao.findSnapshotIdsByTransactionHashList(assetId, hashList)

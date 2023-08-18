@@ -9,6 +9,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.request.TickerRequest
+import one.mixin.android.api.response.TickerResponse
 import one.mixin.android.databinding.FragmentOrderConfirmBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
@@ -42,6 +44,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     private val binding by viewBinding(FragmentOrderConfirmBinding::bind)
     private val walletViewModel by viewModels<WalletViewModel>()
     private lateinit var asset: AssetItem
+    private var amount: Int = 0
     private lateinit var currency: Currency
     private var isGooglePay: Boolean = false
 
@@ -53,6 +56,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                 AssetItem::class.java,
             ),
         )
+        amount = requireArguments().getInt(ARGS_AMOUNT)
         currency = requireNotNull(
             requireArguments().getParcelableCompat(
                 ARGS_CURRENCY,
@@ -114,15 +118,26 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             feeTv.text = "1.23 USD"
             totalTv.text = "50 USD"
         }
+        refresh()
     }
 
     private fun refresh() {
         lifecycleScope.launch {
             while (true) {
-                // Todo refresh price
-                walletViewModel
+                val response = walletViewModel.ticker(TickerRequest(amount, currency.name, asset.assetId))
                 if (isAdded) {
-                    // updateUI()
+                    if (response.isSuccess){
+                        val ticker = response.data
+                        binding.apply {
+                            // Todo refresh price
+                            assetName.text = "+51.23 USDC"
+                            cardNumber.text = "Visa .... 4242"
+                            priceTv.text = "1 ${ticker?.currency} = ${ticker?.price} ${asset.symbol}"
+                            purchaseTv.text = "${ticker?.purchase} ${ticker?.currency}"
+                            feeTv.text = "${ticker?.fee} ${ticker?.currency}"
+                            totalTv.text = "${ticker?.totalAmount} ${ticker?.currency}"
+                        }
+                    }
                 } else {
                     return@launch
                 }

@@ -34,8 +34,10 @@ import one.mixin.android.Constants.PAYMENTS_GATEWAY
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.CreateSessionRequest
+import one.mixin.android.api.request.TickerRequest
 import one.mixin.android.api.response.CheckoutPaymentResponse
 import one.mixin.android.api.response.CreateSessionResponse
+import one.mixin.android.api.response.TickerResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
@@ -265,6 +267,9 @@ internal constructor(
     }
 
     suspend fun ticker(assetId: String, offset: String?) = assetRepository.ticker(assetId, offset)
+
+    suspend fun ticker(tickerRequest: TickerRequest): MixinResponse<TickerResponse> =
+        assetRepository.ticker(tickerRequest)
 
     suspend fun refreshSnapshot(snapshotId: String): SnapshotItem? {
         return withContext(Dispatchers.IO) {
