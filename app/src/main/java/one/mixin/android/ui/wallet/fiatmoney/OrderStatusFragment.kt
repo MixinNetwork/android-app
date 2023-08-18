@@ -208,7 +208,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     private fun init3DS(sessionResponse: CreateSessionResponse) {
         val checkout3DS = Checkout3DSService(
             MixinApplication.appContext,
-            Environment.SANDBOX,
+            Environment.PRODUCTION,
             Locale.US,
             null,
             null, // mixin://

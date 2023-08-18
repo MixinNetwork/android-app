@@ -129,7 +129,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 force = true,
             )
             continueTv.setOnClickListener {
-                checkKyc {
+                // checkKyc {
                     val amount = AmountUtil.toAmount(v, currency.name)
                     if (amount == null) {
                         toast("number error")
@@ -143,7 +143,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             },
                         )
                     }
-                }
+                // }
             }
             switchIv.setOnClickListener {
                 isReverse = !isReverse

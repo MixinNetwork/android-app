@@ -314,10 +314,10 @@ object Constants {
         "VISA",
     )
 
-    const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_TEST
+    const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_PRODUCTION
 
     const val PAYMENTS_GATEWAY = "checkoutltd"
 
     const val TEST_ASSET_ID = "4d8c508b-91c5-375b-92b0-ee702ed2dac5"
-    val CHECKOUT_ENVIRONMENT: Environment = Environment.SANDBOX
+    val CHECKOUT_ENVIRONMENT: Environment = Environment.PRODUCTION
 }

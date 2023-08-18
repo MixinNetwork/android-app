@@ -65,12 +65,6 @@
             app:popExitAnim="@anim/stay" />
 
         <action
-            android:id="@+id/action_wallet_to_buy"
-            app:destination="@id/wallet_buy"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/stay" />
-
-        <action
             android:id="@+id/action_wallet_to_calculate"
             app:destination="@id/wallet_calculate"
             app:enterAnim="@anim/slide_in_right"
@@ -277,10 +271,6 @@
             android:name="args_is_retry"
             app:argType="boolean" />
     </fragment>
-
-    <fragment
-        android:id="@+id/wallet_buy"
-        android:name="one.mixin.android.ui.wallet.BuyCryptoFragment" />
 
     <fragment
         android:id="@+id/wallet_calculate"
