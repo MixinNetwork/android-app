@@ -225,7 +225,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
         @SuppressLint("SetTextI18n")
         fun bind(card: Card) {
             binding.cardNumber.text = "${card.scheme}${card.number}"
-            // todo icon
+            binding.logo.setImageResource(if (card.scheme == "visa") R.drawable.ic_visa else R.drawable.ic_mastercard)
         }
     }
 
