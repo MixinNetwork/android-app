@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.fiatmoney
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.activity.ComponentActivity
@@ -218,7 +219,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             ENVIRONMENT_3DS,
             Locale.US,
             null,
-            null, // mixin://
+            Uri.parse("mixin://checkout"),
         )
 
         val authenticationParameters = AuthenticationParameters(

@@ -36,6 +36,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
         const val ARGS_CURRENCY = "args_currency"
         const val ARGS_GOOGLE_PAY = "args_google_pay"
         const val ARGS_SCHEME = "args_scheme"
+        const val ARGS_LAST = "args_last4"
         const val ARGS_INSTRUMENT_ID = "args_instrument_id"
         const val ARGS_AMOUNT = "args_amount"
 
@@ -52,6 +53,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     private var amount: Int = 0
     private lateinit var currency: Currency
     private var scheme: String? = null
+    private var last4: String? = null
     private var isGooglePay: Boolean = false
 
     @SuppressLint("UseCompatLoadingForDrawables")
@@ -75,6 +77,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             false,
         )
         scheme = requireArguments().getString(ARGS_SCHEME)
+        last4 = requireArguments().getString(ARGS_LAST)
         binding.apply {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
@@ -117,7 +120,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             payWith.text = if (isGooglePay) {
                 "Google Pay"
             } else {
-                "Visa .... 4242"
+                "$scheme...$last4"
             }
             val logo = when {
                 isGooglePay -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_google_pay_small)
@@ -136,6 +139,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     }
 
     private var info = OrderInfo(
+        "null",
         "loading...",
         "loading..",
         "loading...",
@@ -158,6 +162,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                         if (response.isSuccess) {
                             val ticker = response.data
                             info = OrderInfo(
+                                "$scheme...$last4",
                                 "1 ${ticker?.currency} = ${ticker?.price} ${asset.symbol}",
                                 "${ticker?.purchase} ${ticker?.currency}",
                                 "${ticker?.fee} ${ticker?.currency}",

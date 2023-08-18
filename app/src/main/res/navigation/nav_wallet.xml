@@ -368,6 +368,9 @@
         <argument
             android:name="args_scheme"
             app:argType="string" />
+        <argument
+            android:name="args_last4"
+            app:argType="string" />
 
         <action
             android:id="@+id/action_wallet_confirm_to_status"

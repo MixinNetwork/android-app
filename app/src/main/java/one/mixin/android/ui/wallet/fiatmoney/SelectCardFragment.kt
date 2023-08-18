@@ -31,6 +31,7 @@ import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_AMOUNT
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_CURRENCY
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_INSTRUMENT_ID
+import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_LAST
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_SCHEME
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
@@ -152,7 +153,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                 )
             }
 
-            cardRv.adapter = CardAdapter(cards) { instrumentId, scheme ->
+            cardRv.adapter = CardAdapter(cards) { instrumentId, scheme, cardNumber ->
                 root.navigate(
                     R.id.action_wallet_card_to_order,
                     Bundle().apply {
@@ -161,6 +162,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                         putParcelable(ARGS_CURRENCY, currency)
                         putString(ARGS_INSTRUMENT_ID, instrumentId)
                         putString(ARGS_SCHEME, scheme)
+                        putString(ARGS_LAST, cardNumber)
                     },
                 )
             }
@@ -204,7 +206,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
 
     private val cards: MutableList<Card> = mutableListOf()
 
-    class CardAdapter(var data: MutableList<Card>, val callback: (String, String) -> Unit) : RecyclerView.Adapter<CardViewHolder>() {
+    class CardAdapter(var data: MutableList<Card>, val callback: (String, String, String) -> Unit) : RecyclerView.Adapter<CardViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
             val binding =
@@ -220,7 +222,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
             val card = data[position]
             holder.bind(data[position])
             holder.itemView.setOnClickListener {
-                callback.invoke(card.instrumentId, card.scheme)
+                callback.invoke(card.instrumentId, card.scheme, card.number)
             }
         }
     }

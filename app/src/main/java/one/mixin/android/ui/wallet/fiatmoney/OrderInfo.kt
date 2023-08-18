@@ -5,6 +5,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 class OrderInfo(
+    val number: String,
     val price: String,
     val purchase: String,
     val fee: String,
