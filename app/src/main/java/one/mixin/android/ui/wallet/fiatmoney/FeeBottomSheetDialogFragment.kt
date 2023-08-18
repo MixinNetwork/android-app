@@ -11,6 +11,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentFeeBottomSheetBinding
 import one.mixin.android.databinding.FragmentPriceExpiredBottomSheetBinding
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
@@ -31,7 +32,7 @@ class FeeBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
-    private val binding by viewBinding(FragmentPriceExpiredBottomSheetBinding::inflate)
+    private val binding by viewBinding(FragmentFeeBottomSheetBinding::inflate)
 
     private lateinit var contentView: View
 
@@ -64,6 +65,9 @@ class FeeBottomSheetDialogFragment : BottomSheetDialogFragment() {
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
         binding.apply {
+            okTv.setOnClickListener { dismiss() }
+            processingFeeTv.text = "1.23 USD"
+            networkFeeTv.text = "0 USD"
         }
     }
 

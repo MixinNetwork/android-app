@@ -3,57 +3,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:gravity="center_horizontal"
     tools:ignore="UseCompoundDrawables">
 
-    <ImageView
-        android:id="@+id/close_iv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginEnd="12dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/mixin_ripple"
-        android:padding="8dp"
-        android:src="@drawable/ic_close"
-        tools:ignore="ContentDescription" />
-
-    <ImageView
-        android:layout_marginTop="40dp"
-        android:src="@drawable/ic_price_expired"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="@null" />
-
-    <TextView
-        android:id="@+id/title"
+    <one.mixin.android.widget.RoundTitleView
+        android:id="@id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:paddingStart="10dp"
-        android:paddingEnd="10dp"
-        android:gravity="center"
-        android:textColor="?attr/text_primary"
-        android:textSize="16sp"
-        android:text="@string/Price_Expired" />
-
-    <TextView
-        android:id="@+id/sub_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:paddingStart="10dp"
-        android:paddingEnd="10dp"
-        android:gravity="center"
-        android:textColor="?attr/text_minor"
-        android:text="@string/New_price" />
+        app:title_text="@string/Fees"/>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_margin="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="@dimen/margin12"
         android:padding="24dp"
         android:background="@drawable/bg_round_window_8dp">
         <RelativeLayout
@@ -61,16 +29,16 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:text="@string/Old_Price"
+                android:text="@string/Processing_Fee"
                 android:textColor="?attr/text_minor"
                 android:layout_width="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_height="wrap_content" />
 
             <TextView
-                android:id="@+id/old_price"
+                android:id="@+id/processing_fee_tv"
                 android:textColor="?attr/text_minor"
-                tools:text="1 USDC ≈ 1.006 USD"
+                tools:text="1.23 USD"
                 android:layout_alignParentEnd="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -82,21 +50,38 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:text="@string/New_Price"
+                android:text="@string/network_fee"
                 android:textColor="?attr/text_minor"
                 android:layout_width="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_height="wrap_content" />
 
             <TextView
-                android:id="@+id/new_price"
+                android:id="@+id/network_fee_tv"
                 android:textColor="?attr/text_minor"
-                tools:text="1 USDC ≈ 1.005 USD"
+                tools:text="0 USD"
                 android:layout_alignParentEnd="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
-
         </RelativeLayout>
     </LinearLayout>
 
+    <TextView
+        android:text="@string/Fees_tip"
+        android:textColor="?attr/text_minor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"/>
+
+    <Button
+        style="@style/AppTheme.MaterialButton"
+        android:id="@+id/ok_tv"
+        android:layout_width="116dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="40dp"
+        android:text="@string/Got_it"
+        android:textColor="@color/white"
+        android:textSize="14sp"/>
 </LinearLayout>

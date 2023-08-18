@@ -101,6 +101,10 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             }
             assetAvatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             assetAvatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            feeRl.setOnClickListener {
+                FeeBottomSheetDialogFragment.newInstance()
+                    .showNow(parentFragmentManager, FeeBottomSheetDialogFragment.TAG)
+            }
 
             // Todo real data
             assetName.text = "+51.23 USDC"
