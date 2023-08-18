@@ -81,7 +81,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             }
             titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
             buyVa.setOnClickListener {
-                if (buyVa.displayedChild != 3) {
+                if (buyVa.displayedChild != 2) {
                     it.navigate(
                         R.id.action_wallet_confirm_to_status,
                         requireArguments().apply {
@@ -92,27 +92,15 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             }
             titleView.rightAnimator.setOnClickListener { }
             titleView.setSubTitle(getString(R.string.Order_Confirm), "")
-
-            val toValue = if (isGooglePay) {
-                1
-            } else {
-                0
-            }
-            if (buyVa.displayedChild != toValue) {
-                buyVa.displayedChild = if (isGooglePay) {
-                    1
+            buyVa.displayedChild = 2
+            buyVa.setBackgroundResource(
+                if (isGooglePay) {
+                    R.drawable.bg_round_black_btn_40
                 } else {
-                    0
-                }
+                    R.drawable.bg_round_blue_btn_40
+                },
+            )
 
-                buyVa.setBackgroundResource(
-                    if (isGooglePay) {
-                        R.drawable.bg_round_black_btn_40
-                    } else {
-                        R.drawable.bg_round_blue_btn_40
-                    },
-                )
-            }
             assetAvatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             assetAvatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             priceRl.setOnClickListener {
@@ -123,6 +111,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                 FeeBottomSheetDialogFragment.newInstance()
                     .showNow(parentFragmentManager, FeeBottomSheetDialogFragment.TAG)
             }
+            buyVa.isEnabled = false
 
             // Todo real data
             payWith.text = if (isGooglePay) {
@@ -179,6 +168,12 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                                 purchaseTv.text = info.purchase
                                 feeTv.text = info.fee
                                 totalTv.text = info.total
+                                buyVa.isEnabled = true
+                                buyVa.displayedChild = if (isGooglePay) {
+                                    1
+                                } else {
+                                    0
+                                }
                             }
                         }
                     } else {
