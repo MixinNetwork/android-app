@@ -186,6 +186,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
     private fun saveCards(card: Card) {
         cards.add(card)
         binding.cardRv.visibility = View.VISIBLE
+        binding.empty.visibility = View.GONE
         (binding.cardRv.adapter as CardAdapter).apply {
             data = cards
             notifyDataSetChanged()
@@ -224,7 +225,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
     class CardViewHolder(val binding: ItemCardBinding) : RecyclerView.ViewHolder(binding.root) {
         @SuppressLint("SetTextI18n")
         fun bind(card: Card) {
-            binding.cardNumber.text = "${card.scheme}${card.number}"
+            binding.cardNumber.text = "${card.scheme}...4242"
             binding.logo.setImageResource(if (card.scheme == "visa") R.drawable.ic_visa else R.drawable.ic_mastercard)
         }
     }

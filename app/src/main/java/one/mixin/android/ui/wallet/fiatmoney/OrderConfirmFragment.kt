@@ -115,7 +115,6 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             }
 
             // Todo real data
-            assetName.text = "+51.23 USDC"
             cardNumber.text = "Visa .... 4242"
             priceTv.text = "1 USD = 0.995 USDC"
             purchaseTv.text = "48.78 USD"
@@ -135,7 +134,6 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                         val ticker = response.data
                         binding.apply {
                             // Todo refresh price
-                            assetName.text = "+51.23 USDC"
                             cardNumber.text = "Visa .... 4242"
                             priceTv.text = "1 ${ticker?.currency} = ${ticker?.price} ${asset.symbol}"
                             purchaseTv.text = "${ticker?.purchase} ${ticker?.currency}"
