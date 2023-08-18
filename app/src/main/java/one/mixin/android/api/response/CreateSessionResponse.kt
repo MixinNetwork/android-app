@@ -11,6 +11,8 @@ class CreateSessionResponse(
     val instrumentId: String,
     @SerializedName("scheme")
     val scheme: String,
+    @SerializedName("last4")
+    val last4: String,
     @SerializedName("amount")
     val amount: Int,
     @SerializedName("currency")

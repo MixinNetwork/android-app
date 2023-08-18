@@ -168,11 +168,13 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                                 purchaseTv.text = info.purchase
                                 feeTv.text = info.fee
                                 totalTv.text = info.total
-                                buyVa.isEnabled = true
-                                buyVa.displayedChild = if (isGooglePay) {
-                                    1
-                                } else {
-                                    0
+                                if (!buyVa.isEnabled) {
+                                    buyVa.isEnabled = true
+                                    buyVa.displayedChild = if (isGooglePay) {
+                                        1
+                                    } else {
+                                        0
+                                    }
                                 }
                             }
                         }

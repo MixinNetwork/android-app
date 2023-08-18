@@ -101,11 +101,11 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                     successBlock = { response ->
                                         addVa.displayedChild = 0
                                         if (response.isSuccess) {
-                                            val currency = response.data?.currency
+                                            val last4 = response.data?.last4
                                             val instrumentId = response.data?.instrumentId
                                             val scheme = response.data?.scheme
-                                            if (currency != null && instrumentId != null && scheme != null) {
-                                                saveCards(Card(currency, scheme, instrumentId))
+                                            if (last4 != null && instrumentId != null && scheme != null) {
+                                                saveCards(Card(last4, scheme, instrumentId))
                                             } else {
                                                 toast(R.string.error_bad_data)
                                             }
@@ -228,7 +228,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
     class CardViewHolder(val binding: ItemCardBinding) : RecyclerView.ViewHolder(binding.root) {
         @SuppressLint("SetTextI18n")
         fun bind(card: Card) {
-            binding.cardNumber.text = "${card.scheme}...4242"
+            binding.cardNumber.text = "${card.scheme}...${card.number}"
             binding.logo.setImageResource(if (card.scheme == "visa") R.drawable.ic_visa else R.drawable.ic_mastercard)
         }
     }
