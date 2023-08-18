@@ -30,6 +30,7 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.safeAddView
+import one.mixin.android.extension.safeRemoveView
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.widget.lottie.RLottieDrawable
 import one.mixin.android.widget.lottie.RLottieImageView
@@ -105,7 +106,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         }
 
         if (isNightMode != appContext.isNightMode()) {
-            windowView?.let { windowManager.removeView(it) }
+            windowView?.let { windowManager.safeRemoveView(it) }
             recreate(appContext.isNightMode()).show(this.conversationId)
         } else {
             if (!isShown) {
@@ -124,7 +125,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
     private fun init() {
         val wv = windowView
         if (wv != null) {
-            windowManager.removeView(wv)
+            windowManager.safeRemoveView(wv)
         }
         initWindowView()
         if (!::windowLayoutParams.isInitialized) {
@@ -246,7 +247,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
     fun hide(force: Boolean = false) {
         if (!isShown && !force) return
         isShown = false
-        windowView?.let { windowManager.removeView(it) }
+        windowView?.let { windowManager.safeRemoveView(it) }
         windowView = null
         musicView = null
         musicBgView = null

@@ -29,6 +29,7 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.safeAddView
+import one.mixin.android.extension.safeRemoveView
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.Rect
 import one.mixin.android.ui.call.CallActivity
@@ -119,7 +120,7 @@ class PipCallView {
         connectedTime: Long? = null,
         callState: CallStateLiveData,
     ) {
-        windowView?.let { windowManager.removeView(it) }
+        windowView?.let { windowManager.safeRemoveView(it) }
 
         val isLandscape = appContext.isLandscape()
         val realSize = appContext.realSize()
@@ -231,13 +232,7 @@ class PipCallView {
     fun close() {
         Timber.d("$TAG_CALL$shown")
         shown = false
-        if (windowView != null) {
-            try {
-                windowManager.removeView(windowView)
-            } catch (e: Exception) {
-                Timber.w("$TAG_CALL remove windowView throw $e")
-            }
-        }
+        windowView?.let { windowManager.safeRemoveView(it) }
         timeView = null
         iconView = null
         windowView = null

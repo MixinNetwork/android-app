@@ -378,6 +378,14 @@ fun WindowManager.safeAddView(view: View?, params: ViewGroup.LayoutParams) {
     }
 }
 
+fun WindowManager.safeRemoveView(view: View) {
+    try {
+        removeView(view)
+    } catch (e: Exception) {
+        Timber.e("remove view from windowManager meet ${e.stackTraceToString()}")
+    }
+}
+
 var View.leftPadding: Int
     inline get() = paddingLeft
     set(value) = setPadding(value, paddingTop, paddingRight, paddingBottom)

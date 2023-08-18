@@ -12,7 +12,7 @@ sealed class Chain(
     val chainId: String = "$chainNamespace:$chainReference",
 ) {
     object Ethereum : Chain("eip155", 1, "Ethereum Mainnet", "ETH", listOf("https://cloudflare-eth.com"))
-    object BinanceSmartChain : Chain("eip155", 56, "Binance Smart Chain Mainnet", "BSC", listOf("https://bsc-dataseed4.ninicoin.io"))
+    object BinanceSmartChain : Chain("eip155", 56, "Binance Smart Chain Mainnet", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
     object Polygon : Chain("eip155", 137, "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
     object ArbitrumOne : Chain("eip155", 42161, "Arbitrum One", "ETH", listOf("https://arb1.arbitrum.io/rpc"))
     object OPMainnet : Chain("eip155", 10, "OP Mainnet", "ETH", listOf("https://mainnet.optimism.io"))

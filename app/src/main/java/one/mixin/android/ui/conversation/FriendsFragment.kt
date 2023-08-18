@@ -61,8 +61,11 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListene
 
     override fun onItemClick(user: User) {
         if (friendClick != null) {
-            friendClick!!(user)
-            parentFragmentManager.beginTransaction().remove(this).commit()
+            friendClick?.invoke(user)
+            try {
+                parentFragmentManager.beginTransaction().remove(this).commit()
+            } catch (ignored: IllegalStateException) {
+            }
         } else {
             val fw = ForwardMessage(ShareCategory.Contact, GsonHelper.customGson.toJson(ContactMessagePayload(user.userId), ContactMessagePayload::class.java))
             ForwardActivity.show(requireContext(), arrayListOf(fw), ForwardAction.App.Resultless(conversationId))

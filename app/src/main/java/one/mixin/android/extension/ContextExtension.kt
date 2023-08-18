@@ -58,6 +58,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
+import androidx.core.database.getStringOrNull
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -611,8 +612,7 @@ fun Context.getAttachment(local: Uri, mimeType: String? = null): Attachment? {
         }
         cursor = contentResolver.query(uri, null, null, null, null)
         if (cursor != null && cursor.moveToFirst()) {
-            val fileName = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
-
+            val fileName = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME)) ?: "File"
             val copyPath = uri.copyFileUrlWithAuthority(this, fileName)
             val resultUri = if (copyPath == null) {
                 return null
@@ -622,7 +622,7 @@ fun Context.getAttachment(local: Uri, mimeType: String? = null): Attachment? {
             val fileSize = File(copyPath).length()
             return Attachment(resultUri, fileName, mimeType ?: contentResolver.getType(uri) ?: "", fileSize)
         }
-    } catch (e: SecurityException) {
+    } catch (e: Exception) {
         toast(R.string.File_does_not_exist)
     } finally {
         cursor?.close()
