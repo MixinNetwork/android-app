@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet.fiatmoney
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
@@ -23,6 +24,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
+import timber.log.Timber
 
 @AndroidEntryPoint
 class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
@@ -124,27 +126,34 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
         refresh()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun refresh() {
         lifecycleScope.launch {
+            var time = 0
             while (true) {
-                // Todo real
-                val response = walletViewModel.ticker(TickerRequest(amount, currency.name, "4d8c508b-91c5-375b-92b0-ee702ed2dac5"))
-                if (isAdded) {
-                    if (response.isSuccess){
-                        val ticker = response.data
-                        binding.apply {
-                            // Todo refresh price
-                            cardNumber.text = "Visa .... 4242"
-                            priceTv.text = "1 ${ticker?.currency} = ${ticker?.price} ${asset.symbol}"
-                            purchaseTv.text = "${ticker?.purchase} ${ticker?.currency}"
-                            feeTv.text = "${ticker?.fee} ${ticker?.currency}"
-                            totalTv.text = "${ticker?.totalAmount} ${ticker?.currency}"
+                if (time == 10) {
+                    val response =
+                        walletViewModel.ticker(TickerRequest(amount, currency.name, "4d8c508b-91c5-375b-92b0-ee702ed2dac5"))
+                    if (isAdded) {
+                        if (response.isSuccess) {
+                            val ticker = response.data
+                            binding.apply {
+                                cardNumber.text = "Visa .... 4242"
+                                priceTv.text = "1 ${ticker?.currency} = ${ticker?.price} ${asset.symbol}"
+                                purchaseTv.text = "${ticker?.purchase} ${ticker?.currency}"
+                                feeTv.text = "${ticker?.fee} ${ticker?.currency}"
+                                totalTv.text = "${ticker?.totalAmount} ${ticker?.currency}"
+                            }
                         }
+                    } else {
+                        return@launch
                     }
+                    time = 0
                 } else {
-                    return@launch
+                    delay(1000L)
+                    time++
+                    binding.timeTv.text = "${10 - time}s"
                 }
-                delay(10000L) // 10s
             }
         }
     }
