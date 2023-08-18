@@ -128,7 +128,8 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     private fun refresh() {
         lifecycleScope.launch {
             while (true) {
-                val response = walletViewModel.ticker(TickerRequest(amount, currency.name, asset.assetId))
+                // Todo real
+                val response = walletViewModel.ticker(TickerRequest(amount, currency.name, "4d8c508b-91c5-375b-92b0-ee702ed2dac5"))
                 if (isAdded) {
                     if (response.isSuccess){
                         val ticker = response.data

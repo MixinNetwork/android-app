@@ -102,7 +102,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                             val instrumentId = response.data?.instrumentId
                                             val scheme = response.data?.scheme
                                             if (currency != null && instrumentId != null && scheme != null) {
-                                                saveCards(Card(currency, instrumentId, scheme))
+                                                saveCards(Card(currency, scheme, instrumentId))
                                             } else {
                                                 toast(R.string.error_bad_data)
                                             }
