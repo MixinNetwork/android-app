@@ -319,5 +319,8 @@ object Constants {
     const val PAYMENTS_GATEWAY = "checkoutltd"
 
     const val TEST_ASSET_ID = "4d8c508b-91c5-375b-92b0-ee702ed2dac5"
+
     val CHECKOUT_ENVIRONMENT: Environment = Environment.PRODUCTION
+
+    val ENVIRONMENT_3DS = com.checkout.threeds.Environment.PRODUCTION
 }

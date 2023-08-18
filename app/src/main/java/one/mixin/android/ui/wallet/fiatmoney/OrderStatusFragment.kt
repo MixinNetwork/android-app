@@ -33,6 +33,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ENVIRONMENT_3DS
 import one.mixin.android.Constants.TEST_ASSET_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -167,7 +168,12 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     }
 
                     1 -> {
-                        view.navigate(R.id.action_wallet_status_to_select, requireArguments())
+                        view.navigate(R.id.action_wallet_status_to_select,
+                            Bundle().apply {
+                                putParcelable(TransactionsFragment.ARGS_ASSET, asset)
+                                putInt(ARGS_AMOUNT, amount)
+                                putParcelable(CalculateFragment.ARGS_CURRENCY, currency)
+                            })
                     }
 
                     else -> {
@@ -208,7 +214,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     private fun init3DS(sessionResponse: CreateSessionResponse) {
         val checkout3DS = Checkout3DSService(
             MixinApplication.appContext,
-            Environment.PRODUCTION,
+            ENVIRONMENT_3DS,
             Locale.US,
             null,
             null, // mixin://
@@ -277,7 +283,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             } else if (status == OrderStatus.SUCCESS){
                 view?.navigate(R.id.action_wallet_status_to_wallet)
             } else if (status == OrderStatus.FAILED) {
-                view?.navigate(R.id.action_wallet_status_to_select)
+                view?.navigate(R.id.action_wallet_status_to_select, Bundle().apply {
+                    putParcelable(TransactionsFragment.ARGS_ASSET, asset)
+                    putInt(ARGS_AMOUNT, amount)
+                    putParcelable(CalculateFragment.ARGS_CURRENCY, currency)
+                })
             } else {
                 isEnabled = false
                 activity?.onBackPressedDispatcher?.onBackPressed()
