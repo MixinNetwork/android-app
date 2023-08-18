@@ -130,19 +130,19 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             )
             continueTv.setOnClickListener {
                 // checkKyc {
-                    val amount = AmountUtil.toAmount(v, currency.name)
-                    if (amount == null) {
-                        toast("number error")
-                    } else {
-                        view.navigate(
-                            R.id.action_wallet_calculate_to_payment,
-                            Bundle().apply {
-                                putParcelable(ARGS_ASSET, asset)
-                                putParcelable(ARGS_CURRENCY, currency)
-                                putInt(ARGS_AMOUNT, amount)
-                            },
-                        )
-                    }
+                val amount = AmountUtil.toAmount(v, currency.name)
+                if (amount == null) {
+                    toast("number error")
+                } else {
+                    view.navigate(
+                        R.id.action_wallet_calculate_to_payment,
+                        Bundle().apply {
+                            putParcelable(ARGS_ASSET, asset)
+                            putParcelable(ARGS_CURRENCY, currency)
+                            putInt(ARGS_AMOUNT, amount)
+                        },
+                    )
+                }
                 // }
             }
             switchIv.setOnClickListener {

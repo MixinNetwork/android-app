@@ -17,7 +17,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.checkout.CheckoutApiServiceFactory
 import com.checkout.threeds.Checkout3DSService
-import com.checkout.threeds.Environment
 import com.checkout.threeds.domain.model.AuthenticationError
 import com.checkout.threeds.domain.model.AuthenticationErrorType
 import com.checkout.threeds.domain.model.AuthenticationParameters
@@ -168,12 +167,14 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     }
 
                     1 -> {
-                        view.navigate(R.id.action_wallet_status_to_select,
+                        view.navigate(
+                            R.id.action_wallet_status_to_select,
                             Bundle().apply {
                                 putParcelable(TransactionsFragment.ARGS_ASSET, asset)
                                 putInt(ARGS_AMOUNT, amount)
                                 putParcelable(CalculateFragment.ARGS_CURRENCY, currency)
-                            })
+                            },
+                        )
                     }
 
                     else -> {
@@ -280,14 +281,17 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         override fun handleOnBackPressed() {
             if (binding.transparentMask.isVisible) {
                 // do noting
-            } else if (status == OrderStatus.SUCCESS){
+            } else if (status == OrderStatus.SUCCESS) {
                 view?.navigate(R.id.action_wallet_status_to_wallet)
             } else if (status == OrderStatus.FAILED) {
-                view?.navigate(R.id.action_wallet_status_to_select, Bundle().apply {
-                    putParcelable(TransactionsFragment.ARGS_ASSET, asset)
-                    putInt(ARGS_AMOUNT, amount)
-                    putParcelable(CalculateFragment.ARGS_CURRENCY, currency)
-                })
+                view?.navigate(
+                    R.id.action_wallet_status_to_select,
+                    Bundle().apply {
+                        putParcelable(TransactionsFragment.ARGS_ASSET, asset)
+                        putInt(ARGS_AMOUNT, amount)
+                        putParcelable(CalculateFragment.ARGS_CURRENCY, currency)
+                    },
+                )
             } else {
                 isEnabled = false
                 activity?.onBackPressedDispatcher?.onBackPressed()

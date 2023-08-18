@@ -401,10 +401,11 @@
         <argument
             android:name="args_info"
             app:argType="one.mixin.android.ui.wallet.fiatmoney.OrderInfo" />
+
         <action
             android:id="@+id/action_wallet_status_to_wallet"
             app:destination="@id/wallet_fragment"
-            app:popUpTo="@+id/a"
+            app:popUpTo="@id/wallet_fragment"
             app:popUpToInclusive="true" />
 
         <action
