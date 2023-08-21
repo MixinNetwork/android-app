@@ -51,6 +51,7 @@ import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.checkout.PaymentRequest
@@ -249,7 +250,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                                     return@launch
                                 }
                             } else {
-                                showError(session.data?.status ?: session.errorDescription)
+                                showError(requireContext().getMixinErrorStringByCode(session.errorCode, session.errorDescription))
                                 return@launch
                             }
                         }
@@ -321,7 +322,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     if (response.isSuccess) {
                         init3DS(response.data!!)
                     } else {
-                        showError(response.errorDescription)
+                        showError(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription))
                     }
                 },
             )
@@ -392,7 +393,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 }
             } else {
                 status = OrderStatus.FAILED
-                showError(response.errorDescription)
+                showError(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription))
             }
         } catch (e: Exception) {
             showError(e.message)
@@ -431,7 +432,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                                     if (response.isSuccess) {
                                         init3DS(response.data!!)
                                     } else {
-                                        showError(response.errorDescription)
+                                        showError(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription))
                                     }
                                 },
                             )
