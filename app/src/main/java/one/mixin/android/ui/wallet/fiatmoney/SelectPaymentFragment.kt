@@ -9,7 +9,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSelectPaymentBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navigate
-import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment

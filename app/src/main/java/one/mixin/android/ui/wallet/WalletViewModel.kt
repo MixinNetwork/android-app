@@ -227,6 +227,7 @@ internal constructor(
         )
 
     suspend fun findAssetsByIds(ids: List<String>) = assetRepository.findAssetsByIds(ids)
+    suspend fun assetItems() = assetRepository.assetItems()
 
     suspend fun fuzzySearchAssets(query: String?): List<AssetItem>? =
         if (query.isNullOrBlank()) {

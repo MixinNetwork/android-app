@@ -34,6 +34,7 @@ class PaymentFragment : BaseFragment() {
 
         override fun onBackPressed() {
             // the user decided to leave the payment page
+            onBack?.invoke()
             Timber.e("onBackPressed")
             parentFragmentManager.beginTransaction()
                 .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
@@ -62,6 +63,7 @@ class PaymentFragment : BaseFragment() {
 
     var onSuccess: ((String, String?) -> Unit)? = null
     var onFailure: ((String) -> Unit)? = null
+    var onBack: (() -> Unit)? = null
     var onLoading: (() -> Unit)? = null
 
     override fun onBackPressed(): Boolean {

@@ -1239,7 +1239,7 @@
     <string name="Buy_now">立即购买</string>
     <string name="Payment_Services">支付服务</string>
     <string name="error_input_amount">请输入金额</string>
-    <string name="Value_info">最低金额 %1$d 美元，最高金额 %2$d 美元</string>
+    <string name="Value_info">最低金额 %1$d %2$s，最高金额 %3$d %4$s</string>
     <string name="Select_Payment">选择支付方式</string>
     <string name="Select_Card">选择银行卡</string>
     <string name="Order_Confirm">确认订单</string>

@@ -32,7 +32,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ENVIRONMENT_3DS
-import one.mixin.android.Constants.TEST_ASSET_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -173,7 +172,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                             Bundle().apply {
                                 putParcelable(TransactionsFragment.ARGS_ASSET, asset)
                                 putInt(ARGS_AMOUNT, amount)
-                                putParcelable(CalculateFragment.ARGS_CURRENCY, currency)
+                                putParcelable(ARGS_CURRENCY, currency)
                             },
                         )
                     }
@@ -286,7 +285,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     Bundle().apply {
                         putParcelable(TransactionsFragment.ARGS_ASSET, asset)
                         putInt(ARGS_AMOUNT, amount)
-                        putParcelable(CalculateFragment.ARGS_CURRENCY, currency)
+                        putParcelable(ARGS_CURRENCY, currency)
                     },
                 )
             } else {
@@ -308,7 +307,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                             currency.name,
                             scheme,
                             Session.getAccountId()!!,
-                            TEST_ASSET_ID,
+                            asset.assetId,
                             amount,
                             instrumentId,
                         ),
@@ -365,7 +364,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             val response = walletViewModel.payment(
                 PaymentRequest(
                     // todo real data
-                    TEST_ASSET_ID,
+                    asset.assetId,
                     Session.getAccountId()!!,
                     sessionId,
                     instrumentId,
@@ -419,7 +418,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                                             currency.name,
                                             tokenDetails.scheme?.lowercase(),
                                             Session.getAccountId()!!,
-                                            TEST_ASSET_ID,
+                                            asset.assetId,
                                             amount,
                                         ),
                                     )

@@ -12,7 +12,6 @@ import com.google.gson.annotations.SerializedName
 import com.snappydb.SnappyDB
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.TEST_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CreateSessionRequest
@@ -81,6 +80,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                 navTo(
                     PaymentFragment().apply {
                         val paymentFragment = this
+                        onBack = { addVa.displayedChild = 0 }
                         onSuccess = { token, scheme ->
                             parentFragmentManager.beginTransaction()
                                 .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
@@ -94,7 +94,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                                 currency.name,
                                                 scheme,
                                                 Session.getAccountId()!!,
-                                                TEST_ASSET_ID,
+                                                asset.assetId,
                                                 amount,
                                             ),
                                         )
@@ -104,9 +104,9 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                         if (response.isSuccess) {
                                             val last4 = response.data?.last4
                                             val instrumentId = response.data?.instrumentId
-                                            val scheme = response.data?.scheme
-                                            if (last4 != null && instrumentId != null && scheme != null) {
-                                                saveCards(Card(last4, scheme, instrumentId))
+                                            val cardScheme = response.data?.scheme
+                                            if (last4 != null && instrumentId != null && cardScheme != null) {
+                                                saveCards(Card(last4, cardScheme, instrumentId))
                                             } else {
                                                 toast(R.string.error_bad_data)
                                             }

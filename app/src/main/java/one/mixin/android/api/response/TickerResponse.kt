@@ -15,4 +15,8 @@ class TickerResponse(
     val price: String,
     @SerializedName("asset_amount")
     val assetAmount: String,
+    @SerializedName("minimun")
+    val minimun: String,
+    @SerializedName("maximum")
+    val maximum: String,
 )

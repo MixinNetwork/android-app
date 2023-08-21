@@ -42,11 +42,9 @@ import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
-import one.mixin.android.ui.setting.getCurrencyData
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
-import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment.Companion.ARGS_CURRENCY
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
@@ -104,17 +102,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     lifecycleScope.launch {
                         sendReceiveView.buy.displayedChild = 1
                         sendReceiveView.buy.isEnabled = false
-                        val currencyList = getCurrencyData(requireContext().resources)
-                        val currency = currencyList.find { c ->
-                            Session.getFiatCurrency() == c.name
-                        } ?: currencyList.find { c -> c.name == "USD" }
-                        view.navigate(
-                            R.id.action_wallet_to_calculate,
-                            Bundle().apply {
-                                putParcelable(ARGS_ASSET, assets[0])
-                                putParcelable(ARGS_CURRENCY, currency)
-                            },
-                        )
+                        view.navigate(R.id.action_wallet_to_calculate)
                         sendReceiveView.buy.displayedChild = 0
                         sendReceiveView.buy.isEnabled = true
                     }

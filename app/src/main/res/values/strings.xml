@@ -1268,7 +1268,7 @@
     <string name="error_input_amount">Please enter the amount</string>
     <string name="Pay" translatable="false">Pay</string>
     <string name="Buy_with" translatable="false">Buy with</string>
-    <string name="Value_info">Minimum %1$d USD, Maximum %2$d USD</string>
+    <string name="Value_info">Minimum %1$d %2$s, Maximum %3$d %4$s</string>
     <string name="Select_Payment">Select Payment</string>
     <string name="Select_Card">Select Card</string>
     <string name="Order_Confirm">Order Confirm</string>

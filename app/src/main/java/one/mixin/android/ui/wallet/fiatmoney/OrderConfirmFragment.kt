@@ -10,7 +10,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.TEST_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.api.request.TickerRequest
 import one.mixin.android.databinding.FragmentOrderConfirmBinding
@@ -153,7 +152,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             while (true) {
                 if (time == 10) {
                     val response = try {
-                        walletViewModel.ticker(TickerRequest(amount, currency.name, TEST_ASSET_ID))
+                        walletViewModel.ticker(TickerRequest(amount, currency.name, asset.assetId))
                     } catch (e: Exception) {
                         Timber.e(e)
                         return@launch
