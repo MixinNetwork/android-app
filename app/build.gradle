@@ -195,9 +195,13 @@ android {
         resolutionStrategy {
             force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10"
             force "com.github.mixinnetwork:tink-eddsa:0.0.13"
+
+            // keep version 1.69
+            // https://github.com/bcgit/bc-java/commit/9bf72343e1c515ac28fe6b32a5bfe27c6a96baf0
+            force "org.bouncycastle:bcprov-jdk15on:1.69"
+            force "org.bouncycastle:bcutil-jdk15on:1.69"
             exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
-            exclude group: 'org.bouncycastle', module: 'bcutil-jdk18on'
-            exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
+            exclude group: 'org.bouncycastle', module: 'bcprov-jdk15to18'
         }
     }
 }
@@ -370,7 +374,6 @@ dependencies {
     implementation "com.mapbox.plugin:maps-lifecycle:${mapboxSdkVersion}"
     implementation "com.mattprecious.swirl:swirl:$swirlVersion"
     implementation "com.github.warkiz.widget:indicatorseekbar:$indicatorseekbarVersion"
-//    implementation "org.bouncycastle:bcprov-jdk15on:${bcVersion}"
     implementation "org.jetbrains:markdown:${markdownVersion}"
     implementation "io.github.java-diff-utils:java-diff-utils:${diffUtilsVersion}"
     implementation "com.lambdapioneer.argon2kt:argon2kt:${argon2ktVersion}"
