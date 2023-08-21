@@ -173,7 +173,7 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:text="@string/Continue"
-                android:textColor="@color/white"
+                android:textColor="@color/selector_tv_blue"
                 android:textSize="14sp" />
 
             <ProgressBar
@@ -196,7 +196,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="@string/Value_info"
             android:textColor="?attr/text_minor"
             android:textSize="14sp" />
 

@@ -145,6 +145,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 }
                 // }
             }
+            info.text = getString(R.string.Value_info, mininum, maxinum)
             switchIv.setOnClickListener {
                 isReverse = !isReverse
                 updateUI()
@@ -192,6 +193,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         "≈ ${String.format("%.2f", currentValue)} ${currency.name}"
                 }
                 continueVa.isEnabled = currentValue >= mininum && currentValue <= maxinum
+                continueVa.isEnabled
                 if (currentValue > maxinum) {
                     info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
                 } else {
@@ -207,6 +209,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     minorTv.text = "≈ ${String.format("%.2f", currentValue / fiatPrice)} ${asset.symbol}"
                 }
                 continueVa.isEnabled = currentValue >= mininum && currentValue <= maxinum
+                continueTv.isEnabled = continueVa.isEnabled
                 if (currentValue > maxinum) {
                     info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
                 } else {

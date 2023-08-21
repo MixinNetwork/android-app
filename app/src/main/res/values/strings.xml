@@ -1268,7 +1268,7 @@
     <string name="error_input_amount">Please enter the amount</string>
     <string name="Pay" translatable="false">Pay</string>
     <string name="Buy_with" translatable="false">Buy with</string>
-    <string name="Value_info">Minimum 1 USD, Maximum 1,000 USD</string>
+    <string name="Value_info">Minimum %1$d USD, Maximum %2$d USD</string>
     <string name="Select_Payment">Select Payment</string>
     <string name="Select_Card">Select Card</string>
     <string name="Order_Confirm">Order Confirm</string>
@@ -1281,7 +1281,7 @@
     <string name="Processing">Processing</string>
     <string name="Failed">Failed</string>
     <string name="Processing_desc">Payment request has been submitted, your payment and order information is being checked, please wait patiently</string>
-    <string name="Success_desc">Successful purchase of USDC! Your USDC will be transferred directly to Mixin wallet later. Please wait patiently.</string>
+    <string name="Success_desc">Successful purchase of %1$s! Your %2$s will be transferred directly to Mixin wallet later. Please wait patiently.</string>
     <string name="Price_Expired">Price Expired</string>
     <string name="New_price">New price</string>
     <string name="New_Price">New Price</string>
@@ -1290,4 +1290,5 @@
     <string name="Processing_Fee">Processing Fee</string>
     <string name="Fees_tip">You may not cost more fees by bank.</string>
     <string name="Use_New_Price">Use New Price</string>
+    <string name="Google_Pay_error">Google pay is not available</string>
 </resources>

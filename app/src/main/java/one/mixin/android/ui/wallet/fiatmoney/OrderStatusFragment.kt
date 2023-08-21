@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.addCallback
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -113,7 +112,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         binding.bottomVa.displayedChild = 0
         binding.topVa.displayedChild = 0
         binding.title.setText(R.string.Success)
-        binding.content.setText(R.string.Success_desc)
+        binding.content.text = getString(R.string.Success_desc, asset.symbol, asset.symbol)
     }
 
     private fun failed() {
@@ -230,7 +229,6 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         checkout3DS.authenticate(authenticationParameters) { result: AuthenticationResult ->
             when (result.resultType) {
                 ResultType.Completed -> {
-                    Timber.e("Completed")
                     lifecycleScope.launch {
                         while (true) {
                             val session = try {
@@ -241,12 +239,12 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                             }
                             if (session.isSuccess) {
                                 if (session.data?.status == SessionStatus.Approved.value) {
-                                    placeOrder(
+                                    payments(
                                         sessionId = sessionResponse.sessionId,
                                         sessionResponse.instrumentId,
                                     )
                                     break
-                                } else if (session.data?.status != SessionStatus.Pending.value || session.data?.status != SessionStatus.Processing.value) {
+                                } else if (session.data?.status != SessionStatus.Pending.value && session.data?.status != SessionStatus.Processing.value) {
                                     showError(session.data?.status ?: session.errorDescription)
                                     return@launch
                                 }
@@ -361,7 +359,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         }
     }
 
-    private fun placeOrder(sessionId: String, instrumentId: String) = lifecycleScope.launch {
+    private fun payments(sessionId: String, instrumentId: String) = lifecycleScope.launch {
         try {
             val response = walletViewModel.payment(
                 PaymentRequest(

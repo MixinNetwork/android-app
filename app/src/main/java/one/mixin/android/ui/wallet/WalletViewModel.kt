@@ -295,9 +295,6 @@ internal constructor(
 
     data class State(
         val googlePayAvailable: Boolean? = false,
-        val googleWalletAvailable: Boolean? = false,
-        val googlePayButtonClickable: Boolean = true,
-        val checkoutSuccess: Boolean = false,
     )
 
     private val _state = MutableStateFlow(State())
