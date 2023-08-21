@@ -128,7 +128,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "<<"),
                 force = true,
             )
-            continueTv.setOnClickListener {
+            continueVa.setOnClickListener {
                 // checkKyc {
                 val amount = AmountUtil.toAmount(v, currency.name)
                 if (amount == null) {
@@ -191,7 +191,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     minorTv.text =
                         "≈ ${String.format("%.2f", currentValue)} ${currency.name}"
                 }
-                continueTv.isEnabled = currentValue >= mininum && currentValue <= maxinum
+                continueVa.isEnabled = currentValue >= mininum && currentValue <= maxinum
                 if (currentValue > maxinum) {
                     info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
                 } else {
@@ -206,7 +206,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     primaryTv.text = v
                     minorTv.text = "≈ ${String.format("%.2f", currentValue / fiatPrice)} ${asset.symbol}"
                 }
-                continueTv.isEnabled = currentValue >= mininum && currentValue <= maxinum
+                continueVa.isEnabled = currentValue >= mininum && currentValue <= maxinum
                 if (currentValue > maxinum) {
                     info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
                 } else {
@@ -217,9 +217,13 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     }
 
     private fun checkKyc(onSuccess: () -> Unit) = lifecycleScope.launch {
+        binding.continueVa.displayedChild = 1
         handleMixinResponse(
             invokeNetwork = {
                 walletViewModel.token()
+            },
+            endBlock = {
+                binding.continueVa.displayedChild = 0
             },
             successBlock = { resp ->
                 val tokenResponse = requireNotNull(resp.data)

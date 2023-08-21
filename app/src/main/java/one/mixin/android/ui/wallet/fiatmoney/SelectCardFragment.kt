@@ -99,8 +99,8 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                             ),
                                         )
                                     },
+                                    endBlock = { addVa.displayedChild = 0 },
                                     successBlock = { response ->
-                                        addVa.displayedChild = 0
                                         if (response.isSuccess) {
                                             val last4 = response.data?.last4
                                             val instrumentId = response.data?.instrumentId

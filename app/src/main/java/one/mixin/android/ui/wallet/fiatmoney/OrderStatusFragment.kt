@@ -29,7 +29,6 @@ import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.wallet.PaymentData
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
@@ -52,6 +51,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.WalletViewModel
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.checkout.PaymentRequest
@@ -187,12 +187,6 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 view.navigate(R.id.action_wallet_status_to_wallet)
             }
 
-            // Todo real data
-            payWith.text = if (isGooglePay) {
-                "Google Pay"
-            } else {
-                "Visa .... 4242"
-            }
             val logo = when {
                 isGooglePay -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_google_pay_small)
                 scheme == "mastercard" -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_mastercard)
@@ -201,6 +195,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 it?.setBounds(0, 0, 28.dp, 14.dp)
             }
             payWith.setCompoundDrawables(logo, null, null, null)
+            payWith.text = if (isGooglePay) {
+                "Google Pay"
+            } else {
+                info.number
+            }
             priceTv.text = info.price
             purchaseTv.text = info.purchase
             feeTv.text = info.fee
@@ -231,39 +230,37 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         checkout3DS.authenticate(authenticationParameters) { result: AuthenticationResult ->
             when (result.resultType) {
                 ResultType.Completed -> {
-                    // continue with payment, show √
                     Timber.e("Completed")
                     lifecycleScope.launch {
                         while (true) {
-                            delay(1000)
                             val session = try {
                                 walletViewModel.getSession(sessionResponse.sessionId)
                             } catch (e: Exception) {
                                 showError(e.message)
-                                break
+                                return@launch
                             }
-                            if (session.data?.status == SessionStatus.Approved.value) {
-                                placeOrder(
-                                    sessionId = sessionResponse.sessionId,
-                                    sessionResponse.instrumentId,
-                                )
-                                break
-                            } else if (session.data?.status != SessionStatus.Pending.value || session.data?.status != SessionStatus.Processing.value) {
+                            if (session.isSuccess) {
+                                if (session.data?.status == SessionStatus.Approved.value) {
+                                    placeOrder(
+                                        sessionId = sessionResponse.sessionId,
+                                        sessionResponse.instrumentId,
+                                    )
+                                    break
+                                } else if (session.data?.status != SessionStatus.Pending.value || session.data?.status != SessionStatus.Processing.value) {
+                                    showError(session.data?.status ?: session.errorDescription)
+                                    return@launch
+                                }
+                            } else {
                                 showError(session.data?.status ?: session.errorDescription)
-                                break
+                                return@launch
                             }
                         }
                     }
                 }
 
                 ResultType.Error -> {
-                    // handle error (result as AuthenticationError)
-
-                    // handle error based on error type category
                     val errorType: AuthenticationErrorType =
                         (result as AuthenticationError).errorType
-
-                    // Handle error based on fine grained error code or simply log the error
                     val errorCode: String = result.errorCode
 
                     Timber.e("Error $errorType $errorCode")
@@ -318,6 +315,10 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         ),
                     )
                 },
+                defaultExceptionHandle = {
+                    ErrorHandler.handleError(it)
+                    showError(it.message)
+                },
                 successBlock = { response ->
                     if (response.isSuccess) {
                         init3DS(response.data!!)
@@ -361,7 +362,6 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     }
 
     private fun placeOrder(sessionId: String, instrumentId: String) = lifecycleScope.launch {
-        // todo real data
         try {
             val response = walletViewModel.payment(
                 PaymentRequest(
@@ -425,6 +425,10 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                                         ),
                                     )
                                 },
+                                defaultExceptionHandle = {
+                                    ErrorHandler.handleError(it)
+                                    showError(it.message)
+                                },
                                 successBlock = { response ->
                                     if (response.isSuccess) {
                                         init3DS(response.data!!)
@@ -466,7 +470,6 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         }
 
     private fun handleError(statusCode: Int, message: String?) {
-        // Todo handle status statusCode
         showError(message)
     }
 

@@ -47,6 +47,7 @@ suspend fun <T, R> handleMixinResponse(
     defaultExceptionHandle: (suspend (t: Throwable) -> Unit) = {
         ErrorHandler.handleError(it)
     },
+    endBlock: (() -> Unit)? = null,
 ): R? {
     val response = try {
         withContext(switchContext) {
@@ -56,17 +57,21 @@ suspend fun <T, R> handleMixinResponse(
         if (exceptionBlock?.invoke(t) != true) {
             defaultExceptionHandle.invoke(t)
         }
+        endBlock?.invoke()
         return null
     }
 
     doAfterNetworkSuccess?.invoke()
 
     return if (response.isSuccess) {
-        successBlock?.invoke(response)
+        val r = successBlock?.invoke(response)
+        endBlock?.invoke()
+        r
     } else {
         if (failureBlock?.invoke(response) != true) {
             defaultErrorHandle(response)
         }
+        endBlock?.invoke()
         null
     }
 }

@@ -150,8 +150,10 @@
         android:layout_marginBottom="32dp"
         android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/continue_tv"
+        <ViewAnimator
+            android:id="@+id/continue_va"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:clickable="true"
             android:focusable="true"
@@ -160,13 +162,27 @@
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
             android:layout_marginBottom="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/Continue"
-            android:textColor="@drawable/selector_tv_white"
-            android:textSize="14sp"
-            android:background="@drawable/bg_round_blue_btn_40"/>
+            android:inAnimation="@anim/fade_in"
+            android:outAnimation="@anim/fade_out"
+            android:background="@drawable/bg_round_blue_btn_40">
+
+            <TextView
+                android:layout_gravity="center"
+                android:id="@+id/continue_tv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/Continue"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+
+            <ProgressBar
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:theme="@style/AppTheme.WhiteAccent" />
+        </ViewAnimator>
 
         <TextView
             android:id="@+id/info"
