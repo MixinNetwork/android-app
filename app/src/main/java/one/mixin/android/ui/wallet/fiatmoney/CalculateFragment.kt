@@ -67,6 +67,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 if (it.isSuccess) {
                     minimun = it.data?.minimun?.toIntOrNull() ?: 0
                     maxinum = it.data?.maximum?.toIntOrNull() ?: 0
+                    fiatPrice = it.data?.price?.toFloatOrNull() ?: 0f
                 }
             },
         )
@@ -191,12 +192,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 primaryUnit.text = currency.name
             }
         }
-        fiatPrice = (
-            Fiats.getRate(currency.name) * (
-                asset.priceUsd.toDoubleOrNull()
-                    ?: 0.toDouble()
-                )
-            ).toFloat()
         updateValue()
     }
 
