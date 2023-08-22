@@ -54,7 +54,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         currency = currencyList.find {
             it.name == Session.getFiatCurrency()
         } ?: currencyList.first()
-        asset = walletViewModel.findAssetsByIds(listOf("4d8c508b-91c5-375b-92b0-ee702ed2dac5", "6770a1e5-6086-44d5-b60f-545f9d9e8ffd")).first()
+        asset = walletViewModel.findAssetsByIds(listOf("4d8c508b-91c5-375b-92b0-ee702ed2dac5", "9b180ab6-6abe-3dc0-a13f-04169eb34bfa")).first()
     }
 
     private suspend fun refresh() {
@@ -175,9 +175,10 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     private var fiatPrice = 1f
     private var v = "0"
-    private var minimun = 1
+    private var minimun = 15
     private var maxinum = 1000
     private fun updateUI() {
+        if (!isAdded) return
         if (isReverse) {
             binding.apply {
                 fiatName.text = currency.name
@@ -196,6 +197,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     @SuppressLint("SetTextI18n")
     private fun updateValue() {
+        if (!isAdded) return
         binding.apply {
             val value = if (v.endsWith(".")) {
                 v.substring(0, v.length)

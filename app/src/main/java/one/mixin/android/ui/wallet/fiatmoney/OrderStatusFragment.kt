@@ -28,6 +28,7 @@ import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.wallet.PaymentData
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
@@ -388,6 +389,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                             status = OrderStatus.SUCCESS
                             break
                         }
+                        delay(2000)
                     }
                 }
             } else {
