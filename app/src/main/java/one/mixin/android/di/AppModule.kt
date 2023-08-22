@@ -3,6 +3,10 @@ package one.mixin.android.di
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ContentResolver
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
+import androidx.datastore.dataStoreFile
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
@@ -16,6 +20,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -34,6 +39,7 @@ import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
 import one.mixin.android.MixinApplication
+import one.mixin.android.SafeBox
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.MixinResponse
@@ -93,6 +99,7 @@ import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
+import one.mixin.android.vo.checkout.serializer.SafeBoxSerializer
 import one.mixin.android.webrtc.CallDebugLiveData
 import one.mixin.android.websocket.ChatWebSocket
 import org.chromium.net.CronetEngine
@@ -542,4 +549,23 @@ object AppModule {
         linkState,
         messageHistoryDao,
     )
+
+    private const val DATA_STORE_FILE_NAME = "safe_box_%s.pb"
+
+    @Singleton
+    @Provides
+    fun providesDataStore(@ApplicationContext appContext: Context): DataStore<SafeBox> {
+        return DataStoreFactory.create(
+            serializer = SafeBoxSerializer,
+            produceFile = {
+                appContext.dataStoreFile(
+                    String.format(
+                        DATA_STORE_FILE_NAME,
+                        Session.getAccountId(),
+                    ),
+                )
+            },
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+        )
+    }
 }

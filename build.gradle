@@ -113,6 +113,8 @@ buildscript {
         ext.checkoutSecureVersion = '3.1.1'
         ext.playWalletVersion = '19.2.0'
         ext.playPayVersion = '16.1.0'
+        ext.datastoreVersion = '1.0.0'
+        ext.protobufVersion = '3.11.0'
     }
 
     repositories {

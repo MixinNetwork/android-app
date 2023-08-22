@@ -8,6 +8,7 @@ plugins {
     id "de.undercouch.download"
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
     id 'kotlinx-serialization'
+    id "com.google.protobuf" version "0.9.1"
 }
 
 def versionMajor = 0
@@ -465,9 +466,10 @@ dependencies {
     implementation "com.google.android.gms:play-services-wallet:$playWalletVersion"
     implementation "com.google.android.gms:play-services-pay:$playPayVersion"
 
-    // No sql
-    implementation 'com.snappydb:snappydb-lib:0.5.2'
-    implementation 'com.esotericsoftware.kryo:kryo:2.24.0'
+    //Jetpack Datastore - Proto Datastore
+    implementation  "androidx.datastore:datastore-core:$datastoreVersion"
+    implementation  "androidx.datastore:datastore:$datastoreVersion"
+    implementation  "com.google.protobuf:protobuf-javalite:$protobufVersion"
 }
 
 secrets {
@@ -521,6 +523,23 @@ task syncStrings {
                     dest "src/main/res/values-zh-rHK"
                 } else {
                     dest "src/main/res/values-$lang"
+                }
+            }
+        }
+    }
+}
+
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.14.0"
+    }
+
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                java {
+                    option 'lite'
                 }
             }
         }

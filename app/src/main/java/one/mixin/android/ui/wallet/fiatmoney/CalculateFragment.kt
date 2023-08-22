@@ -33,7 +33,6 @@ import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_CURRENCY
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.sumsub.KycState
 import one.mixin.android.widget.Keyboard
 

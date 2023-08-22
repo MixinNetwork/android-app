@@ -154,6 +154,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 ),
             ).apply { attachToRecyclerView(coinsRv) }
             assetsAdapter.onItemListener = this@WalletFragment
+
             coinsRv.adapter = assetsAdapter
             coinsRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {

@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
+import one.mixin.android.Card
 import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.Constants.PAYMENTS_GATEWAY
@@ -227,6 +228,7 @@ internal constructor(
         )
 
     suspend fun findAssetsByIds(ids: List<String>) = assetRepository.findAssetsByIds(ids)
+
     suspend fun assetItems() = assetRepository.assetItems()
 
     suspend fun fuzzySearchAssets(query: String?): List<AssetItem>? =
@@ -359,4 +361,12 @@ internal constructor(
         request.setPaymentMethodTokenizationParameters(params)
         return paymentsClient.loadPaymentData(request.build())
     }
+
+    fun cards() = assetRepository.cards()
+
+    suspend fun addCard(card: Card) = assetRepository.addCard(card)
+
+    suspend fun removeCard(index: Int) = assetRepository.removeCard(index)
+
+    suspend fun initSafeBox() = assetRepository.initSafeBox()
 }

@@ -1,7 +1,9 @@
 package one.mixin.android.repository
 
 import android.os.CancellationSignal
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.asLiveData
 import androidx.paging.DataSource
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
@@ -10,7 +12,9 @@ import androidx.paging.PagingData
 import androidx.paging.liveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.Card
 import one.mixin.android.Constants
+import one.mixin.android.SafeBox
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
@@ -74,6 +78,7 @@ constructor(
     private val traceDao: TraceDao,
     private val chainDao: ChainDao,
     private val jobManager: MixinJobManager,
+    private val safeBox: DataStore<SafeBox>,
 ) {
 
     fun assets() = assetService.assets()
@@ -468,4 +473,28 @@ constructor(
     suspend fun createSession(createSession: CreateSessionRequest): MixinResponse<CreateSessionResponse> = checkoutService.createSession(createSession)
 
     suspend fun getSession(sessionId: String): MixinResponse<CheckoutSessionRequest> = checkoutService.getSession(sessionId)
+
+    fun cards() = safeBox.data.asLiveData()
+
+    suspend fun addCard(card: Card) {
+        safeBox.updateData { box ->
+            box.toBuilder().addCard(card).build()
+        }
+    }
+
+    suspend fun removeCard(index: Int) {
+        safeBox.updateData { box ->
+            box.toBuilder().removeCard(index).build()
+        }
+    }
+
+    suspend fun initSafeBox() {
+        safeBox.updateData {
+            it.toBuilder().apply {
+                if (it.name.isNullOrEmpty()) {
+                    name = Session.getAccountId()
+                }
+            }.build()
+        }
+    }
 }
