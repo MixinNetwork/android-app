@@ -205,7 +205,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 v
             }
             if (isReverse) {
-                val currentValue = value.toFloat() * fiatPrice
+                val currentValue = value.toFloat() / fiatPrice
                 if (value == "0") {
                     primaryTv.text = "0"
                     minorTv.text = "0 ${currency.name}"
@@ -215,7 +215,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         "≈ ${String.format("%.2f", currentValue)} ${currency.name}"
                 }
                 continueVa.isEnabled = currentValue >= minimun && currentValue <= maxinum
-                continueVa.isEnabled
+                continueTv.isEnabled = continueVa.isEnabled
                 if (currentValue > maxinum) {
                     info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
                 } else {
@@ -229,7 +229,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 } else {
                     primaryTv.text = value
                     minorTv.text =
-                        "≈ ${String.format("%.2f", currentValue / fiatPrice)} ${asset.symbol}"
+                        "≈ ${String.format("%.2f", currentValue * fiatPrice)} ${asset.symbol}"
                 }
                 continueVa.isEnabled = currentValue >= minimun && currentValue <= maxinum
                 continueTv.isEnabled = continueVa.isEnabled

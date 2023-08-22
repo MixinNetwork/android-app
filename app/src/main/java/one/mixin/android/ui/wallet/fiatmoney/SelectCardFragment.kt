@@ -38,7 +38,6 @@ import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import timber.log.Timber
-import kotlin.random.Random
 
 @AndroidEntryPoint
 class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
