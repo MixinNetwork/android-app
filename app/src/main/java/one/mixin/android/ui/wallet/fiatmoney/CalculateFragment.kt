@@ -27,6 +27,7 @@ import one.mixin.android.ui.wallet.FiatListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.IdentityFragment.Companion.ARGS_IS_RETRY
 import one.mixin.android.ui.wallet.IdentityVerificationStateBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.IdentityVerificationStateBottomSheetDialogFragment.Companion.ARGS_TOKEN
+import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_AMOUNT
@@ -58,9 +59,13 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     }
 
     private suspend fun refresh() {
+        showLoading()
         handleMixinResponse(
             invokeNetwork = {
                 walletViewModel.ticker(TickerRequest(0, currency.name, asset.assetId))
+            },
+            endBlock = {
+                dismissLoading()
             },
             successBlock = {
                 if (it.isSuccess) {
@@ -87,8 +92,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     AssetListBottomSheetDialogFragment.newInstance(
                         false,
                         arrayListOf(
-                            "4d8c508b-91c5-375b-92b0-ee702ed2dac5",
-                            "9b180ab6-6abe-3dc0-a13f-04169eb34bfa",
+                            "4d8c508b-91c5-375b-92b0-ee702ed2dac5", // USDT
+                            "9b180ab6-6abe-3dc0-a13f-04169eb34bfa", // USDC
                         ),
                     ).setOnAssetClick { asset ->
                         this@CalculateFragment.asset = asset
@@ -194,6 +199,18 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             }
         }
         updateValue()
+    }
+
+    private val loading by lazy {
+        LoadingProgressDialogFragment()
+    }
+
+    private fun showLoading() {
+        loading.showNow(parentFragmentManager, LoadingProgressDialogFragment.TAG)
+    }
+
+    private fun dismissLoading() {
+        loading.dismiss()
     }
 
     @SuppressLint("SetTextI18n")
