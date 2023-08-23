@@ -1228,9 +1228,9 @@
     <string name="Buy_asset">Buy %1$s</string>
     <string name="Identity_Verification">Identity Verification</string>
     <string name="setting_identity_content">Financial regulations require us to verify your identity. To start verifying, you will allow us and our service provides can collect, use, and store your information. Before you star, please:</string>
-    <string name="identity_tip_1">Prepare a valid government-issued ID</string>
-    <string name="identity_tip_2">Check if your device’s camera is uncovered and working</string>
-    <string name="identity_tip_3">Be prepared to take a selfie and photos of your ID</string>
+    <string name="identity_issued">Prepare a valid government-issued ID</string>
+    <string name="identity_device">Check if your device’s camera is uncovered and working</string>
+    <string name="identity_selfie">Be prepared to take a selfie and photos of your ID</string>
     <string name="identity_info">By proceeding, you agree to the Privacy Policy and Terms of Service.</string>
     <string name="Start_Verification">Start Verification</string>
     <plurals name="last_month">
@@ -1254,8 +1254,6 @@
     <string name="Additional_Verification">Additional Verification</string>
     <string name="identity_additional_verification_tip">We need you to submit additional information to meet regulatory requirements, thank you for your understanding and support.</string>
     <string name="Price">Price</string>
-    <string name="Gateway_fee">Gateway fee</string>
-    <string name="Gateway_fee_price">Gateway fee: %1$s</string>
     <string name="Google_Pay" translatable="false">Google Pay</string>
     <string name="Visa_Mastercard">Visa / Mastercard</string>
     <string name="user_deleted_hint">The user has deleted his own account.</string>
@@ -1264,7 +1262,6 @@
     <string name="Pay_with">Pay with</string>
     <string name="Buy_now">Buy now</string>
     <string name="Payment_Services">Payment Services</string>
-    <string name="error_input_amount">Please enter the amount</string>
     <string name="Pay" translatable="false">Pay</string>
     <string name="Buy_with" translatable="false">Buy with</string>
     <string name="Value_info">Minimum %1$d %2$s, Maximum %3$d %4$s</string>
@@ -1282,8 +1279,7 @@
     <string name="Processing_desc">Payment request has been submitted, your payment and order information is being checked, please wait patiently</string>
     <string name="Success_desc">Successful purchase of %1$s! Your %2$s will be transferred directly to Mixin wallet later. Please wait patiently.</string>
     <string name="Price_Expired">Price Expired</string>
-    <string name="New_price">New price</string>
-    <string name="New_Price">New Price</string>
+    <string name="New_Price">New price</string>
     <string name="Old_Price">Old Price</string>
     <string name="Fee_desc">You may be charged in addition to the order by your bank, please contact your bank for more information.</string>
     <string name="Processing_Fee">Processing Fee</string>

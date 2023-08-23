@@ -14,9 +14,19 @@ object CustomPaymentFormTheme {
         disabledButtonColor = 0XFF9B9B9B,
     )
 
-    fun providePaymentFormTheme(): PaymentFormTheme {
+    private val paymentNightFormThemeColors = PaymentFormThemeColors(
+        accentColor = 0XFFFFFFFF,
+        textColor = 0XFFFFFFFF,
+        errorColor = 0XFFE55541,
+        backgroundColor = 0xFF2C3136,
+        fieldBackgroundColor = 0XFF23272B,
+        enabledButtonColor = 0xFF4191FF,
+        disabledButtonColor = 0XFF808691,
+    )
+
+    fun providePaymentFormTheme(isNightMode: Boolean): PaymentFormTheme {
         return PaymentFormTheme(
-            paymentFormThemeColors = paymentFormThemeColors,
+            paymentFormThemeColors = if (isNightMode) paymentNightFormThemeColors else paymentFormThemeColors,
         )
     }
 }

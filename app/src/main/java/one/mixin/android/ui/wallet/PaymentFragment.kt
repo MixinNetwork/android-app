@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.checkout.base.model.CardScheme
 import com.checkout.frames.api.PaymentFlowHandler
 import com.checkout.frames.api.PaymentFormMediator
 import com.checkout.frames.screen.paymentform.PaymentFormConfig
@@ -13,6 +14,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.CHECKOUT_ENVIRONMENT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.common.BaseFragment
 import timber.log.Timber
 
@@ -43,14 +45,14 @@ class PaymentFragment : BaseFragment() {
     }
 
     private val paymentFormConfig = PaymentFormConfig(
-        publicKey = BuildConfig.CHCEKOUT_ID, // set your public key
-        context = MixinApplication.appContext, // set context
-        environment = CHECKOUT_ENVIRONMENT, // todo replace set the environment
-        paymentFlowHandler = paymentFlowHandler, // set the callback
+        publicKey = BuildConfig.CHCEKOUT_ID,
+        context = MixinApplication.appContext,
+        environment = CHECKOUT_ENVIRONMENT,
+        paymentFlowHandler = paymentFlowHandler,
         style = PaymentFormStyleProvider.provide(
-            CustomPaymentFormTheme.providePaymentFormTheme(),
-        ), // set the style
-        supportedCardSchemeList = emptyList(), // set supported card schemes, by default uses all schemes
+            CustomPaymentFormTheme.providePaymentFormTheme(requireContext().isNightMode()),
+        ),
+        supportedCardSchemeList = listOf(CardScheme.VISA, CardScheme.MASTERCARD),
     )
     private val paymentFormMediator = PaymentFormMediator(paymentFormConfig)
     override fun onCreateView(

@@ -364,7 +364,6 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         try {
             val response = walletViewModel.payment(
                 PaymentRequest(
-                    // todo real data
                     asset.assetId,
                     Session.getAccountId()!!,
                     sessionId,
