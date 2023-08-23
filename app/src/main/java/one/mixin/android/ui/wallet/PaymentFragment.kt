@@ -50,7 +50,7 @@ class PaymentFragment : BaseFragment() {
         environment = CHECKOUT_ENVIRONMENT,
         paymentFlowHandler = paymentFlowHandler,
         style = PaymentFormStyleProvider.provide(
-            CustomPaymentFormTheme.providePaymentFormTheme(requireContext().isNightMode()),
+            CustomPaymentFormTheme.providePaymentFormTheme(MixinApplication.appContext.isNightMode()),
         ),
         supportedCardSchemeList = listOf(CardScheme.VISA, CardScheme.MASTERCARD),
     )
