@@ -102,7 +102,7 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:text="@string/Purchase"
+                android:text="@string/Buy"
                 android:textColor="?attr/text_minor"
                 android:layout_width="wrap_content"
                 android:layout_alignParentStart="true"

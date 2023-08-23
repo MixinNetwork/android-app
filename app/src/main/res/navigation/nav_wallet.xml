@@ -68,7 +68,9 @@
             android:id="@+id/action_wallet_to_calculate"
             app:destination="@id/wallet_calculate"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/stay" />
+            app:popExitAnim="@anim/slide_out_right"
+            app:popEnterAnim="@anim/stay"
+            app:exitAnim="@anim/stay" />
     </fragment>
 
     <fragment
@@ -314,7 +316,7 @@
         <action
             android:id="@+id/action_wallet_payment_to_select_card"
             app:destination="@id/wallet_select_card"
-            app:enterAnim="@anim/slide_in_right"
+            app:enterAnim="@anim/stay"
             app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
@@ -344,7 +346,9 @@
             android:id="@+id/action_wallet_card_to_payment"
             app:destination="@id/wallet_select_payment"
             app:popUpTo="@id/wallet_select_payment"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="true"
+            app:enterAnim="@anim/stay"
+            app:exitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -409,13 +413,17 @@
             android:id="@+id/action_wallet_status_to_wallet"
             app:destination="@id/wallet_fragment"
             app:popUpTo="@id/wallet_fragment"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="true"
+            app:enterAnim="@anim/stay"
+            app:exitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_wallet_status_to_select"
             app:destination="@id/wallet_select_payment"
             app:popUpTo="@id/wallet_select_payment"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="true"
+            app:enterAnim="@anim/stay"
+            app:exitAnim="@anim/slide_out_right" />
     </fragment>
 
 </navigation>

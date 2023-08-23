@@ -1212,8 +1212,8 @@
         <item quantity="other">已选择 %1$d 个</item>
     </plurals>
     <string name="user_deleted_hint">该用户已经删除了账号。</string>
-    <string name="Buy">买</string>
-    <string name="Buy_asset">买 %1$s</string>
+    <string name="Buy">购买</string>
+    <string name="Buy_asset">购买 %1$s</string>
     <string name="Identity_Verification">身份验证</string>
     <string name="setting_identity_content">金融监管要求我们验证您的身份。为了开始验证，您将允许我们和我们的服务提供商收集、使用和存储您的信息。在开始之前，请确保：</string>
     <string name="identity_tip_1">准备一份有效的政府签发的身份证明文件</string>
@@ -1233,7 +1233,6 @@
     <string name="Gateway_fee">网关费用</string>
     <string name="Gateway_fee_price">网关费用：%1$s</string>
     <string name="Order_Preview">订单预览</string>
-    <string name="Purchase">购买</string>
     <string name="Total">总计</string>
     <string name="Pay_with">支付方式</string>
     <string name="Buy_now">立即购买</string>
