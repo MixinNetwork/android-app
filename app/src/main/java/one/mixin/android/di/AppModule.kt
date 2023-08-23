@@ -39,7 +39,6 @@ import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
 import one.mixin.android.MixinApplication
-import one.mixin.android.SafeBox
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.MixinResponse
@@ -99,6 +98,7 @@ import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
+import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.checkout.serializer.SafeBoxSerializer
 import one.mixin.android.webrtc.CallDebugLiveData
 import one.mixin.android.websocket.ChatWebSocket
@@ -550,7 +550,7 @@ object AppModule {
         messageHistoryDao,
     )
 
-    private const val DATA_STORE_FILE_NAME = "safe_box_%s.pb"
+    private const val DATA_STORE_FILE_NAME = "safe_box_%s.json"
 
     @Singleton
     @Provides

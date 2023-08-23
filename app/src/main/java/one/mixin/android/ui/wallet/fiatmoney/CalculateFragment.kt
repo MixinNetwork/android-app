@@ -81,6 +81,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 titleView.leftIb.setOnClickListener {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
+                titleView.setSubTitle(getString(R.string.Purchase), "")
                 titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
                 assetRl.setOnClickListener {
                     AssetListBottomSheetDialogFragment.newInstance(

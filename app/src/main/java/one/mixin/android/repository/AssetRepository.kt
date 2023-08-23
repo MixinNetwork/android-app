@@ -12,9 +12,7 @@ import androidx.paging.PagingData
 import androidx.paging.liveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import one.mixin.android.Card
 import one.mixin.android.Constants
-import one.mixin.android.SafeBox
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
@@ -50,7 +48,9 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.AssetsExtra
+import one.mixin.android.vo.Card
 import one.mixin.android.vo.PriceAndChange
+import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
@@ -478,23 +478,27 @@ constructor(
 
     suspend fun addCard(card: Card) {
         safeBox.updateData { box ->
-            box.toBuilder().addCard(card).build()
+            val list = box.cards.toMutableList()
+            list.add(card)
+            SafeBox(list)
         }
     }
 
     suspend fun removeCard(index: Int) {
         safeBox.updateData { box ->
-            box.toBuilder().removeCard(index).build()
+            val list = box.cards.toMutableList()
+            list.removeAt(index)
+            SafeBox(list)
         }
     }
 
     suspend fun initSafeBox() {
-        safeBox.updateData {
-            it.toBuilder().apply {
-                if (it.name.isNullOrEmpty()) {
-                    name = Session.getAccountId()
-                }
-            }.build()
+        safeBox.updateData { box ->
+            if (box.name != Session.getAccountId()) {
+                SafeBox(emptyList())
+            } else {
+                box
+            }
         }
     }
 }

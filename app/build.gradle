@@ -467,9 +467,7 @@ dependencies {
     implementation "com.google.android.gms:play-services-pay:$playPayVersion"
 
     //Jetpack Datastore - Proto Datastore
-    implementation  "androidx.datastore:datastore-core:$datastoreVersion"
-    implementation  "androidx.datastore:datastore:$datastoreVersion"
-    implementation  "com.google.protobuf:protobuf-javalite:$protobufVersion"
+    implementation "androidx.datastore:datastore:$datastoreVersion"
 }
 
 secrets {
@@ -523,23 +521,6 @@ task syncStrings {
                     dest "src/main/res/values-zh-rHK"
                 } else {
                     dest "src/main/res/values-$lang"
-                }
-            }
-        }
-    }
-}
-
-
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:3.14.0"
-    }
-
-    generateProtoTasks {
-        all().each { task ->
-            task.builtins {
-                java {
-                    option 'lite'
                 }
             }
         }

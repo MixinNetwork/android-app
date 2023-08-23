@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Card
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CreateSessionRequest
@@ -37,6 +36,7 @@ import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_SCHEME
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Card
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -112,11 +112,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                             val instrumentId = response.data?.instrumentId
                                             val cardScheme = response.data?.scheme
                                             if (last4 != null && instrumentId != null && cardScheme != null) {
-                                                saveCards(
-                                                    Card.newBuilder().setNumber(last4)
-                                                        .setScheme(cardScheme)
-                                                        .setInstrumentId(instrumentId).build(),
-                                                )
+                                                saveCards(Card(last4, cardScheme, instrumentId))
                                             } else {
                                                 toast(R.string.error_bad_data)
                                             }
@@ -176,12 +172,8 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                 }),
             ).apply { attachToRecyclerView(cardRv) }
             cardRv.adapter = cardAdapter
-        }
-        lifecycleScope.launch {
-            try {
+            lifecycleScope.launch {
                 initCards()
-            } catch (e: Exception) {
-                Timber.e(e)
             }
         }
     }
@@ -204,16 +196,15 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
 
     @SuppressLint("NotifyDataSetChanged")
     private suspend fun initCards() {
-        walletViewModel.initSafeBox()
         walletViewModel.cards().observe(this@SelectCardFragment.viewLifecycleOwner) { safeBox ->
-            if (safeBox.cardCount > 0) {
+            if (safeBox.cards.isNotEmpty()) {
                 binding.cardRv.visibility = View.VISIBLE
                 binding.empty.visibility = View.GONE
             } else {
                 binding.cardRv.visibility = View.GONE
                 binding.empty.visibility = View.VISIBLE
             }
-            cardAdapter.data = safeBox.cardList
+            cardAdapter.data = safeBox.cards
             cardAdapter.notifyDataSetChanged()
         }
     }
