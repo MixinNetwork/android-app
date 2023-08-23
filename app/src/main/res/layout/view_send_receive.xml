@@ -4,38 +4,6 @@
     android:layout_height="44dp"
     android:weightSum="2">
 
-    <ViewAnimator
-        android:id="@+id/buy_va"
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:visibility="gone"
-        android:foreground="@drawable/mixin_ripple_round_left_12dp"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="@string/Buy"
-            android:textSize="16sp"
-            android:textColor="?attr/text_primary" />
-
-        <ProgressBar
-            style="?android:attr/progressBarStyleSmall"
-            android:theme="@style/AppTheme.BlueProgress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center" />
-    </ViewAnimator>
-
-    <View
-        android:id="@+id/buy_delimiter"
-        android:layout_width="2dp"
-        android:layout_height="20dp"
-        android:visibility="gone"
-        android:layout_gravity="center_vertical"
-        android:background="#0D000000" />
-
     <TextView
         android:id="@+id/send_tv"
         android:layout_width="0dp"
@@ -77,4 +45,37 @@
             android:theme="@style/AppTheme.BlueProgress"
             android:visibility="gone" />
     </FrameLayout>
+
+    <View
+        android:id="@+id/buy_delimiter"
+        android:layout_width="2dp"
+        android:layout_height="20dp"
+        android:visibility="gone"
+        android:layout_gravity="center_vertical"
+        android:background="#0D000000" />
+
+    <ViewAnimator
+        android:id="@+id/buy_va"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:visibility="gone"
+        android:foreground="@drawable/mixin_ripple_round_right_12dp"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/Buy"
+            android:textSize="16sp"
+            android:textColor="?attr/text_primary" />
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleSmall"
+            android:theme="@style/AppTheme.BlueProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+    </ViewAnimator>
+
 </merge>
