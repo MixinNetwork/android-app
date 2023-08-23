@@ -26,6 +26,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
+import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.wallet.PaymentFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.WalletViewModel
@@ -74,6 +75,18 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
         requireArguments().getInt(ARGS_AMOUNT)
     }
 
+    private val loading by lazy {
+        LoadingProgressDialogFragment()
+    }
+
+    private fun showLoading() {
+        loading.showNow(parentFragmentManager, LoadingProgressDialogFragment.TAG)
+    }
+
+    private fun dismissLoading() {
+        loading.dismiss()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -86,7 +99,10 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                 navTo(
                     PaymentFragment().apply {
                         val paymentFragment = this
-                        onBack = { addVa.displayedChild = 0 }
+                        onBack = {
+                            addVa.displayedChild = 0
+                            dismissLoading()
+                        }
                         onSuccess = { token, scheme ->
                             parentFragmentManager.beginTransaction()
                                 .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
@@ -105,7 +121,10 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                             ),
                                         )
                                     },
-                                    endBlock = { addVa.displayedChild = 0 },
+                                    endBlock = {
+                                        addVa.displayedChild = 0
+                                        dismissLoading()
+                                    },
                                     successBlock = { response ->
                                         if (response.isSuccess) {
                                             val last4 = response.data?.last4
@@ -142,10 +161,12 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                         }
                         onLoading = {
                             addVa.displayedChild = 1
+                            showLoading()
                         }
                         onFailure = {
                             toast(it)
                             addVa.displayedChild = 0
+                            dismissLoading()
                             parentFragmentManager.beginTransaction()
                                 .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
                                 .remove(paymentFragment).commitNow()
@@ -211,7 +232,6 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
 
     private fun saveCards(card: Card) {
         lifecycleScope.launch {
-            Timber.e("addCard")
             walletViewModel.addCard(card)
         }
     }
