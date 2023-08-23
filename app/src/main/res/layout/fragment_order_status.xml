@@ -63,7 +63,7 @@
             android:paddingStart="32dp"
             android:paddingEnd="32dp"
             android:lines="3"
-            android:ellipsize="end"/>
+            android:ellipsize="end" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -86,7 +86,7 @@
 
                 <TextView
                     android:id="@+id/pay_with"
-                    android:textColor="?attr/text_minor"
+                    android:textColor="?attr/text_primary"
                     tools:text="Visa...4242"
                     android:drawablePadding="3dp"
                     android:layout_alignParentEnd="true"
@@ -105,14 +105,17 @@
                     android:textColor="?attr/text_minor"
                     android:layout_width="wrap_content"
                     android:layout_alignParentStart="true"
+                    android:gravity="center_vertical"
+                    android:layout_gravity="center_vertical"
                     android:layout_height="wrap_content" />
 
                 <TextView
                     android:id="@+id/price_tv"
-                    android:textColor="?attr/text_minor"
+                    android:textColor="?attr/text_primary"
                     tools:text="1 USD = 0.996USDC"
                     android:layout_alignParentEnd="true"
                     android:layout_width="wrap_content"
+                    android:layout_gravity="center_vertical"
                     android:layout_height="wrap_content" />
 
             </RelativeLayout>
@@ -133,7 +136,7 @@
                 <TextView
                     android:id="@+id/purchase_tv"
                     tools:text="48.68 USD"
-                    android:textColor="?attr/text_minor"
+                    android:textColor="?attr/text_primary"
                     android:layout_alignParentEnd="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -155,7 +158,7 @@
                 <TextView
                     android:id="@+id/fee_tv"
                     tools:text="1.23 USD"
-                    android:textColor="?attr/text_minor"
+                    android:textColor="?attr/text_primary"
                     android:layout_alignParentEnd="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -177,7 +180,7 @@
                 <TextView
                     android:id="@+id/total_tv"
                     tools:text="50 USD"
-                    android:textColor="?attr/text_minor"
+                    android:textColor="?attr/text_primary"
                     android:layout_alignParentEnd="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -260,7 +263,7 @@
             android:layout_marginTop="16dp"
             android:visibility="gone"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 
@@ -270,6 +273,6 @@
         android:focusable="true"
         android:background="#01010101"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 
 </FrameLayout>

@@ -332,7 +332,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     private fun payWithGoogle() {
         status = OrderStatus.PROCESSING
         binding.transparentMask.isVisible = true
-        val task = walletViewModel.getLoadPaymentDataTask("${amount / 100f}", currency.name)
+        val task = walletViewModel.getLoadPaymentDataTask(AmountUtil.realAmount(amount, currency.name), currency.name)
         task.addOnCompleteListener { completedTask ->
             if (completedTask.isSuccessful) {
                 completedTask.result.let(::handlePaymentSuccess)
@@ -379,24 +379,42 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 } else {
                     val paymentId = response.data?.paymentId
                     if (paymentId == null) {
-                        status = OrderStatus.FAILED
                         showError(response.errorDescription)
-                    }
-                    while (true) {
-                        val payment = walletViewModel.payment(paymentId!!)
-                        if (payment.data?.status == CheckoutPaymentStatus.Captured.name) {
-                            status = OrderStatus.SUCCESS
-                            break
-                        }
-                        delay(2000)
+                    } else {
+                        getPaymentStatus(paymentId)
                     }
                 }
             } else {
-                status = OrderStatus.FAILED
-                showError(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription))
+                showError(
+                    requireContext().getMixinErrorStringByCode(
+                        response.errorCode,
+                        response.errorDescription
+                    )
+                )
             }
         } catch (e: Exception) {
             showError(e.message)
+        }
+    }
+
+    private suspend fun getPaymentStatus(paymentId: String) {
+        lifecycleScope.launch {
+            while (true) {
+                val response = walletViewModel.payment(paymentId)
+                if (response.data?.status == CheckoutPaymentStatus.Captured.name) {
+                    status = OrderStatus.SUCCESS
+                    break
+                } else if (response.isSuccess) {
+                    delay(2000)
+                } else {
+                    showError(
+                        requireContext().getMixinErrorStringByCode(
+                            response.errorCode,
+                            response.errorDescription
+                        )
+                    )
+                }
+            }
         }
     }
 
@@ -462,7 +480,6 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
 
                 ComponentActivity.RESULT_CANCELED -> {
                     binding.transparentMask.isVisible = false
-                    status = OrderStatus.FAILED
                     showError(R.string.Cancel)
                 }
             }

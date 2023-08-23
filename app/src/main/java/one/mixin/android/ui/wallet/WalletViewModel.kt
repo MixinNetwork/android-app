@@ -303,8 +303,9 @@ internal constructor(
     private val _state = MutableStateFlow(State())
     val state: StateFlow<State> = _state.asStateFlow()
 
-    // A client for interacting with the Google Pay API.
-    private val paymentsClient: PaymentsClient = PaymentsUtil.createPaymentsClient(MixinApplication.appContext)
+    private val paymentsClient: PaymentsClient by lazy {
+        PaymentsUtil.createPaymentsClient(MixinApplication.appContext)
+    }
 
     init {
         fetchCanUseGooglePay()

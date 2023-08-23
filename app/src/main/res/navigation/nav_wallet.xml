@@ -62,7 +62,7 @@
             android:id="@+id/action_wallet_to_identity"
             app:destination="@id/wallet_identity"
             app:enterAnim="@anim/slide_in_bottom"
-            app:popExitAnim="@anim/stay" />
+            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_wallet_to_calculate"
@@ -347,8 +347,7 @@
             app:destination="@id/wallet_select_payment"
             app:popUpTo="@id/wallet_select_payment"
             app:popUpToInclusive="true"
-            app:enterAnim="@anim/stay"
-            app:exitAnim="@anim/slide_out_right" />
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -414,16 +413,14 @@
             app:destination="@id/wallet_fragment"
             app:popUpTo="@id/wallet_fragment"
             app:popUpToInclusive="true"
-            app:enterAnim="@anim/stay"
-            app:exitAnim="@anim/slide_out_right" />
+            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_wallet_status_to_select"
             app:destination="@id/wallet_select_payment"
             app:popUpTo="@id/wallet_select_payment"
             app:popUpToInclusive="true"
-            app:enterAnim="@anim/stay"
-            app:exitAnim="@anim/slide_out_right" />
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
 </navigation>

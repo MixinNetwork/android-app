@@ -14,4 +14,12 @@ object AmountUtil {
             return (v * 100).toInt()
         }
     }
+
+    fun realAmount(value: Int, currency: String): String {
+        if (currency in full_currency) {
+            return value.toString()
+        } else {
+            return (value / 100f).toString()
+        }
+    }
 }
