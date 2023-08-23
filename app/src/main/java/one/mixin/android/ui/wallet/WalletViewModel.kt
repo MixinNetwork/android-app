@@ -370,4 +370,6 @@ internal constructor(
     suspend fun removeCard(index: Int) = assetRepository.removeCard(index)
 
     suspend fun initSafeBox() = assetRepository.initSafeBox()
+
+    suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 }

@@ -242,4 +242,6 @@ constructor(
     suspend fun findUserByAppId(appId: String): User? = userDao.findUserByAppId(appId)
 
     fun updateMuteUntil(id: String, muteUntil: String) = userDao.updateMuteUntil(id, muteUntil)
+
+    suspend fun fetchSessionsSuspend(ids: List<String>) = userService.fetchSessionsSuspend(ids)
 }

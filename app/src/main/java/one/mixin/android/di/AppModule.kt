@@ -119,6 +119,7 @@ object AppModule {
     private const val xServerTime = "X-Server-Time"
     private const val xRequestId = "X-Request-Id"
     private const val authorization = "Authorization"
+    private const val xRouteSignature = "X-route-signature"
 
     @SuppressLint("ConstantLocale")
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
@@ -437,6 +438,13 @@ object AppModule {
     @Provides
     fun provideCheckoutService(httpLoggingInterceptor: HttpLoggingInterceptor?): CheckoutService {
         val client = OkHttpClient.Builder().apply {
+            addInterceptor { chain ->
+                val sourceRequest = chain.request()
+                val request = sourceRequest.newBuilder()
+                    .addHeader(xRouteSignature, Session.getRouteSignature(sourceRequest))
+                    .build()
+                return@addInterceptor chain.proceed(request)
+            }
             httpLoggingInterceptor?.let { interceptor ->
                 addNetworkInterceptor(interceptor)
             }

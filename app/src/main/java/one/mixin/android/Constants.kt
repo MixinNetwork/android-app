@@ -67,6 +67,7 @@ object Constants {
         const val PREF_CLEANUP_THUMB = "pref_cleanup_thumb"
         const val PREF_CLEANUP_QUOTE_CONTENT = "pref_cleanup_quote_content"
         const val PREF_TRANSFER_SCENE = "pref_transfer_scene"
+        const val PREF_CHECKOUT_BOT_PUBLIC_KEY = "pref_checkout_bot_public_key"
 
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
@@ -313,6 +314,8 @@ object Constants {
         "MASTERCARD",
         "VISA",
     )
+
+    const val ROUTE_API_BOT_USER_ID = "a82e1a6a-75c9-4013-80bc-10183eef49a2"
 
     const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_PRODUCTION
 

@@ -8,14 +8,17 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ROUTE_API_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.TickerRequest
 import one.mixin.android.databinding.FragmentCalculateBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -58,9 +61,20 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         asset = walletViewModel.findAssetsByIds(listOf("4d8c508b-91c5-375b-92b0-ee702ed2dac5", "9b180ab6-6abe-3dc0-a13f-04169eb34bfa")).first()
     }
 
+    private suspend fun refreshBotPublicKey() {
+        handleMixinResponse(
+            invokeNetwork = {
+                walletViewModel.fetchSessionsSuspend(listOf(ROUTE_API_BOT_USER_ID))
+            },
+            successBlock = { resp ->
+                defaultSharedPreferences.putString(Constants.Account.PREF_CHECKOUT_BOT_PUBLIC_KEY, requireNotNull(resp.data)[0].publicKey)
+            },
+        )
+    }
+
     private suspend fun refresh() {
         showLoading()
-        handleMixinResponse(
+        requestRouteAPI(
             invokeNetwork = {
                 walletViewModel.ticker(TickerRequest(0, currency.name, asset.assetId))
             },
@@ -74,6 +88,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     fiatPrice = it.data?.price?.toFloatOrNull() ?: 0f
                 }
             },
+            requestSession = { walletViewModel.fetchSessionsSuspend(listOf(ROUTE_API_BOT_USER_ID)) },
         )
     }
 
@@ -171,6 +186,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     updateUI()
                 }
             }
+            refreshBotPublicKey()
             refresh()
             updateUI()
             binding.info.text = getString(R.string.Value_info, minimun, currency.name, maxinum, currency.name)
@@ -263,7 +279,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     private fun checkKyc(onSuccess: () -> Unit) = lifecycleScope.launch {
         binding.continueVa.displayedChild = 1
-        handleMixinResponse(
+        requestRouteAPI(
             invokeNetwork = {
                 walletViewModel.token()
             },
@@ -314,6 +330,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     }
                 }
             },
+            requestSession = { walletViewModel.fetchSessionsSuspend(listOf(ROUTE_API_BOT_USER_ID)) },
         )
     }
 }

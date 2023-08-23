@@ -1,0 +1,64 @@
+package one.mixin.android.ui.wallet.fiatmoney
+
+import one.mixin.android.Constants
+import one.mixin.android.Constants.ROUTE_API_BOT_USER_ID
+import one.mixin.android.MixinApplication
+import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.response.UserSession
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putString
+import one.mixin.android.util.ErrorHandler
+
+suspend fun <T, R> requestRouteAPI(
+    invokeNetwork: suspend () -> MixinResponse<T>,
+    successBlock: (suspend (MixinResponse<T>) -> R)? = null,
+    failureBlock: (suspend (MixinResponse<T>) -> Boolean)? = null,
+    exceptionBlock: (suspend (t: Throwable) -> Boolean)? = null,
+    doAfterNetworkSuccess: (() -> Unit)? = null,
+    defaultErrorHandle: (suspend (MixinResponse<T>) -> Unit) = {
+        ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
+    },
+    defaultExceptionHandle: (suspend (t: Throwable) -> Unit) = {
+        ErrorHandler.handleError(it)
+    },
+    endBlock: (() -> Unit)? = null,
+    authErrorRetryCount: Int = 1,
+    requestSession: suspend (List<String>) -> MixinResponse<List<UserSession>>,
+): R? {
+    val response = try {
+        invokeNetwork()
+    } catch (t: Throwable) {
+        if (exceptionBlock?.invoke(t) != true) {
+            defaultExceptionHandle.invoke(t)
+        }
+        endBlock?.invoke()
+        return null
+    }
+
+    doAfterNetworkSuccess?.invoke()
+
+    return if (response.isSuccess) {
+        val r = successBlock?.invoke(response)
+        endBlock?.invoke()
+        r
+    } else {
+        if (response.errorCode == ErrorHandler.AUTHENTICATION && authErrorRetryCount > 0) {
+            return handleMixinResponse(
+                invokeNetwork = { requestSession(listOf(ROUTE_API_BOT_USER_ID)) },
+                successBlock = { resp ->
+                    MixinApplication.get().defaultSharedPreferences.putString(
+                        Constants.Account.PREF_CHECKOUT_BOT_PUBLIC_KEY,
+                        requireNotNull(resp.data)[0].publicKey,
+                    )
+                    return@handleMixinResponse requestRouteAPI(invokeNetwork, successBlock, failureBlock, exceptionBlock, doAfterNetworkSuccess, defaultErrorHandle, defaultExceptionHandle, endBlock, authErrorRetryCount - 1, requestSession)
+                },
+            )
+        }
+        if (failureBlock?.invoke(response) != true) {
+            defaultErrorHandle(response)
+        }
+        endBlock?.invoke()
+        null
+    }
+}

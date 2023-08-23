@@ -388,8 +388,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 showError(
                     requireContext().getMixinErrorStringByCode(
                         response.errorCode,
-                        response.errorDescription
-                    )
+                        response.errorDescription,
+                    ),
                 )
             }
         } catch (e: Exception) {
@@ -410,8 +410,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     showError(
                         requireContext().getMixinErrorStringByCode(
                             response.errorCode,
-                            response.errorDescription
-                        )
+                            response.errorDescription,
+                        ),
                     )
                 }
             }

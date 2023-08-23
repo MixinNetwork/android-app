@@ -1,6 +1,7 @@
 package one.mixin.android.session
 
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.EdDSAPrivateKey
@@ -11,14 +12,18 @@ import jwt.Jwt
 import okhttp3.Request
 import okio.ByteString.Companion.encode
 import okio.ByteString.Companion.toByteString
+import one.mixin.android.Constants.Account.PREF_CHECKOUT_BOT_PUBLIC_KEY
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.EdKeyPair
+import one.mixin.android.crypto.aesGcmEncrypt
 import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.useGoEd
+import one.mixin.android.extension.base64RawURLDecode
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.bodyToString
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.currentTimeSeconds
@@ -31,6 +36,7 @@ import one.mixin.android.extension.remove
 import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toHex
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import timber.log.Timber
@@ -320,6 +326,27 @@ object Session {
             }
             return getEd25519KeyPair()?.publicKey?.let { EdDSAPublicKey(it.toByteString()) }
         }
+    }
+
+    private data class RouteAuthData(
+        @SerializedName("issued_at")
+        val issuedAt: Long,
+        val hash: String,
+    )
+
+    fun getRouteSignature(request: Request): String {
+        val edKeyPair = getEd25519KeyPair() ?: return ""
+        val botPk = MixinApplication.get().defaultSharedPreferences.getString(PREF_CHECKOUT_BOT_PUBLIC_KEY, null)?.base64RawURLDecode() ?: return ""
+        val private = privateKeyToCurve25519(edKeyPair.privateKey)
+        val sharedKey = calculateAgreement(botPk, private)
+        var bodyHash = ""
+        request.body?.apply {
+            if (contentLength() > 0) {
+                bodyHash = bodyToString().sha256().toHex()
+            }
+        }
+        val authData = RouteAuthData(currentTimeSeconds(), bodyHash)
+        return (requireNotNull(getAccountId()).toByteArray() + aesGcmEncrypt(GsonHelper.customGson.toJson(authData).toByteArray(), sharedKey)).base64RawURLEncode()
     }
 }
 
