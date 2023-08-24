@@ -300,14 +300,13 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         status = OrderStatus.PROCESSING
         binding.transparentMask.isVisible = true
         lifecycleScope.launch {
-            handleMixinResponse(
+            requestRouteAPI(
                 invokeNetwork = {
                     walletViewModel.createSession(
                         RouteSessionRequest(
                             null,
                             currency.name,
                             scheme,
-                            Session.getAccountId()!!,
                             asset.assetId,
                             amount,
                             instrumentId,
@@ -329,6 +328,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         showError(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription))
                     }
                 },
+                requestSession = { walletViewModel.fetchSessionsSuspend(listOf(Constants.ROUTE_API_BOT_USER_ID)) },
             )
         }
     }
@@ -433,14 +433,13 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 ).createToken(
                     GooglePayTokenRequest(tokenJsonPayload, { tokenDetails ->
                         lifecycleScope.launch {
-                            handleMixinResponse(
+                            requestRouteAPI(
                                 invokeNetwork = {
                                     walletViewModel.createSession(
                                         RouteSessionRequest(
                                             tokenDetails.token,
                                             currency.name,
                                             tokenDetails.scheme?.lowercase(),
-                                            Session.getAccountId()!!,
                                             asset.assetId,
                                             amount,
                                         ),
@@ -461,6 +460,9 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                                         showError(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription))
                                     }
                                 },
+                                requestSession = { walletViewModel.fetchSessionsSuspend(listOf(
+                                    Constants.ROUTE_API_BOT_USER_ID
+                                )) },
                             )
                         }
                     }, {

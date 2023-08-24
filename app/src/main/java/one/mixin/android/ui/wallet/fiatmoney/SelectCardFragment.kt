@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteSessionRequest
@@ -109,14 +110,13 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                 .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
                                 .remove(this).commitNow()
                             lifecycleScope.launch {
-                                handleMixinResponse(
+                                requestRouteAPI(
                                     invokeNetwork = {
                                         walletViewModel.createSession(
                                             RouteSessionRequest(
                                                 token,
                                                 currency.name,
                                                 scheme,
-                                                Session.getAccountId()!!,
                                                 asset.assetId,
                                                 amount,
                                             ),
@@ -169,6 +169,8 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                             )
                                         }
                                     },
+                                    requestSession = { walletViewModel.fetchSessionsSuspend(listOf(
+                                        Constants.ROUTE_API_BOT_USER_ID)) },
                                 )
                             }
                         }

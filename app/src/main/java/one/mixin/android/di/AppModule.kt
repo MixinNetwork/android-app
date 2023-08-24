@@ -440,9 +440,11 @@ object AppModule {
         val client = OkHttpClient.Builder().apply {
             addInterceptor { chain ->
                 val sourceRequest = chain.request()
-                val request = sourceRequest.newBuilder()
-                    .addHeader(xRouteSignature, Session.getRouteSignature(sourceRequest))
-                    .build()
+                val builder = sourceRequest.newBuilder()
+                if (!sourceRequest.url.toString().endsWith("checkout/ticker")) {
+                    builder.addHeader(xRouteSignature, Session.getRouteSignature(sourceRequest))
+                }
+                val request = builder.build()
                 return@addInterceptor chain.proceed(request)
             }
             httpLoggingInterceptor?.let { interceptor ->
