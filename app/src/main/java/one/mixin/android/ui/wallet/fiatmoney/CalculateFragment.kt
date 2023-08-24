@@ -45,7 +45,10 @@ import one.mixin.android.widget.Keyboard
 class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     companion object {
         const val TAG = "CalculateFragment"
-
+        private const val CURRENT_CURRENCY = "current_currency"
+        private const val CURRENT_ASSET_ID = "current_asset_id"
+        private val ASSET_IDS =
+            listOf("4d8c508b-91c5-375b-92b0-ee702ed2dac5", "9b180ab6-6abe-3dc0-a13f-04169eb34bfa")
         fun newInstance() = CalculateFragment()
     }
 
@@ -56,10 +59,20 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     private suspend fun initData() {
         val currencyList = getCurrencyData(requireContext().resources)
+        val currencyName = requireContext().defaultSharedPreferences.getString(
+            CURRENT_CURRENCY,
+            Session.getFiatCurrency()
+        )
+        val assetId = requireContext().defaultSharedPreferences.getString(
+            CURRENT_ASSET_ID,
+            "4d8c508b-91c5-375b-92b0-ee702ed2dac5"
+        )
         currency = currencyList.find {
-            it.name == Session.getFiatCurrency()
+            it.name == currencyName
         } ?: currencyList.first()
-        asset = walletViewModel.findAssetsByIds(listOf("4d8c508b-91c5-375b-92b0-ee702ed2dac5", "9b180ab6-6abe-3dc0-a13f-04169eb34bfa")).first()
+        asset = walletViewModel.findAssetsByIds(ASSET_IDS).let { list ->
+            list.find { it.assetId == assetId } ?: list.first()
+        }
     }
 
     private suspend fun refreshBotPublicKey() {
@@ -113,6 +126,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         ),
                     ).setOnAssetClick { asset ->
                         this@CalculateFragment.asset = asset
+                        requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, asset.assetId)
                         updateUI()
                     }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                 }
@@ -122,6 +136,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             override fun onCurrencyClick(currency: Currency) {
                                 this@CalculateFragment.lifecycleScope.launch {
                                     this@CalculateFragment.currency = currency
+                                    requireContext().defaultSharedPreferences.putString(CURRENT_CURRENCY, currency.name)
                                     refresh()
                                     updateUI()
                                 }
