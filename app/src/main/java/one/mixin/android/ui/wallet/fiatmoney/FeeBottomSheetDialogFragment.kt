@@ -14,8 +14,10 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentFeeBottomSheetBinding
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment.Companion.ARGS_INFO
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
@@ -25,7 +27,8 @@ class FeeBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "FeeBottomSheetDialogFragment"
 
-        fun newInstance() = FeeBottomSheetDialogFragment().withArgs {
+        fun newInstance(info: OrderInfo) = FeeBottomSheetDialogFragment().withArgs {
+            putParcelable(ARGS_INFO, info)
         }
     }
 
@@ -63,10 +66,15 @@ class FeeBottomSheetDialogFragment : BottomSheetDialogFragment() {
             dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, requireContext().dpToPx(300f))
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
+        val info = requireNotNull(
+            requireArguments().getParcelableCompat(
+                ARGS_INFO,
+                OrderInfo::class.java,
+            ),
+        )
         binding.apply {
             okTv.setOnClickListener { dismiss() }
-            processingFeeTv.text = "1.23 USD"
-            networkFeeTv.text = "0 USD"
+            feeTv.text = info.feePercent
         }
     }
 

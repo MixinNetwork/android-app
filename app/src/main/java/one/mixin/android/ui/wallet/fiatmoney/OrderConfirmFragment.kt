@@ -18,8 +18,10 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.WalletViewModel
@@ -84,12 +86,16 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
             buyVa.setOnClickListener {
                 if (buyVa.displayedChild != 2) {
-                    it.navigate(
-                        R.id.action_wallet_confirm_to_status,
-                        requireArguments().apply {
-                            putParcelable(ARGS_INFO, info)
-                        },
-                    )
+                    VerifyBottomSheetDialogFragment.newInstance(getString(R.string.Verify_PIN), true).apply {
+                        disableToast = true
+                    }.setOnPinSuccess { _ ->
+                        it.navigate(
+                            R.id.action_wallet_confirm_to_status,
+                            requireArguments().apply {
+                                putParcelable(ARGS_INFO, info)
+                            },
+                        )
+                    }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
                 }
             }
             titleView.rightAnimator.setOnClickListener { }
@@ -110,12 +116,14 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                     .showNow(parentFragmentManager, PriceExpiredBottomSheetDialogFragment.TAG)
             }
             feeRl.setOnClickListener {
-                FeeBottomSheetDialogFragment.newInstance()
-                    .showNow(parentFragmentManager, FeeBottomSheetDialogFragment.TAG)
+                if (info.feePercent != "") {
+                    FeeBottomSheetDialogFragment.newInstance(info).showNow(parentFragmentManager, FeeBottomSheetDialogFragment.TAG)
+                } else {
+                    toast(R.string.Please_wait_a_bit)
+                }
             }
             buyVa.isEnabled = false
 
-            // Todo real data
             payWith.text = if (isGooglePay) {
                 "Google Pay"
             } else {
@@ -143,6 +151,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
         "loading..",
         "loading...",
         "loading...",
+        "",
     )
 
     @SuppressLint("SetTextI18n")
@@ -166,6 +175,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                                 "${ticker?.purchase} ${ticker?.currency}",
                                 "${ticker?.fee} ${ticker?.currency}",
                                 "${ticker?.totalAmount} ${ticker?.currency}",
+                                "${ticker?.feePercent}",
                             )
                             binding.apply {
                                 priceTv.text = info.price

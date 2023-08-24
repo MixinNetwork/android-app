@@ -1283,7 +1283,7 @@
     <string name="Old_Price">Old Price</string>
     <string name="Fee_desc">You may be charged in addition to the order by your bank, please contact your bank for more information.</string>
     <string name="Processing_Fee">Processing Fee</string>
-    <string name="Fees_tip">You may not cost more fees by bank.</string>
+    <string name="Fees_tip">You may cost more fees by bank.</string>
     <string name="Use_New_Price">Use New Price</string>
     <string name="Google_Pay_error">Google pay is not available</string>
 </resources>

@@ -161,8 +161,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 if (isTwoDecimal(v)) {
                                     binding.primaryTv.shaking()
                                     return
-                                } 
-                                else if (v == "0" && value != ".") {
+                                } else if (v == "0" && value != ".") {
                                     v = value
                                 } else if (value == "." && v.contains(".")) {
                                     // do noting

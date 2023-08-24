@@ -1254,6 +1254,6 @@
     <string name="Old_Price">旧价格</string>
     <string name="Fee_desc">除了订单金额之外，您的银行可能会额外收取费用，请与您的银行联系以获取更多信息。</string>
     <string name="Processing_Fee">处理费</string>
-    <string name="Fees_tip">您的银行可能不会收取额外费用。</string>
+    <string name="Fees_tip">您的银行可能会收取额外费用。</string>
     <string name="Use_New_Price">使用新价格</string>
 </resources>
