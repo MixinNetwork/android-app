@@ -318,6 +318,10 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     ErrorHandler.handleError(it)
                     showError(it.message)
                 },
+                failureBlock = {
+                    showError(it.errorDescription)
+                    true
+                },
                 successBlock = { response ->
                     if (response.isSuccess) {
                         init3DS(response.data!!)
@@ -445,6 +449,10 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                                 defaultExceptionHandle = {
                                     ErrorHandler.handleError(it)
                                     showError(it.message)
+                                },
+                                failureBlock = {
+                                    showError(it.errorDescription)
+                                    true
                                 },
                                 successBlock = { response ->
                                     if (response.isSuccess) {

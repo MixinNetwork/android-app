@@ -124,6 +124,18 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                         addVa.displayedChild = 0
                                         dismissLoading()
                                     },
+                                    failureBlock = {response->
+                                        toast(response.errorDescription)
+                                        view.navigate(
+                                            R.id.action_wallet_card_to_payment,
+                                            Bundle().apply {
+                                                putInt(ARGS_AMOUNT, amount)
+                                                putParcelable(ARGS_ASSET, asset)
+                                                putParcelable(ARGS_CURRENCY, currency)
+                                            },
+                                        )
+                                        true
+                                    },
                                     successBlock = { response ->
                                         if (response.isSuccess) {
                                             val last4 = response.data?.last4
