@@ -13,7 +13,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteSessionRequest
 import one.mixin.android.databinding.FragmentSelectCardBinding
 import one.mixin.android.databinding.ItemCardBinding
@@ -23,7 +22,6 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.round
 import one.mixin.android.extension.toast
-import one.mixin.android.session.Session
 import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
@@ -126,7 +124,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                         addVa.displayedChild = 0
                                         dismissLoading()
                                     },
-                                    failureBlock = {response->
+                                    failureBlock = { response ->
                                         toast(response.errorDescription)
                                         view.navigate(
                                             R.id.action_wallet_card_to_payment,
@@ -169,8 +167,13 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                             )
                                         }
                                     },
-                                    requestSession = { walletViewModel.fetchSessionsSuspend(listOf(
-                                        Constants.ROUTE_API_BOT_USER_ID)) },
+                                    requestSession = {
+                                        walletViewModel.fetchSessionsSuspend(
+                                            listOf(
+                                                Constants.ROUTE_API_BOT_USER_ID,
+                                            ),
+                                        )
+                                    },
                                 )
                             }
                         }

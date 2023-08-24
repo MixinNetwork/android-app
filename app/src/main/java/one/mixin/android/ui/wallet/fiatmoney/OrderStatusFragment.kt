@@ -36,7 +36,6 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ENVIRONMENT_3DS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteSessionRequest
 import one.mixin.android.api.response.RoutePaymentStatus
 import one.mixin.android.api.response.RouteSessionResponse
@@ -467,9 +466,13 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                                         showError(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription))
                                     }
                                 },
-                                requestSession = { walletViewModel.fetchSessionsSuspend(listOf(
-                                    Constants.ROUTE_API_BOT_USER_ID
-                                )) },
+                                requestSession = {
+                                    walletViewModel.fetchSessionsSuspend(
+                                        listOf(
+                                            Constants.ROUTE_API_BOT_USER_ID,
+                                        ),
+                                    )
+                                },
                             )
                         }
                     }, {

@@ -61,11 +61,11 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         val currencyList = getCurrencyData(requireContext().resources)
         val currencyName = requireContext().defaultSharedPreferences.getString(
             CURRENT_CURRENCY,
-            Session.getFiatCurrency()
+            Session.getFiatCurrency(),
         )
         val assetId = requireContext().defaultSharedPreferences.getString(
             CURRENT_ASSET_ID,
-            "4d8c508b-91c5-375b-92b0-ee702ed2dac5"
+            "4d8c508b-91c5-375b-92b0-ee702ed2dac5",
         )
         currency = currencyList.find {
             it.name == currencyName
@@ -161,7 +161,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 if (isTwoDecimal(v)) {
                                     binding.primaryTv.shaking()
                                     return
-                                }else if (v == "0" && value != ".") {
+                                } 
+                                else if (v == "0" && value != ".") {
                                     v = value
                                 } else if (value == "." && v.contains(".")) {
                                     // do noting
