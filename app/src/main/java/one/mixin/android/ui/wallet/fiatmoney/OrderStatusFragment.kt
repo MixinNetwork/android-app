@@ -27,6 +27,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.wallet.PaymentData
+import com.mapbox.maps.extension.style.expressions.dsl.generated.color
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -41,8 +42,10 @@ import one.mixin.android.api.response.RoutePaymentStatus
 import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteSessionStatus
 import one.mixin.android.databinding.FragmentOrderStatusBinding
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.highLight
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -94,6 +97,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         requireArguments().getString(ARGS_SCHEME)
     }
 
+    private var assetAmount = ""
     private var status = OrderStatus.INITIALIZED
         private set(value) {
             if (field != value) {
@@ -113,7 +117,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         binding.bottomVa.displayedChild = 0
         binding.topVa.displayedChild = 0
         binding.title.setText(R.string.Success)
-        binding.content.text = getString(R.string.Success_desc, asset.symbol, asset.symbol)
+        binding.content.text = getString(R.string.Success_desc, assetAmount, asset.symbol, asset.symbol)
+        binding.content.highLight("$assetAmount ${asset.symbol}", color = requireContext().colorFromAttribute(R.attr.text_primary))
     }
 
     private fun failed() {
@@ -379,6 +384,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             if (response.isSuccess) {
                 binding.transparentMask.isVisible = false
                 if (response.data?.status == RoutePaymentStatus.Captured.name) {
+                    assetAmount = response.data!!.assetAmount
                     status = OrderStatus.SUCCESS
                 } else {
                     val paymentId = response.data?.paymentId
@@ -406,6 +412,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             while (true) {
                 val response = walletViewModel.payment(paymentId)
                 if (response.data?.status == RoutePaymentStatus.Captured.name) {
+                    assetAmount = response.data!!.assetAmount
                     status = OrderStatus.SUCCESS
                     break
                 } else if (response.isSuccess) {

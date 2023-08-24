@@ -1277,7 +1277,7 @@
     <string name="Processing">Processing</string>
     <string name="Failed">Failed</string>
     <string name="Processing_desc">Payment request has been submitted, your payment and order information is being checked, please wait patiently</string>
-    <string name="Success_desc">Successful purchase of %1$s! Your %2$s will be transferred directly to Mixin wallet later. Please wait patiently.</string>
+    <string name="Success_desc">Successful purchase of %1$s %2$s ! %3$s will be transferred directly to Mixin wallet.</string>
     <string name="Price_Expired">Price Expired</string>
     <string name="New_Price">New price</string>
     <string name="Old_Price">Old Price</string>
