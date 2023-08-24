@@ -315,7 +315,7 @@ object Constants {
         "VISA",
     )
 
-    const val ROUTE_API_BOT_USER_ID = "a82e1a6a-75c9-4013-80bc-10183eef49a2"
+    const val ROUTE_API_BOT_USER_ID = "61cb8dd4-16b1-4744-ba0c-7b2d2e52fc59"
 
     const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_PRODUCTION
 
