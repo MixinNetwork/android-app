@@ -234,7 +234,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     }
 
     private fun dismissLoading() {
-        loading.dismiss()
+        if (loading.isAdded) {
+            loading.dismiss()
+        }
     }
 
     @SuppressLint("SetTextI18n")

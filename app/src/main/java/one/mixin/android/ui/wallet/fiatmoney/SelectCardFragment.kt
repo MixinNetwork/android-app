@@ -83,7 +83,9 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
     }
 
     private fun dismissLoading() {
-        loading.dismiss()
+        if (loading.isAdded) {
+            loading.dismiss()
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
