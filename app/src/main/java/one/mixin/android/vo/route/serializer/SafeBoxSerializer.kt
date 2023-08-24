@@ -1,4 +1,4 @@
-package one.mixin.android.vo.checkout.serializer
+package one.mixin.android.vo.route.serializer
 
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.Serializer

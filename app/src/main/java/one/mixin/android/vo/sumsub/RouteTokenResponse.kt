@@ -2,7 +2,7 @@ package one.mixin.android.vo.sumsub
 
 import com.google.gson.annotations.SerializedName
 
-class TokenResponse(
+class RouteTokenResponse(
     @SerializedName("token")
     val token: String? = null,
     @SerializedName("state")

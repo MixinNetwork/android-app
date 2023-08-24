@@ -2,7 +2,7 @@ package one.mixin.android.api.response
 
 import com.google.gson.annotations.SerializedName
 
-class CheckoutPaymentResponse(
+class RoutePaymentResponse(
     @SerializedName("payment_id")
     val paymentId: String,
     @SerializedName("amount")
@@ -15,4 +15,4 @@ class CheckoutPaymentResponse(
     val status: String,
 )
 
-enum class CheckoutPaymentStatus { Authorized, Captured }
+enum class RoutePaymentStatus { Authorized, Captured }

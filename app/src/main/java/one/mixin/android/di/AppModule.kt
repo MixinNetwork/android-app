@@ -49,7 +49,7 @@ import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.AuthorizationService
-import one.mixin.android.api.service.CheckoutService
+import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.api.service.ConversationService
@@ -99,7 +99,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.SafeBox
-import one.mixin.android.vo.checkout.serializer.SafeBoxSerializer
+import one.mixin.android.vo.route.serializer.SafeBoxSerializer
 import one.mixin.android.webrtc.CallDebugLiveData
 import one.mixin.android.websocket.ChatWebSocket
 import org.chromium.net.CronetEngine
@@ -436,7 +436,7 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideCheckoutService(httpLoggingInterceptor: HttpLoggingInterceptor?): CheckoutService {
+    fun provideRouteService(httpLoggingInterceptor: HttpLoggingInterceptor?): RouteService {
         val client = OkHttpClient.Builder().apply {
             addInterceptor { chain ->
                 val sourceRequest = chain.request()
@@ -455,7 +455,7 @@ object AppModule {
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .client(client)
             .build()
-        return retrofit.create(CheckoutService::class.java)
+        return retrofit.create(RouteService::class.java)
     }
 
     @Provides

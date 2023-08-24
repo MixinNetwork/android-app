@@ -11,7 +11,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ROUTE_API_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.request.TickerRequest
+import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.databinding.FragmentCalculateBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
@@ -19,6 +19,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.shaking
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -76,7 +77,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         showLoading()
         requestRouteAPI(
             invokeNetwork = {
-                walletViewModel.ticker(TickerRequest(0, currency.name, asset.assetId))
+                walletViewModel.ticker(RouteTickerRequest(0, currency.name, asset.assetId))
             },
             endBlock = {
                 dismissLoading()
@@ -142,7 +143,10 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                     v.substring(0, v.length - 1)
                                 }
                             } else {
-                                if (v == "0" && value != ".") {
+                                if (isTwoDecimal(v)) {
+                                    binding.primaryTv.shaking()
+                                    return
+                                }else if (v == "0" && value != ".") {
                                     v = value
                                 } else if (value == "." && v.contains(".")) {
                                     // do noting
@@ -191,6 +195,10 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             updateUI()
             binding.info.text = getString(R.string.Value_info, minimun, currency.name, maxinum, currency.name)
         }
+    }
+
+    private fun isTwoDecimal(string: String): Boolean {
+        return string.matches(Regex("\\d+\\.\\d{2}"))
     }
 
     private var isReverse = false

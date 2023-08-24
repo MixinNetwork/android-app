@@ -16,18 +16,17 @@ import one.mixin.android.Constants
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
-import one.mixin.android.api.request.CheckoutSessionRequest
-import one.mixin.android.api.request.CreateSessionRequest
+import one.mixin.android.api.request.RouteSessionRequest
 import one.mixin.android.api.request.Pin
-import one.mixin.android.api.request.TickerRequest
+import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
-import one.mixin.android.api.response.CheckoutPaymentResponse
-import one.mixin.android.api.response.CreateSessionResponse
-import one.mixin.android.api.response.TickerResponse
+import one.mixin.android.api.response.RoutePaymentResponse
+import one.mixin.android.api.response.RouteSessionResponse
+import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
-import one.mixin.android.api.service.CheckoutService
+import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.AssetsExtraDao
@@ -54,9 +53,9 @@ import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
-import one.mixin.android.vo.checkout.PaymentRequest
-import one.mixin.android.vo.sumsub.TokenRequest
-import one.mixin.android.vo.sumsub.TokenResponse
+import one.mixin.android.vo.route.RoutePaymentRequest
+import one.mixin.android.vo.sumsub.RouteTokenRequest
+import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
 import javax.inject.Inject
@@ -68,7 +67,7 @@ class AssetRepository
 constructor(
     private val appDatabase: MixinDatabase,
     private val assetService: AssetService,
-    private val checkoutService: CheckoutService,
+    private val routeService: RouteService,
     private val assetDao: AssetDao,
     private val assetsExtraDao: AssetsExtraDao,
     private val snapshotDao: SnapshotDao,
@@ -436,7 +435,7 @@ constructor(
 
     suspend fun ticker(assetId: String, offset: String?) = assetService.ticker(assetId, offset)
 
-    suspend fun ticker(tickerRequest: TickerRequest): MixinResponse<TickerResponse> = checkoutService.ticker(tickerRequest)
+    suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> = routeService.ticker(tickerRequest)
 
     suspend fun findSnapshotByTransactionHashList(assetId: String, hashList: List<String>): List<String> =
         snapshotDao.findSnapshotIdsByTransactionHashList(assetId, hashList)
@@ -463,16 +462,16 @@ constructor(
             },
         )
 
-    suspend fun token(): MixinResponse<TokenResponse> =
-        checkoutService.sumsubToken(TokenRequest(requireNotNull(Session.getAccountId())))
+    suspend fun token(): MixinResponse<RouteTokenResponse> =
+        routeService.sumsubToken(RouteTokenRequest(requireNotNull(Session.getAccountId())))
 
-    suspend fun payment(traceRequest: PaymentRequest): MixinResponse<CheckoutPaymentResponse> = checkoutService.payment(traceRequest)
+    suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = routeService.payment(traceRequest)
 
-    suspend fun payment(paymentId: String): MixinResponse<CheckoutPaymentResponse> = checkoutService.payment(paymentId)
+    suspend fun payment(paymentId: String): MixinResponse<RoutePaymentResponse> = routeService.payment(paymentId)
 
-    suspend fun createSession(createSession: CreateSessionRequest): MixinResponse<CreateSessionResponse> = checkoutService.createSession(createSession)
+    suspend fun createSession(createSession: RouteSessionRequest): MixinResponse<RouteSessionResponse> = routeService.createSession(createSession)
 
-    suspend fun getSession(sessionId: String): MixinResponse<CheckoutSessionRequest> = checkoutService.getSession(sessionId)
+    suspend fun getSession(sessionId: String): MixinResponse<RouteSessionResponse> = routeService.getSession(sessionId)
 
     fun cards() = safeBox.data.asLiveData()
 

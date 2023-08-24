@@ -2,7 +2,7 @@ package one.mixin.android.api.request
 
 import com.google.gson.annotations.SerializedName
 
-class TickerRequest(
+class RouteTickerRequest(
     @SerializedName("amount")
     val amount: Int,
     @SerializedName("currency")

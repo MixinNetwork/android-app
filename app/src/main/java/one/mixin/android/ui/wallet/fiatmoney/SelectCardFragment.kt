@@ -13,7 +13,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.request.CreateSessionRequest
+import one.mixin.android.api.request.RouteSessionRequest
 import one.mixin.android.databinding.FragmentSelectCardBinding
 import one.mixin.android.databinding.ItemCardBinding
 import one.mixin.android.extension.dp
@@ -38,7 +38,6 @@ import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Card
-import timber.log.Timber
 
 @AndroidEntryPoint
 class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
@@ -111,7 +110,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                 handleMixinResponse(
                                     invokeNetwork = {
                                         walletViewModel.createSession(
-                                            CreateSessionRequest(
+                                            RouteSessionRequest(
                                                 token,
                                                 currency.name,
                                                 scheme,

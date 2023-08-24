@@ -2,7 +2,7 @@ package one.mixin.android.api.request
 
 import com.google.gson.annotations.SerializedName
 
-class CreateSessionRequest(
+class RouteSessionRequest(
     @SerializedName("token")
     val token: String?,
     @SerializedName("currency")

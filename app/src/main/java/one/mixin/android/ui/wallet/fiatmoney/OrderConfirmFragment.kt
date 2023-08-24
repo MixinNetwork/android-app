@@ -11,7 +11,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.request.TickerRequest
+import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.databinding.FragmentOrderConfirmBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
@@ -152,7 +152,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             while (true) {
                 if (time == 10) {
                     val response = try {
-                        walletViewModel.ticker(TickerRequest(amount, currency.name, asset.assetId))
+                        walletViewModel.ticker(RouteTickerRequest(amount, currency.name, asset.assetId))
                     } catch (e: Exception) {
                         Timber.e(e)
                         return@launch

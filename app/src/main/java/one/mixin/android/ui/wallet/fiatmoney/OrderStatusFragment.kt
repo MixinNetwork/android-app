@@ -36,10 +36,10 @@ import one.mixin.android.Constants.ENVIRONMENT_3DS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.request.CreateSessionRequest
-import one.mixin.android.api.request.SessionStatus
-import one.mixin.android.api.response.CheckoutPaymentStatus
-import one.mixin.android.api.response.CreateSessionResponse
+import one.mixin.android.api.request.RouteSessionRequest
+import one.mixin.android.api.response.RoutePaymentStatus
+import one.mixin.android.api.response.RouteSessionResponse
+import one.mixin.android.api.response.RouteSessionStatus
 import one.mixin.android.databinding.FragmentOrderStatusBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
@@ -54,7 +54,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.checkout.PaymentRequest
+import one.mixin.android.vo.route.RoutePaymentRequest
 import timber.log.Timber
 import java.util.Locale
 
@@ -212,13 +212,13 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         }
     }
 
-    private fun init3DS(sessionResponse: CreateSessionResponse) {
+    private fun init3DS(sessionResponse: RouteSessionResponse) {
         val checkout3DS = Checkout3DSService(
             MixinApplication.appContext,
             ENVIRONMENT_3DS,
             Locale.US,
             null,
-            Uri.parse("mixin://checkout"),
+            Uri.parse("mixin://buy"),
         )
 
         val authenticationParameters = AuthenticationParameters(
@@ -239,13 +239,13 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                                 return@launch
                             }
                             if (session.isSuccess) {
-                                if (session.data?.status == SessionStatus.Approved.value) {
+                                if (session.data?.status == RouteSessionStatus.Approved.value) {
                                     payments(
                                         sessionId = sessionResponse.sessionId,
                                         sessionResponse.instrumentId,
                                     )
                                     break
-                                } else if (session.data?.status != SessionStatus.Pending.value && session.data?.status != SessionStatus.Processing.value) {
+                                } else if (session.data?.status != RouteSessionStatus.Pending.value && session.data?.status != RouteSessionStatus.Processing.value) {
                                     showError(session.data?.status ?: session.errorDescription)
                                     return@launch
                                 }
@@ -303,7 +303,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             handleMixinResponse(
                 invokeNetwork = {
                     walletViewModel.createSession(
-                        CreateSessionRequest(
+                        RouteSessionRequest(
                             null,
                             currency.name,
                             scheme,
@@ -363,7 +363,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     private fun payments(sessionId: String, instrumentId: String) = lifecycleScope.launch {
         try {
             val response = walletViewModel.payment(
-                PaymentRequest(
+                RoutePaymentRequest(
                     asset.assetId,
                     Session.getAccountId()!!,
                     sessionId,
@@ -374,7 +374,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             )
             if (response.isSuccess) {
                 binding.transparentMask.isVisible = false
-                if (response.data?.status == CheckoutPaymentStatus.Captured.name) {
+                if (response.data?.status == RoutePaymentStatus.Captured.name) {
                     status = OrderStatus.SUCCESS
                 } else {
                     val paymentId = response.data?.paymentId
@@ -401,7 +401,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         lifecycleScope.launch {
             while (true) {
                 val response = walletViewModel.payment(paymentId)
-                if (response.data?.status == CheckoutPaymentStatus.Captured.name) {
+                if (response.data?.status == RoutePaymentStatus.Captured.name) {
                     status = OrderStatus.SUCCESS
                     break
                 } else if (response.isSuccess) {
@@ -432,7 +432,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                             handleMixinResponse(
                                 invokeNetwork = {
                                     walletViewModel.createSession(
-                                        CreateSessionRequest(
+                                        RouteSessionRequest(
                                             tokenDetails.token,
                                             currency.name,
                                             tokenDetails.scheme?.lowercase(),

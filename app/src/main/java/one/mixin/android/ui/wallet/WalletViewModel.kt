@@ -33,11 +33,11 @@ import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.Constants.PAYMENTS_GATEWAY
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.request.CreateSessionRequest
-import one.mixin.android.api.request.TickerRequest
-import one.mixin.android.api.response.CheckoutPaymentResponse
-import one.mixin.android.api.response.CreateSessionResponse
-import one.mixin.android.api.response.TickerResponse
+import one.mixin.android.api.request.RouteSessionRequest
+import one.mixin.android.api.request.RouteTickerRequest
+import one.mixin.android.api.response.RoutePaymentResponse
+import one.mixin.android.api.response.RouteSessionResponse
+import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
@@ -55,8 +55,8 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
-import one.mixin.android.vo.checkout.PaymentRequest
-import one.mixin.android.vo.sumsub.TokenResponse
+import one.mixin.android.vo.route.RoutePaymentRequest
+import one.mixin.android.vo.sumsub.RouteTokenResponse
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -271,7 +271,7 @@ internal constructor(
 
     suspend fun ticker(assetId: String, offset: String?) = assetRepository.ticker(assetId, offset)
 
-    suspend fun ticker(tickerRequest: TickerRequest): MixinResponse<TickerResponse> =
+    suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> =
         assetRepository.ticker(tickerRequest)
 
     suspend fun refreshSnapshot(snapshotId: String): SnapshotItem? {
@@ -286,13 +286,13 @@ internal constructor(
     suspend fun getExternalAddressFee(assetId: String, destination: String, tag: String?) =
         accountRepository.getExternalAddressFee(assetId, destination, tag)
 
-    suspend fun token(): MixinResponse<TokenResponse> = assetRepository.token()
+    suspend fun token(): MixinResponse<RouteTokenResponse> = assetRepository.token()
 
-    suspend fun payment(traceRequest: PaymentRequest): MixinResponse<CheckoutPaymentResponse> = assetRepository.payment(traceRequest)
+    suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = assetRepository.payment(traceRequest)
 
-    suspend fun payment(paymentId: String): MixinResponse<CheckoutPaymentResponse> = assetRepository.payment(paymentId)
+    suspend fun payment(paymentId: String): MixinResponse<RoutePaymentResponse> = assetRepository.payment(paymentId)
 
-    suspend fun createSession(createSession: CreateSessionRequest): MixinResponse<CreateSessionResponse> = assetRepository.createSession(createSession)
+    suspend fun createSession(createSession: RouteSessionRequest): MixinResponse<RouteSessionResponse> = assetRepository.createSession(createSession)
 
     suspend fun getSession(sessionId: String) = assetRepository.getSession(sessionId)
 

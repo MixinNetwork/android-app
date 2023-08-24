@@ -1,4 +1,4 @@
-package one.mixin.android.vo.checkout
+package one.mixin.android.vo.route
 
 import com.google.gson.annotations.SerializedName
 

@@ -2,7 +2,7 @@ package one.mixin.android.api.response
 
 import com.google.gson.annotations.SerializedName
 
-class TickerResponse(
+class RouteTickerResponse(
     @SerializedName("currency")
     val currency: String,
     @SerializedName("total_amount")
