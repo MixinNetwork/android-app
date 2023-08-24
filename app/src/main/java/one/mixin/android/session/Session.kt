@@ -30,6 +30,7 @@ import one.mixin.android.extension.currentTimeSeconds
 import one.mixin.android.extension.cutOut
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.hmacSha256
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
@@ -342,7 +343,7 @@ object Session {
         var bodyHash = ""
         request.body?.apply {
             if (contentLength() > 0) {
-                bodyHash = bodyToString().sha256().toHex()
+                bodyHash = bodyToString().hmacSha256(sharedKey).toHex()
             }
         }
         val authData = RouteAuthData(currentTimeSeconds(), bodyHash)

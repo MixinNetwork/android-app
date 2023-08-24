@@ -49,6 +49,8 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 import kotlin.collections.set
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -218,6 +220,15 @@ inline fun String.sha256(): ByteArray = toByteArray().sha256()
 inline fun ByteArray.sha256(): ByteArray {
     val md = MessageDigest.getInstance("SHA256")
     return md.digest(this)
+}
+
+inline fun String.hmacSha256(key: ByteArray) = toByteArray().hmacSha256(key)
+
+inline fun ByteArray.hmacSha256(key: ByteArray): ByteArray {
+    val alg = "HmacSHA256"
+    val mac = Mac.getInstance(alg)
+    mac.init(SecretKeySpec(key, alg))
+    return mac.doFinal(this)
 }
 
 inline fun String.isWebUrl(): Boolean {
