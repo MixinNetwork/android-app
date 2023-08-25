@@ -7,8 +7,10 @@ import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSelectPaymentBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navigate
+import one.mixin.android.extension.round
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
@@ -49,6 +51,8 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
             titleView.setSubTitle(getString(R.string.Select_Payment), "")
+            firstRl.round(8.dp)
+            secondRl.round(8.dp)
             firstRl.setOnClickListener {
                 if (walletViewModel.state.value.googlePayAvailable != true) {
                     // toast(R.string.Google_Pay_error)
