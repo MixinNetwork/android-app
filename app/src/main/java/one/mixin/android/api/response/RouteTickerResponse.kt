@@ -17,8 +17,8 @@ class RouteTickerResponse(
     val assetAmount: String,
     @SerializedName("fee_percent")
     val feePercent: String,
-    @SerializedName("minimun")
-    val minimun: String,
+    @SerializedName("minimum")
+    val minimum: String,
     @SerializedName("maximum")
     val maximum: String,
 )

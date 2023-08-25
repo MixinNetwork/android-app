@@ -52,7 +52,8 @@
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
             android:src="@drawable/ic_switch"
-            tools:ignore="ContentDescription"
+            android:text="0"
+            tools:ignore="ContentDescription,HardcodedText"
             app:layout_constraintTop_toTopOf="@id/primary_tv"
             app:layout_constraintBottom_toBottomOf="@id/primary_tv"
             app:layout_constraintEnd_toEndOf="parent" />
