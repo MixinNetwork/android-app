@@ -6,7 +6,6 @@ import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
@@ -165,6 +164,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     }.showNow(parentFragmentManager, FiatListBottomSheetDialogFragment.TAG)
                 }
                 keyboard.tipTitleEnabled = false
+                keyboard.white(requireContext())
                 keyboard.setOnClickKeyboardListener(
                     object : Keyboard.OnClickKeyboardListener {
                         override fun onKeyClick(position: Int, value: String) {

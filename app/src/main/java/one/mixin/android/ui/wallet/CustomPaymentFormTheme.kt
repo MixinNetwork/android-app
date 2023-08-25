@@ -1,5 +1,8 @@
 package one.mixin.android.ui.wallet
 
+import com.checkout.frames.style.theme.DefaultPaymentFormTheme
+import com.checkout.frames.style.theme.PaymentFormComponentBuilder
+import com.checkout.frames.style.theme.PaymentFormComponentField
 import com.checkout.frames.style.theme.PaymentFormTheme
 import com.checkout.frames.style.theme.PaymentFormThemeColors
 
@@ -27,6 +30,16 @@ object CustomPaymentFormTheme {
     fun providePaymentFormTheme(isNightMode: Boolean): PaymentFormTheme {
         return PaymentFormTheme(
             paymentFormThemeColors = if (isNightMode) paymentNightFormThemeColors else paymentFormThemeColors,
+            paymentFormComponents = DefaultPaymentFormTheme.providePaymentFormComponents(
+                addBillingSummaryButton = PaymentFormComponentBuilder()
+                    .setIsFieldOptional(true)
+                    .setPaymentFormField(PaymentFormComponentField.AddBillingSummaryButton)
+                    .build(),
+                editBillingSummaryButton = PaymentFormComponentBuilder()
+                    .setIsFieldOptional(true)
+                    .setPaymentFormField(PaymentFormComponentField.AddBillingSummaryButton)
+                    .build(),
+            ),
         )
     }
 }

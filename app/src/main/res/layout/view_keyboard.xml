@@ -32,6 +32,7 @@
         android:background="?attr/bg_window" />
 
     <View
+        android:id="@+id/diver"
         android:layout_width="match_parent"
         android:layout_height="1px"
         android:background="?attr/bg_window" />

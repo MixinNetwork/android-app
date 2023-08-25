@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import com.checkout.base.model.CardScheme
 import com.checkout.frames.api.PaymentFlowHandler
 import com.checkout.frames.api.PaymentFormMediator
-import com.checkout.frames.screen.paymentform.PaymentFormConfig
+import com.checkout.frames.screen.paymentform.model.PaymentFormConfig
 import com.checkout.frames.style.theme.paymentform.PaymentFormStyleProvider
 import com.checkout.tokenization.model.TokenDetails
 import one.mixin.android.BuildConfig

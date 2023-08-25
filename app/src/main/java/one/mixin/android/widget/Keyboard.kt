@@ -13,6 +13,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemGridKeyboardBinding
 import one.mixin.android.databinding.ViewKeyboardBinding
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.session.Session
@@ -108,5 +109,10 @@ class Keyboard @JvmOverloads constructor(
             this.key = key ?: listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "<<")
             initKeyboardView()
         }
+    }
+
+    fun white(context: Context) {
+        binding.gvKeyboard.setBackgroundColor(context.colorFromAttribute(R.attr.bg_white))
+        binding.diver.isVisible = false
     }
 }
