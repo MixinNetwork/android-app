@@ -121,7 +121,8 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
         val snsSdk = SNSMobileSDK.Builder(requireActivity())
             .withHandlers(onStateChanged = onSDKStateChangedHandler, onError = onSDKErrorHandler, onCompleted = onSDKCompletedHandler)
             .withAccessToken(accessToken, onTokenExpiration = tokenExpirationHandler)
-            .withLocale(Locale("en")).build()
+            .withLocale(Locale("en"))
+            .build()
 
         snsSdk.launch()
     }

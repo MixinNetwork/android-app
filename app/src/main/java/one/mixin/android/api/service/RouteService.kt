@@ -7,7 +7,6 @@ import one.mixin.android.api.response.RoutePaymentResponse
 import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.vo.route.RoutePaymentRequest
-import one.mixin.android.vo.sumsub.RouteTokenRequest
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -30,6 +29,6 @@ interface RouteService {
     @POST("/checkout/ticker")
     suspend fun ticker(@Body ticker: RouteTickerRequest): MixinResponse<RouteTickerResponse>
 
-    @POST("/kyc/token")
-    suspend fun sumsubToken(@Body request: RouteTokenRequest): MixinResponse<RouteTokenResponse>
+    @GET("/kyc/token")
+    suspend fun sumsubToken(): MixinResponse<RouteTokenResponse>
 }
