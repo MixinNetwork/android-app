@@ -6,6 +6,10 @@ object AmountUtil {
         "KRW",
     )
 
+    fun fullCurrency(currency: String): Boolean {
+        return full_currency.contains(currency)
+    }
+
     fun toAmount(value: String, currency: String): Int? {
         val v = value.toFloatOrNull() ?: return null
         if (currency in full_currency) {

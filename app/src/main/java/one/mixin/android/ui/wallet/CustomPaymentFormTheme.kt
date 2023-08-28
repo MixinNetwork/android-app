@@ -53,12 +53,13 @@ object CustomPaymentFormTheme {
             ),
             paymentFormShape = PaymentFormShape(
                 inputFieldShape = Shape.RoundCorner,
-                addressSummaryShape = Shape.Rectangle, buttonShape = Shape.Circle
+                addressSummaryShape = Shape.Rectangle,
+                buttonShape = Shape.Circle,
             ),
             paymentFormCornerRadius = PaymentFormCornerRadius(
                 inputFieldCornerRadius = CornerRadius(12),
-                addressSummaryCornerRadius = CornerRadius(12)
-            )
+                addressSummaryCornerRadius = CornerRadius(12),
+            ),
         )
     }
 }

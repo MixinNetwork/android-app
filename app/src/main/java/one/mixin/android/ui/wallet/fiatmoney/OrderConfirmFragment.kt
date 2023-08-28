@@ -24,7 +24,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
-import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment.Companion.ARGS_INFO
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
@@ -49,7 +48,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     }
 
     private val binding by viewBinding(FragmentOrderConfirmBinding::bind)
-    private val walletViewModel by viewModels<WalletViewModel>()
+    private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
     private lateinit var asset: AssetItem
     private var amount: Int = 0
     private lateinit var currency: Currency
@@ -161,7 +160,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             while (true) {
                 if (time == 10) {
                     val response = try {
-                        walletViewModel.ticker(RouteTickerRequest(amount, currency.name, asset.assetId))
+                        fiatMoneyViewModel.ticker(RouteTickerRequest(amount, currency.name, asset.assetId))
                     } catch (e: Exception) {
                         Timber.e(e)
                         return@launch

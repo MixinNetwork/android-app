@@ -38,7 +38,6 @@ import one.mixin.android.db.TraceDao
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
@@ -489,16 +488,6 @@ constructor(
             val list = box.cards.toMutableList()
             list.removeAt(index)
             SafeBox(list)
-        }
-    }
-
-    suspend fun initSafeBox() {
-        safeBox.updateData { box ->
-            if (box.name != Session.getAccountId()) {
-                SafeBox(emptyList())
-            } else {
-                box
-            }
         }
     }
 }

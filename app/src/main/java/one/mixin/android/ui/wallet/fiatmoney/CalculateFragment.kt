@@ -9,6 +9,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
+import one.mixin.android.Constants.GOOGLE_PAY
 import one.mixin.android.Constants.ROUTE_API_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -87,6 +88,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     fiatMoneyViewModel.kycEnable = it.data?.kycEnable ?: true
                     fiatMoneyViewModel.supportCurrency = it.data?.currency ?: emptyList()
                     fiatMoneyViewModel.supportAssetIds = it.data?.assetIds ?: emptyList()
+                    fiatMoneyViewModel.hideGooglePay = it.data?.supportPayment?.contains(GOOGLE_PAY)?.not() ?: false
                 } else {
                     fiatMoneyViewModel.kycEnable = true
                 }
@@ -118,7 +120,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             },
             successBlock = {
                 if (it.isSuccess) {
-                    fiatMoneyViewModel.state = FiatMoneyViewModel.CalculateState(
+                    fiatMoneyViewModel.calculateState = FiatMoneyViewModel.CalculateState(
                         minimum = it.data?.minimum?.toIntOrNull() ?: 0,
                         maximum = it.data?.maximum?.toIntOrNull() ?: 0,
                         fiatPrice = it.data?.price?.toFloatOrNull() ?: 0f,
@@ -155,6 +157,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             override fun onCurrencyClick(currency: Currency) {
                                 this@CalculateFragment.lifecycleScope.launch {
                                     fiatMoneyViewModel.currency = currency
+                                    v = "0"
                                     requireContext().defaultSharedPreferences.putString(CURRENT_CURRENCY, currency.name)
                                     refresh()
                                     updateUI()
@@ -164,7 +167,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     }.showNow(parentFragmentManager, FiatListBottomSheetDialogFragment.TAG)
                 }
                 keyboard.tipTitleEnabled = false
-                keyboard.white(requireContext())
                 keyboard.setOnClickKeyboardListener(
                     object : Keyboard.OnClickKeyboardListener {
                         override fun onKeyClick(position: Int, value: String) {
@@ -178,13 +180,19 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                     v.substring(0, v.length - 1)
                                 }
                             } else {
-                                if (AmountUtil.illegal(v, fiatMoneyViewModel.currency!!.name)) {
-                                    binding.primaryTv.shaking()
-                                    return
-                                } else if (v == "0" && value != ".") {
+                                if (v == "0" && value != ".") {
                                     v = value
-                                } else if (value == "." && v.contains(".")) {
+                                    return
+                                } else if (value == "." && (
+                                        v.contains(".") || AmountUtil.fullCurrency(
+                                            fiatMoneyViewModel.currency!!.name,
+                                        )
+                                        )
+                                ) {
                                     // do noting
+                                    return
+                                } else if (AmountUtil.illegal(v, fiatMoneyViewModel.currency!!.name)) {
+                                    binding.primaryTv.shaking()
                                     return
                                 } else {
                                     v += value
@@ -202,6 +210,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     requireContext(),
                     listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "<<"),
                     force = true,
+                    white = true,
                 )
                 continueVa.setOnClickListener {
                     checkKyc {
@@ -225,7 +234,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     updateUI()
                 }
             }
-            if (fiatMoneyViewModel.state == null) {
+            if (fiatMoneyViewModel.calculateState == null) {
                 initData()
                 refresh()
                 updateUI()
@@ -235,10 +244,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             }
             refreshBotPublicKey()
         }
-    }
-
-    private fun isTwoDecimal(string: String): Boolean {
-        return string.matches(Regex("\\d+\\.\\d{2}"))
     }
 
     private var v = "0"
@@ -286,7 +291,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     private fun updateValue() {
         val currency = fiatMoneyViewModel.currency ?: return
         val asset = fiatMoneyViewModel.asset ?: return
-        val state = fiatMoneyViewModel.state ?: return
+        val state = fiatMoneyViewModel.calculateState ?: return
         if (!isAdded) return
         binding.apply {
             val value = if (v.endsWith(".")) {

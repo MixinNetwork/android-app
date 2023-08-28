@@ -28,7 +28,6 @@ import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.wallet.PaymentFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
-import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_AMOUNT
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_CURRENCY
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_INSTRUMENT_ID
@@ -51,7 +50,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
 
     private val binding by viewBinding(FragmentSelectCardBinding::bind)
 
-    private val walletViewModel by viewModels<WalletViewModel>()
+    private val FiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
 
     private val asset by lazy {
         requireNotNull(
@@ -110,7 +109,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                             lifecycleScope.launch {
                                 requestRouteAPI(
                                     invokeNetwork = {
-                                        walletViewModel.createSession(
+                                        FiatMoneyViewModel.createSession(
                                             RouteSessionRequest(
                                                 token,
                                                 currency.name,
@@ -168,7 +167,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                         }
                                     },
                                     requestSession = {
-                                        walletViewModel.fetchSessionsSuspend(
+                                        FiatMoneyViewModel.fetchSessionsSuspend(
                                             listOf(
                                                 Constants.ROUTE_API_BOT_USER_ID,
                                             ),
@@ -205,7 +204,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                 ItemCallback(object : ItemCallback.ItemCallbackListener {
                     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                         lifecycleScope.launch {
-                            walletViewModel.removeCard(viewHolder.absoluteAdapterPosition)
+                            FiatMoneyViewModel.removeCard(viewHolder.absoluteAdapterPosition)
                         }
                     }
                 }),
@@ -235,7 +234,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
 
     @SuppressLint("NotifyDataSetChanged")
     private suspend fun initCards() {
-        walletViewModel.cards().observe(this@SelectCardFragment.viewLifecycleOwner) { safeBox ->
+        FiatMoneyViewModel.cards().observe(this@SelectCardFragment.viewLifecycleOwner) { safeBox ->
             if (safeBox.cards.isNotEmpty()) {
                 binding.cardRv.visibility = View.VISIBLE
                 binding.empty.visibility = View.GONE
@@ -250,7 +249,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
 
     private fun saveCards(card: Card) {
         lifecycleScope.launch {
-            walletViewModel.addCard(card)
+            FiatMoneyViewModel.addCard(card)
         }
     }
 

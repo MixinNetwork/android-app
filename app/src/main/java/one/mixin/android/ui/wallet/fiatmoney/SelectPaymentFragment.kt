@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet.fiatmoney
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
@@ -14,7 +15,6 @@ import one.mixin.android.extension.round
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
-import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 
@@ -29,7 +29,7 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
     private lateinit var asset: AssetItem
     private lateinit var currency: Currency
 
-    private val walletViewModel by viewModels<WalletViewModel>()
+    private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
 
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -53,8 +53,9 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
             titleView.setSubTitle(getString(R.string.Select_Payment), "")
             firstRl.round(8.dp)
             secondRl.round(8.dp)
+            firstRl.isVisible = !fiatMoneyViewModel.hideGooglePay
             firstRl.setOnClickListener {
-                if (walletViewModel.state.value.googlePayAvailable != true) {
+                if (fiatMoneyViewModel.state.value.googlePayAvailable != true) {
                     // toast(R.string.Google_Pay_error)
                     // return@setOnClickListener
                 }

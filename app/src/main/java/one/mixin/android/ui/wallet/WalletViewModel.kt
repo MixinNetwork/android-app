@@ -9,34 +9,14 @@ import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.tasks.Task
-import com.google.android.gms.wallet.CardRequirements
-import com.google.android.gms.wallet.IsReadyToPayRequest
-import com.google.android.gms.wallet.PaymentData
-import com.google.android.gms.wallet.PaymentDataRequest
-import com.google.android.gms.wallet.PaymentMethodTokenizationParameters
-import com.google.android.gms.wallet.PaymentsClient
-import com.google.android.gms.wallet.TransactionInfo
-import com.google.android.gms.wallet.WalletConstants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
-import one.mixin.android.Constants.PAYMENTS_GATEWAY
-import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.request.RouteSessionRequest
 import one.mixin.android.api.request.RouteTickerRequest
-import one.mixin.android.api.response.RoutePaymentResponse
-import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
@@ -50,14 +30,10 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.Card
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
-import one.mixin.android.vo.route.RoutePaymentRequest
-import one.mixin.android.vo.sumsub.RouteTokenResponse
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -285,91 +261,4 @@ internal constructor(
 
     suspend fun getExternalAddressFee(assetId: String, destination: String, tag: String?) =
         accountRepository.getExternalAddressFee(assetId, destination, tag)
-
-    suspend fun token(): MixinResponse<RouteTokenResponse> = assetRepository.token()
-
-    suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = assetRepository.payment(traceRequest)
-
-    suspend fun payment(paymentId: String): MixinResponse<RoutePaymentResponse> = assetRepository.payment(paymentId)
-
-    suspend fun createSession(createSession: RouteSessionRequest): MixinResponse<RouteSessionResponse> = assetRepository.createSession(createSession)
-
-    suspend fun getSession(sessionId: String) = assetRepository.getSession(sessionId)
-
-    data class State(
-        val googlePayAvailable: Boolean? = false,
-    )
-
-    private val _state = MutableStateFlow(State())
-    val state: StateFlow<State> = _state.asStateFlow()
-
-    private val paymentsClient: PaymentsClient by lazy {
-        PaymentsUtil.createPaymentsClient(MixinApplication.appContext)
-    }
-
-    init {
-        fetchCanUseGooglePay()
-    }
-
-    /**
-     * Determine the user's ability to pay with a payment method supported by your app and display
-     * a Google Pay payment button.
-     ) */
-    private fun fetchCanUseGooglePay() {
-        val isReadyToPayJson = PaymentsUtil.isReadyToPayRequest()
-        val request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString())
-        val task = paymentsClient.isReadyToPay(request)
-
-        task.addOnCompleteListener { completedTask ->
-            try {
-                _state.update { currentState ->
-                    currentState.copy(googlePayAvailable = completedTask.getResult(ApiException::class.java))
-                }
-            } catch (exception: ApiException) {
-                Timber.w("isReadyToPay failed", exception)
-            }
-        }
-    }
-
-    fun getLoadPaymentDataTask(totalPrice: String, currencyCode: String): Task<PaymentData> {
-        val request = PaymentDataRequest.newBuilder()
-            .setTransactionInfo(
-                TransactionInfo.newBuilder()
-                    .setTotalPriceStatus(WalletConstants.TOTAL_PRICE_STATUS_FINAL)
-                    .setTotalPrice(totalPrice)
-                    .setCurrencyCode(currencyCode)
-                    .build(),
-            )
-            .addAllowedPaymentMethod(WalletConstants.PAYMENT_METHOD_CARD)
-            .addAllowedPaymentMethod(WalletConstants.PAYMENT_METHOD_TOKENIZED_CARD)
-            .setCardRequirements(
-                CardRequirements.newBuilder()
-                    .addAllowedCardNetworks(
-                        listOf(
-                            WalletConstants.CARD_NETWORK_VISA,
-                            WalletConstants.CARD_NETWORK_MASTERCARD,
-                        ),
-                    )
-                    .build(),
-            )
-        val params = PaymentMethodTokenizationParameters.newBuilder()
-            .setPaymentMethodTokenizationType(
-                WalletConstants.PAYMENT_METHOD_TOKENIZATION_TYPE_PAYMENT_GATEWAY,
-            )
-            .addParameter("gateway", PAYMENTS_GATEWAY)
-            .addParameter("gatewayMerchantId", BuildConfig.CHCEKOUT_ID)
-            .build()
-        request.setPaymentMethodTokenizationParameters(params)
-        return paymentsClient.loadPaymentData(request.build())
-    }
-
-    fun cards() = assetRepository.cards()
-
-    suspend fun addCard(card: Card) = assetRepository.addCard(card)
-
-    suspend fun removeCard(index: Int) = assetRepository.removeCard(index)
-
-    suspend fun initSafeBox() = assetRepository.initSafeBox()
-
-    suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 }

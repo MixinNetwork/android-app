@@ -27,7 +27,6 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.wallet.PaymentData
-import com.mapbox.maps.extension.style.expressions.dsl.generated.color
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -51,7 +50,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
-import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
@@ -79,7 +77,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     }
 
     private val binding by viewBinding(FragmentOrderStatusBinding::bind)
-    private val walletViewModel by viewModels<WalletViewModel>()
+    private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
     private lateinit var asset: AssetItem
     private lateinit var currency: Currency
     private var isGooglePay: Boolean = false
@@ -237,7 +235,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     lifecycleScope.launch {
                         while (true) {
                             val session = try {
-                                walletViewModel.getSession(sessionResponse.sessionId)
+                                fiatMoneyViewModel.getSession(sessionResponse.sessionId)
                             } catch (e: Exception) {
                                 showError(e.message)
                                 return@launch
@@ -306,7 +304,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         lifecycleScope.launch {
             requestRouteAPI(
                 invokeNetwork = {
-                    walletViewModel.createSession(
+                    fiatMoneyViewModel.createSession(
                         RouteSessionRequest(
                             null,
                             currency.name,
@@ -332,7 +330,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         showError(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription))
                     }
                 },
-                requestSession = { walletViewModel.fetchSessionsSuspend(listOf(Constants.ROUTE_API_BOT_USER_ID)) },
+                requestSession = { fiatMoneyViewModel.fetchSessionsSuspend(listOf(Constants.ROUTE_API_BOT_USER_ID)) },
             )
         }
     }
@@ -340,7 +338,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     private fun payWithGoogle() {
         status = OrderStatus.PROCESSING
         binding.transparentMask.isVisible = true
-        val task = walletViewModel.getLoadPaymentDataTask(AmountUtil.realAmount(amount, currency.name), currency.name)
+        val task = fiatMoneyViewModel.getLoadPaymentDataTask(AmountUtil.realAmount(amount, currency.name), currency.name)
         task.addOnCompleteListener { completedTask ->
             if (completedTask.isSuccessful) {
                 completedTask.result.let(::handlePaymentSuccess)
@@ -370,7 +368,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
 
     private fun payments(sessionId: String, instrumentId: String) = lifecycleScope.launch {
         try {
-            val response = walletViewModel.payment(
+            val response = fiatMoneyViewModel.payment(
                 RoutePaymentRequest(
                     asset.assetId,
                     Session.getAccountId()!!,
@@ -409,7 +407,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     private suspend fun getPaymentStatus(paymentId: String) {
         lifecycleScope.launch {
             while (true) {
-                val response = walletViewModel.payment(paymentId)
+                val response = fiatMoneyViewModel.payment(paymentId)
                 if (response.data?.status == RoutePaymentStatus.Captured.name) {
                     assetAmount = response.data!!.assetAmount
                     status = OrderStatus.SUCCESS
@@ -441,7 +439,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         lifecycleScope.launch {
                             requestRouteAPI(
                                 invokeNetwork = {
-                                    walletViewModel.createSession(
+                                    fiatMoneyViewModel.createSession(
                                         RouteSessionRequest(
                                             tokenDetails.token,
                                             currency.name,
@@ -467,7 +465,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                                     }
                                 },
                                 requestSession = {
-                                    walletViewModel.fetchSessionsSuspend(
+                                    fiatMoneyViewModel.fetchSessionsSuspend(
                                         listOf(
                                             Constants.ROUTE_API_BOT_USER_ID,
                                         ),
@@ -506,6 +504,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         }
 
     private fun handleError(statusCode: Int, message: String?) {
+        Timber.e("Status code: $statusCode")
         showError(message)
     }
 
