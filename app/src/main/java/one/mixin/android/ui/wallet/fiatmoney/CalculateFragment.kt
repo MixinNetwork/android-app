@@ -35,6 +35,7 @@ import one.mixin.android.ui.wallet.IdentityVerificationStateBottomSheetDialogFra
 import one.mixin.android.ui.wallet.IdentityVerificationStateBottomSheetDialogFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_AMOUNT
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_CURRENCY
 import one.mixin.android.util.viewBinding
@@ -88,7 +89,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     fiatMoneyViewModel.kycEnable = it.data?.kycEnable ?: true
                     fiatMoneyViewModel.supportCurrency = it.data?.currency ?: emptyList()
                     fiatMoneyViewModel.supportAssetIds = it.data?.assetIds ?: emptyList()
-                    fiatMoneyViewModel.hideGooglePay = it.data?.supportPayment?.contains(GOOGLE_PAY)?.not() ?: false
+                    (requireActivity() as WalletActivity).hideGooglePay = it.data?.supportPayment?.contains(GOOGLE_PAY)?.not() ?: false
+                    (requireActivity() as WalletActivity).buyEnable = it.data?.buyEnable ?: true
                 } else {
                     fiatMoneyViewModel.kycEnable = true
                 }
@@ -183,12 +185,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 if (v == "0" && value != ".") {
                                     v = value
                                     return
-                                } else if (value == "." && (
-                                        v.contains(".") || AmountUtil.fullCurrency(
-                                            fiatMoneyViewModel.currency!!.name,
-                                        )
-                                        )
-                                ) {
+                                } else if (value == "." && (v.contains(".") || AmountUtil.fullCurrency(fiatMoneyViewModel.currency!!.name))) {
                                     // do noting
                                     return
                                 } else if (AmountUtil.illegal(v, fiatMoneyViewModel.currency!!.name)) {

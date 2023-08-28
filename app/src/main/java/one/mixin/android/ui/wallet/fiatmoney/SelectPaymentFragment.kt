@@ -15,6 +15,7 @@ import one.mixin.android.extension.round
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 
@@ -53,7 +54,7 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
             titleView.setSubTitle(getString(R.string.Select_Payment), "")
             firstRl.round(8.dp)
             secondRl.round(8.dp)
-            firstRl.isVisible = !fiatMoneyViewModel.hideGooglePay
+            firstRl.isVisible = !(requireActivity() as WalletActivity).hideGooglePay
             firstRl.setOnClickListener {
                 if (fiatMoneyViewModel.state.value.googlePayAvailable != true) {
                     // toast(R.string.Google_Pay_error)

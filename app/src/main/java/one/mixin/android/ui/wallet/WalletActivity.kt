@@ -64,6 +64,9 @@ class WalletActivity : BlazeBaseActivity() {
         intent.extras?.getBoolean(BUY) ?: false
     }
 
+    var hideGooglePay = false
+    var buyEnable = true
+
     override fun finish() {
         super.finish()
         if (bottomAnim) {

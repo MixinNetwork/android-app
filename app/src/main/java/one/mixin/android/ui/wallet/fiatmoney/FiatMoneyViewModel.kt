@@ -77,7 +77,6 @@ internal constructor(
 
     var asset: AssetItem? = null
     var currency: Currency? = null
-    var hideGooglePay: Boolean = false
 
     class CalculateState(
         var minimum: Int = 15,
