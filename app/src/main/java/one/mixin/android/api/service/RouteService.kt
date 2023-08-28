@@ -8,6 +8,7 @@ import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.RouteTokenResponse
+import one.mixin.android.vo.sumsub.UserResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -31,4 +32,7 @@ interface RouteService {
 
     @GET("/kyc/token")
     suspend fun sumsubToken(): MixinResponse<RouteTokenResponse>
+
+    @GET("/users/{id}")
+    suspend fun getUser(@Path("id") id: String): MixinResponse<UserResponse>
 }

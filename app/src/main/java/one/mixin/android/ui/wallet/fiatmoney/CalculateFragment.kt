@@ -38,6 +38,7 @@ import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.sumsub.KycState
 import one.mixin.android.widget.Keyboard
+import timber.log.Timber
 
 @AndroidEntryPoint
 class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
@@ -52,7 +53,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     private val binding by viewBinding(FragmentCalculateBinding::bind)
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
-
 
     private suspend fun initData() {
         if (fiatMoneyViewModel.asset != null && fiatMoneyViewModel.currency != null) {
@@ -75,6 +75,17 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         }
     }
 
+    private suspend fun getUser() {
+        handleMixinResponse(
+            invokeNetwork = {
+                fiatMoneyViewModel.getUser(requireNotNull(Session.getAccountId()))
+            },
+            successBlock = {
+                Timber.d("user config ${it.data}")
+            },
+        )
+    }
+
     private suspend fun refreshBotPublicKey() {
         handleMixinResponse(
             invokeNetwork = {
@@ -87,8 +98,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     }
 
     private suspend fun refresh() {
-        val currency = fiatMoneyViewModel.currency?:return
-        val asset = fiatMoneyViewModel.asset?:return
+        val currency = fiatMoneyViewModel.currency ?: return
+        val asset = fiatMoneyViewModel.asset ?: return
         showLoading()
         requestRouteAPI(
             invokeNetwork = {
@@ -129,7 +140,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             "9b180ab6-6abe-3dc0-a13f-04169eb34bfa", // USDC
                         ),
                     ).setOnAssetClick { asset ->
-                        fiatMoneyViewModel.asset= asset
+                        fiatMoneyViewModel.asset = asset
                         requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, asset.assetId)
                         updateUI()
                     }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
@@ -216,6 +227,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 binding.primaryTv.text = v
                 updateUI()
             }
+            getUser()
             refreshBotPublicKey()
         }
     }
@@ -228,8 +240,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     private fun updateUI() {
         if (!isAdded) return
-        val currency = fiatMoneyViewModel.currency?:return
-        val asset = fiatMoneyViewModel.asset?:return
+        val currency = fiatMoneyViewModel.currency ?: return
+        val asset = fiatMoneyViewModel.asset ?: return
         if (fiatMoneyViewModel.isReverse) {
             binding.apply {
                 fiatName.text = currency.name
@@ -262,8 +274,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     @SuppressLint("SetTextI18n")
     private fun updateValue() {
-        val currency = fiatMoneyViewModel.currency?:return
-        val asset = fiatMoneyViewModel.asset?:return
+        val currency = fiatMoneyViewModel.currency ?: return
+        val asset = fiatMoneyViewModel.asset ?: return
         val state = fiatMoneyViewModel.state ?: return
         if (!isAdded) return
         binding.apply {

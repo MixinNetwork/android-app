@@ -10,6 +10,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.sumsub.RouteTokenResponse
+import one.mixin.android.vo.sumsub.UserResponse
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,6 +28,8 @@ internal constructor(
         assetRepository.ticker(tickerRequest)
 
     suspend fun token(): MixinResponse<RouteTokenResponse> = assetRepository.token()
+
+    suspend fun getUser(id: String): MixinResponse<UserResponse> = assetRepository.getUser(id)
 
     var state: CalculateState? = null
 
