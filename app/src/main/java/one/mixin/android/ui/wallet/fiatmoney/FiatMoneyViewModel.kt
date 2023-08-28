@@ -29,7 +29,11 @@ internal constructor(
 
     suspend fun token(): MixinResponse<RouteTokenResponse> = assetRepository.token()
 
-    suspend fun getUser(id: String): MixinResponse<UserResponse> = assetRepository.getUser(id)
+    suspend fun profiles(): MixinResponse<UserResponse> = assetRepository.profiles()
+
+    var kycEnable: Boolean = true
+    var supportCurrency: List<String> = emptyList()
+    var supportAssetIds: List<String> = emptyList()
 
     var state: CalculateState? = null
 

@@ -33,6 +33,6 @@ interface RouteService {
     @GET("/kyc/token")
     suspend fun sumsubToken(): MixinResponse<RouteTokenResponse>
 
-    @GET("/users/{id}")
-    suspend fun getUser(@Path("id") id: String): MixinResponse<UserResponse>
+    @GET("/profile")
+    suspend fun profiles(): MixinResponse<UserResponse>
 }

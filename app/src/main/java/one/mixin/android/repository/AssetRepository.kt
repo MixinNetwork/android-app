@@ -464,7 +464,7 @@ constructor(
 
     suspend fun token(): MixinResponse<RouteTokenResponse> = routeService.sumsubToken()
 
-    suspend fun getUser(id: String): MixinResponse<UserResponse> = routeService.getUser(id)
+    suspend fun profiles(): MixinResponse<UserResponse> = routeService.profiles()
 
     suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = routeService.payment(traceRequest)
 

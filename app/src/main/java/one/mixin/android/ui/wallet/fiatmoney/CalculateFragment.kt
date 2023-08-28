@@ -6,8 +6,10 @@ import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
 import one.mixin.android.Constants.ROUTE_API_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -38,7 +40,6 @@ import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.sumsub.KycState
 import one.mixin.android.widget.Keyboard
-import timber.log.Timber
 
 @AndroidEntryPoint
 class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
@@ -46,8 +47,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         const val TAG = "CalculateFragment"
         private const val CURRENT_CURRENCY = "current_currency"
         private const val CURRENT_ASSET_ID = "current_asset_id"
-        private val ASSET_IDS =
-            listOf("4d8c508b-91c5-375b-92b0-ee702ed2dac5", "9b180ab6-6abe-3dc0-a13f-04169eb34bfa")
         fun newInstance() = CalculateFragment()
     }
 
@@ -58,30 +57,40 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         if (fiatMoneyViewModel.asset != null && fiatMoneyViewModel.currency != null) {
             return
         }
-        val currencyList = getCurrencyData(requireContext().resources)
+        getProfiles()
+        val currencyList = getCurrencyData(requireContext().resources).filter {
+            fiatMoneyViewModel.supportCurrency.contains(it.name)
+        }
         val currencyName = requireContext().defaultSharedPreferences.getString(
             CURRENT_CURRENCY,
             Session.getFiatCurrency(),
         )
         val assetId = requireContext().defaultSharedPreferences.getString(
             CURRENT_ASSET_ID,
-            "4d8c508b-91c5-375b-92b0-ee702ed2dac5",
+            USDT_ASSET_ID,
         )
         fiatMoneyViewModel.currency = currencyList.find {
             it.name == currencyName
         } ?: currencyList.first()
-        fiatMoneyViewModel.asset = fiatMoneyViewModel.findAssetsByIds(ASSET_IDS).let { list ->
+        fiatMoneyViewModel.asset = fiatMoneyViewModel.findAssetsByIds(fiatMoneyViewModel.supportAssetIds).let { list ->
             list.find { it.assetId == assetId } ?: list.first()
         }
     }
 
-    private suspend fun getUser() {
+    private suspend fun getProfiles() {
+        showLoading()
         handleMixinResponse(
             invokeNetwork = {
-                fiatMoneyViewModel.getUser(requireNotNull(Session.getAccountId()))
+                fiatMoneyViewModel.profiles()
             },
             successBlock = {
-                Timber.d("user config ${it.data}")
+                if (it.isSuccess) {
+                    fiatMoneyViewModel.kycEnable = it.data?.kycEnable ?: true
+                    fiatMoneyViewModel.supportCurrency = it.data?.currency ?: emptyList()
+                    fiatMoneyViewModel.supportAssetIds = it.data?.assetIds ?: emptyList()
+                } else {
+                    fiatMoneyViewModel.kycEnable = true
+                }
             },
         )
     }
@@ -125,7 +134,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         lifecycleScope.launch {
-            initData()
             binding.apply {
                 titleView.leftIb.setOnClickListener {
                     activity?.onBackPressedDispatcher?.onBackPressed()
@@ -135,10 +143,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 assetRl.setOnClickListener {
                     AssetListBottomSheetDialogFragment.newInstance(
                         false,
-                        arrayListOf(
-                            "4d8c508b-91c5-375b-92b0-ee702ed2dac5", // USDT
-                            "9b180ab6-6abe-3dc0-a13f-04169eb34bfa", // USDC
-                        ),
+                        ArrayList(fiatMoneyViewModel.supportAssetIds),
                     ).setOnAssetClick { asset ->
                         fiatMoneyViewModel.asset = asset
                         requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, asset.assetId)
@@ -199,21 +204,21 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     force = true,
                 )
                 continueVa.setOnClickListener {
-                    // checkKyc {
-                    val amount = AmountUtil.toAmount(v, fiatMoneyViewModel.currency!!.name)
-                    if (amount == null) {
-                        toast("number error")
-                    } else {
-                        view.navigate(
-                            R.id.action_wallet_calculate_to_payment,
-                            Bundle().apply {
-                                putParcelable(ARGS_ASSET, fiatMoneyViewModel.asset)
-                                putParcelable(ARGS_CURRENCY, fiatMoneyViewModel.currency)
-                                putInt(ARGS_AMOUNT, amount)
-                            },
-                        )
+                    checkKyc {
+                        val amount = AmountUtil.toAmount(v, fiatMoneyViewModel.currency!!.name)
+                        if (amount == null) {
+                            toast("number error")
+                        } else {
+                            view.navigate(
+                                R.id.action_wallet_calculate_to_payment,
+                                Bundle().apply {
+                                    putParcelable(ARGS_ASSET, fiatMoneyViewModel.asset)
+                                    putParcelable(ARGS_CURRENCY, fiatMoneyViewModel.currency)
+                                    putInt(ARGS_AMOUNT, amount)
+                                },
+                            )
+                        }
                     }
-                    // }
                 }
                 switchIv.setOnClickListener {
                     fiatMoneyViewModel.isReverse = !fiatMoneyViewModel.isReverse
@@ -221,13 +226,13 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 }
             }
             if (fiatMoneyViewModel.state == null) {
+                initData()
                 refresh()
                 updateUI()
             } else {
                 binding.primaryTv.text = v
                 updateUI()
             }
-            getUser()
             refreshBotPublicKey()
         }
     }
@@ -262,12 +267,17 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         LoadingProgressDialogFragment()
     }
 
+    private var loadingShown = false
     private fun showLoading() {
-        loading.showNow(parentFragmentManager, LoadingProgressDialogFragment.TAG)
+        if (!loadingShown) {
+            loadingShown = true
+            loading.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
+        }
     }
 
     private fun dismissLoading() {
-        if (loading.isAdded) {
+        if (loadingShown) {
+            loadingShown = false
             loading.dismiss()
         }
     }
@@ -324,6 +334,10 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     }
 
     private fun checkKyc(onSuccess: () -> Unit) = lifecycleScope.launch {
+        if (!fiatMoneyViewModel.kycEnable) {
+            onSuccess.invoke()
+            return@launch
+        }
         binding.continueVa.displayedChild = 1
         requestRouteAPI(
             invokeNetwork = {
