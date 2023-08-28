@@ -1097,6 +1097,8 @@ class ConversationFragment() :
                     }
                 }
             }
+        chatRoomHelper.markMessageRead(conversationId)
+        chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
     }
 
     private var lastReadMessage: String? = null
@@ -1844,8 +1846,13 @@ class ConversationFragment() :
                             binding.flagLayout.unreadCount += event.ids.size
                             binding.flagLayout.bottomCountFlag = true
                         }
-                        chatRoomHelper.markMessageRead(conversationId)
-                        chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
+                        if (!paused) {
+                            chatRoomHelper.markMessageRead(conversationId)
+                            chatViewModel.markMessageRead(
+                                conversationId,
+                                (activity as? BubbleActivity)?.isBubbled == true,
+                            )
+                        }
                     }
                     MessageEventAction.UPDATE -> {
                         val messages = messageFetcher.findMessageById(event.ids)
