@@ -1,8 +1,12 @@
 package one.mixin.android.ui.wallet
 
+import com.checkout.frames.model.CornerRadius
+import com.checkout.frames.model.Shape
 import com.checkout.frames.style.theme.DefaultPaymentFormTheme
 import com.checkout.frames.style.theme.PaymentFormComponentBuilder
 import com.checkout.frames.style.theme.PaymentFormComponentField
+import com.checkout.frames.style.theme.PaymentFormCornerRadius
+import com.checkout.frames.style.theme.PaymentFormShape
 import com.checkout.frames.style.theme.PaymentFormTheme
 import com.checkout.frames.style.theme.PaymentFormThemeColors
 
@@ -33,13 +37,28 @@ object CustomPaymentFormTheme {
             paymentFormComponents = DefaultPaymentFormTheme.providePaymentFormComponents(
                 addBillingSummaryButton = PaymentFormComponentBuilder()
                     .setIsFieldOptional(true)
+                    .setIsFieldHidden(true)
                     .setPaymentFormField(PaymentFormComponentField.AddBillingSummaryButton)
                     .build(),
                 editBillingSummaryButton = PaymentFormComponentBuilder()
                     .setIsFieldOptional(true)
+                    .setIsFieldHidden(true)
                     .setPaymentFormField(PaymentFormComponentField.AddBillingSummaryButton)
                     .build(),
+                cardHolderName = PaymentFormComponentBuilder()
+                    .setPaymentFormField(PaymentFormComponentField.CardHolderName)
+                    .setIsFieldOptional(true)
+                    .setIsFieldHidden(true)
+                    .build(),
             ),
+            paymentFormShape = PaymentFormShape(
+                inputFieldShape = Shape.RoundCorner,
+                addressSummaryShape = Shape.Rectangle, buttonShape = Shape.Circle
+            ),
+            paymentFormCornerRadius = PaymentFormCornerRadius(
+                inputFieldCornerRadius = CornerRadius(12),
+                addressSummaryCornerRadius = CornerRadius(12)
+            )
         )
     }
 }
