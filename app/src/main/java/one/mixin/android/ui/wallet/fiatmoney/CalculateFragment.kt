@@ -178,7 +178,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                     v.substring(0, v.length - 1)
                                 }
                             } else {
-                                if (isTwoDecimal(v)) {
+                                if (AmountUtil.illegal(v, fiatMoneyViewModel.currency!!.name)) {
                                     binding.primaryTv.shaking()
                                     return
                                 } else if (v == "0" && value != ".") {

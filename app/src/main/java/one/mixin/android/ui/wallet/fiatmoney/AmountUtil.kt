@@ -1,5 +1,7 @@
 package one.mixin.android.ui.wallet.fiatmoney
 
+import java.util.UUID
+
 object AmountUtil {
     private val full_currency = listOf(
         "JPY",
@@ -22,4 +24,13 @@ object AmountUtil {
             return (value / 100f).toString()
         }
     }
+
+    fun illegal(text: String, currency: String): Boolean {
+        return if (full_currency.contains(currency)) {
+            !text.matches(Regex("^\\d{1,9}\$"))
+        } else {
+            return !text.matches(Regex("^\\d{1,7}(\\.\\d{0,2})?\$"))
+        }
+    }
+
 }
