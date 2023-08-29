@@ -23,7 +23,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.GOOGLE_PAY
 import one.mixin.android.Constants.ROUTE_API_BOT_USER_ID
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
@@ -144,19 +143,20 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                         sendReceiveView.buy.isEnabled = false
                         try {
                             syncBotKey({
-                                launch scope2@ {
+                                launch scope2@{
                                     syncProfile({
-                                            profileResponse->
+                                            profileResponse ->
                                         (requireActivity() as WalletActivity).apply {
                                             keyIgnore = profileResponse.kycState == KycState.IGNORE.value
                                             supportCurrency = profileResponse.currencies
                                             supportAssetIds = profileResponse.assetIds
-                                            hideGooglePay = profileResponse.supportPayments.contains(GOOGLE_PAY,).not()
+                                            hideGooglePay = profileResponse.supportPayments.contains(GOOGLE_PAY).not()
 
                                             launch {
                                                 val currency = requireContext().defaultSharedPreferences.getString(
-                                                            CalculateFragment.CURRENT_CURRENCY,
-                                                            supportCurrency.first()) ?: return@launch
+                                                    CalculateFragment.CURRENT_CURRENCY,
+                                                    supportCurrency.first(),
+                                                ) ?: return@launch
                                                 val tickerResponse = walletViewModel.ticker(RouteTickerRequest(0, currency, supportAssetIds.first()))
                                                 if (tickerResponse.isSuccess) {
                                                     val state = FiatMoneyViewModel.CalculateState(
@@ -176,13 +176,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                         }
                                         sendReceiveView.buy.displayedChild = 0
                                         sendReceiveView.buy.isEnabled = true
-                                    },{ code,error->
+                                    }, { code, error ->
                                         ErrorHandler.handleMixinError(code, error)
                                         sendReceiveView.buy.displayedChild = 0
                                         sendReceiveView.buy.isEnabled = true
                                     })
                                 }
-                            },{ code,error->
+                            }, { code, error ->
                                 ErrorHandler.handleMixinError(code, error)
                                 sendReceiveView.buy.displayedChild = 0
                                 sendReceiveView.buy.isEnabled = true

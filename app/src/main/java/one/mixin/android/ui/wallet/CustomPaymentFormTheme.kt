@@ -9,6 +9,7 @@ import com.checkout.frames.style.theme.PaymentFormCornerRadius
 import com.checkout.frames.style.theme.PaymentFormShape
 import com.checkout.frames.style.theme.PaymentFormTheme
 import com.checkout.frames.style.theme.PaymentFormThemeColors
+import one.mixin.android.R
 
 object CustomPaymentFormTheme {
     private val paymentFormThemeColors = PaymentFormThemeColors(
@@ -35,6 +36,32 @@ object CustomPaymentFormTheme {
         return PaymentFormTheme(
             paymentFormThemeColors = if (isNightMode) paymentNightFormThemeColors else paymentFormThemeColors,
             paymentFormComponents = DefaultPaymentFormTheme.providePaymentFormComponents(
+                paymentHeaderTitle = PaymentFormComponentBuilder().setPaymentFormField(
+                    PaymentFormComponentField.PaymentHeaderTitle,
+                ).setTitleTextId(R.string.Add_New_Card).setBackIconImage(R.drawable.ic_arrow_back)
+                    .build(),
+                cardScheme = PaymentFormComponentBuilder().setPaymentFormField(
+                    PaymentFormComponentField.CardScheme,
+                ).setTitleTextId(
+                    R.string.Accepted_cards,
+                ).build(),
+                cardNumber = PaymentFormComponentBuilder().setPaymentFormField(
+                    PaymentFormComponentField.CardNumber,
+                ).setTitleTextId(R.string.Card_number).build(),
+                expiryDate = PaymentFormComponentBuilder().setPaymentFormField(
+                    PaymentFormComponentField.ExpiryDate,
+                ).setTitleTextId(R.string.Expiry_date)
+                    .setSubTitleTextId(R.string.Expiry_date_sub_title).build(),
+                cvv = PaymentFormComponentBuilder().setPaymentFormField(PaymentFormComponentField.CVV)
+                    .setTitleTextId(
+                        R.string.Security_code,
+                    )
+                    .setSubTitleTextId(R.string.Security_code_sub_title).build(),
+                payButton = PaymentFormComponentBuilder().setPaymentFormField(
+                    PaymentFormComponentField.PaymentDetailsButton,
+                ).setTitleTextId(
+                    R.string.Add_New_Card,
+                ).build(),
                 addBillingSummaryButton = PaymentFormComponentBuilder()
                     .setIsFieldOptional(true)
                     .setIsFieldHidden(true)

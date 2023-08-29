@@ -1290,4 +1290,10 @@
     <string name="Fees_tip">You may cost more fees by bank.</string>
     <string name="Use_New_Price">Use New Price</string>
     <string name="Google_Pay_error">Google pay is not available</string>
+    <string name="Card_number">Card number</string>
+    <string name="Expiry_date">Expiry Date</string>
+    <string name="Security_code">Security code</string>
+    <string name="Accepted_cards">Accepted cards:</string>
+    <string name="Security_code_sub_title">3–4 digit code on your card</string>
+    <string name="Expiry_date_sub_title">Format is MM/YY</string>
 </resources>

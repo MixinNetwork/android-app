@@ -1257,4 +1257,10 @@
     <string name="Processing_Fee">处理费</string>
     <string name="Fees_tip">您的银行可能会收取额外费用。</string>
     <string name="Use_New_Price">使用新价格</string>
+    <string name="Card_number">卡号</string>
+    <string name="Expiry_date">到期日期</string>
+    <string name="Security_code">安全代码</string>
+    <string name="Accepted_cards">接受的卡：</string>
+    <string name="Security_code_sub_title">卡上的 3–4 位代码</string>
+    <string name="Expiry_date_sub_title">格式为 MM/YY</string>
 </resources>
