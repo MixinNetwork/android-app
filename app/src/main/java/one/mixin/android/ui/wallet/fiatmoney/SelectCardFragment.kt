@@ -5,17 +5,22 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.request.RouteSessionRequest
 import one.mixin.android.databinding.FragmentSelectCardBinding
 import one.mixin.android.databinding.ItemCardBinding
+import one.mixin.android.extension.config
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
@@ -50,7 +55,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
 
     private val binding by viewBinding(FragmentSelectCardBinding::bind)
 
-    private val FiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
+    private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
 
     private val asset by lazy {
         requireNotNull(
@@ -109,7 +114,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                             lifecycleScope.launch {
                                 requestRouteAPI(
                                     invokeNetwork = {
-                                        FiatMoneyViewModel.createSession(
+                                        fiatMoneyViewModel.createSession(
                                             RouteSessionRequest(
                                                 token,
                                                 currency.name,
@@ -167,7 +172,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                                         }
                                     },
                                     requestSession = {
-                                        FiatMoneyViewModel.fetchSessionsSuspend(
+                                        fiatMoneyViewModel.fetchSessionsSuspend(
                                             listOf(
                                                 Constants.ROUTE_API_BOT_USER_ID,
                                             ),
@@ -204,7 +209,21 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                 ItemCallback(object : ItemCallback.ItemCallbackListener {
                     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                         lifecycleScope.launch {
-                            FiatMoneyViewModel.removeCard(viewHolder.absoluteAdapterPosition)
+                            val anchorView = cardRv
+                            val card = cardAdapter.data?.get(viewHolder.absoluteAdapterPosition)?:return@launch
+                            fiatMoneyViewModel.removeCard(viewHolder.absoluteAdapterPosition)
+                            snackbar = Snackbar.make(anchorView, getString(R.string.wallet_already_deleted, "${card.scheme}...${card.number}"), 3500)
+                                .setAction(R.string.UNDO) {
+                                    lifecycleScope.launch(Dispatchers.IO) {
+                                        saveCards(card)
+                                    }
+                                }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
+                                    (this.view.findViewById(com.google.android.material.R.id.snackbar_text) as TextView)
+                                        .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                                }.apply {
+                                    snackbar?.config(anchorView.context)
+                                }
+                            snackbar?.show()
                         }
                     }
                 }),
@@ -215,6 +234,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
             }
         }
     }
+    private var snackbar: Snackbar? = null
 
     private val cardAdapter by lazy {
         CardAdapter { instrumentId, scheme, cardNumber ->
@@ -233,8 +253,8 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private suspend fun initCards() {
-        FiatMoneyViewModel.cards().observe(this@SelectCardFragment.viewLifecycleOwner) { safeBox ->
+    private fun initCards() {
+        fiatMoneyViewModel.cards().observe(this@SelectCardFragment.viewLifecycleOwner) { safeBox ->
             if (safeBox.cards.isNotEmpty()) {
                 binding.cardRv.visibility = View.VISIBLE
                 binding.empty.visibility = View.GONE
@@ -249,7 +269,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
 
     private fun saveCards(card: Card) {
         lifecycleScope.launch {
-            FiatMoneyViewModel.addCard(card)
+            fiatMoneyViewModel.addCard(card)
         }
     }
 
