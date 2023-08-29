@@ -27,6 +27,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:lines="1"
+        android:textSize="16sp"
+        android:textColor="@color/colorGreen"
+        android:layout_marginTop="16dp"
         android:layout_marginBottom="48dp"
         tools:text="+51.23 USDC" />
 

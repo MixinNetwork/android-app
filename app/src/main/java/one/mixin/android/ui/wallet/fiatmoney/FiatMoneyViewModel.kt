@@ -33,7 +33,6 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.RouteTokenResponse
-import one.mixin.android.vo.sumsub.ProfileResponse
 import timber.log.Timber
 import javax.inject.Inject
 

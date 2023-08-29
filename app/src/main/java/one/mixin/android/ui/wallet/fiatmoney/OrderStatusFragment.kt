@@ -95,6 +95,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     }
 
     private var assetAmount = ""
+    private lateinit var expectancy: String
     private var status = OrderStatus.INITIALIZED
         private set(value) {
             if (field != value) {
@@ -134,7 +135,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         binding.content.setText(R.string.Processing_desc)
     }
 
-    @SuppressLint("UseCompatLoadingForDrawables")
+    @SuppressLint("UseCompatLoadingForDrawables", "SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         asset = requireNotNull(
@@ -161,6 +162,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 OrderInfo::class.java,
             ),
         )
+        expectancy = info.assetAmount
         binding.apply {
             transparentMask.isVisible = false
             bottomVa.setOnClickListener {
@@ -375,6 +377,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     sessionId,
                     instrumentId,
                     amount.toLong(),
+                    assetAmount = expectancy,
                     currency.name,
                 ),
             )

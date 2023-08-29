@@ -151,6 +151,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
         "loading...",
         "loading...",
         "",
+        "",
     )
 
     @SuppressLint("SetTextI18n")
@@ -167,20 +168,22 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                     }
                     if (isAdded) {
                         if (response.isSuccess) {
-                            val ticker = response.data
+                            val ticker = response.data ?: return@launch
                             info = OrderInfo(
                                 "$scheme...$last4",
-                                "1 ${ticker?.currency} = ${ticker?.price} ${asset.symbol}",
-                                "${ticker?.purchase} ${ticker?.currency}",
-                                "${ticker?.fee} ${ticker?.currency}",
-                                "${ticker?.totalAmount} ${ticker?.currency}",
-                                "${ticker?.feePercent}",
+                                "1 ${ticker.currency} = ${ticker.price} ${asset.symbol}",
+                                "${ticker.purchase} ${ticker.currency}",
+                                "${ticker.fee} ${ticker.currency}",
+                                "${ticker.totalAmount} ${ticker.currency}",
+                                ticker.feePercent,
+                                ticker.assetAmount,
                             )
                             binding.apply {
                                 priceTv.text = info.price
                                 purchaseTv.text = info.purchase
                                 feeTv.text = info.fee
                                 totalTv.text = info.total
+                                assetName.text = "+ ${info.assetAmount} ${ticker.currency}"
                                 if (!buyVa.isEnabled) {
                                     buyVa.isEnabled = true
                                     buyVa.displayedChild = if (isGooglePay) {

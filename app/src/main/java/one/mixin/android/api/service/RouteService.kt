@@ -7,8 +7,8 @@ import one.mixin.android.api.response.RoutePaymentResponse
 import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.vo.route.RoutePaymentRequest
-import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.sumsub.ProfileResponse
+import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST

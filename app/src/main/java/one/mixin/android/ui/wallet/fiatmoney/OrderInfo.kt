@@ -11,4 +11,5 @@ class OrderInfo(
     val fee: String,
     val total: String,
     val feePercent: String,
+    val assetAmount: String,
 ) : Parcelable

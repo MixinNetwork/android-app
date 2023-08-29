@@ -416,6 +416,8 @@
     <string name="error_permission">Please open the necessary permissions</string>
     <string name="error_phone_invalid_format">ERROR 20110: Invalid phone number</string>
     <string name="error_phone_sms_delivery">ERROR 10003: Failed to deliver SMS</string>
+    <string name="error_expired_card">ERROR 10601: Card expired</string>
+    <string name="error_expired_price">ERROR 10602: Price expired</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR 20113: Invalid phone verification code</string>
     <string name="error_pin_check_too_many_request">You have tried more than 5 times, please wait at least 24 hours to try again.</string>

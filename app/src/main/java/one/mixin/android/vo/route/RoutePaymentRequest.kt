@@ -13,6 +13,8 @@ class RoutePaymentRequest(
     val instrumentId: String,
     @SerializedName("amount")
     val amount: Long,
+    @SerializedName("asset_amount")
+    val assetAmount: String,
     @SerializedName("currency")
     val currency: String,
 )

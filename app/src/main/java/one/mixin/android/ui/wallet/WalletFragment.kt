@@ -114,7 +114,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 sendReceiveView.buy.isEnabled = true
                             },
                             successBlock = { resp ->
-                                if (resp.isSuccess){
+                                if (resp.isSuccess) {
                                     (requireActivity() as WalletActivity).apply {
                                         keyIgnore = resp.data?.kycState == KycState.IGNORE.value
                                         supportCurrency = resp.data?.currencies ?: emptyList()

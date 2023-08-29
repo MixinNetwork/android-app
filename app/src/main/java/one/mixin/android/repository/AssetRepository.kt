@@ -53,8 +53,8 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.route.RoutePaymentRequest
-import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.sumsub.ProfileResponse
+import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
 import javax.inject.Inject
