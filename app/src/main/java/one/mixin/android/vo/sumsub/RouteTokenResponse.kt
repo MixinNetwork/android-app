@@ -15,4 +15,5 @@ enum class KycState(val value: String) {
     SUCCESS("success"),
     RETRY("retry"),
     BLOCKED("blocked"),
+    IGNORE("ignore"),
 }

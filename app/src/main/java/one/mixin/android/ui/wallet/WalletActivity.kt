@@ -65,7 +65,9 @@ class WalletActivity : BlazeBaseActivity() {
     }
 
     var hideGooglePay = false
-    var buyEnable = true
+    var keyIgnore: Boolean = false
+    var supportCurrency: List<String> = emptyList()
+    var supportAssetIds: List<String> = emptyList()
 
     override fun finish() {
         super.finish()

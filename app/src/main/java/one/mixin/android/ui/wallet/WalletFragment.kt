@@ -21,7 +21,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.GOOGLE_PAY
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletBinding
@@ -48,6 +50,7 @@ import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.sumsub.KycState
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
@@ -102,9 +105,28 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     lifecycleScope.launch {
                         sendReceiveView.buy.displayedChild = 1
                         sendReceiveView.buy.isEnabled = false
-                        view.navigate(R.id.action_wallet_to_calculate)
-                        sendReceiveView.buy.displayedChild = 0
-                        sendReceiveView.buy.isEnabled = true
+                        handleMixinResponse(
+                            invokeNetwork = {
+                                walletViewModel.profile()
+                            },
+                            endBlock = {
+                                sendReceiveView.buy.displayedChild = 0
+                                sendReceiveView.buy.isEnabled = true
+                            },
+                            successBlock = { resp ->
+                                if (resp.isSuccess){
+                                    (requireActivity() as WalletActivity).apply {
+                                        keyIgnore = resp.data?.kycState == KycState.IGNORE.value
+                                        supportCurrency = resp.data?.currencies ?: emptyList()
+                                        supportAssetIds = resp.data?.assetIds ?: emptyList()
+                                        hideGooglePay = resp.data?.supportPayments?.contains(GOOGLE_PAY)?.not() ?: false
+                                        if (supportCurrency.isNotEmpty() && supportAssetIds.isNotEmpty()) {
+                                            view.navigate(R.id.action_wallet_to_calculate)
+                                        }
+                                    }
+                                }
+                            },
+                        )
                     }
                 }
                 sendReceiveView.send.setOnClickListener {

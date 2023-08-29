@@ -53,8 +53,6 @@ internal constructor(
 
     suspend fun token(): MixinResponse<RouteTokenResponse> = assetRepository.token()
 
-    suspend fun profile(): MixinResponse<ProfileResponse> = assetRepository.profile()
-
     suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = assetRepository.payment(traceRequest)
 
     suspend fun payment(paymentId: String): MixinResponse<RoutePaymentResponse> = assetRepository.payment(paymentId)
@@ -68,10 +66,6 @@ internal constructor(
     suspend fun addCard(card: Card) = assetRepository.addCard(card)
 
     suspend fun removeCard(index: Int) = assetRepository.removeCard(index)
-
-    var kycEnable: Boolean = true
-    var supportCurrency: List<String> = emptyList()
-    var supportAssetIds: List<String> = emptyList()
 
     var calculateState: CalculateState? = null
 

@@ -9,7 +9,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
-import one.mixin.android.Constants.GOOGLE_PAY
 import one.mixin.android.Constants.ROUTE_API_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -58,7 +57,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         if (fiatMoneyViewModel.asset != null && fiatMoneyViewModel.currency != null) {
             return
         }
-        getProfiles()
         val currencyList = getCurrencyData(requireContext().resources)
         val currencyName = requireContext().defaultSharedPreferences.getString(
             CURRENT_CURRENCY,
@@ -71,29 +69,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         fiatMoneyViewModel.currency = currencyList.find {
             it.name == currencyName
         } ?: currencyList.first()
-        fiatMoneyViewModel.asset = fiatMoneyViewModel.findAssetsByIds(fiatMoneyViewModel.supportAssetIds).let { list ->
+        fiatMoneyViewModel.asset = fiatMoneyViewModel.findAssetsByIds((requireActivity() as WalletActivity).supportAssetIds).let { list ->
             list.find { it.assetId == assetId } ?: list.first()
         }
-    }
-
-    private suspend fun getProfiles() {
-        showLoading()
-        handleMixinResponse(
-            invokeNetwork = {
-                fiatMoneyViewModel.profile()
-            },
-            successBlock = {
-                if (it.isSuccess) {
-                    fiatMoneyViewModel.kycEnable = it.data?.kycEnable ?: true
-                    fiatMoneyViewModel.supportCurrency = it.data?.currencies ?: emptyList()
-                    fiatMoneyViewModel.supportAssetIds = it.data?.assetIds ?: emptyList()
-                    (requireActivity() as WalletActivity).hideGooglePay = it.data?.supportPayments?.contains(GOOGLE_PAY)?.not() ?: false
-                    (requireActivity() as WalletActivity).buyEnable = it.data?.buyEnable ?: true
-                } else {
-                    fiatMoneyViewModel.kycEnable = true
-                }
-            },
-        )
     }
 
     private suspend fun refreshBotPublicKey() {
@@ -144,7 +122,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 assetRl.setOnClickListener {
                     AssetListBottomSheetDialogFragment.newInstance(
                         false,
-                        ArrayList(fiatMoneyViewModel.supportAssetIds),
+                        ArrayList((requireActivity() as WalletActivity).supportAssetIds),
                     ).setOnAssetClick { asset ->
                         fiatMoneyViewModel.asset = asset
                         requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, asset.assetId)
@@ -334,7 +312,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     }
 
     private fun checkKyc(onSuccess: () -> Unit) = lifecycleScope.launch {
-        if (!fiatMoneyViewModel.kycEnable) {
+        if ((requireActivity() as WalletActivity).keyIgnore) {
             onSuccess.invoke()
             return@launch
         }

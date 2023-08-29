@@ -34,6 +34,7 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.sumsub.ProfileResponse
 import javax.inject.Inject
 
 @HiltViewModel
@@ -261,4 +262,6 @@ internal constructor(
 
     suspend fun getExternalAddressFee(assetId: String, destination: String, tag: String?) =
         accountRepository.getExternalAddressFee(assetId, destination, tag)
+
+    suspend fun profile(): MixinResponse<ProfileResponse> = assetRepository.profile()
 }
