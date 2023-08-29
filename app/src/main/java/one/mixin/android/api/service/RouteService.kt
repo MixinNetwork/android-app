@@ -8,7 +8,7 @@ import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.RouteTokenResponse
-import one.mixin.android.vo.sumsub.UserResponse
+import one.mixin.android.vo.sumsub.ProfileResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -34,5 +34,5 @@ interface RouteService {
     suspend fun sumsubToken(): MixinResponse<RouteTokenResponse>
 
     @GET("/profile")
-    suspend fun profiles(): MixinResponse<UserResponse>
+    suspend fun profile(): MixinResponse<ProfileResponse>
 }

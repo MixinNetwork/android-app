@@ -59,9 +59,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             return
         }
         getProfiles()
-        val currencyList = getCurrencyData(requireContext().resources).filter {
-            fiatMoneyViewModel.supportCurrency.contains(it.name)
-        }
+        val currencyList = getCurrencyData(requireContext().resources)
         val currencyName = requireContext().defaultSharedPreferences.getString(
             CURRENT_CURRENCY,
             Session.getFiatCurrency(),
@@ -82,14 +80,14 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         showLoading()
         handleMixinResponse(
             invokeNetwork = {
-                fiatMoneyViewModel.profiles()
+                fiatMoneyViewModel.profile()
             },
             successBlock = {
                 if (it.isSuccess) {
                     fiatMoneyViewModel.kycEnable = it.data?.kycEnable ?: true
-                    fiatMoneyViewModel.supportCurrency = it.data?.currency ?: emptyList()
+                    fiatMoneyViewModel.supportCurrency = it.data?.currencies ?: emptyList()
                     fiatMoneyViewModel.supportAssetIds = it.data?.assetIds ?: emptyList()
-                    (requireActivity() as WalletActivity).hideGooglePay = it.data?.supportPayment?.contains(GOOGLE_PAY)?.not() ?: false
+                    (requireActivity() as WalletActivity).hideGooglePay = it.data?.supportPayments?.contains(GOOGLE_PAY)?.not() ?: false
                     (requireActivity() as WalletActivity).buyEnable = it.data?.buyEnable ?: true
                 } else {
                     fiatMoneyViewModel.kycEnable = true

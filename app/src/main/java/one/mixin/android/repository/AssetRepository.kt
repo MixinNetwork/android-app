@@ -54,7 +54,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.RouteTokenResponse
-import one.mixin.android.vo.sumsub.UserResponse
+import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
 import javax.inject.Inject
@@ -463,7 +463,7 @@ constructor(
 
     suspend fun token(): MixinResponse<RouteTokenResponse> = routeService.sumsubToken()
 
-    suspend fun profiles(): MixinResponse<UserResponse> = routeService.profiles()
+    suspend fun profile(): MixinResponse<ProfileResponse> = routeService.profile()
 
     suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = routeService.payment(traceRequest)
 

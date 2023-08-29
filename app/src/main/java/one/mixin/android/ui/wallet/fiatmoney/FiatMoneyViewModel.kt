@@ -33,7 +33,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.RouteTokenResponse
-import one.mixin.android.vo.sumsub.UserResponse
+import one.mixin.android.vo.sumsub.ProfileResponse
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -53,7 +53,7 @@ internal constructor(
 
     suspend fun token(): MixinResponse<RouteTokenResponse> = assetRepository.token()
 
-    suspend fun profiles(): MixinResponse<UserResponse> = assetRepository.profiles()
+    suspend fun profile(): MixinResponse<ProfileResponse> = assetRepository.profile()
 
     suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = assetRepository.payment(traceRequest)
 
