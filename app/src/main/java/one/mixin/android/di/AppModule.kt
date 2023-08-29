@@ -119,7 +119,10 @@ object AppModule {
     private const val xServerTime = "X-Server-Time"
     private const val xRequestId = "X-Request-Id"
     private const val authorization = "Authorization"
-    private const val xRouteSignature = "X-route-signature"
+
+    private const val mrAccessSign = "MR-ACCESS-SIGN"
+    private const val mrAccessTimestamp = "MR-ACCESS-TIMESTAMP"
+    private const val mrAccessUser = "MR-ACCESS-USER"
 
     @SuppressLint("ConstantLocale")
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
@@ -441,8 +444,11 @@ object AppModule {
             addInterceptor { chain ->
                 val sourceRequest = chain.request()
                 val builder = sourceRequest.newBuilder()
+                val (ts, signature) = Session.getRouteSignature(sourceRequest)
                 if (!sourceRequest.url.toString().endsWith("checkout/ticker")) {
-                    builder.addHeader(xRouteSignature, Session.getRouteSignature(sourceRequest))
+                    builder.addHeader(mrAccessUser, requireNotNull(Session.getAccountId()){"required accountId can not be null"})
+                    builder.addHeader(mrAccessTimestamp, ts.toString())
+                    builder.addHeader(mrAccessSign, signature)
                 }
                 val request = builder.build()
                 return@addInterceptor chain.proceed(request)

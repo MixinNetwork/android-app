@@ -329,25 +329,19 @@ object Session {
         }
     }
 
-    private data class RouteAuthData(
-        @SerializedName("issued_at")
-        val issuedAt: Long,
-        val hash: String,
-    )
-
-    fun getRouteSignature(request: Request): String {
-        val edKeyPair = getEd25519KeyPair() ?: return ""
-        val botPk = MixinApplication.get().defaultSharedPreferences.getString(PREF_CHECKOUT_BOT_PUBLIC_KEY, null)?.base64RawURLDecode() ?: return ""
+    fun getRouteSignature(request: Request): Pair<Long, String> {
+        val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
+        val botPk = MixinApplication.get().defaultSharedPreferences.getString(PREF_CHECKOUT_BOT_PUBLIC_KEY, null)?.base64RawURLDecode() ?: return Pair(0L, "")
         val private = privateKeyToCurve25519(edKeyPair.privateKey)
         val sharedKey = calculateAgreement(botPk, private)
-        var bodyHash = ""
+        val ts = currentTimeSeconds()
+        var content = "$ts${request.method}${request.url.cutOut()}"
         request.body?.apply {
             if (contentLength() > 0) {
-                bodyHash = bodyToString().hmacSha256(sharedKey).toHex()
+                content += bodyToString()
             }
         }
-        val authData = RouteAuthData(currentTimeSeconds(), bodyHash)
-        return (requireNotNull(getAccountId()).toByteArray() + aesGcmEncrypt(GsonHelper.customGson.toJson(authData).toByteArray(), sharedKey)).base64RawURLEncode()
+        return Pair(ts, content.hmacSha256(sharedKey).toHex())
     }
 }
 
