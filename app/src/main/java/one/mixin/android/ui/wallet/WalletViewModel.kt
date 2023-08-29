@@ -172,6 +172,14 @@ internal constructor(
         }
     }
 
+    suspend fun syncNoExistAsset(assetIds: List<String>) {
+        assetIds.forEach { id ->
+            if (assetRepository.findAssetItemById(id) == null) {
+                assetRepository.findOrSyncAsset(id)
+            }
+        }
+    }
+
     fun upsetAsset(asset: Asset) = viewModelScope.launch(Dispatchers.IO) {
         assetRepository.insert(asset)
     }

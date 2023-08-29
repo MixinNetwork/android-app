@@ -26,7 +26,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
-import one.mixin.android.ui.setting.getCurrencyData
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.FiatListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.IdentityFragment.Companion.ARGS_IS_RETRY
@@ -158,7 +157,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             } else {
                                 if (v == "0" && value != ".") {
                                     v = value
-                                    return
                                 } else if (value == "." && (v.contains(".") || AmountUtil.fullCurrency(fiatMoneyViewModel.currency!!.name))) {
                                     // do noting
                                     return

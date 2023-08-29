@@ -31,7 +31,7 @@ class FiatListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "FiatListBottomSheetDialogFragment"
         const val ARGS_CURRENCIES = "args_currencies"
-        fun newInstance(currency: Currency, list: List<Currency>? =null) = FiatListBottomSheetDialogFragment().withArgs {
+        fun newInstance(currency: Currency, list: List<Currency>? = null) = FiatListBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_CURRENCY, currency)
             putParcelableArrayList(ARGS_CURRENCIES, list?.let { ArrayList(it) })
         }
@@ -82,8 +82,8 @@ class FiatListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         currencies.addAll(
             requireArguments().getParcelableArrayListCompat(
                 ARGS_CURRENCIES,
-                Currency::class.java
-            ) ?: getCurrencyData(requireContext().resources)
+                Currency::class.java,
+            ) ?: getCurrencyData(requireContext().resources),
         )
         currencyAdapter.submitList(currencies)
     }
