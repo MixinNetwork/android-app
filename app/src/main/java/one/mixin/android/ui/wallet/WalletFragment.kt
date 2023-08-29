@@ -171,11 +171,15 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                                         R.id.action_wallet_to_calculate,
                                                         Bundle().apply { putParcelable(CALCULATE_STATE, state) },
                                                     )
+                                                    sendReceiveView.buy.displayedChild = 0
+                                                    sendReceiveView.buy.isEnabled = true
+                                                } else {
+                                                    ErrorHandler.handleMixinError(tickerResponse.errorCode, tickerResponse.errorDescription)
+                                                    sendReceiveView.buy.displayedChild = 0
+                                                    sendReceiveView.buy.isEnabled = true
                                                 }
                                             }
                                         }
-                                        sendReceiveView.buy.displayedChild = 0
-                                        sendReceiveView.buy.isEnabled = true
                                     }, { code, error ->
                                         ErrorHandler.handleMixinError(code, error)
                                         sendReceiveView.buy.displayedChild = 0
