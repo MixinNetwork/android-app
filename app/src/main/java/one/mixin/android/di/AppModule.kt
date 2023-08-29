@@ -446,7 +446,6 @@ object AppModule {
                 val builder = sourceRequest.newBuilder()
                 val (ts, signature) = Session.getRouteSignature(sourceRequest)
                 if (!sourceRequest.url.toString().endsWith("checkout/ticker")) {
-                    builder.addHeader(mrAccessUser, requireNotNull(Session.getAccountId()){"required accountId can not be null"})
                     builder.addHeader(mrAccessTimestamp, ts.toString())
                     builder.addHeader(mrAccessSign, signature)
                 }

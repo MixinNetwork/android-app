@@ -341,7 +341,7 @@ object Session {
                 content += bodyToString()
             }
         }
-        return Pair(ts, content.hmacSha256(sharedKey).toHex())
+        return Pair(ts, (requireNotNull(getAccountId()).toByteArray() + content.hmacSha256(sharedKey)).base64RawURLEncode())
     }
 }
 
