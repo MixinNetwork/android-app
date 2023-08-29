@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet.fiatmoney
 
+import android.os.Parcelable
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.parcelize.Parcelize
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -71,11 +73,12 @@ internal constructor(
     var asset: AssetItem? = null
     var currency: Currency? = null
 
+    @Parcelize
     class CalculateState(
         var minimum: Int = 15,
         var maximum: Int = 1000,
         var fiatPrice: Float = 1f,
-    )
+    ) : Parcelable
 
     var isReverse: Boolean = false
 

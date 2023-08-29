@@ -1258,7 +1258,7 @@
     <string name="identity_additional_verification_tip">We need you to submit additional information to meet regulatory requirements, thank you for your understanding and support.</string>
     <string name="Price">Price</string>
     <string name="Google_Pay" translatable="false">Google Pay</string>
-    <string name="Visa_Mastercard">Visa / Mastercard</string>
+    <string name="Debit_Credit_Card">Debit / Credit Card</string>
     <string name="user_deleted_hint">The user has deleted his own account.</string>
     <string name="Order_Preview">Order Preview</string>
     <string name="Total">Total</string>

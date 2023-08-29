@@ -11,12 +11,12 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
 import one.mixin.android.Constants.ROUTE_API_BOT_USER_ID
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.databinding.FragmentCalculateBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
@@ -45,7 +45,8 @@ import one.mixin.android.widget.Keyboard
 class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     companion object {
         const val TAG = "CalculateFragment"
-        private const val CURRENT_CURRENCY = "current_currency"
+        const val CALCULATE_STATE = "calculate_state"
+        const val CURRENT_CURRENCY = "current_currency"
         private const val CURRENT_ASSET_ID = "current_asset_id"
         fun newInstance() = CalculateFragment()
     }
@@ -72,17 +73,13 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         fiatMoneyViewModel.asset = fiatMoneyViewModel.findAssetsByIds((requireActivity() as WalletActivity).supportAssetIds).let { list ->
             list.find { it.assetId == assetId } ?: list.first()
         }
-    }
-
-    private suspend fun refreshBotPublicKey() {
-        handleMixinResponse(
-            invokeNetwork = {
-                fiatMoneyViewModel.fetchSessionsSuspend(listOf(ROUTE_API_BOT_USER_ID))
-            },
-            successBlock = { resp ->
-                defaultSharedPreferences.putString(Constants.Account.PREF_CHECKOUT_BOT_PUBLIC_KEY, requireNotNull(resp.data)[0].publicKey)
-            },
+        fiatMoneyViewModel.calculateState = requireArguments().getParcelableCompat(
+            CALCULATE_STATE,
+            FiatMoneyViewModel.CalculateState::class.java,
         )
+        if (fiatMoneyViewModel.calculateState == null) {
+            refresh()
+        }
     }
 
     private suspend fun refresh() {
@@ -209,13 +206,11 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             }
             if (fiatMoneyViewModel.calculateState == null) {
                 initData()
-                refresh()
                 updateUI()
             } else {
                 binding.primaryTv.text = v
                 updateUI()
             }
-            refreshBotPublicKey()
         }
     }
 

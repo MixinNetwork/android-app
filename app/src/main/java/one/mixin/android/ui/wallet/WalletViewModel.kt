@@ -264,4 +264,6 @@ internal constructor(
         accountRepository.getExternalAddressFee(assetId, destination, tag)
 
     suspend fun profile(): MixinResponse<ProfileResponse> = assetRepository.profile()
+
+    suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 }

@@ -75,7 +75,7 @@
             android:layout_centerVertical="true"/>
 
         <TextView
-            android:text="@string/Visa_Mastercard"
+            android:text="@string/Debit_Credit_Card"
             android:layout_toEndOf="@id/bank_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -1212,6 +1212,7 @@
         <item quantity="other">已选择 %1$d 个</item>
     </plurals>
     <string name="user_deleted_hint">该用户已经删除了账号。</string>
+    <string name="Debit_Credit_Card">借记卡 / 信用卡</string>
     <string name="Buy">购买</string>
     <string name="Buy_asset">购买 %1$s</string>
     <string name="Identity_Verification">身份验证</string>

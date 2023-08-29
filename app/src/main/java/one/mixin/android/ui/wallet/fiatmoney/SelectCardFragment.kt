@@ -210,7 +210,7 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
                     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                         lifecycleScope.launch {
                             val anchorView = cardRv
-                            val card = cardAdapter.data?.get(viewHolder.absoluteAdapterPosition)?:return@launch
+                            val card = cardAdapter.data?.get(viewHolder.absoluteAdapterPosition) ?: return@launch
                             fiatMoneyViewModel.removeCard(viewHolder.absoluteAdapterPosition)
                             snackbar = Snackbar.make(anchorView, getString(R.string.wallet_already_deleted, "${card.scheme}...${card.number}"), 3500)
                                 .setAction(R.string.UNDO) {
