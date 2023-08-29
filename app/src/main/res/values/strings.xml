@@ -1266,6 +1266,7 @@
     <string name="Buy_now">Buy now</string>
     <string name="Payment_Services">Payment Services</string>
     <string name="Pay" translatable="false">Pay</string>
+    <string name="Get" translatable="false">Get</string>
     <string name="Buy_with" translatable="false">Buy with</string>
     <string name="Value_info">Minimum %1$d %2$s, Maximum %3$d %4$s</string>
     <string name="Select_Payment">Select Payment</string>

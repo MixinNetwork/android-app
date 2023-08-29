@@ -216,23 +216,23 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     private var v = "0"
 
+    @SuppressLint("SetTextI18n")
     private fun updateUI() {
         if (!isAdded) return
         val currency = fiatMoneyViewModel.currency ?: return
         val asset = fiatMoneyViewModel.asset ?: return
         if (fiatMoneyViewModel.isReverse) {
             binding.apply {
-                fiatName.text = currency.name
-                assetName.text = asset.symbol
                 primaryUnit.text = asset.symbol
             }
         } else {
             binding.apply {
-                fiatName.text = currency.name
-                assetName.text = asset.symbol
                 primaryUnit.text = currency.name
             }
         }
+        binding.fiatName.text = "${getString(R.string.Pay)} ${currency.name}"
+        binding.assetName.text = "${getString(R.string.Get)} ${asset.symbol}"
+        binding.continueTv.text = "${getString(R.string.Buy)} ${asset.symbol}"
         updateValue()
     }
 

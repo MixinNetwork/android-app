@@ -122,7 +122,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
 
-
             <TextView
                 android:id="@+id/asset_name"
                 android:layout_width="wrap_content"
@@ -160,8 +159,8 @@
             android:focusable="true"
             android:paddingStart="24dp"
             android:paddingEnd="24dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
             android:layout_marginBottom="16dp"
             android:inAnimation="@anim/fade_in"
             android:outAnimation="@anim/fade_out"
