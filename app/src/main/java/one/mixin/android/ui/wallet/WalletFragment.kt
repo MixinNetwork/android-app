@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.GOOGLE_PAY
 import one.mixin.android.Constants.ROUTE_API_BOT_USER_ID
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
@@ -38,6 +39,7 @@ import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
@@ -56,6 +58,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.sumsub.KycState
+import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
@@ -97,6 +100,35 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         jobManager.addJobInBackground(RefreshAssetsJob())
     }
 
+    private suspend fun syncBotKey(callback: () -> Unit, errorCallback: (Int, String) -> Unit) {
+        val botKey =
+            defaultSharedPreferences.getString(Constants.Account.PREF_CHECKOUT_BOT_PUBLIC_KEY, null)
+        if (botKey == null) {
+            val sessionResponse =
+                walletViewModel.fetchSessionsSuspend(listOf(ROUTE_API_BOT_USER_ID))
+            if (sessionResponse.isSuccess) {
+                defaultSharedPreferences.putString(
+                    Constants.Account.PREF_CHECKOUT_BOT_PUBLIC_KEY,
+                    requireNotNull(sessionResponse.data)[0].publicKey,
+                )
+                callback.invoke()
+            } else {
+                errorCallback.invoke(sessionResponse.errorCode, sessionResponse.errorDescription)
+            }
+        } else {
+            callback.invoke()
+        }
+    }
+
+    private suspend fun syncProfile(callback: (ProfileResponse) -> Unit, errorCallback: (Int, String) -> Unit) {
+        val profileResponse = walletViewModel.profile()
+        if (profileResponse.isSuccess) {
+            callback.invoke(profileResponse.data!!)
+        } else {
+            errorCallback.invoke(profileResponse.errorCode, profileResponse.errorDescription)
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
@@ -107,74 +139,54 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                 sendReceiveView.enableBuy()
                 sendReceiveView.buy.setOnClickListener {
-                    lifecycleScope.launch {
+                    lifecycleScope.launch scope1@{
                         sendReceiveView.buy.displayedChild = 1
                         sendReceiveView.buy.isEnabled = false
                         try {
-                            val sessionResponse =
-                                walletViewModel.fetchSessionsSuspend(listOf(ROUTE_API_BOT_USER_ID))
-                            if (sessionResponse.isSuccess) {
-                                val profileResponse = walletViewModel.profile()
-                                if (profileResponse.isSuccess) {
-                                    (requireActivity() as WalletActivity).apply {
-                                        keyIgnore = profileResponse.data?.kycState == KycState.IGNORE.value
-                                        supportCurrency = profileResponse.data?.currencies ?: emptyList()
-                                        supportAssetIds = profileResponse.data?.assetIds ?: emptyList()
-                                        hideGooglePay =
-                                            profileResponse.data?.supportPayments?.contains(
-                                                GOOGLE_PAY,
-                                            )?.not() ?: false
-                                        if (supportCurrency.isNotEmpty() && supportAssetIds.isNotEmpty()) {
-                                            val currency = requireContext().defaultSharedPreferences.getString(
-                                                CalculateFragment.CURRENT_CURRENCY,
-                                                supportCurrency.first(),
-                                            ) ?: return@launch
-                                            val tickerResponse = walletViewModel.ticker(RouteTickerRequest(0, currency, supportAssetIds.first()))
-                                            if (tickerResponse.isSuccess) {
-                                                val state = FiatMoneyViewModel.CalculateState(
-                                                    minimum = tickerResponse.data?.minimum?.toIntOrNull() ?: 0,
-                                                    maximum = tickerResponse.data?.maximum?.toIntOrNull() ?: 0,
-                                                    fiatPrice = tickerResponse.data?.price?.toFloatOrNull() ?: 0f,
-                                                )
-                                                view.navigate(
-                                                    R.id.action_wallet_to_calculate,
-                                                    Bundle().apply {
-                                                        putParcelable(
-                                                            CALCULATE_STATE,
-                                                            state,
-                                                        )
-                                                    },
-                                                ) } else {
-                                                ErrorHandler.handleMixinError(
-                                                    sessionResponse.errorCode,
-                                                    sessionResponse.errorDescription,
-                                                )
-                                                sendReceiveView.buy.displayedChild = 0
-                                                sendReceiveView.buy.isEnabled = true
-                                                return@launch
+                            syncBotKey({
+                                launch scope2@ {
+                                    syncProfile({
+                                            profileResponse->
+                                        (requireActivity() as WalletActivity).apply {
+                                            keyIgnore = profileResponse.kycState == KycState.IGNORE.value
+                                            supportCurrency = profileResponse.currencies
+                                            supportAssetIds = profileResponse.assetIds
+                                            hideGooglePay = profileResponse.supportPayments.contains(GOOGLE_PAY,).not()
+
+                                            launch {
+                                                val currency = requireContext().defaultSharedPreferences.getString(
+                                                            CalculateFragment.CURRENT_CURRENCY,
+                                                            supportCurrency.first()) ?: return@launch
+                                                val tickerResponse = walletViewModel.ticker(RouteTickerRequest(0, currency, supportAssetIds.first()))
+                                                if (tickerResponse.isSuccess) {
+                                                    val state = FiatMoneyViewModel.CalculateState(
+                                                        minimum = tickerResponse.data?.minimum?.toIntOrNull()
+                                                            ?: 0,
+                                                        maximum = tickerResponse.data?.maximum?.toIntOrNull()
+                                                            ?: 0,
+                                                        fiatPrice = tickerResponse.data?.price?.toFloatOrNull()
+                                                            ?: 0f,
+                                                    )
+                                                    view.navigate(
+                                                        R.id.action_wallet_to_calculate,
+                                                        Bundle().apply { putParcelable(CALCULATE_STATE, state) },
+                                                    )
+                                                }
                                             }
-                                        } else {
-                                            ErrorHandler.handleMixinError(
-                                                sessionResponse.errorCode,
-                                                sessionResponse.errorDescription,
-                                            )
-                                            sendReceiveView.buy.displayedChild = 0
-                                            sendReceiveView.buy.isEnabled = true
-                                            return@launch
                                         }
-                                    }
-                                } else {
-                                    ErrorHandler.handleMixinError(sessionResponse.errorCode, sessionResponse.errorDescription)
-                                    sendReceiveView.buy.displayedChild = 0
-                                    sendReceiveView.buy.isEnabled = true
-                                    return@launch
+                                        sendReceiveView.buy.displayedChild = 0
+                                        sendReceiveView.buy.isEnabled = true
+                                    },{ code,error->
+                                        ErrorHandler.handleMixinError(code, error)
+                                        sendReceiveView.buy.displayedChild = 0
+                                        sendReceiveView.buy.isEnabled = true
+                                    })
                                 }
-                            } else {
-                                ErrorHandler.handleMixinError(sessionResponse.errorCode, sessionResponse.errorDescription)
+                            },{ code,error->
+                                ErrorHandler.handleMixinError(code, error)
                                 sendReceiveView.buy.displayedChild = 0
                                 sendReceiveView.buy.isEnabled = true
-                                return@launch
-                            }
+                            })
                         } catch (e: Exception) {
                             sendReceiveView.buy.displayedChild = 0
                             sendReceiveView.buy.isEnabled = true
