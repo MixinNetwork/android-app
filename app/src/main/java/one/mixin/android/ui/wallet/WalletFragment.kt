@@ -46,6 +46,7 @@ import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
+import one.mixin.android.ui.setting.getCurrencyData
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
@@ -148,14 +149,16 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                             profileResponse ->
                                         (requireActivity() as WalletActivity).apply {
                                             keyIgnore = profileResponse.kycState == KycState.IGNORE.value
-                                            supportCurrency = profileResponse.currencies
+                                            supportCurrencies = getCurrencyData(requireContext().resources).filter {
+                                                profileResponse.currencies.contains(it.name)
+                                            }
                                             supportAssetIds = profileResponse.assetIds
                                             hideGooglePay = profileResponse.supportPayments.contains(GOOGLE_PAY).not()
 
                                             launch {
                                                 val currency = requireContext().defaultSharedPreferences.getString(
                                                     CalculateFragment.CURRENT_CURRENCY,
-                                                    supportCurrency.first(),
+                                                    supportCurrencies.first().name,
                                                 ) ?: return@launch
                                                 val tickerResponse = walletViewModel.ticker(RouteTickerRequest(0, currency, supportAssetIds.first()))
                                                 if (tickerResponse.isSuccess) {

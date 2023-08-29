@@ -16,19 +16,19 @@ import one.mixin.android.session.Session
 
 class CurrencyAdapter : ListAdapter<Currency, CurrencyHolder>(Currency.DIFF_CALLBACK) {
     var currencyListener: OnCurrencyListener? = null
-
+    var currentCurrency: String? = Session.getFiatCurrency()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         CurrencyHolder(ItemCurrencyBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
     override fun onBindViewHolder(holder: CurrencyHolder, position: Int) {
-        getItem(position)?.let { holder.bind(it, currencyListener) }
+        getItem(position)?.let { holder.bind(it, currentCurrency, currencyListener) }
     }
 }
 
 class CurrencyHolder(private val itemBinding: ItemCurrencyBinding) : RecyclerView.ViewHolder(itemBinding.root) {
-    fun bind(currency: Currency, listener: OnCurrencyListener?) {
+    fun bind(currency: Currency, currentCurrency: String?, listener: OnCurrencyListener?) {
         itemBinding.apply {
-            if (currency.name == Session.getFiatCurrency()) {
+            if (currency.name == currentCurrency) {
                 checkIv.isVisible = true
             } else {
                 checkIv.isInvisible = true

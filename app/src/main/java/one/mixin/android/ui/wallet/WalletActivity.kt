@@ -12,6 +12,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
 import javax.inject.Inject
@@ -66,7 +67,7 @@ class WalletActivity : BlazeBaseActivity() {
 
     var hideGooglePay = false
     var keyIgnore: Boolean = false
-    var supportCurrency: List<String> = emptyList()
+    var supportCurrencies: List<Currency> = emptyList()
     var supportAssetIds: List<String> = emptyList()
 
     override fun finish() {

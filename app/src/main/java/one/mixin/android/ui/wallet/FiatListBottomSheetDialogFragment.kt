@@ -11,6 +11,7 @@ import one.mixin.android.databinding.FragmentFiatListBottomSheetBinding
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.equalsIgnoreCase
+import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.statusBarHeight
@@ -29,9 +30,10 @@ import one.mixin.android.widget.SearchView
 class FiatListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "FiatListBottomSheetDialogFragment"
-
-        fun newInstance(currency: Currency) = FiatListBottomSheetDialogFragment().withArgs {
+        const val ARGS_CURRENCIES = "args_currencies"
+        fun newInstance(currency: Currency, list: List<Currency>? =null) = FiatListBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_CURRENCY, currency)
+            putParcelableArrayList(ARGS_CURRENCIES, list?.let { ArrayList(it) })
         }
     }
 
@@ -54,12 +56,12 @@ class FiatListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         val currency = requireNotNull(requireArguments().getParcelableCompat(ARGS_CURRENCY, Currency::class.java))
-        // TODO use currency
         binding.apply {
             closeIb.setOnClickListener {
                 searchEt.hideKeyboard()
                 dismiss()
             }
+            currencyAdapter.currentCurrency = currency.name
             fiatRv.adapter = currencyAdapter
             currencyAdapter.currencyListener = object : OnCurrencyListener {
                 override fun onClick(currency: Currency) {
@@ -77,7 +79,12 @@ class FiatListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
         currencies.clear()
-        currencies.addAll(getCurrencyData(requireContext().resources))
+        currencies.addAll(
+            requireArguments().getParcelableArrayListCompat(
+                ARGS_CURRENCIES,
+                Currency::class.java
+            ) ?: getCurrencyData(requireContext().resources)
+        )
         currencyAdapter.submitList(currencies)
     }
 

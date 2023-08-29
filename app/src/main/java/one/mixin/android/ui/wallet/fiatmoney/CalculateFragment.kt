@@ -58,7 +58,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         if (fiatMoneyViewModel.asset != null && fiatMoneyViewModel.currency != null) {
             return
         }
-        val currencyList = getCurrencyData(requireContext().resources)
+        val supportCurrency = (requireActivity() as WalletActivity).supportCurrencies
         val currencyName = requireContext().defaultSharedPreferences.getString(
             CURRENT_CURRENCY,
             Session.getFiatCurrency(),
@@ -67,9 +67,10 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             CURRENT_ASSET_ID,
             USDT_ASSET_ID,
         )
-        fiatMoneyViewModel.currency = currencyList.find {
+
+        fiatMoneyViewModel.currency = supportCurrency.find {
             it.name == currencyName
-        } ?: currencyList.first()
+        } ?: supportCurrency.first()
         fiatMoneyViewModel.asset = fiatMoneyViewModel.findAssetsByIds((requireActivity() as WalletActivity).supportAssetIds).let { list ->
             list.find { it.assetId == assetId } ?: list.first()
         }
@@ -127,7 +128,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                 }
                 fiatRl.setOnClickListener {
-                    FiatListBottomSheetDialogFragment.newInstance(fiatMoneyViewModel.currency!!).apply {
+                    FiatListBottomSheetDialogFragment.newInstance(fiatMoneyViewModel.currency!!, (requireActivity() as WalletActivity).supportCurrencies).apply {
                         callback = object : FiatListBottomSheetDialogFragment.Callback {
                             override fun onCurrencyClick(currency: Currency) {
                                 this@CalculateFragment.lifecycleScope.launch {
