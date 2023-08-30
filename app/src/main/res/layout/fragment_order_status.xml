@@ -39,34 +39,15 @@
 
         </ViewAnimator>
 
-        <ViewAnimator
-            android:id="@+id/title_va"
+        <TextView
+            android:id="@+id/title"
+            android:textColor="?attr/text_primary"
+            android:textSize="16sp"
+            android:gravity="center_horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_gravity="center_horizontal"
             android:layout_marginStart="32dp"
-            android:layout_marginEnd="32dp">
-
-            <TextView
-                android:id="@+id/asset_name"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:lines="1"
-                android:textSize="16sp"
-                android:textColor="@color/colorGreen"
-                tools:text="+51.23 USDC" />
-
-            <TextView
-                android:id="@+id/title"
-                android:textColor="?attr/text_primary"
-                android:textSize="16sp"
-                android:gravity="center_horizontal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-        </ViewAnimator>
+            android:layout_marginEnd="32dp" />
 
         <TextView
             android:id="@+id/content"
@@ -105,7 +86,7 @@
                     android:id="@+id/pay_with"
                     android:textColor="?attr/text_primary"
                     tools:text="Visa...4242"
-                    android:drawablePadding="3dp"
+                    android:drawablePadding="8dp"
                     android:layout_alignParentEnd="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />

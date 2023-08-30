@@ -21,16 +21,16 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="16dp"
-        android:padding="16dp"
+        android:padding="8dp"
         android:foreground="?android:attr/selectableItemBackground"
         android:background="@drawable/bg_round_window_8dp"
         app:layout_constraintTop_toBottomOf="@id/title_view">
 
         <ImageView
             android:id="@+id/google_iv"
-            android:src="@drawable/ic_google_pay"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:src="@drawable/google_pay_mark"
+            android:layout_width="64dp"
+            android:layout_height="42dp"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"/>
 
@@ -39,7 +39,6 @@
             android:layout_toEndOf="@id/google_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
             android:textColor="?attr/text_primary"
             android:textSize="16sp"
             android:layout_centerVertical="true"/>
@@ -61,7 +60,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="16dp"
-        android:padding="16dp"
+        android:padding="8dp"
         android:foreground="?android:attr/selectableItemBackground"
         android:background="@drawable/bg_round_window_8dp"
         app:layout_constraintTop_toBottomOf="@id/first_rl">
@@ -69,8 +68,12 @@
         <ImageView
             android:id="@+id/bank_iv"
             android:src="@drawable/ic_bank_card"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"/>
 
@@ -79,7 +82,6 @@
             android:layout_toEndOf="@id/bank_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
             android:textColor="?attr/text_primary"
             android:textSize="16sp"
             android:layout_centerVertical="true"/>
