@@ -14,10 +14,13 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.databinding.FragmentOrderConfirmBinding
+import one.mixin.android.extension.buildAmountSymbol
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigate
+import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -29,6 +32,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment.Companion.ARGS_INFO
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.SnapshotType
 import org.json.JSONException
 import timber.log.Timber
 
@@ -204,7 +208,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                             purchaseTv.text = info.purchase
                             feeTv.text = info.fee
                             totalTv.text = info.total
-                            assetName.text = "+ ${info.assetAmount} ${asset.symbol}"
+                            setAssetAmount(info.assetAmount)
                             if (!buyVa.isEnabled) {
                                 buyVa.isEnabled = true
                                 buyVa.displayedChild = if (isGooglePay) {
@@ -225,5 +229,28 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                 }
             }
         }
+    }
+
+    private fun setAssetAmount(amount: String) {
+        val amountVal = amount.toFloatOrNull()
+        val isPositive = if (amountVal == null) false else amountVal > 0
+        val amountText = if (isPositive) {
+            "+${amount.numberFormat()}"
+        } else {
+            amount.numberFormat()
+        }
+        val amountColor = resources.getColor(
+            when {
+                isPositive -> {
+                    R.color.wallet_green
+                }
+                else -> {
+                    R.color.wallet_pink
+                }
+            },
+            null,
+        )
+        val symbolColor = requireContext().colorFromAttribute(R.attr.text_primary)
+        binding.assetName.text = buildAmountSymbol(requireContext(), amountText, asset.symbol, amountColor, symbolColor)
     }
 }
