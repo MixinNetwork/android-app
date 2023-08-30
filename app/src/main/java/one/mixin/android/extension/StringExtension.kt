@@ -38,6 +38,7 @@ import java.io.IOException
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Serializable
+import java.lang.NullPointerException
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
@@ -474,6 +475,8 @@ fun String.getColorCode(codeType: CodeType): Int {
         UUID.fromString(this).hashCode()
     } catch (e: IllegalArgumentException) {
         hashCode()
+    } catch (e: NullPointerException) {
+        0
     }
     code = abs(hashcode).rem(codeType.count)
     cacheMap[this] = code
