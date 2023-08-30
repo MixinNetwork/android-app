@@ -1232,7 +1232,6 @@
     <string name="identity_additional_verification_tip">为了满足监管要求，我们需要您提交额外的信息。感谢您的理解和支持。</string>
     <string name="Price">价格</string>
     <string name="Order_Preview">订单预览</string>
-    <string name="Total">总计</string>
     <string name="Pay_with">支付方式</string>
     <string name="Buy_now">立即购买</string>
     <string name="Payment_Services">支付服务</string>
@@ -1264,4 +1263,6 @@
     <string name="Security_code_sub_title">卡上的 3–4 位代码</string>
     <string name="Expiry_date_sub_title">格式为 MM/YY</string>
     <string name="Purchase">购买</string>
+    <string name="Total_Amount">总金额</string>
+    <string name="Purchase_Amount">购买金额</string>
 </resources>

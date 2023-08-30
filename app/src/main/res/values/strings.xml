@@ -1297,4 +1297,6 @@
     <string name="Security_code_sub_title">3–4 digit code on your card</string>
     <string name="Expiry_date_sub_title">Format is MM/YY</string>
     <string name="Purchase">Purchase</string>
+    <string name="Total_Amount">Total Amount</string>
+    <string name="Purchase_Amount">Purchase Amount</string>
 </resources>
