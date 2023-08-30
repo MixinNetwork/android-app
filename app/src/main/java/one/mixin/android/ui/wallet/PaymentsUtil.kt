@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import android.content.Context
 import com.google.android.gms.wallet.PaymentsClient
 import com.google.android.gms.wallet.Wallet
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.PAYMENTS_ENVIRONMENT
 import org.json.JSONArray
@@ -56,4 +57,22 @@ object PaymentsUtil {
 
         return Wallet.getPaymentsClient(context, walletOptions)
     }
+
+    fun cardPaymentMethod(): JSONObject {
+        val cardPaymentMethod = baseCardPaymentMethod()
+        cardPaymentMethod.put("tokenizationSpecification", gatewayTokenizationSpecification())
+        return cardPaymentMethod
+    }
+
+    private fun gatewayTokenizationSpecification(): JSONObject {
+        return JSONObject().apply {
+            put("type", "PAYMENT_GATEWAY")
+            put("parameters", JSONObject(PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS))
+        }
+    }
+
+    private val PAYMENT_GATEWAY_TOKENIZATION_PARAMETERS = mapOf(
+        "gateway" to Constants.PAYMENTS_GATEWAY,
+        "gatewayMerchantId" to BuildConfig.CHCEKOUT_ID
+    )
 }

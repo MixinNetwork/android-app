@@ -4,8 +4,11 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.wallet.button.ButtonConstants
+import com.google.android.gms.wallet.button.ButtonOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -23,11 +26,14 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.setting.Currency
+import one.mixin.android.ui.wallet.PaymentsUtil
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment.Companion.ARGS_INFO
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
+import org.json.JSONException
 import timber.log.Timber
+
 
 @AndroidEntryPoint
 class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
@@ -83,31 +89,9 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
             titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
-            buyVa.setOnClickListener {
-                if (buyVa.displayedChild != 2) {
-                    VerifyBottomSheetDialogFragment.newInstance(getString(R.string.Verify_PIN), true).apply {
-                        disableToast = true
-                    }.setOnPinSuccess { _ ->
-                        it.navigate(
-                            R.id.action_wallet_confirm_to_status,
-                            requireArguments().apply {
-                                putParcelable(ARGS_INFO, info)
-                            },
-                        )
-                    }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
-                }
-            }
             titleView.rightAnimator.setOnClickListener { }
             titleView.setSubTitle(getString(R.string.Order_Confirm), "")
             buyVa.displayedChild = 2
-            buyVa.setBackgroundResource(
-                if (isGooglePay) {
-                    R.drawable.bg_round_black_btn_40
-                } else {
-                    R.drawable.bg_round_blue_btn_40
-                },
-            )
-
             assetAvatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             assetAvatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             priceRl.setOnClickListener {
@@ -122,7 +106,20 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                 }
             }
             buyVa.isEnabled = false
-
+            try {
+                googlePayButton.initialize(
+                    ButtonOptions.newBuilder()
+                        .setAllowedPaymentMethods(PaymentsUtil.cardPaymentMethod().toString())
+                        .build()
+                )
+                googlePayButton.setOnClickListener {
+                    googlePayButton.isClickable = false
+                    showVerify(it)
+                }
+            } catch (e: JSONException) {
+                Timber.e(e)
+            }
+            continueTv.setOnClickListener(::showVerify)
             payWith.text = if (isGooglePay) {
                 "Google Pay"
             } else {
@@ -142,6 +139,19 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             totalTv.text = info.total
         }
         refresh()
+    }
+
+    private fun showVerify(view: View) {
+        VerifyBottomSheetDialogFragment.newInstance(getString(R.string.Verify_PIN), true).apply {
+            disableToast = true
+        }.setOnPinSuccess { _ ->
+            view.navigate(
+                R.id.action_wallet_confirm_to_status,
+                requireArguments().apply {
+                    putParcelable(ARGS_INFO, info)
+                },
+            )
+        }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
     }
 
     private var info = OrderInfo(
