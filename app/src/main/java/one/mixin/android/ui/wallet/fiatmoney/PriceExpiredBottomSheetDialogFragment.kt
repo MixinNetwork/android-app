@@ -101,10 +101,6 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             assetAmountTv.text = "$assetAmount ${asset.symbol}"
             payAmount.text = total
         }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         refresh()
     }
 
@@ -114,7 +110,7 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     @SuppressLint("SetTextI18n")
     private fun refresh() {
         lifecycleScope.launch {
-            var time = 10
+            var time = 0
             while (isActive) {
                 if (time == 10) {
                     val response = try {
@@ -123,7 +119,6 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         Timber.e(e)
                         continue
                     }
-                    if (viewDestroyed()) return@launch
                     if (response.isSuccess) {
                         val ticker = response.data ?: continue
                         binding.apply {
@@ -136,9 +131,7 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 } else {
                     delay(1000L)
                     time++
-                    if (!viewDestroyed()) {
-                        binding.continueTv.text = "${getString(R.string.Use_New_Price)} ${10 - time}s"
-                    }
+                    binding.continueTv.text = "${getString(R.string.Use_New_Price)} (${10 - time}s)"
                 }
             }
         }
