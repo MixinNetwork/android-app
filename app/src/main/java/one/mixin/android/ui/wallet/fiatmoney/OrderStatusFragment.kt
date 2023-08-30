@@ -23,6 +23,7 @@ import com.checkout.threeds.domain.model.AuthenticationParameters
 import com.checkout.threeds.domain.model.AuthenticationResult
 import com.checkout.threeds.domain.model.ResultType
 import com.checkout.tokenization.model.GooglePayTokenRequest
+import com.github.salomonbrys.kotson.get
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
@@ -56,6 +57,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.route.RoutePaymentRequest
 import timber.log.Timber
+import java.lang.IllegalArgumentException
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -80,6 +82,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
     private lateinit var asset: AssetItem
     private lateinit var currency: Currency
+    private lateinit var info: OrderInfo
     private var isGooglePay: Boolean = false
 
     private val amount by lazy {
@@ -156,7 +159,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         )
 
         val scheme = requireArguments().getString(OrderConfirmFragment.ARGS_SCHEME)
-        val info = requireNotNull(
+        info = requireNotNull(
             requireArguments().getParcelableCompat(
                 ARGS_INFO,
                 OrderInfo::class.java,
@@ -369,7 +372,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         }
     }
 
-    private fun payments(sessionId: String, instrumentId: String) = lifecycleScope.launch {
+    private fun retry(sessionId: String, instrumentId: String, expectancyAssetAmount:String) {
+        payments(sessionId, instrumentId, expectancyAssetAmount)
+    }
+
+    private fun payments(sessionId: String, instrumentId: String, expectancyAssetAmount: String? = null) = lifecycleScope.launch {
         try {
             val response = fiatMoneyViewModel.payment(
                 RoutePaymentRequest(
@@ -378,7 +385,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     sessionId,
                     instrumentId,
                     amount.toLong(),
-                    assetAmount = expectancy,
+                    assetAmount = expectancyAssetAmount ?: expectancy,
                     currency.name,
                 ),
             )
@@ -396,6 +403,31 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     }
                 }
             } else {
+                if (response.errorCode == ErrorHandler.EXPIRED_PRICE) {
+                    val extra = response.error?.extra?.asJsonObject?.get("data")
+                        ?: throw IllegalArgumentException(getString(R.string.Data_error))
+                    val assetPrice = extra["asset_price"].asString
+                        ?: throw IllegalArgumentException(getString(R.string.Data_error))
+                    val assetAmount = extra["asset_amount"].asString
+                        ?: throw IllegalArgumentException(getString(R.string.Data_error))
+
+                    PriceExpiredBottomSheetDialogFragment.newInstance(
+                        amount,
+                        currency.name,
+                        asset,
+                        info.total,
+                        assetAmount,
+                        assetPrice
+                    ).apply {
+                        continueAction = { assetAmount ->
+                            this@OrderStatusFragment.retry(sessionId, instrumentId, assetAmount)
+                        }
+                        cancelAction = {
+                            view?.navigate(R.id.action_wallet_status_to_wallet)
+                        }
+                    }.showNow(parentFragmentManager, PriceExpiredBottomSheetDialogFragment.TAG)
+                    return@launch
+                }
                 showError(
                     requireContext().getMixinErrorStringByCode(
                         response.errorCode,

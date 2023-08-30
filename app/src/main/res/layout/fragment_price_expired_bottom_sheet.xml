@@ -23,13 +23,6 @@
         android:textColor="?attr/text_primary"
         android:text="@string/Price_Expired"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="26dp"
-        android:textSize="14sp"
-        android:textColor="?attr/text_assist"
-        android:text="@string/New_Price"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -38,42 +31,65 @@
         android:layout_margin="24dp"
         android:padding="24dp"
         android:background="@drawable/bg_round_window_8dp">
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
 
-            <TextView
-                android:text="@string/Old_Price"
-                android:textColor="?attr/text_minor"
-                android:layout_width="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:id="@+id/old_price"
-                android:textColor="?attr/text_minor"
-                tools:text="1.23 USD"
-                android:layout_alignParentEnd="true"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-        </RelativeLayout>
         <RelativeLayout
             android:layout_marginTop="12dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <TextView
-                android:text="@string/New_Price"
+                android:text="@string/Price"
                 android:textColor="?attr/text_minor"
                 android:layout_width="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_height="wrap_content" />
 
             <TextView
-                android:id="@+id/new_price"
+                android:id="@+id/asset_price"
                 android:textColor="?attr/text_minor"
-                tools:text="0 USD"
+                tools:text="≈ 1 USD"
+                android:layout_alignParentEnd="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_marginTop="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="@string/Collection"
+                android:textColor="?attr/text_minor"
+                android:layout_width="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/asset_amount_tv"
+                android:textColor="?attr/text_minor"
+                tools:text="100 USDT"
+                android:layout_alignParentEnd="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_marginTop="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="@string/Pay_amount"
+                android:textColor="?attr/text_minor"
+                android:layout_width="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/pay_amount"
+                android:textColor="?attr/text_minor"
+                tools:text="109 USD"
                 android:layout_alignParentEnd="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -82,7 +98,7 @@
 
     <Button
         style="@style/AppTheme.MaterialButton"
-        android:id="@+id/refresh_tv"
+        android:id="@+id/continue_tv"
         android:layout_width="152dp"
         android:layout_height="42dp"
         android:layout_marginBottom="16dp"

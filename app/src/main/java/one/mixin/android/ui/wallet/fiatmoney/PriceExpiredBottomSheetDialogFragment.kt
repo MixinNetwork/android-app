@@ -4,14 +4,23 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.view.View
 import android.view.WindowManager
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.databinding.FragmentPriceExpiredBottomSheetBinding
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 @AndroidEntryPoint
@@ -19,11 +28,33 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "PriceExpiredBottomSheetDialogFragment"
+        private const val ARGS_AMOUNT = "args_amount"
+        private const val ARGS_CURRENCY_NAME = "args_currency_name"
+        private const val ARGS_ASSET = "args_asset"
+        private const val ARGS_TOTAL = "args_total"
+        private const val ARGS_ASSET_AMOUNT = "args_asset_amount"
+        private const val ARGS_ASSET_PRICE = "args_asset_price"
 
-        fun newInstance() = PriceExpiredBottomSheetDialogFragment()
+        fun newInstance(amount: Int, currencyName: String, asset: AssetItem, total: String, assetAmount: String, assetPrice: String) = PriceExpiredBottomSheetDialogFragment().withArgs {
+            putInt(ARGS_AMOUNT, amount)
+            putString(ARGS_CURRENCY_NAME, currencyName)
+            putParcelable(ARGS_ASSET, asset)
+            putString(ARGS_TOTAL, total)
+            putString(ARGS_ASSET_AMOUNT, assetAmount)
+            putString(ARGS_ASSET_PRICE, assetPrice)
+        }
     }
 
+    private var amount: Int = 0
+    private lateinit var currencyName: String
+    private lateinit var asset: AssetItem
+    private lateinit var total: String
+    private lateinit var assetAmount: String
+    private lateinit var assetPrice: String
+
     private val binding by viewBinding(FragmentPriceExpiredBottomSheetBinding::inflate)
+
+    private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
 
     override fun onStart() {
         try {
@@ -38,25 +69,73 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    @SuppressLint("RestrictedApi")
+    @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
+        amount = requireArguments().getInt(ARGS_AMOUNT)
+        asset = requireNotNull(
+            requireArguments().getParcelableCompat(
+                ARGS_ASSET,
+                AssetItem::class.java,
+            ),
+        )
+        total = requireNotNull(requireArguments().getString(ARGS_TOTAL))
+        assetAmount = requireNotNull(requireArguments().getString(ARGS_ASSET_AMOUNT))
+        assetPrice = requireNotNull(requireArguments().getString(ARGS_ASSET_PRICE))
         binding.apply {
-            refreshTv.setOnClickListener {
-                // TODO refresh
+            continueTv.setOnClickListener {
+                continueAction?.invoke(assetAmount)
                 dismiss()
             }
-            cancelTv.setOnClickListener { dismiss() }
+            cancelTv.setOnClickListener {
+                cancelAction?.invoke()
+                dismiss()
+            }
+            assetPrice.text = "≈ $assetPrice $currencyName"
+            assetAmountTv.text = "$assetAmount ${asset.symbol}"
+            payAmount.text = total
+        }
+        refresh()
+    }
 
-            oldPrice.text = "1 USDC = 1.005 USD"
-            newPrice.text = "1 USDC = 1.006 USD"
+    var continueAction : ((String)->Unit)? = null
+    var cancelAction : (()->Unit)? = null
+
+    @SuppressLint("SetTextI18n")
+    private fun refresh() {
+        lifecycleScope.launch {
+            var time = 10
+            while (true) {
+                if (time == 10) {
+                    val response = try {
+                        fiatMoneyViewModel.ticker(RouteTickerRequest(amount, currencyName, asset.assetId))
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                        continue
+                    }
+                    if (viewDestroyed()) return@launch
+                    if (response.isSuccess) {
+                        val ticker = response.data ?: continue
+                        binding.apply {
+                            assetPrice.text = "≈ ${ticker.assetPrice} $currencyName"
+                            assetAmountTv.text = "${ticker.assetAmount} ${asset.symbol}"
+                        }
+                    }
+                    time = 0
+                } else {
+                    delay(1000L)
+                    time++
+                    if (!viewDestroyed()) {
+                        binding.continueTv.text = "${getString(R.string.Use_New_Price)} ${10 - time}s"
+                    }
+                }
+            }
         }
     }
 
     private val mBottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
-
         override fun onStateChanged(bottomSheet: View, newState: Int) {
             if (newState == BottomSheetBehavior.STATE_HIDDEN) {
                 try {

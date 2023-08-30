@@ -1283,8 +1283,6 @@
     <string name="Processing_desc">Payment request has been submitted, your payment and order information is being checked, please wait patiently</string>
     <string name="Success_desc">Successful purchase of %1$s %2$s ! %3$s will be transferred directly to Mixin wallet.</string>
     <string name="Price_Expired">Price Expired</string>
-    <string name="New_Price">New price</string>
-    <string name="Old_Price">Old Price</string>
     <string name="Fee_desc">You may be charged in addition to the order by your bank, please contact your bank for more information.</string>
     <string name="Processing_Fee">Processing Fee</string>
     <string name="Fees_tip">You may cost more fees by bank.</string>
@@ -1299,4 +1297,6 @@
     <string name="Purchase">Purchase</string>
     <string name="Total_Amount">Total Amount</string>
     <string name="Purchase_Amount">Purchase Amount</string>
+    <string name="Collection">Collection</string>
+    <string name="Pay_amount">Payment amount</string>
 </resources>

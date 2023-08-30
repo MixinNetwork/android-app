@@ -1250,8 +1250,6 @@
     <string name="Processing_desc">支付请求已提交，正在检查您的支付和订单信息，请耐心等待。</string>
     <string name="Success_desc">购买成功 %1$s %2$s！%3$s将直接转入Mixin钱包。</string>
     <string name="Price_Expired">价格已过期</string>
-    <string name="New_Price">新价格</string>
-    <string name="Old_Price">旧价格</string>
     <string name="Fee_desc">除了订单金额之外，您的银行可能会额外收取费用，请与您的银行联系以获取更多信息。</string>
     <string name="Processing_Fee">处理费</string>
     <string name="Fees_tip">您的银行可能会收取额外费用。</string>
@@ -1265,4 +1263,6 @@
     <string name="Purchase">购买</string>
     <string name="Total_Amount">总金额</string>
     <string name="Purchase_Amount">购买金额</string>
+    <string name="Collection">收款</string>
+    <string name="Pay_amount">支付金额</string>
 </resources>
