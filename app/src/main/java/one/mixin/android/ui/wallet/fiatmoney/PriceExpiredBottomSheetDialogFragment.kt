@@ -100,8 +100,8 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         refresh()
     }
 
-    var continueAction : ((String)->Unit)? = null
-    var cancelAction : (()->Unit)? = null
+    var continueAction: ((String) -> Unit)? = null
+    var cancelAction: (() -> Unit)? = null
 
     @SuppressLint("SetTextI18n")
     private fun refresh() {

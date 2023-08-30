@@ -372,7 +372,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         }
     }
 
-    private fun retry(sessionId: String, instrumentId: String, expectancyAssetAmount:String) {
+    private fun retry(sessionId: String, instrumentId: String, expectancyAssetAmount: String) {
         payments(sessionId, instrumentId, expectancyAssetAmount)
     }
 
@@ -417,7 +417,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         asset,
                         info.total,
                         assetAmount,
-                        assetPrice
+                        assetPrice,
                     ).apply {
                         continueAction = { assetAmount ->
                             this@OrderStatusFragment.retry(sessionId, instrumentId, assetAmount)
