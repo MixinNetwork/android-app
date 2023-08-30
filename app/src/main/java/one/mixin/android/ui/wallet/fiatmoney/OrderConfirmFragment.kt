@@ -31,6 +31,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment.Companion.ARGS_INFO
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
+import org.json.JSONArray
 import org.json.JSONException
 import timber.log.Timber
 
@@ -107,9 +108,20 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             }
             buyVa.isEnabled = false
             try {
+                val allowedPaymentMethods = """
+                [
+                    {
+                        "type": "CARD",
+                        "parameters": {
+                            "allowedAuthMethods": ["PAN_ONLY","CRYPTOGRAM_3DS"],
+                            "allowedCardNetworks": ["AMEX", "DISCOVER", "INTERAC", "JCB", "MASTERCARD", "VISA"]
+                        }
+                    }
+                ]
+                """.trimIndent()
                 googlePayButton.initialize(
                     ButtonOptions.newBuilder()
-                        .setAllowedPaymentMethods(PaymentsUtil.cardPaymentMethod().toString())
+                        .setAllowedPaymentMethods(allowedPaymentMethods)
                         .build()
                 )
                 googlePayButton.setOnClickListener {
