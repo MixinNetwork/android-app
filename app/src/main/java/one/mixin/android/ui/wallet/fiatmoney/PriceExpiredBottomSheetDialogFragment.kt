@@ -2,7 +2,6 @@ package one.mixin.android.ui.wallet.fiatmoney
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import androidx.fragment.app.viewModels
@@ -17,7 +16,6 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.databinding.FragmentPriceExpiredBottomSheetBinding
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager

@@ -57,19 +57,27 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         if (fiatMoneyViewModel.asset != null && fiatMoneyViewModel.currency != null) {
             return
         }
-        val supportCurrency = (requireActivity() as WalletActivity).supportCurrencies
-        val currencyName = requireContext().defaultSharedPreferences.getString(
+        val supportCurrencies = (requireActivity() as WalletActivity).supportCurrencies
+        val currencyName = defaultSharedPreferences.getString(
             CURRENT_CURRENCY,
-            Session.getFiatCurrency(),
-        )
+            null,
+        ).let {
+            if (it == null) {
+                val localCurrency = Session.getFiatCurrency()
+                val c = supportCurrencies.find { item -> localCurrency == item.name }
+                c?.name ?: supportCurrencies.last().name
+            } else {
+                it
+            }
+        }
         val assetId = requireContext().defaultSharedPreferences.getString(
             CURRENT_ASSET_ID,
             USDT_ASSET_ID,
         )
 
-        fiatMoneyViewModel.currency = supportCurrency.find {
+        fiatMoneyViewModel.currency = supportCurrencies.find {
             it.name == currencyName
-        } ?: supportCurrency.first()
+        } ?: supportCurrencies.last()
         fiatMoneyViewModel.asset = fiatMoneyViewModel.findAssetsByIds((requireActivity() as WalletActivity).supportAssetIds).let { list ->
             list.find { it.assetId == assetId } ?: list.first()
         }

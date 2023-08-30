@@ -302,9 +302,9 @@ class SelectCardFragment : BaseFragment(R.layout.fragment_select_card) {
             itemView.round(8.dp)
         }
 
-        @SuppressLint("SetTextI18n")
+        @SuppressLint("SetTextI18n", "DefaultLocale")
         fun bind(card: Card) {
-            binding.cardNumber.text = "${card.scheme}...${card.number}"
+            binding.cardNumber.text = "${card.scheme.capitalize()}...${card.number}"
             binding.logo.setImageResource(if (card.scheme == "visa") R.drawable.ic_visa else R.drawable.ic_mastercard)
         }
     }

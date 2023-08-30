@@ -1292,7 +1292,7 @@
     <string name="Expiry_date">Expiry Date</string>
     <string name="Security_code">Security code</string>
     <string name="Accepted_cards">Accepted cards:</string>
-    <string name="Security_code_sub_title">3–4 digit code on your card</string>
+    <string name="Security_code_sub_title">3–4 Digit code on your card</string>
     <string name="Expiry_date_sub_title">Format is MM/YY</string>
     <string name="Purchase">Purchase</string>
     <string name="Total_Amount">Total Amount</string>
