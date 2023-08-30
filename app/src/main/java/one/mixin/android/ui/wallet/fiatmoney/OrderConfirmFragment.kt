@@ -4,10 +4,8 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.google.android.gms.wallet.button.ButtonConstants
 import com.google.android.gms.wallet.button.ButtonOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -22,16 +20,15 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.setting.Currency
-import one.mixin.android.ui.wallet.PaymentsUtil
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment.Companion.ARGS_INFO
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
-import org.json.JSONArray
 import org.json.JSONException
 import timber.log.Timber
 
@@ -187,44 +184,42 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                         fiatMoneyViewModel.ticker(RouteTickerRequest(amount, currency.name, asset.assetId))
                     } catch (e: Exception) {
                         Timber.e(e)
-                        return@launch
+                        continue
                     }
-                    if (isAdded) {
-                        if (response.isSuccess) {
-                            val ticker = response.data ?: return@launch
-                            info = OrderInfo(
-                                "$scheme...$last4",
-                                "≈ ${ticker.assetPrice} ${currency.name}",
-                                "${ticker.purchase} ${ticker.currency}",
-                                "${ticker.fee} ${ticker.currency}",
-                                "${ticker.totalAmount} ${ticker.currency}",
-                                ticker.feePercent,
-                                ticker.assetAmount,
-                            )
-                            binding.apply {
-                                priceTv.text = info.assetPrice
-                                purchaseTv.text = info.purchase
-                                feeTv.text = info.fee
-                                totalTv.text = info.total
-                                assetName.text = "+ ${info.assetAmount} ${asset.symbol}"
-                                if (!buyVa.isEnabled) {
-                                    buyVa.isEnabled = true
-                                    buyVa.displayedChild = if (isGooglePay) {
-                                        1
-                                    } else {
-                                        0
-                                    }
+                    if (viewDestroyed()) return@launch
+
+                    if (response.isSuccess) {
+                        val ticker = response.data ?: continue
+                        info = OrderInfo(
+                            "$scheme...$last4",
+                            "≈ ${ticker.assetPrice} ${currency.name}",
+                            "${ticker.purchase} ${ticker.currency}",
+                            "${ticker.fee} ${ticker.currency}",
+                            "${ticker.totalAmount} ${ticker.currency}",
+                            ticker.feePercent,
+                            ticker.assetAmount,
+                        )
+                        binding.apply {
+                            priceTv.text = info.assetPrice
+                            purchaseTv.text = info.purchase
+                            feeTv.text = info.fee
+                            totalTv.text = info.total
+                            assetName.text = "+ ${info.assetAmount} ${asset.symbol}"
+                            if (!buyVa.isEnabled) {
+                                buyVa.isEnabled = true
+                                buyVa.displayedChild = if (isGooglePay) {
+                                    1
+                                } else {
+                                    0
                                 }
                             }
                         }
-                    } else {
-                        return@launch
                     }
                     time = 0
                 } else {
                     delay(1000L)
                     time++
-                    if (isAdded) {
+                    if (!viewDestroyed()) {
                         binding.timeTv.text = "${10 - time}s"
                     }
                 }
