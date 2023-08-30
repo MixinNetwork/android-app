@@ -32,10 +32,8 @@ import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment.Companion.ARGS_INFO
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.SnapshotType
 import org.json.JSONException
 import timber.log.Timber
-
 
 @AndroidEntryPoint
 class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
@@ -96,10 +94,6 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             buyVa.displayedChild = 2
             assetAvatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             assetAvatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            priceRl.setOnClickListener {
-                PriceExpiredBottomSheetDialogFragment.newInstance()
-                    .showNow(parentFragmentManager, PriceExpiredBottomSheetDialogFragment.TAG)
-            }
             feeRl.setOnClickListener {
                 if (info.feePercent != "") {
                     FeeBottomSheetDialogFragment.newInstance(info).showNow(parentFragmentManager, FeeBottomSheetDialogFragment.TAG)
@@ -123,7 +117,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                 googlePayButton.initialize(
                     ButtonOptions.newBuilder()
                         .setAllowedPaymentMethods(allowedPaymentMethods)
-                        .build()
+                        .build(),
                 )
                 googlePayButton.setOnClickListener {
                     googlePayButton.isClickable = false
