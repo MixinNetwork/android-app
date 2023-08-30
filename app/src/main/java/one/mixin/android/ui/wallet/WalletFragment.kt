@@ -45,6 +45,7 @@ import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.remove
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
@@ -186,6 +187,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                             .not()
                                 }
                                 Pair(walletActivity.supportCurrencies, walletActivity.supportAssetIds)
+                            } else if(profileResponse.errorCode == ErrorHandler.AUTHENTICATION){
+                                defaultSharedPreferences.remove(PREF_CHECKOUT_BOT_PUBLIC_KEY)
+                                throw RuntimeException(getString(R.string.Try_Again))
                             } else {
                                 throw MixinResponseException(profileResponse.errorCode, profileResponse.errorDescription)
                             }
