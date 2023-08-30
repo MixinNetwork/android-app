@@ -73,6 +73,7 @@ class FeeBottomSheetDialogFragment : BottomSheetDialogFragment() {
             ),
         )
         binding.apply {
+            title.rightIv.setOnClickListener { dismiss() }
             okTv.setOnClickListener { dismiss() }
             feeTv.text = info.feePercent
         }
