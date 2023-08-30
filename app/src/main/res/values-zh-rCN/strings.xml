@@ -1263,4 +1263,5 @@
     <string name="Accepted_cards">接受的卡：</string>
     <string name="Security_code_sub_title">卡上的 3–4 位代码</string>
     <string name="Expiry_date_sub_title">格式为 MM/YY</string>
+    <string name="Purchase">购买</string>
 </resources>

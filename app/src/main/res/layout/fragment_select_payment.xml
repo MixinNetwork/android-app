@@ -67,13 +67,9 @@
 
         <ImageView
             android:id="@+id/bank_iv"
-            android:src="@drawable/ic_bank_card"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
+            android:src="@drawable/ic_debit_credit_card"
+            android:layout_width="64dp"
+            android:layout_height="42dp"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"/>
 
