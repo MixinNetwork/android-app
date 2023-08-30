@@ -310,11 +310,10 @@ object Constants {
     )
 
     val SUPPORTED_NETWORKS = listOf(
-        "AMEX",
-        "DISCOVER",
-        "JCB",
         "MASTERCARD",
         "VISA",
+        "AMEX",
+        "JCB"
     )
 
     const val ROUTE_API_BOT_USER_ID = "61cb8dd4-16b1-4744-ba0c-7b2d2e52fc59"

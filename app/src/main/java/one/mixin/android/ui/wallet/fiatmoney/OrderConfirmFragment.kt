@@ -62,7 +62,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     private var last4: String? = null
     private var isGooglePay: Boolean = false
 
-    @SuppressLint("UseCompatLoadingForDrawables")
+    @SuppressLint("UseCompatLoadingForDrawables", "SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         asset = requireNotNull(
@@ -133,7 +133,8 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                 it?.setBounds(0, 0, 28.dp, 14.dp)
             }
             payWith.setCompoundDrawables(logo, null, null, null)
-            priceTv.text = info.price
+            price.text = "${asset.symbol} ${getString(R.string.Price)}"
+            priceTv.text = info.assetPrice
             purchaseTv.text = info.purchase
             feeTv.text = info.fee
             totalTv.text = info.total
@@ -181,7 +182,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                             val ticker = response.data ?: return@launch
                             info = OrderInfo(
                                 "$scheme...$last4",
-                                "1 ${ticker.currency} = ${ticker.price} ${asset.symbol}",
+                                "≈ ${ticker.assetPrice} ${currency.name}",
                                 "${ticker.purchase} ${ticker.currency}",
                                 "${ticker.fee} ${ticker.currency}",
                                 "${ticker.totalAmount} ${ticker.currency}",
@@ -189,7 +190,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                                 ticker.assetAmount,
                             )
                             binding.apply {
-                                priceTv.text = info.price
+                                priceTv.text = info.assetPrice
                                 purchaseTv.text = info.purchase
                                 feeTv.text = info.fee
                                 totalTv.text = info.total

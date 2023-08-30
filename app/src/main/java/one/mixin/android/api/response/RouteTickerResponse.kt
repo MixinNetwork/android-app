@@ -13,6 +13,8 @@ class RouteTickerResponse(
     val fee: String,
     @SerializedName("price")
     val price: String,
+    @SerializedName("asset_price")
+    val assetPrice: String,
     @SerializedName("asset_amount")
     val assetAmount: String,
     @SerializedName("fee_percent")

@@ -204,7 +204,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             } else {
                 info.number
             }
-            priceTv.text = info.price
+            price.text = "${asset.symbol} ${getString(R.string.Price)}"
+            priceTv.text = info.assetPrice
             purchaseTv.text = info.purchase
             feeTv.text = info.fee
             totalTv.text = info.total
