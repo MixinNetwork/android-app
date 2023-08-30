@@ -23,7 +23,6 @@ import com.checkout.threeds.domain.model.AuthenticationParameters
 import com.checkout.threeds.domain.model.AuthenticationResult
 import com.checkout.threeds.domain.model.ResultType
 import com.checkout.tokenization.model.GooglePayTokenRequest
-import com.github.salomonbrys.kotson.get
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
@@ -404,11 +403,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 }
             } else {
                 if (response.errorCode == ErrorHandler.EXPIRED_PRICE) {
-                    val extra = response.error?.extra?.asJsonObject?.get("data")
+                    val extra = response.error?.extra?.asJsonObject?.get("data")?.asJsonObject
                         ?: throw IllegalArgumentException(getString(R.string.Data_error))
-                    val assetPrice = extra["asset_price"].asString
+                    val assetPrice = extra.get("asset_price").asString
                         ?: throw IllegalArgumentException(getString(R.string.Data_error))
-                    val assetAmount = extra["asset_amount"].asString
+                    val assetAmount = extra.get("asset_amount").asString
                         ?: throw IllegalArgumentException(getString(R.string.Data_error))
 
                     PriceExpiredBottomSheetDialogFragment.newInstance(
@@ -423,7 +422,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                             this@OrderStatusFragment.retry(sessionId, instrumentId, assetAmount)
                         }
                         cancelAction = {
-                            view?.navigate(R.id.action_wallet_status_to_wallet)
+                            this@OrderStatusFragment.view?.navigate(R.id.action_wallet_status_to_wallet)
                         }
                     }.showNow(parentFragmentManager, PriceExpiredBottomSheetDialogFragment.TAG)
                     return@launch

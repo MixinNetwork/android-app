@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.fiatmoney
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import androidx.fragment.app.viewModels
@@ -83,20 +84,26 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         )
         total = requireNotNull(requireArguments().getString(ARGS_TOTAL))
         assetAmount = requireNotNull(requireArguments().getString(ARGS_ASSET_AMOUNT))
+        currencyName = requireNotNull(requireArguments().getString(ARGS_CURRENCY_NAME))
         assetPrice = requireNotNull(requireArguments().getString(ARGS_ASSET_PRICE))
         binding.apply {
             continueTv.setOnClickListener {
-                continueAction?.invoke(assetAmount)
                 dismiss()
+                continueAction?.invoke(assetAmount)
             }
             cancelTv.setOnClickListener {
-                cancelAction?.invoke()
                 dismiss()
+                cancelAction?.invoke()
             }
-            assetPrice.text = "≈ $assetPrice $currencyName"
+            priceTitle.text = "${asset.symbol} ${getString(R.string.Price)}"
+            assetPriceTv.text = "≈ $assetPrice $currencyName"
             assetAmountTv.text = "$assetAmount ${asset.symbol}"
             payAmount.text = total
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         refresh()
     }
 
@@ -119,7 +126,8 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     if (response.isSuccess) {
                         val ticker = response.data ?: continue
                         binding.apply {
-                            assetPrice.text = "≈ ${ticker.assetPrice} $currencyName"
+                            assetAmount = ticker.assetAmount
+                            assetPriceTv.text = "≈ ${ticker.assetPrice} $currencyName"
                             assetAmountTv.text = "${ticker.assetAmount} ${asset.symbol}"
                         }
                     }

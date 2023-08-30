@@ -1297,6 +1297,5 @@
     <string name="Purchase">Purchase</string>
     <string name="Total_Amount">Total Amount</string>
     <string name="Purchase_Amount">Purchase Amount</string>
-    <string name="Collection">Collection</string>
-    <string name="Pay_amount">Payment amount</string>
+    <string name="Payment_Receive">Receive</string>
 </resources>

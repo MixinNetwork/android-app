@@ -1263,6 +1263,5 @@
     <string name="Purchase">购买</string>
     <string name="Total_Amount">总金额</string>
     <string name="Purchase_Amount">购买金额</string>
-    <string name="Collection">收款</string>
-    <string name="Pay_amount">支付金额</string>
+    <string name="Payment_Receive">收款</string>
 </resources>
