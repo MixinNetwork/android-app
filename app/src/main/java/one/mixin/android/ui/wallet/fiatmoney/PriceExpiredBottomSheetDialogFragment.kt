@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.request.RouteTickerRequest
@@ -114,7 +115,7 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun refresh() {
         lifecycleScope.launch {
             var time = 10
-            while (true) {
+            while (isActive) {
                 if (time == 10) {
                     val response = try {
                         fiatMoneyViewModel.ticker(RouteTickerRequest(amount, currencyName, asset.assetId))

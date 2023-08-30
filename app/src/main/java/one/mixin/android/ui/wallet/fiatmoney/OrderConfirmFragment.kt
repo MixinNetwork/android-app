@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.wallet.button.ButtonOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -176,7 +177,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     private fun refresh() {
         lifecycleScope.launch {
             var time = 10
-            while (true) {
+            while (isActive) {
                 if (time == 10) {
                     val response = try {
                         fiatMoneyViewModel.ticker(RouteTickerRequest(amount, currency.name, asset.assetId))
