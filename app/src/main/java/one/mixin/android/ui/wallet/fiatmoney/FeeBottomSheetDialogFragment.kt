@@ -21,6 +21,9 @@ import one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment.Companion.ARGS_
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
+import java.text.NumberFormat
+import java.util.Locale
+
 @AndroidEntryPoint
 class FeeBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
@@ -75,7 +78,15 @@ class FeeBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.apply {
             title.rightIv.setOnClickListener { dismiss() }
             okTv.setOnClickListener { dismiss() }
-            feeTv.text = info.feePercent
+            val percent = info.feePercent.toFloatOrNull()
+            if (percent != null) {
+                val percentFormat: NumberFormat =
+                    NumberFormat.getPercentInstance(Locale.getDefault())
+                val formattedPercent: String = percentFormat.format(percent)
+                feeTv.text = formattedPercent
+            } else {
+                feeTv.setText(R.string.Data_error)
+            }
         }
     }
 
