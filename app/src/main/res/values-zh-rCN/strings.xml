@@ -1264,4 +1264,5 @@
     <string name="Total_Amount">总金额</string>
     <string name="Purchase_Amount">购买金额</string>
     <string name="Payment_Receive">收款</string>
+    <string name="Cardholder_name">持卡人姓名</string>
 </resources>

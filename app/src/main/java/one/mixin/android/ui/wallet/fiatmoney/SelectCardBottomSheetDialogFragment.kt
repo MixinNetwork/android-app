@@ -32,16 +32,18 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.round
 import one.mixin.android.ui.address.adapter.ItemCallback
+import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Card
+import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 
 @AndroidEntryPoint
-class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "SelectCardBottomSheetDialogFragment"
@@ -89,7 +91,6 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
 
-    private lateinit var contentView: View
     override fun getTheme() = R.style.AppTheme_Dialog
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
@@ -99,14 +100,7 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
             SystemUIManager.lightUI(window, requireContext().isNightMode())
         }
         contentView = binding.root
-        dialog.setContentView(contentView)
-        val behavior = ((contentView.parent as View).layoutParams as? CoordinatorLayout.LayoutParams)?.behavior
-        if (behavior != null && behavior is BottomSheetBehavior<*>) {
-            behavior.peekHeight = requireContext().dpToPx(480f)
-            behavior.addBottomSheetCallback(mBottomSheetBehaviorCallback)
-            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, requireContext().dpToPx(480f))
-            dialog.window?.setGravity(Gravity.BOTTOM)
-        }
+        (dialog as BottomSheet).setCustomView(contentView)
         binding.apply {
             title.rightIv.setOnClickListener {
                 dismiss()

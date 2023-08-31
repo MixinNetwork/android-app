@@ -74,9 +74,10 @@ object CustomPaymentFormTheme {
                     .build(),
                 cardHolderName = PaymentFormComponentBuilder()
                     .setPaymentFormField(PaymentFormComponentField.CardHolderName)
+                    .setTitleTextId(R.string.Cardholder_name)
                     .setIsFieldOptional(true)
-                    .setIsFieldHidden(true)
-                    .build(),
+                    .setIsFieldHidden(false).build(),
+
             ),
             paymentFormShape = PaymentFormShape(
                 inputFieldShape = Shape.RoundCorner,

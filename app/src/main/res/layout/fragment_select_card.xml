@@ -6,6 +6,7 @@
     android:layout_height="480dp"
     android:orientation="vertical"
     android:gravity="center_horizontal"
+    android:background="?attr/bg_white"
     tools:ignore="UseCompoundDrawables">
 
     <one.mixin.android.widget.RoundTitleView
@@ -19,20 +20,22 @@
         android:id="@+id/card_rv"
         android:padding="16dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="240dp"
+        android:visibility="gone"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:visibility="visible"
         tools:itemCount="5"
-        tools:listitem="@layout/item_card"
-        android:visibility="gone"/>
+        tools:listitem="@layout/item_card" />
 
     <TextView
         android:id="@+id/empty"
         android:text="@string/Empty_card"
-        android:layout_height="310dp"
+        android:layout_height="240dp"
         android:gravity="center"
         android:textColor="?attr/text_primary"
         android:layout_width="match_parent"
-        android:visibility="visible" />
+        android:visibility="visible"
+        tools:visibility="gone"/>
 
     <ViewAnimator
         android:id="@+id/add_va"
