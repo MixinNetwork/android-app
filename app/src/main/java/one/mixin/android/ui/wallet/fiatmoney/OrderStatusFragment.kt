@@ -15,27 +15,28 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.checkout.CheckoutApiServiceFactory
 import com.checkout.threeds.Checkout3DSService
 import com.checkout.threeds.domain.model.AuthenticationError
 import com.checkout.threeds.domain.model.AuthenticationErrorType
 import com.checkout.threeds.domain.model.AuthenticationParameters
 import com.checkout.threeds.domain.model.AuthenticationResult
 import com.checkout.threeds.domain.model.ResultType
-import com.checkout.tokenization.model.GooglePayTokenRequest
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.wallet.PaymentData
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import one.mixin.android.BuildConfig
-import one.mixin.android.Constants
 import one.mixin.android.Constants.ENVIRONMENT_3DS
+import one.mixin.android.Constants.PAN_ONLY
+import one.mixin.android.Constants.ROUTE_API_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.RouteSessionRequest
+import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.response.RoutePaymentStatus
 import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteSessionStatus
@@ -46,7 +47,6 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.withArgs
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
@@ -237,7 +237,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         checkout3DS.authenticate(authenticationParameters) { result: AuthenticationResult ->
             when (result.resultType) {
                 ResultType.Completed -> {
-                    lifecycleScope.launch {
+                    lifecycleScope.launch(defaultErrorHandler) {
                         while (true) {
                             val session = try {
                                 fiatMoneyViewModel.getSession(sessionResponse.sessionId)
@@ -247,10 +247,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                             }
                             if (session.isSuccess) {
                                 if (session.data?.status == RouteSessionStatus.Approved.value) {
-                                    payments(
-                                        sessionId = sessionResponse.sessionId,
-                                        sessionResponse.instrumentId,
-                                    )
+                                    payments(sessionId = sessionResponse.sessionId, instrumentId = sessionResponse.instrumentId, null)
                                     break
                                 } else if (session.data?.status != RouteSessionStatus.Pending.value && session.data?.status != RouteSessionStatus.Processing.value) {
                                     showError(session.data?.status ?: session.errorDescription)
@@ -303,7 +300,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         }
     }
 
-    private fun payWithCheckout() = lifecycleScope.launch {
+    private fun payWithCheckout() = lifecycleScope.launch(defaultErrorHandler) {
         status = OrderStatus.PROCESSING
         binding.transparentMask.isVisible = true
         lifecycleScope.launch {
@@ -335,7 +332,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         showError(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription))
                     }
                 },
-                requestSession = { fiatMoneyViewModel.fetchSessionsSuspend(listOf(Constants.ROUTE_API_BOT_USER_ID)) },
+                requestSession = { fiatMoneyViewModel.fetchSessionsSuspend(listOf(ROUTE_API_BOT_USER_ID)) },
             )
         }
     }
@@ -371,22 +368,20 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         }
     }
 
-    private fun retry(sessionId: String, instrumentId: String, expectancyAssetAmount: String) {
-        payments(sessionId, instrumentId, expectancyAssetAmount)
+    private fun retry(sessionId: String?, instrumentId: String?, token: String?, expectancyAssetAmount: String) {
+        payments(sessionId, instrumentId, token, expectancyAssetAmount)
     }
 
-    private fun payments(sessionId: String, instrumentId: String, expectancyAssetAmount: String? = null) = lifecycleScope.launch {
-        try {
+    private fun payments(sessionId: String?, instrumentId: String?, token: String?, expectancyAssetAmount: String? = null) = lifecycleScope.launch(defaultErrorHandler) {
             val response = fiatMoneyViewModel.payment(
                 RoutePaymentRequest(
-                    asset.assetId,
-                    Session.getAccountId()!!,
-                    sessionId,
-                    instrumentId,
                     amount.toLong(),
-                    assetAmount = expectancyAssetAmount ?: expectancy,
                     currency.name,
-                ),
+                    asset.assetId,
+                    assetAmount = expectancyAssetAmount ?: expectancy,
+                    token,
+                    sessionId,
+                    instrumentId,),
             )
             if (response.isSuccess) {
                 binding.transparentMask.isVisible = false
@@ -419,7 +414,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         assetPrice,
                     ).apply {
                         continueAction = { assetAmount ->
-                            this@OrderStatusFragment.retry(sessionId, instrumentId, assetAmount)
+                            this@OrderStatusFragment.retry(sessionId, instrumentId, token, assetAmount)
                         }
                         cancelAction = {
                             this@OrderStatusFragment.view?.navigate(R.id.action_wallet_status_to_wallet)
@@ -434,14 +429,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     ),
                 )
             }
-        } catch (e: Exception) {
-            showError(e.message)
-        }
     }
 
     private suspend fun getPaymentStatus(paymentId: String) {
-        lifecycleScope.launch {
-            while (true) {
+        lifecycleScope.launch(defaultErrorHandler) {
+            while (isActive) {
                 val response = fiatMoneyViewModel.payment(paymentId)
                 if (response.data?.status == RoutePaymentStatus.Captured.name) {
                     assetAmount = response.data!!.assetAmount
@@ -461,65 +453,40 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         }
     }
 
-    private fun handlePaymentSuccess(paymentData: PaymentData) {
-        try {
-            val tokenJsonPayload = paymentData.paymentMethodToken?.token
-            if (tokenJsonPayload != null) {
-                CheckoutApiServiceFactory.create(
-                    BuildConfig.CHCEKOUT_ID,
-                    Constants.CHECKOUT_ENVIRONMENT,
-                    requireContext(),
-                ).createToken(
-                    GooglePayTokenRequest(tokenJsonPayload, { tokenDetails ->
-                        lifecycleScope.launch {
-                            requestRouteAPI(
-                                invokeNetwork = {
-                                    fiatMoneyViewModel.createSession(
-                                        RouteSessionRequest(
-                                            tokenDetails.token,
-                                            currency.name,
-                                            tokenDetails.scheme?.lowercase(),
-                                            asset.assetId,
-                                            amount,
-                                        ),
-                                    )
-                                },
-                                defaultExceptionHandle = {
-                                    ErrorHandler.handleError(it)
-                                    showError(it.message)
-                                },
-                                failureBlock = {
-                                    showError(it.errorDescription)
-                                    true
-                                },
-                                successBlock = { response ->
-                                    if (response.isSuccess) {
-                                        init3DS(response.data!!)
-                                    } else {
-                                        showError(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription))
-                                    }
-                                },
-                                requestSession = {
-                                    fiatMoneyViewModel.fetchSessionsSuspend(
-                                        listOf(
-                                            Constants.ROUTE_API_BOT_USER_ID,
-                                        ),
-                                    )
-                                },
-                            )
-                        }
-                    }, {
-                        showError(it)
-                        binding.transparentMask.isVisible = false
-                    }),
-                )
+    private val defaultErrorHandler = CoroutineExceptionHandler { _, error ->
+        showError(error.localizedMessage)
+    }
+
+    private suspend fun createToken(tokenJson: String) {
+        val tokenResponse = fiatMoneyViewModel.token(RouteTokenRequest(tokenJson))
+        if (tokenResponse.isSuccess && tokenResponse.data != null) {
+            val tokenData = requireNotNull(tokenResponse.data)
+            if (tokenData.tokenFormat.equals(PAN_ONLY, true)) {
+                createSession(tokenData.scheme, tokenData.token)
             } else {
-                showError("Token null")
-                binding.transparentMask.isVisible = false
+                payments(null, null, tokenData.token, expectancy)
             }
-        } catch (error: Exception) {
-            showError(error.message)
-            binding.transparentMask.isVisible = false
+        } else {
+            ErrorHandler.handleMixinError(tokenResponse.errorCode, tokenResponse.errorDescription)
+            showError(tokenResponse.errorDescription)
+        }
+    }
+
+    private suspend fun createSession(scheme: String, token: String? = null) {
+        val sessionResponse = fiatMoneyViewModel.createSession(RouteSessionRequest(token, currency.name, scheme.lowercase(), asset.assetId, amount, instrumentId))
+        if (sessionResponse.isSuccess && sessionResponse.data != null) {
+            val session = requireNotNull(sessionResponse.data)
+            init3DS(session)
+        } else {
+            ErrorHandler.handleMixinError(sessionResponse.errorCode, sessionResponse.errorDescription)
+            showError(sessionResponse.errorDescription)
+        }
+    }
+
+    private fun handlePaymentSuccess(paymentData: PaymentData) {
+        lifecycleScope.launch(defaultErrorHandler) {
+            val tokenJsonPayload = requireNotNull(paymentData.paymentMethodToken?.token)
+            createToken(tokenJsonPayload)
         }
     }
 

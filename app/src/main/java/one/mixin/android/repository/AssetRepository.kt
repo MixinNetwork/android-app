@@ -20,6 +20,7 @@ import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RouteSessionRequest
 import one.mixin.android.api.request.RouteTickerRequest
+import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.RoutePaymentResponse
@@ -472,6 +473,9 @@ constructor(
     suspend fun payment(paymentId: String): MixinResponse<RoutePaymentResponse> = routeService.payment(paymentId)
 
     suspend fun createSession(createSession: RouteSessionRequest): MixinResponse<RouteSessionResponse> = routeService.createSession(createSession)
+
+    suspend fun token(tokenRequest: RouteTokenRequest) = routeService.token(tokenRequest)
+
     suspend fun createInstrument(createInstrument: RouteInstrumentRequest): MixinResponse<RouteSessionResponse> =
         routeService.createInstrument(createInstrument)
 

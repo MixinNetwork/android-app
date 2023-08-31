@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.wallet.button.ButtonOptions
@@ -246,6 +247,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             null,
         )
         val symbolColor = requireContext().colorFromAttribute(R.attr.text_primary)
+        binding.assetName.isVisible = true
         binding.assetName.text = buildAmountSymbol(requireContext(), amountText, asset.symbol, amountColor, symbolColor)
     }
 }

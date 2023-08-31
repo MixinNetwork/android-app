@@ -4,6 +4,8 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RouteSessionRequest
 import one.mixin.android.api.request.RouteTickerRequest
+import one.mixin.android.api.request.RouteTokenRequest
+import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RoutePaymentResponse
 import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteTickerResponse
@@ -30,6 +32,9 @@ interface RouteService {
 
     @GET("/checkout/sessions/{id}")
     suspend fun getSession(@Path("id") id: String): MixinResponse<RouteSessionResponse>
+
+    @POST("/checkout/tokens")
+    suspend fun token(@Body tokenRequest: RouteTokenRequest): MixinResponse<RouteCreateTokenResponse>
 
     @POST("/checkout/ticker")
     suspend fun ticker(@Body ticker: RouteTickerRequest): MixinResponse<RouteTickerResponse>
