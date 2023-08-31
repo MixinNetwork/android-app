@@ -302,6 +302,7 @@ object Constants {
     // Only for third-party messenger user
     const val TEAM_BOT_ID = ""
     const val TEAM_BOT_NAME = ""
+    const val PAN_ONLY = "pan_only"
 
     val SUPPORTED_METHODS = listOf(
         "PAN_ONLY",
