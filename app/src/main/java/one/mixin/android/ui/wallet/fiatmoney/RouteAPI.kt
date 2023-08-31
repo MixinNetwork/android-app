@@ -1,14 +1,15 @@
 package one.mixin.android.ui.wallet.fiatmoney
 
-import one.mixin.android.Constants
 import one.mixin.android.Constants.ROUTE_API_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.UserSession
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putString
+import one.mixin.android.db.MixinDatabase
+import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.vo.ParticipantSession
+import one.mixin.android.vo.generateConversationId
 
 suspend fun <T, R> requestRouteAPI(
     invokeNetwork: suspend () -> MixinResponse<T>,
@@ -47,10 +48,9 @@ suspend fun <T, R> requestRouteAPI(
             return handleMixinResponse(
                 invokeNetwork = { requestSession(listOf(ROUTE_API_BOT_USER_ID)) },
                 successBlock = { resp ->
-                    MixinApplication.get().defaultSharedPreferences.putString(
-                        Constants.Account.PREF_CHECKOUT_BOT_PUBLIC_KEY,
-                        requireNotNull(resp.data)[0].publicKey,
-                    )
+                    val sessionData = requireNotNull(resp.data)[0]
+                    Session.routePublicKey = sessionData.publicKey
+                    MixinDatabase.getDatabase(MixinApplication.appContext).participantSessionDao().insertSuspend(ParticipantSession(generateConversationId(sessionData.userId, Session.getAccountId()!!), sessionData.userId, sessionData.sessionId, publicKey = sessionData.publicKey))
                     return@handleMixinResponse requestRouteAPI(invokeNetwork, successBlock, failureBlock, exceptionBlock, doAfterNetworkSuccess, defaultErrorHandle, defaultExceptionHandle, endBlock, authErrorRetryCount - 1, requestSession)
                 },
             )

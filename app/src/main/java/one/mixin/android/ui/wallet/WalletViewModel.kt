@@ -30,6 +30,7 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
@@ -274,4 +275,12 @@ internal constructor(
     suspend fun profile(): MixinResponse<ProfileResponse> = assetRepository.profile()
 
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
+    suspend fun findBotPublicKey(conversationId: String, botId: String) = userRepository.findBotPublicKey(conversationId, botId)
+    suspend fun saveSession(participantSession: ParticipantSession) {
+        userRepository.saveSession(participantSession)
+    }
+
+    suspend fun deleteSessionByUserId(conversationId: String, userId: String) {
+        userRepository.deleteSessionByUserId(conversationId, userId)
+    }
 }

@@ -10,13 +10,13 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.api.service.CircleService
-import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
@@ -33,6 +33,7 @@ import one.mixin.android.vo.CircleName
 import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.ForwardUser
+import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import javax.inject.Inject
@@ -48,7 +49,7 @@ constructor(
     private val circleDao: CircleDao,
     private val circleService: CircleService,
     private val conversationDao: ConversationDao,
-    private val tipService: TipService,
+    private val participantSessionDao: ParticipantSessionDao,
     private val userDao: UserDao,
     private val userService: UserService,
 ) {
@@ -244,4 +245,15 @@ constructor(
     fun updateMuteUntil(id: String, muteUntil: String) = userDao.updateMuteUntil(id, muteUntil)
 
     suspend fun fetchSessionsSuspend(ids: List<String>) = userService.fetchSessionsSuspend(ids)
+    suspend fun findBotPublicKey(conversationId: String, botId: String): String? {
+        return participantSessionDao.findBotPublicKey(conversationId, botId)
+    }
+
+    suspend fun saveSession(participantSession: ParticipantSession) {
+        participantSessionDao.insertSuspend(participantSession)
+    }
+
+    fun deleteSessionByUserId(conversationId: String, userId: String) {
+        participantSessionDao.deleteByUserId(conversationId, userId)
+    }
 }

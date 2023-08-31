@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_CHECKOUT_BOT_PUBLIC_KEY
 import one.mixin.android.Constants.GOOGLE_PAY
 import one.mixin.android.Constants.ROUTE_API_BOT_USER_ID
 import one.mixin.android.R
@@ -44,8 +43,6 @@ import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.putString
-import one.mixin.android.extension.remove
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
@@ -64,8 +61,9 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.ParticipantSession
+import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.sumsub.KycState
-import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
@@ -100,40 +98,11 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
 
     private var distance = 0
-    private var snackbar: Snackbar? = null
+    private var snackBar: Snackbar? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         jobManager.addJobInBackground(RefreshAssetsJob())
-    }
-
-    private suspend fun syncBotKey(callback: () -> Unit, errorCallback: (Int, String) -> Unit) {
-        val botKey =
-            defaultSharedPreferences.getString(PREF_CHECKOUT_BOT_PUBLIC_KEY, null)
-        if (botKey == null) {
-            val sessionResponse =
-                walletViewModel.fetchSessionsSuspend(listOf(ROUTE_API_BOT_USER_ID))
-            if (sessionResponse.isSuccess) {
-                defaultSharedPreferences.putString(
-                    PREF_CHECKOUT_BOT_PUBLIC_KEY,
-                    requireNotNull(sessionResponse.data)[0].publicKey,
-                )
-                callback.invoke()
-            } else {
-                errorCallback.invoke(sessionResponse.errorCode, sessionResponse.errorDescription)
-            }
-        } else {
-            callback.invoke()
-        }
-    }
-
-    private suspend fun syncProfile(callback: (ProfileResponse) -> Unit, errorCallback: (Int, String) -> Unit) {
-        val profileResponse = walletViewModel.profile()
-        if (profileResponse.isSuccess) {
-            callback.invoke(profileResponse.data!!)
-        } else {
-            errorCallback.invoke(profileResponse.errorCode, profileResponse.errorDescription)
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -152,16 +121,17 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                         flow {
                             emit(ROUTE_API_BOT_USER_ID)
                         }.map { botId ->
-                            val key = defaultSharedPreferences.getString(PREF_CHECKOUT_BOT_PUBLIC_KEY, null)
+                            val key = walletViewModel.findBotPublicKey(generateConversationId(ROUTE_API_BOT_USER_ID, Session.getAccountId()!!), botId)
                             if (key != null) {
+                                Session.routePublicKey = key
                                 key
                             } else {
                                 val sessionResponse =
                                     walletViewModel.fetchSessionsSuspend(listOf(botId))
                                 if (sessionResponse.isSuccess) {
-                                    val publicKey = requireNotNull(sessionResponse.data)[0].publicKey
-                                    defaultSharedPreferences.putString(PREF_CHECKOUT_BOT_PUBLIC_KEY, publicKey)
-                                    publicKey!!
+                                    val sessionData = requireNotNull(sessionResponse.data)[0]
+                                    walletViewModel.saveSession(ParticipantSession(generateConversationId(sessionData.userId, Session.getAccountId()!!), sessionData.userId, sessionData.sessionId, publicKey = sessionData.publicKey))
+                                    Session.routePublicKey = sessionData.publicKey
                                 } else {
                                     throw MixinResponseException(
                                         sessionResponse.errorCode,
@@ -188,7 +158,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 }
                                 Pair(walletActivity.supportCurrencies, walletActivity.supportAssetIds)
                             } else if (profileResponse.errorCode == ErrorHandler.AUTHENTICATION) {
-                                defaultSharedPreferences.remove(PREF_CHECKOUT_BOT_PUBLIC_KEY)
+                                walletViewModel.deleteSessionByUserId(generateConversationId(ROUTE_API_BOT_USER_ID, Session.getAccountId()!!), ROUTE_API_BOT_USER_ID)
                                 throw RuntimeException(getString(R.string.Try_Again))
                             } else {
                                 throw MixinResponseException(profileResponse.errorCode, profileResponse.errorDescription)
@@ -279,7 +249,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 walletViewModel.updateAssetHidden(asset.assetId, true)
                                 val anchorView = coinsRv
 
-                                snackbar = Snackbar.make(anchorView, getString(R.string.wallet_already_hidden, asset.symbol), 3500)
+                                snackBar = Snackbar.make(anchorView, getString(R.string.wallet_already_hidden, asset.symbol), 3500)
                                     .setAction(R.string.UNDO) {
                                         assetsAdapter.restoreItem(deleteItem, hiddenPos)
                                         lifecycleScope.launch(Dispatchers.IO) {
@@ -289,9 +259,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                         (this.view.findViewById(com.google.android.material.R.id.snackbar_text) as TextView)
                                             .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
                                     }.apply {
-                                        snackbar?.config(anchorView.context)
+                                        snackBar?.config(anchorView.context)
                                     }
-                                snackbar?.show()
+                                snackBar?.show()
                                 distance = 0
                             }
                         }
@@ -303,8 +273,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             coinsRv.adapter = assetsAdapter
             coinsRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    if (abs(distance) > 50.dp && snackbar?.isShown == true) {
-                        snackbar?.dismiss()
+                    if (abs(distance) > 50.dp && snackBar?.isShown == true) {
+                        snackBar?.dismiss()
                         distance = 0
                     }
                     distance += dy
@@ -334,7 +304,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
 
     override fun onStop() {
         super.onStop()
-        snackbar?.dismiss()
+        snackBar?.dismiss()
     }
 
     override fun onDestroyView() {

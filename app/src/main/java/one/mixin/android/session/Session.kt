@@ -11,7 +11,6 @@ import jwt.Jwt
 import okhttp3.Request
 import okio.ByteString.Companion.encode
 import okio.ByteString.Companion.toByteString
-import one.mixin.android.Constants.Account.PREF_CHECKOUT_BOT_PUBLIC_KEY
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.EdKeyPair
@@ -45,6 +44,8 @@ import kotlin.math.abs
 object Session {
     const val PREF_EXTENSION_SESSION_ID = "pref_extension_session_id"
     const val PREF_SESSION = "pref_session"
+
+    var routePublicKey: String? = null
 
     private var self: Account? = null
 
@@ -328,7 +329,7 @@ object Session {
 
     fun getRouteSignature(request: Request): Pair<Long, String> {
         val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
-        val botPk = MixinApplication.get().defaultSharedPreferences.getString(PREF_CHECKOUT_BOT_PUBLIC_KEY, null)?.base64RawURLDecode() ?: return Pair(0L, "")
+        val botPk = routePublicKey?.base64RawURLDecode() ?: return Pair(0L, "")
         val private = privateKeyToCurve25519(edKeyPair.privateKey)
         val sharedKey = calculateAgreement(botPk, private)
         val ts = currentTimeSeconds()
