@@ -5,19 +5,28 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.databinding.FragmentSelectPaymentBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.round
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
+import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
+import one.mixin.android.ui.wallet.PaymentFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Card
 
 @AndroidEntryPoint
 class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
@@ -31,6 +40,24 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
     private lateinit var currency: Currency
 
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
+
+    private val amount by lazy {
+        requireArguments().getInt(OrderConfirmFragment.ARGS_AMOUNT)
+    }
+
+    private val loading by lazy {
+        LoadingProgressDialogFragment()
+    }
+
+    private fun showLoading() {
+        loading.showNow(parentFragmentManager, LoadingProgressDialogFragment.TAG)
+    }
+
+    private fun dismissLoading() {
+        if (loading.isAdded) {
+            loading.dismiss()
+        }
+    }
 
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -68,11 +95,94 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
                 )
             }
             secondRl.setOnClickListener {
-                view.navigate(
-                    R.id.action_wallet_payment_to_select_card,
-                    requireArguments(),
-                )
+                openSelectCard()
             }
+        }
+    }
+
+    private fun openSelectCard() {
+        SelectCardBottomSheetDialogFragment.newInstance(requireArguments()).apply {
+            addCallback = {
+                showCheckoutPayment()
+            }
+        }.show(parentFragmentManager, SelectCardBottomSheetDialogFragment.TAG)
+    }
+
+    private fun showCheckoutPayment() {
+        navTo(
+            PaymentFragment().apply {
+                val paymentFragment = this
+                onBack = {
+                    dismissLoading()
+                }
+                onSuccess = { token, scheme ->
+                    parentFragmentManager.beginTransaction()
+                        .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
+                        .remove(this).commitNow()
+                    lifecycleScope.launch {
+                        requestRouteAPI(
+                            invokeNetwork = {
+                                fiatMoneyViewModel.createInstrument(RouteInstrumentRequest(token))
+                            },
+                            endBlock = {
+                                dismissLoading()
+                            },
+                            failureBlock = { response ->
+                                toast(response.errorDescription)
+                                true
+                            },
+                            successBlock = { response ->
+                                if (response.isSuccess) {
+                                    val cardNumber = response.data?.last4
+                                    val instrumentId = response.data?.instrumentId
+                                    val cardScheme = response.data?.scheme
+                                    if (cardNumber != null && instrumentId != null && cardScheme != null) {
+                                        saveCards(Card(cardNumber, cardScheme, instrumentId))
+                                        toast(R.string.Save_success)
+                                        openSelectCard()
+                                    } else {
+                                        toast(R.string.error_bad_data)
+                                    }
+                                } else {
+                                    toast(response.errorDescription)
+                                    parentFragmentManager.beginTransaction()
+                                        .setCustomAnimations(
+                                            0,
+                                            R.anim.slide_out_right,
+                                            R.anim.stay,
+                                            0,
+                                        )
+                                        .remove(paymentFragment).commitNow()
+                                }
+                            },
+                            requestSession = {
+                                fiatMoneyViewModel.fetchSessionsSuspend(
+                                    listOf(
+                                        Constants.ROUTE_API_BOT_USER_ID,
+                                    ),
+                                )
+                            },
+                        )
+                    }
+                }
+                onLoading = {
+                    showLoading()
+                }
+                onFailure = {
+                    toast(it)
+                    dismissLoading()
+                    parentFragmentManager.beginTransaction()
+                        .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
+                        .remove(paymentFragment).commitNow()
+                }
+            },
+            PaymentFragment.TAG,
+        )
+    }
+
+    private fun saveCards(card: Card) {
+        lifecycleScope.launch {
+            fiatMoneyViewModel.addCard(card)
         }
     }
 }

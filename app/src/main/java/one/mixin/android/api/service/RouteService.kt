@@ -1,6 +1,7 @@
 package one.mixin.android.api.service
 
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RouteSessionRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.response.RoutePaymentResponse
@@ -23,6 +24,9 @@ interface RouteService {
 
     @POST("/checkout/sessions")
     suspend fun createSession(@Body session: RouteSessionRequest): MixinResponse<RouteSessionResponse>
+
+    @POST("/checkout/instruments")
+    suspend fun createInstrument(@Body session: RouteInstrumentRequest): MixinResponse<RouteSessionResponse>
 
     @GET("/checkout/sessions/{id}")
     suspend fun getSession(@Path("id") id: String): MixinResponse<RouteSessionResponse>

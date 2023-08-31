@@ -3,7 +3,6 @@ package one.mixin.android.repository
 import android.os.CancellationSignal
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.asLiveData
 import androidx.paging.DataSource
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
@@ -11,12 +10,14 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.liveData
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.Pin
+import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RouteSessionRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.TransferRequest
@@ -38,6 +39,7 @@ import one.mixin.android.db.TraceDao
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
@@ -470,10 +472,12 @@ constructor(
     suspend fun payment(paymentId: String): MixinResponse<RoutePaymentResponse> = routeService.payment(paymentId)
 
     suspend fun createSession(createSession: RouteSessionRequest): MixinResponse<RouteSessionResponse> = routeService.createSession(createSession)
+    suspend fun createInstrument(createInstrument: RouteInstrumentRequest): MixinResponse<RouteSessionResponse> =
+        routeService.createInstrument(createInstrument)
 
     suspend fun getSession(sessionId: String): MixinResponse<RouteSessionResponse> = routeService.getSession(sessionId)
 
-    fun cards() = safeBox.data.asLiveData()
+    fun cards(): Flow<SafeBox> = safeBox.data
 
     suspend fun addCard(card: Card) {
         safeBox.updateData { box ->
@@ -488,6 +492,16 @@ constructor(
             val list = box.cards.toMutableList()
             list.removeAt(index)
             SafeBox(list)
+        }
+    }
+
+    suspend fun initSafeBox() {
+        safeBox.updateData { box ->
+            if (box.name != Session.getAccountId()) {
+                SafeBox(emptyList())
+            } else {
+                box
+            }
         }
     }
 }

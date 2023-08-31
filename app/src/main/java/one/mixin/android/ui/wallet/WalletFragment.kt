@@ -187,7 +187,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                             .not()
                                 }
                                 Pair(walletActivity.supportCurrencies, walletActivity.supportAssetIds)
-                            } else if(profileResponse.errorCode == ErrorHandler.AUTHENTICATION){
+                            } else if (profileResponse.errorCode == ErrorHandler.AUTHENTICATION) {
                                 defaultSharedPreferences.remove(PREF_CHECKOUT_BOT_PUBLIC_KEY)
                                 throw RuntimeException(getString(R.string.Try_Again))
                             } else {

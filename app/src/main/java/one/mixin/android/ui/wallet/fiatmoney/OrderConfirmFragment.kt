@@ -131,7 +131,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             payWith.text = if (isGooglePay) {
                 "Google Pay"
             } else {
-                "$scheme...$last4"
+                "${scheme?.capitalize()}...$last4"
             }
             val logo = when {
                 isGooglePay -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_google_pay_small)

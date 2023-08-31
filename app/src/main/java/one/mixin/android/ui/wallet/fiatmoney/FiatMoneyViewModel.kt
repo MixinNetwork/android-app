@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.fiatmoney
 
 import android.os.Parcelable
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wallet.CardRequirements
@@ -13,15 +14,18 @@ import com.google.android.gms.wallet.PaymentsClient
 import com.google.android.gms.wallet.TransactionInfo
 import com.google.android.gms.wallet.WalletConstants
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RouteSessionRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.response.RoutePaymentResponse
@@ -33,6 +37,7 @@ import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.PaymentsUtil
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Card
+import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import timber.log.Timber
@@ -60,11 +65,19 @@ internal constructor(
 
     suspend fun createSession(createSession: RouteSessionRequest): MixinResponse<RouteSessionResponse> = assetRepository.createSession(createSession)
 
+    suspend fun createInstrument(createInstrument: RouteInstrumentRequest): MixinResponse<RouteSessionResponse> = assetRepository.createInstrument(createInstrument)
+
     suspend fun getSession(sessionId: String) = assetRepository.getSession(sessionId)
 
-    fun cards() = assetRepository.cards()
+    fun cards(): Flow<SafeBox> = assetRepository.cards()
 
     suspend fun addCard(card: Card) = assetRepository.addCard(card)
+
+    fun initSafeBox() {
+        viewModelScope.launch {
+            assetRepository.initSafeBox()
+        }
+    }
 
     suspend fun removeCard(index: Int) = assetRepository.removeCard(index)
 
