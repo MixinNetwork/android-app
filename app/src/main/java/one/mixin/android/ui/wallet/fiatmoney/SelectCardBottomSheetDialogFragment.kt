@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -43,6 +44,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Card
 import timber.log.Timber
 
+@AndroidEntryPoint
 class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     companion object {
@@ -144,23 +146,17 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
             ).apply { attachToRecyclerView(cardRv) }
             cardRv.adapter = cardAdapter
         }
+        lifecycleScope.launch {
+            initCards()
+        }
     }
 
     private var snackbar: Snackbar? = null
 
     private val cardAdapter by lazy {
         CardAdapter { instrumentId, scheme, cardNumber ->
-            this@SelectCardBottomSheetDialogFragment.view?.navigate(
-                R.id.action_wallet_card_to_order,
-                Bundle().apply {
-                    putInt(OrderConfirmFragment.ARGS_AMOUNT, amount)
-                    putParcelable(TransactionsFragment.ARGS_ASSET, asset)
-                    putParcelable(OrderConfirmFragment.ARGS_CURRENCY, currency)
-                    putString(OrderConfirmFragment.ARGS_INSTRUMENT_ID, instrumentId)
-                    putString(OrderConfirmFragment.ARGS_SCHEME, scheme)
-                    putString(OrderConfirmFragment.ARGS_LAST, cardNumber)
-                },
-            )
+            paymentCallback?.invoke(instrumentId, scheme, cardNumber)
+            dismiss()
         }
     }
 
@@ -180,19 +176,13 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    init {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                initCards()
-            }
-        }
-    }
-
     private fun saveCards(card: Card) {
         lifecycleScope.launch {
             fiatMoneyViewModel.addCard(card)
         }
     }
+
+    var paymentCallback: ((String, String, String) -> Unit)? = null
 
     class CardAdapter(val callback: (String, String, String) -> Unit) :
         RecyclerView.Adapter<CardViewHolder>() {
@@ -226,7 +216,7 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
         @SuppressLint("SetTextI18n", "DefaultLocale")
         fun bind(card: Card) {
             binding.cardNumber.text = "${card.scheme.capitalize()}...${card.number}"
-            binding.logo.setImageResource(if (card.scheme == "visa") R.drawable.ic_visa else R.drawable.ic_mastercard)
+            binding.logo.setImageResource(if (card.scheme.equals("visa", true)) R.drawable.ic_visa else R.drawable.ic_mastercard)
         }
     }
 

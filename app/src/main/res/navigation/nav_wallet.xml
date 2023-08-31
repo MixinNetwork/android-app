@@ -314,7 +314,7 @@
             app:popExitAnim="@anim/slide_out_right" />
 
         <action
-            android:id="@+id/action_wallet_card_to_order"
+            android:id="@+id/action_wallet_payment_to_order"
             app:destination="@id/wallet_order_confirm"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right" />

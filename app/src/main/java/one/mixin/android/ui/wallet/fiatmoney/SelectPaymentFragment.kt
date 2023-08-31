@@ -105,6 +105,19 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
             addCallback = {
                 showCheckoutPayment()
             }
+            paymentCallback = { instrumentId, scheme, cardNumber ->
+                this@SelectPaymentFragment.view?.navigate(
+                    R.id.action_wallet_payment_to_order,
+                    Bundle().apply {
+                        putInt(OrderConfirmFragment.ARGS_AMOUNT, amount)
+                        putParcelable(TransactionsFragment.ARGS_ASSET, asset)
+                        putParcelable(OrderConfirmFragment.ARGS_CURRENCY, currency)
+                        putString(OrderConfirmFragment.ARGS_INSTRUMENT_ID, instrumentId)
+                        putString(OrderConfirmFragment.ARGS_SCHEME, scheme)
+                        putString(OrderConfirmFragment.ARGS_LAST, cardNumber)
+                    },
+                )
+            }
         }.show(parentFragmentManager, SelectCardBottomSheetDialogFragment.TAG)
     }
 

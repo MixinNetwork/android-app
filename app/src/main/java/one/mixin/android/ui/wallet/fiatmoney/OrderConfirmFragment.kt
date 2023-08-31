@@ -135,7 +135,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             }
             val logo = when {
                 isGooglePay -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_google_pay_small)
-                scheme == "mastercard" -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_mastercard)
+                scheme.equals("mastercard", true) -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_mastercard)
                 else -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_visa)
             }.also {
                 it?.setBounds(0, 0, 28.dp, 14.dp)
