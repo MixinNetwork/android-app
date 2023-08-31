@@ -12,9 +12,7 @@ import android.widget.TextView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -33,7 +31,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.navigate
 import one.mixin.android.extension.round
 import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.setting.Currency
