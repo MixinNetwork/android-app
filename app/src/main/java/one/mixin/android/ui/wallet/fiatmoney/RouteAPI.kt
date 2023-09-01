@@ -1,6 +1,6 @@
 package one.mixin.android.ui.wallet.fiatmoney
 
-import one.mixin.android.Constants.ROUTE_API_BOT_USER_ID
+import one.mixin.android.Constants.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
@@ -46,7 +46,7 @@ suspend fun <T, R> requestRouteAPI(
     } else {
         if (response.errorCode == ErrorHandler.AUTHENTICATION && authErrorRetryCount > 0) {
             return handleMixinResponse(
-                invokeNetwork = { requestSession(listOf(ROUTE_API_BOT_USER_ID)) },
+                invokeNetwork = { requestSession(listOf(ROUTE_BOT_USER_ID)) },
                 successBlock = { resp ->
                     val sessionData = requireNotNull(resp.data)[0]
                     Session.routePublicKey = sessionData.publicKey

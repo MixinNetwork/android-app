@@ -32,7 +32,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ENVIRONMENT_3DS
 import one.mixin.android.Constants.PAN_ONLY
-import one.mixin.android.Constants.ROUTE_API_BOT_USER_ID
+import one.mixin.android.Constants.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.RouteSessionRequest

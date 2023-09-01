@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.GOOGLE_PAY
-import one.mixin.android.Constants.ROUTE_API_BOT_USER_ID
+import one.mixin.android.Constants.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.request.RouteTickerRequest
