@@ -65,9 +65,6 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             ),
         )
     }
-    private val amount by lazy {
-        requireArguments().getInt(OrderConfirmFragment.ARGS_AMOUNT)
-    }
 
     var addCallback: (() -> Unit)? = null
     override fun onStart() {

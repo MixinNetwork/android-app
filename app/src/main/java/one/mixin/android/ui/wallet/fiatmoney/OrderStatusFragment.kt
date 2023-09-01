@@ -372,6 +372,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         payments(sessionId, instrumentId, token, expectancyAssetAmount)
     }
 
+    @SuppressLint("SetTextI18n")
     private fun payments(sessionId: String?, instrumentId: String?, token: String?, expectancyAssetAmount: String? = null) = lifecycleScope.launch(defaultErrorHandler) {
         val response = fiatMoneyViewModel.payment(
             RoutePaymentRequest(
@@ -405,7 +406,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     ?: throw IllegalArgumentException(getString(R.string.Data_error))
                 val assetAmount = extra.get("asset_amount").asString
                     ?: throw IllegalArgumentException(getString(R.string.Data_error))
-
+                this@OrderStatusFragment.binding.priceTv.text = "≈ $assetPrice ${currency.name}"
                 PriceExpiredBottomSheetDialogFragment.newInstance(
                     amount,
                     currency.name,

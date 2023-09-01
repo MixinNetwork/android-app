@@ -203,8 +203,8 @@
         <com.google.android.gms.wallet.button.PayButton
             android:id="@+id/googlePayButton"
             android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal" />
+            android:layout_gravity="center"
+            android:layout_height="wrap_content" />
 
         <ProgressBar
             style="?android:attr/progressBarStyleSmall"
