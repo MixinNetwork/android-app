@@ -1236,7 +1236,7 @@
     <string name="Buy_now">立即购买</string>
     <string name="Payment_Services">支付服务</string>
     <string name="Value_info">最低金额 %1$d %2$s，最高金额 %3$d %4$s</string>
-    <string name="Select_Payment">选择支付方式</string>
+    <string name="Select_Payment_Method">选择支付方式</string>
     <string name="Select_Card">选择银行卡</string>
     <string name="Order_Confirm">确认订单</string>
     <string name="Fees">费用</string>
@@ -1265,4 +1265,5 @@
     <string name="Purchase_Amount">购买金额</string>
     <string name="Payment_Receive">收款</string>
     <string name="Cardholder_name">持卡人姓名</string>
+    <string name="calculating">正在计算…</string>
 </resources>

@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.databinding.FragmentOrderConfirmBinding
@@ -141,6 +142,8 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             }.also {
                 it?.setBounds(0, 0, 28.dp, 14.dp)
             }
+            // place, not display
+            setAssetAmount("1")
             payWith.setCompoundDrawables(logo, null, null, null)
             price.text = "${asset.symbol} ${getString(R.string.Price)}"
             priceTv.text = info.assetPrice
@@ -164,12 +167,14 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
         }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
     }
 
+    private val calculating = MixinApplication.appContext.getString(R.string.calculating)
+
     private var info = OrderInfo(
         "null",
-        "loading...",
-        "loading..",
-        "loading...",
-        "loading...",
+        calculating,
+        calculating,
+        calculating,
+        calculating,
         "",
         "",
     )
@@ -205,6 +210,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                             feeTv.text = info.fee
                             totalTv.text = info.total
                             setAssetAmount(info.assetAmount)
+                            assetName.isVisible = true
                             if (!buyVa.isEnabled) {
                                 buyVa.isEnabled = true
                                 buyVa.displayedChild = if (isGooglePay) {
@@ -247,7 +253,6 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             null,
         )
         val symbolColor = requireContext().colorFromAttribute(R.attr.text_primary)
-        binding.assetName.isVisible = true
         binding.assetName.text = buildAmountSymbol(requireContext(), amountText, asset.symbol, amountColor, symbolColor)
     }
 }

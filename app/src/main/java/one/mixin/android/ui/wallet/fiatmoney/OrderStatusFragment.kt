@@ -373,62 +373,63 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     }
 
     private fun payments(sessionId: String?, instrumentId: String?, token: String?, expectancyAssetAmount: String? = null) = lifecycleScope.launch(defaultErrorHandler) {
-            val response = fiatMoneyViewModel.payment(
-                RoutePaymentRequest(
-                    amount.toLong(),
-                    currency.name,
-                    asset.assetId,
-                    assetAmount = expectancyAssetAmount ?: expectancy,
-                    token,
-                    sessionId,
-                    instrumentId,),
-            )
-            if (response.isSuccess) {
-                binding.transparentMask.isVisible = false
-                if (response.data?.status == RoutePaymentStatus.Captured.name) {
-                    assetAmount = response.data!!.assetAmount
-                    status = OrderStatus.SUCCESS
-                } else {
-                    val paymentId = response.data?.paymentId
-                    if (paymentId == null) {
-                        showError(response.errorDescription)
-                    } else {
-                        getPaymentStatus(paymentId)
-                    }
-                }
+        val response = fiatMoneyViewModel.payment(
+            RoutePaymentRequest(
+                amount.toLong(),
+                currency.name,
+                asset.assetId,
+                assetAmount = expectancyAssetAmount ?: expectancy,
+                token,
+                sessionId,
+                instrumentId,
+            ),
+        )
+        if (response.isSuccess) {
+            binding.transparentMask.isVisible = false
+            if (response.data?.status == RoutePaymentStatus.Captured.name) {
+                assetAmount = response.data!!.assetAmount
+                status = OrderStatus.SUCCESS
             } else {
-                if (response.errorCode == ErrorHandler.EXPIRED_PRICE) {
-                    val extra = response.error?.extra?.asJsonObject?.get("data")?.asJsonObject
-                        ?: throw IllegalArgumentException(getString(R.string.Data_error))
-                    val assetPrice = extra.get("asset_price").asString
-                        ?: throw IllegalArgumentException(getString(R.string.Data_error))
-                    val assetAmount = extra.get("asset_amount").asString
-                        ?: throw IllegalArgumentException(getString(R.string.Data_error))
-
-                    PriceExpiredBottomSheetDialogFragment.newInstance(
-                        amount,
-                        currency.name,
-                        asset,
-                        info.total,
-                        assetAmount,
-                        assetPrice,
-                    ).apply {
-                        continueAction = { assetAmount ->
-                            this@OrderStatusFragment.retry(sessionId, instrumentId, token, assetAmount)
-                        }
-                        cancelAction = {
-                            this@OrderStatusFragment.view?.navigate(R.id.action_wallet_status_to_wallet)
-                        }
-                    }.showNow(parentFragmentManager, PriceExpiredBottomSheetDialogFragment.TAG)
-                    return@launch
+                val paymentId = response.data?.paymentId
+                if (paymentId == null) {
+                    showError(response.errorDescription)
+                } else {
+                    getPaymentStatus(paymentId)
                 }
-                showError(
-                    requireContext().getMixinErrorStringByCode(
-                        response.errorCode,
-                        response.errorDescription,
-                    ),
-                )
             }
+        } else {
+            if (response.errorCode == ErrorHandler.EXPIRED_PRICE) {
+                val extra = response.error?.extra?.asJsonObject?.get("data")?.asJsonObject
+                    ?: throw IllegalArgumentException(getString(R.string.Data_error))
+                val assetPrice = extra.get("asset_price").asString
+                    ?: throw IllegalArgumentException(getString(R.string.Data_error))
+                val assetAmount = extra.get("asset_amount").asString
+                    ?: throw IllegalArgumentException(getString(R.string.Data_error))
+
+                PriceExpiredBottomSheetDialogFragment.newInstance(
+                    amount,
+                    currency.name,
+                    asset,
+                    info.total,
+                    assetAmount,
+                    assetPrice,
+                ).apply {
+                    continueAction = { assetAmount ->
+                        this@OrderStatusFragment.retry(sessionId, instrumentId, token, assetAmount)
+                    }
+                    cancelAction = {
+                        this@OrderStatusFragment.view?.navigate(R.id.action_wallet_status_to_wallet)
+                    }
+                }.showNow(parentFragmentManager, PriceExpiredBottomSheetDialogFragment.TAG)
+                return@launch
+            }
+            showError(
+                requireContext().getMixinErrorStringByCode(
+                    response.errorCode,
+                    response.errorDescription,
+                ),
+            )
+        }
     }
 
     private suspend fun getPaymentStatus(paymentId: String) {

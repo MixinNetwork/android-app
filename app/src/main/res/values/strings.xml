@@ -1269,7 +1269,7 @@
     <string name="Get" translatable="false">Get</string>
     <string name="Buy_with" translatable="false">Buy with</string>
     <string name="Value_info">Minimum %1$d %2$s, Maximum %3$d %4$s</string>
-    <string name="Select_Payment">Select Payment</string>
+    <string name="Select_Payment_Method">Select Payment Method</string>
     <string name="Select_Card">Select Card</string>
     <string name="Order_Confirm">Order Confirm</string>
     <string name="Fees">Fees</string>
@@ -1299,4 +1299,5 @@
     <string name="Purchase_Amount">Purchase Amount</string>
     <string name="Payment_Receive">Receive</string>
     <string name="Cardholder_name">Cardholder name</string>
+    <string name="calculating">calculating…</string>
 </resources>

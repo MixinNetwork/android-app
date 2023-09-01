@@ -78,7 +78,7 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
-            titleView.setSubTitle(getString(R.string.Select_Payment), "")
+            titleView.setSubTitle(getString(R.string.Select_Payment_Method), "")
             firstRl.round(8.dp)
             secondRl.round(8.dp)
             firstRl.isVisible = !(requireActivity() as WalletActivity).hideGooglePay
