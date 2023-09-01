@@ -119,7 +119,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                         sendReceiveView.buy.displayedChild = 1
                         sendReceiveView.buy.isEnabled = false
                         flow {
-                            emit(ROUTE_API_BOT_USER_ID)
+                            emit(ROUTE_BOT_USER_ID)
                         }.map { botId ->
                             val key = walletViewModel.findBotPublicKey(generateConversationId(botId, Session.getAccountId()!!), botId)
                             if (key != null) {

@@ -316,7 +316,7 @@ object Constants {
         "JCB",
     )
 
-    const val ROUTE_API_BOT_USER_ID = "61cb8dd4-16b1-4744-ba0c-7b2d2e52fc59"
+    const val ROUTE_BOT_USER_ID = "61cb8dd4-16b1-4744-ba0c-7b2d2e52fc59"
     const val GOOGLE_PAY = "googlepay"
 
     const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_PRODUCTION
