@@ -115,16 +115,15 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                 sendReceiveView.enableBuy()
                 sendReceiveView.buy.setOnClickListener {
-                    lifecycleScope.launch scope1@{
+                    lifecycleScope.launch {
                         sendReceiveView.buy.displayedChild = 1
                         sendReceiveView.buy.isEnabled = false
                         flow {
                             emit(ROUTE_API_BOT_USER_ID)
                         }.map { botId ->
-                            val key = walletViewModel.findBotPublicKey(generateConversationId(ROUTE_API_BOT_USER_ID, Session.getAccountId()!!), botId)
+                            val key = walletViewModel.findBotPublicKey(generateConversationId(botId, Session.getAccountId()!!), botId)
                             if (key != null) {
                                 Session.routePublicKey = key
-                                key
                             } else {
                                 val sessionResponse =
                                     walletViewModel.fetchSessionsSuspend(listOf(botId))
@@ -139,7 +138,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                     )
                                 }
                             }
-                        }.map {
+                            botId
+                        }.map { botId ->
                             val profileResponse =
                                 walletViewModel.profile()
                             if (profileResponse.isSuccess) {
@@ -158,7 +158,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 }
                                 Pair(walletActivity.supportCurrencies, walletActivity.supportAssetIds)
                             } else if (profileResponse.errorCode == ErrorHandler.AUTHENTICATION) {
-                                walletViewModel.deleteSessionByUserId(generateConversationId(ROUTE_API_BOT_USER_ID, Session.getAccountId()!!), ROUTE_API_BOT_USER_ID)
+                                walletViewModel.deleteSessionByUserId(generateConversationId(botId, Session.getAccountId()!!), botId)
                                 throw RuntimeException(getString(R.string.Try_Again))
                             } else {
                                 throw MixinResponseException(profileResponse.errorCode, profileResponse.errorDescription)
