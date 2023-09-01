@@ -38,7 +38,7 @@ object CustomPaymentFormTheme {
             paymentFormComponents = DefaultPaymentFormTheme.providePaymentFormComponents(
                 paymentHeaderTitle = PaymentFormComponentBuilder().setPaymentFormField(
                     PaymentFormComponentField.PaymentHeaderTitle,
-                ).setTitleTextId(R.string.Add_New_Card).setBackIconImage(R.drawable.ic_arrow_back)
+                ).setTitleTextId(R.string.Add_New_Card).setBackIconImage(R.drawable.ic_back_route)
                     .build(),
                 cardScheme = PaymentFormComponentBuilder().setPaymentFormField(
                     PaymentFormComponentField.CardScheme,

@@ -4,7 +4,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="60dp"
     android:layout_marginBottom="8dp">
 
     <!--  wrap this layout to workaround with wrap_content does NOT work inside RecyclerView  -->
@@ -64,7 +63,7 @@
             android:id="@+id/foreground_rl"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="16dp"
+            android:padding="20dp"
             android:background="@drawable/bg_round_window_8dp"
             android:foreground="?android:attr/selectableItemBackground">
 

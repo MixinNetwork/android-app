@@ -35,7 +35,8 @@
             android:singleLine="true"
             android:textColor="?attr/text_primary"
             android:textColorHint="?attr/text_minor"
-            android:textSize="48sp"
+            android:textSize="56sp"
+            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/title_view"
@@ -62,6 +63,7 @@
             android:id="@+id/primary_unit"
             app:layout_constraintTop_toTopOf="@id/primary_tv"
             app:layout_constraintStart_toEndOf="@id/primary_tv"
+            android:layout_marginTop="14sp"
             android:textColor="?attr/text_primary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -85,13 +87,13 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
             android:background="@drawable/bg_round_gray_20dp"
+            android:paddingStart="36dp"
+            android:paddingEnd="30dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
             android:layout_marginBottom="12dp"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
@@ -100,7 +102,8 @@
                 android:id="@+id/fiat_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="Pay USD" />
+                android:layout_marginEnd="8dp"
+                tools:text="Get USDT" />
 
             <ImageView
                 android:id="@+id/fiat_expand_iv"
@@ -117,12 +120,12 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:background="@drawable/bg_round_gray_20dp"
-            android:paddingStart="16dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
+            android:paddingStart="36dp"
+            android:paddingEnd="30dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
             android:layout_marginBottom="12dp"
-            android:layout_marginEnd="12dp"
+            android:layout_marginEnd="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
 
@@ -130,8 +133,9 @@
                 android:id="@+id/asset_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
                 style="@style/NormalTextStyle"
-                tools:text="Pay USD" />
+                tools:text="Get USDT" />
 
             <ImageView
                 android:id="@+id/asset_desc"
@@ -161,10 +165,10 @@
             android:layout_gravity="center_horizontal"
             android:clickable="true"
             android:focusable="true"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+            android:paddingStart="28dp"
+            android:paddingEnd="28dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
             android:layout_marginBottom="16dp"
             android:inAnimation="@anim/fade_in"
             android:outAnimation="@anim/fade_out"
@@ -176,7 +180,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:text="@string/Continue"
+                android:text="@string/Buy"
+                tools:text="Buy USDT"
                 android:textColor="@color/selector_tv_blue"
                 android:textSize="14sp" />
 

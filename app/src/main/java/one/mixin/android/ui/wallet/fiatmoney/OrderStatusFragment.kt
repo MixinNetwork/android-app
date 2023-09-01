@@ -303,38 +303,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     private fun payWithCheckout() = lifecycleScope.launch(defaultErrorHandler) {
         status = OrderStatus.PROCESSING
         binding.transparentMask.isVisible = true
-        lifecycleScope.launch {
-            requestRouteAPI(
-                invokeNetwork = {
-                    fiatMoneyViewModel.createSession(
-                        RouteSessionRequest(
-                            null,
-                            currency.name,
-                            scheme,
-                            asset.assetId,
-                            amount,
-                            instrumentId,
-                        ),
-                    )
-                },
-                defaultExceptionHandle = {
-                    ErrorHandler.handleError(it)
-                    showError(it.message)
-                },
-                failureBlock = {
-                    showError(it.errorDescription)
-                    true
-                },
-                successBlock = { response ->
-                    if (response.isSuccess) {
-                        init3DS(response.data!!)
-                    } else {
-                        showError(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription))
-                    }
-                },
-                requestSession = { fiatMoneyViewModel.fetchSessionsSuspend(listOf(ROUTE_API_BOT_USER_ID)) },
-            )
-        }
+        createSession(scheme!!, null)
     }
 
     private fun payWithGoogle() {
