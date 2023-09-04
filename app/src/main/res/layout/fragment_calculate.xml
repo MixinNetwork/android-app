@@ -88,14 +88,23 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:background="@drawable/ripple_round_30"
-            android:paddingStart="36dp"
-            android:paddingEnd="30dp"
+            android:paddingStart="14dp"
+            android:paddingEnd="12dp"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
             android:layout_marginBottom="12dp"
             android:layout_marginStart="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent">
+
+            <ImageView
+                android:id="@+id/flag_iv"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="8dp"
+                android:layout_gravity="center_vertical"
+                android:contentDescription="@null"
+                tools:src="@drawable/ic_flag_usd"/>
 
             <TextView
                 style="@style/NormalTextStyle"
@@ -120,14 +129,23 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:background="@drawable/ripple_round_30"
-            android:paddingStart="36dp"
-            android:paddingEnd="30dp"
+            android:paddingStart="14dp"
+            android:paddingEnd="12dp"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
             android:layout_marginBottom="12dp"
             android:layout_marginEnd="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:id="@+id/asset_iv"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="8dp"
+                android:layout_gravity="center_vertical"
+                android:contentDescription="@null"
+                tools:src="@drawable/ic_flag_usd" />
 
             <TextView
                 android:id="@+id/asset_name"

@@ -17,6 +17,7 @@ import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
@@ -237,6 +238,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 primaryUnit.text = currency.name
             }
         }
+        binding.flagIv.setImageResource(currency.flag)
+        binding.assetIv.loadImage(asset.iconUrl)
         binding.fiatName.text = "${getString(R.string.Pay)} ${currency.name}"
         binding.assetName.text = "${getString(R.string.Get)} ${asset.symbol}"
         binding.continueTv.text = "${getString(R.string.Buy)} ${asset.symbol}"

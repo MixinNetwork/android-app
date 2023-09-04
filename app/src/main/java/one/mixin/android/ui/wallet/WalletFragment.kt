@@ -132,10 +132,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                     walletViewModel.saveSession(ParticipantSession(generateConversationId(sessionData.userId, Session.getAccountId()!!), sessionData.userId, sessionData.sessionId, publicKey = sessionData.publicKey))
                                     Session.routePublicKey = sessionData.publicKey
                                 } else {
-                                    throw MixinResponseException(
-                                        sessionResponse.errorCode,
-                                        sessionResponse.errorDescription,
-                                    )
+                                    throw MixinResponseException(sessionResponse.errorCode, sessionResponse.errorDescription)
                                 }
                             }
                             botId
