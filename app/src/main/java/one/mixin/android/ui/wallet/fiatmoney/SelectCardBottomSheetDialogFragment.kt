@@ -29,7 +29,6 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.round
 import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.util.SystemUIManager
@@ -187,7 +186,8 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 holder.itemView.setOnClickListener {
                     addCallback.invoke()
                 }
-            }else{
+            } 
+            else {
                 val card = data?.get(position) ?: return
                 holder.bind(card)
                 holder.itemView.setOnClickListener {
@@ -204,28 +204,13 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         @SuppressLint("SetTextI18n", "DefaultLocale")
         fun bind(card: Card? = null) {
-            if (card == null){
+            if (card == null) {
                 binding.cardNumber.setText(R.string.Debit_Credit_Card)
-                binding.logo.setImageResource(R.drawable.ic_add_blue_24dp)
+                binding.logo.setImageResource(R.drawable.ic_select_add)
             } else {
                 binding.cardNumber.text = "${card.scheme.capitalize()}...${card.number}"
                 binding.logo.setImageResource(if (card.scheme.equals("visa", true)) R.drawable.ic_visa else R.drawable.ic_mastercard)
             }
         }
-    }
-
-    private val mBottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
-
-        override fun onStateChanged(bottomSheet: View, newState: Int) {
-            if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                try {
-                    dismissAllowingStateLoss()
-                } catch (e: IllegalStateException) {
-                    Timber.w(e)
-                }
-            }
-        }
-
-        override fun onSlide(bottomSheet: View, slideOffset: Float) {}
     }
 }

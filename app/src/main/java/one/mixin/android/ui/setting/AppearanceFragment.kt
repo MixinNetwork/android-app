@@ -130,7 +130,27 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                     if (newSelectItem == POS_FOLLOW_SYSTEM) {
                         AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
                     } else {
-                        val newLocale = getSelectLocal(selectItem)
+                        val selectedLang = when (newSelectItem) {
+                            POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
+                            POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.language
+                            POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
+                            POS_RUSSIAN -> Constants.Locale.Russian.Language
+                            POS_INDONESIA -> Constants.Locale.Indonesian.Language
+                            POS_Malay -> Constants.Locale.Malay.Language
+                            POS_Spanish -> Constants.Locale.Spanish.Language
+                            else -> Locale.US.language
+                        }
+                        val selectedCountry = when (newSelectItem) {
+                            POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
+                            POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.country
+                            POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
+                            POS_RUSSIAN -> Constants.Locale.Russian.Country
+                            POS_INDONESIA -> Constants.Locale.Indonesian.Country
+                            POS_Malay -> Constants.Locale.Malay.Country
+                            POS_Spanish -> Constants.Locale.Spanish.Country
+                            else -> Locale.US.country
+                        }
+                        val newLocale = Locale(selectedLang, selectedCountry)
                         AppCompatDelegate.setApplicationLocales(LocaleListCompat.create(newLocale))
                     }
                     TimeCache.singleton.evictAll()
@@ -144,30 +164,6 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             }
             .show()
     }
-}
-
-fun getSelectLocal(select: Int): Locale {
-    val selectedLang = when (select) {
-        AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
-        AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.language
-        AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
-        AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Language
-        AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Language
-        AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Language
-        AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Language
-        else -> Locale.US.language
-    }
-    val selectedCountry = when (select) {
-        AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
-        AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.country
-        AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
-        AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Country
-        AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Country
-        AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Country
-        AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Country
-        else -> Locale.US.country
-    }
-    return Locale(selectedLang, selectedCountry)
 }
 
 fun getLanguagePos() = when (getLanguage()) {

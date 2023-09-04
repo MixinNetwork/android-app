@@ -47,7 +47,7 @@ class ItemCallback(private val listener: ItemCallbackListener, private val movem
 
     override fun getMovementFlags(
         recyclerView: RecyclerView,
-        viewHolder: RecyclerView.ViewHolder
+        viewHolder: RecyclerView.ViewHolder,
     ): Int {
         return if (movementFlags != null) {
             makeMovementFlags(0, movementFlags.invoke(viewHolder))

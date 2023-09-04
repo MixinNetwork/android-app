@@ -270,8 +270,15 @@
             android:name="args_token"
             app:argType="string" />
         <argument
-            android:name="args_is_retry"
+            android:name="args_kyc_state"
             app:argType="boolean" />
+
+        <action
+            android:id="@+id/action_wallet_identity_to_calculate"
+            app:destination="@id/wallet_calculate"
+            app:popUpTo="@id/wallet_calculate"
+            app:popUpToInclusive="true"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment

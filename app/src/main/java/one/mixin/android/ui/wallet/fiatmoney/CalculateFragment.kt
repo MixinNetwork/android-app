@@ -5,6 +5,11 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.sumsub.sns.core.SNSMobileSDK
+import com.sumsub.sns.core.data.listener.TokenExpirationHandler
+import com.sumsub.sns.core.data.model.SNSCompletionResult
+import com.sumsub.sns.core.data.model.SNSException
+import com.sumsub.sns.core.data.model.SNSSDKState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -26,20 +31,24 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.setting.AppearanceFragment
 import one.mixin.android.ui.setting.Currency
+import one.mixin.android.ui.setting.getLanguagePos
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.FiatListBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.IdentityFragment.Companion.ARGS_IS_RETRY
-import one.mixin.android.ui.wallet.IdentityVerificationStateBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.IdentityVerificationStateBottomSheetDialogFragment.Companion.ARGS_TOKEN
+import one.mixin.android.ui.wallet.IdentityFragment.Companion.ARGS_KYC_STATE
+import one.mixin.android.ui.wallet.IdentityFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_AMOUNT
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_CURRENCY
+import one.mixin.android.util.isFollowSystem
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.sumsub.KycState
 import one.mixin.android.widget.Keyboard
+import timber.log.Timber
+import java.util.Locale
 
 @AndroidEntryPoint
 class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
@@ -340,34 +349,19 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 val tokenResponse = requireNotNull(resp.data)
                 when (tokenResponse.state) {
                     KycState.INITIAL.value -> {
+                        val token = requireNotNull(tokenResponse.token) { "required token can not be null" }
+                        presentSDK(token)
+                    }
+
+                    KycState.PENDING.value, KycState.RETRY.value, KycState.BLOCKED.value -> {
                         val token =
                             requireNotNull(tokenResponse.token) { "required token can not be null" }
                         view?.navigate(
                             R.id.action_wallet_calculate_to_identity,
                             Bundle().apply {
                                 putString(ARGS_TOKEN, token)
-                                putBoolean(ARGS_IS_RETRY, false)
+                                putString(ARGS_KYC_STATE, tokenResponse.state)
                             },
-                        )
-                    }
-
-                    KycState.PENDING.value, KycState.RETRY.value, KycState.BLOCKED.value -> {
-                        IdentityVerificationStateBottomSheetDialogFragment.newInstance(
-                            tokenResponse.state,
-                            tokenResponse.token,
-                        ).apply {
-                            onRetry = { token ->
-                                binding.root.navigate(
-                                    R.id.action_wallet_calculate_to_identity,
-                                    Bundle().apply {
-                                        putString(ARGS_TOKEN, token)
-                                        putBoolean(ARGS_IS_RETRY, true)
-                                    },
-                                )
-                            }
-                        }.showNow(
-                            parentFragmentManager,
-                            IdentityVerificationStateBottomSheetDialogFragment.TAG,
                         )
                     }
 
@@ -382,5 +376,110 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             },
             requestSession = { fiatMoneyViewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
         )
+    }
+
+    private fun presentSDK(accessToken: String) {
+        val tokenExpirationHandler = object : TokenExpirationHandler {
+            override fun onTokenExpired(): String {
+                // Access token expired
+                // get a new one and pass it to the callback to re-initiate the SDK
+                val newToken = "..." // get a new token from your backend
+                return newToken
+            }
+        }
+        val onSDKStateChangedHandler: (SNSSDKState, SNSSDKState) -> Unit = { newState, prevState ->
+            Timber.d("onSDKStateChangedHandler: $prevState -> $newState")
+
+            when (newState) {
+                is SNSSDKState.Ready -> Timber.d("SDK is ready")
+                is SNSSDKState.Failed -> {
+                    when (newState) {
+                        is SNSSDKState.Failed.ApplicantNotFound -> Timber.e(newState.message)
+                        is SNSSDKState.Failed.ApplicantMisconfigured -> Timber.e(newState.message)
+                        is SNSSDKState.Failed.InitialLoadingFailed -> Timber.e(
+                            newState.exception,
+                            "Initial loading error",
+                        )
+
+                        is SNSSDKState.Failed.InvalidParameters -> Timber.e(newState.message)
+                        is SNSSDKState.Failed.NetworkError -> Timber.e(
+                            newState.exception,
+                            newState.message,
+                        )
+
+                        is SNSSDKState.Failed.Unauthorized -> Timber.e(
+                            newState.exception,
+                            "Invalid token or a token can't be refreshed by the SDK. Please, check your token expiration handler",
+                        )
+
+                        is SNSSDKState.Failed.Unknown -> Timber.e(
+                            newState.exception,
+                            "Unknown error",
+                        )
+                    }
+                }
+
+                is SNSSDKState.Initial -> Timber.d("No verification steps are passed yet")
+                is SNSSDKState.Incomplete -> Timber.d("Some but not all verification steps are passed over")
+                is SNSSDKState.Pending -> Timber.d("Verification is in pending state")
+                is SNSSDKState.FinallyRejected -> Timber.d("Applicant has been finally rejected")
+                is SNSSDKState.TemporarilyDeclined -> Timber.d("Applicant has been declined temporarily")
+                is SNSSDKState.Approved -> Timber.d("Applicant has been approved")
+                else -> Timber.e("Unknown")
+            }
+        }
+
+        val onSDKErrorHandler: (SNSException) -> Unit = { exception ->
+            Timber.d("The SDK throws an exception. Exception: $exception")
+
+            when (exception) {
+                is SNSException.Api -> Timber.d("Api exception. ${exception.description}")
+                is SNSException.Network -> Timber.d(exception, "Network exception.")
+                is SNSException.Unknown -> Timber.d(exception, "Unknown exception.")
+            }
+        }
+
+        val onSDKCompletedHandler: (SNSCompletionResult, SNSSDKState) -> Unit = { result, state ->
+            when (result) {
+                is SNSCompletionResult.SuccessTermination -> Timber.d("The SDK finished successfully")
+                is SNSCompletionResult.AbnormalTermination -> Timber.e(result.exception, "The SDK got closed because of errors")
+                else -> Timber.e("Unknown")
+            }
+        }
+
+        val snsSdk = SNSMobileSDK.Builder(requireActivity())
+            .withHandlers(onStateChanged = onSDKStateChangedHandler, onError = onSDKErrorHandler, onCompleted = onSDKCompletedHandler)
+            .withAccessToken(accessToken, onTokenExpiration = tokenExpirationHandler)
+            .withLocale(
+                if (isFollowSystem()) {
+                    Locale.getDefault()
+                } else {
+                    val languagePos = getLanguagePos()
+                    val selectedLang = when (languagePos) {
+                        AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
+                        AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.language
+                        AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
+                        AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Language
+                        AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Language
+                        AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Language
+                        AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Language
+                        else -> Locale.US.language
+                    }
+                    val selectedCountry = when (languagePos) {
+                        AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
+                        AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.country
+                        AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
+                        AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Country
+                        AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Country
+                        AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Country
+                        AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Country
+                        else -> Locale.US.country
+                    }
+                    Locale(selectedLang, selectedCountry)
+                },
+            )
+            .build()
+
+        snsSdk.launch()
     }
 }

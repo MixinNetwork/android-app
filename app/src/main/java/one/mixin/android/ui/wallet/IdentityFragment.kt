@@ -2,6 +2,8 @@ package one.mixin.android.ui.wallet
 
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
+import androidx.core.view.updateLayoutParams
 import com.sumsub.sns.core.SNSMobileSDK
 import com.sumsub.sns.core.data.listener.TokenExpirationHandler
 import com.sumsub.sns.core.data.model.SNSCompletionResult
@@ -11,13 +13,18 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentIdentityBinding
+import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.setting.AppearanceFragment
 import one.mixin.android.ui.setting.getLanguagePos
-import one.mixin.android.ui.setting.getSelectLocal
-import one.mixin.android.ui.wallet.IdentityVerificationStateBottomSheetDialogFragment.Companion.ARGS_TOKEN
+import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
+import one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment
 import one.mixin.android.util.isFollowSystem
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.sumsub.KycState
 import timber.log.Timber
 import java.util.Locale
 
@@ -25,7 +32,8 @@ import java.util.Locale
 class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
     companion object {
         const val TAG = "IdentityFragment"
-        const val ARGS_IS_RETRY = "args_is_retry"
+        const val ARGS_TOKEN = "args_token"
+        const val ARGS_KYC_STATE = "args_kyc_state"
     }
 
     private val binding by viewBinding(FragmentIdentityBinding::bind)
@@ -33,21 +41,76 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val token = requireNotNull(requireArguments().getString(ARGS_TOKEN)) { "required token can not be null" }
-        val isRetry = requireArguments().getBoolean(ARGS_IS_RETRY)
+        val kycState = requireNotNull(requireArguments().getString(ARGS_KYC_STATE)) { "required kycState can no be null" }
         binding.apply {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
             titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
-            if (isRetry) {
-                innerVa.displayedChild = 1
-                presentSDK(token)
-            } else {
-                innerVa.displayedChild = 0
-                innerVa.setOnClickListener {
-                    innerVa.displayedChild = 1
-                    presentSDK(token)
+            binding.apply {
+                when (kycState) {
+                    KycState.PENDING.value -> {
+                        imageView.setImageResource(R.drawable.ic_identity_verifying)
+                        titleTv.setText(R.string.Identity_Verifying)
+                        tipTv.setText(R.string.identity_verifying_tip)
+                        okTv.setText(R.string.OK)
+                        updateTip(false)
+                        okTv.setOnClickListener {
+                            toCalculate()
+                        }
+                    }
+                    KycState.RETRY.value -> {
+                        imageView.setImageResource(R.drawable.ic_verification_failed)
+                        titleTv.setText(R.string.Verification_Failed)
+                        tipTv.setText(R.string.identity_verification_failed_tip)
+                        okTv.setText(R.string.Continue)
+                        updateTip(false)
+                        okTv.setOnClickListener {
+                            presentSDK(token)
+                            toCalculate()
+                        }
+                    }
+                    KycState.BLOCKED.value -> {
+                        imageView.setImageResource(R.drawable.ic_identity_verifying)
+                        titleTv.setText(R.string.Service_Unavailable)
+                        tipTv.setText(R.string.identity_service_unavailable_tip)
+                        okTv.setText(R.string.OK)
+                        updateTip(true)
+                        okTv.setOnClickListener {
+                            toCalculate()
+                        }
+                    }
                 }
+            }
+        }
+    }
+    
+    private fun toCalculate(){
+        view?.navigate(R.id.action_wallet_identity_to_calculate)
+    }
+
+    private fun updateTip(isWarning: Boolean) {
+        binding.apply {
+            if (isWarning) {
+                tipTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    topMargin = 18.dp
+                    bottomMargin = 32.dp
+                    leftMargin = 22.dp
+                    rightMargin = 22.dp
+                }
+                tipTv.setBackgroundResource(R.drawable.bg_round_8_solid_gray)
+                tipTv.setTextColor(requireContext().getColor(R.color.colorRed))
+                tipTv.setPadding(14.dp, 12.dp, 14.dp, 12.dp)
+            } else {
+                tipTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    topMargin = 32.dp
+                    bottomMargin = 68.dp
+                    leftMargin = 36.dp
+                    rightMargin = 36.dp
+                }
+                tipTv.setBackgroundResource(0)
+                tipTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
+                tipTv.setPadding(0, 0, 0, 0)
             }
         }
     }
@@ -128,8 +191,29 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
                 if (isFollowSystem()) {
                     Locale.getDefault()
                 } else {
-                    getSelectLocal(getLanguagePos())
-                }
+                    val languagePos = getLanguagePos()
+                    val selectedLang = when (languagePos) {
+                        AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
+                        AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.language
+                        AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
+                        AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Language
+                        AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Language
+                        AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Language
+                        AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Language
+                        else -> Locale.US.language
+                    }
+                    val selectedCountry = when (languagePos) {
+                        AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
+                        AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.country
+                        AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
+                        AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Country
+                        AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Country
+                        AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Country
+                        AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Country
+                        else -> Locale.US.country
+                    }
+                    Locale(selectedLang, selectedCountry)
+                },
             )
             .build()
 

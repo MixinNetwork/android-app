@@ -91,6 +91,7 @@
             android:paddingBottom="12dp"
             android:layout_marginBottom="12dp"
             android:layout_marginStart="16dp"
+            android:clipToPadding="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
@@ -101,6 +102,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_gravity="center_vertical"
                 android:contentDescription="@null"
+                android:layout_marginTop="2dp"
                 tools:src="@drawable/ic_flag_usd"/>
 
             <TextView
@@ -109,7 +111,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
-                tools:text="Get USDT" />
+                tools:text="USDT" />
 
             <ImageView
                 android:id="@+id/fiat_expand_iv"
@@ -150,7 +152,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 style="@style/NormalTextStyle"
-                tools:text="Get USDT" />
+                tools:text="USDT" />
 
             <ImageView
                 android:id="@+id/asset_desc"
@@ -159,6 +161,15 @@
                 android:src="@drawable/ic_keyboard_arrow_down"
                 tools:ignore="ContentDescription" />
         </LinearLayout>
+
+        <ImageView
+            app:layout_constraintTop_toTopOf="@id/asset_rl"
+            app:layout_constraintBottom_toBottomOf="@id/asset_rl"
+            app:layout_constraintStart_toEndOf="@id/fiat_rl"
+            app:layout_constraintEnd_toStartOf="@id/asset_rl"
+            android:src="@drawable/ic_arrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <one.mixin.android.widget.Keyboard
@@ -221,7 +232,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:textColor="?attr/text_minor"
-            android:textSize="14sp" />
+            android:textSize="12sp" />
 
     </LinearLayout>
 
