@@ -37,37 +37,4 @@
         android:visibility="visible"
         tools:visibility="gone"/>
 
-    <ViewAnimator
-        android:id="@+id/add_va"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:clickable="true"
-        android:focusable="true"
-        android:paddingStart="28dp"
-        android:paddingEnd="28dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="14dp"
-        android:layout_marginBottom="48dp"
-        android:inAnimation="@anim/fade_in"
-        android:outAnimation="@anim/fade_out"
-        android:background="@drawable/bg_round_blue_btn_40">
-
-        <TextView
-            android:layout_gravity="center"
-            android:id="@+id/continue_tv"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="@string/Add_New_Card"
-            android:textColor="@color/white"
-            android:textSize="14sp" />
-
-        <ProgressBar
-            style="?android:attr/progressBarStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:theme="@style/AppTheme.WhiteAccent" />
-    </ViewAnimator>
 </LinearLayout>

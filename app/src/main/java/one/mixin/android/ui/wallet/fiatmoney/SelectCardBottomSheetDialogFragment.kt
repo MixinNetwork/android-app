@@ -98,12 +98,6 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             title.rightIv.setOnClickListener {
                 dismiss()
             }
-            addVa.setOnClickListener {
-                addCallback?.invoke()
-                dismiss()
-            }
-        }
-        binding.apply {
             ItemTouchHelper(
                 ItemCallback(object : ItemCallback.ItemCallbackListener {
                     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
@@ -137,23 +131,21 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var snackbar: Snackbar? = null
 
     private val cardAdapter by lazy {
-        CardAdapter { instrumentId, scheme, cardNumber ->
+        CardAdapter({
+            addCallback?.invoke()
+            dismiss()
+        }, { instrumentId, scheme, cardNumber ->
             paymentCallback?.invoke(instrumentId, scheme, cardNumber)
             dismiss()
-        }
+        })
     }
 
     @SuppressLint("NotifyDataSetChanged")
     private suspend fun initCards() {
         fiatMoneyViewModel.initSafeBox()
         fiatMoneyViewModel.cards().collect { safeBox ->
-            if (safeBox.cards.isNotEmpty()) {
-                binding.cardRv.visibility = View.VISIBLE
-                binding.empty.visibility = View.GONE
-            } else {
-                binding.cardRv.visibility = View.GONE
-                binding.empty.visibility = View.VISIBLE
-            }
+            binding.cardRv.visibility = View.VISIBLE
+            binding.empty.visibility = View.GONE
             cardAdapter.data = safeBox.cards
             cardAdapter.notifyDataSetChanged()
         }
@@ -167,7 +159,7 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     var paymentCallback: ((String, String, String) -> Unit)? = null
 
-    class CardAdapter(val callback: (String, String, String) -> Unit) :
+    class CardAdapter(val addCallback: () -> Unit, val callback: (String, String, String) -> Unit) :
         RecyclerView.Adapter<CardViewHolder>() {
 
         var data: List<Card>? = null
@@ -179,14 +171,21 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         override fun getItemCount(): Int {
-            return data?.size ?: 0
+            return (data?.size ?: 0) + 1
         }
 
         override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
-            val card = data?.get(position) ?: return
-            holder.bind(card)
-            holder.itemView.setOnClickListener {
-                callback.invoke(card.instrumentId, card.scheme, card.number)
+            if (position == data?.size) {
+                holder.bind()
+                holder.itemView.setOnClickListener {
+                    addCallback.invoke()
+                }
+            }else{
+                val card = data?.get(position) ?: return
+                holder.bind(card)
+                holder.itemView.setOnClickListener {
+                    callback.invoke(card.instrumentId, card.scheme, card.number)
+                }
             }
         }
     }
@@ -197,9 +196,14 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         @SuppressLint("SetTextI18n", "DefaultLocale")
-        fun bind(card: Card) {
-            binding.cardNumber.text = "${card.scheme.capitalize()}...${card.number}"
-            binding.logo.setImageResource(if (card.scheme.equals("visa", true)) R.drawable.ic_visa else R.drawable.ic_mastercard)
+        fun bind(card: Card? = null) {
+            if (card == null){
+                binding.cardNumber.setText(R.string.Debit_Credit_Card)
+                binding.logo.setImageResource(R.drawable.ic_add_blue_24dp)
+            } else {
+                binding.cardNumber.text = "${card.scheme.capitalize()}...${card.number}"
+                binding.logo.setImageResource(if (card.scheme.equals("visa", true)) R.drawable.ic_visa else R.drawable.ic_mastercard)
+            }
         }
     }
 
