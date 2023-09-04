@@ -198,7 +198,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 scheme.equals("mastercard", true) -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_mastercard)
                 else -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_visa)
             }.also {
-                it?.setBounds(0, 0, 28.dp, 21.dp)
+                if (isGooglePay) {
+                    it?.setBounds(0, 0, 28.dp, 14.dp)
+                } else {
+                    it?.setBounds(0, 0, 28.dp, 21.dp)
+                }
             }
             payWith.setCompoundDrawables(logo, null, null, null)
             payWith.text = if (isGooglePay) {

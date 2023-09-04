@@ -173,7 +173,7 @@ internal constructor(
         }
     }
 
-    suspend fun syncNoExistAsset(assetIds: List<String>) {
+    suspend fun syncNoExistAsset(assetIds: List<String>) = withContext(Dispatchers.IO) {
         assetIds.forEach { id ->
             if (assetRepository.findAssetItemById(id) == null) {
                 assetRepository.findOrSyncAsset(id)

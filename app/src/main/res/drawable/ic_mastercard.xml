@@ -7,10 +7,8 @@
     <clip-path
         android:pathData="M0,0h32v24h-32z"/>
     <path
-        android:fillColor="#FF000000"
-        android:pathData="M28,24H4c-2.2,0 -4,-1.8 -4,-4V4c0,-2.2 1.8,-4 4,-4h24c2.2,0 4,1.8 4,4v16C32,22.2 30.2,24 28,24zM4,1C2.3,1 1,2.3 1,4v16c0,1.7 1.3,3 3,3h24c1.7,0 3,-1.3 3,-3V4c0,-1.7 -1.3,-3 -3,-3H4z"
-        android:strokeAlpha="0.14"
-        android:fillAlpha="0.14"/>
+        android:fillColor="?attr/icon_black"
+        android:pathData="M28,24H4c-2.2,0 -4,-1.8 -4,-4V4c0,-2.2 1.8,-4 4,-4h24c2.2,0 4,1.8 4,4v16C32,22.2 30.2,24 28,24zM4,1C2.3,1 1,2.3 1,4v16c0,1.7 1.3,3 3,3h24c1.7,0 3,-1.3 3,-3V4c0,-1.7 -1.3,-3 -3,-3H4z" />
     <path
         android:pathData="M12,12m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0"
         android:fillColor="#EB001B"/>
