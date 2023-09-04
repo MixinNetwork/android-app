@@ -166,6 +166,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             } else {
                                 if (v == "0" && value != ".") {
                                     v = value
+                                } else if (isTwoDecimal(v)) {
+                                    // do noting
+                                    return
                                 } else if (value == "." && (v.contains(".") || AmountUtil.fullCurrency(fiatMoneyViewModel.currency!!.name))) {
                                     // do noting
                                     return
@@ -220,6 +223,10 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 updateUI()
             }
         }
+    }
+
+    private fun isTwoDecimal(string: String): Boolean {
+        return string.matches(Regex("\\d+\\.\\d{2}"))
     }
 
     private var v = "0"

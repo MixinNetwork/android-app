@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 
-class ItemCallback(private val listener: ItemCallbackListener) :
+class ItemCallback(private val listener: ItemCallbackListener, private val movementFlags: ((viewHolder: RecyclerView.ViewHolder) -> Int)? = null) :
     ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.START or ItemTouchHelper.END) {
 
     override fun onMove(p0: RecyclerView, p1: RecyclerView.ViewHolder, p2: RecyclerView.ViewHolder): Boolean {
@@ -45,6 +45,16 @@ class ItemCallback(private val listener: ItemCallbackListener) :
 
     private fun findView(view: View, @IdRes id: Int): View = view.findViewById(id)
 
+    override fun getMovementFlags(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder
+    ): Int {
+        return if (movementFlags != null) {
+            makeMovementFlags(0, movementFlags.invoke(viewHolder))
+        } else {
+            super.getMovementFlags(recyclerView, viewHolder)
+        }
+    }
     override fun onChildDraw(
         c: Canvas,
         recyclerView: RecyclerView,

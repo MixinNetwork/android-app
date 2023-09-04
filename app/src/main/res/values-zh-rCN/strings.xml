@@ -1267,4 +1267,5 @@
     <string name="Payment_Receive">收款</string>
     <string name="Cardholder_name">持卡人姓名</string>
     <string name="calculating">正在计算…</string>
+    <string name="Unsupported_payment_method">不支持的支付方式</string>
 </resources>

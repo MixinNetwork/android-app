@@ -30,6 +30,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.CRYPTOGRAM_3DS
 import one.mixin.android.Constants.ENVIRONMENT_3DS
 import one.mixin.android.Constants.PAN_ONLY
 import one.mixin.android.Constants.ROUTE_BOT_USER_ID
@@ -434,8 +435,10 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             val tokenData = requireNotNull(tokenResponse.data)
             if (tokenData.tokenFormat.equals(PAN_ONLY, true)) {
                 createSession(tokenData.scheme, tokenData.token)
-            } else {
+            } else if (tokenData.tokenFormat.equals(CRYPTOGRAM_3DS, true)) {
                 payments(null, null, tokenData.token, expectancy)
+            } else {
+                showError(R.string.Unsupported_payment_method)
             }
         } else {
             ErrorHandler.handleMixinError(tokenResponse.errorCode, tokenResponse.errorDescription)

@@ -29,6 +29,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.round
 import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.util.SystemUIManager
@@ -119,7 +120,13 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             snackbar?.show()
                         }
                     }
-                }),
+                }) { viewHolder ->
+                    if (viewHolder.absoluteAdapterPosition >= (cardAdapter.data?.size ?: 0)) {
+                        0
+                    } else {
+                        ItemTouchHelper.LEFT
+                    }
+                },
             ).apply { attachToRecyclerView(cardRv) }
             cardRv.adapter = cardAdapter
         }

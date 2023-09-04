@@ -1301,4 +1301,5 @@
     <string name="Payment_Receive">Receive</string>
     <string name="Cardholder_name">Cardholder name</string>
     <string name="calculating">calculating…</string>
+    <string name="Unsupported_payment_method">Unsupported payment method</string>
 </resources>
