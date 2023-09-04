@@ -13,7 +13,10 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentIdentityBinding
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.setting.getLanguagePos
+import one.mixin.android.ui.setting.getSelectLocal
 import one.mixin.android.ui.wallet.IdentityVerificationStateBottomSheetDialogFragment.Companion.ARGS_TOKEN
+import one.mixin.android.util.isFollowSystem
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 import java.util.Locale
@@ -121,7 +124,13 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
         val snsSdk = SNSMobileSDK.Builder(requireActivity())
             .withHandlers(onStateChanged = onSDKStateChangedHandler, onError = onSDKErrorHandler, onCompleted = onSDKCompletedHandler)
             .withAccessToken(accessToken, onTokenExpiration = tokenExpirationHandler)
-            .withLocale(Locale("en"))
+            .withLocale(
+                if (isFollowSystem()) {
+                    Locale.getDefault()
+                } else {
+                    getSelectLocal(getLanguagePos())
+                }
+            )
             .build()
 
         snsSdk.launch()

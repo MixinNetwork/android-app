@@ -44,6 +44,7 @@ import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.supportsS
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
@@ -154,9 +155,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                             .not()
                                 }
                                 Pair(walletActivity.supportCurrencies, walletActivity.supportAssetIds)
-                            } else if (profileResponse.errorCode == ErrorHandler.AUTHENTICATION) {
-                                walletViewModel.deleteSessionByUserId(generateConversationId(botId, Session.getAccountId()!!), botId)
-                                throw RuntimeException(getString(R.string.Try_Again))
                             } else {
                                 throw MixinResponseException(profileResponse.errorCode, profileResponse.errorDescription)
                             }
@@ -203,6 +201,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                             }
                         }.catch { e ->
                             if (e is MixinResponseException) {
+                                if (e.errorCode == ErrorHandler.AUTHENTICATION) {
+                                    walletViewModel.deleteSessionByUserId(generateConversationId(ROUTE_BOT_USER_ID, Session.getAccountId()!!), ROUTE_BOT_USER_ID)
+                                    toast(getString(R.string.Try_Again))
+                                    return@catch
+                                }
+                                sendReceiveView.buy.displayedChild = 0
+                                sendReceiveView.buy.isEnabled = true
                                 ErrorHandler.handleMixinError(e.errorCode, e.errorDescription)
                             } else {
                                 ErrorHandler.handleError(e)

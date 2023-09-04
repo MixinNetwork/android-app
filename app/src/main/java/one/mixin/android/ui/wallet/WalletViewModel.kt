@@ -280,7 +280,7 @@ internal constructor(
         userRepository.saveSession(participantSession)
     }
 
-    suspend fun deleteSessionByUserId(conversationId: String, userId: String) {
+    suspend fun deleteSessionByUserId(conversationId: String, userId: String) = withContext(Dispatchers.IO) {
         userRepository.deleteSessionByUserId(conversationId, userId)
     }
 }
