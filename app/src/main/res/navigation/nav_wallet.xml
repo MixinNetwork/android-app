@@ -59,12 +59,6 @@
             app:popExitAnim="@anim/slide_out_right" />
 
         <action
-            android:id="@+id/action_wallet_to_identity"
-            app:destination="@id/wallet_identity"
-            app:enterAnim="@anim/slide_in_bottom"
-            app:popExitAnim="@anim/slide_out_right" />
-
-        <action
             android:id="@+id/action_wallet_to_calculate"
             app:destination="@id/wallet_calculate"
             app:enterAnim="@anim/slide_in_right"
@@ -271,14 +265,7 @@
             app:argType="string" />
         <argument
             android:name="args_kyc_state"
-            app:argType="boolean" />
-
-        <action
-            android:id="@+id/action_wallet_identity_to_calculate"
-            app:destination="@id/wallet_calculate"
-            app:popUpTo="@id/wallet_calculate"
-            app:popUpToInclusive="true"
-            app:popExitAnim="@anim/slide_out_right" />
+            app:argType="string" />
     </fragment>
 
     <fragment
@@ -295,7 +282,7 @@
             android:id="@+id/action_wallet_calculate_to_identity"
             app:destination="@id/wallet_identity"
             app:enterAnim="@anim/slide_in_bottom"
-            app:popExitAnim="@anim/slide_out_right" />
+            app:popExitAnim="@anim/slide_out_bottom" />
     </fragment>
 
     <fragment

@@ -46,6 +46,11 @@
         android:textColor="?attr/text_primary"
         android:text="@string/identity_verifying_tip" />
 
+    <View
+        android:layout_width="wrap_content"
+        android:layout_weight="1"
+        android:layout_height="0dp" />
+
     <Button
         style="@style/AppTheme.MaterialButton"
         android:id="@+id/ok_tv"

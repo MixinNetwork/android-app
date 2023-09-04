@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
+import androidx.navigation.fragment.findNavController
 import com.sumsub.sns.core.SNSMobileSDK
 import com.sumsub.sns.core.data.listener.TokenExpirationHandler
 import com.sumsub.sns.core.data.model.SNSCompletionResult
@@ -15,13 +16,9 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentIdentityBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.navigate
-import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.AppearanceFragment
 import one.mixin.android.ui.setting.getLanguagePos
-import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
-import one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment
 import one.mixin.android.util.isFollowSystem
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.sumsub.KycState
@@ -44,9 +41,8 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
         val kycState = requireNotNull(requireArguments().getString(ARGS_KYC_STATE)) { "required kycState can no be null" }
         binding.apply {
             titleView.leftIb.setOnClickListener {
-                activity?.onBackPressedDispatcher?.onBackPressed()
+                toCalculate()
             }
-            titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
             binding.apply {
                 when (kycState) {
                     KycState.PENDING.value -> {
@@ -84,9 +80,9 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
             }
         }
     }
-    
-    private fun toCalculate(){
-        view?.navigate(R.id.action_wallet_identity_to_calculate)
+
+    private fun toCalculate() {
+        findNavController().navigateUp()
     }
 
     private fun updateTip(isWarning: Boolean) {

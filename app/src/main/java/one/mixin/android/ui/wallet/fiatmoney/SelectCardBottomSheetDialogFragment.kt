@@ -13,7 +13,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +35,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Card
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
 
 @AndroidEntryPoint
 class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -186,8 +184,7 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 holder.itemView.setOnClickListener {
                     addCallback.invoke()
                 }
-            } 
-            else {
+            } else {
                 val card = data?.get(position) ?: return
                 holder.bind(card)
                 holder.itemView.setOnClickListener {

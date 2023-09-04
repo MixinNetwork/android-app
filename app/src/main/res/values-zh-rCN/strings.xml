@@ -1228,7 +1228,7 @@
     <string name="Verification_Failed">验证失败</string>
     <string name="identity_verification_failed_tip">您的验证失败，可能是因为未提交所有必需的身份证明文件或某些文件存在问题。</string>
     <string name="Service_Unavailable">服务不可用</string>
-    <string name="identity_service_unavailable_tip">您的账户已被暂时封锁。由于法律限制，我们目前无法提供更多信息。感谢您的耐心、理解和对加密货币的兴趣。</string>
+    <string name="identity_service_unavailable_tip">由于法律限制，我们目前无法提供更多信息。感谢您的耐心、理解和对加密货币的兴趣。</string>
     <string name="Additional_Verification">额外验证</string>
     <string name="identity_additional_verification_tip">为了满足监管要求，我们需要您提交额外的信息。感谢您的理解和支持。</string>
     <string name="Price">价格</string>
