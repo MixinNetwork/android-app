@@ -46,6 +46,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.navigate
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
@@ -117,8 +118,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         binding.bottomVa.displayedChild = 0
         binding.topVa.displayedChild = 0
         binding.title.setText(R.string.Success)
+        binding.content.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
         binding.content.text = getString(R.string.Success_desc, assetAmount, asset.symbol, asset.symbol)
-        binding.content.highLight("$assetAmount ${asset.symbol}", color = requireContext().colorFromAttribute(R.attr.text_primary))
     }
 
     private fun failed() {
@@ -210,7 +211,6 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             } else {
                 info.number
             }
-            price.text = "${asset.symbol} ${getString(R.string.Price)}"
             priceTv.text = info.assetPrice
             purchaseTv.text = info.purchase
             feeTv.text = info.fee
@@ -379,7 +379,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     ?: throw IllegalArgumentException(getString(R.string.Data_error))
                 val assetAmount = extra.get("asset_amount").asString
                     ?: throw IllegalArgumentException(getString(R.string.Data_error))
-                this@OrderStatusFragment.binding.priceTv.text = "≈ $assetPrice ${currency.name}"
+                this@OrderStatusFragment.binding.priceTv.text = "1 ${asset.symbol} = $assetPrice ${currency.name}"
                 PriceExpiredBottomSheetDialogFragment.newInstance(
                     amount,
                     currency.name,

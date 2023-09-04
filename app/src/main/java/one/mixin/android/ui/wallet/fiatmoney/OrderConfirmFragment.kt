@@ -149,7 +149,6 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             // place, not display
             setAssetAmount("1")
             payWith.setCompoundDrawables(logo, null, null, null)
-            price.text = "${asset.symbol} ${getString(R.string.Price)}"
             priceTv.text = info.assetPrice
             purchaseTv.text = info.purchase
             feeTv.text = info.fee
@@ -201,7 +200,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                         val ticker = response.data ?: continue
                         info = OrderInfo(
                             "$scheme...$last4",
-                            "≈ ${ticker.assetPrice} ${currency.name}",
+                            "1 ${asset.symbol} = ${ticker.assetPrice} ${currency.name}",
                             "${ticker.purchase} ${ticker.currency}",
                             "${ticker.fee} ${ticker.currency}",
                             "${ticker.totalAmount} ${ticker.currency}",
