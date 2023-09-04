@@ -122,7 +122,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                             emit(ROUTE_BOT_USER_ID)
                         }.map { botId ->
                             val key = walletViewModel.findBotPublicKey(generateConversationId(botId, Session.getAccountId()!!), botId)
-                            if (key != null) {
+                            if (!key.isNullOrEmpty()) {
                                 Session.routePublicKey = key
                             } else {
                                 val sessionResponse =
