@@ -38,7 +38,6 @@ import java.io.IOException
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Serializable
-import java.lang.NullPointerException
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
@@ -50,6 +49,7 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
+import kotlin.NullPointerException
 import kotlin.collections.set
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -457,7 +457,11 @@ fun String.getColorCode(codeType: CodeType): Int {
         is CodeType.Name -> idNameCodeMap
         is CodeType.Avatar -> idAvatarCodeMap
     }
-    var code = cacheMap[this]
+    var code = try {
+        cacheMap[this]
+    } catch (e: NullPointerException) {
+        null
+    }
     if (code != null) return code
 
     val hashcode = try {
@@ -468,7 +472,10 @@ fun String.getColorCode(codeType: CodeType): Int {
         0
     }
     code = abs(hashcode).rem(codeType.count)
-    cacheMap[this] = code
+    try {
+        cacheMap[this] = code
+    } catch (ignored: NullPointerException) {
+    }
     return code
 }
 
