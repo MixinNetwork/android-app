@@ -3,16 +3,19 @@ package one.mixin.android.ui.wallet.fiatmoney
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import androidx.collection.ArraySet
 import androidx.collection.arraySetOf
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -20,23 +23,18 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentSelectCardBinding
 import one.mixin.android.databinding.ItemCardBinding
 import one.mixin.android.extension.alertDialogBuilder
-import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.round
 import one.mixin.android.ui.address.adapter.ItemCallback
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
-import one.mixin.android.util.SystemUIManager
-import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Card
-import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.MixinBottomSheetDialog
 
 @AndroidEntryPoint
-class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "SelectCardBottomSheetDialogFragment"
@@ -64,33 +62,32 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     var addCallback: (() -> Unit)? = null
-    override fun onStart() {
-        try {
-            super.onStart()
-        } catch (ignored: WindowManager.BadTokenException) {
-        }
-        dialog?.window?.let { window ->
-            SystemUIManager.lightUI(
-                window,
-                !requireContext().booleanFromAttribute(R.attr.flag_night),
-            )
+
+    private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
+    override fun getTheme() = R.style.MixinBottomSheet
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        return MixinBottomSheetDialog(requireContext(), theme).apply {
+            dismissWithAnimation = true
         }
     }
 
-    private val binding by viewBinding(FragmentSelectCardBinding::inflate)
+    private var _binding: FragmentSelectCardBinding? = null
+    private val binding get() = requireNotNull(_binding)
 
-    private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
+    private lateinit var contentView: View
 
-    override fun getTheme() = R.style.AppTheme_Dialog
-
-    @SuppressLint("RestrictedApi", "SetTextI18n")
+    @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        dialog.window?.let { window ->
-            SystemUIManager.lightUI(window, requireContext().isNightMode())
-        }
+        _binding = FragmentSelectCardBinding.inflate(LayoutInflater.from(context), null, false)
         contentView = binding.root
-        (dialog as BottomSheet).setCustomView(contentView)
+        dialog.setContentView(contentView)
+        val params = (contentView.parent as View).layoutParams as CoordinatorLayout.LayoutParams
+        val behavior = params.behavior as BottomSheetBehavior<*>
+        behavior.peekHeight = 380.dp
+        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        dialog.window?.setGravity(Gravity.BOTTOM)
         binding.apply {
             title.rightIv.setOnClickListener {
                 dismiss()
@@ -119,8 +116,6 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private var snackbar: Snackbar? = null
-
     private val cardAdapter by lazy {
         CardAdapter({
             addCallback?.invoke()
@@ -142,8 +137,9 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun delete(card: Card) {
         alertDialogBuilder()
-            .setTitle(getString(R.string.conversation_delete_title, "${card.scheme.capitalize()}...${card.number}"))
+            .setTitle(getString(R.string.card_delete_title, "${card.scheme.capitalize()}...${card.number}"))
             .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                cardAdapter.notifyDataSetChanged()
                 dialog.dismiss()
             }
             .setPositiveButton(R.string.Confirm) { dialog, _ ->

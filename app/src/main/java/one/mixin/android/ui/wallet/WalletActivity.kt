@@ -15,6 +15,7 @@ import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.sumsub.KycState
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -65,8 +66,8 @@ class WalletActivity : BlazeBaseActivity() {
         intent.extras?.getBoolean(BUY) ?: false
     }
 
+    var kycState: String = KycState.INITIAL.value
     var hideGooglePay = false
-    var keyIgnore: Boolean = false
     var supportCurrencies: List<Currency> = emptyList()
     var supportAssetIds: List<String> = emptyList()
 

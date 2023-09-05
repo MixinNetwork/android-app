@@ -12,7 +12,6 @@ import com.sumsub.sns.core.data.model.SNSCompletionResult
 import com.sumsub.sns.core.data.model.SNSException
 import com.sumsub.sns.core.data.model.SNSSDKState
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
@@ -250,12 +249,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     }
 
     private suspend fun initSafeBox() {
-        val box = fiatMoneyViewModel.cards().firstOrNull()
-        if (box == null || box.name != Session.getAccountId() || box.cards.isEmpty()) {
-            fiatMoneyViewModel.instruments().data?.let { cards ->
-                if (cards.isNotEmpty()) {
-                    fiatMoneyViewModel.initSafeBox(cards)
-                }
+        fiatMoneyViewModel.instruments().data?.let { cards ->
+            if (cards.isNotEmpty()) {
+                fiatMoneyViewModel.initSafeBox(cards)
             }
         }
     }
@@ -372,7 +368,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     }
 
     private fun checkKyc(onSuccess: () -> Unit) = lifecycleScope.launch {
-        if ((requireActivity() as WalletActivity).keyIgnore) {
+        if ((requireActivity() as WalletActivity).kycState == KycState.SUCCESS.value || (requireActivity() as WalletActivity).kycState == KycState.IGNORE.value) {
             onSuccess.invoke()
             return@launch
         }

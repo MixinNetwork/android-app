@@ -64,7 +64,6 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
-import one.mixin.android.vo.sumsub.KycState
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
@@ -143,13 +142,12 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                             if (profileResponse.isSuccess) {
                                 val walletActivity = (requireActivity() as WalletActivity)
                                 walletActivity.apply {
-                                    keyIgnore =
-                                        profileResponse.data!!.kycState == KycState.IGNORE.value
                                     supportCurrencies =
                                         getCurrencyData(requireContext().resources).filter {
                                             profileResponse.data!!.currencies.contains(it.name)
                                         }
                                     supportAssetIds = profileResponse.data!!.assetIds
+                                    kycState = profileResponse.data!!.kycState
                                     hideGooglePay =
                                         profileResponse.data!!.supportPayments.contains(GOOGLE_PAY)
                                             .not()
