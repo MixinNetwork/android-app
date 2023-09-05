@@ -12,6 +12,7 @@ import com.sumsub.sns.core.data.model.SNSCompletionResult
 import com.sumsub.sns.core.data.model.SNSException
 import com.sumsub.sns.core.data.model.SNSSDKState
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
@@ -44,6 +45,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_AMOUNT
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_CURRENCY
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.isFollowSystem
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.sumsub.KycState
@@ -209,14 +211,26 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         if (amount == null) {
                             toast("number error")
                         } else {
-                            view.navigate(
-                                R.id.action_wallet_calculate_to_payment,
-                                Bundle().apply {
-                                    putParcelable(ARGS_ASSET, fiatMoneyViewModel.asset)
-                                    putParcelable(ARGS_CURRENCY, fiatMoneyViewModel.currency)
-                                    putInt(ARGS_AMOUNT, amount)
-                                },
-                            )
+                            lifecycleScope.launch {
+                                try {
+                                    binding.continueVa.displayedChild = 1
+                                    initSafeBox()
+                                    binding.continueVa.displayedChild = 0
+                                    view.navigate(
+                                        R.id.action_wallet_calculate_to_payment,
+                                        Bundle().apply {
+                                            putParcelable(ARGS_ASSET, fiatMoneyViewModel.asset)
+                                            putParcelable(
+                                                ARGS_CURRENCY,
+                                                fiatMoneyViewModel.currency,
+                                            )
+                                            putInt(ARGS_AMOUNT, amount)
+                                        },
+                                    )
+                                } catch (e: Exception) {
+                                    ErrorHandler.handleError(e)
+                                }
+                            }
                         }
                     }
                 }
@@ -231,6 +245,17 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             } else {
                 binding.primaryTv.text = v
                 updateUI()
+            }
+        }
+    }
+
+    private suspend fun initSafeBox() {
+        val box = fiatMoneyViewModel.cards().firstOrNull()
+        if (box == null || box.name != Session.getAccountId() || box.cards.isEmpty()) {
+            fiatMoneyViewModel.instruments().data?.let { cards ->
+                if (cards.isNotEmpty()) {
+                    fiatMoneyViewModel.initSafeBox(cards)
+                }
             }
         }
     }
@@ -334,7 +359,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         }
     }
 
-    private fun updatePrimarySize(){
+    private fun updatePrimarySize() {
         binding.apply {
             val length = primaryTv.text.length
             val size = if (length <= 4) {

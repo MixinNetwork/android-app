@@ -2,7 +2,6 @@ package one.mixin.android.ui.wallet.fiatmoney
 
 import android.os.Parcelable
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wallet.CardRequirements
@@ -19,7 +18,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
@@ -69,21 +67,20 @@ internal constructor(
 
     suspend fun token(createSession: RouteTokenRequest): MixinResponse<RouteCreateTokenResponse> = assetRepository.token(createSession)
 
-    suspend fun createInstrument(createInstrument: RouteInstrumentRequest): MixinResponse<RouteSessionResponse> = assetRepository.createInstrument(createInstrument)
+    suspend fun createInstrument(createInstrument: RouteInstrumentRequest): MixinResponse<Card> = assetRepository.createInstrument(createInstrument)
 
     suspend fun getSession(sessionId: String) = assetRepository.getSession(sessionId)
 
-    fun cards(): Flow<SafeBox> = assetRepository.cards()
+    fun cards(): Flow<SafeBox?> = assetRepository.cards()
+    suspend fun initSafeBox(cards: List<Card>) = assetRepository.initSafeBox(cards)
+
+    suspend fun instruments() = assetRepository.instruments()
 
     suspend fun addCard(card: Card) = assetRepository.addCard(card)
 
-    fun initSafeBox() {
-        viewModelScope.launch {
-            assetRepository.initSafeBox()
-        }
-    }
-
     suspend fun removeCard(index: Int) = assetRepository.removeCard(index)
+
+    suspend fun deleteInstruments(id: String) = assetRepository.deleteInstruments(id)
 
     var calculateState: CalculateState? = null
 

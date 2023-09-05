@@ -564,7 +564,7 @@ object AppModule {
         messageHistoryDao,
     )
 
-    private const val DATA_STORE_FILE_NAME = "safe_box_%s.json"
+    private const val DATA_STORE_FILE_NAME = "safe_box_%s.store"
 
     @Singleton
     @Provides

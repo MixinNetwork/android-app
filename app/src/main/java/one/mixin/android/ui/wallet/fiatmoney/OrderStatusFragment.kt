@@ -44,7 +44,6 @@ import one.mixin.android.databinding.FragmentOrderStatusBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.highLight
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.withArgs

@@ -40,7 +40,6 @@ import one.mixin.android.db.TraceDao
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
@@ -476,12 +475,12 @@ constructor(
 
     suspend fun token(tokenRequest: RouteTokenRequest) = routeService.token(tokenRequest)
 
-    suspend fun createInstrument(createInstrument: RouteInstrumentRequest): MixinResponse<RouteSessionResponse> =
+    suspend fun createInstrument(createInstrument: RouteInstrumentRequest): MixinResponse<Card> =
         routeService.createInstrument(createInstrument)
 
     suspend fun getSession(sessionId: String): MixinResponse<RouteSessionResponse> = routeService.getSession(sessionId)
 
-    fun cards(): Flow<SafeBox> = safeBox.data
+    fun cards(): Flow<SafeBox?> = safeBox.data
 
     suspend fun addCard(card: Card) {
         safeBox.updateData { box ->
@@ -499,13 +498,13 @@ constructor(
         }
     }
 
-    suspend fun initSafeBox() {
-        safeBox.updateData { box ->
-            if (box.name != Session.getAccountId()) {
-                SafeBox(emptyList())
-            } else {
-                box
-            }
+    suspend fun initSafeBox(cards: List<Card>) {
+        safeBox.updateData { _ ->
+            SafeBox(cards)
         }
     }
+
+    suspend fun instruments(): MixinResponse<List<Card>> = routeService.instruments()
+
+    suspend fun deleteInstruments(id: String): MixinResponse<Void> = routeService.deleteInstruments(id)
 }

@@ -4,24 +4,20 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSelectCardBinding
 import one.mixin.android.databinding.ItemCardBinding
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.booleanFromAttribute
-import one.mixin.android.extension.config
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
@@ -102,19 +98,7 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         lifecycleScope.launch {
                             val anchorView = cardRv
                             val card = cardAdapter.data?.get(viewHolder.absoluteAdapterPosition) ?: return@launch
-                            fiatMoneyViewModel.removeCard(viewHolder.absoluteAdapterPosition)
-                            snackbar = Snackbar.make(anchorView, getString(R.string.wallet_already_deleted, "${card.scheme.capitalize()}...${card.number}"), 3500)
-                                .setAction(R.string.UNDO) {
-                                    lifecycleScope.launch(Dispatchers.IO) {
-                                        saveCards(card)
-                                    }
-                                }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                                    (this.view.findViewById(com.google.android.material.R.id.snackbar_text) as TextView)
-                                        .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                                }.apply {
-                                    snackbar?.config(anchorView.context)
-                                }
-                            snackbar?.show()
+                            delete(card)
                         }
                     }
                 }) { viewHolder ->
@@ -146,19 +130,31 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private suspend fun initCards() {
-        fiatMoneyViewModel.initSafeBox()
         fiatMoneyViewModel.cards().collect { safeBox ->
-            binding.cardRv.visibility = View.VISIBLE
-            binding.empty.visibility = View.GONE
-            cardAdapter.data = safeBox.cards
+            cardAdapter.data = safeBox?.cards
             cardAdapter.notifyDataSetChanged()
         }
     }
 
-    private fun saveCards(card: Card) {
-        lifecycleScope.launch {
-            fiatMoneyViewModel.addCard(card)
-        }
+    private fun delete(card: Card) {
+        alertDialogBuilder()
+            .setTitle(getString(R.string.conversation_delete_title, "${card.scheme.capitalize()}...${card.number}"))
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                lifecycleScope.launch {
+                    val response = fiatMoneyViewModel.deleteInstruments(card.instrumentId)
+                    if (response.isSuccess) {
+                        val index = cardAdapter.data?.indexOf(card) ?: return@launch
+                        fiatMoneyViewModel.removeCard(index)
+                    } else {
+                        cardAdapter.notifyDataSetChanged()
+                    }
+                }
+                dialog.dismiss()
+            }
+            .show()
     }
 
     var paymentCallback: ((String, String, String) -> Unit)? = null

@@ -1268,4 +1268,5 @@
     <string name="Cardholder_name">持卡人姓名</string>
     <string name="calculating">正在计算…</string>
     <string name="Unsupported_payment_method">不支持的支付方式</string>
+    <string name="card_delete_title">删除银行卡：%1$s</string>
 </resources>

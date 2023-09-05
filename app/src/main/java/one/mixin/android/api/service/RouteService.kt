@@ -9,10 +9,12 @@ import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RoutePaymentResponse
 import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.vo.Card
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -28,7 +30,13 @@ interface RouteService {
     suspend fun createSession(@Body session: RouteSessionRequest): MixinResponse<RouteSessionResponse>
 
     @POST("/checkout/instruments")
-    suspend fun createInstrument(@Body session: RouteInstrumentRequest): MixinResponse<RouteSessionResponse>
+    suspend fun createInstrument(@Body session: RouteInstrumentRequest): MixinResponse<Card>
+
+    @GET("/checkout/instruments")
+    suspend fun instruments(): MixinResponse<List<Card>>
+
+    @DELETE("/checkout/instruments/{id}")
+    suspend fun deleteInstruments(@Path("id") id: String): MixinResponse<Void>
 
     @GET("/checkout/sessions/{id}")
     suspend fun getSession(@Path("id") id: String): MixinResponse<RouteSessionResponse>

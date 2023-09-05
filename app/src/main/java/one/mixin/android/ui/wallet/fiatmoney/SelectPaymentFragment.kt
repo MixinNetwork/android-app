@@ -146,11 +146,9 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
                             },
                             successBlock = { response ->
                                 if (response.isSuccess) {
-                                    val cardNumber = response.data?.last4
-                                    val instrumentId = response.data?.instrumentId
-                                    val cardScheme = response.data?.scheme
-                                    if (cardNumber != null && instrumentId != null && cardScheme != null) {
-                                        saveCards(Card(cardNumber, cardScheme, instrumentId))
+                                    val cardData = response.data
+                                    if (cardData != null) {
+                                        saveCards(cardData)
                                         toast(R.string.Save_success)
                                         openSelectCard()
                                     } else {
