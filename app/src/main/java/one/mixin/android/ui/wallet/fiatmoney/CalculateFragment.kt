@@ -256,8 +256,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         }
         binding.flagIv.setImageResource(currency.flag)
         binding.assetIv.loadImage(asset.iconUrl)
-        binding.fiatName.text = "${getString(R.string.Pay)} ${currency.name}"
-        binding.assetName.text = "${getString(R.string.Get)} ${asset.symbol}"
+        binding.fiatName.text = currency.name
+        binding.assetName.text = asset.symbol
         binding.continueTv.text = "${getString(R.string.Buy)} ${asset.symbol}"
         updateValue()
     }
