@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.fiatmoney
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -328,7 +329,20 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     info.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
                 }
             }
+            updatePrimarySize()
             binding.info.text = getString(R.string.Value_info, state.minimum, currency.name, state.maximum, currency.name)
+        }
+    }
+
+    private fun updatePrimarySize(){
+        binding.apply {
+            val length = primaryTv.text.length
+            val size = if (length <= 4) {
+                56f
+            } else {
+                56f - 2 * (length - 4)
+            }
+            primaryTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
         }
     }
 
