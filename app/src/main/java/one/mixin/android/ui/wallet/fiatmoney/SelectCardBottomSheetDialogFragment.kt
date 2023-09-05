@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.collection.ArraySet
+import androidx.collection.arraySetOf
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -14,6 +16,7 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentSelectCardBinding
 import one.mixin.android.databinding.ItemCardBinding
 import one.mixin.android.extension.alertDialogBuilder
@@ -136,6 +139,7 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun delete(card: Card) {
         alertDialogBuilder()
             .setTitle(getString(R.string.conversation_delete_title, "${card.scheme.capitalize()}...${card.number}"))
@@ -144,13 +148,22 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             .setPositiveButton(R.string.Confirm) { dialog, _ ->
                 lifecycleScope.launch {
-                    val response = fiatMoneyViewModel.deleteInstruments(card.instrumentId)
-                    if (response.isSuccess) {
-                        val index = cardAdapter.data?.indexOf(card) ?: return@launch
-                        fiatMoneyViewModel.removeCard(index)
-                    } else {
-                        cardAdapter.notifyDataSetChanged()
-                    }
+                    cardAdapter.deletingIds.add(card.instrumentId)
+                    cardAdapter.notifyDataSetChanged()
+                    handleMixinResponse(
+                        invokeNetwork = {
+                            fiatMoneyViewModel.deleteInstruments(card.instrumentId)
+                        },
+                        endBlock = {
+                            cardAdapter.deletingIds.remove(card.instrumentId)
+                        },
+                        successBlock = { response ->
+                            if (response.isSuccess) {
+                                val index = cardAdapter.data?.indexOf(card) ?: return@handleMixinResponse
+                                fiatMoneyViewModel.removeCard(index)
+                            }
+                        },
+                    )
                 }
                 dialog.dismiss()
             }
@@ -163,6 +176,7 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         RecyclerView.Adapter<CardViewHolder>() {
 
         var data: List<Card>? = null
+        var deletingIds: ArraySet<String> = arraySetOf()
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
             val binding =
@@ -182,7 +196,7 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             } else {
                 val card = data?.get(position) ?: return
-                holder.bind(card)
+                holder.bind(card, deletingIds.contains(card.instrumentId))
                 holder.itemView.setOnClickListener {
                     callback.invoke(card.instrumentId, card.scheme, card.number)
                 }
@@ -196,13 +210,15 @@ class SelectCardBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         @SuppressLint("SetTextI18n", "DefaultLocale")
-        fun bind(card: Card? = null) {
+        fun bind(card: Card? = null, deleting: Boolean = false) {
             if (card == null) {
                 binding.cardNumber.setText(R.string.Debit_Credit_Card)
                 binding.logo.setImageResource(R.drawable.ic_select_add)
+                binding.va.displayedChild = 0
             } else {
                 binding.cardNumber.text = "${card.scheme.capitalize()}...${card.number}"
                 binding.logo.setImageResource(if (card.scheme.equals("visa", true)) R.drawable.ic_visa else R.drawable.ic_mastercard)
+                binding.va.displayedChild = if (deleting) 1 else 0
             }
         }
     }

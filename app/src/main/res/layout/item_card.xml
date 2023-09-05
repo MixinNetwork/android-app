@@ -67,14 +67,30 @@
             android:background="@drawable/bg_round_white_8dp"
             android:foreground="?android:attr/selectableItemBackground">
 
-            <ImageView
-                android:id="@+id/logo"
-                android:src="@drawable/ic_visa"
+            <ViewAnimator
+                android:id="@+id/va"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent">
+
+                <ImageView
+                    android:id="@+id/logo"
+                    android:src="@drawable/ic_visa"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center" />
+
+                <ProgressBar
+                    android:id="@+id/pb"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:theme="@style/AppTheme.BlueAccent"
+                    android:visibility="gone"
+                    android:layout_gravity="center" />
+            </ViewAnimator>
 
             <TextView
                 android:id="@+id/card_number"
@@ -83,7 +99,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 android:layout_marginStart="12dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/logo"
+                app:layout_constraintStart_toEndOf="@+id/va"
                 android:textColor="?attr/text_primary"
                 tools:text="Visa....4242" />
 
