@@ -112,6 +112,7 @@ open class ErrorHandler {
         const val OLD_VERSION = 10006
         const val EXPIRED_CARD = 10601
         const val EXPIRED_PRICE = 10602
+        const val UNSUPPORTED_CARD = 10604
         const val PHONE_INVALID_FORMAT = 20110
         const val INSUFFICIENT_IDENTITY_NUMBER = 20111
         const val INVALID_INVITATION_CODE = 20112
@@ -164,6 +165,9 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
         }
         ErrorHandler.EXPIRED_PRICE -> {
             getString(R.string.error_expired_price)
+        }
+        ErrorHandler.UNSUPPORTED_CARD -> {
+            getString(R.string.error_not_support_card)
         }
         ErrorHandler.PHONE_INVALID_FORMAT -> {
             getString(R.string.error_phone_invalid_format)

@@ -43,18 +43,18 @@ object CustomPaymentFormTheme {
                 cardScheme = PaymentFormComponentBuilder().setPaymentFormField(
                     PaymentFormComponentField.CardScheme,
                 ).setTitleTextId(
-                    R.string.Accepted_cards,
+                    R.string.Accepted_Cards,
                 ).build(),
                 cardNumber = PaymentFormComponentBuilder().setPaymentFormField(
                     PaymentFormComponentField.CardNumber,
-                ).setTitleTextId(R.string.Card_number).build(),
+                ).setTitleTextId(R.string.Card_Number).build(),
                 expiryDate = PaymentFormComponentBuilder().setPaymentFormField(
                     PaymentFormComponentField.ExpiryDate,
-                ).setTitleTextId(R.string.Expiry_date)
+                ).setTitleTextId(R.string.Expiry_Date)
                     .setSubTitleTextId(R.string.Expiry_date_sub_title).build(),
                 cvv = PaymentFormComponentBuilder().setPaymentFormField(PaymentFormComponentField.CVV)
                     .setTitleTextId(
-                        R.string.Security_code,
+                        R.string.Security_Code,
                     )
                     .setSubTitleTextId(R.string.Security_code_sub_title).build(),
                 payButton = PaymentFormComponentBuilder().setPaymentFormField(
@@ -74,7 +74,7 @@ object CustomPaymentFormTheme {
                     .build(),
                 cardHolderName = PaymentFormComponentBuilder()
                     .setPaymentFormField(PaymentFormComponentField.CardHolderName)
-                    .setTitleTextId(R.string.Cardholder_name)
+                    .setTitleTextId(R.string.Cardholder_Name)
                     .setIsFieldOptional(true)
                     .setIsFieldHidden(false).build(),
 

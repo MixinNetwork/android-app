@@ -140,10 +140,6 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
                             endBlock = {
                                 dismissLoading()
                             },
-                            failureBlock = { response ->
-                                toast(response.errorDescription)
-                                true
-                            },
                             successBlock = { response ->
                                 if (response.isSuccess) {
                                     val cardData = response.data
