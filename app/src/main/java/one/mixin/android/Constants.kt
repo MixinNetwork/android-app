@@ -303,11 +303,9 @@ object Constants {
     const val TEAM_BOT_ID = ""
     const val TEAM_BOT_NAME = ""
     const val PAN_ONLY = "pan_only"
-    const val CRYPTOGRAM_3DS = "cryptogram_3ds"
 
     val SUPPORTED_METHODS = listOf(
         "PAN_ONLY",
-        "CRYPTOGRAM_3DS",
     )
 
     val SUPPORTED_NETWORKS = listOf(

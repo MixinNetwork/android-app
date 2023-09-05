@@ -111,7 +111,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                     {
                         "type": "CARD",
                         "parameters": {
-                            "allowedAuthMethods": ["PAN_ONLY","CRYPTOGRAM_3DS"],
+                            "allowedAuthMethods": ["PAN_ONLY"],
                             "allowedCardNetworks": ["AMEX", "DISCOVER", "INTERAC", "JCB", "MASTERCARD", "VISA"]
                         }
                     }
