@@ -1260,7 +1260,7 @@
     <string name="Price">Price</string>
     <string name="Google_Pay" translatable="false">Google Pay</string>
     <string name="Debit_Credit_Card">Debit / Credit Card</string>
-    <string name="Add_Debit_or_Credit_card">Add Debit or Credit card</string>
+    <string name="Add_debit_or_credit_card">Add credit or debit card</string>
     <string name="user_deleted_hint">The user has deleted his own account.</string>
     <string name="Order_Preview">Order Preview</string>
     <string name="Total">Total</string>

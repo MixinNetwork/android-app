@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.fiatmoney
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -92,6 +93,7 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
             title.rightIv.setOnClickListener {
                 dismiss()
             }
+            title.titleTv.setTypeface(null, Typeface.BOLD)
             ItemTouchHelper(
                 ItemCallback(object : ItemCallback.ItemCallbackListener {
                     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
@@ -208,7 +210,7 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
         @SuppressLint("SetTextI18n", "DefaultLocale")
         fun bind(card: Card? = null, deleting: Boolean = false) {
             if (card == null) {
-                binding.cardNumber.setText(R.string.Debit_Credit_Card)
+                binding.cardNumber.setText(R.string.Add_debit_or_credit_card)
                 binding.logo.setImageResource(R.drawable.ic_select_add)
                 binding.va.displayedChild = 0
             } else {
