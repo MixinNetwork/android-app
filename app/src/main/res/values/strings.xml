@@ -418,6 +418,7 @@
     <string name="error_phone_sms_delivery">ERROR 10003: Failed to deliver SMS</string>
     <string name="error_expired_card">ERROR 10601: Card expired</string>
     <string name="error_expired_price">ERROR 10602: Price expired</string>
+    <string name="error_payment_capture">ERROR 10603: Payment capture failed</string>
     <string name="error_not_support_card">ERROR 10604: Card does not support</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR 20113: Invalid phone verification code</string>
