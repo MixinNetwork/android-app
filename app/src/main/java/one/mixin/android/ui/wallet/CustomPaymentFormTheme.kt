@@ -14,12 +14,12 @@ import one.mixin.android.R
 object CustomPaymentFormTheme {
     private val paymentFormThemeColors = PaymentFormThemeColors(
         accentColor = 0XFF333333,
-        textColor = 0XFF333333,
+        textColor = 0XFFFFFFFF,
         errorColor = 0XFFE55541,
         backgroundColor = 0xFFFFFFFF,
         fieldBackgroundColor = 0XFFF6F7FA,
         enabledButtonColor = 0xFF3D75E3,
-        disabledButtonColor = 0XFF9B9B9B,
+        disabledButtonColor = 0XFFE5E5E5,
     )
 
     private val paymentNightFormThemeColors = PaymentFormThemeColors(
@@ -28,8 +28,8 @@ object CustomPaymentFormTheme {
         errorColor = 0XFFE55541,
         backgroundColor = 0xFF2C3136,
         fieldBackgroundColor = 0XFF23272B,
-        enabledButtonColor = 0xFF4191FF,
-        disabledButtonColor = 0XFF808691,
+        enabledButtonColor = 0xFF3D75E3,
+        disabledButtonColor = 0XFF3B3F44,
     )
 
     fun providePaymentFormTheme(isNightMode: Boolean): PaymentFormTheme {
@@ -77,16 +77,15 @@ object CustomPaymentFormTheme {
                     .setTitleTextId(R.string.Cardholder_Name)
                     .setIsFieldOptional(true)
                     .setIsFieldHidden(false).build(),
-
             ),
             paymentFormShape = PaymentFormShape(
                 inputFieldShape = Shape.RoundCorner,
-                addressSummaryShape = Shape.Rectangle,
-                buttonShape = Shape.Circle,
+                buttonShape = Shape.RoundCorner,
             ),
             paymentFormCornerRadius = PaymentFormCornerRadius(
-                inputFieldCornerRadius = CornerRadius(12),
-                addressSummaryCornerRadius = CornerRadius(12),
+                inputFieldCornerRadius = CornerRadius(8),
+                buttonCornerRadius = CornerRadius(8),
+                addressSummaryCornerRadius = CornerRadius(8),
             ),
         )
     }
