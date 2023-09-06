@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.sumsub.sns.core.SNSMobileSDK
 import com.sumsub.sns.core.data.listener.TokenExpirationHandler
@@ -19,6 +20,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.AppearanceFragment
 import one.mixin.android.ui.setting.getLanguagePos
+import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
 import one.mixin.android.util.isFollowSystem
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.sumsub.KycState
@@ -34,6 +36,7 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
     }
 
     private val binding by viewBinding(FragmentIdentityBinding::bind)
+    private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -113,11 +116,12 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
 
     private fun presentSDK(accessToken: String) {
         val tokenExpirationHandler = object : TokenExpirationHandler {
-            override fun onTokenExpired(): String {
-                // Access token expired
-                // get a new one and pass it to the callback to re-initiate the SDK
-                val newToken = "..." // get a new token from your backend
-                return newToken
+            override fun onTokenExpired(): String? {
+                return try {
+                    fiatMoneyViewModel.callSumsubToken().execute().body()?.data?.token
+                } catch (e: Exception) {
+                    null
+                }
             }
         }
         val onSDKStateChangedHandler: (SNSSDKState, SNSSDKState) -> Unit = { newState, prevState ->

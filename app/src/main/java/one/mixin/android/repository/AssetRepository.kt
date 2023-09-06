@@ -59,6 +59,7 @@ import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
+import retrofit2.Call
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -464,6 +465,8 @@ constructor(
         )
 
     suspend fun token(): MixinResponse<RouteTokenResponse> = routeService.sumsubToken()
+
+    fun callSumsubToken(): Call<MixinResponse<RouteTokenResponse>> = routeService.callSumsubToken()
 
     suspend fun profile(): MixinResponse<ProfileResponse> = routeService.profile()
 

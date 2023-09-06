@@ -13,6 +13,7 @@ import one.mixin.android.vo.Card
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
+import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -49,6 +50,9 @@ interface RouteService {
 
     @GET("/kyc/token")
     suspend fun sumsubToken(): MixinResponse<RouteTokenResponse>
+
+    @GET("/kyc/token")
+    fun callSumsubToken(): Call<MixinResponse<RouteTokenResponse>>
 
     @GET("/profile")
     suspend fun profile(): MixinResponse<ProfileResponse>

@@ -40,6 +40,7 @@ import one.mixin.android.vo.Card
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.RouteTokenResponse
+import retrofit2.Call
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -58,6 +59,8 @@ internal constructor(
         assetRepository.ticker(tickerRequest)
 
     suspend fun token(): MixinResponse<RouteTokenResponse> = assetRepository.token()
+
+     fun callSumsubToken(): Call<MixinResponse<RouteTokenResponse>> = assetRepository.callSumsubToken()
 
     suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = assetRepository.payment(traceRequest)
 
