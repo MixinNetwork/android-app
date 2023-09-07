@@ -60,7 +60,7 @@ internal constructor(
 
     suspend fun token(): MixinResponse<RouteTokenResponse> = assetRepository.token()
 
-     fun callSumsubToken(): Call<MixinResponse<RouteTokenResponse>> = assetRepository.callSumsubToken()
+    fun callSumsubToken(): Call<MixinResponse<RouteTokenResponse>> = assetRepository.callSumsubToken()
 
     suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = assetRepository.payment(traceRequest)
 

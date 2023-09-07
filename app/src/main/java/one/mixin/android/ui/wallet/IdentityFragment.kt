@@ -125,10 +125,10 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
             }
         }
         val onSDKStateChangedHandler: (SNSSDKState, SNSSDKState) -> Unit = { newState, prevState ->
-            Timber.d("onSDKStateChangedHandler: $prevState -> $newState")
+            Timber.e("onSDKStateChangedHandler: $prevState -> $newState")
 
             when (newState) {
-                is SNSSDKState.Ready -> Timber.d("SDK is ready")
+                is SNSSDKState.Ready -> Timber.e("SDK is ready")
                 is SNSSDKState.Failed -> {
                     when (newState) {
                         is SNSSDKState.Failed.ApplicantNotFound -> Timber.e(newState.message)
@@ -156,29 +156,29 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
                     }
                 }
 
-                is SNSSDKState.Initial -> Timber.d("No verification steps are passed yet")
-                is SNSSDKState.Incomplete -> Timber.d("Some but not all verification steps are passed over")
-                is SNSSDKState.Pending -> Timber.d("Verification is in pending state")
-                is SNSSDKState.FinallyRejected -> Timber.d("Applicant has been finally rejected")
-                is SNSSDKState.TemporarilyDeclined -> Timber.d("Applicant has been declined temporarily")
-                is SNSSDKState.Approved -> Timber.d("Applicant has been approved")
+                is SNSSDKState.Initial -> Timber.e("No verification steps are passed yet")
+                is SNSSDKState.Incomplete -> Timber.e("Some but not all verification steps are passed over")
+                is SNSSDKState.Pending -> Timber.e("Verification is in pending state")
+                is SNSSDKState.FinallyRejected -> Timber.e("Applicant has been finally rejected")
+                is SNSSDKState.TemporarilyDeclined -> Timber.e("Applicant has been declined temporarily")
+                is SNSSDKState.Approved -> Timber.e("Applicant has been approved")
                 else -> Timber.e("Unknown")
             }
         }
 
         val onSDKErrorHandler: (SNSException) -> Unit = { exception ->
-            Timber.d("The SDK throws an exception. Exception: $exception")
+            Timber.e("The SDK throws an exception. Exception: $exception")
 
             when (exception) {
-                is SNSException.Api -> Timber.d("Api exception. ${exception.description}")
-                is SNSException.Network -> Timber.d(exception, "Network exception.")
-                is SNSException.Unknown -> Timber.d(exception, "Unknown exception.")
+                is SNSException.Api -> Timber.e("Api exception. ${exception.description}")
+                is SNSException.Network -> Timber.e(exception, "Network exception.")
+                is SNSException.Unknown -> Timber.e(exception, "Unknown exception.")
             }
         }
 
         val onSDKCompletedHandler: (SNSCompletionResult, SNSSDKState) -> Unit = { result, state ->
             when (result) {
-                is SNSCompletionResult.SuccessTermination -> Timber.d("The SDK finished successfully")
+                is SNSCompletionResult.SuccessTermination -> Timber.e("The SDK finished successfully")
                 is SNSCompletionResult.AbnormalTermination -> Timber.e(result.exception, "The SDK got closed because of errors")
                 else -> Timber.e("Unknown")
             }

@@ -25,6 +25,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigate
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.shaking
@@ -50,6 +51,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.sumsub.KycState
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
+import java.math.BigDecimal
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -321,9 +323,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     primaryTv.text = "0"
                     minorTv.text = "0 ${currency.name}"
                 } else {
-                    primaryTv.text = value
+                    primaryTv.text = getNumberFormat(value)
                     minorTv.text =
-                        "≈ ${String.format("%.2f", currentValue)} ${currency.name}"
+                        "≈ ${getNumberFormat(String.format("%.2f", currentValue))} ${currency.name}"
                 }
                 continueVa.isEnabled = currentValue >= state.minimum && currentValue <= state.maximum
                 continueTv.isEnabled = continueVa.isEnabled
@@ -338,9 +340,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     primaryTv.text = "0"
                     minorTv.text = "0 ${asset.symbol}"
                 } else {
-                    primaryTv.text = value
+                    primaryTv.text = getNumberFormat(value)
                     minorTv.text =
-                        "≈ ${String.format("%.2f", currentValue * state.fiatPrice)} ${asset.symbol}"
+                        "≈ ${getNumberFormat(String.format("%.2f", currentValue * state.fiatPrice))} ${asset.symbol}"
                 }
                 continueVa.isEnabled = currentValue >= state.minimum && currentValue <= state.maximum
                 continueTv.isEnabled = continueVa.isEnabled
@@ -352,6 +354,16 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             }
             updatePrimarySize()
             binding.info.text = getString(R.string.Value_info, state.minimum, currency.name, state.maximum, currency.name)
+        }
+    }
+
+    private fun getNumberFormat(value: String): String {
+        return BigDecimal(value).numberFormat2().let {
+            if (v.endsWith(".")) {
+                "$it."
+            } else {
+                it
+            }
         }
     }
 
@@ -415,18 +427,19 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     private fun presentSDK(accessToken: String) {
         val tokenExpirationHandler = object : TokenExpirationHandler {
-            override fun onTokenExpired(): String {
-                // Access token expired
-                // get a new one and pass it to the callback to re-initiate the SDK
-                val newToken = "..." // get a new token from your backend
-                return newToken
+            override fun onTokenExpired(): String? {
+                return try {
+                    fiatMoneyViewModel.callSumsubToken().execute().body()?.data?.token
+                } catch (e: Exception) {
+                    null
+                }
             }
         }
         val onSDKStateChangedHandler: (SNSSDKState, SNSSDKState) -> Unit = { newState, prevState ->
-            Timber.d("onSDKStateChangedHandler: $prevState -> $newState")
+            Timber.e("onSDKStateChangedHandler: $prevState -> $newState")
 
             when (newState) {
-                is SNSSDKState.Ready -> Timber.d("SDK is ready")
+                is SNSSDKState.Ready -> Timber.e("SDK is ready")
                 is SNSSDKState.Failed -> {
                     when (newState) {
                         is SNSSDKState.Failed.ApplicantNotFound -> Timber.e(newState.message)
@@ -454,29 +467,29 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     }
                 }
 
-                is SNSSDKState.Initial -> Timber.d("No verification steps are passed yet")
-                is SNSSDKState.Incomplete -> Timber.d("Some but not all verification steps are passed over")
-                is SNSSDKState.Pending -> Timber.d("Verification is in pending state")
-                is SNSSDKState.FinallyRejected -> Timber.d("Applicant has been finally rejected")
-                is SNSSDKState.TemporarilyDeclined -> Timber.d("Applicant has been declined temporarily")
-                is SNSSDKState.Approved -> Timber.d("Applicant has been approved")
+                is SNSSDKState.Initial -> Timber.e("No verification steps are passed yet")
+                is SNSSDKState.Incomplete -> Timber.e("Some but not all verification steps are passed over")
+                is SNSSDKState.Pending -> Timber.e("Verification is in pending state")
+                is SNSSDKState.FinallyRejected -> Timber.e("Applicant has been finally rejected")
+                is SNSSDKState.TemporarilyDeclined -> Timber.e("Applicant has been declined temporarily")
+                is SNSSDKState.Approved -> Timber.e("Applicant has been approved")
                 else -> Timber.e("Unknown")
             }
         }
 
         val onSDKErrorHandler: (SNSException) -> Unit = { exception ->
-            Timber.d("The SDK throws an exception. Exception: $exception")
+            Timber.e("The SDK throws an exception. Exception: $exception")
 
             when (exception) {
-                is SNSException.Api -> Timber.d("Api exception. ${exception.description}")
-                is SNSException.Network -> Timber.d(exception, "Network exception.")
-                is SNSException.Unknown -> Timber.d(exception, "Unknown exception.")
+                is SNSException.Api -> Timber.e("Api exception. ${exception.description}")
+                is SNSException.Network -> Timber.e(exception, "Network exception.")
+                is SNSException.Unknown -> Timber.e(exception, "Unknown exception.")
             }
         }
 
         val onSDKCompletedHandler: (SNSCompletionResult, SNSSDKState) -> Unit = { result, state ->
             when (result) {
-                is SNSCompletionResult.SuccessTermination -> Timber.d("The SDK finished successfully")
+                is SNSCompletionResult.SuccessTermination -> Timber.e("The SDK finished successfully")
                 is SNSCompletionResult.AbnormalTermination -> Timber.e(result.exception, "The SDK got closed because of errors")
                 else -> Timber.e("Unknown")
             }

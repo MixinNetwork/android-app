@@ -65,7 +65,7 @@
             android:textColor="?attr/text_primary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
+            android:textSize="16sp"
             tools:text="USD" />
 
         <TextView

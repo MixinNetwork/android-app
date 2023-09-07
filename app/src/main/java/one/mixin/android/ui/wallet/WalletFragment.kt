@@ -136,7 +136,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 }
                             }
                             botId
-                        }.map { botId ->
+                        }.map { _ ->
                             val profileResponse =
                                 walletViewModel.profile()
                             if (profileResponse.isSuccess) {
