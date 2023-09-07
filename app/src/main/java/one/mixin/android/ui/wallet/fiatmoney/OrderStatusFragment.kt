@@ -126,7 +126,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         binding.bottomVa.displayedChild = 1
         binding.topVa.displayedChild = 1
         binding.cancelTv.isVisible = true
-        binding.title.setText(R.string.Failed)
+        binding.title.setText(R.string.buy_failed)
     }
 
     private fun processing() {

@@ -221,7 +221,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:text="@string/use_other"
+                android:text="@string/switch_payment_method"
                 android:textColor="@color/white"
                 android:inAnimation="@anim/fade_in"
                 android:outAnimation="@anim/fade_out"

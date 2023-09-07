@@ -1278,13 +1278,13 @@
     <string name="Add_New_Card">Add New Card</string>
     <string name="Empty_card">You haven\'t added any card yet.</string>
     <string name="cancel_order">Cancel order</string>
-    <string name="use_other">Use other methods of payment</string>
+    <string name="switch_payment_method">Switch Payment Method</string>
     <string name="Processing">Processing</string>
-    <string name="Failed">Failed</string>
+    <string name="buy_failed">Failed</string>
     <string name="Processing_desc">Payment request has been submitted, your payment and order information is being checked, please wait patiently</string>
     <string name="Success_desc">Successful purchase of %1$s %2$s ! %3$s will be transferred directly to Mixin wallet.</string>
     <string name="Price_Expired">Price Expired</string>
-    <string name="Fee_desc">You may be charged in addition to the order by your bank, please contact your bank for more information.</string>
+    <string name="Fee_desc">You may be charged fees outside of your order by your bank, please contact your bank for more details.</string>
     <string name="Processing_Fee">Processing Fee</string>
     <string name="Fees_tip">You may cost more fees by bank.</string>
     <string name="Use_New_Price">Use New Price</string>
@@ -1300,7 +1300,7 @@
     <string name="Purchase_Amount">Purchase Amount</string>
     <string name="Payment_Receive">Receive</string>
     <string name="Cardholder_Name">Cardholder Name</string>
-    <string name="calculating">calculating…</string>
+    <string name="calculating">Calculating…</string>
     <string name="Unsupported_payment_method">Unsupported payment method</string>
     <string name="card_delete_title">Delete card: %1$s</string>
 </resources>
