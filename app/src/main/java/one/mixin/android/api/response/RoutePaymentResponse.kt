@@ -15,6 +15,12 @@ class RoutePaymentResponse(
     val sessionId: String,
     @SerializedName("status")
     val status: String,
+    @SerializedName("state")
+    val state: String,
+    val reason: String?,
 )
 
 enum class RoutePaymentStatus { Authorized, Captured }
+
+@Suppress("EnumEntryName")
+enum class RoutePaymentState { initial, pending, transferred, failed }
