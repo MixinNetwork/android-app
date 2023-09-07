@@ -32,7 +32,7 @@ interface ParticipantSessionDao : BaseDao<ParticipantSession> {
     suspend fun findBotPublicKey(conversationId: String, userId: String): String?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId AND session_id = :sessionId AND public_key LIMIT 1")
+    @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId AND session_id = :sessionId LIMIT 1")
     fun getParticipantSessionKeyBySessionId(conversationId: String, userId: String, sessionId: String): ParticipantSessionKey?
 
     @Insert(entity = ParticipantSession::class, onConflict = OnConflictStrategy.REPLACE)
