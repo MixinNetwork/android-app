@@ -35,6 +35,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment.Companion.ARGS_INFO
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.cardIcon
 import org.json.JSONException
 import timber.log.Timber
 
@@ -112,7 +113,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                         "type": "CARD",
                         "parameters": {
                             "allowedAuthMethods": ["PAN_ONLY","CRYPTOGRAM_3DS"],
-                            "allowedCardNetworks": ["AMEX", "DISCOVER", "INTERAC", "JCB", "MASTERCARD", "VISA"]
+                            "allowedCardNetworks": ["AMEX", "JCB", "MASTERCARD", "VISA"]
                         }
                     }
                 ]
@@ -137,13 +138,12 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             }
             val logo = when {
                 isGooglePay -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_google_pay_small)
-                scheme.equals("mastercard", true) -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_mastercard)
-                else -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_visa)
+                else -> AppCompatResources.getDrawable(requireContext(), cardIcon(scheme))
             }.also {
                 if (isGooglePay) {
                     it?.setBounds(0, 0, 28.dp, 14.dp)
                 } else {
-                    it?.setBounds(0, 0, 28.dp, 21.dp)
+                    it?.setBounds(0, 0, 26.dp, 16.dp)
                 }
             }
             // place, not display

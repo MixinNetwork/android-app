@@ -54,6 +54,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.cardIcon
 import one.mixin.android.vo.route.RoutePaymentRequest
 import timber.log.Timber
 import java.lang.IllegalArgumentException
@@ -195,13 +196,12 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
 
             val logo = when {
                 isGooglePay -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_google_pay_small)
-                scheme.equals("mastercard", true) -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_mastercard)
-                else -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_visa)
+                else -> AppCompatResources.getDrawable(requireContext(), cardIcon(scheme))
             }.also {
                 if (isGooglePay) {
                     it?.setBounds(0, 0, 28.dp, 14.dp)
                 } else {
-                    it?.setBounds(0, 0, 28.dp, 21.dp)
+                    it?.setBounds(0, 0, 26.dp, 16.dp)
                 }
             }
             payWith.setCompoundDrawables(logo, null, null, null)

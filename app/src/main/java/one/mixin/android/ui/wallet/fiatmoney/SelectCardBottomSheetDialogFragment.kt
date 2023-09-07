@@ -32,6 +32,7 @@ import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Card
+import one.mixin.android.vo.cardIcon
 import one.mixin.android.widget.MixinBottomSheetDialog
 
 @AndroidEntryPoint
@@ -215,7 +216,7 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 binding.va.displayedChild = 0
             } else {
                 binding.cardNumber.text = "${card.scheme.capitalize()}...${card.number}"
-                binding.logo.setImageResource(if (card.scheme.equals("visa", true)) R.drawable.ic_visa else R.drawable.ic_mastercard)
+                binding.logo.setImageResource(cardIcon(card.scheme))
                 binding.va.displayedChild = if (deleting) 1 else 0
             }
         }
