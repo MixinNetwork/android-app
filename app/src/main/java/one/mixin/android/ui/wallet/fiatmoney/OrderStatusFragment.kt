@@ -37,7 +37,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.RouteSessionRequest
 import one.mixin.android.api.request.RouteTokenRequest
-import one.mixin.android.api.response.RoutePaymentState
 import one.mixin.android.api.response.RoutePaymentStatus
 import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteSessionStatus
@@ -363,7 +362,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             if (response.data?.status == RoutePaymentStatus.Captured.name) {
                 assetAmount = response.data!!.assetAmount
                 status = OrderStatus.SUCCESS
-            } else if (response.data?.state == RoutePaymentState.failed.name) {
+            } else if (response.data?.status == RoutePaymentStatus.Declined.name) {
                 showError(response.data?.reason)
             } else {
                 val paymentId = response.data?.paymentId
@@ -416,7 +415,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     assetAmount = response.data!!.assetAmount
                     status = OrderStatus.SUCCESS
                     break
-                } else if (response.data?.state == RoutePaymentState.failed.name) {
+                } else if (response.data?.status == RoutePaymentStatus.Declined.name) {
                     showError(response.data?.reason)
                 } else if (response.isSuccess) {
                     delay(2000)
