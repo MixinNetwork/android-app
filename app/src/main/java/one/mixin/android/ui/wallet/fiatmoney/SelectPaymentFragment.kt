@@ -42,7 +42,7 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
 
     private val amount by lazy {
-        requireArguments().getInt(OrderConfirmFragment.ARGS_AMOUNT)
+        requireArguments().getLong(OrderConfirmFragment.ARGS_AMOUNT)
     }
 
     private val loading by lazy {
@@ -109,7 +109,7 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
                 this@SelectPaymentFragment.view?.navigate(
                     R.id.action_wallet_payment_to_order,
                     Bundle().apply {
-                        putInt(OrderConfirmFragment.ARGS_AMOUNT, amount)
+                        putLong(OrderConfirmFragment.ARGS_AMOUNT, amount)
                         putParcelable(TransactionsFragment.ARGS_ASSET, asset)
                         putParcelable(OrderConfirmFragment.ARGS_CURRENCY, currency)
                         putString(OrderConfirmFragment.ARGS_INSTRUMENT_ID, instrumentId)

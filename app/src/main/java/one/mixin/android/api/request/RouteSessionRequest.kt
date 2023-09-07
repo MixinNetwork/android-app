@@ -12,7 +12,7 @@ class RouteSessionRequest(
     @SerializedName("asset_id")
     val assetId: String,
     @SerializedName("amount")
-    var amount: Int,
+    var amount: Long,
     @SerializedName("instrument_id")
     val instrumentId: String? = null,
 )

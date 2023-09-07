@@ -223,7 +223,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                                 ARGS_CURRENCY,
                                                 fiatMoneyViewModel.currency,
                                             )
-                                            putInt(ARGS_AMOUNT, amount)
+                                            putLong(ARGS_AMOUNT, amount)
                                         },
                                     )
                                 } catch (e: Exception) {

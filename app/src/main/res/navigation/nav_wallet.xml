@@ -299,7 +299,7 @@
 
         <argument
             android:name="args_amount"
-            app:argType="integer" />
+            app:argType="long" />
 
         <action
             android:id="@+id/action_wallet_payment_to_order_confirm"
@@ -329,7 +329,7 @@
             app:argType="boolean" />
         <argument
             android:name="args_amount"
-            app:argType="integer" />
+            app:argType="long" />
         <argument
             android:name="args_instrument_id"
             app:argType="string" />
@@ -362,7 +362,7 @@
             app:argType="boolean" />
         <argument
             android:name="args_amount"
-            app:argType="integer" />
+            app:argType="long" />
         <argument
             android:name="args_instrument_id"
             app:argType="string" />

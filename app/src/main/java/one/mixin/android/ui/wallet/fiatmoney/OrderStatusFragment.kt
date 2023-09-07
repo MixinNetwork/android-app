@@ -85,7 +85,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     private var isGooglePay: Boolean = false
 
     private val amount by lazy {
-        requireArguments().getInt(ARGS_AMOUNT, 0)
+        requireArguments().getLong(ARGS_AMOUNT, 0)
     }
 
     private val instrumentId by lazy {
@@ -178,7 +178,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                             R.id.action_wallet_status_to_select,
                             Bundle().apply {
                                 putParcelable(TransactionsFragment.ARGS_ASSET, asset)
-                                putInt(ARGS_AMOUNT, amount)
+                                putLong(ARGS_AMOUNT, amount)
                                 putParcelable(ARGS_CURRENCY, currency)
                             },
                         )
@@ -292,7 +292,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     R.id.action_wallet_status_to_select,
                     Bundle().apply {
                         putParcelable(TransactionsFragment.ARGS_ASSET, asset)
-                        putInt(ARGS_AMOUNT, amount)
+                        putLong(ARGS_AMOUNT, amount)
                         putParcelable(ARGS_CURRENCY, currency)
                     },
                 )

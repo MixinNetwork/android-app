@@ -59,7 +59,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     private val binding by viewBinding(FragmentOrderConfirmBinding::bind)
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
     private lateinit var asset: AssetItem
-    private var amount: Int = 0
+    private var amount: Long = 0
     private lateinit var currency: Currency
     private var scheme: String? = null
     private var last4: String? = null
@@ -74,7 +74,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                 AssetItem::class.java,
             ),
         )
-        amount = requireArguments().getInt(ARGS_AMOUNT)
+        amount = requireArguments().getLong(ARGS_AMOUNT)
         currency = requireNotNull(
             requireArguments().getParcelableCompat(
                 ARGS_CURRENCY,

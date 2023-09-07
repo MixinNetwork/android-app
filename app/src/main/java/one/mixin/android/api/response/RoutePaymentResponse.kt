@@ -6,7 +6,7 @@ class RoutePaymentResponse(
     @SerializedName("payment_id")
     val paymentId: String,
     @SerializedName("amount")
-    val amount: Int,
+    val amount: Long,
     @SerializedName("asset_amount")
     val assetAmount: String,
     @SerializedName("currency")

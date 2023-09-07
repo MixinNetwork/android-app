@@ -14,7 +14,7 @@ class RouteSessionResponse(
     @SerializedName("last4")
     val last4: String,
     @SerializedName("amount")
-    val amount: Int,
+    val amount: Long,
     @SerializedName("currency")
     val currency: String,
     @SerializedName("status")

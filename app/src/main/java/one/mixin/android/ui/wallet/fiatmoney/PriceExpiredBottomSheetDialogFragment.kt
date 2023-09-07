@@ -35,8 +35,8 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val ARGS_ASSET_AMOUNT = "args_asset_amount"
         private const val ARGS_ASSET_PRICE = "args_asset_price"
 
-        fun newInstance(amount: Int, currencyName: String, asset: AssetItem, total: String, assetAmount: String, assetPrice: String) = PriceExpiredBottomSheetDialogFragment().withArgs {
-            putInt(ARGS_AMOUNT, amount)
+        fun newInstance(amount: Long, currencyName: String, asset: AssetItem, total: String, assetAmount: String, assetPrice: String) = PriceExpiredBottomSheetDialogFragment().withArgs {
+            putLong(ARGS_AMOUNT, amount)
             putString(ARGS_CURRENCY_NAME, currencyName)
             putParcelable(ARGS_ASSET, asset)
             putString(ARGS_TOTAL, total)
@@ -45,7 +45,7 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private var amount: Int = 0
+    private var amount: Long = 0L
     private lateinit var currencyName: String
     private lateinit var asset: AssetItem
     private lateinit var total: String
@@ -74,7 +74,7 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
-        amount = requireArguments().getInt(ARGS_AMOUNT)
+        amount = requireArguments().getLong(ARGS_AMOUNT)
         asset = requireNotNull(
             requireArguments().getParcelableCompat(
                 ARGS_ASSET,

@@ -10,20 +10,20 @@ object AmountUtil {
         return full_currency.contains(currency)
     }
 
-    fun toAmount(value: String, currency: String): Int? {
+    fun toAmount(value: String, currency: String): Long? {
         val v = value.toFloatOrNull() ?: return null
         if (currency in full_currency) {
-            return v.toInt()
+            return v.toLong()
         } else {
-            return (v * 100).toInt()
+            return (v * 100).toLong()
         }
     }
 
-    fun realAmount(value: Int, currency: String): String {
-        if (currency in full_currency) {
-            return value.toString()
+    fun realAmount(value: Long, currency: String): String {
+        return if (currency in full_currency) {
+            value.toString()
         } else {
-            return (value / 100f).toString()
+            (value / 100f).toString()
         }
     }
 
