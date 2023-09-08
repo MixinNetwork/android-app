@@ -8,7 +8,7 @@ plugins {
     id "de.undercouch.download"
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
     id 'kotlinx-serialization'
-    id "com.google.protobuf" version "0.9.1"
+    id "com.google.protobuf" version "0.9.4"
 }
 
 def versionMajor = 0
