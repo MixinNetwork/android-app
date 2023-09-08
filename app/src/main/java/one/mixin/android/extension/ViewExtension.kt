@@ -1,5 +1,6 @@
 package one.mixin.android.extension
 
+import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.app.Activity
@@ -14,6 +15,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import android.view.ViewAnimationUtils
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
 import android.view.WindowManager
@@ -43,6 +45,7 @@ import one.mixin.android.util.reportException
 import timber.log.Timber
 import java.io.IOException
 import java.lang.reflect.Field
+import kotlin.math.hypot
 
 const val ANIMATION_DURATION_SHORT = 260L
 const val ANIMATION_DURATION_SHORTEST = 120L
@@ -223,6 +226,17 @@ fun View.roundTopOrBottom(radius: Float, top: Boolean, bottom: Boolean) {
         }
     }
     this.clipToOutline = true
+}
+
+fun View.circularReveal() {
+    val centerX = width / 2
+    val centerY: Int = height / 2
+    val startRadius = 0f
+    val endRadius = hypot(width / 2f, height / 2f)
+
+    val circularReveal: Animator =
+        ViewAnimationUtils.createCircularReveal(this, centerX, centerY, startRadius, endRadius)
+    circularReveal.start()
 }
 
 fun EditText.showCursor() {

@@ -36,14 +36,17 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "AssetListBottomSheetDialogFragment"
         const val ARGS_FOR_SEND = "args_for_send"
+        const val ARGS_ASSETS = "args_assets"
 
         const val POS_RV = 0
         const val POS_EMPTY_RECEIVE = 1
         const val POS_EMPTY_SEND = 2
 
-        fun newInstance(forSend: Boolean) = AssetListBottomSheetDialogFragment().withArgs {
-            putBoolean(ARGS_FOR_SEND, forSend)
-        }
+        fun newInstance(forSend: Boolean, assets: ArrayList<String>? = null) =
+            AssetListBottomSheetDialogFragment().withArgs {
+                putBoolean(ARGS_FOR_SEND, forSend)
+                putStringArrayList(ARGS_ASSETS, assets)
+            }
     }
 
     private val binding by viewBinding(FragmentAssetListBottomSheetBinding::inflate)
@@ -52,6 +55,10 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private val forSend: Boolean by lazy {
         requireArguments().getBoolean(ARGS_FOR_SEND)
+    }
+
+    private val assetIds by lazy {
+        requireArguments().getStringArrayList(ARGS_ASSETS)
     }
 
     private var disposable: Disposable? = null
@@ -124,17 +131,23 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         } else {
             bottomViewModel.assetItems()
         }.observe(this) {
-            defaultAssets = it
+            defaultAssets = it.let { list ->
+                if (!assetIds.isNullOrEmpty()) {
+                    list.filter { item -> assetIds!!.contains(item.assetId) }
+                } else {
+                    list
+                }
+            }
             if (forSend) {
-                adapter.submitList(it)
-                if (it.isNullOrEmpty()) {
+                adapter.submitList(defaultAssets)
+                if (defaultAssets.isEmpty()) {
                     binding.rvVa.displayedChild = POS_EMPTY_SEND
                 } else {
                     binding.rvVa.displayedChild = POS_RV
                 }
             } else {
                 if (binding.searchEt.et.text.isNullOrBlank()) {
-                    adapter.submitList(it)
+                    adapter.submitList(defaultAssets)
                 }
             }
         }

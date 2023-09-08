@@ -31,6 +31,7 @@
         <item name="icon_default">@color/colorIcon</item>
         <item name="icon_white">@color/colorIconWhite</item>
         <item name="icon_black">@color/colorIcon</item>
+        <item name="icon_google_black">@color/colorIconGoogleBlack</item>
         <item name="icon_gray">@color/colorIconGray</item>
         <item name="icon_action">@color/colorIconAction</item>
 
@@ -336,5 +337,15 @@
     <style name="itemSpinnerStyle" parent="@android:style/Widget.TextView.SpinnerItem">
         <item name="android:textColor">?attr/bg_white</item>
         <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="LoadingProgressDialog" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="LoadingProgressDialog.FadeInOut">
+        <item name="android:windowEnterAnimation">@anim/fade_in</item>
+        <item name="android:windowExitAnimation">@anim/fade_out</item>
     </style>
 </resources>

@@ -3,6 +3,10 @@ package one.mixin.android.di
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ContentResolver
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
+import androidx.datastore.dataStoreFile
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
@@ -16,6 +20,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -52,6 +57,7 @@ import one.mixin.android.api.service.FoursquareService
 import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.ProvisioningService
+import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.TipService
@@ -92,6 +98,8 @@ import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
+import one.mixin.android.vo.SafeBox
+import one.mixin.android.vo.route.serializer.SafeBoxSerializer
 import one.mixin.android.webrtc.CallDebugLiveData
 import one.mixin.android.websocket.ChatWebSocket
 import org.chromium.net.CronetEngine
@@ -111,6 +119,9 @@ object AppModule {
     private const val xServerTime = "X-Server-Time"
     private const val xRequestId = "X-Request-Id"
     private const val authorization = "Authorization"
+
+    private const val mrAccessSign = "MR-ACCESS-SIGN"
+    private const val mrAccessTimestamp = "MR-ACCESS-TIMESTAMP"
 
     @SuppressLint("ConstantLocale")
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
@@ -425,6 +436,34 @@ object AppModule {
         return retrofit.create(FoursquareService::class.java)
     }
 
+    @Singleton
+    @Provides
+    fun provideRouteService(httpLoggingInterceptor: HttpLoggingInterceptor?): RouteService {
+        val client = OkHttpClient.Builder().apply {
+            addInterceptor { chain ->
+                val sourceRequest = chain.request()
+                val builder = sourceRequest.newBuilder()
+                val (ts, signature) = Session.getRouteSignature(sourceRequest)
+                if (!sourceRequest.url.toString().endsWith("checkout/ticker")) {
+                    builder.addHeader(mrAccessTimestamp, ts.toString())
+                    builder.addHeader(mrAccessSign, signature)
+                }
+                val request = builder.build()
+                return@addInterceptor chain.proceed(request)
+            }
+            httpLoggingInterceptor?.let { interceptor ->
+                addNetworkInterceptor(interceptor)
+            }
+        }.build()
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://api.route.mixin.one")
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .client(client)
+            .build()
+        return retrofit.create(RouteService::class.java)
+    }
+
     @Provides
     @Singleton
     fun provideCallState() = CallStateLiveData()
@@ -524,4 +563,23 @@ object AppModule {
         linkState,
         messageHistoryDao,
     )
+
+    private const val DATA_STORE_FILE_NAME = "safe_box_%s.store"
+
+    @Singleton
+    @Provides
+    fun providesDataStore(@ApplicationContext appContext: Context): DataStore<SafeBox> {
+        return DataStoreFactory.create(
+            serializer = SafeBoxSerializer,
+            produceFile = {
+                appContext.dataStoreFile(
+                    String.format(
+                        DATA_STORE_FILE_NAME,
+                        Session.getAccountId(),
+                    ),
+                )
+            },
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+        )
+    }
 }

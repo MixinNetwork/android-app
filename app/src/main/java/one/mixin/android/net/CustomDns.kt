@@ -24,7 +24,7 @@ class CustomDns(val dnsHostname: String) : Dns {
         } catch (e: NullPointerException) {
             throw UnknownHostException(hostname)
         }
-        if(records.isNullOrEmpty()) {
+        if (records.isNullOrEmpty()) {
             throw UnknownHostException(hostname)
         }
         val ipAddresses = records.filter { it.type == Type.A || it.type == Type.AAAA }

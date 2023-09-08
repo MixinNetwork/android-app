@@ -12,8 +12,10 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.sumsub.KycState
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -41,6 +43,8 @@ class WalletActivity : BlazeBaseActivity() {
             if (currentAsset != null) {
                 setStartDestination(R.id.transactions_fragment)
                 addArgument(ARGS_ASSET, NavArgument.Builder().setDefaultValue(currentAsset).build())
+            } else if (isBuy) {
+                setStartDestination(R.id.wallet_calculate)
             } else {
                 setStartDestination(R.id.wallet_fragment)
             }
@@ -58,6 +62,15 @@ class WalletActivity : BlazeBaseActivity() {
         intent.extras?.getBoolean(BOTTOM_ANIM) ?: true
     }
 
+    private val isBuy: Boolean by lazy {
+        intent.extras?.getBoolean(BUY) ?: false
+    }
+
+    var kycState: String = KycState.INITIAL.value
+    var hideGooglePay = false
+    var supportCurrencies: List<Currency> = emptyList()
+    var supportAssetIds: List<String> = emptyList()
+
     override fun finish() {
         super.finish()
         if (bottomAnim) {
@@ -68,11 +81,13 @@ class WalletActivity : BlazeBaseActivity() {
     companion object {
         const val ASSET = "ASSET"
         const val BOTTOM_ANIM = "bottom_anim"
+        const val BUY = "buy"
 
         fun show(
             activity: Activity,
             assetItem: AssetItem? = null,
             bottomAnim: Boolean = true,
+            buy: Boolean = false,
         ) {
             val myIntent = Intent(activity, WalletActivity::class.java)
             val bundle = Bundle()
@@ -80,6 +95,7 @@ class WalletActivity : BlazeBaseActivity() {
                 bundle.putParcelable(ASSET, assetItem)
             }
             bundle.putBoolean(BOTTOM_ANIM, bottomAnim)
+            bundle.putBoolean(BUY, buy)
             myIntent.putExtras(bundle)
             activity.startActivity(myIntent)
             if (bottomAnim) {

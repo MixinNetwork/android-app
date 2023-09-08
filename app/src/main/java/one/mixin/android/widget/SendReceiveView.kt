@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewSendReceiveBinding
 
@@ -20,4 +22,13 @@ class SendReceiveView : LinearLayoutCompat {
     val send get() = binding.sendTv
     val receive get() = binding.receiveTv
     val receiveProgress get() = binding.receiveProgress
+    val buy get() = binding.buyVa
+
+    fun enableBuy() {
+        buy.displayedChild = 0
+        buy.isVisible = true
+        binding.buyDelimiter.isVisible = true
+        receive.foreground = ContextCompat.getDrawable(context, R.drawable.mixin_ripple_rect)
+        weightSum = 3f
+    }
 }

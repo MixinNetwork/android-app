@@ -1,6 +1,7 @@
 package one.mixin.android.repository
 
 import android.os.CancellationSignal
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.paging.ExperimentalPagingApi
@@ -9,15 +10,25 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.liveData
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.Pin
+import one.mixin.android.api.request.RouteInstrumentRequest
+import one.mixin.android.api.request.RouteSessionRequest
+import one.mixin.android.api.request.RouteTickerRequest
+import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
+import one.mixin.android.api.response.RoutePaymentResponse
+import one.mixin.android.api.response.RouteSessionResponse
+import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
+import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.AssetsExtraDao
@@ -37,12 +48,18 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.AssetsExtra
+import one.mixin.android.vo.Card
 import one.mixin.android.vo.PriceAndChange
+import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
+import one.mixin.android.vo.route.RoutePaymentRequest
+import one.mixin.android.vo.sumsub.ProfileResponse
+import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
+import retrofit2.Call
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -52,6 +69,7 @@ class AssetRepository
 constructor(
     private val appDatabase: MixinDatabase,
     private val assetService: AssetService,
+    private val routeService: RouteService,
     private val assetDao: AssetDao,
     private val assetsExtraDao: AssetsExtraDao,
     private val snapshotDao: SnapshotDao,
@@ -61,6 +79,7 @@ constructor(
     private val traceDao: TraceDao,
     private val chainDao: ChainDao,
     private val jobManager: MixinJobManager,
+    private val safeBox: DataStore<SafeBox>,
 ) {
 
     fun assets() = assetService.assets()
@@ -418,6 +437,8 @@ constructor(
 
     suspend fun ticker(assetId: String, offset: String?) = assetService.ticker(assetId, offset)
 
+    suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> = routeService.ticker(tickerRequest)
+
     suspend fun findSnapshotByTransactionHashList(assetId: String, hashList: List<String>): List<String> =
         snapshotDao.findSnapshotIdsByTransactionHashList(assetId, hashList)
 
@@ -442,4 +463,53 @@ constructor(
                 }
             },
         )
+
+    suspend fun token(): MixinResponse<RouteTokenResponse> = routeService.sumsubToken()
+
+    fun callSumsubToken(): Call<MixinResponse<RouteTokenResponse>> = routeService.callSumsubToken()
+
+    suspend fun profile(): MixinResponse<ProfileResponse> = routeService.profile()
+
+    suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = routeService.payment(traceRequest)
+
+    suspend fun payment(paymentId: String): MixinResponse<RoutePaymentResponse> = routeService.payment(paymentId)
+
+    suspend fun payments(): MixinResponse<List<RoutePaymentResponse>> = routeService.payments()
+
+    suspend fun createSession(createSession: RouteSessionRequest): MixinResponse<RouteSessionResponse> = routeService.createSession(createSession)
+
+    suspend fun token(tokenRequest: RouteTokenRequest) = routeService.token(tokenRequest)
+
+    suspend fun createInstrument(createInstrument: RouteInstrumentRequest): MixinResponse<Card> =
+        routeService.createInstrument(createInstrument)
+
+    suspend fun getSession(sessionId: String): MixinResponse<RouteSessionResponse> = routeService.getSession(sessionId)
+
+    fun cards(): Flow<SafeBox?> = safeBox.data
+
+    suspend fun addCard(card: Card) {
+        safeBox.updateData { box ->
+            val list = box.cards.toMutableList()
+            list.add(card)
+            SafeBox(list)
+        }
+    }
+
+    suspend fun removeCard(index: Int) {
+        safeBox.updateData { box ->
+            val list = box.cards.toMutableList()
+            list.removeAt(index)
+            SafeBox(list)
+        }
+    }
+
+    suspend fun initSafeBox(cards: List<Card>) {
+        safeBox.updateData { _ ->
+            SafeBox(cards)
+        }
+    }
+
+    suspend fun instruments(): MixinResponse<List<Card>> = routeService.instruments()
+
+    suspend fun deleteInstruments(id: String): MixinResponse<Void> = routeService.deleteInstruments(id)
 }

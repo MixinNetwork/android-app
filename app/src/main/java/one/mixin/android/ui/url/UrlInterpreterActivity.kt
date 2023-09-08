@@ -19,6 +19,7 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.transfer.TransferActivity
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import timber.log.Timber
 
@@ -37,6 +38,7 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val SNAPSHOTS = "snapshots"
         private const val CONVERSATIONS = "conversations"
         private const val DEVICE_TRANSFER = "device-transfer"
+        private const val BUY = "buy"
         private const val TIP = "tip"
         const val WC = "wc"
 
@@ -131,6 +133,10 @@ class UrlInterpreterActivity : BaseActivity() {
             }
             DEVICE_TRANSFER -> {
                 TransferActivity.parseUri(this, uri, { finish() }) { finish() }
+            }
+            BUY -> {
+                WalletActivity.show(this)
+                finish()
             }
         }
     }

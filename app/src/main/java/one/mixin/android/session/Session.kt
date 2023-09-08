@@ -19,12 +19,15 @@ import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.useGoEd
+import one.mixin.android.extension.base64RawURLDecode
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.bodyToString
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.currentTimeSeconds
 import one.mixin.android.extension.cutOut
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.hmacSha256
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
@@ -41,6 +44,8 @@ import kotlin.math.abs
 object Session {
     const val PREF_EXTENSION_SESSION_ID = "pref_extension_session_id"
     const val PREF_SESSION = "pref_session"
+
+    var routePublicKey: String? = null
 
     private var self: Account? = null
 
@@ -320,6 +325,21 @@ object Session {
             }
             return getEd25519KeyPair()?.publicKey?.let { EdDSAPublicKey(it.toByteString()) }
         }
+    }
+
+    fun getRouteSignature(request: Request): Pair<Long, String> {
+        val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
+        val botPk = routePublicKey?.base64RawURLDecode() ?: return Pair(0L, "")
+        val private = privateKeyToCurve25519(edKeyPair.privateKey)
+        val sharedKey = calculateAgreement(botPk, private)
+        val ts = currentTimeSeconds()
+        var content = "$ts${request.method}${request.url.cutOut()}"
+        request.body?.apply {
+            if (contentLength() > 0) {
+                content += bodyToString()
+            }
+        }
+        return Pair(ts, (requireNotNull(getAccountId()).toByteArray() + content.hmacSha256(sharedKey)).base64RawURLEncode())
     }
 }
 

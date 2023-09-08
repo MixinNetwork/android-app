@@ -8,6 +8,7 @@ plugins {
     id "de.undercouch.download"
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
     id 'kotlinx-serialization'
+    id "com.google.protobuf" version "0.9.1"
 }
 
 def versionMajor = 0
@@ -195,7 +196,13 @@ android {
         resolutionStrategy {
             force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10"
             force "com.github.mixinnetwork:tink-eddsa:0.0.13"
+
+            // keep version 1.69
+            // https://github.com/bcgit/bc-java/commit/9bf72343e1c515ac28fe6b32a5bfe27c6a96baf0
+            force "org.bouncycastle:bcprov-jdk15on:1.69"
+            force "org.bouncycastle:bcutil-jdk15on:1.69"
             exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
+            exclude group: 'org.bouncycastle', module: 'bcprov-jdk15to18'
         }
     }
 }
@@ -368,7 +375,6 @@ dependencies {
     implementation "com.mapbox.plugin:maps-lifecycle:${mapboxSdkVersion}"
     implementation "com.mattprecious.swirl:swirl:$swirlVersion"
     implementation "com.github.warkiz.widget:indicatorseekbar:$indicatorseekbarVersion"
-    implementation "org.bouncycastle:bcprov-jdk15on:${bcVersion}"
     implementation "org.jetbrains:markdown:${markdownVersion}"
     implementation "io.github.java-diff-utils:java-diff-utils:${diffUtilsVersion}"
     implementation "com.lambdapioneer.argon2kt:argon2kt:${argon2ktVersion}"
@@ -436,7 +442,6 @@ dependencies {
     // ML Kit
     implementation 'com.google.mlkit:entity-extraction:16.0.0-beta4'
 
-    testImplementation "org.bitcoinj:bitcoinj-core:0.16.2"
     testImplementation("com.google.protobuf:protobuf-javalite") {
         version {
             strictly '3.11.0'
@@ -448,6 +453,21 @@ dependencies {
     implementation "com.squareup.leakcanary:leakcanary-android-process:$leakcanaryVerison"
     releaseImplementation "com.squareup.leakcanary:leakcanary-android-release:$leakcanaryVerison"
     releaseImplementation "com.squareup.leakcanary:leakcanary-object-watcher-android:$leakcanaryVerison"
+
+    // SumSub
+    implementation("com.sumsub.sns:idensic-mobile-sdk:$sumsubVersion") {
+        exclude group: 'com.twilio.audioswitch', module: 'AudioDevice'
+    }
+    // checkout
+    implementation "com.github.checkout:frames-android:$checkoutFramesVersion"
+    implementation "com.checkout:checkout-sdk-3ds-android:$checkoutSecureVersion"
+
+    // google pay
+    implementation "com.google.android.gms:play-services-wallet:$playWalletVersion"
+    implementation "com.google.android.gms:play-services-pay:$playPayVersion"
+
+    //Jetpack Datastore - Proto Datastore
+    implementation "androidx.datastore:datastore:$datastoreVersion"
 }
 
 secrets {

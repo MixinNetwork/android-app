@@ -1,6 +1,8 @@
 package one.mixin.android
 
 import android.graphics.Color
+import com.checkout.base.model.Environment
+import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
 import one.mixin.android.net.CustomDns
 import one.mixin.android.net.SequentialDns
@@ -176,6 +178,8 @@ object Constants {
         const val MGD_ASSET_ID = "b207bce9-c248-4b8e-b6e3-e357146f3f4c"
         const val BYTOM_CLASSIC_ASSET_ID = "443e1ef5-bc9b-47d3-be77-07f328876c50"
         const val OMNI_USDT_ASSET_ID = "815b0b1a-2764-3736-8faa-42d694fa620a"
+        const val USDT_ASSET_ID = "4d8c508b-91c5-375b-92b0-ee702ed2dac5"
+        const val USDC_ASSET_ID = "9b180ab6-6abe-3dc0-a13f-04169eb34bfa"
     }
 
     object Mute {
@@ -298,4 +302,29 @@ object Constants {
     // Only for third-party messenger user
     const val TEAM_BOT_ID = ""
     const val TEAM_BOT_NAME = ""
+    const val PAN_ONLY = "pan_only"
+    const val CRYPTOGRAM_3DS = "cryptogram_3ds"
+
+    val SUPPORTED_METHODS = listOf(
+        "PAN_ONLY",
+        "CRYPTOGRAM_3DS",
+    )
+
+    val SUPPORTED_NETWORKS = listOf(
+        "MASTERCARD",
+        "VISA",
+        "AMEX",
+        "JCB",
+    )
+
+    const val ROUTE_BOT_USER_ID = "61cb8dd4-16b1-4744-ba0c-7b2d2e52fc59"
+    const val GOOGLE_PAY = "googlepay"
+
+    const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_PRODUCTION
+
+    const val PAYMENTS_GATEWAY = "checkoutltd"
+
+    val CHECKOUT_ENVIRONMENT: Environment = Environment.PRODUCTION
+
+    val ENVIRONMENT_3DS = com.checkout.threeds.Environment.PRODUCTION
 }

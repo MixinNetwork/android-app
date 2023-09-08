@@ -110,6 +110,10 @@ open class ErrorHandler {
         const val RECAPTCHA_IS_INVALID = 10004
         const val NEED_CAPTCHA = 10005
         const val OLD_VERSION = 10006
+        const val EXPIRED_CARD = 10601
+        const val EXPIRED_PRICE = 10602
+        const val CAPTURE_FAILED = 10603
+        const val UNSUPPORTED_CARD = 10604
         const val PHONE_INVALID_FORMAT = 20110
         const val INSUFFICIENT_IDENTITY_NUMBER = 20111
         const val INVALID_INVITATION_CODE = 20112
@@ -156,6 +160,18 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
         ErrorHandler.OLD_VERSION -> {
             val versionName = packageManager.getPackageInfo(packageName, 0).versionName
             getString(R.string.error_old_version, versionName)
+        }
+        ErrorHandler.EXPIRED_CARD -> {
+            getString(R.string.error_expired_card)
+        }
+        ErrorHandler.EXPIRED_PRICE -> {
+            getString(R.string.error_expired_price)
+        }
+        ErrorHandler.CAPTURE_FAILED -> {
+            getString(R.string.error_payment_capture)
+        }
+        ErrorHandler.UNSUPPORTED_CARD -> {
+            getString(R.string.error_not_support_card)
         }
         ErrorHandler.PHONE_INVALID_FORMAT -> {
             getString(R.string.error_phone_invalid_format)

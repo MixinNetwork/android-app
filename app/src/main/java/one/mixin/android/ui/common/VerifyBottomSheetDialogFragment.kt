@@ -61,9 +61,15 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         return bottomViewModel.verifyPin(pin)
     }
 
+    var disableToast = false
     override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
         onPinSuccess?.invoke(pin)
-        return true
+        if (disableToast) {
+            dismiss()
+            return false
+        } else {
+            return true
+        }
     }
 
     override fun getBiometricInfo() = BiometricInfo(

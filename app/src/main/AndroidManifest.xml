@@ -93,6 +93,7 @@
                 <data android:host="conversations" />
                 <data android:host="device-transfer" />
                 <data android:host="tip"/>
+                <data android:host="buy"/>
             </intent-filter>
 
             <intent-filter android:autoVerify="true">
@@ -414,7 +415,6 @@
             android:screenOrientation="portrait"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.Music" />
-
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -516,7 +516,8 @@
             android:resource="@color/gray_light" />
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"
-            android:value="barcode" />
+            android:value="(barcode)"
+            tools:replace="android:value" />
         <meta-data
             android:name="android.max_aspect"
             android:value="2.1" />
@@ -529,6 +530,9 @@
 <!--        <meta-data-->
 <!--            android:name="com.google.android.gms.car.application"-->
 <!--            android:resource="@xml/automotive_app_desc" />-->
+        <meta-data
+            android:name="com.google.android.gms.wallet.api.enabled"
+            android:value="true" />
     </application>
 
     <queries>
