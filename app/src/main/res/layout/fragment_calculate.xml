@@ -209,7 +209,7 @@
                 android:gravity="center"
                 android:text="@string/Buy"
                 tools:text="Buy USDT"
-                android:textColor="@color/selector_tv_blue"
+                android:textColor="@color/selector_tv_white"
                 android:textSize="14sp" />
 
             <ProgressBar
