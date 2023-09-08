@@ -71,6 +71,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         const val ARGS_AMOUNT = "args_amount"
         const val ARGS_INFO = "args_info"
 
+        private const val REFRESH_INTERVAL = 2000L
+
         fun newInstance(assetItem: AssetItem, currency: Currency) =
             OrderStatusFragment().withArgs {
                 putParcelable(TransactionsFragment.ARGS_ASSET, assetItem)
@@ -103,12 +105,19 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         private set(value) {
             if (field != value) {
                 field = value
-                if (value == OrderStatus.PROCESSING) {
-                    processing()
-                } else if (value == OrderStatus.SUCCESS) {
-                    success()
-                } else if (value == OrderStatus.FAILED) {
-                    failed()
+                when (value) {
+                    OrderStatus.PROCESSING -> {
+                        processing()
+                    }
+                    OrderStatus.SUCCESS -> {
+                        success()
+                    }
+                    OrderStatus.FAILED -> {
+                        failed()
+                    }
+                    else -> {
+                        // do noting
+                    }
                 }
             }
         }
@@ -120,6 +129,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         binding.title.setText(R.string.Success)
         binding.content.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
         binding.content.text = getString(R.string.Success_desc, assetAmount, asset.symbol, asset.symbol)
+        binding.transparentMask.isVisible = false
     }
 
     private fun failed() {
@@ -128,6 +138,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         binding.topVa.displayedChild = 1
         binding.cancelTv.isVisible = true
         binding.title.setText(R.string.buy_failed)
+        binding.transparentMask.isVisible = false
     }
 
     private fun processing() {
@@ -136,6 +147,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         binding.topVa.displayedChild = 2
         binding.title.setText(R.string.Processing)
         binding.content.setText(R.string.Processing_desc)
+        binding.transparentMask.isVisible = true
     }
 
     @SuppressLint("UseCompatLoadingForDrawables", "SetTextI18n")
@@ -167,7 +179,6 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         )
         expectancy = info.assetAmount
         binding.apply {
-            transparentMask.isVisible = false
             bottomVa.setOnClickListener {
                 when (bottomVa.displayedChild) {
                     0 -> {
@@ -228,7 +239,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             ENVIRONMENT_3DS,
             Locale.US,
             null,
-            Uri.parse("mixin://buy"),
+            Uri.parse("mixin://buy"), // May jump back to the purchase interface form uri
         )
 
         val authenticationParameters = AuthenticationParameters(
@@ -241,7 +252,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             when (result.resultType) {
                 ResultType.Completed -> {
                     lifecycleScope.launch(defaultErrorHandler) {
-                        while (true) {
+                        while (isActive) {
                             val session = try {
                                 fiatMoneyViewModel.getSession(sessionResponse.sessionId)
                             } catch (e: Exception) {
@@ -255,6 +266,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                                 } else if (session.data?.status != RouteSessionStatus.Pending.value && session.data?.status != RouteSessionStatus.Processing.value) {
                                     showError(session.data?.status ?: session.errorDescription)
                                     return@launch
+                                } else {
+                                    delay(REFRESH_INTERVAL)
                                 }
                             } else {
                                 showError(requireContext().getMixinErrorStringByCode(session.errorCode, session.errorDescription))
@@ -283,7 +296,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
 
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
-            if (binding.transparentMask.isVisible) {
+            if (status == OrderStatus.PROCESSING) {
                 // do noting
             } else if (status == OrderStatus.SUCCESS) {
                 view?.navigate(R.id.action_wallet_status_to_wallet)
@@ -305,13 +318,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
 
     private fun payWithCheckout() = lifecycleScope.launch(defaultErrorHandler) {
         status = OrderStatus.PROCESSING
-        binding.transparentMask.isVisible = true
         createSession(scheme!!, null)
     }
 
     private fun payWithGoogle() {
         status = OrderStatus.PROCESSING
-        binding.transparentMask.isVisible = true
         val task = fiatMoneyViewModel.getLoadPaymentDataTask(AmountUtil.realAmount(amount, currency.name), currency.name)
         task.addOnCompleteListener { completedTask ->
             if (completedTask.isSuccessful) {
@@ -358,7 +369,6 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             ),
         )
         if (response.isSuccess) {
-            binding.transparentMask.isVisible = false
             if (response.data?.status == RoutePaymentStatus.Captured.name) {
                 assetAmount = response.data!!.assetAmount
                 status = OrderStatus.SUCCESS
@@ -418,7 +428,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 } else if (response.data?.status == RoutePaymentStatus.Declined.name) {
                     showError(response.data?.reason)
                 } else if (response.isSuccess) {
-                    delay(2000)
+                    delay(REFRESH_INTERVAL)
                 } else {
                     showError(
                         requireContext().getMixinErrorStringByCode(
@@ -479,7 +489,6 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     }
 
                 ComponentActivity.RESULT_CANCELED -> {
-                    binding.transparentMask.isVisible = false
                     showError(R.string.Cancel)
                 }
             }
@@ -493,7 +502,6 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     private fun showError(message: String?) {
         if (!isAdded) return
         status = OrderStatus.FAILED
-        binding.transparentMask.isVisible = false
         binding.content.text = message
     }
 
