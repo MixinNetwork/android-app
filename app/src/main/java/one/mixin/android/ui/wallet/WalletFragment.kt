@@ -56,8 +56,8 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment.Companion.CALCULATE_STATE
-import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment.Companion.CURRENT_CURRENCY
 import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
+import one.mixin.android.ui.wallet.fiatmoney.getDefaultCurrency
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
@@ -162,18 +162,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                             data
                         }.map { data ->
                             val (supportCurrencies, assetIds) = data
-                            val currency = requireContext().defaultSharedPreferences.getString(
-                                CURRENT_CURRENCY,
-                                null,
-                            ).let {
-                                if (it == null) {
-                                    val localCurrency = Session.getFiatCurrency()
-                                    val c = supportCurrencies.find { item -> localCurrency == item.name }
-                                    c?.name ?: supportCurrencies.last().name
-                                } else {
-                                    it
-                                }
-                            }
+                            val currency = getDefaultCurrency(requireContext(), supportCurrencies)
                             val tickerResponse = walletViewModel.ticker(
                                 RouteTickerRequest(
                                     0,

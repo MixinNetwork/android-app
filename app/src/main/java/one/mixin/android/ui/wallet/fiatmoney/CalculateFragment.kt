@@ -31,7 +31,6 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.shaking
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.AppearanceFragment
 import one.mixin.android.ui.setting.Currency
@@ -72,18 +71,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             return
         }
         val supportCurrencies = (requireActivity() as WalletActivity).supportCurrencies
-        val currencyName = defaultSharedPreferences.getString(
-            CURRENT_CURRENCY,
-            null,
-        ).let {
-            if (it == null) {
-                val localCurrency = Session.getFiatCurrency()
-                val c = supportCurrencies.find { item -> localCurrency == item.name }
-                c?.name ?: supportCurrencies.last().name
-            } else {
-                it
-            }
-        }
+        val currencyName = getDefaultCurrency(requireContext(), supportCurrencies)
         val assetId = requireContext().defaultSharedPreferences.getString(
             CURRENT_ASSET_ID,
             USDT_ASSET_ID,
