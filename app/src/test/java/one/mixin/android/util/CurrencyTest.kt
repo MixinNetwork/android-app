@@ -21,6 +21,7 @@ class CurrencyTest {
         assertEquals(getCurrencyFromPhone("+63-8649875404"), "PHP")
         assertEquals(getCurrencyFromPhone("+65 6595 6868"), "SGD")
         assertEquals(getCurrencyFromPhone("+886-0970852223"), "TWD")
-        assertEquals(getCurrencyFromPhone("+1-9561194893"), "USD")
+        assertEquals(getCurrencyFromPhone("+1 818-840-8840"), "USD")
+        assertEquals(getCurrencyFromPhone("+1 604-207-7077"),"CAD")
     }
 }
