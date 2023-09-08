@@ -200,7 +200,7 @@ android {
             // keep version 1.69
             // https://github.com/bcgit/bc-java/commit/9bf72343e1c515ac28fe6b32a5bfe27c6a96baf0
             force "org.bouncycastle:bcprov-jdk15on:1.69"
-            force "org.bouncycastle:bcutil-jdk15on:1.69"
+            force "org.bouncycastle:bcutil-jdk15on:1.70"
             exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
             exclude group: 'org.bouncycastle', module: 'bcprov-jdk15to18'
         }
