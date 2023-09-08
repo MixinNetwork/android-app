@@ -27,6 +27,9 @@ interface RouteService {
     @GET("/checkout/payments/{id}")
     suspend fun payment(@Path("id") id: String): MixinResponse<RoutePaymentResponse>
 
+    @GET("/checkout/payments")
+    suspend fun payments(): MixinResponse<List<RoutePaymentResponse>>
+
     @POST("/checkout/sessions")
     suspend fun createSession(@Body session: RouteSessionRequest): MixinResponse<RouteSessionResponse>
 

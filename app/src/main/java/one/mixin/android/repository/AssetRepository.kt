@@ -474,6 +474,8 @@ constructor(
 
     suspend fun payment(paymentId: String): MixinResponse<RoutePaymentResponse> = routeService.payment(paymentId)
 
+    suspend fun payments(): MixinResponse<List<RoutePaymentResponse>> = routeService.payments()
+
     suspend fun createSession(createSession: RouteSessionRequest): MixinResponse<RouteSessionResponse> = routeService.createSession(createSession)
 
     suspend fun token(tokenRequest: RouteTokenRequest) = routeService.token(tokenRequest)

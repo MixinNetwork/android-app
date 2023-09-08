@@ -66,6 +66,8 @@ internal constructor(
 
     suspend fun payment(paymentId: String): MixinResponse<RoutePaymentResponse> = assetRepository.payment(paymentId)
 
+    suspend fun payments(): MixinResponse<List<RoutePaymentResponse>> = assetRepository.payments()
+
     suspend fun createSession(createSession: RouteSessionRequest): MixinResponse<RouteSessionResponse> = assetRepository.createSession(createSession)
 
     suspend fun token(createSession: RouteTokenRequest): MixinResponse<RouteCreateTokenResponse> = assetRepository.token(createSession)
