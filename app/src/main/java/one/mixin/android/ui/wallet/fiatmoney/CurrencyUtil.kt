@@ -24,7 +24,7 @@ fun getDefaultCurrency(context: Context, supportCurrencies: List<Currency>): Str
 }
 
 private val phoneNumberUtil by lazy { PhoneNumberUtil.getInstance() }
-private fun getCurrencyFromPhone(phone: String?): String? {
+fun getCurrencyFromPhone(phone: String?): String? {
     if (phone == null) {
         return null
     }

@@ -373,7 +373,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 assetAmount = response.data!!.assetAmount
                 status = OrderStatus.SUCCESS
             } else if (response.data?.status == RoutePaymentStatus.Declined.name) {
-                showError(response.data?.reason)
+                showError(getString(R.string.buy_declined_description))
             } else {
                 val paymentId = response.data?.paymentId
                 if (paymentId == null) {
