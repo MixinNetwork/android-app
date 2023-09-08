@@ -54,6 +54,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -210,7 +211,6 @@ fun PinKeyBoard(
                                 contentAlignment = Alignment.Center,
                             ) {
                                 LazyRow(
-                                    modifier = Modifier.height(20.dp),
                                     verticalAlignment = Alignment.Bottom,
                                 ) {
                                     items(7) { index ->
@@ -219,6 +219,7 @@ fun PinKeyBoard(
                                         }
                                         val hasContent = (if (index > 3) index - 1 else index) < pinCode.length
                                         AnimatedContent(
+                                            modifier = Modifier.height(28.dp),
                                             targetState = hasContent,
                                             transitionSpec = {
                                                 if (targetState > initialState) {
@@ -233,12 +234,11 @@ fun PinKeyBoard(
                                         ) { b ->
                                             Text(
                                                 "*",
-                                                modifier = Modifier
-                                                    .width(24.dp),
+                                                modifier = Modifier.width(28.dp).wrapContentHeight(align = Alignment.Bottom),
                                                 fontWeight = FontWeight.Bold,
                                                 color = if (b) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor,
-                                                fontSize = if (b) 20.sp else 13.sp,
-                                                textAlign = TextAlign.Center,
+                                                fontSize = if (b) 28.sp else 20.sp,
+                                                style = TextStyle(textAlign = TextAlign.Center)
                                             )
                                         }
                                     }
