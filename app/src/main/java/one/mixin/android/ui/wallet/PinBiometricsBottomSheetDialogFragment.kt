@@ -46,11 +46,14 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
 
     override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
         if (fromWalletSetting) {
-            BiometricUtil.savePin(
+            val success = BiometricUtil.savePin(
                 requireContext(),
                 pin,
                 this@PinBiometricsBottomSheetDialogFragment,
             )
+            if (success) {
+                onSavePinSuccess?.invoke()
+            }
         }
 
         return true
@@ -64,4 +67,6 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
 
     private fun getTipTextRes(): Int =
         if (fromWalletSetting) R.string.wallet_pin_open_biometrics else R.string.wallet_pin_modify_biometrics
+
+    var onSavePinSuccess: (() -> Unit)? = null
 }

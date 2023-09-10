@@ -1,11 +1,9 @@
 package one.mixin.android.ui.setting
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricManager
 import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,7 +18,6 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.BiometricTimeFragment.Companion.X_HOUR
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
@@ -73,13 +70,6 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == BiometricUtil.REQUEST_CODE_CREDENTIALS && resultCode == AppCompatActivity.RESULT_OK) {
-            updateWhenSuccess()
-        }
-    }
-
     fun setTimeDesc() {
         val biometricInterval = defaultSharedPreferences.getLong(BIOMETRIC_INTERVAL, BIOMETRIC_INTERVAL_DEFAULT)
         val hour = biometricInterval / X_HOUR.toFloat()
@@ -111,19 +101,11 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
         if (binding.biometricsSc.isChecked) {
             resetBiometricLayout()
         } else {
-            val bottomSheet =
-                PinBiometricsBottomSheetDialogFragment.newInstance(true)
-            bottomSheet.setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
-                override fun onDismiss(success: Boolean) {
-                    if (success) {
-                        updateWhenSuccess()
-                    }
-                }
-            })
-            bottomSheet.showNow(
-                parentFragmentManager,
-                PinBiometricsBottomSheetDialogFragment.TAG,
-            )
+            val bottomSheet = PinBiometricsBottomSheetDialogFragment.newInstance(true)
+            bottomSheet.onSavePinSuccess = {
+                updateWhenSuccess()
+            }
+            bottomSheet.showNow(parentFragmentManager, PinBiometricsBottomSheetDialogFragment.TAG)
         }
     }
 
