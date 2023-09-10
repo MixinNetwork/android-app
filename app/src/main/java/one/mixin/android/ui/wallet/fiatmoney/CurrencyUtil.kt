@@ -29,12 +29,18 @@ fun getCurrencyFromPhone(phone: String?): String? {
         return null
     }
     return try {
-        val countryCode = phoneNumberUtil.parse(phone, "").countryCode
+        val number = phoneNumberUtil.parse(phone, "")
+        val countryCode = number.countryCode
         val country = phoneNumberUtil.getRegionCodeForCountryCode(countryCode)
+
         if (country == "AE") {
             "AED"
         } else if (country == "AU") {
             "AUD"
+        } else if (country == "US") {
+            // North America region
+            val isValid = phoneNumberUtil.isValidNumberForRegion(number, "CA")
+            if (isValid) "CAD" else "USD"
         } else if (country == "CA") {
             "CAD"
         } else if (listOf("IE", "FR", "DE", "AT", "BE", "BG", "CY", "HR", "EE", "FI", "GR", "IT", "LV", "LT", "LU", "MT", "NL", "PT", "SK", "SI", "ES").contains(country)) {
@@ -57,8 +63,6 @@ fun getCurrencyFromPhone(phone: String?): String? {
             "SGD"
         } else if (country == "TW") {
             "TWD"
-        } else if (country == "US") {
-            "USD"
         } else {
             null
         }
