@@ -8,7 +8,7 @@ class CurrencyTest {
 
     @Test
     fun testCurrencyFromPhone() {
-        assertEquals(getCurrencyFromPhone("+971-4-8005111"),"AED")
+        assertEquals(getCurrencyFromPhone("+971-4-8005111"), "AED")
         assertEquals(getCurrencyFromPhone("+610434988123"), "AUD")
         assertEquals(getCurrencyFromPhone("+33-48518116"), "EUR")
         assertEquals(getCurrencyFromPhone("+34-303072941"), "EUR")

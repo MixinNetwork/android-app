@@ -10,7 +10,7 @@ import timber.log.Timber
 fun getDefaultCurrency(context: Context, supportCurrencies: List<Currency>): String {
     val currency = context.defaultSharedPreferences.getString(
         CalculateFragment.CURRENT_CURRENCY,
-        getCurrencyFromPhone(Session.getAccount()?.phone)
+        getCurrencyFromPhone(Session.getAccount()?.phone),
     ).let {
         if (it == null) {
             val localCurrency = Session.getFiatCurrency()
