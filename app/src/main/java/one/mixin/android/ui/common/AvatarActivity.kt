@@ -82,7 +82,7 @@ class AvatarActivity : BaseActivity() {
                 override fun onLoadFailed(
                     e: GlideException?,
                     model: Any?,
-                    target: Target<Bitmap>?,
+                    target: Target<Bitmap>,
                     isFirstResource: Boolean,
                 ): Boolean {
                     return false
@@ -90,9 +90,9 @@ class AvatarActivity : BaseActivity() {
 
                 override fun onResourceReady(
                     resource: Bitmap,
-                    model: Any?,
+                    model: Any,
                     target: Target<Bitmap>?,
-                    dataSource: DataSource?,
+                    dataSource: DataSource,
                     isFirstResource: Boolean,
                 ): Boolean {
                     binding.avatar.doOnPreDraw {
