@@ -10,99 +10,102 @@ import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
-private const val libName = "mixin"
-private const val libSoName = "lib$libName.so"
-private const val localLibSoName = "lib${libName}loc.so"
-
-private var nativeLoaded = false
+private val libNames = listOf("mixin", "argon2jni", "barhopper_v3")
+private val libSoNames = libNames.map { "lib$it.so" }
+private val localLibSoNames = libNames.map { "lib${it}loc.so" }
+private val nativeLoadedList = libNames.map { false }.toMutableList()
 
 @SuppressLint("UnsafeDynamicallyLoadedCode")
 @Suppress("DEPRECATION")
 @Synchronized
 fun initNativeLibs(context: Context) {
-    if (nativeLoaded) return
+    if (nativeLoadedList.all { it }) return
 
-    try {
+    libNames.forEachIndexed { i, libName ->
+        if (nativeLoadedList[i]) return@forEachIndexed
+
         try {
-            System.loadLibrary(libName)
-            nativeLoaded = true
-            return
-        } catch (e: Error) {
-            Timber.e(e)
-            reportException(e)
-        }
-
-        val destDir = File(context.filesDir, "lib")
-        destDir.mkdirs()
-        val destLocalFile = File(destDir, localLibSoName)
-        if (destLocalFile.exists()) {
             try {
-                Timber.d("Load local lib")
-                System.load(destLocalFile.absolutePath)
-                nativeLoaded = true
-                return
+                System.loadLibrary(libName)
+                nativeLoadedList[i] = true
+                return@forEachIndexed
             } catch (e: Error) {
                 Timber.e(e)
                 reportException(e)
             }
-            destLocalFile.delete()
-        }
 
-        var folder: String = try {
-            when {
-                Build.CPU_ABI.equalsIgnoreCase("x86_64") -> {
-                    "x86_64"
+            val destDir = File(context.filesDir, "lib")
+            destDir.mkdirs()
+            val destLocalFile = File(destDir, localLibSoNames[i])
+            if (destLocalFile.exists()) {
+                try {
+                    Timber.d("Load local lib")
+                    System.load(destLocalFile.absolutePath)
+                    nativeLoadedList[i] = true
+                    return@forEachIndexed
+                } catch (e: Error) {
+                    Timber.e(e)
+                    reportException(e)
                 }
-                Build.CPU_ABI.equalsIgnoreCase("arm64-v8a") -> {
-                    "arm64-v8a"
-                }
-                Build.CPU_ABI.equalsIgnoreCase("armeabi-v7a") -> {
-                    "armeabi-v7a"
-                }
-                Build.CPU_ABI.equalsIgnoreCase("armeabi") -> {
-                    "armeabi"
-                }
-                Build.CPU_ABI.equalsIgnoreCase("x86") -> {
-                    "x86"
-                }
-                Build.CPU_ABI.equalsIgnoreCase("mips") -> {
-                    "mips"
-                }
-                else -> {
-                    Timber.e("Unsupported arch: ${Build.CPU_ABI}")
-                    "armeabi"
-                }
+                destLocalFile.delete()
             }
-        } catch (e: Exception) {
+
+            var folder: String = try {
+                when {
+                    Build.CPU_ABI.equalsIgnoreCase("x86_64") -> {
+                        "x86_64"
+                    }
+                    Build.CPU_ABI.equalsIgnoreCase("arm64-v8a") -> {
+                        "arm64-v8a"
+                    }
+                    Build.CPU_ABI.equalsIgnoreCase("armeabi-v7a") -> {
+                        "armeabi-v7a"
+                    }
+                    Build.CPU_ABI.equalsIgnoreCase("armeabi") -> {
+                        "armeabi"
+                    }
+                    Build.CPU_ABI.equalsIgnoreCase("x86") -> {
+                        "x86"
+                    }
+                    Build.CPU_ABI.equalsIgnoreCase("mips") -> {
+                        "mips"
+                    }
+                    else -> {
+                        Timber.e("Unsupported arch: ${Build.CPU_ABI}")
+                        "armeabi"
+                    }
+                }
+            } catch (e: Exception) {
+                Timber.e(e)
+                reportException(e)
+                "armeabi"
+            }
+            val javaArch = System.getProperty("os.arch")
+            if (javaArch != null && javaArch.contains("686")) {
+                folder = "x86"
+            }
+            Timber.e("Lib bot found, arch = $folder")
+
+            if (loadFromZip(context, destDir, destLocalFile, folder, i)) {
+                return@forEachIndexed
+            }
+        } catch (e: Throwable) {
             Timber.e(e)
             reportException(e)
-            "armeabi"
         }
-        val javaArch = System.getProperty("os.arch")
-        if (javaArch != null && javaArch.contains("686")) {
-            folder = "x86"
-        }
-        Timber.e("Lib bot found, arch = $folder")
 
-        if (loadFromZip(context, destDir, destLocalFile, folder)) {
-            return
+        try {
+            System.loadLibrary(libName)
+            nativeLoadedList[i] = true
+        } catch (e: Error) {
+            Timber.e(e)
+            reportException(e)
         }
-    } catch (e: Throwable) {
-        Timber.e(e)
-        reportException(e)
-    }
-
-    try {
-        System.loadLibrary(libName)
-        nativeLoaded = true
-    } catch (e: Error) {
-        Timber.e(e)
-        reportException(e)
     }
 }
 
 @SuppressLint("SetWorldReadable", "UnsafeDynamicallyLoadedCode")
-private fun loadFromZip(context: Context, destDir: File, destLocalFile: File, folder: String): Boolean {
+private fun loadFromZip(context: Context, destDir: File, destLocalFile: File, folder: String, i: Int): Boolean {
     try {
         destDir.listFiles()?.let { files ->
             for (f in files) {
@@ -115,8 +118,8 @@ private fun loadFromZip(context: Context, destDir: File, destLocalFile: File, fo
     }
 
     ZipFile(context.applicationInfo.sourceDir).use { zipFile ->
-        val entry: ZipEntry = zipFile.getEntry("lib/$folder/$libSoName")
-            ?: throw Exception("Unable to find file in apk:lib/$folder/$libName")
+        val entry: ZipEntry = zipFile.getEntry("lib/$folder/${libSoNames[i]}")
+            ?: throw Exception("Unable to find file in apk:lib/$folder/${libNames[i]}")
         zipFile.getInputStream(entry).use { input ->
             FileOutputStream(destLocalFile).use { output ->
                 input.copyTo(output)
@@ -129,7 +132,7 @@ private fun loadFromZip(context: Context, destDir: File, destLocalFile: File, fo
 
     try {
         System.load(destLocalFile.absolutePath)
-        nativeLoaded = true
+        nativeLoadedList[i] = true
         return true
     } catch (e: Error) {
         Timber.e(e)
