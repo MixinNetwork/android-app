@@ -2762,6 +2762,9 @@ class ConversationFragment() :
                 .subscribe(
                     { granted ->
                         if (granted) {
+                            lifecycleScope.launch {
+                                messageItem.saveToLocal(requireContext())
+                            }
                         } else {
                             context?.openPermissionSetting()
                         }
