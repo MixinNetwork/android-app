@@ -35,10 +35,10 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                 messageItem.absolutePath(),
                 object : RequestListener<Drawable?> {
                     override fun onResourceReady(
-                        resource: Drawable?,
-                        model: Any?,
+                        resource: Drawable,
+                        model: Any,
                         target: Target<Drawable?>?,
-                        dataSource: DataSource?,
+                        dataSource: DataSource,
                         isFirstResource: Boolean,
                     ): Boolean {
                         photoViewAttacher.isZoomable = true
@@ -52,7 +52,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                     override fun onLoadFailed(
                         e: GlideException?,
                         model: Any?,
-                        target: Target<Drawable?>?,
+                        target: Target<Drawable?>,
                         isFirstResource: Boolean,
                     ): Boolean {
                         return false
@@ -68,10 +68,10 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                 messageItem.thumbImage,
                 object : RequestListener<Drawable?> {
                     override fun onResourceReady(
-                        resource: Drawable?,
-                        model: Any?,
+                        resource: Drawable,
+                        model: Any,
                         target: Target<Drawable?>?,
-                        dataSource: DataSource?,
+                        dataSource: DataSource,
                         isFirstResource: Boolean,
                     ): Boolean {
                         photoViewAttacher.isZoomable = true
@@ -85,7 +85,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                     override fun onLoadFailed(
                         e: GlideException?,
                         model: Any?,
-                        target: Target<Drawable?>?,
+                        target: Target<Drawable?>,
                         isFirstResource: Boolean,
                     ): Boolean {
                         return false

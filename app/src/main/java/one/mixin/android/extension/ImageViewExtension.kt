@@ -195,17 +195,17 @@ fun ImageView.loadImageMark(uri: String?, mark: Int) {
                 override fun onLoadFailed(
                     e: GlideException?,
                     model: Any?,
-                    target: Target<Drawable>?,
+                    target: Target<Drawable>,
                     isFirstResource: Boolean,
                 ): Boolean {
                     return true
                 }
 
                 override fun onResourceReady(
-                    resource: Drawable?,
-                    model: Any?,
+                    resource: Drawable,
+                    model: Any,
                     target: Target<Drawable>?,
-                    dataSource: DataSource?,
+                    dataSource: DataSource,
                     isFirstResource: Boolean,
                 ): Boolean {
                     this@loadImageMark.context.runOnUiThread {
@@ -262,17 +262,17 @@ fun ImageView.loadLongImageMark(uri: String?, mark: Int?) {
             override fun onLoadFailed(
                 e: GlideException?,
                 model: Any?,
-                target: Target<Drawable>?,
+                target: Target<Drawable>,
                 isFirstResource: Boolean,
             ): Boolean {
                 return true
             }
 
             override fun onResourceReady(
-                resource: Drawable?,
-                model: Any?,
+                resource: Drawable,
+                model: Any,
                 target: Target<Drawable>?,
-                dataSource: DataSource?,
+                dataSource: DataSource,
                 isFirstResource: Boolean,
             ): Boolean {
                 this@loadLongImageMark.context.runOnUiThread {
@@ -306,7 +306,7 @@ fun ImageView.loadVideoMark(
                 override fun onLoadFailed(
                     e: GlideException?,
                     model: Any?,
-                    target: Target<Drawable>?,
+                    target: Target<Drawable>,
                     isFirstResource: Boolean,
                 ): Boolean {
                     this@loadVideoMark.context.runOnUiThread {
@@ -318,10 +318,10 @@ fun ImageView.loadVideoMark(
                 }
 
                 override fun onResourceReady(
-                    resource: Drawable?,
-                    model: Any?,
+                    resource: Drawable,
+                    model: Any,
                     target: Target<Drawable>?,
-                    dataSource: DataSource?,
+                    dataSource: DataSource,
                     isFirstResource: Boolean,
                 ): Boolean {
                     this@loadVideoMark.context.runOnUiThread {

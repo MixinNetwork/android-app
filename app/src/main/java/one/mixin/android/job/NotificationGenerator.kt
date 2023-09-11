@@ -576,9 +576,9 @@ object NotificationGenerator : Injector() {
                     object : RequestListener<Bitmap> {
                         override fun onResourceReady(
                             resource: Bitmap,
-                            model: Any?,
+                            model: Any,
                             target: Target<Bitmap>?,
-                            dataSource: DataSource?,
+                            dataSource: DataSource,
                             isFirstResource: Boolean,
                         ): Boolean {
                             onComplete(resource)
@@ -588,7 +588,7 @@ object NotificationGenerator : Injector() {
                         override fun onLoadFailed(
                             e: GlideException?,
                             model: Any?,
-                            target: Target<Bitmap>?,
+                            target: Target<Bitmap>,
                             isFirstResource: Boolean,
                         ): Boolean {
                             onComplete(null)
