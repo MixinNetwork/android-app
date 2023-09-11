@@ -165,7 +165,7 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
                             requestSession = {
                                 fiatMoneyViewModel.fetchSessionsSuspend(
                                     listOf(
-                                        Constants.ROUTE_BOT_USER_ID,
+                                        Constants.RouteConfig.ROUTE_BOT_USER_ID,
                                     ),
                                 )
                             },

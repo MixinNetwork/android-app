@@ -302,29 +302,33 @@ object Constants {
     // Only for third-party messenger user
     const val TEAM_BOT_ID = ""
     const val TEAM_BOT_NAME = ""
-    const val PAN_ONLY = "pan_only"
-    const val CRYPTOGRAM_3DS = "cryptogram_3ds"
 
-    val SUPPORTED_METHODS = listOf(
-        "PAN_ONLY",
-        "CRYPTOGRAM_3DS",
-    )
+    object RouteConfig {
+        const val PAN_ONLY = "pan_only"
+        const val CRYPTOGRAM_3DS = "cryptogram_3ds"
 
-    val SUPPORTED_NETWORKS = listOf(
-        "MASTERCARD",
-        "VISA",
-        "AMEX",
-        "JCB",
-    )
+        val SUPPORTED_METHODS = listOf(
+            "PAN_ONLY",
+            "CRYPTOGRAM_3DS",
+        )
 
-    const val ROUTE_BOT_USER_ID = "61cb8dd4-16b1-4744-ba0c-7b2d2e52fc59"
-    const val GOOGLE_PAY = "googlepay"
+        val SUPPORTED_NETWORKS = listOf(
+            "MASTERCARD",
+            "VISA",
+            "AMEX",
+            "JCB",
+        )
 
-    const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_PRODUCTION
+        const val ROUTE_BOT_USER_ID = "61cb8dd4-16b1-4744-ba0c-7b2d2e52fc59"
 
-    const val PAYMENTS_GATEWAY = "checkoutltd"
+        const val GOOGLE_PAY = "googlepay"
 
-    val CHECKOUT_ENVIRONMENT: Environment = Environment.PRODUCTION
+        const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_PRODUCTION
 
-    val ENVIRONMENT_3DS = com.checkout.threeds.Environment.PRODUCTION
+        const val PAYMENTS_GATEWAY = "checkoutltd"
+
+        val CHECKOUT_ENVIRONMENT: Environment = Environment.PRODUCTION
+
+        val ENVIRONMENT_3DS = com.checkout.threeds.Environment.PRODUCTION
+    }
 }

@@ -4,7 +4,7 @@ import android.content.Context
 import com.google.android.gms.wallet.PaymentsClient
 import com.google.android.gms.wallet.Wallet
 import one.mixin.android.Constants
-import one.mixin.android.Constants.PAYMENTS_ENVIRONMENT
+import one.mixin.android.Constants.RouteConfig.PAYMENTS_ENVIRONMENT
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -16,9 +16,9 @@ object PaymentsUtil {
         put("apiVersionMinor", 0)
     }
 
-    private val allowedCardNetworks = JSONArray(Constants.SUPPORTED_NETWORKS)
+    private val allowedCardNetworks = JSONArray(Constants.RouteConfig.SUPPORTED_NETWORKS)
 
-    private val allowedCardAuthMethods = JSONArray(Constants.SUPPORTED_METHODS)
+    private val allowedCardAuthMethods = JSONArray(Constants.RouteConfig.SUPPORTED_METHODS)
 
     private fun baseCardPaymentMethod(): JSONObject {
         return JSONObject().apply {

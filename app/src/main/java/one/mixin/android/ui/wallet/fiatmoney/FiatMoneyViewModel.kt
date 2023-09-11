@@ -161,7 +161,7 @@ internal constructor(
             .setPaymentMethodTokenizationType(
                 WalletConstants.PAYMENT_METHOD_TOKENIZATION_TYPE_PAYMENT_GATEWAY,
             )
-            .addParameter("gateway", Constants.PAYMENTS_GATEWAY)
+            .addParameter("gateway", Constants.RouteConfig.PAYMENTS_GATEWAY)
             .addParameter("gatewayMerchantId", BuildConfig.CHCEKOUT_ID)
             .build()
         request.setPaymentMethodTokenizationParameters(params)

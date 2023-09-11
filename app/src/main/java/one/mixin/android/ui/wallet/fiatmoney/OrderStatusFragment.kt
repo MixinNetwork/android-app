@@ -30,9 +30,9 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.CRYPTOGRAM_3DS
-import one.mixin.android.Constants.ENVIRONMENT_3DS
-import one.mixin.android.Constants.PAN_ONLY
+import one.mixin.android.Constants.RouteConfig.CRYPTOGRAM_3DS
+import one.mixin.android.Constants.RouteConfig.ENVIRONMENT_3DS
+import one.mixin.android.Constants.RouteConfig.PAN_ONLY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.RouteSessionRequest
