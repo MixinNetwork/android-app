@@ -32,15 +32,6 @@ android {
         testInstrumentationRunner "one.mixin.android.CustomTestRunner"
         resourceConfigurations += ['en', 'es', 'in', 'ja', 'ms', 'ru', 'zh-rCN', 'zh-rTW']
 
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments += [
-                        "room.schemaLocation":"$projectDir/schemas".toString(),
-                        "room.incremental":"true",
-                        "room.expandProjection":"true"]
-            }
-        }
-
         packagingOptions {
             exclude '**/*.kotlin_metadata'
             exclude 'META-INF/*.kotlin_module'

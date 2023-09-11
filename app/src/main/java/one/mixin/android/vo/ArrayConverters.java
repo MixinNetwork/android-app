@@ -21,10 +21,4 @@ public class ArrayConverters {
         Gson gson = new Gson();
         return gson.toJson(list);
     }
-
-    @TypeConverter
-    public static String fromList(List<String> list) {
-        Gson gson = new Gson();
-        return gson.toJson(list);
-    }
 }
