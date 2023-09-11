@@ -10,6 +10,7 @@ import com.sumsub.sns.core.SNSMobileSDK
 import com.sumsub.sns.core.data.listener.TokenExpirationHandler
 import com.sumsub.sns.core.data.model.SNSCompletionResult
 import com.sumsub.sns.core.data.model.SNSException
+import com.sumsub.sns.core.data.model.SNSInitConfig
 import com.sumsub.sns.core.data.model.SNSSDKState
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
@@ -187,6 +188,9 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
         val snsSdk = SNSMobileSDK.Builder(requireActivity())
             .withHandlers(onStateChanged = onSDKStateChangedHandler, onError = onSDKErrorHandler, onCompleted = onSDKCompletedHandler)
             .withAccessToken(accessToken, onTokenExpiration = tokenExpirationHandler)
+            .withConf(SNSInitConfig(strings = mapOf(
+                "sns_step_IDENTITY_scan_frontSide_title" to getString(R.string.scan_frontSlide_title),
+            )))
             .withLocale(
                 if (isFollowSystem()) {
                     Locale.getDefault()

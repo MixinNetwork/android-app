@@ -1274,4 +1274,5 @@
     <string name="Unsupported_payment_method">不支持的支付方式</string>
     <string name="card_delete_title">删除银行卡：%1$s</string>
     <string name="buy_declined_description">交易被拒绝</string>
+    <string name="scan_frontSlide_title">请拍摄证件中包含个人照片的页面</string>
 </resources>

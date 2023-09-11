@@ -1304,4 +1304,5 @@
     <string name="Unsupported_payment_method">Unsupported payment method</string>
     <string name="card_delete_title">Delete card: %1$s</string>
     <string name="buy_declined_description">Transaction declined</string>
+    <string name="scan_frontSlide_title">Please take a photo of the page containing personal information and a picture</string>
 </resources>
