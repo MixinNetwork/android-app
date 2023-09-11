@@ -6,7 +6,7 @@ plugins {
     id 'kotlin-parcelize'
     id 'com.google.firebase.firebase-perf'
     id 'de.undercouch.download'
-    id "com.google.devtools.ksp" version "1.7.10-1.0.6"
+    id "com.google.devtools.ksp"
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
     id 'kotlinx-serialization'
     id "com.google.protobuf" version "0.9.1"
@@ -181,7 +181,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.8'
+        kotlinCompilerExtensionVersion '1.5.3'
     }
     lint {
         abortOnError false
@@ -312,7 +312,6 @@ dependencies {
     implementation "com.google.code.gson:gson:${gsonVersion}"
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${serializationVersion}"
-    kapt "org.jetbrains.kotlinx:kotlinx-serialization-json:${serializationVersion}"
 
     implementation "com.google.firebase:firebase-messaging-ktx"
     implementation 'com.google.firebase:firebase-analytics-ktx'

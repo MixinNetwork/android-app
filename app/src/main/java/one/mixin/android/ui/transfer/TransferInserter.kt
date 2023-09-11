@@ -452,14 +452,14 @@ class TransferInserter {
             if (capabilities == null) {
                 stmt.bindNull(10)
             } else {
-                stmt.bindString(10, ArrayConverters.fromArrayList(capabilities))
+                stmt.bindString(10, ArrayConverters.fromList(capabilities))
             }
             stmt.bindString(11, app.creatorId)
             val resourcePatterns = app.resourcePatterns
             if (resourcePatterns == null) {
                 stmt.bindNull(12)
             } else {
-                stmt.bindString(12, ArrayConverters.fromArrayList(resourcePatterns))
+                stmt.bindString(12, ArrayConverters.fromList(resourcePatterns))
             }
             if (app.updatedAt == null) {
                 stmt.bindNull(13)
