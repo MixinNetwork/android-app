@@ -17,11 +17,12 @@ import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
-import one.mixin.android.util.glide.GlideApp;
-import one.mixin.android.util.glide.GlideRequest;
 import one.mixin.android.widget.imageeditor.Bounds;
 import one.mixin.android.widget.imageeditor.Renderer;
 import one.mixin.android.widget.imageeditor.RendererContext;
@@ -167,7 +168,7 @@ public final class UriGlideRenderer implements Renderer {
     }
   }
 
-  private GlideRequest<Bitmap> getBitmapGlideRequest(@NonNull Context context, boolean preview) {
+  private RequestBuilder<Bitmap> getBitmapGlideRequest(@NonNull Context context, boolean preview) {
     int width  = this.maxWidth;
     int height = this.maxHeight;
 
@@ -176,7 +177,7 @@ public final class UriGlideRenderer implements Renderer {
       height = Math.min(height, PREVIEW_DIMENSION_LIMIT);
     }
 
-    return GlideApp.with(context)
+    return Glide.with(context)
                    .asBitmap()
                    .diskCacheStrategy(DiskCacheStrategy.NONE)
                    .override(width, height)

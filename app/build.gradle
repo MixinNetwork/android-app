@@ -1,11 +1,12 @@
 plugins {
     id 'com.android.application'
+    id 'kotlin-android'
     id 'org.jetbrains.kotlin.android'
-    id "org.jetbrains.kotlin.kapt"
-    id 'com.google.dagger.hilt.android'
-    id "org.jetbrains.kotlin.plugin.parcelize"
+    id 'dagger.hilt.android.plugin'
+    id 'kotlin-parcelize'
     id 'com.google.firebase.firebase-perf'
-    id "de.undercouch.download"
+    id 'de.undercouch.download'
+    id "com.google.devtools.ksp"
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
     id 'kotlinx-serialization'
     id "com.google.protobuf" version "0.9.1"
@@ -31,15 +32,6 @@ android {
         testInstrumentationRunner "one.mixin.android.CustomTestRunner"
         resourceConfigurations += ['en', 'es', 'in', 'ja', 'ms', 'ru', 'zh-rCN', 'zh-rTW']
 
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments += [
-                        "room.schemaLocation":"$projectDir/schemas".toString(),
-                        "room.incremental":"true",
-                        "room.expandProjection":"true"]
-            }
-        }
-
         packagingOptions {
             exclude '**/*.kotlin_metadata'
             exclude 'META-INF/*.kotlin_module'
@@ -59,10 +51,6 @@ android {
         kotlinOptions {
             jvmTarget = '17'
             freeCompilerArgs += ['-opt-in=kotlin.contracts.ExperimentalContracts']
-            freeCompilerArgs += [
-                    "-P",
-                    "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=1.8.22"
-            ]
         }
 
         lintOptions{
@@ -180,7 +168,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.8'
+        kotlinCompilerExtensionVersion '1.5.3'
     }
     lint {
         abortOnError false
@@ -205,6 +193,12 @@ android {
             exclude group: 'org.bouncycastle', module: 'bcprov-jdk15to18'
         }
     }
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
+    arg("room.expandProjection", "true")
 }
 
 dependencies {
@@ -251,7 +245,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-process:$lifecycleVersion"
     implementation "androidx.room:room-runtime:${roomVersion}"
     implementation "androidx.room:room-paging:${roomVersion}"
-    kapt "androidx.room:room-compiler:${roomVersion}"
+    ksp "androidx.room:room-compiler:${roomVersion}"
     implementation "androidx.room:room-rxjava2:${roomVersion}"
     implementation "androidx.room:room-ktx:${roomVersion}"
     androidTestImplementation "androidx.room:room-testing:${roomVersion}"
@@ -272,10 +266,10 @@ dependencies {
 
     // DI
     implementation "com.google.dagger:hilt-android:${hiltVersion}"
-    kapt "com.google.dagger:hilt-android-compiler:${hiltVersion}"
+    ksp "com.google.dagger:hilt-android-compiler:${hiltVersion}"
     implementation "androidx.hilt:hilt-work:${hiltAndroidxVersion}"
     implementation "androidx.hilt:hilt-navigation-compose:${hiltAndroidxVersion}"
-    kapt "androidx.hilt:hilt-compiler:${hiltAndroidxVersion}"
+    ksp "androidx.hilt:hilt-compiler:${hiltAndroidxVersion}"
 
     // RxJava
     implementation "io.reactivex.rxjava2:rxjava:${rxJavaVersion}"
@@ -305,7 +299,6 @@ dependencies {
     implementation "com.google.code.gson:gson:${gsonVersion}"
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${serializationVersion}"
-    kapt "org.jetbrains.kotlinx:kotlinx-serialization-json:${serializationVersion}"
 
     implementation "com.google.firebase:firebase-messaging-ktx"
     implementation 'com.google.firebase:firebase-analytics-ktx'
@@ -334,7 +327,7 @@ dependencies {
     implementation "com.github.zjupure:webpdecoder:2.3.4.15.1"
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     implementation("com.github.bumptech.glide:okhttp3-integration:$glideVersion")
-    kapt "com.github.bumptech.glide:compiler:$glideVersion"
+    ksp "com.github.bumptech.glide:compiler:$glideVersion"
     implementation "jp.wasabeef:glide-transformations:${glideTransformationsVersion}"
     implementation "com.jakewharton.timber:timber:${timberVersion}"
     implementation "com.github.tougee:FABProgressCircle:${fabprogresscircleVersion}"
@@ -436,8 +429,8 @@ dependencies {
 
     // Hilt testing
     androidTestImplementation "com.google.dagger:hilt-android-testing:$hiltVersion"
-    kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
-    kaptAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
+    kspAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
+    kspAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 
     // ML Kit
     implementation 'com.google.mlkit:entity-extraction:16.0.0-beta4'

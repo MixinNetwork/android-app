@@ -5,10 +5,10 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
 import one.mixin.android.vo.App
-import one.mixin.android.vo.ArrayConverters
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ExpiredMessage
+import one.mixin.android.vo.ListConverter
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.Participant
@@ -452,14 +452,14 @@ class TransferInserter {
             if (capabilities == null) {
                 stmt.bindNull(10)
             } else {
-                stmt.bindString(10, ArrayConverters.fromArrayList(capabilities))
+                stmt.bindString(10, ListConverter.fromList(capabilities))
             }
             stmt.bindString(11, app.creatorId)
             val resourcePatterns = app.resourcePatterns
             if (resourcePatterns == null) {
                 stmt.bindNull(12)
             } else {
-                stmt.bindString(12, ArrayConverters.fromArrayList(resourcePatterns))
+                stmt.bindString(12, ListConverter.fromList(resourcePatterns))
             }
             if (app.updatedAt == null) {
                 stmt.bindNull(13)

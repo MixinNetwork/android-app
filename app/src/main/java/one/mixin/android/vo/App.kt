@@ -18,7 +18,7 @@ interface BotInterface {
 
 @SuppressLint("ParcelCreator")
 @Parcelize
-@TypeConverters(ArrayConverters::class)
+@TypeConverters(ListConverter::class)
 @Entity(tableName = "apps")
 @Serializable
 data class App(
@@ -62,7 +62,7 @@ data class App(
     @SerializedName("capabilities")
     @SerialName("capabilities")
     @ColumnInfo(name = "capabilities")
-    val capabilities: ArrayList<String>?,
+    val capabilities: List<String>?,
     @SerializedName("creator_id")
     @SerialName("creator_id")
     @ColumnInfo(name = "creator_id")
@@ -70,7 +70,7 @@ data class App(
     @SerializedName("resource_patterns")
     @SerialName("resource_patterns")
     @ColumnInfo(name = "resource_patterns")
-    val resourcePatterns: ArrayList<String>?,
+    val resourcePatterns: List<String>?,
     @SerializedName("updated_at")
     @SerialName("updated_at")
     @ColumnInfo(name = "updated_at")
