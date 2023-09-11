@@ -11,7 +11,7 @@ import com.checkout.frames.screen.paymentform.model.PaymentFormConfig
 import com.checkout.frames.style.theme.paymentform.PaymentFormStyleProvider
 import com.checkout.tokenization.model.TokenDetails
 import one.mixin.android.BuildConfig
-import one.mixin.android.Constants.CHECKOUT_ENVIRONMENT
+import one.mixin.android.Constants.RouteConfig.CHECKOUT_ENVIRONMENT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.isNightMode

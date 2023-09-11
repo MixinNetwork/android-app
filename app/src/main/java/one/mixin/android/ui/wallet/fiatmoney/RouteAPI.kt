@@ -1,6 +1,6 @@
 package one.mixin.android.ui.wallet.fiatmoney
 
-import one.mixin.android.Constants.ROUTE_BOT_USER_ID
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse

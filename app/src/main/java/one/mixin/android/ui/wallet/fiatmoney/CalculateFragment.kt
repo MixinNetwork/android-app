@@ -16,7 +16,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
-import one.mixin.android.Constants.ROUTE_BOT_USER_ID
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.databinding.FragmentCalculateBinding
@@ -488,9 +488,12 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             .withHandlers(onStateChanged = onSDKStateChangedHandler, onError = onSDKErrorHandler, onCompleted = onSDKCompletedHandler)
             .withAccessToken(accessToken, onTokenExpiration = tokenExpirationHandler)
             .withConf(
-                SNSInitConfig(strings = mapOf(
-                "sns_step_IDENTITY_scan_frontSide_title" to getString(R.string.scan_frontSlide_title),
-            )))
+                SNSInitConfig(
+                    strings = mapOf(
+                        "sns_step_IDENTITY_scan_frontSide_title" to getString(R.string.scan_frontSlide_title),
+                    ),
+                ),
+            )
             .withLocale(
                 if (isFollowSystem()) {
                     Locale.getDefault()
