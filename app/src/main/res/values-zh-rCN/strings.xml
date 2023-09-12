@@ -1275,4 +1275,10 @@
     <string name="card_delete_title">删除银行卡：%1$s</string>
     <string name="buy_declined_description">交易被拒绝</string>
     <string name="scan_frontSlide_title">请拍摄证件中包含个人照片的页面</string>
+    <string name="Payment_Method">支付方式</string>
+    <string name="Exchange_Rate">代币汇率</string>
+    <string name="Token_Amount">代币总数</string>
+    <string name="Fees_by_Processor">支付网关费用</string>
+    <string name="Fees_by_Mixin">Mixin手续费</string>
+    <string name="Purchase_Total_Amount">购买总金额</string>
 </resources>

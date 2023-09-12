@@ -1305,4 +1305,10 @@
     <string name="card_delete_title">Delete card: %1$s</string>
     <string name="buy_declined_description">Transaction declined</string>
     <string name="scan_frontSlide_title">Please take a photo of the page containing personal information and a picture</string>
+    <string name="Payment_Method">Payment Method</string>
+    <string name="Exchange_Rate">Exchange Rate</string>
+    <string name="Token_Amount">Token Amount</string>
+    <string name="Fees_by_Processor">Fees by Processor</string>
+    <string name="Fees_by_Mixin">Fees by Mixin</string>
+    <string name="Purchase_Total_Amount">Purchase Total Amount</string>
 </resources>

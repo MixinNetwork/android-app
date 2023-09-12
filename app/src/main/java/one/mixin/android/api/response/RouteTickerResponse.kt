@@ -9,8 +9,10 @@ class RouteTickerResponse(
     val totalAmount: String,
     @SerializedName("purchase")
     val purchase: String,
-    @SerializedName("fee")
-    val fee: String,
+    @SerializedName("fee_by_gateway")
+    val feeByGateway: String,
+    @SerializedName("fee_by_mixin")
+    val feeByMixin: String,
     @SerializedName("price")
     val price: String,
     @SerializedName("asset_price")

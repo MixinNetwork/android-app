@@ -78,7 +78,7 @@ class FeeBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.apply {
             title.rightIv.setOnClickListener { dismiss() }
             okTv.setOnClickListener { dismiss() }
-            val percent = info.feePercent.toFloatOrNull()
+            val percent = info.feeByGateway.toFloatOrNull()
             if (percent != null) {
                 val percentFormat: NumberFormat =
                     NumberFormat.getPercentInstance(Locale.getDefault())

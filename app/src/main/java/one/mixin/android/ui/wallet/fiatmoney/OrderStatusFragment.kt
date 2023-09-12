@@ -221,10 +221,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             } else {
                 info.number
             }
-            priceTv.text = info.assetPrice
-            purchaseTv.text = info.purchase
-            feeTv.text = info.fee
-            totalTv.text = info.total
+            priceTv.text = info.exchangeRate
+            feeTv.text = info.feeByGateway
+            feeMixinTv.text = info.feeByMixin
+            tokenTv.text = "${info.assetAmount} ${asset.symbol}"
+            purchaseTotalTv.text = info.purchaseTotal
         }
         if (isGooglePay) {
             payWithGoogle()
@@ -395,7 +396,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     amount,
                     currency.name,
                     asset,
-                    info.total,
+                    info.purchaseTotal,
                     assetAmount,
                     assetPrice,
                 ).apply {

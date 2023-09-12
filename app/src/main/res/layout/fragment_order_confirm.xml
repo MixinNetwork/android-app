@@ -48,7 +48,7 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:text="@string/Pay_with"
+                android:text="@string/Payment_Method"
                 android:textColor="?attr/text_minor"
                 android:layout_width="wrap_content"
                 android:layout_alignParentStart="true"
@@ -67,6 +67,27 @@
         </RelativeLayout>
 
         <RelativeLayout
+            android:layout_marginTop="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="@string/Total_Amount"
+                android:textColor="?attr/text_minor"
+                android:layout_width="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/token_tv"
+                tools:text="50 USD"
+                android:textColor="?attr/text_primary"
+                android:layout_alignParentEnd="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
+
+        <RelativeLayout
             android:id="@+id/price_rl"
             android:layout_marginTop="16dp"
             android:layout_width="match_parent"
@@ -74,7 +95,7 @@
 
             <TextView
                 android:id="@+id/price"
-                android:text="@string/Price"
+                android:text="@string/Exchange_Rate"
                 android:textColor="?attr/text_minor"
                 android:layout_width="wrap_content"
                 android:layout_alignParentStart="true"
@@ -106,41 +127,18 @@
 
 
         <RelativeLayout
-            android:layout_marginTop="16dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:text="@string/Purchase_Amount"
-                android:textColor="?attr/text_minor"
-                android:layout_width="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:id="@+id/purchase_tv"
-                tools:text="48.68 USD"
-                android:textColor="?attr/text_primary"
-                android:layout_alignParentEnd="true"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-        </RelativeLayout>
-
-        <RelativeLayout
             android:id="@+id/fee_rl"
             android:layout_marginTop="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <TextView
-                android:text="@string/Fees"
+                android:text="@string/Fees_by_Processor"
                 android:textColor="?attr/text_minor"
                 android:layout_width="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_height="wrap_content"
-                android:drawablePadding="6dp"
-                app:drawableEndCompat="@drawable/ic_tip"  />
+                android:drawablePadding="6dp" />
 
             <TextView
                 android:id="@+id/fee_tv"
@@ -153,26 +151,61 @@
         </RelativeLayout>
 
         <RelativeLayout
+            android:id="@+id/fee_mixin_rl"
             android:layout_marginTop="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <TextView
-                android:text="@string/Total_Amount"
+                android:text="@string/Fees_by_Mixin"
                 android:textColor="?attr/text_minor"
                 android:layout_width="wrap_content"
                 android:layout_alignParentStart="true"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:drawablePadding="6dp" />
 
             <TextView
-                android:id="@+id/total_tv"
-                tools:text="50 USD"
+                android:id="@+id/fee_mixin_tv"
+                tools:text="0 USD"
                 android:textColor="?attr/text_primary"
                 android:layout_alignParentEnd="true"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"/>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/purchase_total_rl"
+            android:layout_marginTop="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="@string/Purchase_Total_Amount"
+                android:textColor="?attr/text_minor"
+                android:layout_width="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_height="wrap_content"
+                android:drawablePadding="6dp" />
+
+            <TextView
+                android:id="@+id/purchase_total_tv"
+                tools:text="1.23 USD"
+                android:textColor="?attr/text_primary"
+                android:layout_alignParentEnd="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
         </RelativeLayout>
     </LinearLayout>
+
+    <TextView
+        android:layout_gravity="center_horizontal"
+        android:text="@string/Fees_tip"
+        android:textColor="?attr/text_minor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"/>
 
     <ViewAnimator
         android:id="@+id/buy_va"
