@@ -491,6 +491,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 SNSInitConfig(
                     strings = mapOf(
                         "sns_step_IDENTITY_scan_frontSide_title" to getString(R.string.scan_frontSlide_title),
+                        "sns_general_poweredBy" to "Powered and processed by Sumsub, no information is collected by Mixin"
                     ),
                 ),
             )
