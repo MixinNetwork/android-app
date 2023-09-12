@@ -17,7 +17,6 @@ import android.content.Context.ACTIVITY_SERVICE
 import android.content.ContextWrapper
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -1079,7 +1078,7 @@ fun Context.requestIgnoreBatteryOptimization(newTask: Boolean = false) {
         action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
         data = Uri.parse("package:$packageName")
         if (newTask) {
-            addFlags(FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         try {
             startActivity(this)
@@ -1093,7 +1092,7 @@ fun Context.openIgnoreBatteryOptimizationSetting(newTask: Boolean = false) {
     Intent().apply {
         action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
         if (newTask) {
-            addFlags(FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         try {
             startActivity(this)
@@ -1220,7 +1219,7 @@ fun Context.openEmail(email: String) {
 fun Context.callPhone(phone: String) {
     try {
         val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
-        intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
     } catch (e: Exception) {
         Timber.e(e)

@@ -609,18 +609,7 @@ class ConversationFragment() :
 
             @TargetApi(Build.VERSION_CODES.O)
             override fun onFileClick(messageItem: MessageItem) {
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
-                    messageItem.mediaMimeType.equals(
-                        "application/vnd.android.package-archive",
-                        true,
-                    )
-                ) {
-                    showBottomSheet(messageItem)
-                } else if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
-                    showBottomSheet(messageItem)
-                } else {
-                    requireContext().openMedia(messageItem)
-                }
+                showBottomSheet(messageItem)
             }
 
             override fun onAudioFileClick(messageItem: MessageItem) {
@@ -2739,11 +2728,8 @@ class ConversationFragment() :
                 ),
             )
         }
-        if (!messageItem.mediaMimeType.equals(
-                "application/vnd.android.package-archive",
-                true,
-            )
-        ) {
+        // Android O requires installation permissions
+        if (!(messageItem.mediaMimeType.equals("application/vnd.android.package-archive", true) && Build.VERSION.SDK_INT > Build.VERSION_CODES.O)) {
             items.add(
                 BottomSheetItem(
                     getString(R.string.Open),
@@ -2776,6 +2762,9 @@ class ConversationFragment() :
                 .subscribe(
                     { granted ->
                         if (granted) {
+                            lifecycleScope.launch {
+                                messageItem.saveToLocal(requireContext())
+                            }
                         } else {
                             context?.openPermissionSetting()
                         }

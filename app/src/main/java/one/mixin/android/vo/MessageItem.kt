@@ -264,8 +264,6 @@ fun MessageItem.shareFile(context: Context, mediaMimeType: String) {
 }
 
 suspend fun MessageItem.saveToLocal(context: Context) {
-    if (!hasWritePermission()) return
-
     val filePath = absolutePath()
     if (filePath == null) {
         reportException(IllegalStateException("Save messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: null)}"))
@@ -296,7 +294,10 @@ suspend fun MessageItem.saveToLocal(context: Context) {
         dir.mkdirs()
         File(dir, mediaName ?: file.name)
     }
-    if (outFile.isDirectory) return
+    if (outFile.isDirectory) {
+        toast(R.string.Save_failure)
+        return
+    }
     withContext(Dispatchers.IO) {
         outFile.copyFromInputStream(file.inputStream())
     }
