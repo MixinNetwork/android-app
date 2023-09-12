@@ -1286,7 +1286,7 @@
     <string name="Price_Expired">Price Expired</string>
     <string name="Fee_desc">You may be charged fees outside of your order by your bank, please contact your bank for more details.</string>
     <string name="Processing_Fee">Processing Fee</string>
-    <string name="Fees_tip">You may cost more fees by bank.</string>
+    <string name="Fees_tip">You may be charged additional fees by your bank that are not included in the order. Please contact your bank for more information.</string>
     <string name="Use_New_Price">Use New Price</string>
     <string name="Google_Pay_error">Google pay is not available</string>
     <string name="Card_Number">Card Number</string>

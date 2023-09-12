@@ -1257,7 +1257,7 @@
     <string name="Price_Expired">价格已过期</string>
     <string name="Fee_desc">您有可能被您的银行收取订单之外的费用，请联系您的银行了解更多详情。</string>
     <string name="Processing_Fee">处理费</string>
-    <string name="Fees_tip">您的银行可能会收取额外费用。</string>
+    <string name="Fees_tip">您有可能被您的银行收取订单之外的费用，请联系您的银行了解更多。</string>
     <string name="Use_New_Price">使用新价格</string>
     <string name="Card_Number">卡号</string>
     <string name="Expiry_Date">有效期</string>
