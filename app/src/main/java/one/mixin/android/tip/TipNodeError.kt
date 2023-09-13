@@ -8,17 +8,17 @@ sealed class TipNodeError(
 ) {
     fun notRetry() = this is TooManyRequestError || this is IncorrectPinError
 }
-data class ServerError(
-    override val signerIndex: Int,
-    override val requestId: String,
-    override val code: Int,
-) : TipNodeError(signerIndex, requestId, code, 0)
 data class TooManyRequestError(
     override val signerIndex: Int,
     override val requestId: String,
     override val code: Int,
-) : TipNodeError(signerIndex, requestId, code, 1)
+) : TipNodeError(signerIndex, requestId, code, 0)
 data class IncorrectPinError(
+    override val signerIndex: Int,
+    override val requestId: String,
+    override val code: Int,
+) : TipNodeError(signerIndex, requestId, code, 1)
+data class ServerError(
     override val signerIndex: Int,
     override val requestId: String,
     override val code: Int,

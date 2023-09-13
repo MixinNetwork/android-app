@@ -73,7 +73,7 @@
     <string name="All">Todo</string>
     <string name="All_Conversations">Todas las conversaciones</string>
     <string name="All_Media">Todos los medios</string>
-    <string name="All_signer_failure">Falla de todos los nodos, tal vez el PIN no coincida con lo que se configuró la última vez que finalizó inesperadamente</string>
+    <string name="All_signer_failure">Falla de todos los nodos</string>
     <string name="All_Transactions">Todas las transacciones</string>
     <string name="Allow_bot_access_asset">Permite que el bot acceda a tu lista de activos y saldo.</string>
     <string name="Allow_bot_access_bots">Permite que el bot acceda a tu lista de bots.</string>

@@ -5,6 +5,7 @@ import one.mixin.android.tip.TipNodeError
 class NotAllSignerSuccessException(
     val node: String,
     private val successSignerSize: Int,
+    val forRecover: Boolean,
     val tipNodeError: TipNodeError?,
 ) : TipNodeException() {
     companion object {

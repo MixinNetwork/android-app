@@ -42,6 +42,8 @@ suspend fun <T> tipNetworkNullable(network: suspend () -> MixinResponse<T>): Res
     }
 }
 
+fun Throwable.isTipNodeException() = this is NotEnoughPartialsException || this is NotAllSignerSuccessException || this is DifferentIdentityException
+
 fun Throwable.getTipExceptionMsg(context: Context, nodeFailedInfo: String? = null): String {
     var msg = when (this) {
         is PinIncorrectException -> context.getString(R.string.PIN_incorrect)
@@ -66,22 +68,34 @@ fun Throwable.getTipExceptionMsg(context: Context, nodeFailedInfo: String? = nul
     return msg
 }
 
-fun NotEnoughPartialsException.getMsg(context: Context): String =
-    when (tipNodeError) {
+fun NotEnoughPartialsException.getMsg(context: Context): String {
+    val errString = when (tipNodeError) {
         is TooManyRequestError -> context.getString(R.string.error_too_many_request)
         is IncorrectPinError -> context.getString(R.string.PIN_incorrect)
         else -> context.getString(R.string.Not_enough_partials)
     }
+    return if (forRecover) {
+        context.getString(R.string.tip_recovery_failed) + "\n" + errString
+    } else {
+        errString
+    }
+}
 
-fun NotAllSignerSuccessException.getMsg(context: Context): String =
-    if (tipNodeError is TooManyRequestError) {
+fun NotAllSignerSuccessException.getMsg(context: Context): String {
+    val errString = if (tipNodeError is TooManyRequestError) {
         context.getString(R.string.error_too_many_request)
     } else if (tipNodeError is IncorrectPinError) {
         context.getString(R.string.PIN_incorrect)
     } else {
         if (allFailure()) {
-            context.getString(R.string.All_signer_failure)
+            "${context.getString(R.string.All_signer_failure)}\n${this.getStackTraceString()}"
         } else {
             "${context.getString(R.string.Not_all_signer_success)}\n${this.getStackTraceString()}"
         }
     }
+    return if (forRecover) {
+        context.getString(R.string.tip_recovery_failed) + "\n" + errString
+    } else {
+        errString
+    }
+}

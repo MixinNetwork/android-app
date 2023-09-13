@@ -73,7 +73,7 @@
     <string name="All">全部</string>
     <string name="All_Conversations">所有会话</string>
     <string name="All_Media">全部</string>
-    <string name="All_signer_failure">所有节点失败，也许 PIN 跟上次意外退出时设置的不一致</string>
+    <string name="All_signer_failure">所有节点失败</string>
     <string name="All_Transactions">所有交易记录</string>
     <string name="Allow_bot_access_asset">允许机器人查看你的所有资产和余额。</string>
     <string name="Allow_bot_access_bots">允许机器人访问你的机器人列表。</string>
@@ -960,6 +960,7 @@
     <string name="This_message_was_deleted">此消息已撤回</string>
     <string name="Thursday">星期四</string>
     <string name="Time">时间</string>
+    <string name="tip_recovery_failed">TIP 私钥恢复失败。</string>
     <string name="tip_create_pin_title">设置 6 位数字 PIN 创建你的第一个数字钱包</string>
     <string name="TIP_creation_introduction">设置 6 位数字 PIN 创建你的第一个加密货币钱包，PIN 基于去中心化密钥派生协议 Throttled Identity Protocol，阅读文档以**了解更多**。</string>
     <string name="TIP_introduction">6 位数字 PIN 基于去中心化密钥派生协议 Throttled Identity Protocol，阅读文档以**了解更多**。</string>
