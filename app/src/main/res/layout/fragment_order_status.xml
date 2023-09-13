@@ -47,7 +47,7 @@
             <TextView
                 android:id="@+id/title"
                 android:textColor="?attr/text_primary"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 android:layout_gravity="center_horizontal"
                 android:layout_width="wrap_content"
@@ -77,8 +77,8 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginStart="24dp"
                 android:layout_marginEnd="24dp"
-                android:layout_marginBottom="8dp"
-                android:padding="24dp"
+                android:layout_marginBottom="12dp"
+                android:padding="18dp"
                 android:background="@drawable/bg_round_window_8dp">
 
                 <RelativeLayout
@@ -106,7 +106,7 @@
                 </RelativeLayout>
 
                 <RelativeLayout
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="14dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -129,7 +129,7 @@
 
                 <RelativeLayout
                     android:id="@+id/price_rl"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="14dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -172,7 +172,7 @@
 
                 <RelativeLayout
                     android:id="@+id/fee_rl"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="14dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -197,7 +197,7 @@
 
                 <RelativeLayout
                     android:id="@+id/fee_mixin_rl"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="14dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -222,7 +222,7 @@
 
                 <RelativeLayout
                     android:id="@+id/purchase_total_rl"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="14dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -254,8 +254,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:layout_marginStart="48dp"
-                android:layout_marginEnd="48dp" />
+                android:layout_marginStart="42dp"
+                android:layout_marginEnd="42dp" />
 
             <ViewAnimator
                 android:id="@+id/bottom_va"
@@ -276,8 +276,8 @@
                     android:inAnimation="@anim/fade_in"
                     android:outAnimation="@anim/fade_out"
                     android:background="@drawable/bg_round_blue_btn_40"
-                    android:paddingStart="24dp"
-                    android:paddingEnd="24dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp"
                     android:textSize="14sp" />
@@ -293,8 +293,8 @@
                     android:inAnimation="@anim/fade_in"
                     android:outAnimation="@anim/fade_out"
                     android:background="@drawable/bg_round_blue_btn_40"
-                    android:paddingStart="24dp"
-                    android:paddingEnd="24dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp"
                     android:textSize="14sp" />
