@@ -131,9 +131,12 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         false,
                         ArrayList((requireActivity() as WalletActivity).supportAssetIds),
                     ).setOnAssetClick { asset ->
-                        fiatMoneyViewModel.asset = asset
-                        requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, asset.assetId)
-                        updateUI()
+                        this@CalculateFragment.lifecycleScope.launch {
+                            fiatMoneyViewModel.asset = asset
+                            requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, asset.assetId)
+                            refresh()
+                            updateUI()
+                        }
                     }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                 }
                 fiatRl.setOnClickListener {
