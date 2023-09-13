@@ -226,8 +226,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:layout_marginStart="48dp"
-                android:layout_marginEnd="48dp" />
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp" />
 
             <ViewAnimator
                 android:id="@+id/buy_va"
