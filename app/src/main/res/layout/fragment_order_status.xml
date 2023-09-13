@@ -143,24 +143,12 @@
                         android:layout_height="wrap_content" />
 
                     <TextView
-                        android:id="@+id/time_tv"
-                        android:textColor="@color/colorBlue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:layout_toEndOf="@id/price"
-                        android:drawablePadding="4dp"
-                        android:gravity="center_vertical"
-                        android:layout_centerVertical="true"
-                        app:drawableStartCompat="@drawable/ic_time" />
-
-                    <TextView
                         android:id="@+id/price_tv"
                         android:textColor="?attr/text_primary"
                         tools:text="1 USD = 0.996USDC"
                         android:lines="1"
                         android:gravity="center_vertical|end"
-                        android:layout_toEndOf="@id/time_tv"
+                        android:layout_toEndOf="@id/price"
                         android:layout_marginStart="2dp"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
