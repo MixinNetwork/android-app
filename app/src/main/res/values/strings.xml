@@ -73,7 +73,7 @@
     <string name="All">All</string>
     <string name="All_Conversations">All Conversations</string>
     <string name="All_Media">All Media</string>
-    <string name="All_signer_failure">All node failure, perhaps PIN does not match what was set when it was last terminated unexpectedly</string>
+    <string name="All_signer_failure">All node failure</string>
     <string name="All_Transactions">All Transactions</string>
     <string name="Allow_bot_access_asset">Allow bot to access your asset list and balance.</string>
     <string name="Allow_bot_access_bots">Allow bot to access your bot list.</string>
@@ -981,6 +981,7 @@
     <string name="This_message_was_deleted">This message was deleted</string>
     <string name="Thursday">Thursday</string>
     <string name="Time">Time</string>
+    <string name="tip_recovery_failed">TIP private key recovery failed.</string>
     <string name="tip_create_pin_title">Set a 6 digit PIN to create your first digital wallet</string>
     <string name="TIP_creation_introduction">Set a 6 digit Wallet PIN to create your first digital wallet, the PIN is based on the Throttled Identity Protocol, which is the decentralized key derivation protocol, read the document to **learn more**.</string>
     <string name="TIP_introduction">The 6-digit PIN is based on the Throttled Identity Protocol, which is the decentralized key derivation protocol, read the document to **learn more**.</string>

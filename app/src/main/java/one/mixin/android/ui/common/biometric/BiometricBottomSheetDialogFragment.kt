@@ -20,6 +20,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.tip.exception.TipCounterNotSyncedException
 import one.mixin.android.tip.exception.TipNetworkException
+import one.mixin.android.tip.getTipExceptionMsg
+import one.mixin.android.tip.isTipException
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -176,7 +178,11 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             else -> {
                 dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 biometricLayout.showPin(true)
-                ErrorHandler.handleError(t)
+                if (t.isTipException()) {
+                    showErrorInfo(t.getTipExceptionMsg(requireContext(), null), true, errorAction = BiometricLayout.ErrorAction.Close)
+                } else {
+                    ErrorHandler.handleError(t)
+                }
             }
         }
     }

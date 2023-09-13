@@ -94,12 +94,12 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
         if (!forRecover && data.size < nodeCount) {
             Timber.e("not all signer success ${data.size}")
-            throw NotAllSignerSuccessException("", data.size, tipNodeError)
+            throw NotAllSignerSuccessException("", data.size, false, tipNodeError)
         }
 
         if (data.size < tipConfig.commitments.size) {
             Timber.e("not all signer success ${data.size}")
-            throw NotAllSignerSuccessException("", data.size, tipNodeError)
+            throw NotAllSignerSuccessException("", data.size, forRecover, tipNodeError)
         }
 
         val (assignor, partials) = parseAssignorAndPartials(data)
@@ -107,7 +107,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
         if (partials.size < tipConfig.commitments.size) {
             Timber.e("not enough partials ${partials.size} ${tipConfig.commitments.size}")
-            throw NotEnoughPartialsException(partials.size, tipNodeError)
+            throw NotEnoughPartialsException(partials.size, forRecover, tipNodeError)
         }
 
         val hexSigs = partials.joinToString(",") { it.toHex() }

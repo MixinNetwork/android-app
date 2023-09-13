@@ -21,6 +21,9 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.tip.exception.TipNetworkException
+import one.mixin.android.tip.exception.TipNodeException
+import one.mixin.android.tip.getTipExceptionMsg
+import one.mixin.android.tip.isTipException
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
@@ -96,6 +99,9 @@ class PinCheckDialogFragment : DialogFragment() {
                 exceptionBlock = {
                     if (it is TipNetworkException) {
                         handleFailure(it.error)
+                    } else if (it.isTipException()) {
+                        pinVa.displayedChild = POS_PIN
+                        pin.error(it.getTipExceptionMsg(requireContext(), null))
                     } else {
                         pin.clear()
                         pinVa.displayedChild = POS_PIN
