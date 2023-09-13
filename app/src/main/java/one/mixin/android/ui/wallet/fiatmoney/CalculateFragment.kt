@@ -26,6 +26,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.shaking
@@ -333,7 +334,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 } else {
                     primaryTv.text = getNumberFormat(value)
                     minorTv.text =
-                        "≈ ${getNumberFormat(String.format("%.2f", currentValue / state.assetPrice))} ${asset.symbol}"
+                        "≈ ${BigDecimal(String.format("%f", currentValue / state.assetPrice).numberFormat8())} ${asset.symbol}"
                 }
                 continueVa.isEnabled = currentValue >= state.minimum && currentValue <= state.maximum
                 continueTv.isEnabled = continueVa.isEnabled
