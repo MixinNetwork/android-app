@@ -1308,7 +1308,7 @@
     <string name="Payment_Method">Payment Method</string>
     <string name="Exchange_Rate">Exchange Rate</string>
     <string name="Token_Amount">Token Amount</string>
-    <string name="Fees_by_Processor">Fees by Processor</string>
+    <string name="Fees_by_Gateway">Fees by Processor</string>
     <string name="Fees_by_Mixin">Fees by Mixin</string>
     <string name="Purchase_Total_Amount">Purchase Total Amount</string>
 </resources>
