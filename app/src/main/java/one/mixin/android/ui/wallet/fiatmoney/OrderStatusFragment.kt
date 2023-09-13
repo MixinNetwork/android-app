@@ -47,7 +47,6 @@ import one.mixin.android.extension.bold
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.withArgs

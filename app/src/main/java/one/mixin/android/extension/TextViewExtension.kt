@@ -154,7 +154,7 @@ fun TextView.highLightClick(
     setText(spannable)
 }
 
-fun TextView.bold(target: String){
+fun TextView.bold(target: String) {
     val text = this.text.toString()
     val spannableString = SpannableString(text)
     val startIndex = text.indexOf(target)

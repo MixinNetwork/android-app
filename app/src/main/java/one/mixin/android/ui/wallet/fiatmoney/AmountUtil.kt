@@ -19,6 +19,14 @@ object AmountUtil {
         }
     }
 
+    fun toAmount(value: Float, currency: String): Long? {
+        if (currency in full_currency) {
+            return value.toLong()
+        } else {
+            return (value * 100).toLong()
+        }
+    }
+
     fun realAmount(value: Long, currency: String): String {
         return if (currency in full_currency) {
             value.toString()
