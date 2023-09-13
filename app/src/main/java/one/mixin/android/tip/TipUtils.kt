@@ -42,7 +42,7 @@ suspend fun <T> tipNetworkNullable(network: suspend () -> MixinResponse<T>): Res
     }
 }
 
-fun Throwable.isTipException() = this is NotEnoughPartialsException || this is NotAllSignerSuccessException || this is DifferentIdentityException
+fun Throwable.isTipNodeException() = this is NotEnoughPartialsException || this is NotAllSignerSuccessException || this is DifferentIdentityException
 
 fun Throwable.getTipExceptionMsg(context: Context, nodeFailedInfo: String? = null): String {
     var msg = when (this) {
@@ -76,7 +76,9 @@ fun NotEnoughPartialsException.getMsg(context: Context): String {
     }
     return if (forRecover) {
         context.getString(R.string.tip_recovery_failed) + "\n" + errString
-    } else errString
+    } else {
+        errString
+    }
 }
 
 fun NotAllSignerSuccessException.getMsg(context: Context): String {
@@ -93,5 +95,7 @@ fun NotAllSignerSuccessException.getMsg(context: Context): String {
     }
     return if (forRecover) {
         context.getString(R.string.tip_recovery_failed) + "\n" + errString
-    } else errString
+    } else {
+        errString
+    }
 }
