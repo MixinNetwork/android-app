@@ -334,7 +334,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 } else {
                     primaryTv.text = getNumberFormat(value)
                     minorTv.text =
-                        "≈ ${BigDecimal(String.format("%f", currentValue / state.assetPrice).numberFormat8())} ${asset.symbol}"
+                        "≈ ${BigDecimal((currentValue / state.assetPrice).toDouble()).numberFormat8()} ${asset.symbol}"
                 }
                 continueVa.isEnabled = currentValue >= state.minimum && currentValue <= state.maximum
                 continueTv.isEnabled = continueVa.isEnabled
