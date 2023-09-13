@@ -96,7 +96,7 @@ internal constructor(
     class CalculateState(
         var minimum: Int = 15,
         var maximum: Int = 1000,
-        var fiatPrice: Float = 1f,
+        var assetPrice: Float = 1f,
     ) : Parcelable
 
     var isReverse: Boolean = false

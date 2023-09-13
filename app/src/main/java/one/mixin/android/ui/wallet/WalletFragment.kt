@@ -55,6 +55,7 @@ import one.mixin.android.ui.setting.getCurrencyData
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
+import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment.Companion.CALCULATE_STATE
 import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
 import one.mixin.android.ui.wallet.fiatmoney.getDefaultCurrency
@@ -162,12 +163,16 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                             data
                         }.map { data ->
                             val (supportCurrencies, assetIds) = data
+                            val assetId = requireContext().defaultSharedPreferences.getString(
+                                CalculateFragment.CURRENT_ASSET_ID,
+                                Constants.AssetId.USDT_ASSET_ID,
+                            ) ?: assetIds.first()
                             val currency = getDefaultCurrency(requireContext(), supportCurrencies)
                             val tickerResponse = walletViewModel.ticker(
                                 RouteTickerRequest(
                                     0,
                                     currency,
-                                    assetIds.first(),
+                                    assetId
                                 ),
                             )
                             if (tickerResponse.isSuccess) {
@@ -176,7 +181,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                         ?: 0,
                                     maximum = tickerResponse.data!!.maximum.toIntOrNull()
                                         ?: 0,
-                                    fiatPrice = tickerResponse.data!!.price.toFloatOrNull()
+                                    assetPrice = tickerResponse.data!!.assetPrice.toFloatOrNull()
                                         ?: 0f,
                                 )
                                 state
@@ -191,6 +196,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 if (e.errorCode == ErrorHandler.AUTHENTICATION) {
                                     walletViewModel.deleteSessionByUserId(generateConversationId(ROUTE_BOT_USER_ID, Session.getAccountId()!!), ROUTE_BOT_USER_ID)
                                     toast(getString(R.string.Try_Again))
+                                    sendReceiveView.buy.displayedChild = 0
+                                    sendReceiveView.buy.isEnabled = true
                                     return@catch
                                 }
                                 sendReceiveView.buy.displayedChild = 0

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
@@ -13,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
+import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.checkout.threeds.Checkout3DSService
@@ -41,9 +43,11 @@ import one.mixin.android.api.response.RoutePaymentStatus
 import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteSessionStatus
 import one.mixin.android.databinding.FragmentOrderStatusBinding
+import one.mixin.android.extension.bold
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.withArgs
@@ -128,7 +132,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         binding.topVa.displayedChild = 0
         binding.title.setText(R.string.Success)
         binding.content.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
-        binding.content.text = getString(R.string.Success_desc, assetAmount, asset.symbol, asset.symbol)
+        binding.content.text = getString(R.string.Success_desc, "$assetAmount ${asset.symbol}", asset.symbol)
+        binding.content.bold("$assetAmount ${asset.symbol}")
         binding.transparentMask.isVisible = false
     }
 
@@ -204,7 +209,48 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             cancelTv.setOnClickListener {
                 view.navigate(R.id.action_wallet_status_to_wallet)
             }
-
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                payWith,
+                8,
+                14,
+                1,
+                TypedValue.COMPLEX_UNIT_SP,
+            )
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                priceTv,
+                8,
+                14,
+                1,
+                TypedValue.COMPLEX_UNIT_SP,
+            )
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                feeTv,
+                8,
+                14,
+                1,
+                TypedValue.COMPLEX_UNIT_SP,
+            )
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                feeMixinTv,
+                8,
+                14,
+                1,
+                TypedValue.COMPLEX_UNIT_SP,
+            )
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                tokenTv,
+                8,
+                14,
+                1,
+                TypedValue.COMPLEX_UNIT_SP,
+            )
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                purchaseTotalTv,
+                8,
+                14,
+                1,
+                TypedValue.COMPLEX_UNIT_SP,
+            )
             val logo = when {
                 isGooglePay -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_google_pay_small)
                 else -> AppCompatResources.getDrawable(requireContext(), cardIcon(scheme))
@@ -221,10 +267,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             } else {
                 info.number
             }
-            priceTv.text = info.assetPrice
-            purchaseTv.text = info.purchase
-            feeTv.text = info.fee
-            totalTv.text = info.total
+            priceTv.text = info.exchangeRate
+            feeTv.text = info.feeByGateway
+            feeMixinTv.text = info.feeByMixin
+            tokenTv.text = "${info.assetAmount} ${asset.symbol}"
+            purchaseTotalTv.text = info.purchaseTotal
         }
         if (isGooglePay) {
             payWithGoogle()
@@ -395,7 +442,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     amount,
                     currency.name,
                     asset,
-                    info.total,
+                    info.purchaseTotal,
                     assetAmount,
                     assetPrice,
                 ).apply {

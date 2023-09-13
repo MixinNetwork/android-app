@@ -1,272 +1,340 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/bg_white">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/bg_white"
-        android:orientation="vertical">
-
-        <ViewAnimator
-            android:id="@+id/top_va"
-            android:layout_marginTop="?android:attr/actionBarSize"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal">
-
-            <ImageView
-                android:src="@drawable/ic_order_success"
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                android:layout_gravity="center_horizontal" />
-
-            <ImageView
-                android:src="@drawable/ic_order_failed"
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                android:layout_gravity="center_horizontal" />
-
-            <ImageView
-                android:src="@drawable/ic_order_waiting"
-                android:id="@+id/asset_avatar"
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                android:layout_gravity="center_horizontal" />
-
-        </ViewAnimator>
-
-        <TextView
-            android:id="@+id/title"
-            android:textColor="?attr/text_primary"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_gravity="center_horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginStart="32dp"
-            android:layout_marginEnd="32dp" />
-
-        <TextView
-            android:id="@+id/content"
-            android:textColor="?attr/text_primary"
-            android:textSize="14sp"
-            android:layout_marginTop="16dp"
-            android:layout_gravity="center_horizontal"
-            android:gravity="center_horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingStart="32dp"
-            android:paddingEnd="32dp"
-            android:lines="3"
-            android:ellipsize="end" />
+        android:layout_height="match_parent">
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_margin="24dp"
-            android:padding="24dp"
-            android:background="@drawable/bg_round_window_8dp">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/bg_white"
+            android:orientation="vertical">
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+            <ViewAnimator
+                android:id="@+id/top_va"
+                android:layout_marginTop="?android:attr/actionBarSize"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal">
 
-                <TextView
-                    android:text="@string/Pay_with"
-                    android:textColor="?attr/text_minor"
-                    android:layout_width="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_height="wrap_content" />
+                <ImageView
+                    android:src="@drawable/ic_order_success"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:layout_gravity="center_horizontal" />
 
-                <TextView
-                    android:id="@+id/pay_with"
-                    android:textColor="?attr/text_primary"
-                    tools:text="Visa...4242"
-                    android:drawablePadding="8dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                <ImageView
+                    android:src="@drawable/ic_order_failed"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:layout_gravity="center_horizontal" />
 
-            </RelativeLayout>
+                <ImageView
+                    android:src="@drawable/ic_order_waiting"
+                    android:id="@+id/asset_avatar"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:layout_gravity="center_horizontal" />
 
-            <RelativeLayout
-                android:layout_marginTop="16dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:id="@+id/price"
-                    android:text="@string/Price"
-                    android:textColor="?attr/text_minor"
-                    android:layout_width="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:gravity="center_vertical"
-                    android:layout_gravity="center_vertical"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:id="@+id/price_tv"
-                    android:textColor="?attr/text_primary"
-                    tools:text="1 USD = 0.996USDC"
-                    android:layout_alignParentEnd="true"
-                    android:layout_width="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_height="wrap_content" />
-
-            </RelativeLayout>
-
-
-            <RelativeLayout
-                android:layout_marginTop="16dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:text="@string/Purchase_Amount"
-                    android:textColor="?attr/text_minor"
-                    android:layout_width="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:id="@+id/purchase_tv"
-                    tools:text="48.68 USD"
-                    android:textColor="?attr/text_primary"
-                    android:layout_alignParentEnd="true"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_marginTop="16dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:text="@string/Fees"
-                    android:textColor="?attr/text_minor"
-                    android:layout_width="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:id="@+id/fee_tv"
-                    tools:text="1.23 USD"
-                    android:textColor="?attr/text_primary"
-                    android:layout_alignParentEnd="true"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_marginTop="16dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:text="@string/Total_Amount"
-                    android:textColor="?attr/text_minor"
-                    android:layout_width="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:id="@+id/total_tv"
-                    tools:text="50 USD"
-                    android:textColor="?attr/text_primary"
-                    android:layout_alignParentEnd="true"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </RelativeLayout>
-
-        </LinearLayout>
-
-        <ViewAnimator
-            android:id="@+id/bottom_va"
-            android:visibility="gone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="140dp">
+            </ViewAnimator>
 
             <TextView
-                android:id="@+id/done_tv"
-                android:layout_gravity="center"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="@string/Done"
-                android:textColor="@color/white"
-                android:inAnimation="@anim/fade_in"
-                android:outAnimation="@anim/fade_out"
-                android:background="@drawable/bg_round_blue_btn_40"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
-                android:textSize="14sp" />
+                android:id="@+id/title"
+                android:textColor="?attr/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_gravity="center_horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp" />
 
             <TextView
-                android:id="@+id/retry_tv"
-                android:layout_gravity="center"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="@string/switch_payment_method"
-                android:textColor="@color/white"
-                android:inAnimation="@anim/fade_in"
-                android:outAnimation="@anim/fade_out"
-                android:background="@drawable/bg_round_blue_btn_40"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
-                android:textSize="14sp" />
+                android:id="@+id/content"
+                android:textColor="?attr/text_primary"
+                android:textSize="14sp"
+                android:layout_marginTop="16dp"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center_horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:lines="3"
+                android:ellipsize="end" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_gravity="center"
-                android:gravity="center_horizontal">
+                android:layout_marginTop="24dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="12dp"
+                android:padding="18dp"
+                android:background="@drawable/bg_round_window_8dp">
 
-                <ProgressBar
-                    style="?android:attr/progressBarStyleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:theme="@style/AppTheme.GrayProgress" />
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:text="@string/Payment_Method"
+                        android:textColor="?attr/text_minor"
+                        android:layout_width="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/pay_with"
+                        android:textColor="?attr/text_primary"
+                        tools:text="Visa...4242"
+                        android:gravity="center_vertical"
+                        android:drawablePadding="6dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:drawableStartCompat="@drawable/ic_visa" />
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_marginTop="14dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:text="@string/Token_Amount"
+                        android:textColor="?attr/text_minor"
+                        android:layout_width="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/token_tv"
+                        tools:text="50 USD"
+                        android:gravity="center_vertical"
+                        android:textColor="?attr/text_primary"
+                        android:layout_alignParentEnd="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/price_rl"
+                    android:layout_marginTop="14dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/price"
+                        android:text="@string/Exchange_Rate"
+                        android:textColor="?attr/text_minor"
+                        android:layout_width="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/time_tv"
+                        android:textColor="@color/colorBlue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:layout_toEndOf="@id/price"
+                        android:drawablePadding="4dp"
+                        android:gravity="center_vertical"
+                        android:layout_centerVertical="true"
+                        app:drawableStartCompat="@drawable/ic_time" />
+
+                    <TextView
+                        android:id="@+id/price_tv"
+                        android:textColor="?attr/text_primary"
+                        tools:text="1 USD = 0.996USDC"
+                        android:lines="1"
+                        android:gravity="center_vertical|end"
+                        android:layout_toEndOf="@id/time_tv"
+                        android:layout_marginStart="2dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </RelativeLayout>
+
+
+                <RelativeLayout
+                    android:id="@+id/fee_rl"
+                    android:layout_marginTop="14dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:text="@string/Fees_by_Gateway"
+                        android:textColor="?attr/text_minor"
+                        android:layout_width="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="6dp" />
+
+                    <TextView
+                        android:id="@+id/fee_tv"
+                        tools:text="1.23 USD"
+                        android:gravity="center_vertical"
+                        android:textColor="?attr/text_primary"
+                        android:layout_alignParentEnd="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/fee_mixin_rl"
+                    android:layout_marginTop="14dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:text="@string/Fees_by_Mixin"
+                        android:textColor="?attr/text_minor"
+                        android:layout_width="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="6dp" />
+
+                    <TextView
+                        android:id="@+id/fee_mixin_tv"
+                        tools:text="0 USD"
+                        android:gravity="center_vertical"
+                        android:textColor="?attr/text_primary"
+                        android:layout_alignParentEnd="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/purchase_total_rl"
+                    android:layout_marginTop="14dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:text="@string/Purchase_Total_Amount"
+                        android:textColor="?attr/text_minor"
+                        android:layout_width="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="6dp" />
+
+                    <TextView
+                        android:id="@+id/purchase_total_tv"
+                        tools:text="1.23 USD"
+                        android:gravity="center_vertical"
+                        android:textColor="?attr/text_primary"
+                        android:layout_alignParentEnd="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </RelativeLayout>
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_gravity="center_horizontal"
+                android:text="@string/Fees_tip"
+                android:textColor="?attr/text_minor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp" />
+
+            <ViewAnimator
+                android:id="@+id/bottom_va"
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="64dp">
 
                 <TextView
-                    android:text="@string/Processing"
-                    android:layout_marginTop="8dp"
-                    android:textColor="?attr/text_minor"
-                    android:textSize="14sp"
+                    android:id="@+id/done_tv"
+                    android:layout_gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="@string/Done"
+                    android:textColor="@color/white"
+                    android:inAnimation="@anim/fade_in"
+                    android:outAnimation="@anim/fade_out"
+                    android:background="@drawable/bg_round_blue_btn_40"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/retry_tv"
+                    android:layout_gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="@string/switch_payment_method"
+                    android:textColor="@color/white"
+                    android:inAnimation="@anim/fade_in"
+                    android:outAnimation="@anim/fade_out"
+                    android:background="@drawable/bg_round_blue_btn_40"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:textSize="14sp" />
+
+                <LinearLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-        </ViewAnimator>
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_gravity="center"
+                    android:gravity="center_horizontal">
 
-        <TextView
-            android:id="@+id/cancel_tv"
-            android:text="@string/cancel_order"
-            android:layout_gravity="center_horizontal"
-            android:textColor="@color/selector_waiting"
-            android:layout_marginTop="16dp"
-            android:visibility="gone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+                    <ProgressBar
+                        style="?android:attr/progressBarStyleSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:theme="@style/AppTheme.GrayProgress" />
 
-    </LinearLayout>
+                    <TextView
+                        android:text="@string/Processing"
+                        android:layout_marginTop="8dp"
+                        android:textColor="?attr/text_minor"
+                        android:textSize="14sp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </ViewAnimator>
+
+            <TextView
+                android:id="@+id/cancel_tv"
+                android:text="@string/cancel_order"
+                android:layout_gravity="center_horizontal"
+                android:textColor="@color/selector_waiting"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+    </ScrollView>
 
     <View
         android:id="@+id/transparent_mask"

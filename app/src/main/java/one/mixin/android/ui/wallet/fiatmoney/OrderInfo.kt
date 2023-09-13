@@ -6,10 +6,10 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 class OrderInfo(
     val number: String,
-    val assetPrice: String,
+    val exchangeRate: String,
     val purchase: String,
-    val fee: String,
-    val total: String,
-    val feePercent: String,
+    val feeByGateway: String,
+    val feeByMixin: String,
+    val purchaseTotal: String,
     val assetAmount: String,
 ) : Parcelable

@@ -1,6 +1,7 @@
 package one.mixin.android.extension
 
 import android.content.res.ColorStateList
+import android.graphics.Typeface
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -10,6 +11,7 @@ import android.text.method.LinkMovementMethod
 import android.text.style.CharacterStyle
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.text.style.TextAppearanceSpan
 import android.view.View
 import android.widget.EditText
@@ -150,6 +152,16 @@ fun TextView.highLightClick(
         index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
     }
     setText(spannable)
+}
+
+fun TextView.bold(target: String){
+    val text = this.text.toString()
+    val spannableString = SpannableString(text)
+    val startIndex = text.indexOf(target)
+    val endIndex = startIndex + target.length
+    val boldSpan = StyleSpan(Typeface.BOLD)
+    spannableString.setSpan(boldSpan, startIndex, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+    setText(spannableString)
 }
 
 fun TextView.timeAgo(str: String) {

@@ -10,7 +10,6 @@ import com.sumsub.sns.core.SNSMobileSDK
 import com.sumsub.sns.core.data.listener.TokenExpirationHandler
 import com.sumsub.sns.core.data.model.SNSCompletionResult
 import com.sumsub.sns.core.data.model.SNSException
-import com.sumsub.sns.core.data.model.SNSInitConfig
 import com.sumsub.sns.core.data.model.SNSSDKState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -27,6 +26,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.shaking
@@ -60,7 +60,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         const val TAG = "CalculateFragment"
         const val CALCULATE_STATE = "calculate_state"
         const val CURRENT_CURRENCY = "current_currency"
-        private const val CURRENT_ASSET_ID = "current_asset_id"
+        const val CURRENT_ASSET_ID = "current_asset_id"
         fun newInstance() = CalculateFragment()
     }
 
@@ -109,7 +109,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     fiatMoneyViewModel.calculateState = FiatMoneyViewModel.CalculateState(
                         minimum = it.data?.minimum?.toIntOrNull() ?: 0,
                         maximum = it.data?.maximum?.toIntOrNull() ?: 0,
-                        fiatPrice = it.data?.price?.toFloatOrNull() ?: 0f,
+                        assetPrice = it.data?.assetPrice?.toFloatOrNull() ?: 0f,
                     )
                 }
             },
@@ -132,9 +132,12 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         false,
                         ArrayList((requireActivity() as WalletActivity).supportAssetIds),
                     ).setOnAssetClick { asset ->
-                        fiatMoneyViewModel.asset = asset
-                        requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, asset.assetId)
-                        updateUI()
+                        this@CalculateFragment.lifecycleScope.launch {
+                            fiatMoneyViewModel.asset = asset
+                            requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, asset.assetId)
+                            refresh()
+                            updateUI()
+                        }
                     }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                 }
                 fiatRl.setOnClickListener {
@@ -307,7 +310,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 v
             }
             if (fiatMoneyViewModel.isReverse) {
-                val currentValue = value.toFloat() / state.fiatPrice
+                val currentValue = value.toFloat() * state.assetPrice
                 if (value == "0") {
                     primaryTv.text = "0"
                     minorTv.text = "0 ${currency.name}"
@@ -331,7 +334,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 } else {
                     primaryTv.text = getNumberFormat(value)
                     minorTv.text =
-                        "≈ ${getNumberFormat(String.format("%.2f", currentValue * state.fiatPrice))} ${asset.symbol}"
+                        "≈ ${BigDecimal((currentValue / state.assetPrice).toDouble()).numberFormat8()} ${asset.symbol}"
                 }
                 continueVa.isEnabled = currentValue >= state.minimum && currentValue <= state.maximum
                 continueTv.isEnabled = continueVa.isEnabled
@@ -350,6 +353,12 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         return BigDecimal(value).numberFormat2().let {
             if (v.endsWith(".")) {
                 "$it."
+            } 
+            else if (v.endsWith(".00")) {
+                "$it.00"
+            } 
+            else if (v.endsWith(".0")) {
+                "$it.0"
             } else {
                 it
             }
@@ -487,13 +496,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         val snsSdk = SNSMobileSDK.Builder(requireActivity())
             .withHandlers(onStateChanged = onSDKStateChangedHandler, onError = onSDKErrorHandler, onCompleted = onSDKCompletedHandler)
             .withAccessToken(accessToken, onTokenExpiration = tokenExpirationHandler)
-            .withConf(
-                SNSInitConfig(
-                    strings = mapOf(
-                        "sns_step_IDENTITY_scan_frontSide_title" to getString(R.string.scan_frontSlide_title),
-                    ),
-                ),
-            )
             .withLocale(
                 if (isFollowSystem()) {
                     Locale.getDefault()

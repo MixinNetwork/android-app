@@ -1282,11 +1282,10 @@
     <string name="Processing">Processing</string>
     <string name="buy_failed">Failed</string>
     <string name="Processing_desc">Payment request has been submitted, your payment and order information is being checked, please wait patiently</string>
-    <string name="Success_desc">Successful purchase of %1$s %2$s ! %3$s will be transferred directly to Mixin wallet.</string>
+    <string name="Success_desc">Successful purchase of %1$s ! %2$s will be transferred directly to Mixin wallet.</string>
     <string name="Price_Expired">Price Expired</string>
-    <string name="Fee_desc">You may be charged fees outside of your order by your bank, please contact your bank for more details.</string>
     <string name="Processing_Fee">Processing Fee</string>
-    <string name="Fees_tip">You may cost more fees by bank.</string>
+    <string name="Fees_tip">You may be charged additional fees by your bank that are not included in the order. Please contact your bank for more information.</string>
     <string name="Use_New_Price">Use New Price</string>
     <string name="Google_Pay_error">Google pay is not available</string>
     <string name="Card_Number">Card Number</string>
@@ -1304,5 +1303,10 @@
     <string name="Unsupported_payment_method">Unsupported payment method</string>
     <string name="card_delete_title">Delete card: %1$s</string>
     <string name="buy_declined_description">Transaction declined</string>
-    <string name="scan_frontSlide_title">Please take a photo of the page containing personal information and a picture</string>
+    <string name="Payment_Method">Payment Method</string>
+    <string name="Exchange_Rate">Exchange Rate</string>
+    <string name="Token_Amount">Token Amount</string>
+    <string name="Fees_by_Gateway">Fees by Processor</string>
+    <string name="Fees_by_Mixin">Fees by Mixin</string>
+    <string name="Purchase_Total_Amount">Purchase Total Amount</string>
 </resources>

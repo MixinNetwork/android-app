@@ -2,9 +2,11 @@ package one.mixin.android.ui.wallet.fiatmoney
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.TypedValue.COMPLEX_UNIT_SP
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
+import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.wallet.button.ButtonOptions
@@ -25,7 +27,6 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -36,7 +37,6 @@ import one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment.Companion.ARGS_
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.cardIcon
-import org.json.JSONException
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -98,13 +98,48 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             buyVa.displayedChild = 2
             assetAvatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             assetAvatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            feeRl.setOnClickListener {
-                if (info.feePercent != "") {
-                    FeeBottomSheetDialogFragment.newInstance(info).showNow(parentFragmentManager, FeeBottomSheetDialogFragment.TAG)
-                } else {
-                    toast(R.string.Please_wait_a_bit)
-                }
-            }
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                payWith,
+                8,
+                14,
+                1,
+                COMPLEX_UNIT_SP,
+            )
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                priceTv,
+                8,
+                14,
+                1,
+                COMPLEX_UNIT_SP,
+            )
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                feeTv,
+                8,
+                14,
+                1,
+                COMPLEX_UNIT_SP,
+            )
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                feeMixinTv,
+                8,
+                14,
+                1,
+                COMPLEX_UNIT_SP,
+            )
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                tokenTv,
+                8,
+                14,
+                1,
+                COMPLEX_UNIT_SP,
+            )
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                purchaseTotalTv,
+                8,
+                14,
+                1,
+                COMPLEX_UNIT_SP,
+            )
             buyVa.isEnabled = false
             try {
                 val allowedPaymentMethods = """
@@ -127,7 +162,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                     googlePayButton.isClickable = false
                     showVerify(it)
                 }
-            } catch (e: JSONException) {
+            } catch (e: Exception) {
                 Timber.e(e)
             }
             continueTv.setOnClickListener(::showVerify)
@@ -149,10 +184,12 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             // place, not display
             setAssetAmount("1")
             payWith.setCompoundDrawables(logo, null, null, null)
-            priceTv.text = info.assetPrice
-            purchaseTv.text = info.purchase
-            feeTv.text = info.fee
-            totalTv.text = info.total
+            priceTv.text = info.exchangeRate
+            purchaseTotalTv.text = info.purchase
+            tokenTv.text = info.purchase
+            feeTv.text = info.feeByGateway
+            feeMixinTv.text = info.feeByMixin
+            purchaseTotalTv.text = info.purchaseTotal
         }
         refresh()
     }
@@ -178,7 +215,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
         calculating,
         calculating,
         calculating,
-        "",
+        calculating,
         "",
     )
 
@@ -200,18 +237,19 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                         val ticker = response.data ?: continue
                         info = OrderInfo(
                             "$scheme...$last4",
-                            "1 ${asset.symbol} = ${ticker.assetPrice} ${currency.name}",
+                            "1 ${asset.symbol} ≈ ${ticker.assetPrice} ${currency.name}",
                             "${ticker.purchase} ${ticker.currency}",
-                            "${ticker.fee} ${ticker.currency}",
+                            "${ticker.feeByGateway} ${ticker.currency}",
+                            "${ticker.feeByMixin} ${ticker.currency}",
                             "${ticker.totalAmount} ${ticker.currency}",
-                            ticker.feePercent,
                             ticker.assetAmount,
                         )
                         binding.apply {
-                            priceTv.text = info.assetPrice
-                            purchaseTv.text = info.purchase
-                            feeTv.text = info.fee
-                            totalTv.text = info.total
+                            priceTv.text = info.exchangeRate
+                            feeTv.text = info.feeByGateway
+                            feeMixinTv.text = info.feeByMixin
+                            tokenTv.text = "${info.assetAmount} ${asset.symbol}"
+                            purchaseTotalTv.text = info.purchaseTotal
                             setAssetAmount(info.assetAmount)
                             assetName.isVisible = true
                             if (!buyVa.isEnabled) {
