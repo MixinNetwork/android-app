@@ -97,6 +97,7 @@ internal constructor(
         var minimum: Int = 15,
         var maximum: Int = 1000,
         var assetPrice: Float = 1f,
+        var feePercent: Float = 0f,
     ) : Parcelable
 
     var isReverse: Boolean = false

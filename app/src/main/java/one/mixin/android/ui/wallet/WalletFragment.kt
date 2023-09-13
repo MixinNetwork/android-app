@@ -172,7 +172,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 RouteTickerRequest(
                                     0,
                                     currency,
-                                    assetId
+                                    assetId,
                                 ),
                             )
                             if (tickerResponse.isSuccess) {
@@ -182,6 +182,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                     maximum = tickerResponse.data!!.maximum.toIntOrNull()
                                         ?: 0,
                                     assetPrice = tickerResponse.data!!.assetPrice.toFloatOrNull()
+                                        ?: 0f,
+                                    feePercent = tickerResponse.data!!.feePercent.toFloatOrNull()
                                         ?: 0f,
                                 )
                                 state

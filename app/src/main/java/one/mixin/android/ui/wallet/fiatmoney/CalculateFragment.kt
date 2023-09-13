@@ -52,6 +52,7 @@ import one.mixin.android.vo.sumsub.KycState
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -110,6 +111,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         minimum = it.data?.minimum?.toIntOrNull() ?: 0,
                         maximum = it.data?.maximum?.toIntOrNull() ?: 0,
                         assetPrice = it.data?.assetPrice?.toFloatOrNull() ?: 0f,
+                        feePercent = it.data?.feePercent?.toFloatOrNull() ?: 0f,
                     )
                 }
             },
@@ -200,7 +202,21 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 )
                 continueVa.setOnClickListener {
                     checkKyc {
-                        val amount = AmountUtil.toAmount(v, fiatMoneyViewModel.currency!!.name)
+                        val value = if (v.endsWith(".")) {
+                            v.substring(0, v.length)
+                        } else {
+                            v
+                        }
+                        val feePercent = fiatMoneyViewModel.calculateState?.feePercent ?: 0f
+                        val assetPrice = fiatMoneyViewModel.calculateState?.assetPrice ?: 1f
+                        val amount = if (fiatMoneyViewModel.isReverse) {
+                            AmountUtil.toAmount(
+                                getPayAmount(value.toFloat(), assetPrice, feePercent),
+                                fiatMoneyViewModel.currency!!.name,
+                            )
+                        } else {
+                            AmountUtil.toAmount(value, fiatMoneyViewModel.currency!!.name)
+                        }
                         if (amount == null) {
                             toast("number error")
                         } else {
@@ -302,6 +318,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         val currency = fiatMoneyViewModel.currency ?: return
         val asset = fiatMoneyViewModel.asset ?: return
         val state = fiatMoneyViewModel.calculateState ?: return
+        val feePercent = fiatMoneyViewModel.calculateState?.feePercent ?: 0f
         if (!isAdded) return
         binding.apply {
             val value = if (v.endsWith(".")) {
@@ -310,7 +327,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 v
             }
             if (fiatMoneyViewModel.isReverse) {
-                val currentValue = value.toFloat() * state.assetPrice
+                val currentValue = value.toFloat() * state.assetPrice * (1f + feePercent)
                 if (value == "0") {
                     primaryTv.text = "0"
                     minorTv.text = "0 ${currency.name}"
@@ -353,11 +370,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         return BigDecimal(value).numberFormat2().let {
             if (v.endsWith(".")) {
                 "$it."
-            } 
-            else if (v.endsWith(".00")) {
+            } else if (v.endsWith(".00")) {
                 "$it.00"
-            } 
-            else if (v.endsWith(".0")) {
+            } else if (v.endsWith(".0")) {
                 "$it.0"
             } else {
                 it
@@ -527,5 +542,14 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             .build()
 
         snsSdk.launch()
+    }
+
+    private fun getPayAmount(assetAmount: Float, assetPrice: Float, feePercent: Float): String {
+        val merchant = assetAmount * assetPrice
+        val total = merchant / (1 - feePercent)
+        val fee = total - merchant
+        val roundedFee = BigDecimal(fee.toDouble()).setScale(2, RoundingMode.UP)
+        val payingAmount = roundedFee.plus(BigDecimal(merchant.toDouble())).setScale(2, RoundingMode.UP)
+        return payingAmount.toPlainString()
     }
 }
