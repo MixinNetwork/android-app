@@ -109,7 +109,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     fiatMoneyViewModel.calculateState = FiatMoneyViewModel.CalculateState(
                         minimum = it.data?.minimum?.toIntOrNull() ?: 0,
                         maximum = it.data?.maximum?.toIntOrNull() ?: 0,
-                        fiatPrice = it.data?.price?.toFloatOrNull() ?: 0f,
+                        assetPrice = it.data?.assetPrice?.toFloatOrNull() ?: 0f,
                     )
                 }
             },
@@ -307,7 +307,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 v
             }
             if (fiatMoneyViewModel.isReverse) {
-                val currentValue = value.toFloat() / state.fiatPrice
+                val currentValue = value.toFloat() * state.assetPrice
                 if (value == "0") {
                     primaryTv.text = "0"
                     minorTv.text = "0 ${currency.name}"
@@ -331,7 +331,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 } else {
                     primaryTv.text = getNumberFormat(value)
                     minorTv.text =
-                        "≈ ${getNumberFormat(String.format("%.2f", currentValue * state.fiatPrice))} ${asset.symbol}"
+                        "≈ ${getNumberFormat(String.format("%.2f", currentValue / state.assetPrice))} ${asset.symbol}"
                 }
                 continueVa.isEnabled = currentValue >= state.minimum && currentValue <= state.maximum
                 continueTv.isEnabled = continueVa.isEnabled
@@ -487,14 +487,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         val snsSdk = SNSMobileSDK.Builder(requireActivity())
             .withHandlers(onStateChanged = onSDKStateChangedHandler, onError = onSDKErrorHandler, onCompleted = onSDKCompletedHandler)
             .withAccessToken(accessToken, onTokenExpiration = tokenExpirationHandler)
-            .withConf(
-                SNSInitConfig(
-                    strings = mapOf(
-                        "sns_step_IDENTITY_scan_frontSide_title" to getString(R.string.scan_frontSlide_title),
-                        "sns_general_poweredBy" to "Powered and processed by Sumsub, no information is collected by Mixin.",
-                    ),
-                ),
-            )
             .withLocale(
                 if (isFollowSystem()) {
                     Locale.getDefault()

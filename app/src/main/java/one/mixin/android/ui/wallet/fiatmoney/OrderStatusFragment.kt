@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
@@ -13,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
+import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.checkout.threeds.Checkout3DSService
@@ -204,7 +206,24 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             cancelTv.setOnClickListener {
                 view.navigate(R.id.action_wallet_status_to_wallet)
             }
-
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(payWith, 8, 14, 1,
+                TypedValue.COMPLEX_UNIT_SP
+            )
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(priceTv, 8, 14, 1,
+                TypedValue.COMPLEX_UNIT_SP
+            )
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(feeTv, 8, 14, 1,
+                TypedValue.COMPLEX_UNIT_SP
+            )
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(feeMixinTv, 8, 14, 1,
+                TypedValue.COMPLEX_UNIT_SP
+            )
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(tokenTv, 8, 14, 1,
+                TypedValue.COMPLEX_UNIT_SP
+            )
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(purchaseTotalTv, 8, 14, 1,
+                TypedValue.COMPLEX_UNIT_SP
+            )
             val logo = when {
                 isGooglePay -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_google_pay_small)
                 else -> AppCompatResources.getDrawable(requireContext(), cardIcon(scheme))

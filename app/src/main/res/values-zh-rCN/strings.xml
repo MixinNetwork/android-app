@@ -1255,7 +1255,6 @@
     <string name="Processing_desc">支付请求已提交，正在检查您的支付和订单信息，请耐心等待。</string>
     <string name="Success_desc">成功支付 %1$s %2$s。%3$s将直接转入Mixin钱包。</string>
     <string name="Price_Expired">价格已过期</string>
-    <string name="Fee_desc">您有可能被您的银行收取订单之外的费用，请联系您的银行了解更多详情。</string>
     <string name="Processing_Fee">处理费</string>
     <string name="Fees_tip">您有可能被您的银行收取订单之外的费用，请联系您的银行了解更多。</string>
     <string name="Use_New_Price">使用新价格</string>
@@ -1274,7 +1273,6 @@
     <string name="Unsupported_payment_method">不支持的支付方式</string>
     <string name="card_delete_title">删除银行卡：%1$s</string>
     <string name="buy_declined_description">交易被拒绝</string>
-    <string name="scan_frontSlide_title">请拍摄证件中包含个人照片的页面</string>
     <string name="Payment_Method">支付方式</string>
     <string name="Exchange_Rate">价格</string>
     <string name="Token_Amount">代币总数</string>

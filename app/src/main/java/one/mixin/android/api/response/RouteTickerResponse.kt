@@ -13,8 +13,6 @@ class RouteTickerResponse(
     val feeByGateway: String,
     @SerializedName("fee_by_mixin")
     val feeByMixin: String,
-    @SerializedName("price")
-    val price: String,
     @SerializedName("asset_price")
     val assetPrice: String,
     @SerializedName("asset_amount")

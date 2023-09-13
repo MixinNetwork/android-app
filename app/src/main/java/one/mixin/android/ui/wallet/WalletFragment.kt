@@ -176,7 +176,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                         ?: 0,
                                     maximum = tickerResponse.data!!.maximum.toIntOrNull()
                                         ?: 0,
-                                    fiatPrice = tickerResponse.data!!.price.toFloatOrNull()
+                                    assetPrice = tickerResponse.data!!.assetPrice.toFloatOrNull()
                                         ?: 0f,
                                 )
                                 state
