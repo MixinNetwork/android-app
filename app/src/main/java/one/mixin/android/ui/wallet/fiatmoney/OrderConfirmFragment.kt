@@ -193,7 +193,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                         val ticker = response.data ?: continue
                         info = OrderInfo(
                             "$scheme...$last4",
-                            "1 ${asset.symbol} = ${ticker.assetPrice} ${currency.name}",
+                            "1 ${asset.symbol} ≈ ${ticker.assetPrice} ${currency.name}",
                             "${ticker.purchase} ${ticker.currency}",
                             "${ticker.feeByGateway} ${ticker.currency}",
                             "${ticker.feeByMixin} ${ticker.currency}",
