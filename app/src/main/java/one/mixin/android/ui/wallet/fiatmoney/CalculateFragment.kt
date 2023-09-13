@@ -10,7 +10,6 @@ import com.sumsub.sns.core.SNSMobileSDK
 import com.sumsub.sns.core.data.listener.TokenExpirationHandler
 import com.sumsub.sns.core.data.model.SNSCompletionResult
 import com.sumsub.sns.core.data.model.SNSException
-import com.sumsub.sns.core.data.model.SNSInitConfig
 import com.sumsub.sns.core.data.model.SNSSDKState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -350,6 +349,12 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         return BigDecimal(value).numberFormat2().let {
             if (v.endsWith(".")) {
                 "$it."
+            } 
+            else if (v.endsWith(".00")) {
+                "$it.00"
+            } 
+            else if (v.endsWith(".0")) {
+                "$it.0"
             } else {
                 it
             }

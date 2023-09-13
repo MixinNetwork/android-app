@@ -206,23 +206,47 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             cancelTv.setOnClickListener {
                 view.navigate(R.id.action_wallet_status_to_wallet)
             }
-            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(payWith, 8, 14, 1,
-                TypedValue.COMPLEX_UNIT_SP
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                payWith,
+                8,
+                14,
+                1,
+                TypedValue.COMPLEX_UNIT_SP,
             )
-            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(priceTv, 8, 14, 1,
-                TypedValue.COMPLEX_UNIT_SP
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                priceTv,
+                8,
+                14,
+                1,
+                TypedValue.COMPLEX_UNIT_SP,
             )
-            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(feeTv, 8, 14, 1,
-                TypedValue.COMPLEX_UNIT_SP
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                feeTv,
+                8,
+                14,
+                1,
+                TypedValue.COMPLEX_UNIT_SP,
             )
-            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(feeMixinTv, 8, 14, 1,
-                TypedValue.COMPLEX_UNIT_SP
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                feeMixinTv,
+                8,
+                14,
+                1,
+                TypedValue.COMPLEX_UNIT_SP,
             )
-            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(tokenTv, 8, 14, 1,
-                TypedValue.COMPLEX_UNIT_SP
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                tokenTv,
+                8,
+                14,
+                1,
+                TypedValue.COMPLEX_UNIT_SP,
             )
-            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(purchaseTotalTv, 8, 14, 1,
-                TypedValue.COMPLEX_UNIT_SP
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                purchaseTotalTv,
+                8,
+                14,
+                1,
+                TypedValue.COMPLEX_UNIT_SP,
             )
             val logo = when {
                 isGooglePay -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_google_pay_small)

@@ -2,7 +2,6 @@ package one.mixin.android.ui.wallet.fiatmoney
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.TypedValue
 import android.util.TypedValue.COMPLEX_UNIT_SP
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
@@ -99,23 +98,47 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             buyVa.displayedChild = 2
             assetAvatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             assetAvatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(payWith, 8, 14, 1,
-                COMPLEX_UNIT_SP
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                payWith,
+                8,
+                14,
+                1,
+                COMPLEX_UNIT_SP,
             )
-            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(priceTv, 8, 14, 1,
-                COMPLEX_UNIT_SP
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                priceTv,
+                8,
+                14,
+                1,
+                COMPLEX_UNIT_SP,
             )
-            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(feeTv, 8, 14, 1,
-                COMPLEX_UNIT_SP
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                feeTv,
+                8,
+                14,
+                1,
+                COMPLEX_UNIT_SP,
             )
-            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(feeMixinTv, 8, 14, 1,
-                COMPLEX_UNIT_SP
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                feeMixinTv,
+                8,
+                14,
+                1,
+                COMPLEX_UNIT_SP,
             )
-            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(tokenTv, 8, 14, 1,
-                COMPLEX_UNIT_SP
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                tokenTv,
+                8,
+                14,
+                1,
+                COMPLEX_UNIT_SP,
             )
-            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(purchaseTotalTv, 8, 14, 1,
-                COMPLEX_UNIT_SP
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                purchaseTotalTv,
+                8,
+                14,
+                1,
+                COMPLEX_UNIT_SP,
             )
             buyVa.isEnabled = false
             try {

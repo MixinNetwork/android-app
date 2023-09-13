@@ -10,7 +10,6 @@ import com.sumsub.sns.core.SNSMobileSDK
 import com.sumsub.sns.core.data.listener.TokenExpirationHandler
 import com.sumsub.sns.core.data.model.SNSCompletionResult
 import com.sumsub.sns.core.data.model.SNSException
-import com.sumsub.sns.core.data.model.SNSInitConfig
 import com.sumsub.sns.core.data.model.SNSSDKState
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
