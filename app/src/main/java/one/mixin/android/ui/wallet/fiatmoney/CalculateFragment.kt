@@ -59,7 +59,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         const val TAG = "CalculateFragment"
         const val CALCULATE_STATE = "calculate_state"
         const val CURRENT_CURRENCY = "current_currency"
-        private const val CURRENT_ASSET_ID = "current_asset_id"
+        const val CURRENT_ASSET_ID = "current_asset_id"
         fun newInstance() = CalculateFragment()
     }
 

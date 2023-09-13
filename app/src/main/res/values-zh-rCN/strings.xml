@@ -1253,7 +1253,7 @@
     <string name="Processing">处理中</string>
     <string name="buy_failed">交易失败</string>
     <string name="Processing_desc">支付请求已提交，正在检查您的支付和订单信息，请耐心等待。</string>
-    <string name="Success_desc">成功支付 %1$s %2$s。%3$s将直接转入Mixin钱包。</string>
+    <string name="Success_desc">成功支付 %1$s。%2$s将直接转入Mixin钱包。</string>
     <string name="Price_Expired">价格已过期</string>
     <string name="Processing_Fee">处理费</string>
     <string name="Fees_tip">您有可能被您的银行收取订单之外的费用，请联系您的银行了解更多。</string>

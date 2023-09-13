@@ -43,9 +43,11 @@ import one.mixin.android.api.response.RoutePaymentStatus
 import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteSessionStatus
 import one.mixin.android.databinding.FragmentOrderStatusBinding
+import one.mixin.android.extension.bold
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.withArgs
@@ -130,7 +132,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         binding.topVa.displayedChild = 0
         binding.title.setText(R.string.Success)
         binding.content.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
-        binding.content.text = getString(R.string.Success_desc, assetAmount, asset.symbol, asset.symbol)
+        binding.content.text = getString(R.string.Success_desc, "$assetAmount ${asset.symbol}", asset.symbol)
+        binding.content.bold("$assetAmount ${asset.symbol}")
         binding.transparentMask.isVisible = false
     }
 
