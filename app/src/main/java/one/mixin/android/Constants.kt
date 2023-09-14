@@ -306,6 +306,7 @@ object Constants {
     object RouteConfig {
         const val PAN_ONLY = "pan_only"
         const val CRYPTOGRAM_3DS = "cryptogram_3ds"
+        const val PREPAID = "PREPAID"
 
         val SUPPORTED_METHODS = listOf(
             "PAN_ONLY",

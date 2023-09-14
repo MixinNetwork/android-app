@@ -334,6 +334,9 @@
             android:name="args_instrument_id"
             app:argType="string" />
         <argument
+            android:name="args_card_type"
+            app:argType="string" />
+        <argument
             android:name="args_scheme"
             app:argType="string" />
         <argument
@@ -365,6 +368,9 @@
             app:argType="long" />
         <argument
             android:name="args_instrument_id"
+            app:argType="string" />
+        <argument
+            android:name="args_card_type"
             app:argType="string" />
         <argument
             android:name="args_scheme"

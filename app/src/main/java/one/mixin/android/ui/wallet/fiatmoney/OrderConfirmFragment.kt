@@ -48,6 +48,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
         const val ARGS_SCHEME = "args_scheme"
         const val ARGS_LAST = "args_last4"
         const val ARGS_INSTRUMENT_ID = "args_instrument_id"
+        const val ARGS_CARD_TYPE = "args_card_type"
         const val ARGS_AMOUNT = "args_amount"
 
         fun newInstance(assetItem: AssetItem, currency: Currency) =
