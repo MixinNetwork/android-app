@@ -1310,4 +1310,7 @@
     <string name="Fees_by_Gateway">Fees by Processor</string>
     <string name="Fees_by_Mixin">Fees by Mixin</string>
     <string name="Purchase_Total_Amount">Purchase Total Amount</string>
+    <string name="Billing_Address">Billing Address</string>
+    <string name="Edit_Billing_Address">Edit Billing Address</string>
+    <string name="Address_line_1">Address line 1</string>
 </resources>

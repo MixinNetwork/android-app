@@ -1280,4 +1280,6 @@
     <string name="Fees_by_Gateway">支付网关费用</string>
     <string name="Fees_by_Mixin">Mixin 手续费</string>
     <string name="Purchase_Total_Amount">购买总金额</string>
+    <string name="Billing_Address">帐单地址</string>
+    <string name="Edit_Billing_Address">编辑帐单地址</string>
 </resources>

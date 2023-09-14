@@ -62,14 +62,22 @@ object CustomPaymentFormTheme {
                 ).setTitleTextId(
                     R.string.Add_New_Card,
                 ).build(),
+                billingSummaryTextStyle = PaymentFormComponentBuilder()
+                    .setIsFieldOptional(true)
+                    .setIsFieldHidden(false)
+                    .setTitleTextId(R.string.Billing_Address)
+                    .setPaymentFormField(PaymentFormComponentField.BillingSummaryHeader)
+                    .build(),
                 addBillingSummaryButton = PaymentFormComponentBuilder()
                     .setIsFieldOptional(true)
-                    .setIsFieldHidden(true)
+                    .setIsFieldHidden(false)
+                    .setTitleTextId(R.string.Billing_Address)
                     .setPaymentFormField(PaymentFormComponentField.AddBillingSummaryButton)
                     .build(),
                 editBillingSummaryButton = PaymentFormComponentBuilder()
                     .setIsFieldOptional(true)
-                    .setIsFieldHidden(true)
+                    .setIsFieldHidden(false)
+                    .setTitleTextId(R.string.Edit_Billing_Address)
                     .setPaymentFormField(PaymentFormComponentField.AddBillingSummaryButton)
                     .build(),
                 cardHolderName = PaymentFormComponentBuilder()
@@ -77,6 +85,19 @@ object CustomPaymentFormTheme {
                     .setTitleTextId(R.string.Cardholder_Name)
                     .setIsFieldOptional(true)
                     .setIsFieldHidden(false).build(),
+                addressLineOne = PaymentFormComponentBuilder()
+                    .setPaymentFormField(PaymentFormComponentField.AddressLineOne)
+                    .setTitleTextId(R.string.Address_line_1)
+                    .setIsFieldOptional(true)
+                    .setIsFieldHidden(false)
+                    .build(),
+
+                addressLineTwo = PaymentFormComponentBuilder()
+                    .setPaymentFormField(PaymentFormComponentField.AddressLineOne)
+                    .setTitleTextId(R.string.Address_line_1)
+                    .setIsFieldOptional(true)
+                    .setIsFieldHidden(false)
+                    .build(),
             ),
             paymentFormShape = PaymentFormShape(
                 inputFieldShape = Shape.RoundCorner,
