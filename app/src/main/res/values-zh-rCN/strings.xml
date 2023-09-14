@@ -1282,4 +1282,10 @@
     <string name="Purchase_Total_Amount">购买总金额</string>
     <string name="Billing_Address">帐单地址</string>
     <string name="Edit_Billing_Address">编辑帐单地址</string>
+    <string name="Address_Line_1">地址 1</string>
+    <string name="Address_Line_2">地址 2</string>
+    <string name="Country">国家</string>
+    <string name="Postcode_Zip">邮编</string>
+    <string name="State">省</string>
+    <string name="City">市</string>
 </resources>

@@ -1312,5 +1312,10 @@
     <string name="Purchase_Total_Amount">Purchase Total Amount</string>
     <string name="Billing_Address">Billing Address</string>
     <string name="Edit_Billing_Address">Edit Billing Address</string>
-    <string name="Address_line_1">Address line 1</string>
+    <string name="Address_Line_1">Address Line 1</string>
+    <string name="Address_Line_2">Address Line 2</string>
+    <string name="Country">Country</string>
+    <string name="Postcode_Zip">PostCode / Zip</string>
+    <string name="State">State</string>
+    <string name="City">City</string>
 </resources>
