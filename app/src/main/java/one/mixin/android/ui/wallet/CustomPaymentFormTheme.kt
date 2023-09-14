@@ -97,7 +97,7 @@ object CustomPaymentFormTheme {
                     .setPaymentFormField(PaymentFormComponentField.BillingFormCardHolderName)
                     .setTitleTextId(R.string.Cardholder_Name)
                     .setIsFieldOptional(true)
-                    .setIsFieldHidden(false)
+                    .setIsFieldHidden(true)
                     .build(),
                 addressLineOne = PaymentFormComponentBuilder()
                     .setPaymentFormField(PaymentFormComponentField.AddressLineOne)
