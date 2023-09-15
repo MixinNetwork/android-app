@@ -195,7 +195,11 @@ fun ScopesContent(
     scopes: MutableSet<Scope>,
     onConfirmed: ((List<String>) -> Unit)?,
 ) {
-    val pagerState = rememberPagerState(initialPage = 0)
+    val pagerState = rememberPagerState(
+        initialPage = 0,
+        initialPageOffsetFraction = 0f,
+        pageCount = { scopeGroup.size }
+    )
     val scope = rememberCoroutineScope()
     Column {
         HorizontalPager(
@@ -203,7 +207,6 @@ fun ScopesContent(
                 .weight(1f)
                 .padding(vertical = 16.dp, horizontal = 4.dp),
             state = pagerState,
-            pageCount = scopeGroup.size,
             verticalAlignment = Alignment.Top,
         ) { page ->
             val groupId = scopeGroup.keyAt(page)

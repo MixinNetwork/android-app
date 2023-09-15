@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.CompositionLocalProvider
@@ -234,25 +235,25 @@ class SettingComposeFragment : BaseFragment() {
                             startDestination = SettingDestination.Setting.name,
                             enterTransition = {
                                 slideIntoContainer(
-                                    AnimatedContentScope.SlideDirection.Left,
+                                    AnimatedContentTransitionScope.SlideDirection.Left,
                                     animationSpec = tween(300),
                                 )
                             },
                             popEnterTransition = {
                                 slideIntoContainer(
-                                    AnimatedContentScope.SlideDirection.Right,
+                                    AnimatedContentTransitionScope.SlideDirection.Right,
                                     animationSpec = tween(300),
                                 )
                             },
                             exitTransition = {
                                 slideOutOfContainer(
-                                    AnimatedContentScope.SlideDirection.Left,
+                                    AnimatedContentTransitionScope.SlideDirection.Left,
                                     animationSpec = tween(300),
                                 )
                             },
                             popExitTransition = {
                                 slideOutOfContainer(
-                                    AnimatedContentScope.SlideDirection.Right,
+                                    AnimatedContentTransitionScope.SlideDirection.Right,
                                     animationSpec = tween(300),
                                 )
                             },
