@@ -367,7 +367,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     }
 
     private fun getNumberFormat(value: String): String {
-        return BigDecimal(value).numberFormat2().let {
+        return value.numberFormat2().let {
             if (v.endsWith(".")) {
                 "$it."
             } else if (v.endsWith(".00")) {
