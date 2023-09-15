@@ -58,6 +58,10 @@ interface AssetDao : BaseDao<Asset> {
     fun assetItems(): LiveData<List<AssetItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("""$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:assetIds) $POSTFIX_ASSET_ITEM """)
+    fun assetItems(assetIds: List<String>): LiveData<List<AssetItem>>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """$PREFIX_ASSET_ITEM 
         WHERE a1.balance > 0 

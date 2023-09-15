@@ -80,8 +80,6 @@ android {
         buildConfig = true
     }
 
-    kotlin { jvmToolchain(17) }
-
     sourceSets {
         String sharedTestDir = 'src/sharedTest/java'
         test {
