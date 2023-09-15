@@ -170,7 +170,13 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             binding.rvVa.displayedChild = POS_RV
             binding.pb.isVisible = true
 
-            val localAssets = bottomViewModel.fuzzySearchAssets(query)
+            val localAssets = bottomViewModel.fuzzySearchAssets(query).let { list ->
+                if (!assetIds.isNullOrEmpty()) {
+                    list?.filter { item -> assetIds!!.contains(item.assetId) }
+                } else {
+                    list
+                }
+            }
             adapter.submitList(localAssets)
 
             val remoteAssets = bottomViewModel.queryAsset(query)
