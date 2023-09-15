@@ -499,7 +499,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             }
         }
 
-        val onSDKCompletedHandler: (SNSCompletionResult, SNSSDKState) -> Unit = { result, state ->
+        val onSDKCompletedHandler: (SNSCompletionResult, SNSSDKState) -> Unit = { result, _ ->
             when (result) {
                 is SNSCompletionResult.SuccessTermination -> Timber.e("The SDK finished successfully")
                 is SNSCompletionResult.AbnormalTermination -> Timber.e(result.exception, "The SDK got closed because of errors")

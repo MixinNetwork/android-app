@@ -9,9 +9,9 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.NavHostController
-import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.safeNavigateUp
@@ -44,8 +44,8 @@ class WalletConnectFragment : BaseFragment() {
                 MixinAppTheme(
                     darkTheme = context.isNightMode(),
                 ) {
-                    val navController = rememberAnimatedNavController()
-                    AnimatedNavHost(
+                    val navController = rememberNavController()
+                    NavHost(
                         navController = navController,
                         startDestination = WCDestination.Connections.name,
                         enterTransition = {
