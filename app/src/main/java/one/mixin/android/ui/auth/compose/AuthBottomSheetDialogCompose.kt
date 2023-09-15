@@ -198,7 +198,7 @@ fun ScopesContent(
     val pagerState = rememberPagerState(
         initialPage = 0,
         initialPageOffsetFraction = 0f,
-        pageCount = { scopeGroup.size }
+        pageCount = { scopeGroup.size },
     )
     val scope = rememberCoroutineScope()
     Column {

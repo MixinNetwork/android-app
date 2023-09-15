@@ -36,7 +36,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.AppearanceFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.setting.getLanguagePos
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.AssetListFixedBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.FiatListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.IdentityFragment.Companion.ARGS_KYC_STATE
 import one.mixin.android.ui.wallet.IdentityFragment.Companion.ARGS_TOKEN
@@ -130,8 +130,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 titleView.setSubTitle(getString(R.string.Buy), "")
                 titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
                 assetRl.setOnClickListener {
-                    AssetListBottomSheetDialogFragment.newInstance(
-                        false,
+                    AssetListFixedBottomSheetDialogFragment.newInstance(
                         ArrayList((requireActivity() as WalletActivity).supportAssetIds),
                     ).setOnAssetClick { asset ->
                         this@CalculateFragment.lifecycleScope.launch {
@@ -140,7 +139,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             refresh()
                             updateUI()
                         }
-                    }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                    }.showNow(parentFragmentManager, AssetListFixedBottomSheetDialogFragment.TAG)
                 }
                 fiatRl.setOnClickListener {
                     FiatListBottomSheetDialogFragment.newInstance(fiatMoneyViewModel.currency!!, (requireActivity() as WalletActivity).supportCurrencies).apply {

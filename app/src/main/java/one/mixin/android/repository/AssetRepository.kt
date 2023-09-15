@@ -230,6 +230,8 @@ constructor(
 
     fun assetItems() = assetDao.assetItems()
 
+    fun assetItems(assetIds: List<String>) = assetDao.assetItems(assetIds)
+
     suspend fun fuzzySearchAsset(query: String, cancellationSignal: CancellationSignal) =
         DataProvider.fuzzySearchAsset(query, query, appDatabase, cancellationSignal)
 
