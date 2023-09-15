@@ -387,7 +387,7 @@ dependencies {
     // accompanist
     implementation "com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}"
     implementation "com.google.accompanist:accompanist-pager:0.30.1"
-    implementation "com.google.accompanist:accompanist-pager-indicators:0.30.1"
+    implementation "com.google.accompanist:accompanist-pager-indicators:0.32.0"
 
     // wallet connect && web3j
     implementation "org.web3j:core:4.10.1" // ⚠️ dependabot unexpected behavior update to version 5.0.0
