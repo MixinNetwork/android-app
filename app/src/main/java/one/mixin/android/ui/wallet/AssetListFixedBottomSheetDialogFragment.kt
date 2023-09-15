@@ -11,6 +11,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
+import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.equalsIgnoreCase
@@ -53,7 +54,7 @@ class AssetListFixedBottomSheetDialogFragment : MixinBottomSheetDialogFragment()
         super.setupDialog(dialog, style)
         contentView = binding.root
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight() + 48.dp
+            height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
