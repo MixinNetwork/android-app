@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.checkout.base.model.CardScheme
 import com.checkout.frames.api.PaymentFlowHandler
 import com.checkout.frames.api.PaymentFormMediator
 import com.checkout.frames.screen.paymentform.model.PaymentFormConfig
@@ -12,6 +11,7 @@ import com.checkout.frames.style.theme.paymentform.PaymentFormStyleProvider
 import com.checkout.tokenization.model.TokenDetails
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.RouteConfig.CHECKOUT_ENVIRONMENT
+import one.mixin.android.Constants.RouteConfig.SUPPORTED_CARD_SCHEME
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.isNightMode
@@ -52,7 +52,7 @@ class PaymentFragment : BaseFragment() {
         style = PaymentFormStyleProvider.provide(
             CustomPaymentFormTheme.providePaymentFormTheme(MixinApplication.appContext.isNightMode()),
         ),
-        supportedCardSchemeList = listOf(CardScheme.VISA, CardScheme.MASTERCARD),
+        supportedCardSchemeList = SUPPORTED_CARD_SCHEME,
     )
     private val paymentFormMediator = PaymentFormMediator(paymentFormConfig)
     override fun onCreateView(
