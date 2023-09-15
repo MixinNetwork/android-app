@@ -81,9 +81,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
         fiatMoneyViewModel.currency = supportCurrencies.find {
             it.name == currencyName
-        } ?: supportCurrencies.last()
+        } ?: supportCurrencies.lastOrNull()
         fiatMoneyViewModel.asset = fiatMoneyViewModel.findAssetsByIds((requireActivity() as WalletActivity).supportAssetIds).let { list ->
-            list.find { it.assetId == assetId } ?: list.first()
+            list.find { it.assetId == assetId } ?: list.firstOrNull()
         }
         fiatMoneyViewModel.calculateState = requireArguments().getParcelableCompat(
             CALCULATE_STATE,
@@ -367,7 +367,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     }
 
     private fun getNumberFormat(value: String): String {
-        return BigDecimal(value).numberFormat2().let {
+        return value.numberFormat2().let {
             if (v.endsWith(".")) {
                 "$it."
             } else if (v.endsWith(".00")) {
