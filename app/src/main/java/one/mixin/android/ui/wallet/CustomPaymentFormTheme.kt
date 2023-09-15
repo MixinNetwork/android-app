@@ -62,14 +62,22 @@ object CustomPaymentFormTheme {
                 ).setTitleTextId(
                     R.string.Add_New_Card,
                 ).build(),
+                billingSummaryTextStyle = PaymentFormComponentBuilder()
+                    .setIsFieldOptional(true)
+                    .setIsFieldHidden(false)
+                    .setTitleTextId(R.string.Billing_Address)
+                    .setPaymentFormField(PaymentFormComponentField.BillingSummaryHeader)
+                    .build(),
                 addBillingSummaryButton = PaymentFormComponentBuilder()
                     .setIsFieldOptional(true)
-                    .setIsFieldHidden(true)
+                    .setIsFieldHidden(false)
+                    .setTitleTextId(R.string.Billing_Address)
                     .setPaymentFormField(PaymentFormComponentField.AddBillingSummaryButton)
                     .build(),
                 editBillingSummaryButton = PaymentFormComponentBuilder()
                     .setIsFieldOptional(true)
-                    .setIsFieldHidden(true)
+                    .setIsFieldHidden(false)
+                    .setTitleTextId(R.string.Edit_Billing_Address)
                     .setPaymentFormField(PaymentFormComponentField.AddBillingSummaryButton)
                     .build(),
                 cardHolderName = PaymentFormComponentBuilder()
@@ -77,6 +85,66 @@ object CustomPaymentFormTheme {
                     .setTitleTextId(R.string.Cardholder_Name)
                     .setIsFieldOptional(true)
                     .setIsFieldHidden(false).build(),
+                billingDetailsHeader = PaymentFormComponentBuilder()
+                    .setPaymentFormField(PaymentFormComponentField.BillingDetailsHeader)
+                    .setTitleTextId(R.string.Billing_Address)
+                    .build(),
+                billingDetailsHeaderButton = PaymentFormComponentBuilder()
+                    .setPaymentFormField(PaymentFormComponentField.BillingDetailsHeaderButton)
+                    .setTitleTextId(R.string.Done)
+                    .build(),
+                billingFormCardHolderName = PaymentFormComponentBuilder()
+                    .setPaymentFormField(PaymentFormComponentField.BillingFormCardHolderName)
+                    .setTitleTextId(R.string.Cardholder_Name)
+                    .setIsFieldOptional(true)
+                    .setIsFieldHidden(true)
+                    .build(),
+                addressLineOne = PaymentFormComponentBuilder()
+                    .setPaymentFormField(PaymentFormComponentField.AddressLineOne)
+                    .setTitleTextId(R.string.Address_Line_1)
+                    .setIsFieldOptional(true)
+                    .setIsFieldHidden(false)
+                    .build(),
+                addressLineTwo = PaymentFormComponentBuilder()
+                    .setPaymentFormField(PaymentFormComponentField.AddressLineTwo)
+                    .setTitleTextId(R.string.Address_Line_2)
+                    .setIsFieldOptional(true)
+                    .setIsFieldHidden(false)
+                    .build(),
+                city = PaymentFormComponentBuilder()
+                    .setPaymentFormField(PaymentFormComponentField.City)
+                    .setTitleTextId(R.string.City)
+                    .setIsFieldOptional(true)
+                    .setIsFieldHidden(false)
+                    .build(),
+                state = PaymentFormComponentBuilder()
+                    .setPaymentFormField(PaymentFormComponentField.State)
+                    .setTitleTextId(R.string.State)
+                    .setIsFieldOptional(true)
+                    .setIsFieldHidden(false)
+                    .build(),
+                postCode = PaymentFormComponentBuilder()
+                    .setPaymentFormField(PaymentFormComponentField.PostCode)
+                    .setTitleTextId(R.string.Postcode_Zip)
+                    .setIsFieldOptional(true)
+                    .setIsFieldHidden(false)
+                    .build(),
+                phone = PaymentFormComponentBuilder()
+                    .setPaymentFormField(PaymentFormComponentField.Phone)
+                    .setTitleTextId(R.string.Phone_Number)
+                    .setIsFieldOptional(false)
+                    .setIsFieldHidden(false)
+                    .build(),
+                country = PaymentFormComponentBuilder()
+                    .setPaymentFormField(PaymentFormComponentField.Country)
+                    .setTitleTextId(R.string.Country)
+                    .setIsFieldOptional(false)
+                    .setIsFieldHidden(false)
+                    .build(),
+                countryPicker = PaymentFormComponentBuilder()
+                    .setPaymentFormField(PaymentFormComponentField.CountryPicker)
+                    .setTitleTextId(R.string.Country)
+                    .build(),
             ),
             paymentFormShape = PaymentFormShape(
                 inputFieldShape = Shape.RoundCorner,
