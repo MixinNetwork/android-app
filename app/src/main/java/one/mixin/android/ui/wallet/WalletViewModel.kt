@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.wallet
 
 import android.content.SharedPreferences
@@ -59,7 +61,7 @@ internal constructor(
         assetId: String,
         type: String? = null,
         otherType: String? = null,
-        initialLoadKey: Int? = 0,
+        @Suppress("UNUSED_PARAMETER") initialLoadKey: Int? = 0,
         orderByAmount: Boolean = false,
     ): LiveData<PagingData<SnapshotItem>> =
         assetRepository.snapshots(assetId, type, otherType, orderByAmount)
