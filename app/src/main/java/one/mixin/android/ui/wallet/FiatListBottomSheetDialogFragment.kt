@@ -10,7 +10,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentFiatListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.getParcelableCompat
