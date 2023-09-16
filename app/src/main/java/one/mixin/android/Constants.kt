@@ -1,6 +1,7 @@
 package one.mixin.android
 
 import android.graphics.Color
+import com.checkout.base.model.CardScheme
 import com.checkout.base.model.Environment
 import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
@@ -313,11 +314,13 @@ object Constants {
         )
 
         val SUPPORTED_NETWORKS = listOf(
-            "MASTERCARD",
             "VISA",
+            "MASTERCARD",
             "AMEX",
             "JCB",
         )
+
+        val SUPPORTED_CARD_SCHEME = listOf(CardScheme.VISA, CardScheme.MASTERCARD, CardScheme.AMERICAN_EXPRESS, CardScheme.JCB)
 
         const val ROUTE_BOT_USER_ID = "61cb8dd4-16b1-4744-ba0c-7b2d2e52fc59"
 
