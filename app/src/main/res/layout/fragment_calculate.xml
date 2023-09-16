@@ -12,15 +12,6 @@
         android:layout_width="match_parent"
         android:layout_height="0dp">
 
-        <one.mixin.android.widget.TitleView
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:id="@+id/title_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:need_divider="false" />
-
         <TextView
             android:id="@+id/primary_tv"
             android:layout_width="wrap_content"
@@ -171,6 +162,15 @@
             android:src="@drawable/ic_arrow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
+
+        <one.mixin.android.widget.TitleView
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:id="@+id/title_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:need_divider="false" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <one.mixin.android.widget.Keyboard
