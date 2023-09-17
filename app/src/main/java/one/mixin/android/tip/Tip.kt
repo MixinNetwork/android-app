@@ -358,7 +358,7 @@ class Tip @Inject internal constructor(
         val e = result.exceptionOrNull()
         if (e != null) {
             if (e is TipNetworkException && e.error.code == ErrorHandler.BAD_DATA) {
-                reportException("Tip tip/secret meet bad data", e)
+                reportException("Tip tip-secret meet bad data", e)
 
                 val msg = TipBody.forVerify(timestamp)
                 val goSigBase64 = Ed25519.sign(msg, stSeed).base64RawURLEncode()
@@ -373,7 +373,7 @@ class Tip @Inject internal constructor(
                 )
                 Timber.e("use go-ed25519 before updateTipSecret")
                 tipNetworkNullable { tipService.updateTipSecret(request) }.getOrThrow()
-                reportException("Tip tip/secret go update success after bad data", e)
+                reportException("Tip tip-secret go update success after bad data", e)
             } else {
                 throw e
             }
