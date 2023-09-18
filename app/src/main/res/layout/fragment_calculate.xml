@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
@@ -7,234 +7,227 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_weight="1"
+    <TextView
+        android:id="@+id/info"
+        android:layout_gravity="center_horizontal"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
         android:layout_width="match_parent"
-        android:layout_height="0dp">
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="?attr/text_minor"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:textSize="12sp" />
+
+    <ViewAnimator
+        android:id="@+id/continue_va"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingStart="28dp"
+        android:paddingEnd="28dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp"
+        android:layout_marginBottom="16dp"
+        android:inAnimation="@anim/fade_in"
+        android:outAnimation="@anim/fade_out"
+        android:background="@drawable/bg_round_blue_btn_40"
+        app:layout_constraintBottom_toTopOf="@id/info"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <TextView
-            android:id="@+id/primary_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="72sp"
-            android:layout_marginStart="@dimen/margin16"
-            android:layout_marginEnd="@dimen/margin16"
-            android:layout_marginTop="80dp"
-            android:paddingStart="@dimen/margin16"
-            android:paddingEnd="@dimen/margin16"
-            android:singleLine="true"
-            android:gravity="center_vertical"
-            android:textColor="?attr/text_primary"
-            android:textSize="56sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/title_view"
-            tools:text="0"
-            tools:ignore="HardcodedText" />
-
-        <ImageView
-            android:id="@+id/switch_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/mixin_ripple"
-            android:padding="8dp"
-            android:src="@drawable/ic_switch"
-            android:text="0"
-            tools:ignore="ContentDescription,HardcodedText"
-            app:layout_constraintTop_toTopOf="@id/primary_tv"
-            app:layout_constraintBottom_toBottomOf="@id/primary_tv"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <TextView
-            android:id="@+id/primary_unit"
-            app:layout_constraintTop_toTopOf="@id/primary_tv"
-            app:layout_constraintStart_toEndOf="@id/primary_tv"
-            android:layout_marginTop="14sp"
-            android:textColor="?attr/text_primary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            tools:text="USD" />
-
-        <TextView
-            android:id="@+id/minor_tv"
-            android:textColor="?attr/text_minor"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            app:layout_constraintTop_toBottomOf="@id/primary_tv"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            tools:text="0 USDC" />
-
-        <LinearLayout
-            android:id="@+id/fiat_rl"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="@drawable/ripple_round_30"
-            android:paddingStart="14dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:layout_marginBottom="12dp"
-            android:layout_marginStart="32dp"
-            android:clipToPadding="false"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <ImageView
-                android:id="@+id/flag_iv"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginEnd="8dp"
-                android:layout_gravity="center_vertical"
-                android:contentDescription="@null"
-                android:layout_marginTop="2dp"
-                tools:src="@drawable/ic_flag_usd"/>
-
-            <TextView
-                style="@style/NormalTextStyle"
-                android:id="@+id/fiat_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                tools:text="USDT" />
-
-            <ImageView
-                android:id="@+id/fiat_expand_iv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_keyboard_arrow_down"
-                tools:ignore="ContentDescription" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/asset_rl"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="@drawable/ripple_round_30"
-            android:paddingStart="14dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:layout_marginBottom="12dp"
-            android:layout_marginEnd="32dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
-
-            <ImageView
-                android:id="@+id/asset_iv"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginEnd="8dp"
-                android:layout_gravity="center_vertical"
-                android:contentDescription="@null"
-                tools:src="@drawable/ic_flag_usd" />
-
-            <TextView
-                android:id="@+id/asset_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                style="@style/NormalTextStyle"
-                tools:text="USDT" />
-
-            <ImageView
-                android:id="@+id/asset_desc"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_keyboard_arrow_down"
-                tools:ignore="ContentDescription" />
-        </LinearLayout>
-
-        <ImageView
-            app:layout_constraintTop_toTopOf="@id/asset_rl"
-            app:layout_constraintBottom_toBottomOf="@id/asset_rl"
-            app:layout_constraintStart_toEndOf="@id/fiat_rl"
-            app:layout_constraintEnd_toStartOf="@id/asset_rl"
-            android:src="@drawable/ic_arrow"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <one.mixin.android.widget.TitleView
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:id="@+id/title_view"
+            android:layout_gravity="center"
+            android:id="@+id/continue_tv"
             android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/Buy"
+            tools:text="Buy USDT"
+            android:textColor="@color/selector_tv_white"
+            android:textSize="14sp" />
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:need_divider="false" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_gravity="center"
+            android:theme="@style/AppTheme.WhiteAccent" />
+    </ViewAnimator>
 
     <one.mixin.android.widget.Keyboard
         android:id="@+id/keyboard"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/continue_va" />
+
+    <one.mixin.android.widget.TitleView
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:need_divider="false" />
+
+    <TextView
+        android:id="@+id/primary_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="72sp"
+        android:layout_marginStart="@dimen/margin16"
+        android:layout_marginEnd="@dimen/margin16"
+        android:paddingStart="@dimen/margin16"
+        android:paddingEnd="@dimen/margin16"
+        android:singleLine="true"
+        android:gravity="center_vertical"
+        android:textColor="?attr/text_primary"
+        android:textSize="56sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title_view"
+        app:layout_constraintBottom_toTopOf="@id/fiat_rl"
+        tools:text="0"
+        tools:ignore="HardcodedText" />
+
+    <ImageView
+        android:id="@+id/switch_iv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/mixin_ripple"
+        android:padding="8dp"
+        android:src="@drawable/ic_switch"
+        android:text="0"
+        tools:ignore="ContentDescription,HardcodedText"
+        app:layout_constraintTop_toTopOf="@id/primary_tv"
+        app:layout_constraintBottom_toBottomOf="@id/primary_tv"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/primary_unit"
+        app:layout_constraintTop_toTopOf="@id/primary_tv"
+        app:layout_constraintStart_toEndOf="@id/primary_tv"
+        android:layout_marginTop="14sp"
+        android:textColor="?attr/text_primary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        tools:text="USD" />
+
+    <TextView
+        android:id="@+id/minor_tv"
+        android:textColor="?attr/text_minor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/primary_tv"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="0 USDC" />
 
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_marginTop="32dp"
-        android:layout_marginBottom="32dp"
-        android:layout_height="wrap_content">
+        android:id="@+id/fiat_rl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/ripple_round_30"
+        android:paddingStart="14dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:layout_marginBottom="12dp"
+        android:layout_marginStart="32dp"
+        android:clipToPadding="false"
+        app:layout_constraintBottom_toTopOf="@id/keyboard"
+        app:layout_constraintStart_toStartOf="parent">
 
-        <ViewAnimator
-            android:id="@+id/continue_va"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:clickable="true"
-            android:focusable="true"
-            android:paddingStart="28dp"
-            android:paddingEnd="28dp"
-            android:paddingTop="14dp"
-            android:paddingBottom="14dp"
-            android:layout_marginBottom="16dp"
-            android:inAnimation="@anim/fade_in"
-            android:outAnimation="@anim/fade_out"
-            android:background="@drawable/bg_round_blue_btn_40">
-
-            <TextView
-                android:layout_gravity="center"
-                android:id="@+id/continue_tv"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="@string/Buy"
-                tools:text="Buy USDT"
-                android:textColor="@color/selector_tv_white"
-                android:textSize="14sp" />
-
-            <ProgressBar
-                style="?android:attr/progressBarStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:theme="@style/AppTheme.WhiteAccent" />
-        </ViewAnimator>
+        <ImageView
+            android:id="@+id/flag_iv"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="8dp"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@null"
+            android:layout_marginTop="2dp"
+            tools:src="@drawable/ic_flag_usd" />
 
         <TextView
-            android:id="@+id/info"
-            android:layout_gravity="center_horizontal"
-            android:clickable="true"
-            android:focusable="true"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
+            style="@style/NormalTextStyle"
+            android:id="@+id/fiat_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:textColor="?attr/text_minor"
-            android:textSize="12sp" />
+            android:layout_marginEnd="8dp"
+            tools:text="USDT" />
 
+        <ImageView
+            android:id="@+id/fiat_expand_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_keyboard_arrow_down"
+            tools:ignore="ContentDescription" />
     </LinearLayout>
 
-</LinearLayout>
+    <LinearLayout
+        android:id="@+id/asset_rl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/ripple_round_30"
+        android:paddingStart="14dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:layout_marginBottom="12dp"
+        android:layout_marginEnd="32dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/keyboard">
+
+        <ImageView
+            android:id="@+id/asset_iv"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="8dp"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@null"
+            tools:src="@drawable/ic_flag_usd" />
+
+        <TextView
+            android:id="@+id/asset_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            style="@style/NormalTextStyle"
+            tools:text="USDT" />
+
+        <ImageView
+            android:id="@+id/asset_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_keyboard_arrow_down"
+            tools:ignore="ContentDescription" />
+    </LinearLayout>
+
+    <ImageView
+        app:layout_constraintTop_toTopOf="@id/asset_rl"
+        app:layout_constraintBottom_toBottomOf="@id/asset_rl"
+        app:layout_constraintStart_toEndOf="@id/fiat_rl"
+        app:layout_constraintEnd_toStartOf="@id/asset_rl"
+        android:src="@drawable/ic_arrow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@null" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
