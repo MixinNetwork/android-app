@@ -1232,7 +1232,6 @@
     <string name="identity_verifying_tip">正在验证您的身份。一旦您的验证完成，我们将通过 Mixin Messenger 向您发送消息。</string>
     <string name="Verification_Failed">验证失败</string>
     <string name="identity_verification_failed_tip">您的验证失败，可能是因为未提交所有必需的身份证明文件或某些文件存在问题。</string>
-    <string name="Service_Unavailable">服务不可用</string>
     <string name="identity_service_unavailable_tip">由于监管限制，目前我们无法提供更多信息。感谢您的耐心、理解，以及对加密货币的兴趣。</string>
     <string name="Additional_Verification">补充验证材料</string>
     <string name="identity_additional_verification_tip">根据监管需求，我们需要您补充验证材料。感谢您的理解与支持</string>
