@@ -43,14 +43,15 @@ class WalletActivity : BlazeBaseActivity() {
             if (currentAsset != null) {
                 setStartDestination(R.id.transactions_fragment)
                 addArgument(ARGS_ASSET, NavArgument.Builder().setDefaultValue(currentAsset).build())
-            } else if (isBuy) {
-                setStartDestination(R.id.wallet_calculate)
-            } else {
                 setStartDestination(R.id.wallet_fragment)
             }
         }
         if (navController != null && navGraph != null) {
-            navController.graph = navGraph
+            if (isBuy) {
+                navController.setGraph(navGraph, Bundle().apply { putBoolean(BUY, true) })
+            } else {
+                navController.graph = navGraph
+            }
         }
     }
 

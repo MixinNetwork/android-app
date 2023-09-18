@@ -135,7 +135,7 @@ class UrlInterpreterActivity : BaseActivity() {
                 TransferActivity.parseUri(this, uri, { finish() }) { finish() }
             }
             BUY -> {
-                WalletActivity.show(this)
+                WalletActivity.show(this, buy = true)
                 finish()
             }
         }

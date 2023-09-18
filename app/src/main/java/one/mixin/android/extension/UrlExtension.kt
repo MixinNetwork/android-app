@@ -73,7 +73,8 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.APPS, true) ||
         startsWith(Constants.Scheme.SNAPSHOTS, true) ||
         startsWith(Constants.Scheme.CONVERSATIONS, true) ||
-        startsWith(Constants.Scheme.TIP, true)
+        startsWith(Constants.Scheme.TIP, true) ||
+        startsWith(Constants.Scheme.BUY, true)
     ) {
         true
     } else {

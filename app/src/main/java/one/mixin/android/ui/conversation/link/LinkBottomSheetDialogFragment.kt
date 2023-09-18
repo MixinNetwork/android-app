@@ -81,6 +81,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
@@ -668,6 +669,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 ConfirmBottomFragment.show(requireContext(), parentFragmentManager, url)
                 dismiss()
             }
+        } else if (url.startsWith(Scheme.BUY, true)) {
+            WalletActivity.show(requireActivity(), buy = true)
+            dismiss()
         } else if (url.startsWith(Scheme.TIP, true)) {
             val uri = Uri.parse(url)
             handleTipScheme(uri)
