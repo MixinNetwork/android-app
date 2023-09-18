@@ -107,7 +107,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     }
 
     private fun toBuy() {
-        val sendReceiveView = _headBinding?.sendReceiveView?:return
+        val sendReceiveView = _headBinding?.sendReceiveView ?: return
         lifecycleScope.launch {
             sendReceiveView.buy.displayedChild = 1
             sendReceiveView.buy.isEnabled = false
@@ -117,8 +117,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 val key = walletViewModel.findBotPublicKey(
                     generateConversationId(
                         botId,
-                        Session.getAccountId()!!
-                    ), botId
+                        Session.getAccountId()!!,
+                    ),
+                    botId,
                 )
                 if (!key.isNullOrEmpty()) {
                     Session.routePublicKey = key
@@ -131,18 +132,18 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                             ParticipantSession(
                                 generateConversationId(
                                     sessionData.userId,
-                                    Session.getAccountId()!!
+                                    Session.getAccountId()!!,
                                 ),
                                 sessionData.userId,
                                 sessionData.sessionId,
-                                publicKey = sessionData.publicKey
-                            )
+                                publicKey = sessionData.publicKey,
+                            ),
                         )
                         Session.routePublicKey = sessionData.publicKey
                     } else {
                         throw MixinResponseException(
                             sessionResponse.errorCode,
-                            sessionResponse.errorDescription
+                            sessionResponse.errorDescription,
                         )
                     }
                 }
@@ -167,7 +168,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 } else {
                     throw MixinResponseException(
                         profileResponse.errorCode,
-                        profileResponse.errorDescription
+                        profileResponse.errorDescription,
                     )
                 }
             }.map { data ->
@@ -212,8 +213,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                         walletViewModel.deleteSessionByUserId(
                             generateConversationId(
                                 ROUTE_BOT_USER_ID,
-                                Session.getAccountId()!!
-                            ), ROUTE_BOT_USER_ID
+                                Session.getAccountId()!!,
+                            ),
+                            ROUTE_BOT_USER_ID,
                         )
                         toast(getString(R.string.Try_Again))
                         sendReceiveView.buy.displayedChild = 0
@@ -330,7 +332,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         }
         checkPin()
 
-        if (arguments?.getBoolean(WalletActivity.BUY) == true){
+        if (arguments?.getBoolean(WalletActivity.BUY) == true) {
             arguments?.remove(WalletActivity.BUY)
             toBuy()
         }

@@ -131,7 +131,7 @@ class Keyboard @JvmOverloads constructor(
         binding.diver.isVisible = false
     }
 
-    fun disableNestedScrolling(){
+    fun disableNestedScrolling() {
         binding.gvKeyboard.isNestedScrollingEnabled = false
     }
 }
