@@ -2049,12 +2049,14 @@ class ConversationFragment() :
                 encryptCategory(),
                 replyMessage = getRelyMessage(),
             )
-            binding.messageRv.postDelayed(
-                {
-                    scrollToDown()
-                },
-                1000,
-            )
+            if (!viewDestroyed()) {
+                binding.messageRv.postDelayed(
+                    {
+                        scrollToDown()
+                    },
+                    1000,
+                )
+            }
         }
     }
 

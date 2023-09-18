@@ -1,6 +1,6 @@
 package one.mixin.android.job
 
-import androidx.collection.ArrayMap
+import android.util.LruCache
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.db.makeMessageStatus
 import one.mixin.android.extension.getEpochNano
@@ -9,7 +9,7 @@ import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
 import java.util.UUID
 
-var pendingMessageStatusMap = ArrayMap<String, String>()
+var pendingMessageStatusLruCache = LruCache<String, String>(2000)
 
 class RefreshOffsetJob : MixinJob(
     Params(PRIORITY_UI_HIGH)
@@ -45,15 +45,15 @@ class RefreshOffsetJob : MixinJob(
                         if (mh != null) {
                             return@block
                         }
-                        val pendingMessageStatus = pendingMessageStatusMap[m.messageId]
+                        val pendingMessageStatus = pendingMessageStatusLruCache[m.messageId]
                         if (pendingMessageStatus != null) {
-                            val currentStatus = MessageStatus.values().firstOrNull { it.name == m.status }?.ordinal ?: return@block
-                            val localStatus = MessageStatus.values().firstOrNull { it.name == pendingMessageStatus }?.ordinal ?: return@block
+                            val currentStatus = MessageStatus.entries.firstOrNull { it.name == m.status }?.ordinal ?: return@block
+                            val localStatus = MessageStatus.entries.firstOrNull { it.name == pendingMessageStatus }?.ordinal ?: return@block
                             if (currentStatus > localStatus) {
-                                pendingMessageStatusMap[m.messageId] = m.status
+                                pendingMessageStatusLruCache.put(m.messageId, m.status)
                             }
                         } else {
-                            pendingMessageStatusMap[m.messageId] = m.status
+                            pendingMessageStatusLruCache.put(m.messageId, m.status)
                         }
                     }
                     pendingDatabase.makeMessageStatus(m.status, m.messageId, callback)

@@ -16,7 +16,7 @@ import one.mixin.android.job.DecryptCallMessage
 import one.mixin.android.job.DecryptMessage
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshUserJob
-import one.mixin.android.job.pendingMessageStatusMap
+import one.mixin.android.job.pendingMessageStatusLruCache
 import one.mixin.android.session.Session
 import one.mixin.android.util.FLOOD_THREAD
 import one.mixin.android.util.GsonHelper
@@ -160,7 +160,7 @@ class HedwigImp(
                     messageDecrypt.onRun(data)
                 }
                 pendingDatabase.deleteFloodMessage(message)
-                pendingMessageStatusMap.remove(data.messageId)
+                pendingMessageStatusLruCache.remove(data.messageId)
             }
             processFloodMessage()
         } else {
@@ -199,7 +199,7 @@ class HedwigImp(
                     pendingDatabase.deletePendingMessageByIds(messages.map { it.messageId })
                     conversationExtDao.increment(conversationId, messages.size)
                     messages.filter { message ->
-                        !message.isMine() && message.status != MessageStatus.READ.name && (pendingMessageStatusMap[message.messageId] != MessageStatus.READ.name)
+                        !message.isMine() && message.status != MessageStatus.READ.name && (pendingMessageStatusLruCache[message.messageId] != MessageStatus.READ.name)
                     }.map { message ->
                         RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name)
                     }.let { remoteMessageStatus ->
