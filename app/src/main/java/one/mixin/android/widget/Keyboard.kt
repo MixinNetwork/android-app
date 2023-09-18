@@ -130,4 +130,8 @@ class Keyboard @JvmOverloads constructor(
         binding.gvKeyboard.setBackgroundColor(context.colorFromAttribute(R.attr.bg_white))
         binding.diver.isVisible = false
     }
+
+    fun disableNestedScrolling(){
+        binding.gvKeyboard.isNestedScrollingEnabled = false
+    }
 }

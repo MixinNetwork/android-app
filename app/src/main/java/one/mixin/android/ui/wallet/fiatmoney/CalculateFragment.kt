@@ -157,6 +157,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     }.showNow(parentFragmentManager, FiatListBottomSheetDialogFragment.TAG)
                 }
                 keyboard.tipTitleEnabled = false
+                keyboard.disableNestedScrolling()
                 keyboard.setOnClickKeyboardListener(
                     object : Keyboard.OnClickKeyboardListener {
                         override fun onKeyClick(position: Int, value: String) {
