@@ -106,6 +106,141 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         jobManager.addJobInBackground(RefreshAssetsJob())
     }
 
+    private fun toBuy() {
+        val sendReceiveView = _headBinding?.sendReceiveView ?: return
+        lifecycleScope.launch {
+            sendReceiveView.buy.displayedChild = 1
+            sendReceiveView.buy.isEnabled = false
+            flow {
+                emit(ROUTE_BOT_USER_ID)
+            }.map { botId ->
+                val key = walletViewModel.findBotPublicKey(
+                    generateConversationId(
+                        botId,
+                        Session.getAccountId()!!,
+                    ),
+                    botId,
+                )
+                if (!key.isNullOrEmpty()) {
+                    Session.routePublicKey = key
+                } else {
+                    val sessionResponse =
+                        walletViewModel.fetchSessionsSuspend(listOf(botId))
+                    if (sessionResponse.isSuccess) {
+                        val sessionData = requireNotNull(sessionResponse.data)[0]
+                        walletViewModel.saveSession(
+                            ParticipantSession(
+                                generateConversationId(
+                                    sessionData.userId,
+                                    Session.getAccountId()!!,
+                                ),
+                                sessionData.userId,
+                                sessionData.sessionId,
+                                publicKey = sessionData.publicKey,
+                            ),
+                        )
+                        Session.routePublicKey = sessionData.publicKey
+                    } else {
+                        throw MixinResponseException(
+                            sessionResponse.errorCode,
+                            sessionResponse.errorDescription,
+                        )
+                    }
+                }
+                botId
+            }.map { _ ->
+                val profileResponse =
+                    walletViewModel.profile()
+                if (profileResponse.isSuccess) {
+                    val walletActivity = (requireActivity() as WalletActivity)
+                    walletActivity.apply {
+                        supportCurrencies =
+                            getCurrencyData(requireContext().resources).filter {
+                                profileResponse.data!!.currencies.contains(it.name)
+                            }
+                        supportAssetIds = profileResponse.data!!.assetIds
+                        kycState = profileResponse.data!!.kycState
+                        hideGooglePay =
+                            profileResponse.data!!.supportPayments.contains(GOOGLE_PAY)
+                                .not()
+                    }
+                    Pair(walletActivity.supportCurrencies, walletActivity.supportAssetIds)
+                } else {
+                    throw MixinResponseException(
+                        profileResponse.errorCode,
+                        profileResponse.errorDescription,
+                    )
+                }
+            }.map { data ->
+                val (_, assetIds) = data
+                walletViewModel.syncNoExistAsset(assetIds)
+                data
+            }.map { data ->
+                val (supportCurrencies, assetIds) = data
+                val assetId = requireContext().defaultSharedPreferences.getString(
+                    CalculateFragment.CURRENT_ASSET_ID,
+                    Constants.AssetId.USDT_ASSET_ID,
+                ) ?: assetIds.first()
+                val currency = getDefaultCurrency(requireContext(), supportCurrencies)
+                val tickerResponse = walletViewModel.ticker(
+                    RouteTickerRequest(
+                        0,
+                        currency,
+                        assetId,
+                    ),
+                )
+                if (tickerResponse.isSuccess) {
+                    val state = FiatMoneyViewModel.CalculateState(
+                        minimum = tickerResponse.data!!.minimum.toIntOrNull()
+                            ?: 0,
+                        maximum = tickerResponse.data!!.maximum.toIntOrNull()
+                            ?: 0,
+                        assetPrice = tickerResponse.data!!.assetPrice.toFloatOrNull()
+                            ?: 0f,
+                        feePercent = tickerResponse.data!!.feePercent.toFloatOrNull()
+                            ?: 0f,
+                    )
+                    state
+                } else {
+                    throw MixinResponseException(
+                        tickerResponse.errorCode,
+                        tickerResponse.errorDescription,
+                    )
+                }
+            }.catch { e ->
+                if (e is MixinResponseException) {
+                    if (e.errorCode == ErrorHandler.AUTHENTICATION) {
+                        walletViewModel.deleteSessionByUserId(
+                            generateConversationId(
+                                ROUTE_BOT_USER_ID,
+                                Session.getAccountId()!!,
+                            ),
+                            ROUTE_BOT_USER_ID,
+                        )
+                        toast(getString(R.string.Try_Again))
+                        sendReceiveView.buy.displayedChild = 0
+                        sendReceiveView.buy.isEnabled = true
+                        return@catch
+                    }
+                    sendReceiveView.buy.displayedChild = 0
+                    sendReceiveView.buy.isEnabled = true
+                    ErrorHandler.handleMixinError(e.errorCode, e.errorDescription)
+                } else {
+                    ErrorHandler.handleError(e)
+                }
+                sendReceiveView.buy.displayedChild = 0
+                sendReceiveView.buy.isEnabled = true
+            }.collectLatest { state ->
+                view?.navigate(
+                    R.id.action_wallet_to_calculate,
+                    Bundle().apply { putParcelable(CALCULATE_STATE, state) },
+                )
+                sendReceiveView.buy.displayedChild = 0
+                sendReceiveView.buy.isEnabled = true
+            }
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
@@ -116,109 +251,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                 sendReceiveView.enableBuy()
                 sendReceiveView.buy.setOnClickListener {
-                    lifecycleScope.launch {
-                        sendReceiveView.buy.displayedChild = 1
-                        sendReceiveView.buy.isEnabled = false
-                        flow {
-                            emit(ROUTE_BOT_USER_ID)
-                        }.map { botId ->
-                            val key = walletViewModel.findBotPublicKey(generateConversationId(botId, Session.getAccountId()!!), botId)
-                            if (!key.isNullOrEmpty()) {
-                                Session.routePublicKey = key
-                            } else {
-                                val sessionResponse =
-                                    walletViewModel.fetchSessionsSuspend(listOf(botId))
-                                if (sessionResponse.isSuccess) {
-                                    val sessionData = requireNotNull(sessionResponse.data)[0]
-                                    walletViewModel.saveSession(ParticipantSession(generateConversationId(sessionData.userId, Session.getAccountId()!!), sessionData.userId, sessionData.sessionId, publicKey = sessionData.publicKey))
-                                    Session.routePublicKey = sessionData.publicKey
-                                } else {
-                                    throw MixinResponseException(sessionResponse.errorCode, sessionResponse.errorDescription)
-                                }
-                            }
-                            botId
-                        }.map { _ ->
-                            val profileResponse =
-                                walletViewModel.profile()
-                            if (profileResponse.isSuccess) {
-                                val walletActivity = (requireActivity() as WalletActivity)
-                                walletActivity.apply {
-                                    supportCurrencies =
-                                        getCurrencyData(requireContext().resources).filter {
-                                            profileResponse.data!!.currencies.contains(it.name)
-                                        }
-                                    supportAssetIds = profileResponse.data!!.assetIds
-                                    kycState = profileResponse.data!!.kycState
-                                    hideGooglePay =
-                                        profileResponse.data!!.supportPayments.contains(GOOGLE_PAY)
-                                            .not()
-                                }
-                                Pair(walletActivity.supportCurrencies, walletActivity.supportAssetIds)
-                            } else {
-                                throw MixinResponseException(profileResponse.errorCode, profileResponse.errorDescription)
-                            }
-                        }.map { data ->
-                            val (_, assetIds) = data
-                            walletViewModel.syncNoExistAsset(assetIds)
-                            data
-                        }.map { data ->
-                            val (supportCurrencies, assetIds) = data
-                            val assetId = requireContext().defaultSharedPreferences.getString(
-                                CalculateFragment.CURRENT_ASSET_ID,
-                                Constants.AssetId.USDT_ASSET_ID,
-                            ) ?: assetIds.first()
-                            val currency = getDefaultCurrency(requireContext(), supportCurrencies)
-                            val tickerResponse = walletViewModel.ticker(
-                                RouteTickerRequest(
-                                    0,
-                                    currency,
-                                    assetId,
-                                ),
-                            )
-                            if (tickerResponse.isSuccess) {
-                                val state = FiatMoneyViewModel.CalculateState(
-                                    minimum = tickerResponse.data!!.minimum.toIntOrNull()
-                                        ?: 0,
-                                    maximum = tickerResponse.data!!.maximum.toIntOrNull()
-                                        ?: 0,
-                                    assetPrice = tickerResponse.data!!.assetPrice.toFloatOrNull()
-                                        ?: 0f,
-                                    feePercent = tickerResponse.data!!.feePercent.toFloatOrNull()
-                                        ?: 0f,
-                                )
-                                state
-                            } else {
-                                throw MixinResponseException(
-                                    tickerResponse.errorCode,
-                                    tickerResponse.errorDescription,
-                                )
-                            }
-                        }.catch { e ->
-                            if (e is MixinResponseException) {
-                                if (e.errorCode == ErrorHandler.AUTHENTICATION) {
-                                    walletViewModel.deleteSessionByUserId(generateConversationId(ROUTE_BOT_USER_ID, Session.getAccountId()!!), ROUTE_BOT_USER_ID)
-                                    toast(getString(R.string.Try_Again))
-                                    sendReceiveView.buy.displayedChild = 0
-                                    sendReceiveView.buy.isEnabled = true
-                                    return@catch
-                                }
-                                sendReceiveView.buy.displayedChild = 0
-                                sendReceiveView.buy.isEnabled = true
-                                ErrorHandler.handleMixinError(e.errorCode, e.errorDescription)
-                            } else {
-                                ErrorHandler.handleError(e)
-                            }
-                            sendReceiveView.buy.displayedChild = 0
-                            sendReceiveView.buy.isEnabled = true
-                        }.collectLatest { state ->
-                            view.navigate(
-                                R.id.action_wallet_to_calculate,
-                                Bundle().apply { putParcelable(CALCULATE_STATE, state) },
-                            )
-                            sendReceiveView.buy.displayedChild = 0
-                            sendReceiveView.buy.isEnabled = true
-                        }
-                    }
+                    toBuy()
                 }
                 sendReceiveView.send.setOnClickListener {
                     AssetListBottomSheetDialogFragment.newInstance(true)
@@ -298,6 +331,11 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             }
         }
         checkPin()
+
+        if (arguments?.getBoolean(WalletActivity.BUY) == true) {
+            arguments?.remove(WalletActivity.BUY)
+            toBuy()
+        }
     }
 
     override fun onStop() {

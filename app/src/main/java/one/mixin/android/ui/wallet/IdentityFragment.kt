@@ -71,7 +71,7 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
                     }
                     KycState.BLOCKED.value -> {
                         imageView.setImageResource(R.drawable.ic_identity_verifying)
-                        titleTv.setText(R.string.Service_Unavailable)
+                        titleTv.setText(R.string.Verification_Failed)
                         tipTv.setText(R.string.identity_service_unavailable_tip)
                         okTv.setText(R.string.OK)
                         updateTip(true)
