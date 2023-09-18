@@ -438,11 +438,16 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideRouteService(httpLoggingInterceptor: HttpLoggingInterceptor?): RouteService {
+    fun provideRouteService(resolver: ContentResolver, httpLoggingInterceptor: HttpLoggingInterceptor?): RouteService {
         val client = OkHttpClient.Builder().apply {
             addInterceptor { chain ->
+                val requestId = UUID.randomUUID().toString()
                 val sourceRequest = chain.request()
                 val builder = sourceRequest.newBuilder()
+                builder.addHeader("User-Agent", API_UA)
+                    .addHeader("Accept-Language", Locale.getDefault().language)
+                    .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
+                    .addHeader(xRequestId, requestId)
                 val (ts, signature) = Session.getRouteSignature(sourceRequest)
                 if (!sourceRequest.url.toString().endsWith("checkout/ticker")) {
                     builder.addHeader(mrAccessTimestamp, ts.toString())
