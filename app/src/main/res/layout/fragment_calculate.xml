@@ -102,10 +102,11 @@
                 android:textColor="?attr/text_primary"
                 android:textSize="56sp"
                 android:textStyle="bold"
+                app:layout_constraintVertical_chainStyle="packed"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/fiat_rl"
+                app:layout_constraintBottom_toTopOf="@id/minor_tv"
                 tools:text="0"
                 tools:ignore="HardcodedText" />
 
@@ -143,6 +144,8 @@
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
                 app:layout_constraintTop_toBottomOf="@id/primary_tv"
+                app:layout_constraintBottom_toTopOf="@id/fiat_rl"
+                android:layout_marginBottom="3dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 tools:text="0 USDC" />
