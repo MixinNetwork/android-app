@@ -439,7 +439,12 @@ object AppModule {
     @Singleton
     @Provides
     fun provideRouteService(resolver: ContentResolver, httpLoggingInterceptor: HttpLoggingInterceptor?): RouteService {
-        val client = OkHttpClient.Builder().apply {
+        val builder = OkHttpClient.Builder()
+        builder.connectTimeout(10, TimeUnit.SECONDS)
+        builder.writeTimeout(10, TimeUnit.SECONDS)
+        builder.readTimeout(10, TimeUnit.SECONDS)
+        builder.dns(DNS)
+        val client = builder.apply {
             addInterceptor { chain ->
                 val requestId = UUID.randomUUID().toString()
                 val sourceRequest = chain.request()
