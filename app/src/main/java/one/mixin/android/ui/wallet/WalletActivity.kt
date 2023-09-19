@@ -40,13 +40,12 @@ class WalletActivity : BlazeBaseActivity() {
         val navGraph = navController.navInflater.inflate(R.navigation.nav_wallet)
         val currentAsset = asset
         if (currentAsset != null) {
-            navGraph.setStartDestination(R.id.transactions_fragment)
-            navGraph.addArgument(ARGS_ASSET, NavArgument.Builder().setDefaultValue(currentAsset).build())
-            navController.graph = navGraph
+            navGraph.setStartDestination(R.id.transactions_fragment) // change start destination
+            navController.setGraph(navGraph, Bundle().apply { putParcelable(ARGS_ASSET, currentAsset) })
         } else if (isBuy) {
             navController.setGraph(navGraph, Bundle().apply { putBoolean(BUY, true) })
         } else {
-            navController.graph = navGraph
+            navController.setGraph(navGraph, null)
         }
     }
 
