@@ -23,7 +23,7 @@
         android:contentDescription="@null" />
 
     <TextView
-        android:id="@+id/title_tv"
+        android:id="@+id/tip_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
