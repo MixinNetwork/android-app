@@ -63,6 +63,10 @@ fun getCurrencyFromPhone(phone: String?): String? {
             "SGD"
         } else if (country == "TW") {
             "TWD"
+        } else if (country == "TR") {
+            "TRY"
+        } else if (country == "VN") {
+            "VND"
         } else {
             null
         }
