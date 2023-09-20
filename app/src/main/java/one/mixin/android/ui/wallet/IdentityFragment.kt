@@ -64,8 +64,8 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
                     }
                     KycState.RETRY.value -> {
                         imageView.setImageResource(R.drawable.ic_verification_failed)
-                        tipTitle.setText(R.string.Verification_Failed)
-                        tipTv.setText(R.string.identity_verification_failed_tip)
+                        tipTitle.setText(R.string.verification_failed)
+                        tipTv.setText(R.string.verification_failed_description)
                         okTv.setText(R.string.Continue)
                         updateTip(false)
                         okTv.setOnClickListener {
@@ -75,8 +75,8 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
                     }
                     KycState.BLOCKED.value -> {
                         imageView.setImageResource(R.drawable.ic_verification_failed)
-                        tipTitle.setText(R.string.Verification_Failed)
-                        tipTv.setText(R.string.identity_verification_blocked_tip)
+                        tipTitle.setText(R.string.verification_failed)
+                        tipTv.setText(R.string.verification_blocked_description)
                         okTv.setText(R.string.chat_with_us)
                         updateTip(true)
                         okTv.setOnClickListener {
