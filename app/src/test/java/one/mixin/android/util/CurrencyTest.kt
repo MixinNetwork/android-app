@@ -25,5 +25,6 @@ class CurrencyTest {
         assertEquals(getCurrencyFromPhone("+1 604-207-7077"), "CAD")
         assertEquals(getCurrencyFromPhone("+84 4441442"), "VND")
         assertEquals(getCurrencyFromPhone("+90 212 4633000"), "TRY")
+        assertEquals(getCurrencyFromPhone("+91 7428 730894"), "INR")
     }
 }
