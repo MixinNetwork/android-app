@@ -168,4 +168,6 @@ internal constructor(
         request.setPaymentMethodTokenizationParameters(params)
         return paymentsClient.loadPaymentData(request.build())
     }
+
+    suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
 }

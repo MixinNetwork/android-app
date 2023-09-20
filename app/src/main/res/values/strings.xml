@@ -1255,7 +1255,7 @@
     <string name="identity_verifying_tip">Your identity is being verified. We will send you message on once your verification has completed by Mixin Messenger.</string>
     <string name="Verification_Failed">Verification Failed</string>
     <string name="identity_verification_failed_tip">Your verification failed, possibly because all required identification documents were not submitted or there was a problem with some documents.</string>
-    <string name="identity_service_unavailable_tip">Due to legal constraints, we are not able to give you any more information at this time. We would like to thank you for your patience, understanding and interest in cryptocurrency.</string>
+    <string name="identity_verification_blocked_tip">Your verification failed, there was a problem with some documents, please click the button below to contact with us.</string>
     <string name="Additional_Verification">Additional Verification</string>
     <string name="identity_additional_verification_tip">We need you to submit additional information to meet regulatory requirements, thank you for your understanding and support.</string>
     <string name="Price">Price</string>
@@ -1309,4 +1309,5 @@
     <string name="Fees_by_Gateway">Fees by Processor</string>
     <string name="Fees_by_Mixin">Fees by Mixin</string>
     <string name="Purchase_Total_Amount">Purchase Total Amount</string>
+    <string name="chat_with_us">Chat with us</string>
 </resources>
