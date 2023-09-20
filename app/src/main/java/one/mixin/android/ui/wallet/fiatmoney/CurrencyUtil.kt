@@ -67,6 +67,8 @@ fun getCurrencyFromPhone(phone: String?): String? {
             "TRY"
         } else if (country == "VN") {
             "VND"
+        } else if (country == "IN") {
+            "INR"
         } else {
             null
         }
