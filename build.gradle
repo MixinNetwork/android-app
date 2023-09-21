@@ -99,7 +99,7 @@ buildscript {
         ext.dnsVersion = '2.1.9'
         ext.appCenterSdkVersion = '4.3.1'
         ext.audioSwitchVersion = '1.1.8'
-        ext.balloonVersion = '1.5.4'
+        ext.balloonVersion = '1.6.0'
         ext.markdownVersion = '0.5.0'
 
         ext.bcVersion = '1.70'
