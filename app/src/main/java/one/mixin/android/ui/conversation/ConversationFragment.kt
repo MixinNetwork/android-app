@@ -346,6 +346,9 @@ class ConversationFragment() :
 
     @SuppressLint("NotifyDataSetChanged")
     fun updateConversationInfo(messageId: String?, keyword: String?) {
+        if (!::messageAdapter.isInitialized) {
+            return
+        }
         this.keyword = keyword
         messageAdapter.keyword = keyword
         if (messageId != null) {
@@ -1076,6 +1079,9 @@ class ConversationFragment() :
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(pauseScope)
             .subscribe { event ->
+                if (!::messageAdapter.isInitialized) {
+                    return@subscribe
+                }
                 if (messageAdapter.selectSet.any { it.messageId == event.messageId }) {
                     closeTool()
                 }
@@ -1280,6 +1286,9 @@ class ConversationFragment() :
     }
 
     private fun markRead() {
+        if (!::messageAdapter.isInitialized) {
+            return
+        }
         messageAdapter.markRead()
     }
 
@@ -1321,7 +1330,11 @@ class ConversationFragment() :
         lifecycleScope.launch {
             val pageData = messageFetcher.previousPage(conversationId, id)
             if (pageData.isNotEmpty()) {
-                messageAdapter.submitPrevious(pageData)
+                if (viewDestroyed()) return@launch
+
+                binding.messageRv.post {
+                    messageAdapter.submitPrevious(pageData)
+                }
             }
         }
     }
@@ -1330,7 +1343,11 @@ class ConversationFragment() :
         lifecycleScope.launch {
             val pageData = messageFetcher.nextPage(conversationId, id)
             if (pageData.isNotEmpty()) {
-                messageAdapter.submitNext(pageData)
+                if (viewDestroyed()) return@launch
+
+                binding.messageRv.post {
+                    messageAdapter.submitNext(pageData)
+                }
             }
         }
     }
