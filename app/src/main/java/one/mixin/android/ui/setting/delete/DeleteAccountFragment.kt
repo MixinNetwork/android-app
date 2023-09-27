@@ -20,6 +20,7 @@ import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
@@ -151,6 +152,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                 viewModel.verification(verificationRequest)
             },
             successBlock = { response ->
+                if (viewDestroyed()) return@handleMixinResponse
                 binding.deleteCover.isVisible = false
                 val verificationResponse = response.data!!
                 activity?.addFragment(
@@ -166,6 +168,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                 )
             },
             failureBlock = { r ->
+                if (viewDestroyed()) return@handleMixinResponse true
                 if (r.errorCode == ErrorHandler.NEED_CAPTCHA) {
                     initAndLoadCaptcha()
                     return@handleMixinResponse true
@@ -174,6 +177,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                 return@handleMixinResponse false
             },
             exceptionBlock = {
+                if (viewDestroyed()) return@handleMixinResponse false
                 binding.deleteCover.isVisible = false
                 return@handleMixinResponse false
             },
@@ -181,6 +185,8 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
     }
 
     private fun initAndLoadCaptcha() = lifecycleScope.launch {
+        if (viewDestroyed()) return@launch
+
         if (captchaView == null) {
             captchaView = CaptchaView(
                 requireContext(),
