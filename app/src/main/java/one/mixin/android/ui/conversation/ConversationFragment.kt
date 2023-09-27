@@ -1330,7 +1330,11 @@ class ConversationFragment() :
         lifecycleScope.launch {
             val pageData = messageFetcher.previousPage(conversationId, id)
             if (pageData.isNotEmpty()) {
-                messageAdapter.submitPrevious(pageData)
+                if (viewDestroyed()) return@launch
+
+                binding.messageRv.post {
+                    messageAdapter.submitPrevious(pageData)
+                }
             }
         }
     }
@@ -1339,7 +1343,11 @@ class ConversationFragment() :
         lifecycleScope.launch {
             val pageData = messageFetcher.nextPage(conversationId, id)
             if (pageData.isNotEmpty()) {
-                messageAdapter.submitNext(pageData)
+                if (viewDestroyed()) return@launch
+
+                binding.messageRv.post {
+                    messageAdapter.submitNext(pageData)
+                }
             }
         }
     }
