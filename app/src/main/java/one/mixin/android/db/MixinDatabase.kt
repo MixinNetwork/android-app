@@ -264,6 +264,7 @@ abstract class MixinDatabase : RoomDatabase() {
             override fun onOpen(db: SupportSQLiteDatabase) {
                 super.onOpen(db)
                 supportSQLiteDatabase = db
+                db.execSQL("PRAGMA synchronous = NORMAL")
                 db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_count_insert")
                 db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_insert")
                 db.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_update")
