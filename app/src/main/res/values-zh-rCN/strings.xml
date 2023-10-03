@@ -1280,4 +1280,6 @@
     <string name="Fees_by_Mixin">Mixin 手续费</string>
     <string name="Purchase_Total_Amount">购买总金额</string>
     <string name="chat_with_us">联系客服</string>
+    <string name="Old_Wallet">老钱包</string>
+    <string name="New_Wallet">新钱包</string>
 </resources>
