@@ -168,4 +168,12 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun providesChainDao(db: MixinDatabase) = db.chainDao()
+
+    @Singleton
+    @Provides
+    fun provideUTXOAssetDao(db: MixinDatabase) = db.utxoAssetDao()
+
+    @Singleton
+    @Provides
+    fun provideOutputDao(db: MixinDatabase) = db.outputDao()
 }

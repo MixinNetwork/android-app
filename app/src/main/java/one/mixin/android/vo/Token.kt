@@ -9,6 +9,7 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.math.BigDecimal
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -86,3 +87,33 @@ data class Token(
     @SerialName("withdrawal_memo_possibility")
     val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
 ) : Parcelable
+
+data class TokenPriceAndChange(
+    @ColumnInfo(name = "asset_id")
+    val assetId: String,
+    @ColumnInfo(name = "price_btc")
+    val priceBtc: String,
+    @ColumnInfo(name = "price_usd")
+    val priceUsd: String,
+    @ColumnInfo(name = "change_usd")
+    val changeUsd: String,
+    @ColumnInfo(name = "change_btc")
+    val changeBtc: String,
+)
+
+//fun Token.toAssetItem(chainIconUrl: String? = null): AssetItem = AssetItem(
+//    assetId, symbol, name, iconUrl, balance, destination, depositEntries, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, false,
+//    confirmations, chainIconUrl, null, null, null, assetKey, reserve, withdrawalMemoPossibility,
+//)
+//
+//fun Token.toTopAssetItem(chainIconUrl: String?) = TopAssetItem(assetId, symbol, name, iconUrl, chainId, chainIconUrl, assetKey, priceUsd, changeUsd)
+//
+//fun Token?.priceUSD(): BigDecimal = if (this == null) {
+//    BigDecimal.ZERO
+//} else {
+//    if (priceUsd == "0") {
+//        BigDecimal.ZERO
+//    } else {
+//        BigDecimal(priceUsd)
+//    }
+//}

@@ -111,6 +111,10 @@ private fun edwardsToMontgomeryX(y: LongArray): LongArray {
     return outX
 }
 
+fun String.sha3Sum256(): ByteArray {
+    return digestKeccak(KeccakParameter.SHA3_256)
+}
+
 fun ByteArray.sha3Sum256(): ByteArray {
     return digestKeccak(KeccakParameter.SHA3_256)
 }

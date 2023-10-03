@@ -375,6 +375,7 @@ class MixinDatabaseMigrations private constructor() {
 
         val MIGRATION_50_51: Migration = object : Migration(50, 51) {
             override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS `outputs` (`utxo_id` TEXT NOT NULL, `type` TEXT NOT NULL, `user_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `amount` TEXT NOT NULL, `members` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `memo` TEXT, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`utxo_id`))")
                 database.execSQL("CREATE TABLE IF NOT EXISTS `tokens` (`asset_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `price_btc` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `change_btc` TEXT NOT NULL, `confirmations` INTEGER NOT NULL, `asset_key` TEXT, `reserve` TEXT, `deposit_entries` TEXT, `withdrawal_memo_possibility` TEXT, PRIMARY KEY(`asset_id`))")
                 database.execSQL("ALTER TABLE `assets_extra` ADD COLUMN `balance` TEXT")
             }

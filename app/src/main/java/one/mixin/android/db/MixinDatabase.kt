@@ -78,6 +78,7 @@ import one.mixin.android.vo.MessageFts4
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.Offset
+import one.mixin.android.vo.Output
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.PinMessage
@@ -136,6 +137,7 @@ import kotlin.math.min
         (ExpiredMessage::class),
         (ConversationExt::class),
         (Chain::class),
+        (Output::class),
         (Token::class),
     ],
     version = CURRENT_VERSION,
@@ -174,6 +176,8 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun propertyDao(): PropertyDao
     abstract fun expiredMessageDao(): ExpiredMessageDao
     abstract fun chainDao(): ChainDao
+    abstract fun utxoAssetDao(): TokenDao
+    abstract fun outputDao(): OutputDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null

@@ -61,6 +61,7 @@ import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.TipService
+import one.mixin.android.api.service.UtxoService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.JobSenderKey
@@ -343,6 +344,20 @@ object AppModule {
     @Provides
     fun provideTipNodeService(retrofit: Retrofit) =
         retrofit.create(TipNodeService::class.java) as TipNodeService
+
+    @Singleton
+    @Provides
+    fun provideUtxoService(okHttp: OkHttpClient, gson: Gson): UtxoService {
+        val builder = Retrofit.Builder()
+            .baseUrl(URL)
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .addCallAdapterFactory(LiveDataCallAdapterFactory())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .client(okHttp)
+        val retrofit = builder.build()
+        return retrofit.create(UtxoService::class.java) as UtxoService
+    }
 
     @Singleton
     @Provides
