@@ -2,12 +2,19 @@ package one.mixin.android.vo
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 
 @TypeConverters(ListConverter::class)
-@Entity(tableName = "outputs")
+@Entity(
+    tableName = "outputs",
+    indices = [
+        Index(value = arrayOf("asset_id", "state", "created_at")),
+        Index(value = arrayOf("transaction_hash", "output_index"), unique = true),
+    ],
+)
 class Output(
     @PrimaryKey
     @SerializedName("utxo_id")

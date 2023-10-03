@@ -2,6 +2,7 @@ package one.mixin.android.db
 
 import androidx.room.Dao
 import androidx.room.Query
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.vo.AssetsExtra
 
 @Dao
@@ -12,6 +13,6 @@ interface AssetsExtraDao : BaseDao<AssetsExtra> {
     @Query("UPDATE assets_extra SET hidden=:hidden WHERE asset_id=:assetId")
     suspend fun updateHiddenByAssetId(assetId: String, hidden: Boolean)
 
-    @Query("UPDATE assets_extra SET balance=:balance, utxo_id=:utxoId WHERE asset_id=:assetId")
-    suspend fun updateBalanceAndUtxoIdByAssetId(assetId: String, balance: String, utxoId: String)
+    @Query("UPDATE assets_extra SET balance=balance + :amount, updated_at=:updatedAt WHERE asset_id=:assetId")
+    suspend fun updateBalanceByAssetId(assetId: String, amount: String, updatedAt: String = nowInUtc())
 }

@@ -22,7 +22,7 @@ data class AssetsExtra(
     @SerializedName("balance")
     @ColumnInfo(name = "balance")
     val balance: String?,
-    @SerializedName("utxo_id")
-    @ColumnInfo(name = "utxo_id")
-    val utxoId: String?,
+    @SerializedName("updated_at")
+    @ColumnInfo(name = "updated_at")
+    val updatedAt: String?,
 ) : Parcelable

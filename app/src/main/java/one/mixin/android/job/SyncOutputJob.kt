@@ -23,8 +23,8 @@ class SyncOutputJob : BaseJob(
     }
 
     private tailrec suspend fun syncOutputs() {
-        Timber.d("$TAG start sync outputs")
         val latestOutputCreatedAt = outputDao.findLatestOutputCreatedAt()
+        Timber.d("$TAG sync outputs latestOutputCreatedAt: $latestOutputCreatedAt")
         val userId = requireNotNull(Session.getAccountId())
         val members = buildHashMembers(listOf(userId))
         val resp = utxoService.getOutputs(members, 1, latestOutputCreatedAt?.getRFC3339Nano(), syncOutputLimit)
@@ -32,13 +32,12 @@ class SyncOutputJob : BaseJob(
             Timber.d("$TAG getOutputs ${resp.isSuccess}, ${resp.data.isNullOrEmpty()}")
             return
         }
-        val outputs = (requireNotNull(resp.data) { "outputs can not be null or empty at this step" }).sortedBy { it.createdAt }
+        val outputs = (requireNotNull(resp.data) { "outputs can not be null or empty at this step" })
         outputDao.insertListSuspend(outputs)
-        outputs.groupBy { it.assetId }.keys.map { assetId ->
-            jobManager.addJobInBackground(UpdateTokenJob(assetId))
-        }
         if (outputs.size <= syncOutputLimit) {
             syncOutputs()
+        } else {
+            jobManager.addJobInBackground(ProcessUtxoJob())
         }
     }
 

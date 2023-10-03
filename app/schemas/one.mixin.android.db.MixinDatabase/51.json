@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "3c25efe70ddbf85d1a2e2e37d813ef1c",
+    "identityHash": "407d0cf6abb2c6c2944ba37013579cda",
     "entities": [
       {
         "tableName": "users",
@@ -754,7 +754,7 @@
       },
       {
         "tableName": "assets_extra",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `hidden` INTEGER, `balance` TEXT, `utxo_id` TEXT, PRIMARY KEY(`asset_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `hidden` INTEGER, `balance` TEXT, `updated_at` TEXT, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
             "fieldPath": "assetId",
@@ -775,8 +775,8 @@
             "notNull": false
           },
           {
-            "fieldPath": "utxoId",
-            "columnName": "utxo_id",
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
             "affinity": "TEXT",
             "notNull": false
           }
@@ -2407,7 +2407,29 @@
             "utxo_id"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_outputs_asset_id_state_created_at",
+            "unique": false,
+            "columnNames": [
+              "asset_id",
+              "state",
+              "created_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_outputs_asset_id_state_created_at` ON `${TABLE_NAME}` (`asset_id`, `state`, `created_at`)"
+          },
+          {
+            "name": "index_outputs_transaction_hash_output_index",
+            "unique": true,
+            "columnNames": [
+              "transaction_hash",
+              "output_index"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_outputs_transaction_hash_output_index` ON `${TABLE_NAME}` (`transaction_hash`, `output_index`)"
+          }
+        ],
         "foreignKeys": []
       },
       {
@@ -2512,7 +2534,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3c25efe70ddbf85d1a2e2e37d813ef1c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '407d0cf6abb2c6c2944ba37013579cda')"
     ]
   }
 }
