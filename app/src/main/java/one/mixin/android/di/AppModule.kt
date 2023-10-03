@@ -61,8 +61,8 @@ import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.TipService
-import one.mixin.android.api.service.UtxoService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.PinCipher

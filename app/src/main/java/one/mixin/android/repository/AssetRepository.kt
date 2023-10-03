@@ -9,6 +9,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.liveData
+import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -208,7 +209,16 @@ constructor(
 
     suspend fun paySuspend(request: TransferRequest) = assetService.paySuspend(request)
 
-    suspend fun updateHidden(id: String, hidden: Boolean) = assetsExtraDao.insertSuspend(AssetsExtra(id, hidden, ""))  // TODO update specific field
+    suspend fun updateHidden(id: String, hidden: Boolean) {
+        appDatabase.withTransaction {
+            val assetsExtra = assetsExtraDao.findByAssetId(id)
+            if (assetsExtra != null) {
+                assetsExtraDao.updateHiddenByAssetId(id, hidden)
+            } else {
+                assetsExtraDao.insertSuspend(AssetsExtra(id, hidden, null, null))
+            }
+        }
+    }
 
     fun hiddenAssetItems() = assetDao.hiddenAssetItems()
 

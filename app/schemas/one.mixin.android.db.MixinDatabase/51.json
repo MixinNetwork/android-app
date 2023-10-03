@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "4c74b059c52ad5d466a28d84fcd4505c",
+    "identityHash": "3c25efe70ddbf85d1a2e2e37d813ef1c",
     "entities": [
       {
         "tableName": "users",
@@ -754,7 +754,7 @@
       },
       {
         "tableName": "assets_extra",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `hidden` INTEGER, `balance` TEXT, PRIMARY KEY(`asset_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `hidden` INTEGER, `balance` TEXT, `utxo_id` TEXT, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
             "fieldPath": "assetId",
@@ -771,6 +771,12 @@
           {
             "fieldPath": "balance",
             "columnName": "balance",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "utxoId",
+            "columnName": "utxo_id",
             "affinity": "TEXT",
             "notNull": false
           }
@@ -2506,7 +2512,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4c74b059c52ad5d466a28d84fcd4505c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3c25efe70ddbf85d1a2e2e37d813ef1c')"
     ]
   }
 }

@@ -176,7 +176,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun propertyDao(): PropertyDao
     abstract fun expiredMessageDao(): ExpiredMessageDao
     abstract fun chainDao(): ChainDao
-    abstract fun utxoAssetDao(): TokenDao
+    abstract fun tokenDao(): TokenDao
     abstract fun outputDao(): OutputDao
 
     companion object {

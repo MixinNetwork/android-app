@@ -171,7 +171,7 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideUTXOAssetDao(db: MixinDatabase) = db.utxoAssetDao()
+    fun provideTokenDao(db: MixinDatabase) = db.tokenDao()
 
     @Singleton
     @Provides

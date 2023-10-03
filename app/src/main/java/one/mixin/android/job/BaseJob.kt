@@ -22,14 +22,15 @@ import one.mixin.android.api.service.ContactService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.SignalKeyService
-import one.mixin.android.api.service.UtxoService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
+import one.mixin.android.db.AssetsExtraDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
@@ -54,9 +55,9 @@ import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
+import one.mixin.android.db.TokenDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TranscriptMessageDao
-import one.mixin.android.db.TokenDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.di.ApplicationScope
@@ -171,6 +172,10 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var assetDao: AssetDao
+
+    @Inject
+    @Transient
+    lateinit var assetsExtraDao: AssetsExtraDao
 
     @Inject
     @Transient

@@ -7,7 +7,6 @@ import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.getRFC3339Nano
 import one.mixin.android.session.Session
 import timber.log.Timber
-import java.math.BigDecimal
 
 class SyncOutputJob : BaseJob(
     Params(PRIORITY_UI_HIGH).addTags(TAG).requireNetwork(),
@@ -16,26 +15,30 @@ class SyncOutputJob : BaseJob(
         private const val serialVersionUID = 1L
         const val TAG = "SyncOutputJob"
 
-        private const val syncOutputLimit = 100
+        private const val syncOutputLimit = 200
     }
 
     override fun onRun() = runBlocking {
+        syncOutputs()
+    }
+
+    private tailrec suspend fun syncOutputs() {
         Timber.d("$TAG start sync outputs")
         val latestOutputCreatedAt = outputDao.findLatestOutputCreatedAt()
         val userId = requireNotNull(Session.getAccountId())
         val members = buildHashMembers(listOf(userId))
-        val resp = utxoService.getOutputs(members, 1,  latestOutputCreatedAt?.getRFC3339Nano(), syncOutputLimit)
+        val resp = utxoService.getOutputs(members, 1, latestOutputCreatedAt?.getRFC3339Nano(), syncOutputLimit)
         if (!resp.isSuccess || resp.data.isNullOrEmpty()) {
             Timber.d("$TAG getOutputs ${resp.isSuccess}, ${resp.data.isNullOrEmpty()}")
-            return@runBlocking
+            return
         }
-        val outputs = requireNotNull(resp.data) { "outputs can not be null or empty at this step" }
-        val groups = outputs.groupBy { it.assetId }
-        groups.forEach { t, u ->
-
+        val outputs = (requireNotNull(resp.data) { "outputs can not be null or empty at this step" }).sortedBy { it.createdAt }
+        outputDao.insertListSuspend(outputs)
+        outputs.groupBy { it.assetId }.keys.map { assetId ->
+            jobManager.addJobInBackground(UpdateTokenJob(assetId))
         }
-        outputs.forEach { o ->
-            val amount = BigDecimal(o.amount)
+        if (outputs.size <= syncOutputLimit) {
+            syncOutputs()
         }
     }
 
