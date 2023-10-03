@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 50,
-    "identityHash": "4c74b059c52ad5d466a28d84fcd4505c",
+    "identityHash": "ba26a54ce81daccb4450b56639f4a09e",
     "entities": [
       {
         "tableName": "users",
@@ -754,7 +754,7 @@
       },
       {
         "tableName": "assets_extra",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `hidden` INTEGER, `balance` TEXT, PRIMARY KEY(`asset_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `hidden` INTEGER, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
             "fieldPath": "assetId",
@@ -766,12 +766,6 @@
             "fieldPath": "hidden",
             "columnName": "hidden",
             "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "balance",
-            "columnName": "balance",
-            "affinity": "TEXT",
             "notNull": false
           }
         ],
@@ -2311,202 +2305,12 @@
         },
         "indices": [],
         "foreignKeys": []
-      },
-      {
-        "tableName": "outputs",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`utxo_id` TEXT NOT NULL, `type` TEXT NOT NULL, `user_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `amount` TEXT NOT NULL, `members` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `memo` TEXT, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`utxo_id`))",
-        "fields": [
-          {
-            "fieldPath": "utxoId",
-            "columnName": "utxo_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "type",
-            "columnName": "type",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "userId",
-            "columnName": "user_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "assetId",
-            "columnName": "asset_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "transactionHash",
-            "columnName": "transaction_hash",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "outputIndex",
-            "columnName": "output_index",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "amount",
-            "columnName": "amount",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "members",
-            "columnName": "members",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "threshold",
-            "columnName": "threshold",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "memo",
-            "columnName": "memo",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "state",
-            "columnName": "state",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "createdAt",
-            "columnName": "created_at",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "updatedAt",
-            "columnName": "updated_at",
-            "affinity": "TEXT",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "utxo_id"
-          ]
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
-        "tableName": "tokens",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `price_btc` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `change_btc` TEXT NOT NULL, `confirmations` INTEGER NOT NULL, `asset_key` TEXT, `reserve` TEXT, `deposit_entries` TEXT, `withdrawal_memo_possibility` TEXT, PRIMARY KEY(`asset_id`))",
-        "fields": [
-          {
-            "fieldPath": "assetId",
-            "columnName": "asset_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "symbol",
-            "columnName": "symbol",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "name",
-            "columnName": "name",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "iconUrl",
-            "columnName": "icon_url",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "priceBtc",
-            "columnName": "price_btc",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "priceUsd",
-            "columnName": "price_usd",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "chainId",
-            "columnName": "chain_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "changeUsd",
-            "columnName": "change_usd",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "changeBtc",
-            "columnName": "change_btc",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "confirmations",
-            "columnName": "confirmations",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "assetKey",
-            "columnName": "asset_key",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "reserve",
-            "columnName": "reserve",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "depositEntries",
-            "columnName": "deposit_entries",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "withdrawalMemoPossibility",
-            "columnName": "withdrawal_memo_possibility",
-            "affinity": "TEXT",
-            "notNull": false
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "asset_id"
-          ]
-        },
-        "indices": [],
-        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4c74b059c52ad5d466a28d84fcd4505c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ba26a54ce81daccb4450b56639f4a09e')"
     ]
   }
 }
