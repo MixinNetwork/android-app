@@ -36,8 +36,6 @@ class SyncOutputJob : BaseJob(
         outputDao.insertListSuspend(outputs)
         if (outputs.size <= syncOutputLimit) {
             syncOutputs()
-        } else {
-            jobManager.addJobInBackground(ProcessUtxoJob())
         }
     }
 

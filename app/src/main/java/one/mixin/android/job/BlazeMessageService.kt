@@ -34,6 +34,7 @@ import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
@@ -162,6 +163,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     @Inject
     lateinit var circleService: CircleService
 
+    @Inject
+    lateinit var assetService: AssetService
+
     private val accountId = Session.getAccountId()
     private val gson = GsonHelper.customGson
 
@@ -175,6 +179,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         HedwigImp(database, pendingDatabase, conversationService, circleService, jobManager, callState, lifecycleScope)
     }
 
+    private val utxoProcessor by lazy {
+        UtxoProcessor(database, jobManager, assetService, lifecycleScope)
+    }
+
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
         return null
@@ -186,6 +194,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         webSocket.setWebSocketObserver(this)
         webSocket.connect()
         hedwig.takeOff()
+        utxoProcessor.start()
         startObserveAck()
         startObserveStatus()
         startObserveExpired()
@@ -244,6 +253,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     override fun onDestroy() {
         super.onDestroy()
         hedwig.land()
+        utxoProcessor.stop()
         stopObserveAck()
         stopObserveStatus()
         stopObserveExpired()
