@@ -1310,6 +1310,4 @@
     <string name="Fees_by_Mixin">Fees by Mixin</string>
     <string name="Purchase_Total_Amount">Purchase Total Amount</string>
     <string name="chat_with_us">Chat with us</string>
-    <string name="Old_Wallet">Old Wallet</string>
-    <string name="New_Wallet">New Wallet</string>
 </resources>

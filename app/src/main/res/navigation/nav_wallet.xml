@@ -7,8 +7,8 @@
 
     <fragment
         android:id="@+id/wallet_fragment"
-        android:name="one.mixin.android.ui.wallet.WalletCollectionFragment"
-        tools:layout="@layout/fragment_wallet_collection">
+        android:name="one.mixin.android.ui.wallet.WalletFragment"
+        tools:layout="@layout/fragment_wallet">
 
         <action
             android:id="@+id/action_wallet_fragment_to_all_transactions_fragment"

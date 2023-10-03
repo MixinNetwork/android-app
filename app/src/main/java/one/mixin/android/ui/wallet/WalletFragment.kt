@@ -32,7 +32,7 @@ import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
-import one.mixin.android.databinding.FragmentOldWalletBinding
+import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewWalletBottomBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.extension.config
@@ -75,22 +75,24 @@ import javax.inject.Inject
 import kotlin.math.abs
 
 @AndroidEntryPoint
-class OldWalletFragment : BaseFragment(R.layout.fragment_old_wallet), HeaderAdapter.OnItemListener {
+class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnItemListener {
 
     companion object {
         const val TAG = "WalletFragment"
-        fun newInstance(): OldWalletFragment = OldWalletFragment()
+        fun newInstance(): WalletFragment = WalletFragment()
     }
 
     @Inject
     lateinit var jobManager: MixinJobManager
 
     private var _headBinding: ViewWalletFragmentHeaderBinding? = null
+    private var _bottomBinding: ViewWalletBottomBinding? = null
+    private val bottomBinding get() = requireNotNull(_bottomBinding)
 
     private val sendBottomSheet = SendBottomSheet(this, R.id.action_wallet_to_single_friend_select, R.id.action_wallet_to_address_management)
 
     private val walletViewModel by viewModels<WalletViewModel>()
-    private val binding by viewBinding(FragmentOldWalletBinding::bind, destroyTask = { b ->
+    private val binding by viewBinding(FragmentWalletBinding::bind, destroyTask = { b ->
         b.coinsRv.adapter = null
     })
     private var assets: List<AssetItem> = listOf()
@@ -242,6 +244,10 @@ class OldWalletFragment : BaseFragment(R.layout.fragment_old_wallet), HeaderAdap
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
+            titleView.rightAnimator.setOnClickListener { showBottom() }
+            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            searchIb.setOnClickListener { view.navigate(R.id.action_wallet_to_wallet_search) }
+
             _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                 sendReceiveView.enableBuy()
                 sendReceiveView.buy.setOnClickListener {
@@ -293,7 +299,7 @@ class OldWalletFragment : BaseFragment(R.layout.fragment_old_wallet), HeaderAdap
                     },
                 ),
             ).apply { attachToRecyclerView(coinsRv) }
-            assetsAdapter.onItemListener = this@OldWalletFragment
+            assetsAdapter.onItemListener = this@WalletFragment
 
             coinsRv.adapter = assetsAdapter
             coinsRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -341,6 +347,7 @@ class OldWalletFragment : BaseFragment(R.layout.fragment_old_wallet), HeaderAdap
         assetsAdapter.headerView = null
         assetsAdapter.onItemListener = null
         _headBinding = null
+        _bottomBinding = null
         sendBottomSheet.release()
         super.onDestroyView()
     }
@@ -475,7 +482,7 @@ class OldWalletFragment : BaseFragment(R.layout.fragment_old_wallet), HeaderAdap
             val pinCheckDialog = PinCheckDialogFragment.newInstance().apply {
                 supportsS({
                     setDialogCallback { showed ->
-                        if (this@OldWalletFragment.viewDestroyed()) return@setDialogCallback
+                        if (this@WalletFragment.viewDestroyed()) return@setDialogCallback
 
                         binding.container.setRenderEffect(
                             if (showed) {
@@ -495,6 +502,29 @@ class OldWalletFragment : BaseFragment(R.layout.fragment_old_wallet), HeaderAdap
         val item = PercentItemView(requireContext())
         item.setPercentItem(p, index)
         _headBinding?.pieItemContainer?.addView(item)
+    }
+
+    @SuppressLint("InflateParams")
+    private fun showBottom() {
+        val builder = BottomSheet.Builder(requireActivity())
+        _bottomBinding = ViewWalletBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_bottom, null))
+        builder.setCustomView(bottomBinding.root)
+        val bottomSheet = builder.create()
+        val rootView = this.view
+        bottomBinding.hide.setOnClickListener {
+            rootView?.navigate(R.id.action_wallet_fragment_to_hidden_assets_fragment)
+            bottomSheet.dismiss()
+        }
+        bottomBinding.transactionsTv.setOnClickListener {
+            rootView?.navigate(R.id.action_wallet_fragment_to_all_transactions_fragment)
+            bottomSheet.dismiss()
+        }
+        bottomBinding.connectedTv.setOnClickListener {
+            rootView?.navigate(R.id.action_wallet_to_wallet_connect)
+            bottomSheet.dismiss()
+        }
+
+        bottomSheet.show()
     }
 
     private fun showReceiveAssetList(view: View) {
