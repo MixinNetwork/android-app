@@ -51,6 +51,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_46_47
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_47_48
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_48_49
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_49_50
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_50_51
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
@@ -89,6 +90,7 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
+import one.mixin.android.vo.Token
 import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
@@ -134,6 +136,7 @@ import kotlin.math.min
         (ExpiredMessage::class),
         (ConversationExt::class),
         (Chain::class),
+        (Token::class),
     ],
     version = CURRENT_VERSION,
 )
@@ -201,6 +204,7 @@ abstract class MixinDatabase : RoomDatabase() {
                             MIGRATION_29_30, MIGRATION_30_31, MIGRATION_31_32, MIGRATION_32_33, MIGRATION_33_34, MIGRATION_34_35, MIGRATION_35_36,
                             MIGRATION_36_37, MIGRATION_37_38, MIGRATION_38_39, MIGRATION_39_40, MIGRATION_40_41, MIGRATION_41_42, MIGRATION_42_43,
                             MIGRATION_43_44, MIGRATION_44_45, MIGRATION_45_46, MIGRATION_46_47, MIGRATION_47_48, MIGRATION_48_49, MIGRATION_49_50,
+                            MIGRATION_50_51,
                         )
                         .enableMultiInstanceInvalidation()
                         .setQueryExecutor(

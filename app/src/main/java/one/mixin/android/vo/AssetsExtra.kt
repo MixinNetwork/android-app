@@ -19,4 +19,7 @@ data class AssetsExtra(
     @SerializedName("hidden")
     @ColumnInfo(name = "hidden")
     var hidden: Boolean?,
+    @ColumnInfo(name = "balance")
+    @SerializedName("balance")
+    val balance: String?,
 ) : Parcelable

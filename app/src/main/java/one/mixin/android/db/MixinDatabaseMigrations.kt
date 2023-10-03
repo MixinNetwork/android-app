@@ -373,6 +373,13 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
+        val MIGRATION_50_51: Migration = object : Migration(50, 51) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS `tokens` (`asset_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `price_btc` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `change_btc` TEXT NOT NULL, `confirmations` INTEGER NOT NULL, `asset_key` TEXT, `reserve` TEXT, `deposit_entries` TEXT, `withdrawal_memo_possibility` TEXT, PRIMARY KEY(`asset_id`))")
+                database.execSQL("ALTER TABLE `assets_extra` ADD COLUMN `balance` TEXT")
+            }
+        }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
