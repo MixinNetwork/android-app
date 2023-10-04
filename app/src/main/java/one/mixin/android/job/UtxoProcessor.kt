@@ -14,6 +14,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.vo.AssetsExtra
 import one.mixin.android.vo.toToken
 import timber.log.Timber
+import java.math.BigDecimal
 
 class UtxoProcessor(
     private val mixinDatabase: MixinDatabase,
@@ -101,11 +102,14 @@ class UtxoProcessor(
                 tokenDao.insertSuspend(token)
             }
             val assetsExtra = assetsExtraDao.findByAssetId(output.assetId)
-            if (assetsExtra == null) {
-                assetsExtraDao.insertSuspend(AssetsExtra(output.assetId, false, null, null))
-            }
             mixinDatabase.withTransaction {
-                assetsExtraDao.updateBalanceByAssetId(output.assetId, output.amount)
+                if (assetsExtra == null) {
+                    assetsExtraDao.insertSuspend(AssetsExtra(output.assetId, false, output.amount, output.createdAt))
+                } else {
+                    val old = BigDecimal(assetsExtra.balance ?: "0")
+                    val new = BigDecimal(output.amount).plus(old)
+                    assetsExtraDao.updateBalanceByAssetId(output.assetId, new.toPlainString(), output.createdAt)
+                }
                 propertyDao.updateValueByKey(keyProcessUtxoId, output.utxoId)
             }
         }
