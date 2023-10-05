@@ -69,7 +69,7 @@ class LoadingViewModel @Inject internal constructor(
                     }
                 }
             }
-            if (sessionMap.isEmpty) {
+            if (sessionMap.isEmpty()) {
                 return@withContext
             }
             val newSession = mutableListOf<Session>()
