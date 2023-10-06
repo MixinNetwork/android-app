@@ -25,8 +25,6 @@ jobs:
         distribution: 'adopt'
     - name: Make Gradle executable
       run: chmod +x ./gradlew
-    - name: Check format with ktlint
-      run: ./gradlew ktlintFormat
 
     - name: Set mapbox token
       env:

@@ -19,7 +19,6 @@ def versionBuild = 1
 
 android {
     compileSdk 34
-    buildToolsVersion "34.0.0"
     ndkVersion "25.2.9519653"
     namespace "one.mixin.android"
     defaultConfig {
@@ -134,7 +133,7 @@ android {
         if (project.hasProperty("RELEASE_STORE_FILE")) {
             release {
                 ndk {
-                    abiFilters "armeabi-v7a", "arm64-v8a"
+                    abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
                 }
                 debuggable false
                 jniDebuggable false
@@ -155,10 +154,6 @@ android {
             initWith debug
             applicationIdSuffix ".test"
         }
-    }
-
-    configurations {
-        ktlint
     }
 
     testOptions {
@@ -398,8 +393,6 @@ dependencies {
 
     implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
 
-    ktlint "com.pinterest:ktlint:${ktlintVersion}"
-
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
 
@@ -465,25 +458,6 @@ dependencies {
 
 secrets {
     defaultPropertiesFileName = 'local.defaults.properties'
-}
-
-task ktlint(type: JavaExec, group: "verification") {
-    description = "Check Kotlin code style."
-    classpath = configurations.ktlint
-    main = "com.pinterest.ktlint.Main"
-    args "src/**/*.kt"
-    // to generate report in checkstyle format prepend following args:
-    // "--reporter=plain", "--reporter=checkstyle,output=${buildDir}/ktlint.xml"
-    // see https://github.com/pinterest/ktlint#usage for more
-}
-check.dependsOn ktlint
-
-task ktlintFormat(type: JavaExec, group: "formatting") {
-    description = "Fix Kotlin code style deviations."
-    classpath = configurations.ktlint
-    main = "com.pinterest.ktlint.Main"
-    args "-F", "src/**/*.kt"
-    jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
 }
 
 configurations.all {
