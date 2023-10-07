@@ -1310,4 +1310,6 @@
     <string name="Fees_by_Mixin">Fees by Mixin</string>
     <string name="Purchase_Total_Amount">Purchase Total Amount</string>
     <string name="chat_with_us">Chat with us</string>
+    <string name="Asset_Migration">Asset Migration</string>
+    <string name="Asset_Migration_Content">Mixin has upgraded the new wallet system, you have not yet migrated to assets, please move your assets from the old wallet to the new wallet immediately!</string>
 </resources>

@@ -1280,4 +1280,6 @@
     <string name="Fees_by_Mixin">Mixin 手续费</string>
     <string name="Purchase_Total_Amount">购买总金额</string>
     <string name="chat_with_us">联系客服</string>
+    <string name="Asset_Migration">资产迁移</string>
+    <string name="Asset_Migration_Content">Mixin 已升级新的钱包系统，您还有未迁移到资产，请立刻将您的资产从旧的钱包迁移到新的钱包！</string>
 </resources>
