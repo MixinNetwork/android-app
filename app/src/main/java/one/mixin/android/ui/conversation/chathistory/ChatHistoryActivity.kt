@@ -18,6 +18,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
@@ -75,6 +76,7 @@ import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.copy
@@ -99,7 +101,7 @@ import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 
-@AndroidEntryPoint
+@UnstableApi @AndroidEntryPoint
 class ChatHistoryActivity : BaseActivity() {
     private lateinit var binding: ActivityChatHistoryBinding
     override fun getNightThemeId(): Int = R.style.AppTheme_Night_NoActionBar
@@ -527,22 +529,7 @@ class ChatHistoryActivity : BaseActivity() {
             }
 
             override fun onFileClick(messageItem: ChatHistoryMessageItem) {
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
-                    messageItem.mediaMimeType.equals(
-                        "application/vnd.android.package-archive",
-                        true,
-                    )
-                ) {
-                    if (this@ChatHistoryActivity.packageManager.canRequestPackageInstalls()) {
-                        openMedia(messageItem)
-                    } else {
-                        startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES))
-                    }
-                } else if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
-                    showBottomSheet(messageItem)
-                } else {
-                    openMedia(messageItem)
-                }
+                showBottomSheet(messageItem)
             }
 
             override fun onUserClick(userId: String?) {
@@ -715,11 +702,22 @@ class ChatHistoryActivity : BaseActivity() {
                 ),
             )
         }
+        // Android O requires installation permissions
+        if (!(messageItem.mediaMimeType.equals("application/vnd.android.package-archive", true) && Build.VERSION.SDK_INT > Build.VERSION_CODES.O)) {
+            items.add(
+                BottomSheetItem(
+                    getString(R.string.Open),
+                    {
+                        this.openMedia(messageItem)
+                        bottomSheet?.dismiss()
+                    },
+                ),
+            )
+        }
         items.add(
             BottomSheetItem(
-                getString(R.string.Open),
+                getString(R.string.Cancel),
                 {
-                    openMedia(messageItem)
                     bottomSheet?.dismiss()
                 },
             ),
