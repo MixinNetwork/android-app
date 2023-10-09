@@ -14,8 +14,8 @@ plugins {
 
 def versionMajor = 0
 def versionMinor = 41
-def versionPatch = 6
-def versionBuild = 1
+def versionPatch = 7
+def versionBuild = 0
 
 android {
     compileSdk 34
@@ -167,7 +167,6 @@ android {
     }
     lint {
         abortOnError false
-        ignore 'Overdraw'
     }
     packagingOptions {
         jniLibs {
