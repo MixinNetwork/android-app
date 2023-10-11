@@ -12,11 +12,16 @@ import com.sumsub.sns.core.data.model.SNSCompletionResult
 import com.sumsub.sns.core.data.model.SNSException
 import com.sumsub.sns.core.data.model.SNSSDKState
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
+import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.databinding.FragmentCalculateBinding
 import one.mixin.android.extension.clickVibrate
@@ -24,6 +29,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -32,9 +38,11 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.shaking
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.AppearanceFragment
 import one.mixin.android.ui.setting.Currency
+import one.mixin.android.ui.setting.getCurrencyData
 import one.mixin.android.ui.setting.getLanguagePos
 import one.mixin.android.ui.wallet.AssetListFixedBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.FiatListBottomSheetDialogFragment
@@ -48,6 +56,8 @@ import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.isFollowSystem
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.ParticipantSession
+import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.sumsub.KycState
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
@@ -69,6 +79,11 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
 
     private suspend fun initData() {
+        if ((requireActivity() as WalletActivity).supportCurrencies.isEmpty()) {
+            checkData()
+            return
+        }
+
         if (fiatMoneyViewModel.asset != null && fiatMoneyViewModel.currency != null) {
             return
         }
@@ -85,10 +100,12 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         fiatMoneyViewModel.asset = fiatMoneyViewModel.findAssetsByIds((requireActivity() as WalletActivity).supportAssetIds).let { list ->
             list.find { it.assetId == assetId } ?: list.firstOrNull()
         }
-        fiatMoneyViewModel.calculateState = requireArguments().getParcelableCompat(
-            CALCULATE_STATE,
-            FiatMoneyViewModel.CalculateState::class.java,
-        )
+        if (fiatMoneyViewModel.calculateState == null) {
+            fiatMoneyViewModel.calculateState = requireArguments().getParcelableCompat(
+                CALCULATE_STATE,
+                FiatMoneyViewModel.CalculateState::class.java,
+            )
+        }
         if (fiatMoneyViewModel.calculateState == null) {
             refresh()
         }
@@ -551,5 +568,115 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         val roundedFee = BigDecimal(fee.toDouble()).setScale(2, RoundingMode.UP)
         val payingAmount = roundedFee.plus(BigDecimal(merchant.toDouble())).setScale(2, RoundingMode.UP)
         return payingAmount.toPlainString()
+    }
+
+    private fun checkData() {
+        lifecycleScope.launch {
+            showLoading()
+            flow {
+                emit(ROUTE_BOT_USER_ID)
+            }.map { botId ->
+                val key = fiatMoneyViewModel.findBotPublicKey(
+                    generateConversationId(
+                        botId,
+                        Session.getAccountId()!!,
+                    ),
+                    botId,
+                )
+                if (!key.isNullOrEmpty()) {
+                    Session.routePublicKey = key
+                } else {
+                    val sessionResponse =
+                        fiatMoneyViewModel.fetchSessionsSuspend(listOf(botId))
+                    if (sessionResponse.isSuccess) {
+                        val sessionData = requireNotNull(sessionResponse.data)[0]
+                        fiatMoneyViewModel.saveSession(
+                            ParticipantSession(
+                                generateConversationId(
+                                    sessionData.userId,
+                                    Session.getAccountId()!!,
+                                ),
+                                sessionData.userId,
+                                sessionData.sessionId,
+                                publicKey = sessionData.publicKey,
+                            ),
+                        )
+                        Session.routePublicKey = sessionData.publicKey
+                    } else {
+                        throw MixinResponseException(
+                            sessionResponse.errorCode,
+                            sessionResponse.errorDescription,
+                        )
+                    }
+                }
+                botId
+            }.map { _ ->
+                val profileResponse =
+                    fiatMoneyViewModel.profile()
+                if (profileResponse.isSuccess) {
+                    val walletActivity = (requireActivity() as WalletActivity)
+                    walletActivity.apply {
+                        supportCurrencies =
+                            getCurrencyData(requireContext().resources).filter {
+                                profileResponse.data!!.currencies.contains(it.name)
+                            }
+                        supportAssetIds = profileResponse.data!!.assetIds
+                        kycState = profileResponse.data!!.kycState
+                        hideGooglePay =
+                            profileResponse.data!!.supportPayments.contains(Constants.RouteConfig.GOOGLE_PAY)
+                                .not()
+                    }
+                    Pair(walletActivity.supportCurrencies, walletActivity.supportAssetIds)
+                } else {
+                    throw MixinResponseException(
+                        profileResponse.errorCode,
+                        profileResponse.errorDescription,
+                    )
+                }
+            }.map { data ->
+                val (_, assetIds) = data
+                fiatMoneyViewModel.syncNoExistAsset(assetIds)
+                data
+            }.map { data ->
+                val (supportCurrencies, assetIds) = data
+                val assetId = requireContext().defaultSharedPreferences.getString(
+                    CURRENT_ASSET_ID,
+                    USDT_ASSET_ID,
+                ) ?: assetIds.first()
+                val currency = getDefaultCurrency(requireContext(), supportCurrencies)
+                val tickerResponse = fiatMoneyViewModel.ticker(
+                    RouteTickerRequest(
+                        0,
+                        currency,
+                        assetId,
+                    ),
+                )
+                if (tickerResponse.isSuccess) {
+                    val state = FiatMoneyViewModel.CalculateState(
+                        minimum = tickerResponse.data!!.minimum.toIntOrNull()
+                            ?: 0,
+                        maximum = tickerResponse.data!!.maximum.toIntOrNull()
+                            ?: 0,
+                        assetPrice = tickerResponse.data!!.assetPrice.toFloatOrNull()
+                            ?: 0f,
+                        feePercent = tickerResponse.data!!.feePercent.toFloatOrNull()
+                            ?: 0f,
+                    )
+                    state
+                } else {
+                    throw MixinResponseException(
+                        tickerResponse.errorCode,
+                        tickerResponse.errorDescription,
+                    )
+                }
+            }.catch { e ->
+                activity?.finish()
+            }.collectLatest { state ->
+                fiatMoneyViewModel.calculateState = state
+                dismissLoading()
+                initData()
+                updateUI()
+            }
+        }
     }
 }
