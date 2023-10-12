@@ -413,7 +413,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 token,
                 sessionId,
                 instrumentId,
-                getCountryCodeFromPhone(Session.getAccount()?.phone),
+                getCountryCodeFromPhoneNumber(Session.getAccount()?.phone),
             ),
         )
         if (response.isSuccess) {
