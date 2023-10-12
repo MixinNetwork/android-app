@@ -16,7 +16,9 @@ import one.mixin.android.vo.MessageSource
 import one.mixin.android.vo.SearchSource
 import one.mixin.android.vo.toUser
 
-class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requireNetwork().persist()) {
+class RefreshAccountJob(
+    private val checkTip: Boolean = false,
+) : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requireNetwork().persist()) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -81,16 +83,18 @@ class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requir
                 }
             }
 
-            tip.checkCounter(
-                account.tipCounter,
-                onNodeCounterNotEqualServer = { nodeMaxCounter, failedSigners ->
-                    RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
-                },
-                onNodeCounterInconsistency = { nodeMaxCounter, failedSigners ->
-                    RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
-                },
-            ).onSuccess {
-                tipCounterSynced.synced = true
+            if(checkTip) {
+                tip.checkCounter(
+                    account.tipCounter,
+                    onNodeCounterNotEqualServer = { nodeMaxCounter, failedSigners ->
+                        RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
+                    },
+                    onNodeCounterInconsistency = { nodeMaxCounter, failedSigners ->
+                        RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
+                    },
+                ).onSuccess {
+                    tipCounterSynced.synced = true
+                }
             }
         }
     }
