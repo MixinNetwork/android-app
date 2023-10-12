@@ -50,6 +50,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
@@ -412,6 +413,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 token,
                 sessionId,
                 instrumentId,
+                getCountryCodeFromPhone(Session.getAccount()?.phone),
             ),
         )
         if (response.isSuccess) {

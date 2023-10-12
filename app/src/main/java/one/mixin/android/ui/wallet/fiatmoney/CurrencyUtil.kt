@@ -24,6 +24,20 @@ fun getDefaultCurrency(context: Context, supportCurrencies: List<Currency>): Str
 }
 
 private val phoneNumberUtil by lazy { PhoneNumberUtil.getInstance() }
+
+fun getCountryCodeFromPhone(phone: String?): String? {
+    if (phone == null) {
+        return null
+    }
+    return try {
+        val number = phoneNumberUtil.parse(phone, "")
+        val countryCode = number.countryCode
+        phoneNumberUtil.getRegionCodeForCountryCode(countryCode)
+    } catch (e: Exception) {
+        null
+    }
+}
+
 fun getCurrencyFromPhone(phone: String?): String? {
     if (phone == null) {
         return null
@@ -32,7 +46,6 @@ fun getCurrencyFromPhone(phone: String?): String? {
         val number = phoneNumberUtil.parse(phone, "")
         val countryCode = number.countryCode
         val country = phoneNumberUtil.getRegionCodeForCountryCode(countryCode)
-
         if (country == "AE") {
             "AED"
         } else if (country == "AU") {
