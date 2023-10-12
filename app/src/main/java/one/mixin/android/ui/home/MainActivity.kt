@@ -339,7 +339,7 @@ class MainActivity : BlazeBaseActivity() {
         sendSafetyNetRequest()
         checkBatteryOptimization()
 
-        jobManager.addJobInBackground(RefreshAccountJob())
+        jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
 
         if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
             jobManager.addJobInBackground(RefreshCircleJob())
