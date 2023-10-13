@@ -13,6 +13,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.DeactivateVerificationRequest
+import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
@@ -41,6 +42,18 @@ class MobileViewModel @Inject internal constructor(
 
     suspend fun create(id: String, request: AccountRequest): MixinResponse<Account> = withContext(Dispatchers.IO) {
         accountRepository.create(id, request)
+    }
+
+    suspend fun createEmergency(request: EmergencyRequest): MixinResponse<VerificationResponse> = withContext(Dispatchers.IO) {
+        accountRepository.createEmergency(request)
+    }
+
+    suspend fun createVerifyEmergency(id: String, request: EmergencyRequest): MixinResponse<Account> = withContext(Dispatchers.IO) {
+        accountRepository.createVerifyEmergency(id, request)
+    }
+
+    suspend fun loginVerifyEmergency(id: String, request: EmergencyRequest): MixinResponse<Account> = withContext(Dispatchers.IO) {
+        accountRepository.loginVerifyEmergency(id, request)
     }
 
     suspend fun changePhone(id: String, verificationCode: String, pin: String): MixinResponse<Account> =

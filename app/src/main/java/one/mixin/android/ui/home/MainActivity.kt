@@ -754,7 +754,7 @@ class MainActivity : BlazeBaseActivity() {
                                 .body()
                         if (response != null && response.isSuccess) {
                             response.data?.let { u ->
-                                runBlocking { userRepo.upsert(u) }
+                                runBlocking { userDao.upsert(u) }
                                 user = u
                             }
                         }

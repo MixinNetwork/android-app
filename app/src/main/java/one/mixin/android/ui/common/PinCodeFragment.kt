@@ -15,7 +15,6 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
 import one.mixin.android.crypto.db.SignalDatabase
-import one.mixin.android.crypto.seedFromPrivateKey
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
 import one.mixin.android.crypto.EdKeyPair
@@ -24,7 +23,6 @@ import one.mixin.android.extension.clear
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.moveTo
 import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.putString
@@ -40,7 +38,6 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.VerificationCodeView
-import one.mixin.eddsa.KeyPair
 import java.io.File
 
 abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFragment(contentLayoutId) {

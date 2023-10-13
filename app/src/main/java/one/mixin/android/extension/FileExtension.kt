@@ -679,20 +679,6 @@ fun File.copy(destFile: File) {
     dest.closeSilently()
 }
 
-fun File.moveTo(target: File) {
-    if (!exists()) {
-        throw FileNotFoundException("$absolutePath does not exist.")
-    }
-    if (target.exists()) {
-        delete()
-        return
-    }
-    val renamed = renameTo(target)
-    if (!renamed) {
-        throw IOException("Failed to move file $absolutePath to ${target.absolutePath}.")
-    }
-}
-
 fun File.blurThumbnail(size: Size): Bitmap? {
     var scale = 1
     do {
