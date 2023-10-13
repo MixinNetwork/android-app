@@ -1,5 +1,7 @@
 package one.mixin.android.job
 
+import androidx.collection.ArraySet
+import androidx.collection.arraySetOf
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import okio.internal.commonToUtf8String
@@ -34,7 +36,7 @@ class SyncOutputJob : BaseJob(
         }
         val outputs = (requireNotNull(resp.data) { "outputs can not be null or empty at this step" })
         outputDao.insertListSuspend(outputs)
-        if (outputs.size <= syncOutputLimit) {
+        if (outputs.size >= syncOutputLimit) {
             syncOutputs()
         }
     }

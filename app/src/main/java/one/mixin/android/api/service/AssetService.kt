@@ -30,6 +30,9 @@ interface AssetService {
     @GET("assets/{id}")
     suspend fun getAssetByIdSuspend(@Path("id") id: String): MixinResponse<Asset>
 
+    @GET("network/assets/{id}")
+    suspend fun getAssetByMixinIdSuspend(@Path("id") mixinId: String): MixinResponse<Asset>
+
     @GET("assets/{id}")
     suspend fun getAssetPrecisionById(@Path("id") id: String): MixinResponse<AssetPrecision>
 

@@ -1,6 +1,5 @@
 package one.mixin.android.job
 
-import androidx.collection.ArraySet
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.util.reportException
@@ -8,7 +7,7 @@ import timber.log.Timber
 import java.math.BigDecimal
 
 class CheckBalanceJob(
-    val assetIds: ArraySet<String>,
+    val assetIds: ArrayList<String>,
 ) : BaseJob(
     Params(PRIORITY_UI_HIGH).addTags(TAG).persist().requireNetwork(),
 ) {

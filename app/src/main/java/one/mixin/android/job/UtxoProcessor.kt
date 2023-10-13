@@ -73,14 +73,14 @@ class UtxoProcessor(
     }
 
     private suspend fun run() {
-        val changedAssetIds = arraySetOf<String>()
+        val changedAssetIds = ArrayList<String>()
         processUtxo(changedAssetIds)
         if (changedAssetIds.isNotEmpty()) {
             jobManager.addJobInBackground(CheckBalanceJob(changedAssetIds))
         }
     }
 
-    private tailrec suspend fun processUtxo(changedAssetIds: ArraySet<String>, utxoId: String? = null) {
+    private tailrec suspend fun processUtxo(changedAssetIds: ArrayList<String>, utxoId: String? = null) {
         Timber.d("$TAG processUtxo changedAssetIds size: ${changedAssetIds.size}, utxoId: $utxoId")
         val processedUtxoId = utxoId ?: propertyDao.findValueByKey(keyProcessUtxoId)
         val outputs = if (processedUtxoId.isNullOrBlank()) {
@@ -96,7 +96,7 @@ class UtxoProcessor(
             val exists = tokenDao.checkExists(output.asset)
             if (exists == null) {
                 // TODO new asset API?
-                val r = assetService.getAssetByIdSuspend(output.asset)
+                val r = assetService.getAssetByMixinIdSuspend(output.asset)
                 if (!r.isSuccess || r.data == null) return // TODO
                 val token = requireNotNull(r.data).toToken()
                 tokenDao.insertSuspend(token)
@@ -108,13 +108,14 @@ class UtxoProcessor(
                 } else {
                     val old = BigDecimal(assetsExtra.balance ?: "0")
                     val new = BigDecimal(output.amount).plus(old)
+                    // todo replace asset_id
                     assetsExtraDao.updateBalanceByAssetId(output.asset, new.toPlainString(), output.createdAt)
                 }
                 propertyDao.updateValueByKey(keyProcessUtxoId, output.outputId)
             }
         }
 
-        changedAssetIds.addAll(outputs.groupBy { it.asset }.keys)
+        changedAssetIds.addAll(outputs.groupBy { it.asset }.keys.toSet())
         if (outputs.size <= processUtxoLimit) {
             processUtxo(changedAssetIds, outputs.last().outputId)
         }

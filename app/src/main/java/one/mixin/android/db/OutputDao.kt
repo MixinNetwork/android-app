@@ -17,6 +17,9 @@ interface OutputDao : BaseDao<Output> {
     @Query("SELECT created_at FROM outputs ORDER BY created_at DESC LIMIT 1")
     suspend fun findLatestOutputCreatedAt(): String?
 
-    @Query("SELECT sum(amount) FROM outputs WHERE asset =:assetId AND state = 'unspent'")
-    suspend fun calcBalanceByAssetId(assetId: String): Double
+    @Query("SELECT sum(amount) FROM outputs WHERE asset =:mixinId AND state = 'unspent'")
+    suspend fun calcBalanceByAssetId(mixinId: String): Double
+
+    @Query("SELECT DISTINCT asset FROM outputs")
+    fun getMixinId(): List<String>
 }
