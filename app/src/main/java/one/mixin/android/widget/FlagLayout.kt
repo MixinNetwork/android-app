@@ -5,8 +5,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.view_flag.view.*
-import one.mixin.android.R
+import one.mixin.android.databinding.ViewFlagBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.translationY
 import kotlin.math.max
@@ -14,8 +13,12 @@ import kotlin.math.max
 class FlagLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyle: Int = 0
+    defStyle: Int = 0,
 ) : ViewGroup(context, attrs, defStyle) {
+
+    private val binding = ViewFlagBinding.inflate(LayoutInflater.from(context), this)
+    val downFlagLayout get() = binding.downFlagLayout
+    val mentionFlagLayout get() = binding.mentionFlagLayout
 
     private val space by lazy {
         3.dp
@@ -24,7 +27,7 @@ class FlagLayout @JvmOverloads constructor(
     var bottomFlag = false
         set(value) {
             if (field != value) {
-                down_flag_layout.isVisible = value
+                binding.downFlagLayout.isVisible = value
                 field = value
                 update()
             }
@@ -33,7 +36,7 @@ class FlagLayout @JvmOverloads constructor(
     var bottomCountFlag = false
         set(value) {
             if (field != value) {
-                down_unread.isVisible = value
+                binding.downUnread.isVisible = value
                 field = value
                 update()
             }
@@ -42,8 +45,8 @@ class FlagLayout @JvmOverloads constructor(
     var mentionCount = 0
         set(value) {
             if (field != value) {
-                mention_flag_layout.isVisible = value > 0
-                mention_count.text = "$value"
+                binding.mentionFlagLayout.isVisible = value > 0
+                binding.mentionCount.text = "$value"
                 field = value
                 update()
             }
@@ -53,7 +56,7 @@ class FlagLayout @JvmOverloads constructor(
         set(value) {
             if (field != value) {
                 field = value
-                down_unread.text = "$value"
+                binding.downUnread.text = "$value"
                 update()
             }
         }
@@ -65,10 +68,6 @@ class FlagLayout @JvmOverloads constructor(
         } else {
             show()
         }
-    }
-
-    init {
-        LayoutInflater.from(context).inflate(R.layout.view_flag, this, true)
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
@@ -98,12 +97,14 @@ class FlagLayout @JvmOverloads constructor(
     }
 
     private fun show() {
-        if (this.translationY != 0f)
+        if (this.translationY != 0f) {
             translationY(0f, 100)
+        }
     }
 
     private fun hide() {
-        if (this.translationY == 0f)
+        if (this.translationY == 0f) {
             translationY(130.dp.toFloat(), 100)
+        }
     }
 }

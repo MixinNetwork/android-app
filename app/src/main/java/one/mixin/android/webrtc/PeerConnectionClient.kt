@@ -2,12 +2,17 @@ package one.mixin.android.webrtc
 
 import android.content.Context
 import androidx.collection.arrayMapOf
-import com.google.firebase.crashlytics.FirebaseCrashlytics
+import kotlinx.coroutines.delay
+import one.mixin.android.RxBus
+import one.mixin.android.event.FrameKeyEvent
+import one.mixin.android.event.VoiceEvent
 import one.mixin.android.session.Session
+import org.webrtc.AddIceObserver
 import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
 import org.webrtc.DataChannel
 import org.webrtc.IceCandidate
+import org.webrtc.Logging
 import org.webrtc.MediaConstraints
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
@@ -21,14 +26,30 @@ import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
 import timber.log.Timber
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
-class PeerConnectionClient(context: Context, private val events: PeerConnectionEvents) {
+class PeerConnectionClient(context: Context) {
     private var factory: PeerConnectionFactory? = null
     private var isError = false
 
+    var events: PeerConnectionEvents? = null
+
+    var callDebugState = CallDebugLiveData.Type.None
+        set(value) {
+            if (value == field) return
+
+            field = value
+            if (value.logEnable()) {
+                Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO)
+            } else {
+                Logging.enableLogToDebugOutput(Logging.Severity.LS_NONE)
+            }
+        }
+
     init {
         PeerConnectionFactory.initialize(
-            PeerConnectionFactory.InitializationOptions.builder(context).createInitializationOptions()
+            PeerConnectionFactory.InitializationOptions.builder(context).createInitializationOptions(),
         )
     }
 
@@ -40,10 +61,60 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     private var audioSource: AudioSource? = null
     private var rtpSender: RtpSender? = null
     private val rtpReceivers = arrayMapOf<String, RtpReceiver>()
+    private val receiverIdUserIdMap = arrayMapOf<String, String>()
+    private val receiverIdUserIdNoKeyMap = arrayMapOf<String, String>()
 
-    private val restartConstraint = MediaConstraints.KeyValuePair("IceRestart", "true")
     private val offerReceiveAudioConstraint = MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true")
     private val offerReceiveVideoConstraint = MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false")
+
+    suspend fun observeStats(callPipShown: () -> Boolean) {
+        while (peerConnection != null && peerConnection?.connectionState() == PeerConnection.PeerConnectionState.CONNECTED) {
+            if (!callPipShown.invoke()) {
+                requireNotNull(peerConnection).getStats { report ->
+                    val map = report.statsMap
+                    map.entries.forEach { (_, v) ->
+                        when (v.type) {
+                            "inbound-rtp" -> {
+                                val trackIdentifier = v.members["trackIdentifier"]
+                                val audioLevel = v.members["audioLevel"] as? Double?
+                                var userId = receiverIdUserIdMap[trackIdentifier]
+                                if (callDebugState.reportEnable()) {
+                                    Timber.d("$TAG_CALL userId: $userId, trackIdentifier: $trackIdentifier, audioLevel: $audioLevel")
+                                }
+                                if (userId != null) {
+                                    RxBus.publish(VoiceEvent(userId, audioLevel ?: 0.0))
+                                } else {
+                                    userId = receiverIdUserIdNoKeyMap[trackIdentifier]
+                                    if (userId != null) {
+                                        RxBus.publish(FrameKeyEvent(userId, false))
+                                    }
+                                }
+                            }
+                            "media-source" -> {
+                                if (audioTrack?.enabled() == true) {
+                                    val audioLevel = v.members["audioLevel"] as? Double?
+                                    RxBus.publish(
+                                        VoiceEvent(
+                                            requireNotNull(Session.getAccountId()),
+                                            audioLevel ?: 0.0,
+                                        ),
+                                    )
+                                } else {
+                                    RxBus.publish(
+                                        VoiceEvent(
+                                            requireNotNull(Session.getAccountId()),
+                                            0.0,
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            delay(500)
+        }
+    }
 
     fun createPeerConnectionFactory(options: PeerConnectionFactory.Options) {
         if (factory != null) {
@@ -57,16 +128,17 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         iceServerList: List<PeerConnection.IceServer>? = null,
         setLocalSuccess: ((sdp: SessionDescription) -> Unit),
         frameKey: ByteArray? = null,
-        doWhenSetFailure: (() -> Unit)? = null
+        doWhenSetFailure: (() -> Unit)? = null,
     ) {
         val sdpConstraint = createMediaConstraint()
         if (iceServerList != null) {
             iceServers.clear()
             iceServers.addAll(iceServerList)
-        } else {
-            sdpConstraint.mandatory.add(restartConstraint)
+        } else if (peerConnection != null && peerConnection?.connectionState() != PeerConnection.PeerConnectionState.CLOSED) {
+            peerConnection?.restartIce()
         }
-        if (peerConnection == null || peerConnection?.connectionState() == PeerConnection.PeerConnectionState.CLOSED) {
+        val connectionState = peerConnection?.connectionState()
+        if (peerConnection == null || connectionState == PeerConnection.PeerConnectionState.CLOSED) {
             peerConnection = createPeerConnectionInternal(frameKey)
         }
         val offerSdpObserver = object : SdpObserverWrapper() {
@@ -97,7 +169,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                             }
                         }
                     },
-                    sdp
+                    sdp,
                 )
             }
 
@@ -130,7 +202,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         iceServerList: List<PeerConnection.IceServer>? = null,
         remoteSdp: SessionDescription,
         setLocalSuccess: (sdp: SessionDescription) -> Unit,
-        doWhenSetFailure: (() -> Unit)? = null
+        doWhenSetFailure: (() -> Unit)? = null,
     ) {
         val sdpConstraint = createMediaConstraint()
         if (iceServerList != null) {
@@ -167,12 +239,12 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 override fun onSetSuccess() {
                     Timber.d("$TAG_CALL createAnswer setRemoteSdp onSetSuccess remoteCandidateCache: ${remoteCandidateCache.size}")
                     remoteCandidateCache.forEach {
-                        peerConnection?.addIceCandidate(it)
+                        peerConnection?.addIceCandidate(it, iceObserver)
                     }
                     remoteCandidateCache.clear()
                 }
             },
-            remoteSdp
+            remoteSdp,
         )
         val answerSdpObserver = object : SdpObserverWrapper() {
             override fun onCreateSuccess(sdp: SessionDescription) {
@@ -202,7 +274,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                             }
                         }
                     },
-                    sdp
+                    sdp,
                 )
             }
 
@@ -234,7 +306,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     fun addRemoteIceCandidate(candidate: IceCandidate) {
         Timber.d("$TAG_CALL addRemoteIceCandidate peerConnection: $peerConnection")
         if (peerConnection != null && peerConnection!!.remoteDescription != null) {
-            peerConnection?.addIceCandidate(candidate)
+            peerConnection?.addIceCandidate(candidate, iceObserver)
         } else {
             remoteCandidateCache.add(candidate)
         }
@@ -242,7 +314,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
 
     fun setAnswerSdp(
         sdp: SessionDescription,
-        doWhenSetFailure: (() -> Unit)? = null
+        doWhenSetFailure: (() -> Unit)? = null,
     ) {
         peerConnection?.setRemoteDescription(
             object : SdpObserverWrapper() {
@@ -271,12 +343,12 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 override fun onSetSuccess() {
                     Timber.d("$TAG_CALL setAnswerSdp setRemoteSdp onSetSuccess remoteCandidateCache: ${remoteCandidateCache.size}")
                     remoteCandidateCache.forEach {
-                        peerConnection?.addIceCandidate(it)
+                        peerConnection?.addIceCandidate(it, iceObserver)
                     }
                     remoteCandidateCache.clear()
                 }
             },
-            sdp
+            sdp,
         )
     }
 
@@ -307,35 +379,45 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         isError = false
         rtpSender = null
         rtpReceivers.clear()
-        events.onPeerConnectionClosed()
+        events?.onPeerConnectionClosed()
     }
 
     fun release() {
         dispose()
+        events = null
         factory?.dispose()
         factory = null
     }
 
     fun getPeerConnection() = peerConnection
 
-    private fun reportError(error: String) {
-        Timber.d("$TAG_CALL reportError: $error")
+    fun getPCMessage(error: String? = null): String {
+        val msgBuilder = StringBuilder().append("$TAG_CALL WebRTC peer connection").appendLine()
+        if (!error.isNullOrBlank()) {
+            msgBuilder.append("error: $error").appendLine()
+        }
         peerConnection?.let { pc ->
             val localSdp = "{ localDescription: { description: ${pc.localDescription?.description}, type: ${pc.localDescription?.type} }"
             val remoteSdp = "{ remoteDescription: { description: ${pc.remoteDescription?.description}, type: ${pc.remoteDescription?.type} }"
+            msgBuilder.append(localSdp).appendLine().append(remoteSdp).appendLine()
+
+            val latch = CountDownLatch(1)
             pc.getStats { report ->
-                FirebaseCrashlytics.getInstance().log(
-                    "WebRTC peer connection error " +
-                        """
-                        { stats: $report },
-                        $localSdp,
-                        $remoteSdp
-                    """
-                )
+                msgBuilder.append("{ stats: $report }").appendLine()
+                latch.countDown()
+            }
+            try {
+                latch.await(5, TimeUnit.SECONDS)
+            } catch (ignored: Exception) {
             }
         }
+        return msgBuilder.toString()
+    }
+
+    private fun reportError(error: String) {
+        val msg = getPCMessage(error)
         if (!isError) {
-            events.onPeerConnectionError(error)
+            events?.onPeerConnectionError(msg)
             isError = true
         }
     }
@@ -351,7 +433,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE
             rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE
             sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
-            enableDtlsSrtp = true
             continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_ONCE
         }
         val peerConnection = factory!!.createPeerConnection(rtcConfig, pcObserver)
@@ -359,7 +440,9 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             reportError("PeerConnection is not created")
             return null
         }
-        // Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO)
+        if (callDebugState.logEnable()) {
+            Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO)
+        }
         peerConnection.setAudioPlayout(false)
         peerConnection.setAudioRecording(false)
 
@@ -377,9 +460,14 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     fun setReceiverFrameKey(userId: String, sessionId: String, frameKey: ByteArray? = null) {
         val key = "$userId~$sessionId"
         if (rtpReceivers.containsKey(key) && frameKey != null) {
-            val receiver = rtpReceivers[key]
-            Timber.d("$TAG_CALL setFrameDecryptor")
-            receiver?.setFrameDecryptor(RTCFrameDecryptor(frameKey))
+            val receiver = rtpReceivers[key] ?: return
+            val receiverId = receiver.id()
+            Timber.d("$TAG_CALL setReceiverFrameKey receiver id: $receiverId")
+            receiver.setFrameDecryptor(RTCFrameDecryptor(frameKey))
+            receiver.track()?.setEnabled(true)
+            receiverIdUserIdMap[receiverId] = userId
+            receiverIdUserIdNoKeyMap.remove(receiverId)
+            RxBus.publish(FrameKeyEvent(userId, true))
         }
     }
 
@@ -401,10 +489,20 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         mandatory.add(offerReceiveVideoConstraint)
     }
 
+    private val iceObserver = object : AddIceObserver {
+        override fun onAddSuccess() {
+            Timber.d("$TAG_CALL iceObserver onAddSuccess")
+        }
+
+        override fun onAddFailure(error: String?) {
+            Timber.d("$TAG_CALL iceObserver onAddFailure error: $error")
+        }
+    }
+
     private inner class PCObserver : PeerConnection.Observer {
 
         override fun onIceCandidate(candidate: IceCandidate) {
-            events.onIceCandidate(candidate)
+            events?.onIceCandidate(candidate)
         }
 
         override fun onDataChannel(dataChannel: DataChannel?) {
@@ -416,20 +514,20 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         override fun onIceConnectionChange(newState: PeerConnection.IceConnectionState) {
             Timber.d("$TAG_CALL onIceConnectionChange: $newState")
             if (newState == PeerConnection.IceConnectionState.DISCONNECTED) {
-                events.onIceDisconnected()
+                events?.onIceDisconnected()
             } else if (newState == PeerConnection.IceConnectionState.FAILED) {
-                events.onIceFailed()
+                events?.onIceFailed()
             }
         }
 
         override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
             Timber.d("$TAG_CALL onConnectionChange: $newState")
             if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
-                events.onConnected()
+                events?.onConnected()
             } else if (newState == PeerConnection.PeerConnectionState.DISCONNECTED) {
-                events.onDisconnected()
+                events?.onDisconnected()
             } else if (newState == PeerConnection.PeerConnectionState.CLOSED) {
-                events.onClosed()
+                events?.onClosed()
             }
         }
 
@@ -443,7 +541,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
 
         override fun onIceCandidatesRemoved(candidates: Array<IceCandidate>) {
             Timber.d("$TAG_CALL onIceCandidatesRemoved")
-            events.onIceCandidatesRemoved(candidates)
+            events?.onIceCandidatesRemoved(candidates)
         }
 
         override fun onAddStream(stream: MediaStream) {
@@ -461,7 +559,9 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         }
 
         override fun onAddTrack(receiver: RtpReceiver, mediaStreams: Array<out MediaStream>) {
+            var hasAllMediaStreamKey = true
             for (m in mediaStreams) {
+                Timber.d("$TAG_CALL mediaStream: $m")
                 val userSession = m.id.split("~")
                 if (userSession.size != 2) {
                     continue
@@ -469,14 +569,20 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 if (userSession[0] == Session.getAccountId()) {
                     continue
                 }
-                val frameKey = events.getSenderPublicKey(userSession[0], userSession[1])
+                val frameKey = events?.getSenderPublicKey(userSession[0], userSession[1])
+                Timber.d("$TAG_CALL getSenderPublicKey userId: ${userSession[0]}, sessionId: ${userSession[1]}, frameKey: $frameKey")
+                rtpReceivers[m.id] = receiver
                 if (frameKey != null) {
-                    rtpReceivers[m.id] = receiver
+                    receiverIdUserIdMap[receiver.id()] = userSession[0]
                     receiver.setFrameDecryptor(RTCFrameDecryptor(frameKey))
+                } else {
+                    receiverIdUserIdNoKeyMap[receiver.id()] = userSession[0]
+                    hasAllMediaStreamKey = false
+                    events?.requestResendKey(userSession[0], userSession[1])
                 }
             }
-            Timber.d("$TAG_CALL onAddTrack=%s", receiver.toString())
-            receiver.track()?.setEnabled(true)
+            Timber.d("$TAG_CALL onAddTrack id: ${receiver.id()}, hasAllMediaStreamKey: $hasAllMediaStreamKey")
+            receiver.track()?.setEnabled(hasAllMediaStreamKey)
         }
     }
 
@@ -550,9 +656,11 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         /**
          * Callback fired once peer connection error happened.
          */
-        fun onPeerConnectionError(description: String)
+        fun onPeerConnectionError(errorMsg: String)
 
         fun getSenderPublicKey(userId: String, sessionId: String): ByteArray?
+
+        fun requestResendKey(userId: String, sessionId: String)
     }
 
     companion object {

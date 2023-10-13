@@ -9,6 +9,9 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.RenderEffect
+import android.graphics.Shader
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.View
 import android.view.animation.DecelerateInterpolator
@@ -19,31 +22,42 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import kotlinx.android.synthetic.main.activity_avatar.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ActivityAvatarBinding
 import one.mixin.android.extension.belowOreo
+import one.mixin.android.extension.blurBitmap
+import one.mixin.android.extension.supportsS
+import one.mixin.android.ui.web.getScreenshot
+import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.widget.AvatarTransform
 
 class AvatarActivity : BaseActivity() {
 
     companion object {
-        const val TAG = "AvatarFragment"
+        const val TAG = "AvatarActivity"
         const val ARGS_URL = "args_url"
 
         fun show(activity: Activity, url: String, view: View) {
+            refreshScreenshot(activity)
             val intent = Intent(activity, AvatarActivity::class.java).apply {
                 putExtra(ARGS_URL, url)
             }
             val options = ActivityOptions.makeSceneTransitionAnimation(
                 activity,
                 view,
-                activity.getString(R.string.avatar_transition_name)
+                activity.getString(R.string.avatar_transition_name),
             )
             activity.startActivity(intent, options.toBundle())
         }
     }
 
+    override fun getNightThemeId(): Int = R.style.AppTheme_Night_Blur
+
+    override fun getDefaultThemeId(): Int = R.style.AppTheme_Blur
+
     private val url: String by lazy { intent.getStringExtra(ARGS_URL) as String }
+
+    private lateinit var binding: ActivityAvatarBinding
 
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,37 +67,45 @@ class AvatarActivity : BaseActivity() {
         }
         postponeEnterTransition()
         window.statusBarColor = Color.TRANSPARENT
-        setContentView(R.layout.activity_avatar)
-
+        binding = ActivityAvatarBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        getScreenshot()?.let {
+            supportsS({
+                binding.background.background = BitmapDrawable(resources, it)
+                binding.background.setRenderEffect(RenderEffect.createBlurEffect(10f, 10f, Shader.TileMode.MIRROR))
+            }, {
+                binding.rootView.background = BitmapDrawable(resources, it.blurBitmap(25))
+            })
+        }
         Glide.with(this).asBitmap().load(url).listener(
             object : RequestListener<Bitmap> {
                 override fun onLoadFailed(
                     e: GlideException?,
                     model: Any?,
-                    target: Target<Bitmap>?,
-                    isFirstResource: Boolean
+                    target: Target<Bitmap>,
+                    isFirstResource: Boolean,
                 ): Boolean {
                     return false
                 }
 
                 override fun onResourceReady(
                     resource: Bitmap,
-                    model: Any?,
+                    model: Any,
                     target: Target<Bitmap>?,
-                    dataSource: DataSource?,
-                    isFirstResource: Boolean
+                    dataSource: DataSource,
+                    isFirstResource: Boolean,
                 ): Boolean {
-                    avatar.doOnPreDraw {
-                        val avatarTransform = AvatarTransform(resource).apply { addTarget(avatar) }
+                    binding.avatar.doOnPreDraw {
+                        val avatarTransform = AvatarTransform(resource).apply { addTarget(binding.avatar) }
                         window.sharedElementEnterTransition = avatarTransform
                         startPostponedEnterTransition()
                     }
                     return false
                 }
-            }
-        ).into(avatar)
+            },
+        ).into(binding.avatar)
 
-        root.setOnClickListener { finish() }
+        binding.rootView.setOnClickListener { finish() }
     }
 
     override fun onBackPressed() {
@@ -93,9 +115,9 @@ class AvatarActivity : BaseActivity() {
     override fun finish() {
         AnimatorSet().apply {
             playTogether(
-                ObjectAnimator.ofFloat(avatar, View.SCALE_X, 0f),
-                ObjectAnimator.ofFloat(avatar, View.SCALE_Y, 0f),
-                ObjectAnimator.ofFloat(root, View.ALPHA, 0f)
+                ObjectAnimator.ofFloat(binding.avatar, View.SCALE_X, 0f),
+                ObjectAnimator.ofFloat(binding.avatar, View.SCALE_Y, 0f),
+                ObjectAnimator.ofFloat(binding.rootView, View.ALPHA, 0f),
             )
             duration = 200
             interpolator = DecelerateInterpolator()

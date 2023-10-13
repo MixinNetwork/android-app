@@ -7,13 +7,34 @@ import okhttp3.Request
 import one.mixin.android.Constants
 import one.mixin.android.Constants.API.URL
 import java.io.IOException
-import kotlin.jvm.Throws
+import java.net.ConnectException
+import java.net.NoRouteToHostException
+import java.net.ProtocolException
+import java.net.SocketException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import javax.net.ssl.SSLHandshakeException
+import javax.net.ssl.SSLPeerUnverifiedException
+
+fun Throwable.isNeedSwitch(): Boolean {
+    return (
+        this is SocketTimeoutException ||
+            this is UnknownHostException ||
+            this is ConnectException ||
+            this is ProtocolException ||
+            this is NoRouteToHostException ||
+            this is SocketException ||
+            this is SSLPeerUnverifiedException ||
+            this is SSLHandshakeException
+        )
+}
 
 class HostSelectionInterceptor private constructor() : Interceptor {
     @Volatile
     private var host: HttpUrl? = URL.toHttpUrlOrNull()
 
     private fun setHost(url: String) {
+        CURRENT_URL = url
         this.host = url.toHttpUrlOrNull()
     }
 
@@ -45,6 +66,9 @@ class HostSelectionInterceptor private constructor() : Interceptor {
     }
 
     companion object {
+        var CURRENT_URL: String = URL
+            private set
+
         @Synchronized
         fun get(): HostSelectionInterceptor {
             if (instance == null) {

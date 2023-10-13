@@ -6,7 +6,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -18,5 +18,5 @@ data class AssetsExtra(
     val assetId: String,
     @SerializedName("hidden")
     @ColumnInfo(name = "hidden")
-    var hidden: Boolean?
+    var hidden: Boolean?,
 ) : Parcelable

@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.RecyclerView
 import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.Executor
 
-abstract class SafePagedListAdapter<T, VH : RecyclerView.ViewHolder>(
-    diffCallback: DiffUtil.ItemCallback<T>
+abstract class SafePagedListAdapter<T : Any, VH : RecyclerView.ViewHolder>(
+    diffCallback: DiffUtil.ItemCallback<T>,
 ) : PagedListAdapter<T, VH>(diffCallback) {
 
     init {
@@ -53,7 +53,7 @@ abstract class SafePagedListAdapter<T, VH : RecyclerView.ViewHolder>(
                 return Handler::class.java.getDeclaredConstructor(
                     Looper::class.java,
                     Handler.Callback::class.java,
-                    Boolean::class.javaPrimitiveType
+                    Boolean::class.javaPrimitiveType,
                 ).newInstance(looper, null, true)
             } catch (ignored: IllegalAccessException) {
             } catch (ignored: InstantiationException) {

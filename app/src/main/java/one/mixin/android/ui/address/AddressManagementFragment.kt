@@ -2,9 +2,7 @@ package one.mixin.android.ui.address
 
 import android.os.Bundle
 import android.text.Editable
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
@@ -12,80 +10,80 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_address_management.*
-import kotlinx.android.synthetic.main.item_address.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentAddressManagementBinding
+import one.mixin.android.databinding.ItemAddressBinding
+import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.equalsIgnoreCase
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.adapter.AddressAdapter
 import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.DELETE
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.SearchView
 
 @AndroidEntryPoint
-class AddressManagementFragment : BaseFragment() {
+class AddressManagementFragment : BaseFragment(R.layout.fragment_address_management) {
 
     private val addressViewModel by viewModels<AddressViewModel>()
 
-    private var deleteSuccess = false
     private val asset: AssetItem by lazy {
-        requireArguments().getParcelable<AssetItem>(ARGS_ASSET)!!
+        requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)!!
     }
     private var addresses: List<Address>? = null
 
-    private val adapter: AddressAdapter by lazy { AddressAdapter(asset, true) }
+    private val adapter: AddressAdapter by lazy { AddressAdapter() }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_address_management, container, false)
+    private val binding by viewBinding(FragmentAddressManagementBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title_view.right_animator.setOnClickListener {
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.titleView.rightAnimator.setOnClickListener {
             view.navigate(
                 R.id.action_address_management_to_address_add,
                 Bundle().apply {
                     putParcelable(ARGS_ASSET, asset)
-                }
+                },
             )
         }
-        empty_tv.setOnClickListener {
+        binding.emptyTv.setOnClickListener {
             view.navigate(
                 R.id.action_address_management_to_address_add,
                 Bundle().apply {
                     putParcelable(ARGS_ASSET, asset)
-                }
+                },
             )
         }
         addressViewModel.addresses(asset.assetId).observe(
             viewLifecycleOwner,
-            {
-                val list = it?.toMutableList()
-                if (list.isNullOrEmpty()) {
-                    empty_tv.isVisible = true
-                    content_ll.isGone = true
-                } else {
-                    empty_tv.isVisible = false
-                    content_ll.isGone = false
-                }
-                addresses = list
-                adapter.addresses = list
+        ) {
+            val list = it?.toMutableList()
+            if (list.isNullOrEmpty()) {
+                binding.emptyTv.isVisible = true
+                binding.contentLl.isGone = true
+            } else {
+                binding.emptyTv.isVisible = false
+                binding.contentLl.isGone = false
             }
-        )
+            addresses = list
+            adapter.addresses = list
+        }
         val addrListener = object : AddressAdapter.SimpleAddressListener() {
             override fun onAddrLongClick(view: View, addr: Address) {
-                val popMenu = PopupMenu(activity!!, view.addr_tv)
-                popMenu.menuInflater.inflate(R.menu.address_mamangement_item, popMenu.menu)
+                val popMenu = PopupMenu(requireActivity(), ItemAddressBinding.bind(view).addrTv)
+                popMenu.menuInflater.inflate(R.menu.address_management_item, popMenu.menu)
                 popMenu.setOnMenuItemClickListener {
                     if (it.itemId == R.id.delete) {
                         showBottomSheet(addr, asset)
@@ -101,7 +99,12 @@ class AddressManagementFragment : BaseFragment() {
                     transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)
                     transferFragment.callback = object : TransferFragment.Callback {
                         override fun onSuccess() {
-                            activity?.onBackPressed()
+                            if (viewDestroyed()) return
+
+                            view.navigate(
+                                R.id.action_address_management_to_transactions,
+                                Bundle().apply { putParcelable(ARGS_ASSET, asset) },
+                            )
                         }
                     }
                 } else {
@@ -118,23 +121,24 @@ class AddressManagementFragment : BaseFragment() {
                         val deleteItem = adapter.removeItem(viewHolder.bindingAdapterPosition)!!
                         val bottomSheet = showBottomSheet(addr, asset)
                         parentFragmentManager.executePendingTransactions()
-                        bottomSheet.dialog?.setOnDismissListener {
-                            bottomSheet.dismiss()
-                            if (!deleteSuccess) {
-                                adapter.restoreItem(deleteItem, deletePos)
+                        bottomSheet.setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
+                            override fun onDismiss(success: Boolean) {
+                                if (!success) {
+                                    adapter.restoreItem(deleteItem, deletePos)
+                                }
                             }
-                        }
+                        })
                     }
-                }
-            )
-        ).apply { attachToRecyclerView(addr_rv) }
-        addr_rv.adapter = adapter
+                },
+            ),
+        ).apply { attachToRecyclerView(binding.addrRv) }
+        binding.addrRv.adapter = adapter
         adapter.setAddrListener(addrListener)
-        search_et.listener = object : SearchView.OnSearchViewListener {
+        binding.searchEt.listener = object : SearchView.OnSearchViewListener {
             override fun afterTextChanged(s: Editable?) {
                 adapter.addresses = addresses?.filter {
-                    it.label.contains(s.toString(), ignoreCase = true)
-                }?.sortedByDescending { it.label == s.toString() }?.toMutableList()
+                    it.label.containsIgnoreCase(s)
+                }?.sortedByDescending { it.label.equalsIgnoreCase(s) }?.toMutableList()
             }
 
             override fun onSearch() {
@@ -143,24 +147,22 @@ class AddressManagementFragment : BaseFragment() {
         addressViewModel.refreshAddressesByAssetId(asset.assetId)
     }
 
-    private fun showBottomSheet(addr: Address, asset: AssetItem): MixinBottomSheetDialogFragment {
+    private fun showBottomSheet(address: Address, asset: AssetItem): BiometricBottomSheetDialogFragment {
         val bottomSheet = PinAddrBottomSheetDialogFragment.newInstance(
-            addressId = addr.addressId,
+            addressId = address.addressId,
             assetUrl = asset.iconUrl,
+            assetSymbol = asset.symbol,
+            assetKey = asset.assetKey,
             chainId = asset.chainId,
+            chainName = asset.chainName,
             chainIconUrl = asset.chainIconUrl,
-            destination = addr.destination,
-            label = addr.label,
-            tag = addr.tag,
+            destination = address.destination,
+            label = address.label,
+            tag = address.tag,
             assetName = asset.name,
-            type = DELETE
+            type = DELETE,
         )
         bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
-        bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback {
-            override fun onSuccess() {
-                deleteSuccess = true
-            }
-        }
         return bottomSheet
     }
 }

@@ -1,16 +1,15 @@
 package one.mixin.android.util.image
 
 import android.graphics.Bitmap
-import io.reactivex.Flowable
+import android.net.Uri
 import java.io.File
 import java.io.IOException
-import kotlin.jvm.Throws
 
 class Compressor {
-    private var maxWidth = 1080
-    private var maxHeight = 1080
+    private var maxWidth = 1920
+    private var maxHeight = 1920
     private var compressFormat: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG
-    private var quality = 80
+    private var quality = 85
 
     fun setMaxWidth(maxWidth: Int): Compressor {
         this.maxWidth = maxWidth
@@ -33,44 +32,14 @@ class Compressor {
     }
 
     @Throws(IOException::class)
-    @JvmOverloads
-    fun compressToFile(imageFile: File, compressedFilePath: String = imageFile.name): File {
+    fun compressToFile(imageUri: Uri, compressedFilePath: String): File {
         return ImageUtil.compressImage(
-            imageFile,
+            imageUri,
             maxWidth,
             maxHeight,
             compressFormat,
             quality,
-            compressedFilePath
+            compressedFilePath,
         )
-    }
-
-    @Throws(IOException::class)
-    fun compressToBitmap(imageFile: File): Bitmap {
-        return ImageUtil.decodeSampledBitmapFromFile(imageFile, maxWidth, maxHeight)
-    }
-
-    fun compressToFileAsFlowable(imageFile: File): Flowable<File> {
-        return compressToFileAsFlowable(imageFile, imageFile.name)
-    }
-
-    fun compressToFileAsFlowable(imageFile: File, compressedFilePath: String): Flowable<File> {
-        return Flowable.defer {
-            try {
-                Flowable.just<File>(compressToFile(imageFile, compressedFilePath))
-            } catch (e: IOException) {
-                Flowable.error<File>(e)
-            }
-        }
-    }
-
-    fun compressToBitmapAsFlowable(imageFile: File): Flowable<Bitmap> {
-        return Flowable.defer {
-            try {
-                Flowable.just<Bitmap>(compressToBitmap(imageFile))
-            } catch (e: IOException) {
-                Flowable.error<Bitmap>(e)
-            }
-        }
     }
 }

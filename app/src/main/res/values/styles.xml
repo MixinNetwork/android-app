@@ -1,15 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar.Bridge">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">?attr/color_primary</item>
         <item name="colorPrimaryDark">?attr/color_primary_dark</item>
         <item name="colorAccent">?attr/color_accent</item>
         <item name="colorSurface">?attr/color_primary</item>
+        <item name="colorOnSurface">@color/colorOnSurface</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:fontFamily">@font/roboto_regular</item>
-        <item name="android:windowBackground">?attr/colorPrimary</item>
+        <item name="android:windowBackground">?attr/bg_window</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:textColorHighlight">@color/blue_highlight</item>
         <item name="android:textViewStyle">@style/NoneHFTextViewStyle</item>
@@ -30,7 +31,9 @@
         <item name="icon_default">@color/colorIcon</item>
         <item name="icon_white">@color/colorIconWhite</item>
         <item name="icon_black">@color/colorIcon</item>
+        <item name="icon_google_black">@color/colorIconGoogleBlack</item>
         <item name="icon_gray">@color/colorIconGray</item>
+        <item name="icon_action">@color/colorIconAction</item>
 
         <item name="badger">@color/badger</item>
         <item name="badger_mute">@color/badgerMute</item>
@@ -51,18 +54,55 @@
         <item name="bg_block">@color/bgBlock</item>
         <item name="bg_post">@color/bgPost</item>
         <item name="bg_bubble">@color/bgBubble</item>
+        <item name="bg_choose_network_yellow">@color/bgChooseNetworkYellow</item>
+        <item name="bg_choose_network">@color/bgChooseNetwork</item>
         <item name="bg_bot">@color/bgBot</item>
         <item name="bg_divider">@color/divider</item>
         <item name="bg_translucence">@color/bgTranslucence</item>
+        <item name="bg_pin_content">@drawable/chat_bubble_pin_message</item>
+        <item name="bg_flag">@color/bgFlag</item>
+
+        <item name="music_played">@color/musicPlayed</item>
+        <item name="music_unplayed">@color/musicUnPlayed</item>
+        <item name="music_buffered">@color/musicBuffered</item>
+        <item name="music_text">@color/musicText</item>
+        <item name="music_floating_bg">@color/musicFloatingBg</item>
+        <item name="music_play_pause_bg">@color/musicPlayPauseBg</item>
 
         <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
 
         <item name="code_border">@color/codeBorder</item>
 
-        <item name="map_default">@drawable/ic_map_default_night</item>
+        <item name="map_default">@drawable/ic_map_default</item>
+
+        <item name="android:colorControlHighlight">@color/highlight</item>
+
+        <item name="snackbarStyle">@style/Snackbar</item>
+
+
+        <item name="swirl_ridgeColor">@color/gray_light</item>
+        <item name="swirl_errorColor">@color/colorRed</item>
+
+        <item name="popupMenuStyle">@style/AppTheme.PopupMenuStyle</item>
+        <item name="android:textAppearanceLargePopupMenu">@style/AppTheme.PopupMenuStyle.MenuTextAppearanceSmall</item>
+        <item name="android:textAppearanceSmallPopupMenu">@style/AppTheme.PopupMenuStyle.MenuTextAppearanceLarge</item>
+
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+
     </style>
 
+    <style name="AppTheme.PopupMenuStyle" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">?attr/bg_white</item>
+    </style>
+
+    <style name="AppTheme.PopupMenuStyle.MenuTextAppearanceSmall" parent="@android:style/TextAppearance.DeviceDefault.Widget.PopupMenu.Small">
+                <item name="android:textColor">?attr/text_primary</item>
+    </style>
+
+    <style name="AppTheme.PopupMenuStyle.MenuTextAppearanceLarge" parent="@android:style/TextAppearance.DeviceDefault.Widget.PopupMenu.Large">
+        <item name="android:textColor">?attr/text_primary</item>
+    </style>
 
     <style name="NoneHFTextViewStyle" parent="Widget.AppCompat.TextView">
         <item name="android:hyphenationFrequency" tools:ignore="NewApi">none</item>
@@ -81,32 +121,17 @@
         <item name="android:windowAnimationStyle">@null</item>
     </style>
 
+    <style name="AppTheme.Post" parent="AppTheme.NoActionBar">
+        <item name="android:windowBackground">?attr/bg_post</item>
+    </style>
+
     <style name="AppTheme.Capture" parent="AppTheme.FullScreen">
         <item name="android:windowFullscreen">true</item>
         <item name="android:immersive">true</item>
     </style>
 
-    <style name="AppTheme.Avatar" parent="AppTheme.FullScreen">
-        <item name="android:windowAnimationStyle">@null</item>
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:navigationBarColor">?attr/text_primary</item>
-    </style>
-
     <style name="AppTheme.Photo" parent="AppTheme.FullScreen">
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowTranslucentStatus">true</item>
-    </style>
-
-
-    <style name="AppTheme.Call" parent="AppTheme.NoActionBar">
-        <item name="android:windowBackground">@color/call_gray</item>
-        <item name="android:windowIsTranslucent">false</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowBackground">#33000000</item>
     </style>
 
     <style name="MixinAlertDialogTheme" parent="Theme.AppCompat.DayNight.Dialog.Alert">
@@ -116,6 +141,7 @@
         <item name="textColorAlertDialogListItem">?attr/text_primary</item>
         <item name="android:colorControlNormal">?attr/text_primary</item>
         <item name="android:background">?attr/bg_white</item>
+        <item name="android:textColor">?attr/text_primary</item>
     </style>
 
     <style name="PositiveButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
@@ -158,6 +184,12 @@
     <style name="AppTheme.GrayProgress">
         <item name="android:indeterminateTint">?attr/icon_gray</item>
         <item name="android:indeterminate">false</item>
+        <item name="android:indeterminateTintMode">src_atop</item>
+    </style>
+
+    <style name="AppTheme.GrayProgressIndeterminate">
+        <item name="android:indeterminateTint">?attr/icon_gray</item>
+        <item name="android:indeterminate">true</item>
         <item name="android:indeterminateTintMode">src_atop</item>
     </style>
 
@@ -213,10 +245,16 @@
         <item name="android:windowIsFloating">false</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowIsTranslucent">true</item>
-        <item name="android:backgroundDimAmount">0.3</item>
+        <item name="android:backgroundDimAmount">0.6</item>
         <item name="android:windowAnimationStyle">@style/BottomSheet.Animation</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="bottomSheetStyle">@style/BottomSheetModal</item>
+    </style>
+
+    <style name="AppTheme.Call" parent="AppTheme.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
     </style>
 
     <style name="AppTheme.Transparent" parent="AppTheme.FullScreen">
@@ -225,9 +263,15 @@
         <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
     </style>
 
-    <style name="AppTheme.Web" parent="AppTheme.NoActionBar">
+    <style name="AppTheme.Blur" parent="AppTheme.NoActionBar">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
+    </style>
+
+    <style name="AppTheme.Music" parent="AppTheme.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
     <style name="BoxStyle" parent="AppTheme">
@@ -241,20 +285,12 @@
         <item name="android:windowExitAnimation">@anim/dock_bottom_exit</item>
     </style>
 
-    <style name="SeekBar">
-        <item name="android:splitTrack">false</item>
-        <item name="android:progressDrawable">@drawable/layer_progress</item>
-        <item name="android:thumb">@drawable/ic_seek_bar</item>
-        <item name="android:minHeight">2dp</item>
-        <item name="android:maxHeight">2dp</item>
-    </style>
-
     <style name="TransactionTitleTextStyle">
         <item name="android:textSize">12sp</item>
         <item name="android:textColor">?attr/text_minor</item>
         <item name="android:layout_marginStart">20dp</item>
         <item name="android:layout_marginEnd">20dp</item>
-        <item name="android:layout_marginTop">18dp</item>
+        <item name="android:layout_marginTop">12dp</item>
         <item name="android:layout_marginBottom">5dp</item>
     </style>
 
@@ -264,7 +300,7 @@
         <item name="android:layout_marginStart">20dp</item>
         <item name="android:layout_marginEnd">20dp</item>
         <item name="android:layout_marginTop">5dp</item>
-        <item name="android:layout_marginBottom">18dp</item>
+        <item name="android:layout_marginBottom">12dp</item>
     </style>
 
     <style name="ProgressTheme" parent="Widget.AppCompat.ProgressBar.Horizontal">
@@ -274,5 +310,42 @@
     <style name="AppTheme.MaterialButton">
         <item name="android:background">@drawable/bg_round_blue_btn</item>
         <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="Snackbar" parent="Widget.MaterialComponents.Snackbar">
+    </style>
+
+    <style name="MaterialTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorDarkBlue</item>
+    </style>
+
+    <style name="common_spinner">
+        <item name="android:popupBackground">?attr/bg_white</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:dropDownVerticalOffset">?attr/actionBarSize</item>
+        <item name="android:dropDownListViewStyle">@style/spinnerListStyle</item>
+        <item name="android:dropDownItemStyle">@style/itemSpinnerStyle</item>
+    </style>
+
+    <style name="spinnerListStyle" parent="@android:style/Widget.ListView.DropDown">
+        <item name="android:dividerHeight">0dp</item>
+    </style>
+
+    <style name="itemSpinnerStyle" parent="@android:style/Widget.TextView.SpinnerItem">
+        <item name="android:textColor">?attr/bg_white</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="LoadingProgressDialog" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="LoadingProgressDialog.FadeInOut">
+        <item name="android:windowEnterAnimation">@anim/fade_in</item>
+        <item name="android:windowExitAnimation">@anim/fade_out</item>
     </style>
 </resources>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/bg_white"
@@ -14,6 +15,7 @@
         app:titleText="@string/withdrawal_addr_new" />
 
     <ScrollView
+        android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?attr/bg_window"
@@ -61,7 +63,8 @@
                     android:paddingEnd="8dp"
                     android:textColor="?attr/text_primary"
                     android:textColorHint="?attr/text_assist"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    tools:ignore="Autofill" />
 
             </RelativeLayout>
 
@@ -82,12 +85,13 @@
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
                     android:layout_toStartOf="@id/addr_iv"
                     android:background="@null"
-                    android:hint="@string/withdrawal_address"
+                    android:hint="@string/Address"
                     android:paddingStart="@dimen/activity_horizontal_margin"
                     android:paddingEnd="8dp"
                     android:textColor="?attr/text_primary"
                     android:textColorHint="?attr/text_assist"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    tools:ignore="Autofill,TextFields" />
 
                 <ImageView
                     android:id="@+id/addr_iv"
@@ -117,12 +121,13 @@
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
                     android:layout_toStartOf="@id/tag_iv"
                     android:background="@null"
-                    android:hint="@string/withdrawal_addr_memo_hint"
+                    android:hint="@string/withdrawal_memo"
                     android:paddingStart="@dimen/activity_horizontal_margin"
                     android:paddingEnd="8dp"
                     android:textColor="?attr/text_primary"
                     android:textColorHint="?attr/text_assist"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    tools:ignore="Autofill,TextFields" />
 
                 <ImageView
                     android:id="@+id/tag_iv"
@@ -145,6 +150,19 @@
                 android:layout_marginEnd="20dp"
                 android:textColor="?attr/text_primary" />
 
+            <TextView
+                android:id="@+id/tip_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="@dimen/margin16"
+                android:lineSpacingExtra="2dp"
+                android:textColor="?attr/text_primary"
+                android:textSize="12sp"
+                android:visibility="gone"/>
+
             <Button
                 android:id="@+id/save_tv"
                 style="@style/AppTheme.MaterialButton"
@@ -152,8 +170,9 @@
                 android:layout_height="40dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/margin16"
+                android:layout_marginBottom="20dp"
                 android:enabled="false"
-                android:text="@string/save"
+                android:text="@string/Save"
                 android:textColor="?attr/text_minor"
                 android:textSize="14sp" />
         </LinearLayout>

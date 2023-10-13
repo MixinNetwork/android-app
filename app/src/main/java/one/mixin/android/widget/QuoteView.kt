@@ -3,246 +3,314 @@ package one.mixin.android.widget
 import android.content.Context
 import android.graphics.Typeface
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.net.toUri
 import androidx.core.widget.TextViewCompat
-import kotlinx.android.synthetic.main.view_quote.view.*
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewQuoteBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
+import one.mixin.android.extension.generateConversationPath
+import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getMediaPath
+import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.loadImageCenterCrop
-import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.extension.renderConversation
+import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.round
-import one.mixin.android.ui.conversation.holder.BaseViewHolder
+import one.mixin.android.session.Session
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
+import one.mixin.android.vo.AppButtonData
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.QuoteMessageItem
-import org.jetbrains.anko.dip
+import timber.log.Timber
+import java.io.File
 
 class QuoteView constructor(context: Context, attrs: AttributeSet) :
     ConstraintLayout(context, attrs) {
+
+    private val binding = ViewQuoteBinding.inflate(LayoutInflater.from(context), this)
+
     init {
-        LayoutInflater.from(context).inflate(R.layout.view_quote, this, true)
-        round(dip(4))
+        round(4.dp)
+    }
+
+    private var iconSize = context.dpToPx(10f)
+    fun changeSize(size: Float) {
+        binding.replyNameTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size)
+        binding.replyContentTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size - 2f)
+        (binding.replyAvatar.layoutParams as LayoutParams).apply {
+            this.matchConstraintMaxWidth = context.dpToPx(26 + size)
+        }
+        iconSize = context.dpToPx(size - 4f)
     }
 
     fun bind(quoteMessageItem: QuoteMessageItem?) {
         if (quoteMessageItem == null) {
             setBackgroundColor(context.getColor(R.color.colorAccent))
             background.alpha = 0x0D
-            start_view.setBackgroundColor(context.getColor(R.color.colorAccent))
-            reply_name_tv.visibility = View.GONE
-            reply_iv.visibility = View.GONE
-            reply_avatar.visibility = View.GONE
-            reply_content_tv.setText(R.string.chat_not_found)
-            reply_content_tv.setTypeface(null, Typeface.ITALIC)
+            binding.startView.setBackgroundColor(context.getColor(R.color.colorAccent))
+            binding.replyNameTv.visibility = View.GONE
+            binding.replyIv.visibility = View.GONE
+            binding.replyAvatar.visibility = View.GONE
+            binding.replyContentTv.setText(R.string.Message_not_found)
+            binding.replyContentTv.setTypeface(null, Typeface.ITALIC)
             setIcon(R.drawable.ic_type_recall)
             return
         }
-        reply_content_tv.setTypeface(null, Typeface.NORMAL)
-        reply_name_tv.visibility = View.VISIBLE
-        reply_name_tv.text = quoteMessageItem.userFullName
-        reply_name_tv.setTextColor(BaseViewHolder.getColorById(quoteMessageItem.userId))
+        binding.replyContentTv.setTypeface(null, Typeface.NORMAL)
+        binding.replyNameTv.visibility = View.VISIBLE
+        binding.replyNameTv.text = quoteMessageItem.userFullName
+        binding.replyNameTv.setTextColor(BaseViewHolder.getColorById(quoteMessageItem.userId))
         setBackgroundColor(BaseViewHolder.getColorById(quoteMessageItem.userId))
         background.alpha = 0x0D
-        start_view.setBackgroundColor(BaseViewHolder.getColorById(quoteMessageItem.userId))
+        binding.startView.setBackgroundColor(BaseViewHolder.getColorById(quoteMessageItem.userId))
         when {
             quoteMessageItem.type.endsWith("_TEXT") -> {
                 if (quoteMessageItem.mentions != null) {
-                    reply_content_tv.renderConversation(
+                    binding.replyContentTv.renderMessage(
                         quoteMessageItem.content,
-                        MentionRenderCache.singleton.getMentionRenderContext(quoteMessageItem.mentions) {}
+                        MentionRenderCache.singleton.getMentionRenderContext(quoteMessageItem.mentions),
                     )
                 } else {
-                    reply_content_tv.text = quoteMessageItem.content
+                    binding.replyContentTv.text = quoteMessageItem.content
                 }
-                reply_iv.visibility = View.GONE
-                reply_avatar.visibility = View.GONE
-                (reply_content_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
-                (reply_name_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                binding.replyIv.visibility = View.GONE
+                binding.replyAvatar.visibility = View.GONE
+                (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
+                    8.dp
+                (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
+                    8.dp
                 setIcon()
             }
             quoteMessageItem.type == MessageCategory.MESSAGE_RECALL.name -> {
-                reply_content_tv.setText(R.string.chat_recall_me)
-                reply_iv.visibility = View.GONE
-                reply_avatar.visibility = View.GONE
-                (reply_content_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
-                (reply_name_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                binding.replyContentTv.setText(
+                    if (quoteMessageItem.userId == Session.getAccountId()) {
+                        R.string.You_deleted_this_message
+                    } else {
+                        R.string.This_message_was_deleted
+                    },
+                )
+                binding.replyIv.visibility = View.GONE
+                binding.replyAvatar.visibility = View.GONE
+                (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
+                    8.dp
+                (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
+                    8.dp
                 setIcon(R.drawable.ic_type_recall)
             }
             quoteMessageItem.type.endsWith("_IMAGE") -> {
-                reply_iv.loadImageCenterCrop(
-                    quoteMessageItem.mediaUrl,
-                    R.drawable.image_holder
+                binding.replyIv.loadImageCenterCrop(
+                    absolutePath(quoteMessageItem.mediaUrl, quoteMessageItem.type, quoteMessageItem.conversationId),
+                    R.drawable.image_holder,
                 )
-                reply_content_tv.setText(R.string.photo)
+                binding.replyContentTv.setText(R.string.Photo)
                 setIcon(R.drawable.ic_type_pic)
-                reply_iv.visibility = View.VISIBLE
-                reply_avatar.visibility = View.GONE
-                (reply_content_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
-                (reply_name_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
+                binding.replyIv.visibility = View.VISIBLE
+                binding.replyAvatar.visibility = View.GONE
+                (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
+                    16.dp
+                (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
+                    16.dp
             }
             quoteMessageItem.type.endsWith("_VIDEO") -> {
-                reply_iv.loadImageCenterCrop(
-                    quoteMessageItem.mediaUrl,
-                    R.drawable.image_holder
+                binding.replyIv.loadImageCenterCrop(
+                    absolutePath(quoteMessageItem.mediaUrl, quoteMessageItem.type, quoteMessageItem.conversationId),
+                    R.drawable.image_holder,
                 )
-                reply_content_tv.setText(R.string.video)
+                binding.replyContentTv.setText(R.string.Video)
                 setIcon(R.drawable.ic_type_video)
-                reply_iv.visibility = View.VISIBLE
-                reply_avatar.visibility = View.GONE
-                (reply_content_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
-                (reply_name_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
+                binding.replyIv.visibility = View.VISIBLE
+                binding.replyAvatar.visibility = View.GONE
+                (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
+                    16.dp
+                (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
+                    16.dp
             }
             quoteMessageItem.type.endsWith("_LIVE") -> {
-                reply_iv.loadImageCenterCrop(
+                binding.replyIv.loadImageCenterCrop(
                     quoteMessageItem.thumbUrl,
-                    R.drawable.image_holder
+                    R.drawable.image_holder,
                 )
-                reply_content_tv.setText(R.string.live)
+                binding.replyContentTv.setText(R.string.Live)
                 setIcon(R.drawable.ic_type_live)
-                reply_iv.visibility = View.VISIBLE
-                reply_avatar.visibility = View.GONE
-                (reply_content_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
-                (reply_name_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
+                binding.replyIv.visibility = View.VISIBLE
+                binding.replyAvatar.visibility = View.GONE
+                (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
+                    16.dp
+                (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
+                    16.dp
             }
             quoteMessageItem.type.endsWith("_DATA") -> {
-                quoteMessageItem.mediaName.notNullWithElse(
-                    {
-                        reply_content_tv.text = it
-                    },
-                    {
-                        reply_content_tv.setText(R.string.document)
-                    }
-                )
+                val mediaName = quoteMessageItem.mediaName
+                if (mediaName != null) {
+                    binding.replyContentTv.text = mediaName
+                } else {
+                    binding.replyContentTv.setText(R.string.File)
+                }
                 setIcon(R.drawable.ic_type_file)
-                reply_iv.visibility = View.GONE
-                reply_avatar.visibility = View.GONE
-                (reply_content_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
-                (reply_name_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                binding.replyIv.visibility = View.GONE
+                binding.replyAvatar.visibility = View.GONE
+                (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
+                    8.dp
+                (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
+                    8.dp
             }
             quoteMessageItem.type.endsWith("_POST") -> {
-                reply_content_tv.setText(R.string.post)
+                binding.replyContentTv.setText(R.string.Post)
                 setIcon(R.drawable.ic_type_file)
-                reply_iv.visibility = View.GONE
-                reply_avatar.visibility = View.GONE
-                (reply_content_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
-                (reply_name_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                binding.replyIv.visibility = View.GONE
+                binding.replyAvatar.visibility = View.GONE
+                (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
+                    8.dp
+                (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
+                    8.dp
+            }
+            quoteMessageItem.type.endsWith("_TRANSCRIPT") -> {
+                binding.replyContentTv.setText(R.string.Transcript)
+                setIcon(R.drawable.ic_type_transcript)
+                binding.replyIv.visibility = View.GONE
+                binding.replyAvatar.visibility = View.GONE
+                (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
+                    8.dp
+                (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
+                    8.dp
             }
             quoteMessageItem.type.endsWith("_LOCATION") -> {
-                reply_content_tv.setText(R.string.location)
+                binding.replyContentTv.setText(R.string.Location)
                 setIcon(R.drawable.ic_type_location)
-                reply_iv.visibility = View.GONE
-                reply_avatar.visibility = View.GONE
-                (reply_content_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
-                (reply_name_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                binding.replyIv.visibility = View.GONE
+                binding.replyAvatar.visibility = View.GONE
+                (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
+                    8.dp
+                (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
+                    8.dp
             }
             quoteMessageItem.type.endsWith("_AUDIO") -> {
-                quoteMessageItem.mediaDuration.notNullWithElse(
-                    {
-                        reply_content_tv.text = it.toLong().formatMillis()
-                    },
-                    {
-                        reply_content_tv.setText(R.string.audio)
-                    }
-                )
+                val mediaDuration = quoteMessageItem.mediaDuration
+                if (mediaDuration != null) {
+                    binding.replyContentTv.text = mediaDuration.toLong().formatMillis()
+                } else {
+                    binding.replyContentTv.setText(R.string.Audio)
+                }
                 setIcon(R.drawable.ic_type_audio)
-                reply_iv.visibility = View.GONE
-                reply_avatar.visibility = View.GONE
-                (reply_content_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
-                (reply_name_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                binding.replyIv.visibility = View.GONE
+                binding.replyAvatar.visibility = View.GONE
+                (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
+                    8.dp
+                (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
+                    8.dp
             }
             quoteMessageItem.type.endsWith("_STICKER") -> {
-                reply_content_tv.setText(R.string.common_sticker)
+                binding.replyContentTv.setText(R.string.Sticker)
                 setIcon(R.drawable.ic_type_stiker)
-                reply_iv.loadImageCenterCrop(
+                binding.replyIv.loadImageCenterCrop(
                     quoteMessageItem.assetUrl,
-                    R.drawable.image_holder
+                    R.drawable.image_holder,
                 )
-                reply_iv.visibility = View.VISIBLE
-                reply_avatar.visibility = View.GONE
-                (reply_content_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
-                (reply_name_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
+                binding.replyIv.visibility = View.VISIBLE
+                binding.replyAvatar.visibility = View.GONE
+                (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
+                    16.dp
+                (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
+                    16.dp
             }
             quoteMessageItem.type.endsWith("_CONTACT") -> {
-                reply_content_tv.text = quoteMessageItem.sharedUserIdentityNumber
+                binding.replyContentTv.text = quoteMessageItem.sharedUserIdentityNumber
                 setIcon(R.drawable.ic_type_contact)
-                reply_avatar.setInfo(
+                binding.replyAvatar.setInfo(
                     quoteMessageItem.sharedUserFullName,
                     quoteMessageItem.sharedUserAvatarUrl,
                     quoteMessageItem.sharedUserId
-                        ?: "0"
+                        ?: "0",
                 )
-                reply_avatar.visibility = View.VISIBLE
-                reply_iv.visibility = View.INVISIBLE
-                (reply_content_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
-                (reply_name_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
+                binding.replyAvatar.visibility = View.VISIBLE
+                binding.replyIv.visibility = View.INVISIBLE
+                (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
+                    16.dp
+                (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
+                    16.dp
             }
             quoteMessageItem.type == MessageCategory.APP_BUTTON_GROUP.name || quoteMessageItem.type == MessageCategory.APP_CARD.name -> {
-                reply_content_tv.setText(R.string.extensions)
+                try {
+                    if (quoteMessageItem.type == MessageCategory.APP_CARD.name) {
+                        val appCard = GsonHelper.customGson.fromJson(quoteMessageItem.content, AppCardData::class.java)
+                        binding.replyContentTv.text = appCard.title
+                    } else if (quoteMessageItem.type == MessageCategory.APP_BUTTON_GROUP.name) {
+                        val buttons = GsonHelper.customGson.fromJson(quoteMessageItem.content, Array<AppButtonData>::class.java)
+                        var content = ""
+                        buttons.map { content += "[" + it.label + "]" }
+                        binding.replyContentTv.text = content
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e)
+                }
                 setIcon(R.drawable.ic_type_touch_app)
-                reply_iv.visibility = View.GONE
-                reply_avatar.visibility = View.GONE
-                (reply_content_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
-                (reply_name_tv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                binding.replyIv.visibility = View.GONE
+                binding.replyAvatar.visibility = View.GONE
+                (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
+                    8.dp
+                (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
+                    8.dp
             }
             else -> {
-                reply_iv.visibility = View.GONE
+                binding.replyIv.visibility = View.GONE
             }
         }
     }
 
     private fun setIcon(@DrawableRes icon: Int? = null) {
-        icon.notNullWithElse(
-            { drawable ->
-                AppCompatResources.getDrawable(context, drawable).let {
-                    it?.setBounds(0, 0, context.dpToPx(10f), context.dpToPx(10f))
-                    TextViewCompat.setCompoundDrawablesRelative(
-                        reply_content_tv,
-                        it,
-                        null,
-                        null,
-                        null
-                    )
-                }
-            },
-            {
+        if (icon != null) {
+            AppCompatResources.getDrawable(context, icon).let {
+                it?.setBounds(0, 0, iconSize, iconSize)
                 TextViewCompat.setCompoundDrawablesRelative(
-                    reply_content_tv,
+                    binding.replyContentTv,
+                    it,
                     null,
                     null,
                     null,
-                    null
                 )
             }
-        )
+        } else {
+            TextViewCompat.setCompoundDrawablesRelative(
+                binding.replyContentTv,
+                null,
+                null,
+                null,
+                null,
+            )
+        }
+    }
+
+    fun absolutePath(
+        mediaUrl: String?,
+        type: String,
+        conversationId: String,
+        context: Context = MixinApplication.appContext,
+    ): String? {
+        val mediaPath = context.getMediaPath()?.toUri()?.toString() ?: return null
+        return when {
+            mediaUrl == null -> null
+            mediaUrl.startsWith(mediaPath) -> mediaUrl
+            type == MessageCategory.SIGNAL_IMAGE.name || type == MessageCategory.PLAIN_IMAGE.name || type == MessageCategory.ENCRYPTED_IMAGE.name -> File(
+                context.getImagePath().generateConversationPath(conversationId),
+                mediaUrl,
+            ).toUri().toString()
+            type == MessageCategory.SIGNAL_VIDEO.name || type == MessageCategory.PLAIN_VIDEO.name || type == MessageCategory.ENCRYPTED_VIDEO.name ->
+                File(
+                    context.getVideoPath().generateConversationPath(conversationId),
+                    mediaUrl,
+                ).toUri().toString()
+            else -> null
+        }
     }
 }

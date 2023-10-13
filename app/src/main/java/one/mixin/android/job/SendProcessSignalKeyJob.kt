@@ -13,10 +13,10 @@ class SendProcessSignalKeyJob(
     val data: BlazeMessageData,
     val action: ProcessSignalKeyAction,
     val participantId: String? = null,
-    priority: Int = PRIORITY_SEND_MESSAGE
+    priority: Int = PRIORITY_SEND_MESSAGE,
 ) : MixinJob(
     Params(priority).groupBy("send_message_group").requireWebSocketConnected().persist(),
-    UUID.randomUUID().toString()
+    UUID.randomUUID().toString(),
 ) {
 
     companion object {
@@ -39,7 +39,7 @@ class SendProcessSignalKeyJob(
             val response = userService.fetchSessions(arrayListOf(participantId!!)).execute().body()
             if (response != null && response.isSuccess) {
                 val ps = response.data?.map { item ->
-                    ParticipantSession(data.conversationId, item.userId, item.sessionId)
+                    ParticipantSession(data.conversationId, item.userId, item.sessionId, publicKey = item.publicKey)
                 }
                 if (!ps.isNullOrEmpty()) {
                     participantSessionDao.insertList(ps)

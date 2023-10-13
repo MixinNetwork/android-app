@@ -7,10 +7,13 @@ import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.extension.decodeBase64
+import one.mixin.android.extension.getParcelableExtraCompat
+import one.mixin.android.extension.getSerializableExtraCompat
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.vo.CallType
+import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
@@ -32,6 +35,7 @@ class VoiceCallService : CallService() {
     private var declineTriggeredByUser: Boolean = true
 
     override fun handleIntent(intent: Intent): Boolean {
+        initWebRtc()
         var handled = true
         when (intent.action) {
             ACTION_CALL_INCOMING -> handleCallIncoming(intent)
@@ -51,8 +55,8 @@ class VoiceCallService : CallService() {
     }
 
     private fun handleCallIncoming(intent: Intent) {
-        val blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
-        val user = intent.getParcelableExtra<User>(ARGS_USER)
+        val blazeMessageData = intent.getSerializableExtraCompat(EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
+        val user = intent.getParcelableExtraCompat(ARGS_USER, User::class.java)
 
         if (user?.userId == callState.user?.userId) {
             peerConnectionClient.createAnswer(
@@ -60,14 +64,14 @@ class VoiceCallService : CallService() {
                 getSdp(blazeMessageData.data.decodeBase64()),
                 setLocalSuccess = {
                     sendCallMessage(MessageCategory.WEBRTC_AUDIO_ANSWER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
-                }
+                },
             )
             return
         }
 
-        if (callState.isBusy(this)) {
+        if (callState.isBusy()) {
             val category = MessageCategory.WEBRTC_AUDIO_BUSY.name
-            val bmd = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
+            val bmd = intent.getSerializableExtraCompat(EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
             val m = createCallMessage(
                 UUID.randomUUID().toString(),
                 bmd.conversationId,
@@ -76,7 +80,7 @@ class VoiceCallService : CallService() {
                 null,
                 nowInUtc(),
                 MessageStatus.SENDING.name,
-                bmd.messageId
+                bmd.messageId,
             )
             jobManager.addJobInBackground(SendMessageJob(m, recipientId = bmd.userId))
 
@@ -88,10 +92,10 @@ class VoiceCallService : CallService() {
                 m.content,
                 m.createdAt,
                 bmd.status,
-                bmd.messageId
+                bmd.messageId,
             )
             if (checkConversation(m)) {
-                database.insertAndNotifyConversation(savedMessage)
+                insertCallMessage(savedMessage)
             }
             return
         }
@@ -128,7 +132,7 @@ class VoiceCallService : CallService() {
             val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
             require(cid != null)
             callState.conversationId = cid
-            val user = intent.getParcelableExtra<User>(ARGS_USER)
+            val user = intent.getParcelableExtraCompat(ARGS_USER, User::class.java)
             callState.user = user
             updateForegroundNotification()
             callState.isOffer = true
@@ -140,7 +144,7 @@ class VoiceCallService : CallService() {
                     turns,
                     setLocalSuccess = {
                         sendCallMessage(MessageCategory.WEBRTC_AUDIO_OFFER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
-                    }
+                    },
                 )
             }
         }
@@ -149,7 +153,9 @@ class VoiceCallService : CallService() {
     private fun handleAnswerCall(intent: Intent) {
         if (callState.state == CallState.STATE_ANSWERING ||
             callState.isIdle()
-        ) return
+        ) {
+            return
+        }
 
         if (!callState.isConnected()) {
             callState.state = CallState.STATE_ANSWERING
@@ -158,10 +164,9 @@ class VoiceCallService : CallService() {
             audioManager.stop()
         }
         if (callState.isOffer) {
-            val bmd = intent.getSerializableExtra(EXTRA_BLAZE) ?: return
-            val blazeMessageData = bmd as BlazeMessageData
-            this.blazeMessageData = blazeMessageData
-            peerConnectionClient.setAnswerSdp(getRemoteSdp(Base64.decode(blazeMessageData.data)))
+            val bmd = intent.getSerializableExtraCompat(EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
+            this.blazeMessageData = bmd
+            peerConnectionClient.setAnswerSdp(getRemoteSdp(Base64.decode(bmd.data)))
         } else {
             getTurnServer { turns ->
                 val bmd = this.blazeMessageData
@@ -174,14 +179,14 @@ class VoiceCallService : CallService() {
                     getSdp(bmd.data.decodeBase64()),
                     setLocalSuccess = {
                         sendCallMessage(MessageCategory.WEBRTC_AUDIO_ANSWER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
-                    }
+                    },
                 )
             }
         }
     }
 
     private fun handleCandidate(intent: Intent) {
-        val blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
+        val blazeMessageData = intent.getSerializableExtraCompat(EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
         val json = String(Base64.decode(blazeMessageData.data))
         val ices = gson.fromJson(json, Array<IceCandidate>::class.java)
         ices.forEach {
@@ -210,6 +215,8 @@ class VoiceCallService : CallService() {
         audioManager.stop()
         disconnect()
     }
+
+    override fun needInitWebRtc(action: String) = true
 
     override fun handleLocalEnd() {
         if (callState.isIdle()) return
@@ -270,9 +277,9 @@ class VoiceCallService : CallService() {
                 null,
                 nowInUtc(),
                 MessageStatus.READ.name,
-                mId
+                mId,
             )
-            database.insertAndNotifyConversation(m)
+            insertCallMessage(m)
         } else if (state != CallState.STATE_CONNECTED) {
             sendCallMessage(MessageCategory.WEBRTC_AUDIO_FAILED.name)
         }
@@ -309,7 +316,8 @@ class VoiceCallService : CallService() {
         }
     }
 
-    override fun onPeerConnectionError(description: String) {
+    override fun onPeerConnectionError(errorMsg: String) {
+        super.onPeerConnectionError(errorMsg)
         callExecutor.execute { handleCallLocalFailed() }
     }
 
@@ -323,7 +331,7 @@ class VoiceCallService : CallService() {
                 null,
                 setLocalSuccess = {
                     sendCallMessage(MessageCategory.WEBRTC_AUDIO_OFFER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
-                }
+                },
             )
         }
     }
@@ -331,6 +339,8 @@ class VoiceCallService : CallService() {
     override fun getSenderPublicKey(userId: String, sessionId: String): ByteArray? {
         return null
     }
+
+    override fun requestResendKey(userId: String, sessionId: String) {}
 
     private fun sendCallMessage(category: String, content: String? = null) {
         val quoteMessageId = callState.trackId
@@ -356,7 +366,7 @@ class VoiceCallService : CallService() {
                     val duration = System.currentTimeMillis() - connectedTime
                     createCallMessage(
                         messageId, conversationId, self.userId, category, content,
-                        nowInUtc(), MessageStatus.SENDING.name, quoteMessageId, duration.toString()
+                        nowInUtc(), MessageStatus.SENDING.name, quoteMessageId, duration.toString(),
                     )
                 } else {
                     createCallMessage(
@@ -367,7 +377,7 @@ class VoiceCallService : CallService() {
                         content,
                         nowInUtc(),
                         MessageStatus.SENDING.name,
-                        quoteMessageId
+                        quoteMessageId,
                     )
                 }
             }
@@ -388,7 +398,7 @@ class VoiceCallService : CallService() {
                 createCallMessage(
                     UUID.randomUUID().toString(), blazeMessageData.conversationId,
                     self.userId, category, content, nowInUtc(), MessageStatus.SENDING.name, quoteMessageId,
-                    duration.toString()
+                    duration.toString(),
                 )
             } else {
                 createCallMessage(
@@ -399,7 +409,7 @@ class VoiceCallService : CallService() {
                     content,
                     nowInUtc(),
                     MessageStatus.SENDING.name,
-                    quoteMessageId
+                    quoteMessageId,
                 )
             }
         }
@@ -426,28 +436,39 @@ class VoiceCallService : CallService() {
         when (m.category) {
             MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
                 val status = if (declineTriggeredByUser) MessageStatus.READ else MessageStatus.DELIVERED
-                database.insertAndNotifyConversation(createNewReadMessage(m, uId, status))
+                insertCallMessage(createNewReadMessage(m, uId, status))
             }
             MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
                 val msg = createCallMessage(
-                    m.id, m.conversationId, uId, m.category, m.content,
-                    m.createdAt, MessageStatus.READ.name, m.quoteMessageId, m.mediaDuration
+                    m.messageId, m.conversationId, uId, m.category, m.content,
+                    m.createdAt, MessageStatus.READ.name, m.quoteMessageId, m.mediaDuration,
                 )
-                database.insertAndNotifyConversation(msg)
+                insertCallMessage(msg)
             }
             MessageCategory.WEBRTC_AUDIO_END.name, MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
                 val msg = createNewReadMessage(m, uId, MessageStatus.READ)
-                database.insertAndNotifyConversation(msg)
+                insertCallMessage(msg)
             }
         }
     }
 
-    private fun createNewReadMessage(m: Message, userId: String, status: MessageStatus) =
-        createCallMessage(
-            callState.trackId ?: blazeMessageData?.quoteMessageId ?: blazeMessageData?.messageId
-                ?: UUID.randomUUID().toString(),
-            m.conversationId, userId, m.category, m.content, m.createdAt, status.name, m.quoteMessageId, m.mediaDuration
-        )
+    private fun insertCallMessage(message: Message) {
+        database.insertAndNotifyConversation(message)
+        database.conversationDao().findConversationById(message.conversationId)?.let {
+            val expiredIn = it.expireIn ?: return@let
+            if (it.expireIn > 0) {
+                database.expiredMessageDao().insert(ExpiredMessage(message.messageId, expiredIn, null))
+            }
+        }
+    }
+
+    private fun createNewReadMessage(m: Message, userId: String, status: MessageStatus): Message {
+        var mId = callState.trackId ?: blazeMessageData?.quoteMessageId ?: blazeMessageData?.messageId
+        if (mId.isNullOrBlank()) {
+            mId = UUID.randomUUID().toString()
+        }
+        return createCallMessage(mId, m.conversationId, userId, m.category, m.content, m.createdAt, status.name, m.quoteMessageId, m.mediaDuration)
+    }
 
     companion object {
         const val TAG = "VoiceCallService"

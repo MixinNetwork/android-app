@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<one.mixin.android.ui.common.biometric.ScrollableBottomSheetLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <one.mixin.android.widget.RoundTitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/bg_white"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="64dp"
+                android:layout_marginEnd="64dp"
+                android:gravity="center"
+                android:singleLine="true"
+                android:textColor="?attr/text_primary"
+                android:textSize="@dimen/wallet_balance_text" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/margin10"
+                android:layout_marginBottom="@dimen/margin10"
+                android:orientation="horizontal">
+
+                <one.mixin.android.widget.AvatarsView
+                    android:id="@+id/senders_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:avatar_border_width="1dp"
+                    app:avatar_size="32dp" />
+
+                <ImageView
+                    android:id="@+id/arrow_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="@dimen/margin10"
+                    android:layout_marginEnd="@dimen/margin10"
+                    android:src="@drawable/ic_multisigs_arrow_ban"
+                    tools:ignore="ContentDescription" />
+
+                <one.mixin.android.widget.AvatarsView
+                    android:id="@+id/receivers_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:avatar_border_width="1dp"
+                    app:avatar_size="32dp" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/nft_iv"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="6dp"
+                android:src="@drawable/nft_default"
+                tools:ignore="ContentDescription"/>
+
+            <TextView
+                android:id="@+id/nft_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:textColor="?attr/text_primary"
+                android:textSize="18sp"/>
+
+            <TextView
+                android:id="@+id/nft_token_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="4dp"
+                android:textColor="?attr/text_minor"
+                android:textSize="12sp"/>
+
+            <TextView
+                android:id="@+id/nft_token_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="4dp"
+                android:textColor="?attr/text_minor"
+                android:textSize="12sp"/>
+
+            <one.mixin.android.ui.common.biometric.BiometricLayout
+                android:id="@+id/biometric_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    </ScrollView>
+
+    <one.mixin.android.widget.Keyboard
+        android:id="@+id/keyboard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</one.mixin.android.ui.common.biometric.ScrollableBottomSheetLayout>

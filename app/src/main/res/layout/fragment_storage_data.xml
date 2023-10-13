@@ -11,185 +11,189 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_storage"/>
+        app:titleText="@string/Storage_Usage" />
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="16dp"
-        android:orientation="vertical">
+        android:layout_height="wrap_content">
 
-        <RelativeLayout
-            android:id="@+id/storage_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
-
-            <TextView
-                android:id="@+id/storage_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_storage"
-                tools:ignore="RelativeOverlap"/>
-        </RelativeLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/storage_auto_download"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="?attr/bg_white"
-            android:padding="16dp">
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/storage_title"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:id="@+id/storage_rl"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:background="?attr/bg_white"
+                android:foreground="?attr/selectableItemBackground">
+
+                <TextView
+                    android:id="@+id/storage_tv"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:text="@string/Storage_Usage"
+                    tools:ignore="RelativeOverlap" />
+            </RelativeLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/storage_auto_download"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:text="@string/setting_data_title"
-                android:textColor="@color/colorBlue"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toTopOf="@id/storage_info"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:ignore="RelativeOverlap"/>
+                android:layout_marginTop="16dp"
+                android:background="?attr/bg_white"
+                android:padding="16dp">
 
-            <TextView
-                android:id="@+id/storage_info"
-                style="@style/NormalTextStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginTop="3dp"
-                android:text="@string/setting_data_info"
-                android:textColor="?attr/text_minor"
-                android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/storage_title"
-                tools:ignore="RelativeOverlap"/>
+                <TextView
+                    android:id="@+id/storage_title"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="@string/setting_data_title"
+                    android:textColor="@color/colorBlue"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toTopOf="@id/storage_info"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="RelativeOverlap" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:id="@+id/storage_info"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginTop="3dp"
+                    android:text="@string/auto_download_hint"
+                    android:textColor="?attr/text_minor"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/storage_title"
+                    tools:ignore="RelativeOverlap" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/storage_mobile"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <TextView
-                android:id="@+id/storage_mobile_title"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_data_mobile"
-                app:layout_constraintBottom_toTopOf="@id/storage_mobile_info"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:ignore="RelativeOverlap"/>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/storage_mobile"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:background="?attr/bg_white"
+                android:foreground="?attr/selectableItemBackground">
 
-            <TextView
-                android:id="@+id/storage_mobile_info"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="3dp"
-                android:text="@string/setting_data_audio"
-                android:textColor="?attr/text_minor"
-                android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/storage_mobile_title"
-                tools:ignore="RelativeOverlap"/>
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:id="@+id/storage_mobile_title"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:text="@string/setting_data_mobile"
+                    app:layout_constraintBottom_toTopOf="@id/storage_mobile_info"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="RelativeOverlap" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/storage_wifi"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+                <TextView
+                    android:id="@+id/storage_mobile_info"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="3dp"
+                    android:text="@string/Audios"
+                    android:textColor="?attr/text_minor"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/storage_mobile_title"
+                    tools:ignore="RelativeOverlap" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <TextView
-                android:id="@+id/storage_wifi_title"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_data_wifi"
-                app:layout_constraintBottom_toTopOf="@id/storage_wifi_info"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:ignore="RelativeOverlap"/>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/storage_wifi"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:background="?attr/bg_white"
+                android:foreground="?attr/selectableItemBackground">
 
-            <TextView
-                android:id="@+id/storage_wifi_info"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="3dp"
-                android:text="@string/setting_data_noting"
-                android:textColor="?attr/text_minor"
-                android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/storage_wifi_title"
-                tools:ignore="RelativeOverlap"/>
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:id="@+id/storage_wifi_title"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:text="@string/setting_data_wifi"
+                    app:layout_constraintBottom_toTopOf="@id/storage_wifi_info"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="RelativeOverlap" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/storage_roaming"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+                <TextView
+                    android:id="@+id/storage_wifi_info"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="3dp"
+                    android:text="@string/NO_MEDIA"
+                    android:textColor="?attr/text_minor"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/storage_wifi_title"
+                    tools:ignore="RelativeOverlap" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <TextView
-                android:id="@+id/storage_roaming_title"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_data_roaming"
-                app:layout_constraintBottom_toTopOf="@id/storage_roaming_info"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:ignore="RelativeOverlap"/>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/storage_roaming"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:background="?attr/bg_white"
+                android:foreground="?attr/selectableItemBackground">
 
-            <TextView
-                android:id="@+id/storage_roaming_info"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="3dp"
-                android:text="@string/setting_data_noting"
-                android:textColor="?attr/text_minor"
-                android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/storage_roaming_title"
-                tools:ignore="RelativeOverlap"/>
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </LinearLayout>
+                <TextView
+                    android:id="@+id/storage_roaming_title"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:text="@string/When_roaming"
+                    app:layout_constraintBottom_toTopOf="@id/storage_roaming_info"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="RelativeOverlap" />
 
+                <TextView
+                    android:id="@+id/storage_roaming_info"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="3dp"
+                    android:text="@string/NO_MEDIA"
+                    android:textColor="?attr/text_minor"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/storage_roaming_title"
+                    tools:ignore="RelativeOverlap" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>
 

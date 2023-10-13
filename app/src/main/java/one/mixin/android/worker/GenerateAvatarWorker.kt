@@ -14,23 +14,26 @@ import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.text.TextPaint
 import androidx.collection.ArrayMap
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.core.content.res.ResourcesCompat
+import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import one.mixin.android.R
 import one.mixin.android.extension.CodeType
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.saveGroupAvatar
 import one.mixin.android.vo.User
 import one.mixin.android.widget.AvatarView
-import org.jetbrains.anko.dip
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-class GenerateAvatarWorker @WorkerInject constructor(
+@HiltWorker
+class GenerateAvatarWorker @AssistedInject constructor(
     @Assisted context: Context,
-    @Assisted parameters: WorkerParameters
+    @Assisted parameters: WorkerParameters,
 ) : AvatarWorker(context, parameters) {
 
     private lateinit var texts: ArrayMap<Int, String>
@@ -69,8 +72,8 @@ class GenerateAvatarWorker @WorkerInject constructor(
         val textSizeLarge = applicationContext.resources.getDimension(R.dimen.group_avatar_text_size)
         val textSizeMedium = applicationContext.resources.getDimension(R.dimen.group_avatar_text_medium)
         val textSizeSmall = applicationContext.resources.getDimension(R.dimen.group_avatar_text_small)
-        val textOffset = applicationContext.dip(5f).toFloat()
-        val dividerOffset = applicationContext.dip(.5f).toFloat()
+        val textOffset = 5.dp.toFloat()
+        val dividerOffset = 0.5f.dp.toFloat()
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE
@@ -92,7 +95,7 @@ class GenerateAvatarWorker @WorkerInject constructor(
             size / 2f,
             size / 2f - dividerOffset,
             size.toFloat(),
-            size / 2f + dividerOffset
+            size / 2f + dividerOffset,
         )
         val rectF = RectF()
 
@@ -124,7 +127,7 @@ class GenerateAvatarWorker @WorkerInject constructor(
                             offset.toInt(),
                             offset.toInt(),
                             b.width - offset.toInt(),
-                            b.height - offset.toInt()
+                            b.height - offset.toInt(),
                         )
                         val dst = if (i == 0) {
                             RectF(0f, 0f, size / 2f, size.toFloat())
@@ -177,7 +180,7 @@ class GenerateAvatarWorker @WorkerInject constructor(
                                 offset.toInt(),
                                 offset.toInt(),
                                 b.width - offset.toInt(),
-                                b.height - offset.toInt()
+                                b.height - offset.toInt(),
                             )
                             val dst = RectF(0f, 0f, size / 2f, size.toFloat())
                             canvas.drawBitmap(b, src, dst, null)
@@ -199,7 +202,7 @@ class GenerateAvatarWorker @WorkerInject constructor(
                             offset.toInt(),
                             offset.toInt(),
                             b.width - offset.toInt(),
-                            b.height - offset.toInt()
+                            b.height - offset.toInt(),
                         )
                         val dst = when (i) {
                             1 -> {
@@ -250,7 +253,7 @@ class GenerateAvatarWorker @WorkerInject constructor(
                         offset.toInt(),
                         offset.toInt(),
                         item.width - offset.toInt(),
-                        item.height - offset.toInt()
+                        item.height - offset.toInt(),
                     )
                     val dst = when (i) {
                         0 -> {
@@ -309,7 +312,7 @@ class GenerateAvatarWorker @WorkerInject constructor(
                         .asBitmap()
                         .load(item)
                         .submit()
-                        .get(10, TimeUnit.SECONDS)
+                        .get(10, TimeUnit.SECONDS),
                 )
             }
         }
@@ -331,7 +334,7 @@ class GenerateAvatarWorker @WorkerInject constructor(
             -1
         }
         if (color == -1) {
-            val d = applicationContext.resources.getDrawable(R.drawable.default_avatar, applicationContext.theme)
+            val d = requireNotNull(ResourcesCompat.getDrawable(applicationContext.resources, R.drawable.default_avatar, applicationContext.theme))
             if (d is BitmapDrawable) {
                 return d.bitmap
             }

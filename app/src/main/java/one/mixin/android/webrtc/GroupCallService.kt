@@ -5,63 +5,52 @@ import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.google.gson.Gson
 import com.google.gson.JsonElement
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.SignalKey
-import one.mixin.android.api.createPreKeyBundle
 import one.mixin.android.api.response.UserSession
 import one.mixin.android.api.service.ConversationService
+import one.mixin.android.crypto.GroupCallSenderKey
+import one.mixin.android.crypto.db.RatchetSenderKeyDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
-import one.mixin.android.db.findFullNameById
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.event.CallEvent
 import one.mixin.android.event.SenderKeyChange
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
-import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.getDeviceId
+import one.mixin.android.extension.getSerializableExtraCompat
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toast
-import one.mixin.android.job.MessageResult
 import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallActivity
-import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.CONVERSATION_CHECKSUM_INVALID_ERROR
+import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.vo.CallType
+import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.KrakenData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.Participant
-import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.Sdp
-import one.mixin.android.vo.SenderKeyStatus
 import one.mixin.android.vo.createCallMessage
-import one.mixin.android.vo.generateConversationChecksum
 import one.mixin.android.vo.isGroupCallType
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.BlazeMessageParam
-import one.mixin.android.websocket.BlazeMessageParamSession
-import one.mixin.android.websocket.BlazeSignalKeyMessage
 import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.LIST_KRAKEN_PEERS
-import one.mixin.android.websocket.createBlazeSignalKeyMessage
-import one.mixin.android.websocket.createConsumeSessionSignalKeys
-import one.mixin.android.websocket.createConsumeSignalKeysParam
 import one.mixin.android.websocket.createKrakenMessage
 import one.mixin.android.websocket.createListKrakenPeers
-import one.mixin.android.websocket.createSignalKeyMessage
-import one.mixin.android.websocket.createSignalKeyMessageParam
 import org.webrtc.IceCandidate
 import org.webrtc.PeerConnection
 import org.webrtc.SessionDescription
+import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -78,16 +67,37 @@ class GroupCallService : CallService() {
 
     @Inject
     lateinit var chatWebSocket: ChatWebSocket
+
     @Inject
     lateinit var participantSessionDao: ParticipantSessionDao
+
     @Inject
     lateinit var participantDao: ParticipantDao
+
+    @Inject
+    lateinit var ratchetSenderKeyDao: RatchetSenderKeyDao
+
     @Inject
     lateinit var conversationApi: ConversationService
 
     private var disposable: Disposable? = null
 
     private var reconnectTimeoutCount = 0
+
+    private lateinit var callSenderKey: GroupCallSenderKey
+
+    override fun onCreate() {
+        super.onCreate()
+        callSenderKey = GroupCallSenderKey(
+            participantSessionDao,
+            signalProtocol,
+            conversationApi,
+            participantDao,
+            chatWebSocket,
+        ) {
+            return@GroupCallSenderKey webSocketChannel(it)
+        }
+    }
 
     override fun handleIntent(intent: Intent): Boolean {
         var handled = true
@@ -110,8 +120,7 @@ class GroupCallService : CallService() {
     }
 
     private fun handleReceivePublish(intent: Intent) {
-        val blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as? BlazeMessageData
-        requireNotNull(blazeMessageData)
+        val blazeMessageData = intent.getSerializableExtraCompat(EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
         val cid = blazeMessageData.conversationId
         val userId = blazeMessageData.userId
         callState.addUser(cid, userId)
@@ -159,21 +168,26 @@ class GroupCallService : CallService() {
     }
 
     private fun reconnect(conversationId: String) {
+        Timber.d("$TAG_CALL reconnect cid: $conversationId, reconnecting: ${callState.reconnecting}")
+
         reconnectingTimeoutFuture?.cancel(true)
         reconnectingTimeoutFuture = timeoutExecutor.schedule(ReconnectingTimeoutRunnable(), RECONNECTING_TIMEOUT, TimeUnit.SECONDS)
 
-        val pc = peerConnectionClient.getPeerConnection()
-        if (pc != null) {
-            callState.reconnecting = true
-            pc.close()
-        } else {
+        callState.reconnecting = true
+        callExecutor.execute {
+            val pc = peerConnectionClient.getPeerConnection()
+            if (pc != null && pc.connectionState() != PeerConnection.PeerConnectionState.CLOSED) {
+                Timber.d("$TAG_CALL reconnect pc.close()")
+                pc.close()
+                Timber.d("$TAG_CALL reconnect pc.close() done")
+            }
             publish(conversationId)
         }
     }
 
     @SuppressLint("AutoDispose")
     private fun createOfferWithTurns(conversationId: String, turns: List<PeerConnection.IceServer>? = null) {
-        checkSessionSenderKey(conversationId)
+        callSenderKey.checkSessionSenderKey(conversationId)
         val key = signalProtocol.getSenderKeyPublic(conversationId, Session.getAccountId()!!)
         peerConnectionClient.createOffer(
             turns,
@@ -182,7 +196,7 @@ class GroupCallService : CallService() {
                     conversation_id = conversationId,
                     category = MessageCategory.KRAKEN_PUBLISH.name,
                     message_id = UUID.randomUUID().toString(),
-                    jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode()
+                    jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
                 )
                 val bm = createKrakenMessage(blazeMessageParam)
                 val data = getBlazeMessageData(bm) ?: return@createOffer
@@ -192,7 +206,7 @@ class GroupCallService : CallService() {
             frameKey = key,
             doWhenSetFailure = {
                 reconnect(conversationId)
-            }
+            },
         )
 
         disposable = RxBus.listen(SenderKeyChange::class.java)
@@ -201,15 +215,12 @@ class GroupCallService : CallService() {
                     return@subscribe
                 }
                 if (event.userId != null && event.sessionId != null) {
-                    val users = callState.getUsers(event.conversationId) ?: return@subscribe
-                    if (users.contains(event.userId)) {
-                        val frameKey = getSenderPublicKey(event.userId, event.sessionId) ?: return@subscribe
-                        peerConnectionClient.setReceiverFrameKey(event.userId, event.sessionId, frameKey)
-                    }
+                    val frameKey = getSenderPublicKey(event.userId, event.sessionId) ?: return@subscribe
+                    peerConnectionClient.setReceiverFrameKey(event.userId, event.sessionId, frameKey)
                 } else if (event.userId != null) {
-                    checkSessionSenderKey(event.conversationId)
+                    callSenderKey.checkSessionSenderKey(event.conversationId)
                 } else {
-                    checkSessionSenderKey(conversationId)
+                    callSenderKey.checkSessionSenderKey(conversationId)
                     val frameKey = signalProtocol.getSenderKeyPublic(conversationId, Session.getAccountId()!!)
                     peerConnectionClient.setSenderFrameKey(frameKey)
                 }
@@ -236,7 +247,7 @@ class GroupCallService : CallService() {
             conversation_id = conversationId,
             category = MessageCategory.KRAKEN_SUBSCRIBE.name,
             message_id = UUID.randomUUID().toString(),
-            track_id = trackId
+            track_id = trackId,
         )
         val bm = createKrakenMessage(blazeMessageParam)
         Timber.d("$TAG_CALL subscribe track id: $trackId")
@@ -259,7 +270,7 @@ class GroupCallService : CallService() {
                         category = MessageCategory.KRAKEN_ANSWER.name,
                         message_id = UUID.randomUUID().toString(),
                         jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
-                        track_id = krakenData.trackId
+                        track_id = krakenData.trackId,
                     )
                     val bm = createKrakenMessage(blazeMessageParam)
                     val data = webSocketChannel(bm) ?: return@createAnswer
@@ -267,7 +278,7 @@ class GroupCallService : CallService() {
                 },
                 doWhenSetFailure = {
                     reconnect(conversationId)
-                }
+                },
             )
         }
     }
@@ -275,14 +286,7 @@ class GroupCallService : CallService() {
     private fun handleCheckPeer(intent: Intent) {
         val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
         requireNotNull(cid)
-
-        val peerList = sendPeer(cid) ?: return
-        Timber.d("$TAG_CALL handleCheckPeer : ${peerList.peers}")
-        if (peerList.peers.isNullOrEmpty()) return
-
-        val userIdList = arrayListOf<String>()
-        peerList.peers.mapTo(userIdList) { it.userId }
-        callState.setUsersByConversationId(cid, userIdList)
+        getPeers(cid, true)
     }
 
     private fun startCheckPeers(cid: String) {
@@ -295,12 +299,12 @@ class GroupCallService : CallService() {
                 ListRunnable(cid),
                 KRAKEN_LIST_INTERVAL,
                 KRAKEN_LIST_INTERVAL,
-                TimeUnit.SECONDS
+                TimeUnit.SECONDS,
             )
         }
     }
 
-    private fun getPeers(conversationId: String) {
+    private fun getPeers(conversationId: String, setWhenCurrentListEmpty: Boolean = false) {
         val peerList = sendPeer(conversationId) ?: return
         Timber.d("$TAG_CALL getPeers : ${peerList.peers}")
         if (peerList.peers.isNullOrEmpty()) {
@@ -316,9 +320,14 @@ class GroupCallService : CallService() {
             } else {
                 callState.setUsersByConversationId(
                     conversationId,
-                    userIdList
+                    userIdList,
                 )
             }
+        } else if (currentList == null && setWhenCurrentListEmpty) {
+            callState.setUsersByConversationId(
+                conversationId,
+                userIdList,
+            )
         }
     }
 
@@ -326,7 +335,7 @@ class GroupCallService : CallService() {
         val blazeMessageParam = BlazeMessageParam(
             conversation_id = conversationId,
             category = MessageCategory.KRAKEN_LIST.name,
-            message_id = UUID.randomUUID().toString()
+            message_id = UUID.randomUUID().toString(),
         )
         val bm = createListKrakenPeers(blazeMessageParam)
         val json = getJsonElement(bm) ?: return null
@@ -339,7 +348,7 @@ class GroupCallService : CallService() {
         requireNotNull(cid)
         val userId = intent.getStringExtra(EXTRA_USER_ID)
 
-        if (callState.isBusy(this)) {
+        if (callState.isBusy()) {
             Timber.d("$TAG_CALL receive a invite from $userId in $cid")
             userId?.let {
                 saveMessage(cid, it, MessageCategory.KRAKEN_INVITE.name)
@@ -348,36 +357,52 @@ class GroupCallService : CallService() {
                     conversation_id = cid,
                     recipient_id = it,
                     category = MessageCategory.KRAKEN_DECLINE.name,
-                    message_id = UUID.randomUUID().toString()
+                    message_id = UUID.randomUUID().toString(),
                 )
                 val bm = createKrakenMessage(blazeMessageParam)
                 val bmData = getBlazeMessageData(bm) ?: return
-                @Suppress("UNUSED_VARIABLE") val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
+
+                @Suppress("UNUSED_VARIABLE")
+                val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
             }
             return
         }
+        val playRing = intent.getBooleanExtra(EXTRA_PLAY_RING, true)
+        if (playRing) {
+            if (isDisconnected.compareAndSet(true, false)) {
+                callState.state = CallState.STATE_RINGING
+                callState.callType = CallType.Group
+                updateForegroundNotification()
+                callState.conversationId = cid
+                userId?.let {
+                    callState.setInviter(cid, it)
+                    callState.addPendingUsers(cid, arrayListOf(it))
+                }
+                callState.isOffer = false
+                timeoutFuture = timeoutExecutor.schedule(
+                    TimeoutRunnable(),
+                    DEFAULT_TIMEOUT_MINUTES,
+                    TimeUnit.MINUTES,
+                )
+                CallActivity.show(this, !playRing)
+                audioManager.start(false, playRing)
+                startCheckPeers(cid)
 
-        if (isDisconnected.compareAndSet(true, false)) {
-            callState.state = CallState.STATE_RINGING
+                userId?.let {
+                    saveMessage(cid, it, MessageCategory.KRAKEN_INVITE.name)
+                }
+            }
+        } else {
+            callState.state = CallState.STATE_IDLE
             callState.callType = CallType.Group
-            updateForegroundNotification()
             callState.conversationId = cid
             userId?.let {
                 callState.setInviter(cid, it)
                 callState.addPendingUsers(cid, arrayListOf(it))
             }
             callState.isOffer = false
-            val playRing = intent.getBooleanExtra(EXTRA_PLAY_RING, true)
-            if (playRing) {
-                timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-            }
-            CallActivity.show(this, !playRing)
-            audioManager.start(false, playRing)
             startCheckPeers(cid)
-
-            userId?.let {
-                saveMessage(cid, it, MessageCategory.KRAKEN_INVITE.name)
-            }
+            CallActivity.show(this, !playRing)
         }
     }
 
@@ -399,10 +424,6 @@ class GroupCallService : CallService() {
 
         callState.removeUser(cid, userId)
         saveMessage(cid, userId, MessageCategory.KRAKEN_CANCEL.name)
-        val fullName = database.findFullNameById(userId)
-        mainThread {
-            toast(getString(R.string.chat_group_call_cancel, fullName))
-        }
         if (callState.isBeforeAnswering()) {
             disconnect()
             checkConversationUserCount(cid)
@@ -417,10 +438,6 @@ class GroupCallService : CallService() {
 
         callState.removeUser(cid, userId)
         saveMessage(cid, userId, MessageCategory.KRAKEN_DECLINE.name)
-        val fullName = database.findFullNameById(userId)
-        mainThread {
-            toast(getString(R.string.chat_group_call_decline, fullName))
-        }
     }
 
     private fun handleAcceptInvite() {
@@ -433,6 +450,7 @@ class GroupCallService : CallService() {
         }
         if (callState.isAnswering()) return
 
+        isDisconnected.set(false)
         callState.state = CallState.STATE_ANSWERING
         callState.callType = CallType.Group
         updateForegroundNotification()
@@ -458,14 +476,16 @@ class GroupCallService : CallService() {
             conversation_id = cid,
             category = MessageCategory.KRAKEN_END.name,
             message_id = UUID.randomUUID().toString(),
-            track_id = trackId
+            track_id = trackId,
         )
 
         disconnect()
 
         saveMessage(cid, self.userId, MessageCategory.KRAKEN_END.name, duration.toString())
         val bm = createKrakenMessage(blazeMessageParam)
-        @Suppress("UNUSED_VARIABLE") val bmData = getBlazeMessageData(bm)
+
+        @Suppress("UNUSED_VARIABLE")
+        val bmData = getBlazeMessageData(bm)
 
         checkConversationUserCount(cid)
     }
@@ -476,7 +496,7 @@ class GroupCallService : CallService() {
 
         val cid = callState.conversationId
         if (cid == null) {
-            Timber.e("$TAG_CALL try send kraken cancel message but conversation id is $cid")
+            Timber.e("$TAG_CALL try send kraken cancel message but conversation id is null")
             disconnect()
             return
         }
@@ -484,7 +504,7 @@ class GroupCallService : CallService() {
         val blazeMessageParam = BlazeMessageParam(
             conversation_id = cid,
             category = MessageCategory.KRAKEN_CANCEL.name,
-            message_id = UUID.randomUUID().toString()
+            message_id = UUID.randomUUID().toString(),
         )
 
         audioManager.stop()
@@ -492,7 +512,9 @@ class GroupCallService : CallService() {
 
         saveMessage(cid, self.userId, MessageCategory.KRAKEN_CANCEL.name)
         val bm = createKrakenMessage(blazeMessageParam)
-        @Suppress("UNUSED_VARIABLE") val bmData = getBlazeMessageData(bm)
+
+        @Suppress("UNUSED_VARIABLE")
+        val bmData = getBlazeMessageData(bm)
 
         checkConversationUserCount(cid)
     }
@@ -503,7 +525,7 @@ class GroupCallService : CallService() {
 
         val cid = callState.conversationId
         if (cid == null) {
-            Timber.e("$TAG_CALL try send kraken decline message but conversation id is $cid")
+            Timber.e("$TAG_CALL try send kraken decline message but conversation id is null")
             disconnect()
             return
         }
@@ -519,11 +541,13 @@ class GroupCallService : CallService() {
                 conversation_id = cid,
                 recipient_id = inviter,
                 category = MessageCategory.KRAKEN_DECLINE.name,
-                message_id = UUID.randomUUID().toString()
+                message_id = UUID.randomUUID().toString(),
             )
             val bm = createKrakenMessage(blazeMessageParam)
             val bmData = getBlazeMessageData(bm) ?: return
-            @Suppress("UNUSED_VARIABLE") val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
+
+            @Suppress("UNUSED_VARIABLE")
+            val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
         } else {
             Timber.w("$TAG_CALL try send kraken decline message but inviter is null, conversationId: $cid")
         }
@@ -547,17 +571,27 @@ class GroupCallService : CallService() {
         cid?.let { checkConversationUserCount(cid) }
     }
 
+    override fun needInitWebRtc(action: String) = action != ACTION_CHECK_PEER
+
     override fun onConnected() {
+        val fromReconnecting = callState.reconnecting
         super.onConnected()
         callExecutor.execute {
             reconnectTimeoutCount = 0
             reconnectingTimeoutFuture?.cancel(true)
+
+            if (fromReconnecting) return@execute
+            val cid = callState.conversationId ?: return@execute
+            val needMute = callState.needMuteWhenJoin(cid)
+            if (needMute) {
+                muteAudio<GroupCallService>(this, true)
+            }
         }
     }
 
     override fun onClosed() {
         Timber.d("$TAG_CALL onClosed callState.reconnecting: ${callState.reconnecting}")
-        if (!callState.reconnecting) {
+        if (callState.reconnecting) {
             return
         }
 
@@ -573,8 +607,11 @@ class GroupCallService : CallService() {
         }
     }
 
-    override fun onPeerConnectionError(description: String) {
-        callExecutor.execute { handleLocalEnd() }
+    override fun onPeerConnectionError(errorMsg: String) {
+        super.onPeerConnectionError(errorMsg)
+        callExecutor.execute {
+            handleLocalEnd()
+        }
     }
 
     override fun onTimeout() {
@@ -584,6 +621,7 @@ class GroupCallService : CallService() {
     }
 
     override fun onTurnServerError() {
+        Timber.d("$TAG_CALL onTurnServerError")
         if (callState.reconnecting) {
             SystemClock.sleep(SLEEP_MILLIS)
             val conversationId = callState.conversationId
@@ -601,7 +639,7 @@ class GroupCallService : CallService() {
     @SuppressLint("AutoDispose")
     override fun onIceFailed() {
         Timber.d(
-            "$TAG_CALL onIceFailed callState.isConnected(): ${callState.isConnected()}, disconnected: ${callState.disconnected}, reconnecting: ${callState.reconnecting}"
+            "$TAG_CALL onIceFailed callState.isConnected(): ${callState.isConnected()}, disconnected: ${callState.disconnected}, reconnecting: ${callState.reconnecting}",
         )
         if (!callState.isConnected() || callState.reconnecting) return
 
@@ -631,7 +669,7 @@ class GroupCallService : CallService() {
                         category = MessageCategory.KRAKEN_RESTART.name,
                         message_id = UUID.randomUUID().toString(),
                         track_id = trackId,
-                        jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode()
+                        jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
                     )
                     val bm = createKrakenMessage(blazeMessageParam)
                     val data = getBlazeMessageData(bm) ?: return@createOffer
@@ -640,7 +678,7 @@ class GroupCallService : CallService() {
                 },
                 doWhenSetFailure = {
                     reconnect(conversationId)
-                }
+                },
             )
         }
     }
@@ -651,6 +689,25 @@ class GroupCallService : CallService() {
             return signalProtocol.getSenderKeyPublic(it, userId, sessionId)
         }
         return null
+    }
+
+    override fun requestResendKey(userId: String, sessionId: String) {
+        callState.conversationId?.let { cid ->
+            val deviceId = sessionId.getDeviceId()
+            val address = SignalProtocolAddress(userId, deviceId)
+            val status = ratchetSenderKeyDao.getRatchetSenderKey(cid, address.toString())?.status
+            if (status == null) {
+                one.mixin.android.crypto.requestResendKey(
+                    gson,
+                    jobManager,
+                    ratchetSenderKeyDao,
+                    cid,
+                    userId,
+                    null,
+                    sessionId,
+                )
+            }
+        }
     }
 
     override fun onCallDisconnected() {
@@ -677,10 +734,12 @@ class GroupCallService : CallService() {
                 category = MessageCategory.KRAKEN_TRICKLE.name,
                 message_id = UUID.randomUUID().toString(),
                 candidate = gson.toJson(candidate).base64Encode(),
-                track_id = trackId
+                track_id = trackId,
             )
             val bm = createKrakenMessage(blazeMessageParam)
-            @Suppress("UNUSED_VARIABLE") val data = webSocketChannel(bm)
+
+            @Suppress("UNUSED_VARIABLE")
+            val data = webSocketChannel(bm)
         }
     }
 
@@ -694,7 +753,9 @@ class GroupCallService : CallService() {
         val bm = webSocketChannel(blazeMessage)
         return if (bm != null) {
             gson.fromJson(bm.data, BlazeMessageData::class.java)
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun getJsonElement(blazeMessage: BlazeMessage): JsonElement? =
@@ -705,40 +766,56 @@ class GroupCallService : CallService() {
             Timber.d("$TAG_CALL network not connected, action: ${blazeMessage.action}")
             if (blazeMessage.action == LIST_KRAKEN_PEERS) return null
 
+            callState.reconnecting = false
+
             SystemClock.sleep(SLEEP_MILLIS)
             return webSocketChannel(blazeMessage)
         }
 
         blazeMessage.params?.conversation_id?.let {
-            blazeMessage.params.conversation_checksum = getCheckSum(it)
+            blazeMessage.params.conversation_checksum = callSenderKey.getCheckSum(it)
         }
         val bm = chatWebSocket.sendMessage(blazeMessage)
         Timber.d("$TAG_CALL webSocketChannel $blazeMessage, bm: $bm")
         if (bm == null) {
             Timber.d("$TAG_CALL callExecutor: $callExecutor")
+            if (!chatWebSocket.connected && blazeMessage.action == LIST_KRAKEN_PEERS) {
+                Timber.d("$TAG_CALL chatWebSocket.connected: ${chatWebSocket.connected}")
+                return null
+            }
             SystemClock.sleep(SLEEP_MILLIS)
             blazeMessage.id = UUID.randomUUID().toString()
             return webSocketChannel(blazeMessage)
         } else if (bm.error != null) {
             Timber.d("$TAG_CALL $bm")
             return when (bm.error.code) {
-                ErrorHandler.CONVERSATION_CHECKSUM_INVALID_ERROR -> {
+                CONVERSATION_CHECKSUM_INVALID_ERROR -> {
                     blazeMessage.params?.conversation_id?.let {
                         syncConversation(it)
                         // send sender key
-                        checkSessionSenderKey(it)
+                        callSenderKey.checkSessionSenderKey(it)
                     }
                     blazeMessage.id = UUID.randomUUID().toString()
                     webSocketChannel(blazeMessage)
                 }
-                ErrorHandler.FORBIDDEN -> {
+                FORBIDDEN -> {
+                    val cid = blazeMessage.params?.conversation_id
+                    Timber.d("$TAG_CALL  ${blazeMessage.action} meet error code FORBIDDEN, conversation id: $cid")
+                    cid?.let {
+                        RxBus.publish(CallEvent(it, FORBIDDEN, blazeMessage.action))
+                    }
+                    if (blazeMessage.action == LIST_KRAKEN_PEERS) {
+                        callExecutor.execute {
+                            handleLocalEnd()
+                        }
+                    }
                     null
                 }
                 ERROR_ROOM_FULL -> {
                     val cid = blazeMessage.params?.conversation_id
                     Timber.d("$TAG_CALL try to publish and join a group call, but the room is full, conversation id: $cid.")
                     cid?.let {
-                        RxBus.publish(CallEvent(it))
+                        RxBus.publish(CallEvent(it, ERROR_ROOM_FULL))
                     }
                     disconnect()
                     null
@@ -751,7 +828,10 @@ class GroupCallService : CallService() {
                         }
                         disconnect()
                     } else {
-                        reconnect(cid)
+                        if (!callState.reconnecting) {
+                            Timber.d("$TAG_CALL reconnecting from bm error: ${bm.error.code}")
+                            reconnect(cid)
+                        }
                     }
                     null
                 }
@@ -783,146 +863,11 @@ class GroupCallService : CallService() {
         }
     }
 
-    private fun checkSessionSenderKey(conversationId: String) {
-        val participants = participantSessionDao.getNotSendSessionParticipants(conversationId, Session.getSessionId()!!)
-        if (participants.isEmpty()) return
-        val requestSignalKeyUsers = arrayListOf<BlazeMessageParamSession>()
-        val signalKeyMessages = arrayListOf<BlazeSignalKeyMessage>()
-        for (p in participants) {
-            if (!signalProtocol.containsSession(p.userId, p.sessionId.getDeviceId())) {
-                requestSignalKeyUsers.add(BlazeMessageParamSession(p.userId, p.sessionId))
-            } else {
-                val (cipherText, err) = signalProtocol.encryptSenderKey(conversationId, p.userId, p.sessionId.getDeviceId())
-                if (err) {
-                    requestSignalKeyUsers.add(BlazeMessageParamSession(p.userId, p.sessionId))
-                } else {
-                    signalKeyMessages.add(createBlazeSignalKeyMessage(p.userId, cipherText!!, p.sessionId))
-                }
-            }
-        }
-
-        if (requestSignalKeyUsers.isNotEmpty()) {
-            val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(requestSignalKeyUsers))
-            val data = getJsonElement(blazeMessage)
-            if (data != null) {
-                val signalKeys = Gson().fromJson<ArrayList<SignalKey>>(data)
-                val keys = arrayListOf<BlazeMessageParamSession>()
-                if (signalKeys.isNotEmpty()) {
-                    for (key in signalKeys) {
-                        val preKeyBundle = createPreKeyBundle(key)
-                        signalProtocol.processSession(key.userId!!, preKeyBundle)
-                        val (cipherText, _) = signalProtocol.encryptSenderKey(conversationId, key.userId, preKeyBundle.deviceId)
-                        signalKeyMessages.add(createBlazeSignalKeyMessage(key.userId, cipherText!!, key.sessionId))
-                        keys.add(BlazeMessageParamSession(key.userId, key.sessionId))
-                    }
-                } else {
-                    Timber.d("$TAG_CALL No any group signal key from server: $requestSignalKeyUsers")
-                }
-
-                val noKeyList = requestSignalKeyUsers.filter { !keys.contains(it) }
-                if (noKeyList.isNotEmpty()) {
-                    val sentSenderKeys = noKeyList.map {
-                        ParticipantSession(conversationId, it.user_id, it.session_id!!, SenderKeyStatus.UNKNOWN.ordinal)
-                    }
-                    participantSessionDao.updateList(sentSenderKeys)
-                }
-            }
-        }
-        if (signalKeyMessages.isEmpty()) {
-            return
-        }
-        val checksum = getCheckSum(conversationId)
-        val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, signalKeyMessages, checksum))
-        val result = deliverNoThrow(bm)
-        if (result.retry) {
-            return checkSessionSenderKey(conversationId)
-        }
-        if (result.success) {
-            val sentSenderKeys = signalKeyMessages.map {
-                ParticipantSession(conversationId, it.recipient_id, it.sessionId!!, SenderKeyStatus.SENT.ordinal)
-            }
-            participantSessionDao.updateList(sentSenderKeys)
-        }
-    }
-
-    private tailrec fun deliverNoThrow(blazeMessage: BlazeMessage): MessageResult {
-        val bm = chatWebSocket.sendMessage(blazeMessage)
-        when {
-            bm == null -> {
-                SystemClock.sleep(SLEEP_MILLIS)
-                return deliverNoThrow(blazeMessage)
-            }
-            bm.error != null -> {
-                return when (bm.error.code) {
-                    ErrorHandler.CONVERSATION_CHECKSUM_INVALID_ERROR -> {
-                        blazeMessage.params?.conversation_id?.let {
-                            syncConversation(it)
-                        }
-                        MessageResult(false, retry = true)
-                    }
-                    ErrorHandler.FORBIDDEN -> {
-                        MessageResult(true, retry = false)
-                    }
-                    else -> {
-                        SystemClock.sleep(SLEEP_MILLIS)
-                        // warning: may caused job leak if server return error data and come to this branch
-                        return deliverNoThrow(blazeMessage)
-                    }
-                }
-            }
-            else -> {
-                return MessageResult(true, retry = false)
-            }
-        }
-    }
-
-    private fun getCheckSum(conversationId: String): String {
-        val sessions = participantSessionDao.getParticipantSessionsByConversationId(conversationId)
-        return if (sessions.isEmpty()) {
-            ""
-        } else {
-            generateConversationChecksum(sessions)
-        }
-    }
-
     private fun syncConversation(conversationId: String) {
-        val response = conversationApi.getConversation(conversationId).execute().body()
-        if (response != null && response.isSuccess) {
-            response.data?.let { data ->
-                val remote = data.participants.map {
-                    Participant(conversationId, it.userId, it.role, it.createdAt!!)
-                }
-                participantDao.replaceAll(conversationId, remote)
-
-                data.participantSessions?.let {
-                    syncParticipantSession(conversationId, it)
-                }
-            }
-        }
-    }
-
-    private fun syncParticipantSession(conversationId: String, data: List<UserSession>) {
-        participantSessionDao.deleteByStatus(conversationId)
-        val remote = data.map {
-            ParticipantSession(conversationId, it.userId, it.sessionId)
-        }
-        if (remote.isEmpty()) {
-            participantSessionDao.deleteByConversationId(conversationId)
-            return
-        }
-        val local = participantSessionDao.getParticipantSessionsByConversationId(conversationId)
-        if (local.isEmpty()) {
-            participantSessionDao.insertList(remote)
-            return
-        }
-        val common = remote.intersect(local)
-        val remove = local.minus(common)
-        val add = remote.minus(common)
-        if (remove.isNotEmpty()) {
-            participantSessionDao.deleteList(remove)
-        }
-        if (add.isNotEmpty()) {
-            participantSessionDao.insertList(add)
+        try {
+            callSenderKey.syncConversation(conversationId)
+        } catch (e: Exception) {
+            Timber.w(e)
         }
     }
 
@@ -937,8 +882,14 @@ class GroupCallService : CallService() {
             "",
             nowInUtc(),
             MessageStatus.READ.name,
-            mediaDuration = duration
+            mediaDuration = duration,
         )
+        database.conversationDao().findConversationById(cid)?.let {
+            val expiredIn = it.expireIn ?: return@let
+            if (it.expireIn > 0) {
+                database.expiredMessageDao().insert(ExpiredMessage(message.messageId, expiredIn, null))
+            }
+        }
         database.insertAndNotifyConversation(message)
     }
 
@@ -983,7 +934,7 @@ class GroupCallService : CallService() {
                     $iceGatheringState,
                     $iceConnectionState,
                     $connectionState
-                """
+                """,
             )
         }
     }
@@ -1022,7 +973,7 @@ const val ERROR_PEER_CLOSED = 5002002
 const val ERROR_TRACK_NOT_FOUND = 5002003
 
 data class PeerList(
-    val peers: ArrayList<UserSession>?
+    val peers: ArrayList<UserSession>?,
 )
 
 fun publish(ctx: Context, conversationId: String, users: ArrayList<String>? = null) =

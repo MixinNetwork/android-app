@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
+import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.RxBus
@@ -14,7 +15,7 @@ import one.mixin.android.extension.fileUnit
 class FileProgressTextView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
 ) :
     AppCompatTextView(context, attrs, defStyleAttr) {
 
@@ -29,6 +30,7 @@ class FileProgressTextView @JvmOverloads constructor(
         if (disposable == null) {
             disposable = RxBus.listen(ProgressEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(this)
                 .subscribe { event ->
                     if (event.id == mBindId && progress != event.progress) {
                         progress = event.progress
@@ -45,6 +47,11 @@ class FileProgressTextView @JvmOverloads constructor(
             this.mediaSize = mediaSize
             mBindId = id
         }
+    }
+
+    fun clearBindIdAndSetText(fileText: String?) {
+        text = fileText
+        mBindId = null
     }
 
     override fun onDetachedFromWindow() {

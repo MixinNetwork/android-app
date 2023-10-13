@@ -8,47 +8,111 @@
     </string-array>
 
     <integer-array name="currency_flags">
-        <item>@drawable/ic_flag_cny</item>
-        <item>@drawable/ic_flag_usd</item>
-        <item>@drawable/ic_flag_jpy</item>
-        <item>@drawable/ic_flag_eur</item>
-        <item>@drawable/ic_flag_krw</item>
-        <item>@drawable/ic_flag_hkd</item>
-        <item>@drawable/ic_flag_gbp</item>
+        <item>@drawable/ic_flag_aed</item>
         <item>@drawable/ic_flag_aud</item>
-        <item>@drawable/ic_flag_sgd</item>
+        <item>@drawable/ic_flag_cad</item>
+        <item>@drawable/ic_flag_cny</item>
+        <item>@drawable/ic_flag_eur</item>
+        <item>@drawable/ic_flag_gbp</item>
+        <item>@drawable/ic_flag_hkd</item>
+        <item>@drawable/ic_flag_idr</item>
+        <item>@drawable/ic_flag_inr</item>
+        <item>@drawable/ic_flag_jpy</item>
+        <item>@drawable/ic_flag_krw</item>
         <item>@drawable/ic_flag_myr</item>
+        <item>@drawable/ic_flag_php</item>
+        <item>@drawable/ic_flag_sgd</item>
+        <item>@drawable/ic_flag_try</item>
+        <item>@drawable/ic_flag_twd</item>
+        <item>@drawable/ic_flag_vnd</item>
+        <item>@drawable/ic_flag_usd</item>
     </integer-array>
     <string-array name="currency_names">
-        <item>CNY</item>
-        <item>USD</item>
-        <item>JPY</item>
-        <item>EUR</item>
-        <item>KRW</item>
-        <item>HKD</item>
-        <item>GBP</item>
+        <item>AED</item>
         <item>AUD</item>
-        <item>SGD</item>
+        <item>CAD</item>
+        <item>CNY</item>
+        <item>EUR</item>
+        <item>GBP</item>
+        <item>HKD</item>
+        <item>IDR</item>
+        <item>INR</item>
+        <item>JPY</item>
+        <item>KRW</item>
         <item>MYR</item>
+        <item>PHP</item>
+        <item>SGD</item>
+        <item>TRY</item>
+        <item>TWD</item>
+        <item>VND</item>
+        <item>USD</item>
     </string-array>
     <string-array name="currency_symbols">
-        <item>¥</item>
-        <item>$</item>
+        <item>AED&#160;</item>
+        <item>A$</item>
+        <item>C$</item>
         <item>¥</item>
         <item>€</item>
-        <item>₩</item>
-        <item>HK$</item>
         <item>£</item>
-        <item>A$</item>
-        <item>S$</item>
+        <item>HK$</item>
+        <item>Rp</item>
+        <item>₹</item>
+        <item>¥</item>
+        <item>₩</item>
         <item>RM</item>
+        <item>₱</item>
+        <item>S$</item>
+        <item>₺</item>
+        <item>NT$</item>
+        <item>₫</item>
+        <item>$</item>
     </string-array>
 
     <string-array name="language_names">
         <item>Follow System</item>
         <item>English</item>
         <item>简体中文</item>
+        <item>繁體中文</item>
         <item>日本語</item>
+        <item>Русский</item>
         <item>Bahasa Indonesia</item>
+        <item>Bahasa Melayu</item>
+        <item>Española</item>
     </string-array>
+
+    <string-array name="setting_night_array">
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+
+    <string-array name="setting_night_array_oreo">
+        <item>Light</item>
+        <item>Dark</item>
+        <item>Follow system</item>
+    </string-array>
+
+    <plurals name="time_interval_unit_second">
+        <item quantity="one">second</item>
+        <item quantity="other">seconds</item>
+    </plurals>
+    <plurals name="time_interval_unit_minute">
+        <item quantity="one">minute</item>
+        <item quantity="other">minutes</item>
+    </plurals>
+    <plurals name="time_interval_unit_hour">
+        <item quantity="one">hour</item>
+        <item quantity="other">hours</item>
+    </plurals>
+    <plurals name="time_interval_unit_day">
+        <item quantity="one">day</item>
+        <item quantity="other">days</item>
+    </plurals>
+    <plurals name="time_interval_unit_week">
+        <item quantity="one">week</item>
+        <item quantity="other">weeks</item>
+    </plurals>
+    <array name="database">
+        <item>Primary</item>
+        <item>Secondary</item>
+    </array>
 </resources>

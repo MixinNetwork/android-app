@@ -71,6 +71,9 @@
         <attr name="bg" format="color"/>
         <attr name="color" format="color"/>
     </declare-styleable>
+    <declare-styleable name="PlayButton">
+        <attr name="play_color" format="color"/>
+    </declare-styleable>
     <declare-styleable name="MessageLayout">
         <attr name="max_width" format="dimension" />
         <attr name="content_padding" format="dimension" />
@@ -104,6 +107,9 @@
         <attr name="right_icon" format="reference" />
         <attr name="left_icon" format="reference" />
     </declare-styleable>
+    <declare-styleable name="TimeView">
+        <attr name="text_color" format="reference" />
+    </declare-styleable>
     <declare-styleable name="BalanceLayout">
         <attr name="center" format="boolean"/>
     </declare-styleable>
@@ -120,5 +126,106 @@
     </declare-styleable>
     <declare-styleable name="PlayerView">
         <attr name="use_controller" format="boolean"/>
+    </declare-styleable>
+    <declare-styleable name="KeyboardLayout">
+        <attr name="input_aera_id" format="reference"/>
+    </declare-styleable>
+    <declare-styleable name="SearchView">
+        <attr name="circle_clear_icon" format="boolean" />
+        <attr name="android:hint" format="string"/>
+        <attr name="android:imeOptions" format="integer" />
+    </declare-styleable>
+
+    <declare-styleable name="WheelPicker">
+        <attr name="wheel_data" format="reference" />
+        <attr name="wheel_selected_item_position" format="integer" />
+        <attr name="wheel_item_text_size" format="dimension" />
+        <attr name="wheel_item_text_color" format="color" />
+        <attr name="wheel_selected_item_text_color" format="color" />
+        <attr name="wheel_same_width" format="boolean" />
+        <attr name="wheel_maximum_width_text" format="string" />
+        <attr name="wheel_maximum_width_text_position" format="integer" />
+        <attr name="wheel_visible_item_count" format="integer" />
+        <attr name="wheel_item_space" format="dimension" />
+        <attr name="wheel_cyclic" format="boolean" />
+        <attr name="wheel_indicator" format="boolean" />
+        <attr name="wheel_indicator_color" format="color" />
+        <attr name="wheel_indicator_size" format="dimension" />
+        <attr name="wheel_curtain" format="boolean" />
+        <attr name="wheel_curtain_color" format="color" />
+        <attr name="wheel_atmospheric" format="boolean" />
+        <attr name="wheel_curved" format="boolean" />
+        <attr name="wheel_item_align" format="enum">
+            <enum name="center" value="0" />
+            <enum name="left" value="1" />
+            <enum name="right" value="2" />
+        </attr>
+        <attr name="wheel_font_path" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="ExpandableTextView">
+        <attr name="limitedMaxLines" format="integer" />
+        <attr name="originalText" format="string" />
+        <attr name="expandAction" format="string" />
+        <attr name="expandActionColor" format="string" />
+    </declare-styleable>
+    <declare-styleable name="HeadTailView">
+        <attr name="head" format="string" />
+        <attr name="tail" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="ViewfinderView">
+        <attr name="maskColor" format="color" />
+        <attr name="frameColor" format="color" />
+        <attr name="cornerColor" format="color"/>
+        <attr name="laserColor" format="color"/>
+        <attr name="labelText" format="string"/>
+        <attr name="labelTextColor" format="color"/>
+        <attr name="labelTextSize" format="dimension"/>
+        <attr name="labelTextPadding" format="dimension"/>
+        <attr name="labelTextWidth" format="dimension"/>
+        <attr name="labelTextLocation" format="enum">
+            <enum name="top" value="0"/>
+            <enum name="bottom" value="1"/>
+        </attr>
+        <attr name="frameWidth" format="dimension"/>
+        <attr name="frameHeight" format="dimension"/>
+        <attr name="gridColumn" format="integer"/>
+        <attr name="gridHeight" format="dimension"/>
+        <attr name="laserStyle" format="enum">
+            <enum name="none" value="0"/>
+            <enum name="line" value="1"/>
+            <enum name="grid" value="2"/>
+            <enum name="radar" value="3"/>
+        </attr>
+        <attr name="cornerRectWidth" format="dimension"/>
+        <attr name="cornerRectHeight" format="dimension"/>
+        <attr name="scannerLineMoveDistance" format="dimension"/>
+        <attr name="scannerLineHeight" format="dimension"/>
+        <attr name="frameLineWidth" format="dimension"/>
+        <attr name="scannerAnimationDelay" format="integer"/>
+        <attr name="frameRatio" format="float"/>
+        <attr name="framePaddingLeft" format="dimension"/>
+        <attr name="framePaddingTop" format="dimension"/>
+        <attr name="framePaddingRight" format="dimension"/>
+        <attr name="framePaddingBottom" format="dimension"/>
+        <attr name="frameGravity" format="enum">
+            <enum name="center" value="0"/>
+            <enum name="left" value="1"/>
+            <enum name="top" value="2"/>
+            <enum name="right" value="3"/>
+            <enum name="bottom" value="4"/>
+        </attr>
+        <attr name="pointColor" format="color"/>
+        <attr name="pointStrokeColor" format="color"/>
+        <attr name="pointRadius" format="dimension"/>
+        <attr name="pointStrokeRatio" format="float"/>
+        <attr name="pointDrawable" format="reference"/>
+        <attr name="showPointAnim" format="boolean"/>
+        <attr name="laserDrawable" format="reference"/>
+        <attr name="viewfinderStyle" format="enum">
+            <enum name="classic" value="0"/>
+            <enum name="popular" value="1"/>
+        </attr>
     </declare-styleable>
 </resources>

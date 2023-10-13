@@ -11,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_phone_number" />
+        app:titleText="@string/Phone_Number" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -20,7 +20,7 @@
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:text="@string/setting_phone_number_privacy"
+        android:text="@string/phone_number_privacy"
         android:textColor="?attr/text_minor"
         android:textSize="12sp" />
 
@@ -31,7 +31,7 @@
         android:clickable="true"
         android:focusable="true"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground">
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:id="@+id/everybody_tv"
@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_conversation_everybody"
+            android:text="@string/Everybody"
             tools:ignore="RelativeOverlap" />
 
         <ImageView
@@ -72,7 +72,7 @@
         android:clickable="true"
         android:focusable="true"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground">
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:id="@+id/my_contacts_tv"
@@ -81,7 +81,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_my_contacts"
+            android:text="@string/My_Contacts"
             tools:ignore="RelativeOverlap" />
 
         <ImageView
@@ -113,7 +113,7 @@
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
                 android:id="@+id/nobody_tv"
@@ -122,7 +122,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/nobody"
+                android:text="@string/Nobody"
                 tools:ignore="RelativeOverlap" />
 
         <ImageView

@@ -7,43 +7,31 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.TextView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.DefaultControlDispatcher
-import com.google.android.exoplayer2.PlaybackPreparer
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.Timeline
-import com.google.android.exoplayer2.ui.DefaultTimeBar
-import com.google.android.exoplayer2.ui.TimeBar
-import com.google.android.exoplayer2.util.Assertions
-import com.google.android.exoplayer2.util.Util
-import com.google.android.exoplayer2.video.VideoListener
+import androidx.media3.common.C
+import androidx.media3.common.Player
+import androidx.media3.common.Timeline
+import androidx.media3.common.util.Assertions
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.common.util.Util
+import androidx.media3.ui.TimeBar
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewPlayerControlBinding
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.statusBarHeight
-import one.mixin.android.widget.PlayView2
 import one.mixin.android.widget.PlayView2.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView2.Companion.STATUS_PLAYING
 import java.util.Formatter
 import java.util.Locale
 import kotlin.math.min
 
-class PlayerControlView(context: Context, attributeSet: AttributeSet) :
+@UnstableApi class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     FrameLayout(context, attributeSet) {
 
-    private val topLayout: View
-    private val bottomLayout: View
-    private val playView: PlayView2
-    private val durationView: TextView
-    private val positionView: TextView
-    private val timeBar: TimeBar
-    private val liveView: View
-    private val pipView: View
-    private val fullscreenView: ImageView
-
     private val componentListener = ComponentListener()
-    private val controlDispatcher = DefaultControlDispatcher()
     private val formatBuilder = StringBuilder()
     private val formatter = Formatter(formatBuilder, Locale.getDefault())
     private val window = Timeline.Window()
@@ -79,7 +67,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     var showTimeoutMs = DEFAULT_SHOW_TIMEOUT_MS
     var scrubbing = false
 
-    var playbackPreparer: PlaybackPreparer? = null
+    var preparePlayback: (() -> Unit)? = null
 
     var player: Player? = null
         set(value) {
@@ -97,19 +85,43 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     var progressUpdateListener: ProgressUpdateListener? = null
     var visibilityListener: VisibilityListener? = null
 
+    private val binding = ViewPlayerControlBinding.inflate(LayoutInflater.from(context), this, true)
+    private val topLayout by lazy { binding.topFl }
+    private val playView by lazy { binding.playView }
+    private val durationView by lazy { binding.exoDuration }
+    private val positionView by lazy { binding.exoPosition }
+    private val timeBar by lazy { binding.exoProgress }
+    private val liveView by lazy { binding.liveTv }
+    val bottomLayout by lazy { binding.bottomLl }
+    val fullscreenIv by lazy { binding.fullscreenIv }
+    val pipView by lazy { binding.pipIv }
+    val closeIv by lazy { binding.closeIv }
+
     init {
-        LayoutInflater.from(context).inflate(R.layout.view_player_control, this)
-        topLayout = findViewById(R.id.top_fl)
-        bottomLayout = findViewById(R.id.bottom_ll)
-        playView = findViewById(R.id.play_view)
         playView.setOnClickListener(componentListener)
-        durationView = findViewById(R.id.exo_duration)
-        positionView = findViewById(R.id.exo_position)
-        timeBar = findViewById<DefaultTimeBar>(R.id.exo_progress)
         timeBar.addListener(componentListener)
-        liveView = findViewById(R.id.live_tv)
-        pipView = findViewById(R.id.pip_iv)
-        fullscreenView = findViewById(R.id.fullscreen_iv)
+        ViewCompat.setOnApplyWindowInsetsListener(this) { _: View?, insets: WindowInsetsCompat ->
+            insets.getInsets(WindowInsetsCompat.Type.systemBars()).let { systemInserts ->
+                if (context.isLandscape()) {
+                    binding.topFl.setPadding(systemInserts.left, 0, systemInserts.right, 0)
+                    binding.bottomLl.setPadding(
+                        12.dp + systemInserts.left,
+                        12.dp,
+                        12.dp + systemInserts.right,
+                        24.dp,
+                    )
+                } else {
+                    binding.topFl.setPadding(0, 24.dp + systemInserts.top, 0, 0)
+                    binding.bottomLl.setPadding(
+                        12.dp,
+                        24.dp,
+                        12.dp,
+                        24.dp + systemInserts.bottom,
+                    )
+                }
+                WindowInsetsCompat.CONSUMED
+            }
+        }
     }
 
     override fun onFinishInflate() {
@@ -120,6 +132,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     public override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         attachedToWindow = true
+        player?.addListener(componentListener)
         if (hideAtMs != C.TIME_UNSET) {
             val delayMs = hideAtMs - SystemClock.uptimeMillis()
             if (delayMs <= 0) {
@@ -135,6 +148,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     public override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         attachedToWindow = false
+        player?.removeListener(componentListener)
         removeCallbacks(updateProgressAction)
         removeCallbacks(hideAction)
     }
@@ -170,10 +184,10 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
 
     fun switchFullscreen(fullscreen: Boolean) {
         if (fullscreen) {
-            fullscreenView.setImageResource(R.drawable.ic_fullscreen_exit)
+            fullscreenIv.setImageResource(R.drawable.ic_fullscreen_exit)
             topLayout.setPadding(0, 0, 0, 0)
         } else {
-            fullscreenView.setImageResource(R.drawable.ic_fullscreen)
+            fullscreenIv.setImageResource(R.drawable.ic_fullscreen)
             topLayout.setPadding(0, statusBarHeight, 0, 0)
         }
     }
@@ -205,7 +219,8 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     }
 
     private fun seekTo(player: Player, windowIndex: Int, positionMs: Long): Boolean {
-        return controlDispatcher.dispatchSeekTo(player, windowIndex, positionMs)
+        player.seekTo(windowIndex, positionMs)
+        return true
     }
 
     private fun seekToTimeBarPosition(player: Player, positionMsParams: Long) {
@@ -275,6 +290,9 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
             Player.STATE_ENDED -> {
                 playView.status = STATUS_IDLE
             }
+            Player.STATE_BUFFERING -> {
+                // Do nothing
+            }
         }
     }
 
@@ -291,7 +309,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
                 enableSeeking = isSeekable
             }
         }
-        timeBar.setEnabled(enableSeeking)
+        timeBar.isEnabled = enableSeeking
     }
 
     private fun updateTimeline() {
@@ -363,14 +381,14 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
             0,
             adGroupTimesMs,
             adGroupCount,
-            extraAdGroupCount
+            extraAdGroupCount,
         )
         System.arraycopy(
             extraPlayedAdGroups,
             0,
             playedAdGroups,
             adGroupCount,
-            extraAdGroupCount
+            extraAdGroupCount,
         )
         timeBar.setAdGroupTimesMs(adGroupTimesMs, playedAdGroups, totalAdGroupCount)
         updateProgress()
@@ -413,7 +431,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
             delayMs = Util.constrainValue(
                 delayMs,
                 timeBarMinUpdateIntervalMs.toLong(),
-                MAX_UPDATE_INTERVAL_MS
+                MAX_UPDATE_INTERVAL_MS,
             )
             postDelayed(updateProgressAction, delayMs)
         } else if (playbackState != Player.STATE_ENDED && playbackState != Player.STATE_IDLE) {
@@ -422,10 +440,9 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     }
 
     inner class ComponentListener :
-        Player.EventListener,
+        Player.Listener,
         TimeBar.OnScrubListener,
-        OnClickListener,
-        VideoListener {
+        OnClickListener {
         override fun onScrubMove(timeBar: TimeBar, position: Long) {
             positionView.text = Util.getStringForTime(formatBuilder, formatter, position)
         }
@@ -468,14 +485,15 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
                 when (playView.status) {
                     STATUS_IDLE -> {
                         if (player.playbackState == Player.STATE_IDLE) {
-                            playbackPreparer?.preparePlayback()
+                            player.prepare()
+                            preparePlayback?.invoke()
                         } else if (player.playbackState == Player.STATE_ENDED) {
                             seekTo(player, player.currentWindowIndex, C.TIME_UNSET)
                         }
-                        controlDispatcher.dispatchSetPlayWhenReady(player, true)
+                        player.playWhenReady = true
                     }
                     STATUS_PLAYING -> {
-                        controlDispatcher.dispatchSetPlayWhenReady(player, false)
+                        player.playWhenReady = false
                     }
                 }
             }

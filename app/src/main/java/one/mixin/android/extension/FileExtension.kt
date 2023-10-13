@@ -11,8 +11,10 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.media.ThumbnailUtils
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.util.Base64
 import android.util.Size
 import android.webkit.MimeTypeMap
@@ -29,18 +31,23 @@ import one.mixin.android.session.Session
 import one.mixin.android.util.blurhash.Base83
 import one.mixin.android.util.blurhash.BlurHashDecoder
 import one.mixin.android.util.blurhash.BlurHashEncoder
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.StorageUsage
 import one.mixin.android.widget.gallery.MimeType
+import timber.log.Timber
+import java.io.BufferedReader
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.io.InputStreamReader
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.LinkedList
 import java.util.Locale
+import java.util.Scanner
 
 private fun isAvailable(): Boolean {
     val state = Environment.getExternalStorageState()
@@ -53,44 +60,45 @@ private fun isAvailable(): Boolean {
 fun hasWritePermission(): Boolean {
     return ContextCompat.checkSelfPermission(
         MixinApplication.appContext,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
     ) == PackageManager.PERMISSION_GRANTED
 }
 
 fun Context.checkStorageNotLow(lowAction: () -> Unit, defaultAction: () -> Unit) {
-    if (cacheDir.freeSpace < 100 * 1024 * 1024) { // 100MB
+    if (isLowDisk()) { // 100MB
         lowAction()
     } else {
         defaultAction()
     }
 }
 
-private fun Context.getAppPath(): File? {
-    return if (!hasWritePermission()) {
-        null
-    } else if (isAvailable()) {
-        File(
-            "${Environment.getExternalStorageDirectory()}${File.separator}Mixin${File.separator}"
-        )
-    } else {
-        val externalFile = ContextCompat.getExternalFilesDirs(this, null)
-        val root = File("${externalFile[0]}${File.separator}Mixin${File.separator}")
-        root.mkdirs()
-        return if (root.exists()) {
-            root
-        } else {
-            getBestAvailableCacheRoot()
+fun Context.isLowDisk(): Boolean {
+    return cacheDir.freeSpace < 100 * 1024 * 1024
+}
+
+private fun Context.getAppPath(legacy: Boolean = false): File? {
+    return when {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !legacy -> {
+            externalMediaDirs.first()
+        }
+        hasWritePermission() && isAvailable() -> {
+            File(
+                "${Environment.getExternalStorageDirectory()}${File.separator}Mixin${File.separator}",
+            )
+        }
+        else -> {
+            null
         }
     }
 }
 
-fun Context.getMediaPath(): File? {
-    val path = getAppPath() ?: return null
+fun Context.getMediaPath(legacy: Boolean = false): File? {
+    val path = getAppPath(legacy) ?: return null
     val identityNumber = Session.getAccount()?.identityNumber ?: return null
     return File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Media")
 }
 
-fun Context.getOldMediaPath(): File? {
+fun Context.getAncientMediaPath(): File? {
     val path = getAppPath() ?: return null
     val f = File("${path.absolutePath}${File.separator}Media")
     if (f.exists()) {
@@ -99,8 +107,8 @@ fun Context.getOldMediaPath(): File? {
     return null
 }
 
-fun Context.getBackupPath(create: Boolean = false): File? {
-    val path = getAppPath() ?: return null
+fun Context.getLegacyBackupPath(create: Boolean = false, legacy: Boolean = false): File? {
+    val path = getAppPath(legacy) ?: return null
     val identityNumber = Session.getAccount()?.identityNumber ?: return null
     val f = File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Backup")
     if (create && (!f.exists() || !f.isDirectory)) {
@@ -110,8 +118,8 @@ fun Context.getBackupPath(create: Boolean = false): File? {
     return f
 }
 
-fun Context.getOldBackupPath(create: Boolean = false): File? {
-    val path = getAppPath() ?: return null
+fun Context.getOldBackupPath(create: Boolean = false, legacy: Boolean = false): File? {
+    val path = getAppPath(legacy) ?: return null
     val identityNumber = Session.getAccount()?.identityNumber ?: return null
     val f = File("${path.absolutePath}${File.separator}Backup${File.separator}$identityNumber")
     if (create && (!f.exists() || !f.isDirectory)) {
@@ -127,7 +135,7 @@ fun Context.getCacheMediaPath(): File {
 
 fun getMimeType(
     uri: Uri,
-    isImage: Boolean = false
+    isImage: Boolean = false,
 ): String? {
     var type: String? = null
     if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
@@ -198,7 +206,7 @@ private fun getOrientationFromExif(imagePath: String): Int {
     val exif = ExifInterface(imagePath)
     val exifOrientation = exif.getAttributeInt(
         ExifInterface.TAG_ORIENTATION,
-        ExifInterface.ORIENTATION_NORMAL
+        ExifInterface.ORIENTATION_NORMAL,
     )
     when (exifOrientation) {
         ExifInterface.ORIENTATION_ROTATE_270 -> orientation = 270
@@ -219,30 +227,42 @@ private fun Context.getBestAvailableCacheRoot(): File {
 fun File.generateConversationPath(conversationId: String): File {
     return File("$this${File.separator}$conversationId")
 }
-
-fun Context.getImagePath(): File {
-    val root = getMediaPath()
+fun Context.getImagePath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
     return File("$root${File.separator}Images")
 }
 
-fun Context.getOtherPath(): File {
-    val root = getMediaPath()
+fun Context.getOtherPath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
     return File("$root${File.separator}Others")
 }
 
-fun Context.getDocumentPath(): File {
-    val root = getMediaPath()
+fun Context.getDocumentPath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
     return File("$root${File.separator}Files")
 }
 
-fun Context.getVideoPath(): File {
-    val root = getMediaPath()
+fun Context.getVideoPath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
     return File("$root${File.separator}Videos")
 }
 
-fun Context.getAudioPath(): File {
-    val root = getMediaPath()
-    return File("$root${File.separator}Audios")
+fun Context.getAudioPath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
+    return File("${root}${File.separator}Audios")
+}
+
+fun Context.getTranscriptFile(name: String, type: String, legacy: Boolean = false): File {
+    return getTranscriptDirPath(legacy).newTempFile(
+        name,
+        type,
+        true,
+    )
+}
+
+fun Context.getTranscriptDirPath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
+    return File("$root${File.separator}Transcripts${File.separator}")
 }
 
 fun Context.getConversationImagePath(conversationId: String): File? {
@@ -273,22 +293,22 @@ fun Context.getConversationMediaSize(conversationId: String): Long {
     var mediaSize = 0L
     getConversationImagePath(conversationId)?.apply {
         if (exists()) {
-            mediaSize += dirSize() ?: 0
+            mediaSize += getDirSize() ?: 0
         }
     }
     getConversationVideoPath(conversationId)?.apply {
         if (exists()) {
-            mediaSize += dirSize() ?: 0
+            mediaSize += getDirSize() ?: 0
         }
     }
     getConversationAudioPath(conversationId)?.apply {
         if (exists()) {
-            mediaSize += dirSize() ?: 0
+            mediaSize += getDirSize() ?: 0
         }
     }
     getConversationDocumentPath(conversationId)?.apply {
         if (exists()) {
-            mediaSize += dirSize() ?: 0
+            mediaSize += getDirSize() ?: 0
         }
     }
     return mediaSize
@@ -318,6 +338,14 @@ fun Context.getPublicPicturePath(): File {
     return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Mixin")
 }
 
+fun Context.getPublicDownloadPath(): File {
+    return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Mixin")
+}
+
+fun Context.getPublicMusicPath(): File {
+    return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "Mixin")
+}
+
 fun Context.getPublicDocumentPath(): File {
     return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "Mixin")
 }
@@ -325,21 +353,6 @@ fun Context.getPublicDocumentPath(): File {
 fun Context.getImageCachePath(): File {
     val root = getBestAvailableCacheRoot()
     return File("$root${File.separator}Images")
-}
-
-fun Context.isQRCodeFileExists(name: String): Boolean {
-    val root = getBestAvailableCacheRoot()
-    val file = File("$root${File.separator}$name.png")
-    return file.exists() && file.length() > 0
-}
-
-fun Context.getQRCodePath(name: String): File {
-    val root = getBestAvailableCacheRoot()
-    val file = File("$root${File.separator}$name.png")
-    if (!file.exists()) {
-        file.createNewFile()
-    }
-    return file
 }
 
 fun Context.getGroupAvatarPath(name: String, create: Boolean = true): File {
@@ -351,13 +364,22 @@ fun Context.getGroupAvatarPath(name: String, create: Boolean = true): File {
     return file
 }
 
+fun Context.getWallpaperFile(): File {
+    val root = getBestAvailableCacheRoot()
+    return File("$root${File.separator}wallpaper.jpge")
+}
+
 fun File.createNoMediaDir() {
     val no = File(this, ".nomedia")
     if (!exists()) {
         mkdirs()
     }
     if (!no.exists()) {
-        no.createNewFile()
+        try {
+            no.createNewFile()
+        } catch (e: IOException) {
+            Timber.e(e)
+        }
     }
 }
 
@@ -367,16 +389,30 @@ fun File.createImageTemp(conversationId: String, messageId: String, type: String
 }
 
 fun File.createImageTemp(noMedia: Boolean = true): File {
-    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
     return newTempFile("IMAGE_$time", ".jpg", noMedia)
 }
 
+fun File.createImagePngTemp(noMedia: Boolean = true): File {
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
+    return newTempFile("IMAGE_$time", ".png", noMedia)
+}
+
 fun File.createPostTemp(prefix: String? = null, type: String? = null): File {
-    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
     return if (prefix != null) {
         newTempFile("${prefix}_POST_$time", type ?: ".md", false)
     } else {
         newTempFile("POST_$time", type ?: ".md", false)
+    }
+}
+
+fun File.createPdfTemp(prefix: String? = null): File {
+    val time = SimpleDateFormat("yyyyMMdd_HHmm", Locale.US).format(Date())
+    return if (prefix != null) {
+        newTempFile("${prefix}_POST_$time", ".pdf", false)
+    } else {
+        newTempFile("POST_$time", ".pdf", false)
     }
 }
 
@@ -386,12 +422,12 @@ fun File.createGifTemp(conversationId: String, messageId: String, noMedia: Boole
 }
 
 fun File.createGifTemp(noMedia: Boolean = true): File {
-    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
     return newTempFile(time, ".gif", noMedia)
 }
 
 fun File.createPngTemp(noMedia: Boolean = true): File {
-    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
     return newTempFile("IMAGE_$time", ".png", noMedia)
 }
 
@@ -414,21 +450,35 @@ fun File.createDocumentTemp(conversationId: String, messageId: String, type: Str
         } else {
             ".$type"
         },
-        noMedia
+        noMedia,
     )
 }
 
-private fun File.createDocumentFile(noMedia: Boolean = true, name: String? = null): Pair<File, Boolean> {
-    val defaultName = "FILE_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}"
-    val fileName = name ?: defaultName
+private fun File.createDocumentFile(
+    noMedia: Boolean = true,
+    name: String? = null,
+    extensionName: String? = null,
+): File {
+    val defaultName = "FILE_${
+        SimpleDateFormat(
+            "yyyyMMdd_HHmmss_SSS",
+            Locale.US,
+        ).format(Date())
+    }${
+        if (extensionName == null) {
+            ""
+        } else {
+            ".$extensionName"
+        }
+    }"
+    val fileName = name?.toValidFileName() ?: defaultName
     if (!this.exists()) {
         this.mkdirs()
     }
     if (noMedia) {
         createNoMediaDir()
     }
-    val f = File(this, fileName)
-    return Pair(f, f.exists())
+    return File(this, fileName)
 }
 
 fun File.createVideoTemp(conversationId: String, messageId: String, type: String, noMedia: Boolean = true): File {
@@ -437,7 +487,7 @@ fun File.createVideoTemp(conversationId: String, messageId: String, type: String
 }
 
 fun File.createVideoTemp(type: String, noMedia: Boolean = true): File {
-    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
     return newTempFile("VIDEO_$time", ".$type", noMedia)
 }
 
@@ -446,14 +496,24 @@ fun File.createAudioTemp(conversationId: String, messageId: String, type: String
     return path.newTempFile(messageId, ".$type", noMedia)
 }
 
-private fun File.newTempFile(name: String, type: String, noMedia: Boolean): File {
+fun File.createAudioPreviewTemp(conversationId: String): File {
+    val path = generateConversationPath(conversationId)
+    return path.newTempFile("audio-preview", "", true)
+}
+
+fun File.getAudioPreviewTemp(conversationId: String): File {
+    val path = generateConversationPath(conversationId)
+    return File(path, "audio-preview")
+}
+
+fun File.newTempFile(name: String, type: String, noMedia: Boolean): File {
     if (!this.exists()) {
         this.mkdirs()
     }
     if (noMedia) {
         createNoMediaDir()
     }
-    return createTempFile(name, type, this)
+    return File(this, "$name$type")
 }
 
 fun File.processing(to: File) {
@@ -467,9 +527,11 @@ fun File.processing(to: File) {
 
 fun String.getFilePath(): String? = Uri.parse(this).getFilePath()
 
+@Deprecated("Don’t get the file path on the URI")
 fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
     val scheme = this.scheme
     var data: String? = null
+    var reportException: Exception? = null
     when (scheme) {
         null -> data = this.toString()
         ContentResolver.SCHEME_FILE -> data = this.path
@@ -483,36 +545,89 @@ fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
                         if (index > -1) {
                             data = cursor.getString(index)
                             if (data == null) {
-                                return copyFileUrlWithAuthority(context)
+                                data = copyFileUrlWithAuthority(context)
                             }
                         } else if (index == -1) {
-                            return copyFileUrlWithAuthority(context)
+                            data = copyFileUrlWithAuthority(context)
                         }
                     }
                 } else {
-                    return copyFileUrlWithAuthority(context)
+                    data = copyFileUrlWithAuthority(context)
                 }
-            } catch (ignored: SecurityException) {
+            } catch (e: SecurityException) {
+                Timber.w(e)
+                reportException = e
+            } catch (e: UnsupportedOperationException) {
+                cursor = context.contentResolver.query(this, null, null, null, null)
+                val name = try {
+                    if (cursor != null && cursor.moveToFirst()) {
+                        val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                        cursor.getString(index)
+                    } else {
+                        null
+                    }
+                } catch (e: Exception) {
+                    null
+                }
+                data = copyFileUrlWithAuthority(context, name)
             } finally {
                 cursor?.close()
             }
         }
     }
+    if (data == null) {
+        if (reportException == null) {
+            reportException = IllegalStateException("Uri.getFilePath data == null")
+        }
+        reportException("Uri.getFilePath uri: $this", reportException)
+    }
     return data
+}
+
+fun Uri.getFileName(context: Context = MixinApplication.appContext): String {
+    try {
+        var result: String? = null
+        if (scheme.equals(ContentResolver.SCHEME_CONTENT)) {
+            var cursor: Cursor? = null
+            try {
+                cursor = context.contentResolver.query(this, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+                cursor?.let { c ->
+                    if (c.moveToFirst()) {
+                        val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                        result = c.getString(index)
+                    }
+                }
+            } catch (e: Exception) {
+                Timber.e(e)
+            } finally {
+                cursor?.close()
+            }
+        }
+        if (result == null) {
+            result = path
+            val cut = result!!.lastIndexOf('/')
+            if (cut != -1) {
+                result = result!!.substring(cut + 1)
+            }
+        }
+        return result ?: ""
+    } catch (e: java.lang.Exception) {
+        Timber.e(e)
+    }
+    return ""
 }
 
 fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String? {
     if (this.authority != null) {
         var input: InputStream? = null
         return try {
+            val extensionName = getFileName(context).getExtensionName()
             input = context.contentResolver.openInputStream(this) ?: return null
-            val pair = context.getDocumentPath().createDocumentFile(name = name)
-            val outFile = pair.first
-            if (!pair.second) {
-                outFile.copyFromInputStream(input)
-            }
+            val outFile = context.getDocumentPath().createDocumentFile(name = name, extensionName = extensionName)
+            outFile.copyFromInputStream(input)
             outFile.absolutePath
-        } catch (ignored: Exception) {
+        } catch (e: Exception) {
+            reportException("Uri.copyFileUrlWithAuthority name: $name", e)
             null
         } finally {
             input?.closeSilently()
@@ -521,9 +636,33 @@ fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String
     return null
 }
 
+fun Uri.getOrCreate(context: Context = MixinApplication.appContext, name: String): String? {
+    val file = File(context.getDocumentPath(), name)
+    if (!file.exists()) {
+        context.contentResolver.openInputStream(this)?.use {
+            file.copyFromInputStream(it)
+        }
+    }
+    return file.absolutePath
+}
+
 fun File.copyFromInputStream(inputStream: InputStream) {
     inputStream.use { input ->
         this.outputStream().use { output ->
+            input.copyTo(output)
+        }
+    }
+}
+
+fun File.deleteOnExists() {
+    if (exists()) {
+        delete()
+    }
+}
+
+fun Uri.copyFromInputStream(inputStream: InputStream) {
+    inputStream.use { input ->
+        MixinApplication.appContext.contentResolver.openOutputStream(this, "w")?.use { output ->
             input.copyTo(output)
         }
     }
@@ -540,10 +679,24 @@ fun File.copy(destFile: File) {
     dest.closeSilently()
 }
 
+fun File.moveTo(target: File) {
+    if (!exists()) {
+        throw FileNotFoundException("$absolutePath does not exist.")
+    }
+    if (target.exists()) {
+        delete()
+        return
+    }
+    val renamed = renameTo(target)
+    if (!renamed) {
+        throw IOException("Failed to move file $absolutePath to ${target.absolutePath}.")
+    }
+}
+
 fun File.blurThumbnail(size: Size): Bitmap? {
     var scale = 1
     do {
-        if (maxOf(size.width, size.height) / scale > 64) {
+        if (maxOf(size.width, size.height) / scale > 48) {
             scale++
         } else {
             break
@@ -554,25 +707,27 @@ fun File.blurThumbnail(size: Size): Bitmap? {
 
 fun File.dirSize(): Long? {
     return if (isDirectory) {
-        var result = 0L
-        val dirList = LinkedList<File>()
-        dirList.clear()
-        dirList.push(this)
-        while (!dirList.isEmpty()) {
-            val dirCurrent = dirList.pop()
-            val fileList = dirCurrent.listFiles()
-            for (f in fileList) {
-                if (f.isDirectory) {
-                    dirList.push(f)
-                } else {
-                    result += f.length()
-                }
-            }
-        }
-        return result
+        getDirSize()
+    } else if (isFile) {
+        length()
     } else {
         null
     }
+}
+
+private fun File.getDirSize(): Long? {
+    try {
+        val du = Runtime.getRuntime().exec(
+            "/system/bin/du -s $canonicalPath",
+            arrayOf(),
+            Environment.getRootDirectory(),
+        )
+        val br = BufferedReader(InputStreamReader(du.inputStream))
+        return Scanner(br.readLine()).nextLong()
+    } catch (e: Exception) {
+        Timber.e(e.message)
+    }
+    return null
 }
 
 fun File.encodeBlurHash(): String? {
@@ -615,15 +770,11 @@ private fun File.blurThumbnail(width: Int, height: Int): Bitmap? {
         return ThumbnailUtils.extractThumbnail(
             BitmapFactory.decodeFile(this.absolutePath),
             width,
-            height
+            height,
         ).fastBlur(1f, 10)
     } catch (e: Exception) {
     }
     return null
-}
-
-fun String.decodeBase64(): ByteArray {
-    return Base64.decode(this, Base64.DEFAULT)
 }
 
 fun Bitmap.bitmap2String(mimeType: String = "", bitmapQuality: Int = 90): String? {
@@ -648,12 +799,26 @@ fun ByteArray.encodeBitmap(): Bitmap? {
 
 fun Bitmap.toDrawable(): Drawable = BitmapDrawable(MixinApplication.appContext.resources, this)
 
+private const val MAX_BLUR_HASH_DIMEN = 20
+
 fun String.toDrawable(width: Int, height: Int): Drawable? {
     return try {
         if (!Base83.isValid(this)) {
             this.decodeBase64().encodeBitmap()?.toDrawable()
         } else {
-            BlurHashDecoder.decode(this, maxOf(width, 64), maxOf(height, 64), 1.0)?.toDrawable()
+            BlurHashDecoder.decode(this, minOf(width, MAX_BLUR_HASH_DIMEN), minOf(height, MAX_BLUR_HASH_DIMEN), 1.0)?.toDrawable()
+        }
+    } catch (e: Exception) {
+        null
+    }
+}
+
+fun String.toBitmap(width: Int, height: Int): Bitmap? {
+    return try {
+        if (!Base83.isValid(this)) {
+            this.decodeBase64().encodeBitmap()
+        } else {
+            BlurHashDecoder.decode(this, minOf(width, MAX_BLUR_HASH_DIMEN), minOf(height, MAX_BLUR_HASH_DIMEN), 1.0)
         }
     } catch (e: Exception) {
         null
@@ -779,7 +944,6 @@ fun Bitmap.fastBlur(scale: Float, radius: Int): Bitmap? {
 
         x = 0
         while (x < w) {
-
             r[yi] = dv[rsum]
             g[yi] = dv[gsum]
             b[yi] = dv[bsum]
@@ -946,4 +1110,16 @@ fun File.toByteArray(): ByteArray? {
     }
 
     return byteArray
+}
+
+val MediaPath by lazy {
+    MixinApplication.appContext.getMediaPath()?.toUri()?.toString()
+}
+
+val oldMediaPath by lazy {
+    MixinApplication.appContext.getMediaPath(true)?.toUri()?.toString()
+}
+
+val ancientMediaPath by lazy {
+    MixinApplication.appContext.getAncientMediaPath()?.toUri()?.toString()
 }

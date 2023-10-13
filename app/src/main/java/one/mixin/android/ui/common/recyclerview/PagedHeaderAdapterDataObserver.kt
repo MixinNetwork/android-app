@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
  */
 class PagedHeaderAdapterDataObserver(
     private val dataObserver: RecyclerView.AdapterDataObserver,
-    private val headerCount: Int
+    private val headerCount: Int,
 ) : RecyclerView.AdapterDataObserver() {
 
     override fun onChanged() {

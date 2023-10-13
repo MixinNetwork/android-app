@@ -1,46 +1,46 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
-import androidx.core.widget.TextViewCompat
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.MarkerOptions
-import kotlinx.android.synthetic.main.item_chat_location.view.*
+import com.mapbox.maps.MapView
+import com.mapbox.maps.ResourceOptionsManager
+import com.mapbox.maps.plugin.gestures.gestures
+import one.mixin.android.BuildConfig
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatLocationBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
+import one.mixin.android.ui.conversation.location.MixinLatLng
+import one.mixin.android.ui.conversation.location.MixinMapView
+import one.mixin.android.ui.conversation.location.useMapbox
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.toLocationData
-import org.jetbrains.anko.dip
-import org.jetbrains.anko.textColorResource
 
-class LocationHolder constructor(containerView: View) : BaseViewHolder(containerView), OnMapReadyCallback {
+class LocationHolder constructor(val binding: ItemChatLocationBinding) :
+    BaseViewHolder(binding.root),
+    OnMapReadyCallback,
+    Terminable {
+
     private val dp16 = itemView.context.dpToPx(16f)
 
-    private lateinit var map: GoogleMap
+    private var mixinMapView: MixinMapView
     private var onResumeCalled = false
-
-    companion object {
-        val isGooglePlayServicesAvailable by lazy { MixinApplication.appContext.isGooglePlayServicesAvailable() }
-    }
 
     private val dp36 by lazy {
         36.dp
@@ -50,16 +50,29 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         MixinApplication.appContext.dpToPx(4f).toFloat()
     }
 
+    private val useMapbox = useMapbox()
+
     init {
-        itemView.chat_name.maxWidth = itemView.context.maxItemWidth() - dp16
-        itemView.location_layout.round(6.dp)
-        itemView.location_map.onCreate(null)
-        itemView.location_map.getMapAsync(this)
+        binding.chatName.maxWidth = itemView.context.maxItemWidth() - dp16
+        binding.locationLayout.round(6.dp)
+        var mapBoxView: MapView? = null
+        if (useMapbox) {
+            ResourceOptionsManager.getDefault(itemView.context, BuildConfig.MAPBOX_PUBLIC_TOKEN)
+            val stub = binding.mapboxStub
+            mapBoxView = stub.inflate() as MapView
+        }
+        mixinMapView = MixinMapView(binding.root.context, binding.googleMap, mapBoxView)
+        mixinMapView.onCreate(null)
+        if (useMapbox) {
+            initMapbox(mapBoxView)
+        } else {
+            binding.googleMap.getMapAsync(this)
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         MapsInitializer.initialize(MixinApplication.appContext)
-        map = googleMap
+        mixinMapView.googleMap = googleMap
         if (isNightMode) {
             val style = MapStyleOptions.loadRawResourceStyle(MixinApplication.appContext, R.raw.mapstyle_night)
             googleMap.setMapStyle(style)
@@ -70,67 +83,88 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
             uiSettings.isScrollGesturesEnabledDuringRotateOrZoom = false
         }
         if (onResumeCalled) {
-            itemView.location_map.onResume()
+            mixinMapView.onResume()
+        }
+        setMapLocation()
+    }
+
+    private fun initMapbox(mapboxView: MapView?) {
+        val mapboxMap = mapboxView?.getMapboxMap() ?: return
+
+        mixinMapView.mapboxMap = mapboxMap
+        mapboxMap.loadStyleUri(mixinMapView.getMapboxStyle())
+        mapboxView.gestures.updateSettings {
+            rotateEnabled = false
+            rotateEnabled = false
+            pitchEnabled = false
+        }
+        if (onResumeCalled) {
+            mixinMapView.onResume()
         }
         setMapLocation()
     }
 
     private fun setMapLocation() {
-        if (!::map.isInitialized) return
+        if (useMapbox) {
+            if (mixinMapView.mapboxMap == null) return
+        } else {
+            if (mixinMapView.googleMap == null) return
+        }
         if (itemView.tag == location.hashCode()) return
+
         itemView.tag = location.hashCode()
         onResumeCalled = true
-        map.clear()
-        itemView.location_map.onResume()
+        mixinMapView.clear()
+        mixinMapView.onResume()
         location?.let { data ->
-            val position = LatLng(data.latitude, data.longitude)
-            with(map) {
-                mapType = GoogleMap.MAP_TYPE_NORMAL
-                addMarker(MarkerOptions().position(position).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_marker)))
-                moveCamera(CameraUpdateFactory.newLatLngZoom(position, 13f))
+            val position = MixinLatLng(data.latitude, data.longitude)
+            if (!useMapbox) {
+                mixinMapView.googleMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
             }
+            mixinMapView.addMarker(position)
+            mixinMapView.moveCamera(position)
         }
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
-        val lp = (itemView.chat_msg_layout.layoutParams as FrameLayout.LayoutParams)
+        val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
-            lp.gravity = Gravity.END
+            lp.horizontalBias = 1f
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_reply_me_last,
-                    R.drawable.chat_bubble_reply_me_last_night
+                    R.drawable.chat_bubble_reply_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_reply_me,
-                    R.drawable.chat_bubble_reply_me_night
+                    R.drawable.chat_bubble_reply_me_night,
                 )
             }
-            (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
+            (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
         } else {
-            lp.gravity = Gravity.START
+            lp.horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_reply_other_last,
-                    R.drawable.chat_bubble_reply_other_last_night
+                    R.drawable.chat_bubble_reply_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_reply_other,
-                    R.drawable.chat_bubble_reply_other_night
+                    R.drawable.chat_bubble_reply_other_night,
                 )
             }
-            (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp3
+            (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp3
         }
     }
 
-    private var onItemListener: ConversationAdapter.OnItemListener? = null
+    private var onItemListener: MessageAdapter.OnItemListener? = null
 
     private var location: LocationPayload? = null
     fun bind(
@@ -140,38 +174,30 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
+        super.bind(messageItem)
         this.onItemListener = onItemListener
         location = toLocationData(messageItem.content)
         if (location?.name == null) {
-            itemView.location_sub_title.isVisible = false
-            itemView.location_title.visibility = View.INVISIBLE
+            binding.locationSubTitle.isVisible = false
+            binding.locationTitle.visibility = View.INVISIBLE
         } else {
-            itemView.location_sub_title.isVisible = true
-            itemView.location_title.isVisible = true
-            itemView.location_title.text = location?.name
-            itemView.location_sub_title.text = location?.address
+            binding.locationSubTitle.isVisible = true
+            binding.locationTitle.isVisible = true
+            binding.locationTitle.text = location?.name
+            binding.locationSubTitle.text = location?.address
         }
         if (location?.name == null && location?.address == null) {
-            (itemView.location_bottom.layoutParams as ViewGroup.MarginLayoutParams).topMargin = -dp36
-            itemView.chat_time.setBackgroundResource(R.drawable.bg_bubble_shadow)
-            itemView.chat_time.textColorResource = R.color.white
-            itemView.chat_time.translationY = dp4
+            (binding.locationBottom.layoutParams as ViewGroup.MarginLayoutParams).topMargin = -dp36
+            binding.chatTime.setBackgroundResource(R.drawable.bg_bubble_shadow)
+            binding.chatTime.translationY = dp4
         } else {
-            (itemView.location_bottom.layoutParams as ViewGroup.MarginLayoutParams).topMargin = 0
-            itemView.chat_time.setBackgroundResource(0)
-            itemView.chat_time.textColorResource = (R.color.color_chat_date)
-            itemView.chat_time.translationY = 0f
+            (binding.locationBottom.layoutParams as ViewGroup.MarginLayoutParams).topMargin = 0
+            binding.chatTime.setBackgroundResource(0)
+            binding.chatTime.translationY = 0f
         }
-        if (isGooglePlayServicesAvailable) {
-            itemView.location_holder.isVisible = false
-            itemView.location_map.isVisible = true
-            setMapLocation()
-        } else {
-            itemView.location_holder.isVisible = true
-            itemView.location_map.isVisible = false
-        }
+        setMapLocation()
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
@@ -193,21 +219,21 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
                 onItemListener.onLocationClick(messageItem)
             }
         }
-        itemView.location_layout.setOnClickListener {
+        binding.locationLayout.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             } else {
                 onItemListener.onLocationClick(messageItem)
             }
         }
-        itemView.chat_layout.setOnClickListener {
+        binding.chatContentLayout.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             } else {
                 onItemListener.onLocationClick(messageItem)
             }
         }
-        itemView.location_layout.setOnLongClickListener {
+        binding.locationLayout.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -215,7 +241,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
                 true
             }
         }
-        itemView.chat_layout.setOnLongClickListener {
+        binding.chatContentLayout.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -225,36 +251,38 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         }
         val isMe = meId == messageItem.userId
 
-        itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative, location?.name == null && location?.address == null) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon ?: representativeIcon, null, statusIcon, null)
-        }
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            messageItem.isPin ?: false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret(),
+            isWhite = location?.name == null && location?.address == null,
+        )
 
         if (isFirst && !isMe) {
-            itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            binding.chatName.visibility = View.VISIBLE
+            binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
-                itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-                itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
-                itemView.chat_name.setCompoundDrawables(null, null, null, null)
+                binding.chatName.setCompoundDrawables(null, null, null, null)
             }
-            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
-            itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+            binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
-            itemView.chat_name.visibility = View.GONE
+            binding.chatName.visibility = View.GONE
         }
 
         if (messageItem.appId != null) {
-            itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-            itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+            binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+            binding.chatName.compoundDrawablePadding = 3.dp
         } else {
-            itemView.chat_name.setCompoundDrawables(null, null, null, null)
+            binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_layout)
         chatLayout(isMe, isLast)
     }
 }

@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -27,7 +26,7 @@ class ConversationJob(
     private val conversationId: String? = null,
     private val participantRequests: List<ParticipantRequest>? = null,
     private val type: Int,
-    private val recipientId: String? = null
+    private val recipientId: String? = null,
 ) : MixinJob(Params(PRIORITY_UI_HIGH).groupBy(GROUP), UUID.randomUUID().toString()) {
 
     companion object {
@@ -56,7 +55,7 @@ class ConversationJob(
                 updateConversationStatusFailure()
                 return
             }
-            createCheckRunJob = GlobalScope.launch(Dispatchers.IO) {
+            createCheckRunJob = applicationScope.launch(Dispatchers.IO) {
                 delay(CREATE_TIMEOUT_MILLIS)
                 updateConversationStatusFailure()
             }
@@ -83,14 +82,14 @@ class ConversationJob(
                     conversationApi.participants(
                         conversationId!!,
                         ParticipantAction.ADD.name,
-                        participantRequests!!
+                        participantRequests!!,
                     )
                         .execute().body()
                 TYPE_REMOVE ->
                     conversationApi.participants(
                         conversationId!!,
                         ParticipantAction.REMOVE.name,
-                        participantRequests!!
+                        participantRequests!!,
                     )
                         .execute().body()
                 TYPE_UPDATE ->
@@ -99,7 +98,7 @@ class ConversationJob(
                     conversationApi.participants(
                         conversationId!!,
                         ParticipantAction.ROLE.name,
-                        participantRequests!!
+                        participantRequests!!,
                     )
                         .execute().body()
                 TYPE_EXIT ->
@@ -110,7 +109,7 @@ class ConversationJob(
                     conversationApi.participants(
                         conversationId!!,
                         ParticipantAction.ROLE.name,
-                        participantRequests!!
+                        participantRequests!!,
                     )
                         .execute().body()
                 else -> null
@@ -131,14 +130,14 @@ class ConversationJob(
         if (r != null && r.isSuccess && r.data != null) {
             val cr = r.data!!
             if (type == TYPE_CREATE) {
-                insertOrUpdateConversation(cr)
+                conversationRepo.insertOrUpdateConversation(cr)
                 val participants = mutableListOf<Participant>()
                 cr.participants.mapTo(participants) {
                     Participant(cr.conversationId, it.userId, it.role, cr.createdAt)
                 }
                 participantDao.insertList(participants)
                 cr.participantSessions?.let {
-                    syncParticipantSession(cr.conversationId, it)
+                    jobSenderKey.syncParticipantSession(cr.conversationId, it)
                 }
                 jobManager.addJobInBackground(GenerateAvatarJob(cr.conversationId))
             } else if (type == TYPE_MUTE) {
@@ -158,7 +157,7 @@ class ConversationJob(
                 request?.let {
                     conversationDao.updateConversationStatusById(
                         request.conversationId,
-                        ConversationStatus.FAILURE.ordinal
+                        ConversationStatus.FAILURE.ordinal,
                     )
                 }
             }

@@ -2,6 +2,7 @@ package one.mixin.android.widget
 
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -9,26 +10,29 @@ import android.graphics.CornerPathEffect
 import android.graphics.Paint
 import android.graphics.Paint.Cap
 import android.graphics.Path
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.LinearInterpolator
+import androidx.core.view.isVisible
+import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ProgressEvent
-import org.jetbrains.anko.dip
-import org.jetbrains.anko.sp
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.sp
 
 class CircleProgress @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) :
-    View(context, attrs, defStyleAttr) {
+    defStyleAttr: Int = 0,
+) : View(context, attrs, defStyleAttr) {
     private val bounds = RectF()
     private val fBounds = RectF()
 
@@ -51,7 +55,7 @@ class CircleProgress @JvmOverloads constructor(
 
     private var mProgress = 0
     private var mMaxProgress = 100
-    private var mTextSize = context.sp(12)
+    private var mTextSize = 12.sp
     private val mSize: Int
     private val mShadowColor: Int
     private val mProgressColor: Int
@@ -67,26 +71,27 @@ class CircleProgress @JvmOverloads constructor(
         get() = mProgress.toFloat()
 
     private val cornerRadius by lazy {
-        context.dip(3f).toFloat()
+        3.dp.toFloat()
     }
 
     private val drawable: PlayPauseDrawable = PlayPauseDrawable().apply {
         callback = this@CircleProgress
-        firstTimeNotAnimated = true
+        setFirstTimeNotAnimated(true)
     }
 
     init {
         val a = context.obtainStyledAttributes(attrs, R.styleable.CircleProgress, defStyleAttr, 0)
-        mSize = a.getDimensionPixelSize(R.styleable.CircleProgress_size, context.dip(40))
+        mSize = a.getDimensionPixelSize(R.styleable.CircleProgress_size, 40.dp)
         mBorderWidth = a.getDimensionPixelSize(
             R.styleable.CircleProgress_progressWidth,
-            context.dip(DEFAULT_BORDER_WIDTH)
+
+            DEFAULT_BORDER_WIDTH.dp,
         )
         mShadowColor = a.getColor(R.styleable.CircleProgress_shadowColor, Color.WHITE)
         mProgressColor = a.getColor(R.styleable.CircleProgress_progressColor, Color.BLUE)
         mPlayColor = a.getColor(
             R.styleable.CircleProgress_playColor,
-            context.getColor(R.color.colorDarkBlue)
+            context.getColor(R.color.colorDarkBlue),
         )
         mBorder = a.getBoolean(R.styleable.CircleProgress_border, false)
         mProgress = a.getInt(R.styleable.CircleProgress_mProgress, mProgress)
@@ -104,7 +109,7 @@ class CircleProgress @JvmOverloads constructor(
         mBackgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         mBackgroundPaint.color = mShadowColor
 
-        drawable.color = mPlayColor
+        drawable.colorFilter = PorterDuffColorFilter(mPlayColor, PorterDuff.Mode.MULTIPLY)
 
         mForkPath = Path()
         mArrowPath = Path()
@@ -114,7 +119,6 @@ class CircleProgress @JvmOverloads constructor(
         mTextPaint.textSize = mTextSize.toFloat()
         mTextPaint.textAlign = Paint.Align.CENTER
         mTextPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        setupAnimations()
     }
 
     private fun start() {
@@ -122,7 +126,7 @@ class CircleProgress @JvmOverloads constructor(
             return
         }
         isRunning = true
-        mObjectAnimatorAngle!!.start()
+        getObjectAnimatorAngle()?.start()
     }
 
     private fun stop() {
@@ -130,7 +134,8 @@ class CircleProgress @JvmOverloads constructor(
             return
         }
         isRunning = false
-        mObjectAnimatorAngle!!.cancel()
+        getObjectAnimatorAngle()?.cancel()
+        mObjectAnimatorAngle = null
         arcAngle = 10f
         setProgress(0)
         invalidate()
@@ -150,6 +155,7 @@ class CircleProgress @JvmOverloads constructor(
         if (disposable == null) {
             disposable = RxBus.listen(ProgressEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(this)
                 .subscribe { event ->
                     if (event.id == mBindId) {
                         if (event.status == STATUS_LOADING) {
@@ -163,12 +169,12 @@ class CircleProgress @JvmOverloads constructor(
                             }
                             setProgress(progress)
                         } else {
-                            when {
-                                event.status == STATUS_PAUSE -> {
+                            when (event.status) {
+                                STATUS_PAUSE -> {
                                     setPlay()
                                     invalidate()
                                 }
-                                event.status == STATUS_PLAY -> {
+                                STATUS_PLAY -> {
                                     setPause()
                                     invalidate()
                                 }
@@ -179,12 +185,15 @@ class CircleProgress @JvmOverloads constructor(
                             }
                         }
                     } else if (status == STATUS_PAUSE || status == STATUS_PLAY || status == STATUS_ERROR) {
-                        if (event.status == STATUS_PAUSE || event.status == STATUS_PLAY || event.status == STATUS_ERROR) {
+                        if (event.status == STATUS_PAUSE || (event.status == STATUS_PLAY && event.progress == 0f) || event.status == STATUS_ERROR) {
                             setPlay()
                             invalidate()
                         }
                     }
                 }
+        }
+        if (isVisible) {
+            getObjectAnimatorAngle()?.resume()
         }
         super.onAttachedToWindow()
     }
@@ -197,6 +206,9 @@ class CircleProgress @JvmOverloads constructor(
             }
         }
         disposable = null
+        if (isVisible) {
+            mObjectAnimatorAngle?.pause()
+        }
         super.onDetachedFromWindow()
     }
 
@@ -212,13 +224,14 @@ class CircleProgress @JvmOverloads constructor(
             (centerX - mSize / 2).toFloat(),
             (centerY - mSize / 2).toFloat(),
             (centerX + mSize / 2).toFloat(),
-            (centerY + mSize / 2).toFloat()
+            (centerY + mSize / 2).toFloat(),
         )
         fBounds.left = bounds.left + mBorderWidth
         fBounds.right = bounds.right - mBorderWidth
         fBounds.top = bounds.top + mBorderWidth
         fBounds.bottom = bounds.bottom - mBorderWidth
         drawable.setBounds(0, 0, w, h)
+        drawable.setSize(w)
     }
 
     override fun draw(canvas: Canvas) {
@@ -243,11 +256,11 @@ class CircleProgress @JvmOverloads constructor(
                 drawDone(canvas)
             }
             STATUS_PLAY -> {
-                drawable.isPlay = true
+                drawable.setPause(false)
                 drawable.draw(canvas)
             }
             STATUS_PAUSE -> {
-                drawable.isPlay = false
+                drawable.setPause(true)
                 drawable.draw(canvas)
             }
             else -> {
@@ -275,11 +288,11 @@ class CircleProgress @JvmOverloads constructor(
                 fBounds.centerX() - fBounds.width() * 0.16f,
                 fBounds.centerY() - fBounds.height() * 0.16f,
                 fBounds.centerX() + fBounds.width() * 0.16f,
-                fBounds.centerY() + fBounds.height() * 0.16f
+                fBounds.centerY() + fBounds.height() * 0.16f,
             ),
             cornerRadius,
             0f,
-            mPaint
+            mPaint,
         )
     }
 
@@ -288,7 +301,7 @@ class CircleProgress @JvmOverloads constructor(
         mForkPath.moveTo(fBounds.centerX(), fBounds.centerY() - fBounds.height() * 0.25f)
         mForkPath.lineTo(
             fBounds.centerX(),
-            fBounds.centerY() + fBounds.height() * 0.25f - mBorderWidth
+            fBounds.centerY() + fBounds.height() * 0.25f - mBorderWidth,
         )
         mForkPath.moveTo(fBounds.centerX() + fBounds.width() * 0.16f, fBounds.centerY())
         mForkPath.lineTo(fBounds.centerX(), fBounds.centerY() + fBounds.height() * 0.25f)
@@ -301,7 +314,7 @@ class CircleProgress @JvmOverloads constructor(
         mForkPath.moveTo(fBounds.centerX(), fBounds.centerY() + fBounds.height() * 0.25f)
         mForkPath.lineTo(
             fBounds.centerX(),
-            fBounds.centerY() - fBounds.height() * 0.25f + mBorderWidth
+            fBounds.centerY() - fBounds.height() * 0.25f + mBorderWidth,
         )
         mForkPath.moveTo(fBounds.centerX() - fBounds.width() * 0.16f, fBounds.centerY())
         mForkPath.lineTo(fBounds.centerX(), fBounds.centerY() - fBounds.height() * 0.25f)
@@ -328,12 +341,24 @@ class CircleProgress @JvmOverloads constructor(
         canvas.drawArc(fBounds, startAngle, arcAngle, false, mPaint)
     }
 
-    private fun setupAnimations() {
-        mObjectAnimatorAngle = ObjectAnimator.ofFloat(this, "CurrentGlobalAngle", 0f, 360f)
-        mObjectAnimatorAngle!!.interpolator = ANGLE_INTERPOLATOR
-        mObjectAnimatorAngle!!.duration = ANGLE_ANIMATOR_DURATION.toLong()
-        mObjectAnimatorAngle!!.repeatMode = ValueAnimator.RESTART
-        mObjectAnimatorAngle!!.repeatCount = ValueAnimator.INFINITE
+    @SuppressLint("Recycle")
+    private fun getObjectAnimatorAngle(): ObjectAnimator? {
+        return mObjectAnimatorAngle ?: ObjectAnimator.ofFloat(this, "CurrentGlobalAngle", 0f, 360f).apply {
+            interpolator = ANGLE_INTERPOLATOR
+            duration = ANGLE_ANIMATOR_DURATION.toLong()
+            repeatMode = ValueAnimator.RESTART
+            repeatCount = ValueAnimator.INFINITE
+            mObjectAnimatorAngle = this
+        }
+    }
+
+    override fun onWindowVisibilityChanged(visibility: Int) {
+        if (visibility == VISIBLE) {
+            mObjectAnimatorAngle?.resume()
+        } else {
+            mObjectAnimatorAngle?.pause()
+        }
+        super.onWindowVisibilityChanged(visibility)
     }
 
     fun setProgress(progress: Int) {

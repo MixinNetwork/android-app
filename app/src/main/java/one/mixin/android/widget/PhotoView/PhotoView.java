@@ -1,5 +1,6 @@
 package one.mixin.android.widget.PhotoView;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.RectF;
@@ -10,6 +11,7 @@ import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 
+@SuppressWarnings("unused")
 public class PhotoView extends AppCompatImageView {
 
     private PhotoViewAttacher attacher;
@@ -37,6 +39,7 @@ public class PhotoView extends AppCompatImageView {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return attacher.onTouch(this, event);

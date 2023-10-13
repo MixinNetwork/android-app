@@ -17,21 +17,23 @@
             android:layout_margin="8dp"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
-            android:src="@drawable/ic_close_black"/>
+            android:src="@drawable/ic_close_black"
+            android:contentDescription="@string/Close" />
 
         <one.mixin.android.widget.SearchView
             android:id="@+id/search_et"
             android:layout_width="match_parent"
-            android:layout_height="?actionBarSize"
+            android:layout_height="?android:attr/actionBarSize"
             android:layout_marginEnd="@dimen/margin20"
             android:layout_toEndOf="@id/close_iv"
             android:background="@null"
-            android:drawableStart="@drawable/ic_asset_add_search"
             android:drawablePadding="8dp"
-            android:hint="@string/search"
+            android:gravity="center_vertical"
+            android:hint="@string/Search"
             android:imeOptions="actionDone"
             android:inputType="text"
             android:maxLines="1"
+            app:circle_clear_icon="true"
             android:textColor="?attr/text_primary"
             android:textColorHint="?attr/text_minor"
             android:textSize="14sp"/>
@@ -42,9 +44,26 @@
         android:layout_height=".5dp"
         android:background="?attr/bg_window"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/type_rv"
+    <FrameLayout
+        android:id="@+id/type_fl"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layoutManager="LinearLayoutManager"/>
+        android:layout_height="wrap_content">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/type_rv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layoutManager="LinearLayoutManager"/>
+
+        <TextView
+            android:id="@+id/empty_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="200dp"
+            android:gravity="center"
+            android:visibility="gone"
+            android:textColor="?attr/text_primary"
+            android:textSize="16sp"
+            android:text="@string/No_Available_Assets"/>
+    </FrameLayout>
 </one.mixin.android.widget.BottomSheetLinearLayout>

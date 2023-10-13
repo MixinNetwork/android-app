@@ -6,13 +6,18 @@ import kotlinx.coroutines.Deferred
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.api.request.CollectibleRequest
+import one.mixin.android.api.request.DeactivateRequest
+import one.mixin.android.api.request.DeactivateVerificationRequest
 import one.mixin.android.api.request.LogoutRequest
+import one.mixin.android.api.request.NonFungibleToken
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.RawTransactionsRequest
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.request.SessionSecretRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
+import one.mixin.android.api.response.AddressFeeResponse
 import one.mixin.android.api.response.DeviceCheckResponse
 import one.mixin.android.api.response.SessionSecretResponse
 import one.mixin.android.api.response.VerificationResponse
@@ -32,13 +37,19 @@ import retrofit2.http.Query
 interface AccountService {
 
     @POST("verifications")
-    fun verification(@Body request: VerificationRequest): Observable<MixinResponse<VerificationResponse>>
+    fun verificationObserver(@Body request: VerificationRequest): Observable<MixinResponse<VerificationResponse>>
+
+    @POST("verifications")
+    suspend fun verification(@Body request: VerificationRequest): MixinResponse<VerificationResponse>
 
     @POST("verifications/{id}")
     suspend fun create(@Path("id") id: String, @Body request: AccountRequest): MixinResponse<Account>
 
     @POST("verifications/{id}")
-    fun changePhone(@Path("id") id: String, @Body request: AccountRequest): Observable<MixinResponse<Account>>
+    suspend fun changePhone(@Path("id") id: String, @Body request: AccountRequest): MixinResponse<Account>
+
+    @POST("verifications/{id}")
+    fun deactiveVerification(@Path("id") id: String, @Body request: DeactivateVerificationRequest): Observable<MixinResponse<VerificationResponse>>
 
     @POST("me")
     fun update(@Body request: AccountUpdateRequest): Observable<MixinResponse<Account>>
@@ -52,14 +63,20 @@ interface AccountService {
     @GET("me")
     fun getMe(): Call<MixinResponse<Account>>
 
+    @GET("me")
+    suspend fun getMeSuspend(): MixinResponse<Account>
+
+    @POST("me/deactivate")
+    suspend fun deactivate(@Body request: DeactivateRequest): MixinResponse<Account>
+
     @POST("logout")
     suspend fun logout(@Body request: LogoutRequest): MixinResponse<Unit>
 
     @GET("codes/{id}")
-    fun code(@Path("id") id: String): Observable<MixinResponse<JsonObject>>
+    suspend fun code(@Path("id") id: String): MixinResponse<JsonObject>
 
     @POST("pin/update")
-    fun updatePin(@Body request: PinRequest): Observable<MixinResponse<Account>>
+    suspend fun updatePinSuspend(@Body request: PinRequest): MixinResponse<Account>
 
     @POST("pin/verify")
     suspend fun verifyPin(@Body request: PinRequest): MixinResponse<Account>
@@ -68,13 +85,22 @@ interface AccountService {
     fun updateSession(@Body request: SessionRequest): Observable<MixinResponse<Account>>
 
     @GET("stickers/albums")
-    fun getStickerAlbums(): Call<MixinResponse<List<StickerAlbum>>>
+    suspend fun getStickerAlbums(): MixinResponse<List<StickerAlbum>>
 
     @GET("stickers/albums/{id}")
     fun getStickersByAlbumId(@Path("id") id: String): Call<MixinResponse<List<Sticker>>>
 
+    @GET("stickers/albums/{id}")
+    suspend fun getStickersByAlbumIdSuspend(@Path("id") id: String): MixinResponse<List<Sticker>>
+
+    @GET("albums/{id}")
+    suspend fun getAlbumByIdSuspend(@Path("id") id: String): MixinResponse<StickerAlbum>
+
     @GET("stickers/{id}")
     fun getStickerById(@Path("id") id: String): Call<MixinResponse<Sticker>>
+
+    @GET("stickers/{id}")
+    suspend fun getStickerByIdSuspend(@Path("id") id: String): MixinResponse<Sticker>
 
     @POST("stickers/favorite/add")
     fun addStickerAsync(@Body request: StickerAddRequest): Deferred<MixinResponse<Sticker>>
@@ -103,9 +129,27 @@ interface AccountService {
     @POST("multisigs/{id}/unlock")
     suspend fun unlockMultisigs(@Path("id") id: String, @Body pinRequest: PinRequest): MixinResponse<Void>
 
+    @GET("collectibles/tokens/{id}")
+    suspend fun getToken(@Path("id") id: String): MixinResponse<NonFungibleToken>
+
+    @POST("collectibles/requests/{id}/cancel")
+    suspend fun cancelCollectibleTransfer(@Path("id") id: String): MixinResponse<NonFungibleToken>
+
+    @POST("collectibles/requests/{id}/sign")
+    suspend fun signCollectibleTransfer(@Path("id") id: String, @Body request: CollectibleRequest): MixinResponse<NonFungibleToken>
+
+    @POST("collectibles/requests/{id}/unlock")
+    suspend fun unlockCollectibleTransfer(@Path("id") id: String, @Body request: CollectibleRequest): MixinResponse<NonFungibleToken>
+
     @POST("transactions")
     suspend fun transactions(@Body request: RawTransactionsRequest): MixinResponse<Void>
 
     @POST("session/secret")
     suspend fun modifySessionSecret(@Body request: SessionSecretRequest): MixinResponse<SessionSecretResponse>
+
+    @GET("external/schemes")
+    suspend fun getExternalSchemes(): MixinResponse<Set<String>>
+
+    @GET("external/addresses/check")
+    suspend fun getExternalAddressFee(@Query("asset") assetId: String, @Query("destination") destination: String, @Query("tag") tag: String?): MixinResponse<AddressFeeResponse>
 }

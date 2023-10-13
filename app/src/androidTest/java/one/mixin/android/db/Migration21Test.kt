@@ -15,7 +15,7 @@ class Migration21Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_17_18,
             MixinDatabaseMigrations.MIGRATION_18_19,
             MixinDatabaseMigrations.MIGRATION_19_20,
-            MixinDatabaseMigrations.MIGRATION_20_21
+            MixinDatabaseMigrations.MIGRATION_20_21,
         )
     }
 
@@ -30,7 +30,7 @@ class Migration21Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_17_18,
             MixinDatabaseMigrations.MIGRATION_18_19,
             MixinDatabaseMigrations.MIGRATION_19_20,
-            MixinDatabaseMigrations.MIGRATION_20_21
+            MixinDatabaseMigrations.MIGRATION_20_21,
         )
     }
 
@@ -44,7 +44,7 @@ class Migration21Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_17_18,
             MixinDatabaseMigrations.MIGRATION_18_19,
             MixinDatabaseMigrations.MIGRATION_19_20,
-            MixinDatabaseMigrations.MIGRATION_20_21
+            MixinDatabaseMigrations.MIGRATION_20_21,
         )
     }
 
@@ -57,7 +57,7 @@ class Migration21Test : BaseMigrationTest() {
             true,
             MixinDatabaseMigrations.MIGRATION_18_19,
             MixinDatabaseMigrations.MIGRATION_19_20,
-            MixinDatabaseMigrations.MIGRATION_20_21
+            MixinDatabaseMigrations.MIGRATION_20_21,
         )
     }
 
@@ -69,7 +69,7 @@ class Migration21Test : BaseMigrationTest() {
             21,
             true,
             MixinDatabaseMigrations.MIGRATION_19_20,
-            MixinDatabaseMigrations.MIGRATION_20_21
+            MixinDatabaseMigrations.MIGRATION_20_21,
         )
     }
 
@@ -80,7 +80,7 @@ class Migration21Test : BaseMigrationTest() {
             Constants.DataBase.DB_NAME,
             21,
             true,
-            MixinDatabaseMigrations.MIGRATION_20_21
+            MixinDatabaseMigrations.MIGRATION_20_21,
         )
     }
 }

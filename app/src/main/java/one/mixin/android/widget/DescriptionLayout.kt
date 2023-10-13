@@ -1,5 +1,6 @@
 package one.mixin.android.widget
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.text.Layout
 import android.text.StaticLayout
@@ -28,6 +29,7 @@ class DescriptionLayout : ViewGroup {
         requestLayout()
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val childCount = childCount
         if (childCount != 2) {
@@ -60,13 +62,13 @@ class DescriptionLayout : ViewGroup {
             lineWidth + secondView.measuredWidth <= w - paddingWidth -> {
                 val height = lineHeight * 3
                 setMeasuredDimension(w + paddingWidth, height + paddingHeight)
-                secondView.setText(R.string.group_info_show_more_omit)
+                secondView.text = " ${context.getString(R.string.More)}"
                 TAIL
             }
             else -> {
                 val height = lineHeight * 3
                 setMeasuredDimension(w + paddingWidth, height + paddingHeight)
-                secondView.setText(R.string.group_info_show_more)
+                secondView.setText(R.string.More)
                 BOTTOM
             }
         }
@@ -79,7 +81,7 @@ class DescriptionLayout : ViewGroup {
             paddingStart,
             paddingTop,
             firstView.measuredWidth + paddingStart,
-            firstView.measuredHeight + paddingTop
+            firstView.measuredHeight + paddingTop,
         )
         when (type) {
             EXPAND, DEFAULT -> {
@@ -89,7 +91,7 @@ class DescriptionLayout : ViewGroup {
                     paddingTop,
                     firstView.measuredWidth + paddingStart,
                     firstView
-                        .measuredHeight + paddingTop
+                        .measuredHeight + paddingTop,
                 )
             }
             TAIL -> {
@@ -100,7 +102,7 @@ class DescriptionLayout : ViewGroup {
                     paddingTop,
                     firstView.measuredWidth + paddingStart,
                     firstView
-                        .measuredHeight + paddingTop
+                        .measuredHeight + paddingTop,
                 )
                 secondView.layout(left, top, left + secondView.measuredWidth, top + lineHeight)
             }
@@ -110,7 +112,7 @@ class DescriptionLayout : ViewGroup {
                     paddingStart,
                     paddingTop,
                     firstView.measuredWidth + paddingStart,
-                    paddingTop + lineHeight * 2
+                    paddingTop + lineHeight * 2,
                 )
                 secondView.layout(paddingStart, top, firstView.measuredWidth + paddingStart, top + lineHeight)
             }

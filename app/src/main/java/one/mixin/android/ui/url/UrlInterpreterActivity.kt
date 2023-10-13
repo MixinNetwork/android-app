@@ -1,20 +1,27 @@
 package one.mixin.android.ui.url
 
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.checkUserOrApp
 import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
+import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
+import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.transfer.TransferActivity
+import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.web.WebActivity
 import timber.log.Timber
-import kotlin.IllegalStateException
 
 @AndroidEntryPoint
 class UrlInterpreterActivity : BaseActivity() {
@@ -29,6 +36,18 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val ADDRESS = "address"
         private const val APPS = "apps"
         private const val SNAPSHOTS = "snapshots"
+        private const val CONVERSATIONS = "conversations"
+        private const val DEVICE_TRANSFER = "device-transfer"
+        private const val BUY = "buy"
+        private const val TIP = "tip"
+        const val WC = "wc"
+
+        fun show(context: Context, data: Uri) {
+            Intent(context, UrlInterpreterActivity::class.java).apply {
+                setData(data)
+                context.startActivity(this)
+            }
+        }
     }
 
     override fun getDefaultThemeId(): Int {
@@ -47,11 +66,33 @@ class UrlInterpreterActivity : BaseActivity() {
             return
         }
         if (Session.getAccount() == null) {
-            toast(R.string.not_logged_in)
+            toast(R.string.Not_logged_in)
             finish()
             return
         }
-        interpretIntent(data)
+
+        if (data.toString().startsWith("https://", true)) {
+            val bottomSheet = LinkBottomSheetDialogFragment.newInstance(data.toString())
+            bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+        } else if (data.scheme == WC) {
+            if (WalletConnect.isEnabled(this)) {
+                if (MixinApplication.get().topActivity is WebActivity) {
+                    val url = data.toString()
+                    WalletConnect.connect(url)
+                } else {
+                    startActivity(
+                        Intent(this, MainActivity::class.java).apply {
+                            putExtra(MainActivity.WALLET_CONNECT, data.toString())
+                        },
+                    )
+                }
+            } else {
+                toast(R.string.Not_recognized)
+            }
+            finish()
+        } else {
+            interpretIntent(data)
+        }
     }
 
     override fun onPause() {
@@ -62,7 +103,7 @@ class UrlInterpreterActivity : BaseActivity() {
     private fun interpretIntent(uri: Uri) {
         when (uri.host) {
             USER, APPS -> uri.checkUserOrApp(this, supportFragmentManager, lifecycleScope)
-            CODE, PAY, WITHDRAWAL, ADDRESS, SNAPSHOTS -> {
+            CODE, PAY, WITHDRAWAL, ADDRESS, SNAPSHOTS, CONVERSATIONS, TIP -> {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
@@ -73,6 +114,7 @@ class UrlInterpreterActivity : BaseActivity() {
                             .showNow(supportFragmentManager, TransferFragment.TAG)
                     } else {
                         toast(R.string.transfer_without_pin)
+                        finish()
                     }
                 }
             }
@@ -86,8 +128,15 @@ class UrlInterpreterActivity : BaseActivity() {
                     afterShareText = { finish() },
                     onError = { err ->
                         Timber.e(IllegalStateException(err))
-                    }
+                    },
                 )
+            }
+            DEVICE_TRANSFER -> {
+                TransferActivity.parseUri(this, uri, { finish() }) { finish() }
+            }
+            BUY -> {
+                WalletActivity.show(this, buy = true)
+                finish()
             }
         }
     }

@@ -7,7 +7,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -58,7 +58,19 @@ data class SnapshotItem(
     val avatarUrl: String?,
     @SerializedName("asset_confirmations")
     @ColumnInfo(name = "asset_confirmations")
-    val assetConfirmations: Int
+    val assetConfirmations: Int,
+    @SerializedName("trace_id")
+    @ColumnInfo(name = "trace_id")
+    val traceId: String?,
+    @SerializedName("snapshot_hash")
+    @ColumnInfo(name = "snapshot_hash")
+    val snapshotHash: String?,
+    @SerializedName("opening_balance")
+    @ColumnInfo(name = "opening_balance")
+    val openingBalance: String?,
+    @SerializedName("closing_balance")
+    @ColumnInfo(name = "closing_balance")
+    val closingBalance: String?,
 ) : Parcelable {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SnapshotItem>() {
@@ -84,7 +96,11 @@ data class SnapshotItem(
             assetSymbol = symbol,
             confirmations = snapshot.confirmations,
             avatarUrl = avatarUrl,
-            assetConfirmations = 0
+            assetConfirmations = 0,
+            traceId = snapshot.traceId,
+            snapshotHash = snapshot.snapshotHash,
+            openingBalance = snapshot.openingBalance,
+            closingBalance = snapshot.closingBalance,
         )
     }
 }

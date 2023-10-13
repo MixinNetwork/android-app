@@ -21,8 +21,6 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_add_sticker.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,6 +28,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.StickerAddRequest
+import one.mixin.android.databinding.FragmentAddStickerBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getFilePath
@@ -37,20 +36,27 @@ import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isStickerSupport
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.maxSizeScale
+import one.mixin.android.extension.scaleDown
+import one.mixin.android.extension.scaleUp
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toPNGBytes
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.gallery.MimeType
-import org.jetbrains.anko.textColor
 import java.io.File
+import java.lang.Integer.max
+import java.lang.Integer.min
+import java.nio.ByteBuffer
 import java.util.concurrent.TimeUnit
 
+@Suppress("BlockingMethodInNonBlockingContext")
 @AndroidEntryPoint
 class StickerAddFragment : BaseFragment() {
     companion object {
@@ -58,15 +64,17 @@ class StickerAddFragment : BaseFragment() {
         const val ARGS_URL = "args_url"
         const val ARGS_FROM_MANAGEMENT = "args_from_management"
 
-        const val MIN_SIZE = 64
-        const val MAX_SIZE = 512
-        const val MIN_FILE_SIZE = 1024
-        const val MAX_FILE_SIZE = 800 * 1024
+        private const val MIN_SIZE = 128
+        private const val MAX_SIZE = 1024
+        private const val RATIO_MIN_MAX = MIN_SIZE / MAX_SIZE.toFloat()
+        private const val RATIO_MAX_MIN = MAX_SIZE / MIN_SIZE.toFloat()
+        private const val MIN_FILE_SIZE = 1024
+        private const val MAX_FILE_SIZE = 1024 * 1024
 
         fun newInstance(url: String, fromManagement: Boolean = false) = StickerAddFragment().apply {
             arguments = bundleOf(
                 ARGS_URL to url,
-                ARGS_FROM_MANAGEMENT to fromManagement
+                ARGS_FROM_MANAGEMENT to fromManagement,
             )
         }
     }
@@ -83,15 +91,17 @@ class StickerAddFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_add_sticker, container, false)
 
+    private val binding by viewBinding(FragmentAddStickerBinding::bind)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.right_tv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title_view.right_animator.setOnClickListener {
+        binding.titleView.rightTv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.titleView.rightAnimator.setOnClickListener {
             if (dialog == null) {
                 dialog = indeterminateProgressDialog(
-                    message = R.string.pb_dialog_message,
-                    title = R.string.group_adding
+                    message = R.string.Please_wait_a_bit,
+                    title = R.string.Adding,
                 ).apply {
                     setCancelable(false)
                 }
@@ -103,7 +113,7 @@ class StickerAddFragment : BaseFragment() {
     }
 
     private fun loadImage() = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         val w = withContext(Dispatchers.IO) {
             try {
@@ -124,29 +134,29 @@ class StickerAddFragment : BaseFragment() {
         }
 
         if (w == dp100) {
-            sticker_iv?.updateLayoutParams<ViewGroup.LayoutParams> {
+            binding.stickerIv.updateLayoutParams<ViewGroup.LayoutParams> {
                 width = w
                 height = w
             }
         } else {
-            sticker_iv?.scaleType = ImageView.ScaleType.CENTER_INSIDE
+            binding.stickerIv.scaleType = ImageView.ScaleType.CENTER_INSIDE
         }
-        sticker_iv?.loadImage(url)
+        binding.stickerIv.loadImage(url)
     }
 
     private fun addSticker() = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         val request = try {
             val uri = url.toUri()
             val mimeType = getMimeType(uri, true)
             if (mimeType?.isStickerSupport() != true) {
-                handleBack(R.string.sticker_add_invalid_format)
+                handleBack(R.string.Invalid_sticker_format)
                 return@launch
             }
             getStickerAddRequest(mimeType, uri)
         } catch (e: Exception) {
-            handleBack(R.string.sticker_add_failed)
+            handleBack(R.string.Add_sticker_failed)
             null
         } ?: return@launch
 
@@ -160,7 +170,7 @@ class StickerAddFragment : BaseFragment() {
         if (r.isSuccess) {
             doAfterStickerAdded(r)
         } else {
-            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription, getString(R.string.error_image))
+            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription, getString(R.string.File_error))
             handleBack()
         }
     }
@@ -177,36 +187,36 @@ class StickerAddFragment : BaseFragment() {
                 override fun onLoadFailed(
                     e: GlideException?,
                     model: Any?,
-                    target: Target<Drawable>?,
-                    isFirstResource: Boolean
+                    target: Target<Drawable>,
+                    isFirstResource: Boolean,
                 ): Boolean {
-                    handleBack(R.string.add_success)
+                    handleBack(R.string.Add_success)
                     return true
                 }
 
                 override fun onResourceReady(
-                    resource: Drawable?,
-                    model: Any?,
+                    resource: Drawable,
+                    model: Any,
                     target: Target<Drawable>?,
-                    dataSource: DataSource?,
-                    isFirstResource: Boolean
+                    dataSource: DataSource,
+                    isFirstResource: Boolean,
                 ): Boolean {
-                    handleBack(R.string.add_success)
+                    handleBack(R.string.Add_success)
                     return true
                 }
-            }
+            },
         ).submit(r.data!!.assetWidth, r.data!!.assetHeight)
     }
 
     private suspend fun getStickerAddRequest(
         mimeType: String?,
-        uri: Uri
+        uri: Uri,
     ): StickerAddRequest? = withContext(Dispatchers.IO) {
-        return@withContext if (mimeType == MimeType.GIF.toString() || mimeType == MimeType.WEBP.toString()) {
+        return@withContext if (mimeType == MimeType.GIF.toString()) {
             val path = uri.getFilePath(requireContext())
             if (path == null) {
                 withContext(Dispatchers.Main) {
-                    handleBack(R.string.sticker_add_failed)
+                    handleBack(R.string.Add_sticker_failed)
                 }
                 return@withContext null
             }
@@ -215,12 +225,24 @@ class StickerAddFragment : BaseFragment() {
                 handleBack(R.string.sticker_add_invalid_size)
                 return@withContext null
             }
+
             val byteArray = if (mimeType == MimeType.GIF.toString()) {
-                Glide.with(MixinApplication.appContext)
-                    .`as`(ByteArray::class.java)
+                val gifDrawable = Glide.with(MixinApplication.appContext)
+                    .asGif()
                     .load(url)
                     .submit()
                     .get(10, TimeUnit.SECONDS)
+                val w = gifDrawable.intrinsicWidth
+                val h = gifDrawable.intrinsicHeight
+                if (min(w, h) >= MIN_SIZE && max(w, h) <= MAX_SIZE) {
+                    val buffer = gifDrawable.buffer
+                    val bytes = ByteArray(buffer.capacity())
+                    (buffer.duplicate().clear() as ByteBuffer).get(bytes)
+                    bytes
+                } else {
+                    handleBack(R.string.sticker_add_invalid_size)
+                    return@withContext null
+                }
             } else {
                 Glide.with(MixinApplication.appContext)
                     .asFile()
@@ -236,26 +258,32 @@ class StickerAddFragment : BaseFragment() {
                 .load(url)
                 .submit()
                 .get(10, TimeUnit.SECONDS)
-            if (bitmap.width < MIN_SIZE || bitmap.height < MIN_SIZE) {
+
+            val ratio = bitmap.width / bitmap.height.toFloat()
+            if (ratio in RATIO_MIN_MAX..RATIO_MAX_MIN) {
+                if (min(bitmap.width, bitmap.height) < MIN_SIZE) {
+                    bitmap = bitmap.scaleUp(MIN_SIZE)
+                } else if (max(bitmap.width, bitmap.height) > MAX_SIZE) {
+                    bitmap = bitmap.scaleDown(MAX_SIZE)
+                }
+                StickerAddRequest(
+                    Base64.encodeToString(
+                        if (mimeType == MimeType.PNG.toString()) bitmap.toPNGBytes() else bitmap.toBytes(),
+                        Base64.NO_WRAP,
+                    ),
+                )
+            } else {
                 handleBack(R.string.sticker_add_invalid_size)
                 return@withContext null
             }
-
-            bitmap = bitmap.maxSizeScale(MAX_SIZE, MAX_SIZE)
-            StickerAddRequest(
-                Base64.encodeToString(
-                    if (mimeType == MimeType.PNG.toString()) bitmap.toPNGBytes() else bitmap.toBytes(),
-                    Base64.NO_WRAP
-                )
-            )
         }
     }
 
     private fun handleBack(toastRes: Int? = null) = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         dialog?.dismiss()
-        toastRes?.let { requireContext().toast(it) }
+        toastRes?.let { toast(it) }
         if (fromManagement) {
             parentFragmentManager.popBackStackImmediate()
         } else {

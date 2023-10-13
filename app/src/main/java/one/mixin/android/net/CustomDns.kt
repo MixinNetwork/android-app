@@ -13,15 +13,18 @@ import java.net.InetAddress
 import java.net.UnknownHostException
 import kotlin.jvm.Throws
 
-class CustomDns(private val dnsHostname: String) : Dns {
+class CustomDns(val dnsHostname: String) : Dns {
 
     override fun lookup(hostname: String): List<InetAddress> {
         val resolver: Resolver = SimpleResolver(dnsHostname)
         val lookup: Lookup = doLookup(hostname)
         lookup.setResolver(resolver)
-        val records: Array<Record> = try {
+        val records: Array<Record>? = try {
             lookup.run()
         } catch (e: NullPointerException) {
+            throw UnknownHostException(hostname)
+        }
+        if (records.isNullOrEmpty()) {
             throw UnknownHostException(hostname)
         }
         val ipAddresses = records.filter { it.type == Type.A || it.type == Type.AAAA }
@@ -30,7 +33,7 @@ class CustomDns(private val dnsHostname: String) : Dns {
             }.map {
                 val kFunction = ARecord::getAddress
                 kFunction(it)
-            }
+            }.filter { it.hostAddress != "127.0.0.1" && it.hostAddress != "0.0.0.0" }
         if (ipAddresses.isNotEmpty()) {
             return ipAddresses
         }

@@ -13,7 +13,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:need_divider="false"
         app:rightIcon="@drawable/ic_more"
-        app:titleText="@string/wallet_transactions_title"/>
+        app:titleText="@string/Transactions"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/transactions_rv"

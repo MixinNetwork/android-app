@@ -1,10 +1,11 @@
 package one.mixin.android.ui.conversation.location
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_location.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemLocationBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
@@ -15,30 +16,29 @@ import one.mixin.android.websocket.LocationPayload
 
 class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerView.Adapter<VenueHolder>() {
     var venues: List<Venue>? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()
         }
 
     var keyword: String? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()
         }
 
-    fun setMark(index: Float = -1f) {
-        if (index < 0) {
+    fun setMark(latitude: Double? = null, longitude: Double? = null) {
+        if (latitude == null || longitude == null) {
             currentVenues = null
             return
         }
-        index.toInt().let { i ->
-            if (i < venues?.size!!) {
-                currentVenues = venues!![i]
-            }
-        }
+        currentVenues = venues?.find { v -> v.location.lat == latitude && v.location.lng == longitude }
     }
 
     private var currentVenues: Venue? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -62,7 +62,7 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
             0
         } else {
             1
-        }
+        },
     )
 
     override fun getItemViewType(position: Int): Int {
@@ -91,31 +91,34 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
 
     override fun onBindViewHolder(holder: VenueHolder, position: Int) {
         val venue = getItem(position)
+        val binding = ItemLocationBinding.bind(holder.itemView)
         if (getItemViewType(position) == 1) {
-            holder.itemView.title.setText(R.string.location_send_current_location)
-            holder.itemView.sub_title.text = venue?.name
-            holder.itemView.location_icon.setBackgroundResource(R.drawable.ic_current_location)
-            holder.itemView.location_icon.setImageDrawable(null)
-            holder.itemView.location_icon.imageTintList = null
+            binding.title.setText(R.string.Send_your_Current_Location)
+            binding.subTitle.text = venue?.name
+            binding.locationIcon.setBackgroundResource(R.drawable.ic_current_location)
+            binding.locationIcon.setImageDrawable(null)
+            binding.locationIcon.imageTintList = null
             holder.itemView.setOnClickListener {
                 venue ?: return@setOnClickListener
-                LocationPayload(
-                    venue.location.lat,
-                    venue.location.lng,
-                    venue.name,
-                    venue.location.address,
-                    venue.getVenueType()
+                callback(
+                    LocationPayload(
+                        venue.location.lat,
+                        venue.location.lng,
+                        venue.name,
+                        venue.location.address,
+                        venue.getVenueType(),
+                    ),
                 )
             }
             return
         }
-        holder.itemView.title.text = venue?.name
+        binding.title.text = venue?.name
         if (keyword != null) {
-            holder.itemView.title.highLight(keyword)
+            binding.title.highLight(keyword)
         }
-        holder.itemView.sub_title.text = venue?.location?.address ?: venue?.location?.formattedAddress?.get(0)
-        holder.itemView.location_icon.loadImage(venue?.getImageUrl())
-        holder.itemView.location_icon.setBackgroundResource(R.drawable.bg_menu)
+        binding.subTitle.text = venue?.location?.address ?: venue?.location?.formattedAddress?.get(0)
+        binding.locationIcon.loadImage(venue?.getImageUrl())
+        binding.locationIcon.setBackgroundResource(R.drawable.bg_menu)
         holder.itemView.setOnClickListener {
             venue ?: return@setOnClickListener
             callback(
@@ -124,8 +127,8 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
                     venue.location.lng,
                     venue.name,
                     venue.location.address ?: venue.location.formattedAddress?.get(0),
-                    venue.getVenueType()
-                )
+                    venue.getVenueType(),
+                ),
             )
         }
     }

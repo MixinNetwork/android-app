@@ -6,23 +6,24 @@ import android.view.LayoutInflater
 import android.widget.Checkable
 import android.widget.FrameLayout
 import androidx.annotation.StringRes
-import kotlinx.android.synthetic.main.view_radio.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewRadioBinding
 
 class RadioButton(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs), Checkable {
 
     private var checked: Boolean = false
+    private val binding = ViewRadioBinding.inflate(LayoutInflater.from(context), this, true)
 
     init {
-        LayoutInflater.from(context).inflate(R.layout.view_radio, this, true)
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.RadioButton)
-        title.text = typedArray.getText(R.styleable.RadioButton_android_text)
+
+        binding.title.text = typedArray.getText(R.styleable.RadioButton_android_text)
         checked = typedArray.getBoolean(R.styleable.RadioButton_android_checked, false)
         typedArray.recycle()
         if (checked) {
-            check_iv.setImageResource(R.drawable.ic_check_blue_24dp)
+            binding.checkIv.setImageResource(R.drawable.ic_check_blue_24dp)
         } else {
-            check_iv.setImageDrawable(null)
+            binding.checkIv.setImageDrawable(null)
         }
         setOnClickListener {
             if (!isChecked) {
@@ -32,11 +33,11 @@ class RadioButton(context: Context, attrs: AttributeSet) : FrameLayout(context, 
     }
 
     fun setText(text: String) {
-        title.text = text
+        binding.title.text = text
     }
 
     fun setText(@StringRes resId: Int) {
-        title.setText(resId)
+        binding.title.setText(resId)
     }
 
     override fun isChecked(): Boolean {
@@ -53,9 +54,9 @@ class RadioButton(context: Context, attrs: AttributeSet) : FrameLayout(context, 
         }
         this.checked = checked
         if (checked) {
-            check_iv.setImageResource(R.drawable.ic_check_blue_24dp)
+            binding.checkIv.setImageResource(R.drawable.ic_check_blue_24dp)
         } else {
-            check_iv.setImageDrawable(null)
+            binding.checkIv.setImageDrawable(null)
         }
     }
 

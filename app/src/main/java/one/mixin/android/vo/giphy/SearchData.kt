@@ -10,5 +10,5 @@ class SearchData(
     val meta: Meta,
 
     @SerializedName("pagination")
-    val pagination: Pagination
+    val pagination: Pagination,
 )

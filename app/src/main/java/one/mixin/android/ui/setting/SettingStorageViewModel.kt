@@ -1,65 +1,89 @@
 package one.mixin.android.ui.setting
 
-import androidx.hilt.lifecycle.ViewModelInject
+import android.content.Context
 import androidx.lifecycle.ViewModel
-import io.reactivex.Flowable
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Storage.AUDIO
 import one.mixin.android.Constants.Storage.DATA
 import one.mixin.android.Constants.Storage.IMAGE
+import one.mixin.android.Constants.Storage.TRANSCRIPT
 import one.mixin.android.Constants.Storage.VIDEO
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.generateConversationPath
+import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getConversationAudioPath
 import one.mixin.android.extension.getConversationDocumentPath
 import one.mixin.android.extension.getConversationImagePath
 import one.mixin.android.extension.getConversationMediaSize
 import one.mixin.android.extension.getConversationVideoPath
+import one.mixin.android.extension.getDocumentPath
+import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getStorageUsageByConversationAndType
+import one.mixin.android.extension.getVideoPath
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.ui.common.message.CleanMessageHelper
+import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.StorageUsage
+import java.io.File
+import javax.inject.Inject
 
-class SettingStorageViewModel @ViewModelInject
+@HiltViewModel
+class SettingStorageViewModel
+@Inject
 internal constructor(
-    private val conversationRepository: ConversationRepository
+    private val conversationRepository: ConversationRepository,
+    private val cleanMessageHelper: CleanMessageHelper,
+    private val jobManager: MixinJobManager,
 ) : ViewModel() {
 
-    fun getStorageUsage(conversationId: String): Single<List<StorageUsage>> =
-        Single.just(conversationId).map { cid ->
-            val result = mutableListOf<StorageUsage>()
-            val context = MixinApplication.appContext
-            context.getStorageUsageByConversationAndType(cid, IMAGE)?.apply {
-                result.add(this)
+    suspend fun getStorageUsage(context: Context, conversationId: String): List<StorageUsage> = withContext(Dispatchers.IO) {
+        val result = mutableListOf<StorageUsage>()
+        context.getStorageUsageByConversationAndType(conversationId, IMAGE)?.apply {
+            result.add(this)
+        }
+        context.getStorageUsageByConversationAndType(conversationId, VIDEO)?.apply {
+            result.add(this)
+        }
+        context.getStorageUsageByConversationAndType(conversationId, AUDIO)?.apply {
+            result.add(this)
+        }
+        context.getStorageUsageByConversationAndType(conversationId, DATA)?.apply {
+            result.add(this)
+        }
+        conversationRepository.getMediaSizeTotalById(conversationId)?.apply {
+            if (this > 0) {
+                result.add(StorageUsage(conversationId, TRANSCRIPT, conversationRepository.countTranscriptById(conversationId), this / 1024))
             }
-            context.getStorageUsageByConversationAndType(cid, VIDEO)?.apply {
-                result.add(this)
-            }
-            context.getStorageUsageByConversationAndType(cid, AUDIO)?.apply {
-                result.add(this)
-            }
-            context.getStorageUsageByConversationAndType(cid, DATA)?.apply {
-                result.add(this)
-            }
-            result.toList()
-        }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        }
+        result.toList()
+    }
 
-    fun getConversationStorageUsage(): Flowable<List<ConversationStorageUsage>> = conversationRepository.getConversationStorageUsage()
-        .map { list ->
-            list.asSequence().map { item ->
-                val context = MixinApplication.appContext
-                item.mediaSize = context.getConversationMediaSize(item.conversationId)
-                item
-            }.filter { conversationStorageUsage ->
-                conversationStorageUsage.mediaSize != 0L && conversationStorageUsage.conversationId.isNotEmpty()
-            }.sortedByDescending { conversationStorageUsage ->
-                conversationStorageUsage.mediaSize
-            }.toList()
-        }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+    suspend fun getConversationStorageUsage(context: Context): List<ConversationStorageUsage> =
+        withContext(Dispatchers.IO) {
+            conversationRepository.getConversationStorageUsage()
+                .map { item ->
+                    async(Dispatchers.IO) {
+                        item.apply { mediaSize = context.getConversationMediaSize(conversationId) + (conversationRepository.getMediaSizeTotalById(conversationId) ?: 0L) / 1024 }
+                    }
+                }.awaitAll()
+                .filter { conversationStorageUsage ->
+                    conversationStorageUsage.mediaSize != 0L && conversationStorageUsage.conversationId.isNotEmpty()
+                }.sortedByDescending { conversationStorageUsage ->
+                    conversationStorageUsage.mediaSize
+                }.toList()
+        }
 
     fun clear(conversationId: String, type: String) {
         if (MixinApplication.appContext.defaultSharedPreferences.getBoolean(Constants.Account.PREF_ATTACHMENT, false)) {
@@ -69,7 +93,8 @@ internal constructor(
                     conversationRepository.deleteMediaMessageByConversationAndCategory(
                         conversationId,
                         MessageCategory.SIGNAL_IMAGE.name,
-                        MessageCategory.PLAIN_IMAGE.name
+                        MessageCategory.PLAIN_IMAGE.name,
+                        MessageCategory.ENCRYPTED_IMAGE.name,
                     )
                 }
                 VIDEO -> {
@@ -77,7 +102,8 @@ internal constructor(
                     conversationRepository.deleteMediaMessageByConversationAndCategory(
                         conversationId,
                         MessageCategory.SIGNAL_VIDEO.name,
-                        MessageCategory.PLAIN_VIDEO.name
+                        MessageCategory.PLAIN_VIDEO.name,
+                        MessageCategory.ENCRYPTED_VIDEO.name,
                     )
                 }
                 AUDIO -> {
@@ -85,7 +111,8 @@ internal constructor(
                     conversationRepository.deleteMediaMessageByConversationAndCategory(
                         conversationId,
                         MessageCategory.SIGNAL_AUDIO.name,
-                        MessageCategory.PLAIN_AUDIO.name
+                        MessageCategory.PLAIN_AUDIO.name,
+                        MessageCategory.ENCRYPTED_AUDIO.name,
                     )
                 }
                 DATA -> {
@@ -93,26 +120,58 @@ internal constructor(
                     conversationRepository.deleteMediaMessageByConversationAndCategory(
                         conversationId,
                         MessageCategory.SIGNAL_DATA.name,
-                        MessageCategory.PLAIN_DATA.name
+                        MessageCategory.PLAIN_DATA.name,
+                        MessageCategory.ENCRYPTED_DATA.name,
+                    )
+                }
+                TRANSCRIPT -> {
+                    conversationRepository.deleteMediaMessageByConversationAndCategory(
+                        conversationId,
+                        MessageCategory.SIGNAL_TRANSCRIPT.name,
+                        MessageCategory.PLAIN_TRANSCRIPT.name,
+                        MessageCategory.ENCRYPTED_TRANSCRIPT.name,
                     )
                 }
             }
         } else {
             when (type) {
-                IMAGE -> clear(conversationId, MessageCategory.SIGNAL_IMAGE.name, MessageCategory.PLAIN_IMAGE.name)
-                VIDEO -> clear(conversationId, MessageCategory.SIGNAL_VIDEO.name, MessageCategory.PLAIN_VIDEO.name)
-                AUDIO -> clear(conversationId, MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name)
-                DATA -> clear(conversationId, MessageCategory.SIGNAL_DATA.name, MessageCategory.PLAIN_DATA.name)
+                IMAGE -> clear(conversationId, MessageCategory.SIGNAL_IMAGE.name, MessageCategory.PLAIN_IMAGE.name, MessageCategory.ENCRYPTED_IMAGE.name)
+                VIDEO -> clear(conversationId, MessageCategory.SIGNAL_VIDEO.name, MessageCategory.PLAIN_VIDEO.name, MessageCategory.ENCRYPTED_VIDEO.name)
+                AUDIO -> clear(conversationId, MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name, MessageCategory.ENCRYPTED_AUDIO.name)
+                DATA -> clear(conversationId, MessageCategory.SIGNAL_DATA.name, MessageCategory.PLAIN_DATA.name, MessageCategory.ENCRYPTED_DATA.name)
+                TRANSCRIPT -> clear(conversationId, MessageCategory.SIGNAL_TRANSCRIPT.name, MessageCategory.PLAIN_TRANSCRIPT.name, MessageCategory.ENCRYPTED_TRANSCRIPT.name)
             }
         }
+        conversationRepository.refreshConversationById(conversationId)
     }
 
-    private fun clear(conversationId: String, signalCategory: String, plainCategory: String) {
-        conversationRepository.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory)
+    private fun clear(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String) {
+        if (signalCategory == MessageCategory.SIGNAL_TRANSCRIPT.name && plainCategory == MessageCategory.PLAIN_TRANSCRIPT.name && encryptedCategory == MessageCategory.ENCRYPTED_TRANSCRIPT.name) {
+            viewModelScope.launch(SINGLE_DB_THREAD) {
+                val ids = conversationRepository.findTranscriptIdByConversationId(conversationId)
+                if (ids.isEmpty()) {
+                    return@launch
+                }
+                jobManager.addJobInBackground(TranscriptDeleteJob(ids))
+            }
+            return
+        }
+        conversationRepository.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory)
             ?.let { list ->
-                list.forEach { item ->
-                    conversationRepository.deleteMessage(item.messageId, item.mediaUrl)
+                viewModelScope.launch(SINGLE_DB_THREAD) {
+                    cleanMessageHelper.deleteMessageMinimals(conversationId, list)
                 }
             }
+        categoryPath(MixinApplication.appContext, signalCategory, conversationId)?.deleteRecursively()
+    }
+
+    private fun categoryPath(context: Context, category: String, conversationId: String): File? {
+        return when {
+            category.endsWith("_IMAGE") -> context.getImagePath().generateConversationPath(conversationId)
+            category.endsWith("_VIDEO") -> context.getVideoPath().generateConversationPath(conversationId)
+            category.endsWith("_AUDIO") -> context.getAudioPath().generateConversationPath(conversationId)
+            category.endsWith("_DATA") -> context.getDocumentPath().generateConversationPath(conversationId)
+            else -> null
+        }
     }
 }

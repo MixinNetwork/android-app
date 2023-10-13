@@ -1,26 +1,33 @@
 package one.mixin.android.ui.media
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import androidx.appcompat.view.ContextThemeWrapper
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_shared_media.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentSharedMediaBinding
+import one.mixin.android.databinding.ViewSharedMediaBinding
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity
+import one.mixin.android.ui.media.SharedMediaActivity.Companion.FROM_CHAT
+import one.mixin.android.util.viewBinding
+import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
-class SharedMediaFragment : BaseFragment() {
+class SharedMediaFragment : BaseFragment(R.layout.fragment_shared_media) {
     companion object {
         const val TAG = "SharedMediaFragment"
 
-        fun newInstance(conversationId: String) = SharedMediaFragment().withArgs {
+        fun newInstance(conversationId: String, fromChat: Boolean) = SharedMediaFragment().withArgs {
             putString(ARGS_CONVERSATION_ID, conversationId)
+            putBoolean(FROM_CHAT, fromChat)
         }
     }
 
@@ -28,36 +35,64 @@ class SharedMediaFragment : BaseFragment() {
         requireArguments().getString(ARGS_CONVERSATION_ID)!!
     }
 
-    private val adapter: SharedMediaAdapter by lazy {
-        SharedMediaAdapter(requireActivity(), conversationId)
+    private val fromChat: Boolean by lazy {
+        requireArguments().getBoolean(FROM_CHAT, false)
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_shared_media, container, false)
+    private val adapter: SharedMediaAdapter by lazy {
+        SharedMediaAdapter(this, conversationId) { messageId ->
+            val builder = BottomSheet.Builder(requireContext())
+            val view = View.inflate(
+                ContextThemeWrapper(requireContext(), R.style.Custom),
+                R.layout.view_shared_media,
+                null,
+            )
+            val binding = ViewSharedMediaBinding.bind(view)
+            builder.setCustomView(view)
+            val bottomSheet = builder.create()
+            binding.cancel.setOnClickListener {
+                bottomSheet.dismiss()
+            }
+            binding.showInChat.setOnClickListener {
+                if (fromChat) {
+                    requireActivity().setResult(
+                        Activity.RESULT_OK,
+                        Intent().apply {
+                            putExtra(ChatHistoryActivity.JUMP_ID, messageId)
+                        },
+                    )
+                } else {
+                    ConversationActivity.showAndClear(requireActivity(), conversationId, messageId = messageId)
+                }
+                requireActivity().finish()
+                bottomSheet.dismiss()
+            }
+            bottomSheet.show()
+        }
+    }
+
+    private val binding by viewBinding(FragmentSharedMediaBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        view_pager.adapter = adapter
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.viewPager.adapter = adapter
         TabLayoutMediator(
-            shared_tl,
-            view_pager
+            binding.sharedTl,
+            binding.viewPager,
         ) { tab, position ->
             tab.text = getString(
                 when (position) {
-                    0 -> R.string.media
-                    1 -> R.string.audio
-                    2 -> R.string.post
-                    3 -> R.string.links
-                    else -> R.string.files
-                }
+                    0 -> R.string.Media
+                    1 -> R.string.Audio
+                    2 -> R.string.Post
+                    3 -> R.string.Links
+                    else -> R.string.Files
+                },
             )
-            view_pager.setCurrentItem(tab.position, true)
+            binding.viewPager.setCurrentItem(tab.position, true)
         }.attach()
-        shared_tl.tabMode = TabLayout.MODE_FIXED
-        view_pager.currentItem = 0
+        binding.sharedTl.tabMode = TabLayout.MODE_FIXED
+        binding.viewPager.currentItem = 0
     }
 }

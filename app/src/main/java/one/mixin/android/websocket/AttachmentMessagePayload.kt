@@ -24,7 +24,12 @@ data class AttachmentMessagePayload(
     @SerializedName("duration")
     var duration: Long? = null,
     @SerializedName("waveform")
-    var waveform: ByteArray? = null
+    var waveform: ByteArray? = null,
+    @SerializedName("caption")
+    var caption: String? = null,
+    @SerializedName("created_at")
+    var createdAt: String? = null,
+    val shareable: Boolean? = null,
 )
 
 fun AttachmentMessagePayload.invalidData(): Boolean {

@@ -3,16 +3,16 @@ package one.mixin.android.widget
 import android.content.Context
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
+import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.RxBus
-import kotlin.jvm.JvmOverloads
 
 class ProgressTextView @JvmOverloads
 constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
 ) : AppCompatTextView(context, attrs, defStyleAttr) {
 
     private var disposable: Disposable? = null
@@ -27,6 +27,7 @@ constructor(
         if (disposable == null) {
             disposable = RxBus.listen(ConvertEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(this)
                 .subscribe { event ->
                     if (mId == event.id) {
                         progress = event.progress

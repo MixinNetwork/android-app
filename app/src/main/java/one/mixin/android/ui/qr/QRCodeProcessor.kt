@@ -1,10 +1,10 @@
 package one.mixin.android.ui.qr
 
 import android.graphics.Bitmap
-import com.google.mlkit.vision.barcode.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode.FORMAT_QR_CODE
 import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,8 +16,8 @@ import one.mixin.android.extension.decodeQR
 class QRCodeProcessor {
     private val scanner: BarcodeScanner = BarcodeScanning.getClient(
         BarcodeScannerOptions.Builder()
-            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
-            .build()
+            .setBarcodeFormats(FORMAT_QR_CODE)
+            .build(),
     )
 
     fun detect(
@@ -25,7 +25,7 @@ class QRCodeProcessor {
         bitmap: Bitmap,
         onSuccess: (String) -> Unit,
         onFailure: (Exception?) -> Unit,
-        onComplete: (() -> Unit)? = null
+        onComplete: (() -> Unit)? = null,
     ) = coroutineScope.launch {
         try {
             var url: String? = null
@@ -55,7 +55,7 @@ class QRCodeProcessor {
         bitmap: Bitmap,
         onSuccess: (String) -> Unit,
         onFailure: (Exception?) -> Unit,
-        onComplete: (() -> Unit)? = null
+        onComplete: (() -> Unit)? = null,
     ) = coroutineScope.launch {
         val url = withContext(Dispatchers.IO) {
             bitmap.decodeQR()

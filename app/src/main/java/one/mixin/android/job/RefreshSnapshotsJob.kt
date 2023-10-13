@@ -9,7 +9,7 @@ import one.mixin.android.vo.Snapshot
 class RefreshSnapshotsJob(
     private val assetId: String? = null,
     private val offset: String? = null,
-    private val opponent: String? = null
+    private val opponent: String? = null,
 ) : BaseJob(Params(PRIORITY_BACKGROUND).addTags(GROUP).requireNetwork()) {
 
     companion object {

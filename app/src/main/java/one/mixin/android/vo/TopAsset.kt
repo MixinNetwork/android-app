@@ -6,7 +6,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -47,5 +47,9 @@ data class TopAsset(
     @ColumnInfo(name = "change_btc")
     val changeBtc: String,
     @ColumnInfo(name = "confirmations")
-    val confirmations: Int
+    val confirmations: Int,
 ) : Parcelable
+
+fun TopAsset.toPriceAndChange(): PriceAndChange {
+    return PriceAndChange(assetId, priceBtc, priceUsd, changeUsd, changeBtc)
+}

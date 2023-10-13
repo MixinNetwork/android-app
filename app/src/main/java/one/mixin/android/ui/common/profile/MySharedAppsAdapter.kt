@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemSharedAppBinding
+import one.mixin.android.databinding.ItemSharedLocalAppBinding
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.common.profile.holder.FooterHolder
 import one.mixin.android.ui.common.profile.holder.ItemViewHolder
@@ -14,11 +16,12 @@ import one.mixin.android.vo.App
 
 class MySharedAppsAdapter(
     private val onAddSharedApp: (app: App) -> Unit,
-    private val onRemoveSharedApp: (app: App) -> Unit
+    private val onRemoveSharedApp: (app: App) -> Unit,
 ) : RecyclerView.Adapter<ItemViewHolder>() {
     private var favoriteApps: List<App>? = null
     private var unFavoriteApps: List<App>? = null
 
+    @SuppressLint("NotifyDataSetChanged")
     fun setData(favoriteApps: List<App>, unFavoriteApps: List<App>) {
         this.favoriteApps = favoriteApps
         this.unFavoriteApps = unFavoriteApps
@@ -27,20 +30,14 @@ class MySharedAppsAdapter(
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
-        viewType: Int
+        viewType: Int,
     ): ItemViewHolder {
         return when (viewType) {
             0 -> {
-                val view =
-                    LayoutInflater.from(parent.context)
-                        .inflate(R.layout.item_shared_app, parent, false)
-                SharedAppHolder(view)
+                SharedAppHolder(ItemSharedAppBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             1 -> {
-                val view =
-                    LayoutInflater.from(parent.context)
-                        .inflate(R.layout.item_shared_local_app, parent, false)
-                LocalAppHolder(view)
+                LocalAppHolder(ItemSharedLocalAppBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             else -> {
                 val view =
@@ -54,7 +51,7 @@ class MySharedAppsAdapter(
     @SuppressLint("ClickableViewAccessibility")
     override fun onBindViewHolder(
         holder: ItemViewHolder,
-        position: Int
+        position: Int,
     ) {
         if (getItemViewType(position) == 0) {
             holder.bind(getItem(position), onRemoveSharedApp)

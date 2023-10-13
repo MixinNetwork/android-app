@@ -1,12 +1,12 @@
 package one.mixin.android.ui.media
 
 import android.net.Uri
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.PAGE_SIZE
@@ -16,28 +16,31 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.repository.ConversationRepository
-import one.mixin.android.ui.media.pager.MediaPagerActivity
+import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isVideo
 import org.threeten.bp.ZonedDateTime
+import javax.inject.Inject
 
-class SharedMediaViewModel @ViewModelInject constructor(
+@HiltViewModel
+class SharedMediaViewModel @Inject constructor(
     val conversationRepository: ConversationRepository,
-    private val jobManager: MixinJobManager
+    private val jobManager: MixinJobManager,
 ) : ViewModel() {
 
     fun getMediaMessagesExcludeLive(conversationId: String): LiveData<PagedList<MessageItem>> {
         return LivePagedListBuilder(
             conversationRepository.getMediaMessagesExcludeLive(conversationId),
             PagedList.Config.Builder()
-                .setPrefetchDistance(MediaPagerActivity.PAGE_SIZE * 2)
-                .setPageSize(MediaPagerActivity.PAGE_SIZE)
+                .setPageSize(MediaFragment.PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         )
             .build()
     }
@@ -45,7 +48,7 @@ class SharedMediaViewModel @ViewModelInject constructor(
     fun getAudioMessages(conversationId: String): LiveData<PagedList<MessageItem>> {
         val dataSource = conversationRepository.getAudioMessages(conversationId)
         val sortedDataSource = dataSource.mapByPage { list ->
-            list.sortWith(
+            list.toMutableList().sortWith(
                 Comparator<MessageItem> { o1, o2 ->
                     if (o1 == null || o2 == null) return@Comparator 0
 
@@ -65,7 +68,7 @@ class SharedMediaViewModel @ViewModelInject constructor(
                     } else {
                         return@Comparator year2 - year1
                     }
-                }
+                },
             )
             return@mapByPage list
         }
@@ -75,7 +78,7 @@ class SharedMediaViewModel @ViewModelInject constructor(
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         )
             .build()
     }
@@ -87,7 +90,7 @@ class SharedMediaViewModel @ViewModelInject constructor(
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         )
             .build()
     }
@@ -99,7 +102,7 @@ class SharedMediaViewModel @ViewModelInject constructor(
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         )
             .build()
     }
@@ -111,7 +114,7 @@ class SharedMediaViewModel @ViewModelInject constructor(
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         )
             .build()
     }
@@ -131,26 +134,32 @@ class SharedMediaViewModel @ViewModelInject constructor(
                             it.conversationId,
                             it.userId,
                             Uri.parse(it.mediaUrl),
-                            it.category.startsWith("PLAIN"),
-                            it.id,
-                            it.createdAt
-                        )
+                            0f,
+                            1f,
+                            when {
+                                it.isSignal() -> EncryptCategory.SIGNAL
+                                it.isEncrypted() -> EncryptCategory.ENCRYPTED
+                                else -> EncryptCategory.PLAIN
+                            },
+                            it.messageId,
+                            it.createdAt,
+                        ),
                     )
                 } catch (e: NullPointerException) {
                     onError.invoke()
                 }
             } else if (it.isImage() && it.mediaSize != null && it.mediaSize == 0L) { // un-downloaded GIPHY
-                val category =
-                    if (it.category.startsWith("PLAIN")) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+                val category = when {
+                    it.isSignal() -> MessageCategory.SIGNAL_IMAGE
+                    it.isEncrypted() -> MessageCategory.ENCRYPTED_IMAGE
+                    else -> MessageCategory.PLAIN_IMAGE
+                }.name
                 try {
                     jobManager.addJobInBackground(
                         SendGiphyJob(
-                            it.conversationId, it.userId, it.mediaUrl!!,
-                            it.mediaWidth!!, it.mediaHeight!!, category, it.id,
-                            it.thumbImage
-                                ?: "",
-                            it.createdAt
-                        )
+                            it.conversationId, it.userId, it.mediaUrl!!, it.mediaWidth!!, it.mediaHeight!!,
+                            it.mediaSize, category, it.messageId, it.thumbImage ?: "", it.createdAt,
+                        ),
                     )
                 } catch (e: NullPointerException) {
                     onError.invoke()
@@ -161,10 +170,10 @@ class SharedMediaViewModel @ViewModelInject constructor(
         }
     }
 
-    fun cancel(id: String) = viewModelScope.launch(Dispatchers.IO) {
+    fun cancel(id: String, conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
         jobManager.cancelJobByMixinJobId(id) {
             viewModelScope.launch {
-                conversationRepository.updateMediaStatusSuspend(MediaStatus.CANCELED.name, id)
+                conversationRepository.updateMediaStatusSuspend(MediaStatus.CANCELED.name, id, conversationId)
             }
         }
     }
@@ -172,13 +181,13 @@ class SharedMediaViewModel @ViewModelInject constructor(
     suspend fun indexMediaMessages(
         conversationId: String,
         messageId: String,
-        excludeLive: Boolean
+        excludeLive: Boolean,
     ): Int = conversationRepository.indexMediaMessages(conversationId, messageId, excludeLive)
 
     fun getMediaMessages(
         conversationId: String,
         index: Int,
-        excludeLive: Boolean
+        excludeLive: Boolean,
     ) = conversationRepository.getMediaMessages(conversationId, index, excludeLive)
 
     suspend fun getMediaMessage(conversationId: String, messageId: String) =

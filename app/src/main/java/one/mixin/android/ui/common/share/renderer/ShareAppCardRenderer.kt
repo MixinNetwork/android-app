@@ -1,36 +1,36 @@
 package one.mixin.android.ui.common.share.renderer
 
 import android.content.Context
-import android.view.Gravity
 import android.view.LayoutInflater
-import android.view.View
-import android.widget.LinearLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.item_chat_action_card.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatActionCardBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadRoundImage
 import one.mixin.android.vo.AppCardData
 
-open class ShareAppCardRenderer(context: Context) : ShareMessageRenderer {
+open class ShareAppCardRenderer(context: Context) {
 
-    val contentView: View = LayoutInflater.from(context).inflate(R.layout.item_chat_action_card, null)
+    private val binding = ItemChatActionCardBinding.inflate(LayoutInflater.from(context), null, false)
+    val contentView get() = binding.root
 
     init {
-        (contentView.chat_layout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.CENTER
-        contentView.chat_name.isVisible = false
+        (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0.5f
+        binding.chatName.isVisible = false
     }
 
     fun render(actionCard: AppCardData, isNightMode: Boolean) {
-        contentView.chat_icon.loadRoundImage(actionCard.iconUrl, 4.dp, R.drawable.holder_bot)
-        contentView.chat_title.text = actionCard.title
-        contentView.chat_description.text = actionCard.description
-        contentView.chat_layout.setBackgroundResource(
+        binding.chatIcon.loadRoundImage(actionCard.iconUrl, 4.dp, R.drawable.holder_bot)
+        binding.chatTitle.text = actionCard.title
+        binding.chatDescription.text = actionCard.description
+        binding.chatTime.isVisible = false
+        binding.chatContentLayout.setBackgroundResource(
             if (!isNightMode) {
-                R.drawable.bill_bubble_me_last
+                R.drawable.chat_bubble_other
             } else {
-                R.drawable.bill_bubble_me_last_night
-            }
+                R.drawable.chat_bubble_other_night
+            },
         )
     }
 }

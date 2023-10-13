@@ -18,7 +18,6 @@ import com.google.zxing.Result
 import com.google.zxing.common.GlobalHistogramBinarizer
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.qrcode.QRCodeReader
-import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
@@ -39,19 +38,6 @@ fun Bitmap.toPNGBytes(): ByteArray {
     ByteArrayOutputStream().use { stream ->
         compress(Bitmap.CompressFormat.PNG, 100, stream)
         return stream.toByteArray()
-    }
-}
-
-fun Bitmap.saveQRCode(ctx: Context, name: String) {
-    try {
-        ByteArrayOutputStream().use { bos ->
-            compress(Bitmap.CompressFormat.PNG, 100, bos)
-            FileOutputStream(ctx.getQRCodePath(name)).use { fos ->
-                fos.write(bos.toByteArray())
-                fos.flush()
-            }
-        }
-    } catch (ignored: Exception) {
     }
 }
 
@@ -127,32 +113,29 @@ private fun decodeLuminanceSource(source: LuminanceSource): String? {
     return results[0].text
 }
 
-fun Bitmap.maxSizeScale(maxWidth: Int, maxHeight: Int): Bitmap {
-    if (maxHeight > 0 && maxWidth > 0) {
-        val width = this.width
-        val height = this.height
-        val ratioBitmap = width.toFloat() / height.toFloat()
-        val ratioMax = maxWidth.toFloat() / maxHeight.toFloat()
+fun Bitmap.scaleUp(minSize: Int): Bitmap {
+    if (minSize <= 0 || (width >= minSize && height >= minSize)) return this
 
-        var finalWidth = maxWidth
-        var finalHeight = maxHeight
-        if (ratioMax > ratioBitmap) {
-            finalWidth = (maxHeight.toFloat() * ratioBitmap).toInt()
-        } else {
-            finalHeight = (maxWidth.toFloat() / ratioBitmap).toInt()
-        }
-        return Bitmap.createScaledBitmap(this, finalWidth, finalHeight, true)
-    } else {
-        return this
-    }
+    val small = if (width > height) height else width
+    val ratio = small / minSize.toFloat()
+    return Bitmap.createScaledBitmap(this, (width / ratio).toInt(), (height / ratio).toInt(), true)
 }
 
-fun Bitmap.base64Encode(): String? {
+fun Bitmap.scaleDown(maxSize: Int): Bitmap {
+    if (maxSize <= 0 || (width <= maxSize && height <= maxSize)) return this
+
+    val large = if (width > height) width else height
+    val ratio = large / maxSize.toFloat()
+    return Bitmap.createScaledBitmap(this, (width / ratio).toInt(), (height / ratio).toInt(), true)
+}
+
+fun Bitmap.base64Encode(format: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG): String? {
     var result: String? = null
     var baos: ByteArrayOutputStream? = null
     try {
+        if (isRecycled) return null
         baos = ByteArrayOutputStream()
-        compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        compress(format, 100, baos)
         baos.flush()
         baos.close()
         val bitmapBytes = baos.toByteArray()
@@ -177,8 +160,9 @@ fun decodeBitmapFromBase64(base64Data: String): Bitmap {
     return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 }
 
+@Suppress("DEPRECATION")
 fun Bitmap.blurBitmap(
-    @IntRange(from = 0, to = 25) radius: Int
+    @IntRange(from = 0, to = 25) radius: Int,
 ): Bitmap {
     val input = Allocation.createFromBitmap(rs, this)
     val output = Allocation.createTyped(rs, input.type)
@@ -191,7 +175,10 @@ fun Bitmap.blurBitmap(
     return result
 }
 
+@Suppress("DEPRECATION")
 private lateinit var rs: RenderScript
+
+@Suppress("DEPRECATION")
 fun initRenderScript(context: Context) {
     if (!::rs.isInitialized) {
         rs = RenderScript.create(context.applicationContext)

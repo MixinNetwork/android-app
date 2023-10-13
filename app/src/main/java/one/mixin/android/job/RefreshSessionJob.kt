@@ -6,7 +6,7 @@ import one.mixin.android.vo.ParticipantSession
 
 class RefreshSessionJob(
     private val conversationId: String,
-    private val userIds: List<String>
+    private val userIds: List<String>,
 ) : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requireNetwork().persist()) {
 
     companion object {
@@ -18,7 +18,7 @@ class RefreshSessionJob(
         val response = userService.fetchSessionsSuspend(userIds)
         if (response.isSuccess) {
             val ps = response.data?.map { item ->
-                ParticipantSession(conversationId, item.userId, item.sessionId)
+                ParticipantSession(conversationId, item.userId, item.sessionId, publicKey = item.publicKey)
             }
             if (!ps.isNullOrEmpty()) {
                 participantSessionDao.insertList(ps)

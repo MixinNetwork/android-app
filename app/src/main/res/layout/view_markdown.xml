@@ -11,11 +11,11 @@
         android:layout_gravity="center"
         android:background="@drawable/bg_upper_round"
         android:drawablePadding="16dp"
-        android:foreground="?attr/selectableItemBackground"
+        android:foreground="?android:attr/selectableItemBackground"
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="@string/forward"
+        android:text="@string/Forward"
         android:textColor="?attr/text_primary" />
 
     <TextView
@@ -25,11 +25,25 @@
         android:layout_gravity="center"
         android:background="?attr/bg_white"
         android:drawablePadding="16dp"
-        android:foreground="?attr/selectableItemBackground"
+        android:foreground="?android:attr/selectableItemBackground"
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="@string/save"
+        android:text="@string/Export_Markdown"
+        android:textColor="?attr/text_primary" />
+
+    <TextView
+        android:id="@+id/pdf"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="center"
+        android:background="?attr/bg_white"
+        android:drawablePadding="16dp"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/Export_PDF"
         android:textColor="?attr/text_primary" />
 
 </LinearLayout>

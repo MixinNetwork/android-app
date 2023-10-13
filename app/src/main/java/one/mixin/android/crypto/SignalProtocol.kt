@@ -1,7 +1,6 @@
 package one.mixin.android.crypto
 
 import android.content.Context
-import android.util.Log
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.db.SessionDao
 import one.mixin.android.crypto.db.SignalDatabase
@@ -35,14 +34,14 @@ import org.whispersystems.libsignal.protocol.PreKeySignalMessage
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
 import org.whispersystems.libsignal.protocol.SignalMessage
 import org.whispersystems.libsignal.state.PreKeyBundle
-import java.lang.Exception
+import timber.log.Timber
 
 class SignalProtocol(ctx: Context) {
 
     data class ComposeMessageData(
         val keyType: Int,
         val cipher: ByteArray,
-        val resendMessageId: String? = null
+        val resendMessageId: String? = null,
     )
 
     companion object {
@@ -194,24 +193,26 @@ class SignalProtocol(ctx: Context) {
         recipientId: String,
         resendMessageId: String? = null,
         sessionId: String? = null,
-        mentionData: List<String>? = null
+        mentionData: List<String>? = null,
+        expireIn: Long? = null,
     ): BlazeMessage {
         val cipher = encryptSession(message.content!!.toByteArray(), recipientId, sessionId.getDeviceId())
         val data = encodeMessageData(ComposeMessageData(cipher.type, cipher.serialize(), resendMessageId))
         val blazeParam = BlazeMessageParam(
             message.conversationId,
             recipientId,
-            message.id,
+            message.messageId,
             message.category,
             data,
             quote_message_id = message.quoteMessageId,
             session_id = sessionId,
-            mentions = mentionData
+            mentions = mentionData,
+            expire_in = expireIn,
         )
         return createParamBlazeMessage(blazeParam)
     }
 
-    fun encryptGroupMessage(message: Message, mentionData: List<String>?): BlazeMessage {
+    fun encryptGroupMessage(message: Message, mentionData: List<String>?, isSilent: Boolean? = null, expireIn: Long? = null): BlazeMessage {
         val address = SignalProtocolAddress(message.userId, DEFAULT_DEVICE_ID)
         val senderKeyName = SenderKeyName(message.conversationId, address)
         val groupCipher = GroupCipher(senderKeyStore, senderKeyName)
@@ -219,18 +220,20 @@ class SignalProtocol(ctx: Context) {
         try {
             cipher = groupCipher.encrypt(message.content!!.toByteArray())
         } catch (e: NoSessionException) {
-            Log.e(TAG, "NoSessionException", e)
+            Timber.tag(TAG).e(e, "NoSessionException")
         }
 
         val data = encodeMessageData(ComposeMessageData(SENDERKEY_TYPE, cipher))
         val blazeParam = BlazeMessageParam(
             message.conversationId,
             null,
-            message.id,
+            message.messageId,
             message.category,
             data,
             quote_message_id = message.quoteMessageId,
-            mentions = mentionData
+            mentions = mentionData,
+            silent = isSilent,
+            expire_in = expireIn,
         )
         return createParamBlazeMessage(blazeParam)
     }

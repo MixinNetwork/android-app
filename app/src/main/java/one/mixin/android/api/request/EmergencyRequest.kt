@@ -24,10 +24,10 @@ data class EmergencyRequest(
     @SerializedName("session_secret")
     val sessionSecret: String? = null,
     @SerializedName("registration_id")
-    val registrationId: Int? = null
+    val registrationId: Int? = null,
 )
 
 enum class EmergencyPurpose {
     SESSION,
-    CONTACT
+    CONTACT,
 }

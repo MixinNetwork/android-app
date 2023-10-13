@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.circle
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -13,30 +14,30 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_conversation_circle_edit.*
-import kotlinx.android.synthetic.main.fragment_conversation_circle_edit.search_et
-import kotlinx.android.synthetic.main.fragment_group.select_rv
-import kotlinx.android.synthetic.main.fragment_group.title_view
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CircleConversationPayload
 import one.mixin.android.api.request.CircleConversationRequest
+import one.mixin.android.databinding.FragmentConversationCircleEditBinding
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardAdapter
 import one.mixin.android.ui.home.ConversationListViewModel
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.CircleConversationAction
 import one.mixin.android.vo.ConversationCircleItem
-import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
-import org.jetbrains.anko.textColor
+import one.mixin.android.vo.isContactConversation
 
+@SuppressLint("NotifyDataSetChanged")
 @AndroidEntryPoint
 class ConversationCircleEditFragment : BaseFragment() {
     companion object {
@@ -47,10 +48,10 @@ class ConversationCircleEditFragment : BaseFragment() {
         private const val CIRCLE_CONVERSATION_LIMIT = 5
 
         fun newInstance(
-            circle: ConversationCircleItem
+            circle: ConversationCircleItem,
         ) = ConversationCircleEditFragment().apply {
             arguments = bundleOf(
-                ARGS_CIRCLE to circle
+                ARGS_CIRCLE to circle,
             )
         }
     }
@@ -58,7 +59,7 @@ class ConversationCircleEditFragment : BaseFragment() {
     private val chatViewModel by viewModels<ConversationListViewModel>()
 
     private val circle: ConversationCircleItem by lazy {
-        requireArguments().getParcelable<ConversationCircleItem>(ARGS_CIRCLE)!!
+        requireArguments().getParcelableCompat(ARGS_CIRCLE, ConversationCircleItem::class.java)!!
     }
 
     private val adapter = ForwardAdapter(true)
@@ -77,22 +78,25 @@ class ConversationCircleEditFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_conversation_circle_edit, container, false)
 
+    private val binding by viewBinding(FragmentConversationCircleEditBinding::bind)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener {
+        binding.titleView.leftIb.setOnClickListener {
             parentFragmentManager.popBackStackImmediate()
         }
-        title_view.right_animator.setOnClickListener {
+        binding.titleView.rightAnimator.setOnClickListener {
             save()
         }
         updateTitleText(circle.count)
 
-        select_rv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-        select_rv.adapter = selectAdapter
-        conversation_rv.adapter = adapter
-        conversation_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        binding.selectRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        binding.selectRv.adapter = selectAdapter
+        binding.conversationRv.adapter = adapter
+        binding.conversationRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         adapter.setForwardListener(
             object : ForwardAdapter.ForwardListener {
+                @SuppressLint("NotifyDataSetChanged")
                 override fun onUserItemClick(user: User) {
                     lifecycleScope.launch {
                         if (adapter.selectItem.contains(user)) {
@@ -101,11 +105,12 @@ class ConversationCircleEditFragment : BaseFragment() {
                         } else {
                             val count = chatViewModel.getCircleConversationCount(
                                 generateConversationId(
-                                    Session.getAccountId()!!, user.userId
-                                )
+                                    Session.getAccountId()!!,
+                                    user.userId,
+                                ),
                             )
                             if (count >= CIRCLE_CONVERSATION_LIMIT) {
-                                toast(R.string.circle_limit)
+                                toast(R.string.number_reached_limit)
                                 return@launch
                             }
                             adapter.selectItem.add(user)
@@ -113,12 +118,13 @@ class ConversationCircleEditFragment : BaseFragment() {
                         }
                         adapter.notifyDataSetChanged()
                         selectAdapter.notifyDataSetChanged()
-                        select_rv.layoutManager?.scrollToPosition(selectAdapter.checkedItems.size - 1)
+                        binding.selectRv.layoutManager?.scrollToPosition(selectAdapter.checkedItems.size - 1)
                         updateTitleText(adapter.selectItem.size)
                     }
                 }
 
-                override fun onConversationItemClick(item: ConversationItem) {
+                @SuppressLint("NotifyDataSetChanged")
+                override fun onConversationClick(item: ConversationMinimal) {
                     lifecycleScope.launch {
                         if (adapter.selectItem.contains(item)) {
                             adapter.selectItem.remove(item)
@@ -126,7 +132,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                         } else {
                             val count = chatViewModel.getCircleConversationCount(item.conversationId)
                             if (count >= CIRCLE_CONVERSATION_LIMIT) {
-                                toast(R.string.circle_limit)
+                                toast(R.string.number_reached_limit)
                                 return@launch
                             }
                             adapter.selectItem.add(item)
@@ -134,26 +140,25 @@ class ConversationCircleEditFragment : BaseFragment() {
                         }
                         adapter.notifyDataSetChanged()
                         selectAdapter.notifyDataSetChanged()
-                        select_rv.layoutManager?.scrollToPosition(selectAdapter.checkedItems.size - 1)
+                        binding.selectRv.layoutManager?.scrollToPosition(selectAdapter.checkedItems.size - 1)
                         updateTitleText(adapter.selectItem.size)
                     }
                 }
-            }
+            },
         )
-        search_et.addTextChangedListener(mWatcher)
-
+        binding.searchEt.et.addTextChangedListener(mWatcher)
         loadData()
     }
 
     private fun updateTitleText(size: Int) {
         if (!hasChanged()) {
-            title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)
-            title_view.right_animator.isEnabled = false
+            binding.titleView.rightTv.textColor = resources.getColor(R.color.text_gray, null)
+            binding.titleView.rightAnimator.isEnabled = false
         } else {
-            title_view.right_tv.textColor = resources.getColor(R.color.colorBlue, null)
-            title_view.right_animator.isEnabled = true
+            binding.titleView.rightTv.textColor = resources.getColor(R.color.colorBlue, null)
+            binding.titleView.rightAnimator.isEnabled = true
         }
-        title_view.setSubTitle(circle.name, getString(R.string.circle_subtitle, size))
+        binding.titleView.setSubTitle(circle.name, requireContext().resources.getQuantityString(R.plurals.circle_subtitle, size, size))
     }
 
     private fun hasChanged(): Boolean {
@@ -163,7 +168,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                     is User -> {
                         generateConversationId(Session.getAccountId()!!, item.userId)
                     }
-                    is ConversationItem -> {
+                    is ConversationMinimal -> {
                         item.conversationId
                     }
                     else -> {
@@ -173,6 +178,7 @@ class ConversationCircleEditFragment : BaseFragment() {
             }.sorted()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun loadData() = lifecycleScope.launch {
         val conversations = chatViewModel.successConversationList()
         adapter.sourceConversations = conversations
@@ -187,8 +193,8 @@ class ConversationCircleEditFragment : BaseFragment() {
                         null
                     } else {
                         cc.userId
-                    }
-                )
+                    },
+                ),
             )
             if (cc.userId != null) {
                 inCircleContactId.add(cc.userId)
@@ -200,7 +206,7 @@ class ConversationCircleEditFragment : BaseFragment() {
         selectAdapter.checkedItems.addAll(conversationItems)
         val set = ArraySet<String>()
         conversations.forEach { item ->
-            if (item.isContact()) {
+            if (item.isContactConversation()) {
                 set.add(item.ownerId)
             }
         }
@@ -231,13 +237,13 @@ class ConversationCircleEditFragment : BaseFragment() {
 
     private fun save() = lifecycleScope.launch {
         val dialog = indeterminateProgressDialog(
-            message = R.string.pb_dialog_message,
-            title = R.string.saving
+            message = R.string.Please_wait_a_bit,
+            title = R.string.Saving,
         ).apply {
             setCancelable(false)
         }
         dialog.show()
-        search_et.hideKeyboard()
+        binding.searchEt.hideKeyboard()
 
         val conversationRequests = mutableSetOf<CircleConversationPayload>()
         adapter.selectItem.forEach { item ->
@@ -245,15 +251,15 @@ class ConversationCircleEditFragment : BaseFragment() {
                 conversationRequests.add(
                     CircleConversationPayload(
                         generateConversationId(Session.getAccountId()!!, item.userId),
-                        item.userId
-                    )
+                        item.userId,
+                    ),
                 )
-            } else if (item is ConversationItem) {
+            } else if (item is ConversationMinimal) {
                 conversationRequests.add(
                     CircleConversationPayload(
                         item.conversationId,
-                        if (item.isContact()) item.ownerId else null
-                    )
+                        if (item.isContactConversation()) item.ownerId else null,
+                    ),
                 )
             }
         }
@@ -284,7 +290,7 @@ class ConversationCircleEditFragment : BaseFragment() {
             failureBlock = {
                 dialog.dismiss()
                 return@handleMixinResponse false
-            }
+            },
         )
     }
 

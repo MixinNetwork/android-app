@@ -1,10 +1,12 @@
 package one.mixin.android.widget
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
+import android.view.View
 import android.widget.FrameLayout
-import timber.log.Timber
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 
 class ContainerFrameLayout : FrameLayout {
     constructor(context: Context) : this(context, null)
@@ -12,27 +14,16 @@ class ContainerFrameLayout : FrameLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
-    )
-
-    @SuppressLint("BinaryOperationInTimber")
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        Timber.d("@@@ ${MeasureSpec.getSize(widthMeasureSpec)}")
-        Timber.d("@@@ ${MeasureSpec.getSize(heightMeasureSpec)}")
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        measureChild(
-            getChildAt(0),
-            MeasureSpec.getSize(widthMeasureSpec),
-            MeasureSpec.getSize(heightMeasureSpec)
-        )
-        setMeasuredDimension(
-            MeasureSpec.getSize(widthMeasureSpec),
-            MeasureSpec.getSize(heightMeasureSpec)
-        )
-    }
-
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        super.onLayout(changed, left, top, right, bottom)
-        Timber.d("@@@ $left $top $right $bottom")
+        defStyleAttr,
+    ) {
+        ViewCompat.setOnApplyWindowInsetsListener(this) { _: View?, insets: WindowInsetsCompat ->
+            insets.getInsets(WindowInsetsCompat.Type.systemBars()).let { systemInserts ->
+                updatePadding(
+                    top = systemInserts.top,
+                    bottom = systemInserts.bottom,
+                )
+            }
+            insets
+        }
     }
 }

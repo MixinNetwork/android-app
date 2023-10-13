@@ -6,7 +6,6 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
-import one.mixin.android.widget.RLottieDrawable
 import java.util.concurrent.Callable
 
 sealed class ImageLoader<T> {
@@ -31,40 +30,18 @@ sealed class ImageLoader<T> {
                     override fun onResult(result: T) {
                         taskCache.remove(cacheKey)
                     }
-                }
+                },
             )
             task.addFailureListener(
                 object : ImageListener<Throwable> {
                     override fun onResult(result: Throwable) {
                         taskCache.remove(cacheKey)
                     }
-                }
+                },
             )
             taskCache[cacheKey] = task
         }
         return task
-    }
-}
-
-object LottieLoader : ImageLoader<RLottieDrawable>() {
-
-    fun fromUrl(
-        context: Context,
-        url: String,
-        cacheKey: String? = url,
-        w: Int,
-        h: Int,
-        precache: Boolean = false,
-        limitFps: Boolean = false
-    ): ImageTask<RLottieDrawable> {
-        return fromUrl(
-            url,
-            cacheKey,
-            Callable {
-                val file = NetworkFetcher.fetchSync(context, url)
-                ImageResult(RLottieDrawable(file.value, w, h, precache, limitFps))
-            }
-        )
     }
 }
 
@@ -81,7 +58,7 @@ object HeicLoader : ImageLoader<Drawable>() {
             Callable {
                 val source = ImageDecoder.createSource(context.contentResolver, uri)
                 return@Callable ImageResult(ImageDecoder.decodeDrawable(source))
-            }
+            },
         )
     }
 }

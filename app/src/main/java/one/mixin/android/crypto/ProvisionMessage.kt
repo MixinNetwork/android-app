@@ -15,7 +15,7 @@ class ProvisionMessage(
     @SerializedName("provisioning_code")
     val provisioningCode: String,
     @SerializedName("platform")
-    val platform: String = "Android"
+    val platform: String = "Android",
 ) {
 
     fun toByteArray(): ByteArray {
@@ -27,7 +27,7 @@ class ProvisionEnvelope(
     @SerializedName("public_key")
     val publicKey: ByteArray,
     @SerializedName("body")
-    val body: ByteArray
+    val body: ByteArray,
 ) {
 
     fun toByteArray(): ByteArray {

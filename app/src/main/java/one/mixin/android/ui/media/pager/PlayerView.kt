@@ -5,39 +5,36 @@ import android.graphics.Matrix
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.TextureView
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
-import com.google.android.exoplayer2.ExoPlaybackException
-import com.google.android.exoplayer2.PlaybackPreparer
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.ui.spherical.SingleTapListener
-import com.google.android.exoplayer2.video.VideoListener
-import kotlinx.android.synthetic.main.layout_player_view.view.*
-import kotlinx.android.synthetic.main.layout_player_view.view.video_aspect_ratio
-import kotlinx.android.synthetic.main.layout_player_view.view.video_texture
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.BehindLiveWindowException
 import one.mixin.android.R
+import one.mixin.android.databinding.LayoutPlayerViewBinding
 import one.mixin.android.util.VideoPlayer
+import one.mixin.android.util.reportExoPlayerException
 import one.mixin.android.widget.AspectRatioFrameLayout
 
-class PlayerView(context: Context, attributeSet: AttributeSet) :
+@UnstableApi class PlayerView(context: Context, attributeSet: AttributeSet) :
     FrameLayout(context, attributeSet) {
-    var player: Player? = null
+    var player: ExoPlayer? = null
         set(value) {
             field?.apply {
-                videoComponent?.clearVideoTextureView(video_texture)
-                videoComponent?.removeVideoListener(componentListener)
+                clearVideoTextureView(binding.videoTexture)
                 removeListener(componentListener)
             }
             field = value
             if (useController) {
-                player_control_view.player = value
+                binding.playerControlView.player = value
             }
             value?.apply {
-                videoComponent?.setVideoTextureView(video_texture)
-                videoComponent?.addVideoListener(componentListener)
+                setVideoTextureView(binding.videoTexture)
                 addListener(componentListener)
             }
         }
@@ -48,7 +45,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
         set(value) {
             field = value
             if (useController) {
-                player_control_view.messageId = value
+                binding.playerControlView.messageId = value
             }
         }
 
@@ -60,10 +57,11 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
     var refreshAction: (() -> Unit)? = null
 
     private val componentListener = ComponentListener()
+    private val binding = LayoutPlayerViewBinding.inflate(LayoutInflater.from(context), this)
+    val videoAspectRatio get() = binding.videoAspectRatio
+    val playerControlView get() = binding.playerControlView
 
     init {
-        LayoutInflater.from(context).inflate(R.layout.layout_player_view, this)
-
         val useController = true
         val ta = context.obtainStyledAttributes(attributeSet, R.styleable.PlayerView)
         this.useController = ta.getBoolean(R.styleable.PlayerView_use_controller, useController)
@@ -77,31 +75,41 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
             callback?.onLongClick()
             return@setOnLongClickListener false
         }
-        refresh_view.setOnClickListener {
+        binding.refreshView.setOnClickListener {
             refreshAction?.invoke()
             updateRefreshViewVisibility(false)
         }
         hideController()
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        player?.addListener(componentListener)
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        player?.removeListener(componentListener)
+    }
+
     override fun setLayoutDirection(layoutDirection: Int) {
         super.setLayoutDirection(layoutDirection)
-        player_control_view.layoutDirection = layoutDirection
+        binding.playerControlView.layoutDirection = layoutDirection
     }
 
     private fun updateRefreshViewVisibility(visible: Boolean) {
-        refresh_view.isVisible = visible
-        player_control_view.inRefreshState = visible
+        binding.refreshView.isVisible = visible
+        binding.playerControlView.inRefreshState = visible
         if (!visible) {
             hideController()
         }
     }
 
-    private fun applyTextureViewRotation(video_texture: TextureView, video_textureRotation: Int) {
-        val videoTextureWidth = video_texture.width.toFloat()
-        val videoTextureHeight = video_texture.height.toFloat()
+    private fun applyTextureViewRotation(textureView: TextureView, video_textureRotation: Int) {
+        val videoTextureWidth = textureView.width.toFloat()
+        val videoTextureHeight = textureView.height.toFloat()
         if (videoTextureWidth == 0f || videoTextureHeight == 0f || video_textureRotation == 0) {
-            video_texture.setTransform(null)
+            textureView.setTransform(null)
         } else {
             val transformMatrix = Matrix()
             val pivotX = videoTextureWidth / 2
@@ -115,15 +123,15 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
                 videoTextureWidth / rotatedTextureRect.width(),
                 videoTextureHeight / rotatedTextureRect.height(),
                 pivotX,
-                pivotY
+                pivotY,
             )
-            video_texture.setTransform(transformMatrix)
+            textureView.setTransform(transformMatrix)
         }
     }
 
     private fun onContentAspectRatioChanged(
         contentAspectRatio: Float,
-        contentFrame: AspectRatioFrameLayout
+        contentFrame: AspectRatioFrameLayout,
     ) {
         contentFrame.setAspectRatio(contentAspectRatio, videoTextureRotation)
     }
@@ -131,10 +139,10 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
     private fun toggleControllerVisibility(): Boolean {
         if (!useController || player == null) return false
 
-        if (!player_control_view.isVisible) {
+        if (!binding.playerControlView.isVisible) {
             maybeShowController(true)
         } else {
-            player_control_view.hide()
+            binding.playerControlView.hide()
         }
         return true
     }
@@ -143,7 +151,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
         if (!useController) return
 
         val wasShowingIndefinitely =
-            player_control_view.isVisible && player_control_view.showTimeoutMs <= 0
+            binding.playerControlView.isVisible && binding.playerControlView.showTimeoutMs <= 0
         val shouldShowIndefinitely = shouldShowControllerIndefinitely()
         if (isForced || wasShowingIndefinitely || shouldShowIndefinitely) {
             showController(shouldShowIndefinitely)
@@ -153,26 +161,27 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
     fun showController(showIndefinitely: Boolean) {
         if (!useController) return
 
-        player_control_view.showTimeoutMs = if (showIndefinitely) 0 else controllerShowTimeoutMs
-        player_control_view.show()
+        binding.playerControlView.showTimeoutMs =
+            if (showIndefinitely) 0 else controllerShowTimeoutMs
+        binding.playerControlView.show()
     }
 
     fun hideController() {
-        player_control_view.hide()
+        binding.playerControlView.hide()
     }
 
     fun switchFullscreen(fullscreen: Boolean) {
-        player_control_view.switchFullscreen(fullscreen)
+        binding.playerControlView.switchFullscreen(fullscreen)
     }
 
-    fun setPlaybackPrepare(playbackPreparer: PlaybackPreparer) {
+    fun setPlaybackPrepare(preparePlayback: () -> Unit) {
         if (!useController) return
 
-        player_control_view.playbackPreparer = playbackPreparer
+        binding.playerControlView.preparePlayback = preparePlayback
     }
 
     fun showPb() {
-        pb_view.isVisible = true
+        binding.pbView.isVisible = true
         updateRefreshViewVisibility(false)
     }
 
@@ -189,10 +198,9 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
     }
 
     inner class ComponentListener :
-        Player.EventListener,
-        VideoListener,
+        Player.Listener,
         OnLayoutChangeListener,
-        SingleTapListener {
+        OnClickListener {
         override fun onLayoutChange(
             v: View?,
             left: Int,
@@ -202,21 +210,20 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
             oldLeft: Int,
             oldTop: Int,
             oldRight: Int,
-            oldBottom: Int
+            oldBottom: Int,
         ) {
             applyTextureViewRotation(v as TextureView, videoTextureRotation)
         }
 
-        override fun onSingleTapUp(e: MotionEvent): Boolean {
-            return toggleControllerVisibility()
+        override fun onClick(v: View?) {
+            toggleControllerVisibility()
         }
 
-        override fun onVideoSizeChanged(
-            width: Int,
-            height: Int,
-            unappliedRotationDegrees: Int,
-            pixelWidthHeightRatio: Float
-        ) {
+        override fun onVideoSizeChanged(videoSize: VideoSize) {
+            val pixelWidthHeightRatio = videoSize.pixelWidthHeightRatio
+            val unappliedRotationDegrees = videoSize.unappliedRotationDegrees
+            val width = videoSize.width
+            val height = videoSize.height
             if (VideoPlayer.player().mId != currentMessageId) {
                 return
             }
@@ -226,15 +233,15 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
                 videoAspectRatio = 1 / videoAspectRatio
             }
             if (videoTextureRotation != 0) {
-                video_texture.removeOnLayoutChangeListener(this)
+                binding.videoTexture.removeOnLayoutChangeListener(this)
             }
             videoTextureRotation = unappliedRotationDegrees
             if (videoTextureRotation != 0) {
-                video_texture.addOnLayoutChangeListener(this)
+                binding.videoTexture.addOnLayoutChangeListener(this)
             }
-            applyTextureViewRotation(video_texture, videoTextureRotation)
+            applyTextureViewRotation(binding.videoTexture, videoTextureRotation)
 
-            onContentAspectRatioChanged(videoAspectRatio, video_aspect_ratio)
+            onContentAspectRatioChanged(videoAspectRatio, binding.videoAspectRatio)
         }
 
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
@@ -244,7 +251,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
                         showPb()
                     }
                     Player.STATE_READY -> {
-                        pb_view.isVisible = false
+                        binding.pbView.isVisible = false
                         if (playWhenReady) {
                             hideController()
                         } else {
@@ -252,23 +259,29 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
                         }
                     }
                     else -> {
-                        pb_view.isVisible = false
+                        binding.pbView.isVisible = false
                         maybeShowController(false)
                     }
                 }
             }
         }
 
-        override fun onPlayerError(error: ExoPlaybackException) {
+        override fun onPlayerError(error: PlaybackException) {
             if (VideoPlayer.player().mId == currentMessageId) {
-                pb_view.isVisible = false
+                binding.pbView.isVisible = false
                 updateRefreshViewVisibility(true)
+
+                if (error.cause is BehindLiveWindowException) {
+                    VideoPlayer.player().player.prepare()
+                } else {
+                    reportExoPlayerException("PlayerView", error)
+                }
             }
         }
 
         override fun onRenderedFirstFrame() {
             if (VideoPlayer.player().mId == currentMessageId) {
-                player_control_view.updateLiveView()
+                binding.playerControlView.updateLiveView()
             }
             callback?.onRenderFirstFrame()
         }

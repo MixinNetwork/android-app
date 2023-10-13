@@ -1,17 +1,19 @@
 package one.mixin.android.worker
 
 import android.content.Context
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
-import one.mixin.android.api.service.AssetService
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import one.mixin.android.api.service.AddressService
 import one.mixin.android.db.AddressDao
 
-class RefreshAddressWorker @WorkerInject constructor(
+@HiltWorker
+class RefreshAddressWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
-    private val assetService: AssetService,
-    private val addressDao: AddressDao
+    private val addressService: AddressService,
+    private val addressDao: AddressDao,
 ) : BaseWork(context, parameters) {
 
     companion object {
@@ -20,7 +22,7 @@ class RefreshAddressWorker @WorkerInject constructor(
 
     override suspend fun onRun(): Result {
         val assetId = inputData.getString(ASSET_ID) ?: return Result.failure()
-        val response = assetService.addresses(assetId).execute().body()
+        val response = addressService.addresses(assetId).execute().body()
         return if (response != null && response.isSuccess && response.data != null) {
             response.data?.let {
                 addressDao.insertList(it)

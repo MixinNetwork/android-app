@@ -3,26 +3,26 @@ package one.mixin.android.util.image
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
 import androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_180
 import androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_270
 import androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90
+import one.mixin.android.MixinApplication
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import kotlin.jvm.Throws
 
 internal object ImageUtil {
 
     @Throws(IOException::class)
     fun compressImage(
-        imageFile: File,
+        imageUri: Uri,
         reqWidth: Int,
         reqHeight: Int,
-        compressFormat:
-            Bitmap.CompressFormat,
+        compressFormat: Bitmap.CompressFormat,
         quality: Int,
-        destinationPath: String
+        destinationPath: String,
     ): File {
         var fileOutputStream: FileOutputStream? = null
         val file = File(destinationPath).parentFile
@@ -31,7 +31,7 @@ internal object ImageUtil {
         }
         try {
             fileOutputStream = FileOutputStream(destinationPath)
-            decodeSampledBitmapFromFile(imageFile, reqWidth, reqHeight)
+            decodeSampledBitmapFromFile(imageUri, reqWidth, reqHeight)
                 .compress(compressFormat, quality, fileOutputStream)
         } finally {
             if (fileOutputStream != null) {
@@ -44,44 +44,32 @@ internal object ImageUtil {
     }
 
     @Throws(IOException::class)
-    fun decodeSampledBitmapFromFile(imageFile: File, reqWidth: Int, reqHeight: Int): Bitmap {
+    fun decodeSampledBitmapFromFile(imageUri: Uri, reqWidth: Int, reqHeight: Int): Bitmap {
+        val imageInputStream = MixinApplication.get().contentResolver.openInputStream(imageUri)!!
         val options = BitmapFactory.Options()
-        options.inJustDecodeBounds = true
-        BitmapFactory.decodeFile(imageFile.absolutePath, options)
-
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
-
-        options.inJustDecodeBounds = false
-
-        var scaledBitmap = BitmapFactory.decodeFile(imageFile.absolutePath, options)
-
-        val exif = ExifInterface(imageFile.absolutePath)
-        val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0)
+        var bitmap = requireNotNull(BitmapFactory.decodeStream(imageInputStream, null, options))
+        val scale = calculateInScale(bitmap.width, bitmap.height, reqWidth, reqHeight)
+        val exif = ExifInterface(MixinApplication.get().contentResolver.openInputStream(imageUri)!!)
+        val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
         val matrix = Matrix()
         when (orientation) {
             ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
             ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
-            8 -> matrix.postRotate(ORIENTATION_ROTATE_270.toFloat())
+            ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
         }
-        scaledBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.width, scaledBitmap.height, matrix, true)
-        return scaledBitmap
+        matrix.postScale(scale, scale)
+        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        return bitmap
     }
 
-    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
-        val height = options.outHeight
-        val width = options.outWidth
-        var inSampleSize = 1
-
-        if (height > reqHeight || width > reqWidth) {
-
-            val halfHeight = height / 2
-            val halfWidth = width / 2
-
-            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
-                inSampleSize *= 2
-            }
+    private fun calculateInScale(width: Int, height: Int, reqWidth: Int, reqHeight: Int): Float {
+        if (width == 0 || height == 0 || height / width >= 3 || width / height >= 3) {
+            return 1f
         }
-
-        return inSampleSize
+        return if (width > height) {
+            reqWidth / width.toFloat()
+        } else {
+            reqHeight / height.toFloat()
+        }
     }
 }

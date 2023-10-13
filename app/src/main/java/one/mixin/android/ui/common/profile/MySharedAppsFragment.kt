@@ -8,14 +8,14 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_my_shared_apps.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentMySharedAppsBinding
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.widget.SegmentationItemDecoration
 
@@ -29,18 +29,21 @@ class MySharedAppsFragment : BaseFragment() {
     }
 
     private val mySharedAppsViewModel by viewModels<MySharedAppsViewModel>()
+    private val binding by viewBinding(FragmentMySharedAppsBinding::bind)
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_my_shared_apps, container, false)
+        savedInstanceState: Bundle?,
+    ): View = inflater.inflate(R.layout.fragment_my_shared_apps, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        recyclerView.adapter = adapter
-        recyclerView.addItemDecoration(SegmentationItemDecoration())
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        binding.apply {
+            recyclerView.adapter = adapter
+            recyclerView.addItemDecoration(SegmentationItemDecoration())
+            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        }
         loadData()
         refresh()
     }
@@ -61,16 +64,15 @@ class MySharedAppsFragment : BaseFragment() {
             val favoriteApps =
                 mySharedAppsViewModel.getFavoriteAppsByUserId(Session.getAccountId()!!)
             val unFavoriteApps = mySharedAppsViewModel.getUnfavoriteApps()
-            recyclerView ?: return@launch
-            recyclerView.isVisible = favoriteApps.isNotEmpty() || unFavoriteApps.isNotEmpty()
-            empty.isVisible = favoriteApps.isEmpty() && unFavoriteApps.isEmpty()
+            binding.recyclerView.isVisible = favoriteApps.isNotEmpty() || unFavoriteApps.isNotEmpty()
+            binding.empty.isVisible = favoriteApps.isEmpty() && unFavoriteApps.isEmpty()
             adapter.setData(favoriteApps, unFavoriteApps)
         }
     }
 
     private val onAddSharedApp: (app: App) -> Unit = { app ->
         lifecycleScope.launch {
-            val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                 setCancelable(false)
             }
             try {
@@ -85,7 +87,7 @@ class MySharedAppsFragment : BaseFragment() {
     }
     private val onRemoveSharedApp: (app: App) -> Unit = { app ->
         lifecycleScope.launch {
-            val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                 setCancelable(false)
             }
             try {

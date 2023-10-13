@@ -1,9 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:clickable="true"
+    android:focusable="true">
+
+    <ImageView
+        android:id="@+id/chat_reply"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:background="@drawable/bg_circle_reply"
+        android:layout_marginStart="16dp"
+        android:padding="4dp"
+        android:alpha="0"
+        android:scaleX="0"
+        android:scaleY="0"
+        android:src="@drawable/ic_reply_white"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/chat_msg_layout"
+        app:layout_constraintBottom_toBottomOf="@id/chat_msg_layout"
+        tools:ignore="ContentDescription,NotSibling" />
+
+    <ImageView
+        android:id="@+id/chat_jump"
+        android:padding="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_chat_jump"
+        android:foreground="@drawable/jump_ripple"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/chat_msg_layout"
+        app:layout_constraintTop_toTopOf="@id/chat_msg_layout"
+        app:layout_constraintBottom_toBottomOf="@id/chat_msg_layout"
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/chat_name"
@@ -18,73 +53,93 @@
         android:maxWidth="280dp"
         android:minWidth="30dp"
         android:textColor="#19BEF1"
-        android:textSize="14sp"/>
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@id/chat_msg_layout"
+        app:layout_constraintStart_toStartOf="@id/chat_msg_layout" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/chat_layout"
-        android:layout_width="240dp"
+    <LinearLayout
+        android:id="@+id/chat_msg_layout"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="1.5dp"
-        android:layout_marginEnd="4dp">
+        android:orientation="vertical"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chat_name"
+        app:layout_constraintVertical_bias="0"
+        app:layout_goneMarginBottom="0dp">
 
-        <one.mixin.android.widget.CircleProgress
-            android:id="@+id/file_progress"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:src="@drawable/ic_avatar_place_holder"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:progressColor="@color/colorDarkBlue"
-            app:progressWidth="1.5dp"
-            app:shadowColor="@color/progress_gary"
-            app:size="40dp"/>
-
-        <ImageView
-            android:id="@+id/file_expired"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_expired"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
-
-        <TextView
-            android:id="@+id/file_name_tv"
-            android:layout_width="0dp"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/chat_layout"
+            android:layout_width="240dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:ellipsize="middle"
-            android:singleLine="true"
-            android:textColor="?attr/text_primary"
-            android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/file_progress"
-            app:layout_constraintTop_toTopOf="@id/file_progress"/>
+            android:layout_gravity="end"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="1.5dp"
+            android:layout_marginEnd="4dp">
 
-        <one.mixin.android.widget.FileHolderBottomLayout
-            android:id="@+id/bottom_layout"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/file_progress"
-            app:layout_constraintTop_toBottomOf="@id/file_name_tv"/>
+            <one.mixin.android.widget.CircleProgress
+                android:id="@+id/file_progress"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:src="@drawable/ic_avatar_place_holder"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:progressColor="@color/colorDarkBlue"
+                app:progressWidth="1.5dp"
+                app:shadowColor="@color/progress_gary"
+                app:size="40dp" />
 
-        <include
-            android:id="@+id/bill_time"
-            layout="@layout/date_wrapper"/>
+            <ImageView
+                android:id="@+id/file_expired"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_expired"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:contentDescription="@string/Expired" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</LinearLayout>
+            <TextView
+                android:id="@+id/file_name_tv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:ellipsize="middle"
+                android:singleLine="true"
+                android:textColor="?attr/text_primary"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/file_progress"
+                app:layout_constraintTop_toTopOf="@id/file_progress" />
+
+            <one.mixin.android.widget.FileHolderBottomLayout
+                android:id="@+id/bottom_layout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/file_progress"
+                app:layout_constraintTop_toBottomOf="@id/file_name_tv" />
+
+            <one.mixin.android.widget.bubble.TimeBubble
+                android:id="@+id/chat_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 
 
+</androidx.constraintlayout.widget.ConstraintLayout>

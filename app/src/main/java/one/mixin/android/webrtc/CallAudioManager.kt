@@ -1,26 +1,33 @@
 package one.mixin.android.webrtc
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
+import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import com.twilio.audioswitch.AudioDevice
 import com.twilio.audioswitch.AudioSwitch
 import one.mixin.android.R
 import one.mixin.android.extension.isBluetoothHeadsetOrWiredHeadset
+import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.safeActivate
 import one.mixin.android.extension.safeStop
 import one.mixin.android.extension.selectEarpiece
 import one.mixin.android.extension.selectSpeakerphone
+import one.mixin.android.util.AudioPlayer
+import one.mixin.android.util.MusicPlayer
 import timber.log.Timber
 
 class CallAudioManager(
     private val context: Context,
-    private val audioSwitch: AudioSwitch
+    private val audioSwitch: AudioSwitch,
+    private val callback: Callback,
 ) {
 
     private val audioManager: AudioManager? = context.getSystemService()
@@ -30,10 +37,10 @@ class CallAudioManager(
     private var mediaPlayerStopped = false
     private var hasStarted = false
 
-    var callback: Callback? = null
-
     private var isInitiator = false
     private var playRingtone = false
+
+    private var initAudioSwitch = false
 
     var isSpeakerOn: Boolean = false
         set(value) {
@@ -44,40 +51,48 @@ class CallAudioManager(
             setSpeaker(value)
         }
 
+    init {
+        initAudioSwitch()
+    }
+
+    private fun initAudioSwitch() {
+        if (!initAudioSwitch && (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED)) {
+            initAudioSwitch = true
+            audioSwitch.start { audioDevices, selectedAudioDevice ->
+                Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
+                val bluetoothHeadset = audioDevices.find { it is AudioDevice.BluetoothHeadset }
+                if (bluetoothHeadset != null && audioSwitch.bluetoothHeadsetManager?.hasActivationError() == false) {
+                    audioSwitch.selectDevice(bluetoothHeadset)
+                    callback.customAudioDeviceAvailable(true)
+                    return@start
+                }
+                val wiredHeadset = audioDevices.find { it is AudioDevice.WiredHeadset }
+                if (wiredHeadset != null) {
+                    audioSwitch.selectDevice(wiredHeadset)
+                    callback.customAudioDeviceAvailable(true)
+                } else {
+                    if (mediaPlayerStopped && !isSpeakerOn && selectedAudioDevice !is AudioDevice.Earpiece) {
+                        audioSwitch.selectEarpiece()
+                    }
+                    callback.customAudioDeviceAvailable(false)
+                }
+            }
+        }
+    }
+
     fun start(isInitiator: Boolean, playRingtone: Boolean = true) {
+        initAudioSwitch()
+        mainThread {
+            AudioPlayer.pause()
+            MusicPlayer.pause()
+        }
+
         hasStarted = true
         this.playRingtone = playRingtone
         this.isInitiator = isInitiator
+        val ringerMode = audioManager?.ringerMode ?: AudioManager.RINGER_MODE_NORMAL
 
-        audioSwitch.start { audioDevices, selectedAudioDevice ->
-            Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
-            if (selectedAudioDevice !is AudioDevice.BluetoothHeadset) {
-                val bluetoothHeadset = audioDevices.find { it is AudioDevice.BluetoothHeadset }
-                if (bluetoothHeadset != null) {
-                    audioSwitch.deactivate()
-                    audioSwitch.selectDevice(bluetoothHeadset)
-                    audioSwitch.safeActivate()
-                } else {
-                    if (selectedAudioDevice !is AudioDevice.WiredHeadset) {
-                        val wiredHeadset = audioDevices.find { it is AudioDevice.WiredHeadset }
-                        if (wiredHeadset != null) {
-                            audioSwitch.deactivate()
-                            audioSwitch.selectDevice(wiredHeadset)
-                            audioSwitch.safeActivate()
-                        } else {
-                            if (mediaPlayerStopped && !isSpeakerOn && selectedAudioDevice !is AudioDevice.Earpiece) {
-                                audioSwitch.selectEarpiece()
-                                audioSwitch.safeActivate()
-                            }
-                        }
-                    }
-                }
-            }
-
-            callback?.customAudioDeviceAvailable(selectedAudioDevice.isBluetoothHeadsetOrWiredHeadset())
-        }
-
-        if (playRingtone && !isInitiator && vibrator != null && audioManager?.ringerMode != AudioManager.RINGER_MODE_SILENT) {
+        if (playRingtone && !isInitiator && vibrator != null && ringerMode != AudioManager.RINGER_MODE_SILENT) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val vibrationEffect = VibrationEffect.createWaveform(longArrayOf(0, 1000, 1000), 1)
                 vibrator.vibrate(vibrationEffect)
@@ -89,7 +104,9 @@ class CallAudioManager(
 
         setSpeaker(!isInitiator)
 
-        updateMediaPlayer()
+        if (playRingtone && (isInitiator || ringerMode == AudioManager.RINGER_MODE_NORMAL)) {
+            updateMediaPlayer()
+        }
     }
 
     fun stop() {
@@ -108,18 +125,33 @@ class CallAudioManager(
         audioSwitch.safeActivate()
     }
 
-    fun release() {
+    fun reset() {
         if (!mediaPlayerStopped) {
             stop()
         }
-        if (hasStarted) {
-            audioSwitch.safeStop()
-        }
+
+        audioSwitch.deactivate()
         hasStarted = false
         mediaPlayerStopped = false
         isInitiator = false
         isSpeakerOn = false
         playRingtone = false
+    }
+
+    fun release() {
+        audioSwitch.safeStop()
+    }
+
+    fun getMsg(): String {
+        return """
+            $TAG_AUDIO CallAudioManager message
+            isInitiator: $isInitiator
+            playRingtone: $playRingtone
+            hasStarted: $hasStarted
+            mediaPlayerStopped: $mediaPlayerStopped
+            isSpeakerOn: $isSpeakerOn
+            audioSwitch selectedAudioDevice: ${audioSwitch.selectedAudioDevice}, availableAudioDevices: ${audioSwitch.availableAudioDevices}
+        """.trimIndent()
     }
 
     private fun setSpeaker(enable: Boolean) {
@@ -131,7 +163,6 @@ class CallAudioManager(
             audioSwitch.selectSpeakerphone()
         } else {
             audioSwitch.selectEarpiece()
-            audioSwitch.safeActivate()
         }
     }
 
@@ -148,7 +179,9 @@ class CallAudioManager(
 
         val sound = if (isInitiator) {
             R.raw.call_outgoing
-        } else R.raw.call_incoming
+        } else {
+            R.raw.call_incoming
+        }
         val uri = Uri.parse("android.resource://${context.packageName}/$sound")
         try {
             mediaPlayer?.setDataSource(context, uri)

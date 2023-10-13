@@ -6,7 +6,7 @@ class Menu(
     val type: MenuType,
     val nameRes: Int?,
     val icon: Int?,
-    val app: AppItem?
+    val app: AppItem?,
 )
 
 sealed class MenuType {

@@ -1,6 +1,6 @@
 package one.mixin.android.job
 
-import android.util.ArrayMap
+import androidx.collection.ArrayMap
 import com.birbit.android.jobqueue.Job
 import com.birbit.android.jobqueue.JobManager
 import com.birbit.android.jobqueue.TagConstraint

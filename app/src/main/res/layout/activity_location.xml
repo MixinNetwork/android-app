@@ -8,7 +8,7 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
+        android:layout_height="?android:attr/actionBarSize"
         android:background="?attr/bg_white">
 
         <ImageButton
@@ -37,9 +37,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:text="@string/location"
+                    android:text="@string/Location"
                     android:textColor="?attr/text_primary"
-                    android:textSize="18sp" />
+                    android:textSize="18sp"
+                    tools:ignore="RelativeOverlap" />
 
                 <ImageButton
                     android:id="@+id/ic_search"
@@ -79,7 +80,7 @@
                     android:layout_centerVertical="true"
                     android:layout_toStartOf="@id/ic_close"
                     android:background="@null"
-                    android:hint="@string/search"
+                    android:hint="@string/Search"
                     android:imeOptions="actionSearch"
                     android:inputType="text"
                     android:paddingTop="8dp"
@@ -87,7 +88,8 @@
                     android:singleLine="true"
                     android:textColor="?attr/text_primary"
                     android:textColorHint="?attr/text_assist"
-                    android:textSize="18sp" />
+                    android:textSize="18sp"
+                    tools:ignore="Autofill" />
 
                 <ImageButton
                     android:id="@+id/ic_close"
@@ -103,14 +105,15 @@
                     tools:ignore="ContentDescription" />
             </RelativeLayout>
         </ViewAnimator>
-
     </RelativeLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <include layout="@layout/mention_location" />
+        <include
+            android:id="@+id/mention_location"
+            layout="@layout/mention_location" />
 
         <RelativeLayout
             android:id="@+id/location_go"
@@ -129,7 +132,8 @@
                 android:layout_height="42dp"
                 android:background="@drawable/bg_menu"
                 android:padding="4dp"
-                app:tint="?attr/icon_default" />
+                app:tint="?attr/icon_default"
+                android:contentDescription="@string/Location" />
 
             <ImageView
                 android:id="@+id/location_go_iv"
@@ -137,7 +141,8 @@
                 android:layout_height="42dp"
                 android:layout_alignParentEnd="true"
                 android:foreground="@drawable/mixin_ripple"
-                android:src="@drawable/ic_location_go" />
+                android:src="@drawable/ic_location_go"
+                android:contentDescription="@null" />
 
             <TextView
                 android:id="@+id/location_title"
@@ -165,10 +170,8 @@
                 android:singleLine="true"
                 android:textColor="?attr/text_minor"
                 android:textSize="12sp" />
-
         </RelativeLayout>
     </FrameLayout>
-
 </LinearLayout>
 
 

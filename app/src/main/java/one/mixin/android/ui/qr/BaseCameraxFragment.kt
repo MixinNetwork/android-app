@@ -8,6 +8,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.hardware.display.DisplayManager
+import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Size
@@ -15,6 +16,7 @@ import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_UP
 import android.view.ScaleGestureDetector
+import android.view.Surface
 import android.view.View
 import android.view.ViewConfiguration
 import androidx.camera.core.Camera
@@ -36,7 +38,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.mlkit.vision.common.InputImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import kotlinx.android.synthetic.main.fragment_capture.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
@@ -48,18 +49,22 @@ import one.mixin.android.extension.bounce
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.getStackTraceString
+import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.isDonateUrl
+import one.mixin.android.extension.matchResourcePattern
 import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.job.RefreshExternalSchemeJob.Companion.PREF_EXTERNAL_SCHEMES
 import one.mixin.android.ui.device.ConfirmBottomFragment
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.reportException
 import one.mixin.android.widget.gallery.ui.GalleryActivity
-import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
-import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
@@ -78,11 +83,12 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
     protected var forScanResult: Boolean = false
 
-    protected var videoFile: File? = null
-
     protected var lensFacing = CameraSelector.LENS_FACING_BACK
 
     private var alreadyDetected = false
+
+    private var cameraProvider: ProcessCameraProvider? = null
+    private var cameraSelector: CameraSelector? = null
 
     private var imageAnalysis: ImageAnalysis? = null
 
@@ -120,38 +126,61 @@ abstract class BaseCameraxFragment : VisionFragment() {
         backgroundExecutor = Executors.newSingleThreadExecutor()
     }
 
+    abstract fun getContentView(): View
+    private val _contentView get() = getContentView()
+
+    private val close: View by lazy {
+        _contentView.findViewById(R.id.close)
+    }
+    private val flash: View by lazy {
+        _contentView.findViewById(R.id.flash)
+    }
+    private val galleryIv: View by lazy {
+        _contentView.findViewById(R.id.gallery_iv)
+    }
+    private val viewFinder: PreviewView by lazy {
+        _contentView.findViewById(R.id.view_finder)
+    }
+    private val focusView: FocusView by lazy {
+        _contentView.findViewById(R.id.focus_view)
+    }
+
     @SuppressLint("RestrictedApi", "ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        close.setOnClickListener { activity?.onBackPressed() }
+        close.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         flash.setOnClickListener {
             onFlashClick()
             flash.bounce()
         }
-        gallery_iv.setOnClickListener {
-            RxPermissions(requireActivity())
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            openGallery()
-                        } else {
-                            context?.openPermissionSetting()
-                        }
-                    },
-                    {
-                    }
-                )
+        galleryIv.setOnClickListener {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                openGallery()
+                            } else {
+                                context?.openPermissionSetting()
+                            }
+                        },
+                        {
+                        },
+                    )
+            } else {
+                openGallery()
+            }
         }
         checkFlash()
 
-        displayManager = view_finder.context
+        displayManager = viewFinder.context
             .getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
         displayManager.registerDisplayListener(displayListener, null)
 
         setZoomRatio(UNITY_ZOOM_SCALE)
-        view_finder.setOnTouchListener { v, event ->
+        viewFinder.setOnTouchListener { v, event ->
             if (isPinchToZoomEnabled) {
                 pinchToZoomGestureDetector.onTouchEvent(event)
             }
@@ -173,54 +202,48 @@ abstract class BaseCameraxFragment : VisionFragment() {
             }
             return@setOnTouchListener true
         }
-        view_finder.post {
-            displayId = view_finder.display.displayId
+        viewFinder.post {
+            displayId = viewFinder.display.displayId
             bindCameraUseCase()
         }
     }
 
     @SuppressLint("RestrictedApi")
     protected fun bindCameraUseCase() {
-        metrics = DisplayMetrics().also { view_finder.display.getRealMetrics(it) }
-        val rotation = view_finder.display.rotation
+        metrics = DisplayMetrics().also { viewFinder.display.getRealMetrics(it) }
+        val rotation = getRotation()
 
-        val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
+        cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
         cameraProviderFuture.addListener(
             {
-                val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+                cameraProvider = cameraProviderFuture.get()
 
+                val useCases = arrayListOf<UseCase>()
                 preview = Preview.Builder()
                     .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
                     .setTargetRotation(rotation)
                     .build()
 
-                imageAnalysis = ImageAnalysis.Builder()
-                    .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
-                    .setTargetRotation(rotation)
-                    .build()
-                    .also {
-                        it.setAnalyzer(backgroundExecutor, imageAnalyzer)
-                    }
+                useCases.add(preview!!)
+                useCases.add(getImageAnalysis())
+                appendOtherUseCases(useCases, rotation)
 
-                val otherUseCases = getOtherUseCases(rotation)
-
-                cameraProvider.unbindAll()
+                cameraProvider?.unbindAll()
 
                 try {
-                    camera = cameraProvider.bindToLifecycle(
+                    camera = cameraProvider?.bindToLifecycle(
                         this as LifecycleOwner,
-                        cameraSelector,
-                        preview,
-                        imageAnalysis,
-                        *otherUseCases
+                        cameraSelector!!,
+                        *useCases.toTypedArray(),
                     )
-                    preview?.setSurfaceProvider(view_finder.surfaceProvider)
+                    preview?.setSurfaceProvider(viewFinder.surfaceProvider)
                 } catch (e: Exception) {
                     reportException("$CRASHLYTICS_CAMERAX-camera bindToLifecycle failure", e)
+                    Timber.w(e)
                 }
             },
-            mainExecutor
+            mainExecutor,
         )
     }
 
@@ -233,9 +256,10 @@ abstract class BaseCameraxFragment : VisionFragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             data?.data?.let {
+                @Suppress("DEPRECATION")
                 val path = it.getFilePath(MixinApplication.get())
                 if (path == null) {
-                    context?.toast(R.string.error_image)
+                    toast(R.string.File_error)
                 } else {
                     if (data.hasExtra(GalleryActivity.IS_VIDEO)) {
                         openEdit(path, true, fromGallery = true)
@@ -246,6 +270,76 @@ abstract class BaseCameraxFragment : VisionFragment() {
             }
         }
     }
+
+    protected fun bindUseCases(vararg useCases: UseCase) {
+        try {
+            camera = cameraProvider?.bindToLifecycle(
+                this as LifecycleOwner,
+                cameraSelector!!,
+                *useCases,
+            )
+        } catch (e: Exception) {
+            reportException("$CRASHLYTICS_CAMERAX-bindUseCases", e)
+            Timber.w(e)
+        }
+    }
+
+    protected fun unbindUseCases(vararg useCases: UseCase) {
+        try {
+            cameraProvider?.unbind(*useCases)
+        } catch (e: Exception) {
+            reportException("$CRASHLYTICS_CAMERAX-unbindUseCases", e)
+            Timber.w(e)
+        }
+    }
+
+    protected fun stopImageAnalysis() {
+        if (imageAnalysis != null) {
+            try {
+                imageAnalysis?.clearAnalyzer()
+                cameraProvider?.unbind(imageAnalysis!!)
+                imageAnalysis = null
+            } catch (e: Exception) {
+                reportException("$CRASHLYTICS_CAMERAX-stopImageAnalysis", e)
+                Timber.w(e)
+            }
+        }
+    }
+
+    protected fun startImageAnalysis() {
+        val localImageAnalysis = getImageAnalysis()
+        try {
+            camera = cameraProvider?.bindToLifecycle(
+                this as LifecycleOwner,
+                cameraSelector!!,
+                localImageAnalysis,
+            )
+        } catch (e: Exception) {
+            reportException("$CRASHLYTICS_CAMERAX-startImageAnalysis", e)
+            Timber.w(e)
+        }
+    }
+
+    private fun getImageAnalysis(): ImageAnalysis {
+        if (imageAnalysis != null) return imageAnalysis!!
+
+        imageAnalysis = ImageAnalysis.Builder()
+            .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
+            .setTargetRotation(getRotation())
+            .build()
+            .also {
+                it.setAnalyzer(backgroundExecutor, imageAnalyzer)
+            }
+        return imageAnalysis!!
+    }
+
+    fun startImageAnalysisIfNeeded() {
+        if (imageAnalysis == null) {
+            startImageAnalysis()
+        }
+    }
+
+    private fun getRotation(): Int = viewFinder.display?.rotation ?: Surface.ROTATION_0
 
     private fun isLensBack() = CameraSelector.LENS_FACING_BACK == lensFacing
 
@@ -277,41 +371,37 @@ abstract class BaseCameraxFragment : VisionFragment() {
                     override fun onSuccess(result: Void?) {
                     }
 
-                    override fun onFailure(t: Throwable?) {
-                        t?.let { throwable ->
-                            if (throwable is CameraControl.OperationCanceledException) {
-                                Timber.d("$CRASHLYTICS_CAMERAX-setZoomRatio onFailure, ${throwable.getStackTraceString()}")
-                                return
-                            }
-                            if (BuildConfig.DEBUG) {
-                                Timber.w("$CRASHLYTICS_CAMERAX-setZoomRatio onFailure, ${throwable.getStackTraceString()}")
-                            } else {
-                                reportException("$CRASHLYTICS_CAMERAX-setZoomRatio onFailure", throwable)
-                            }
+                    override fun onFailure(t: Throwable) {
+                        if (t is CameraControl.OperationCanceledException) {
+                            Timber.d("$CRASHLYTICS_CAMERAX-setZoomRatio onFailure, ${t.getStackTraceString()}")
+                            return
+                        }
+                        if (BuildConfig.DEBUG) {
+                            Timber.w("$CRASHLYTICS_CAMERAX-setZoomRatio onFailure, ${t.getStackTraceString()}")
+                        } else {
+                            reportException("$CRASHLYTICS_CAMERAX-setZoomRatio onFailure", t)
                         }
                     }
                 },
-                mainExecutor
+                mainExecutor,
             )
         }
     }
 
     @SuppressLint("RestrictedApi")
     private fun focusAndMeter(v: PreviewView): Boolean {
-        var x = 0f
-        var y = 0f
-        upEvent.notNullWithElse(
-            {
-                x = it.x
-                y = it.y
-            },
-            {
-                x = v.x + v.width / 2f
-                y = v.y + v.height / 2f
-            }
-        )
+        val x: Float
+        val y: Float
+        val ue = upEvent
+        if (ue != null) {
+            x = ue.x
+            y = ue.y
+        } else {
+            x = v.x + v.width / 2f
+            y = v.y + v.height / 2f
+        }
         upEvent = null
-        focus_view.focusAndMeter(x, y)
+        focusView.focusAndMeter(x, y)
 
         camera?.let { c ->
             val pointFactory = v.meteringPointFactory
@@ -323,11 +413,11 @@ abstract class BaseCameraxFragment : VisionFragment() {
             val future = c.cameraControl.startFocusAndMetering(
                 FocusMeteringAction.Builder(
                     afPoint,
-                    FocusMeteringAction.FLAG_AF
+                    FocusMeteringAction.FLAG_AF,
                 ).addPoint(
                     aePoint,
-                    FocusMeteringAction.FLAG_AE
-                ).build()
+                    FocusMeteringAction.FLAG_AE,
+                ).build(),
             )
             Futures.addCallback(
                 future,
@@ -335,21 +425,19 @@ abstract class BaseCameraxFragment : VisionFragment() {
                     override fun onSuccess(result: FocusMeteringResult?) {
                     }
 
-                    override fun onFailure(t: Throwable?) {
-                        t?.let { throwable ->
-                            if (throwable is CameraControl.OperationCanceledException) {
-                                Timber.d("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure, ${throwable.getStackTraceString()}")
-                                return
-                            }
-                            if (BuildConfig.DEBUG) {
-                                Timber.w("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure, ${throwable.getStackTraceString()}")
-                            } else {
-                                reportException("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure", throwable)
-                            }
+                    override fun onFailure(t: Throwable) {
+                        if (t is CameraControl.OperationCanceledException) {
+                            Timber.d("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure, ${t.getStackTraceString()}")
+                            return
+                        }
+                        if (BuildConfig.DEBUG) {
+                            Timber.w("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure, ${t.getStackTraceString()}")
+                        } else {
+                            reportException("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure", t)
                         }
                     }
                 },
-                mainExecutor
+                mainExecutor,
             )
         }
         return true
@@ -367,29 +455,59 @@ abstract class BaseCameraxFragment : VisionFragment() {
     private fun delta() = System.currentTimeMillis() - downEventTimestamp
 
     abstract fun onFlashClick()
-    abstract fun getOtherUseCases(rotation: Int): Array<UseCase>
+    abstract fun appendOtherUseCases(useCases: ArrayList<UseCase>, rotation: Int)
     abstract fun onDisplayChanged(rotation: Int)
     abstract fun fromScan(): Boolean
 
     private fun handleAnalysis(analysisResult: String) {
-        if (!isAdded) return
+        if (viewDestroyed()) return
 
+        requireContext().heavyClickVibrate()
         requireContext().defaultSharedPreferences.putBoolean(CaptureActivity.SHOW_QR_CODE, false)
         if (forScanResult) {
+            val scanResult = if (analysisResult.isDonateUrl()) {
+                val index = analysisResult.indexOf("?")
+                if (index != -1) {
+                    analysisResult.take(index)
+                } else {
+                    analysisResult
+                }
+            } else {
+                analysisResult
+            }
             val result = Intent().apply {
-                putExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT, analysisResult)
+                putExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT, scanResult)
             }
             activity?.setResult(Activity.RESULT_OK, result)
             activity?.finish()
             return
         }
         if (analysisResult.startsWith(Constants.Scheme.DEVICE)) {
-            ConfirmBottomFragment.show(requireContext(), parentFragmentManager, analysisResult) {
-                activity?.finish()
+            ConfirmBottomFragment.show(requireContext(), parentFragmentManager, analysisResult) { _, complete ->
+                if (complete) {
+                    activity?.finish()
+                }
             }
+            // } else if (analysisResult.startsWith(Constants.Scheme.DEVICE_TRANSFER)) {
+            //     val uri = analysisResult.toUri()
+            //     if (uri == Uri.EMPTY) {
+            //         handleResult(requireActivity(), fromShortcut, analysisResult)
+            //         return
+            //     }
+            //     TransferActivity.parseUri(requireContext(), false, uri, {
+            //         activity?.finish()
+            //     }) {
+            //         handleResult(requireActivity(), fromShortcut, analysisResult)
+            //     }
         } else {
             if (fromScan()) {
-                handleResult(analysisResult)
+                val externalSchemes = requireContext().defaultSharedPreferences.getStringSet(PREF_EXTERNAL_SCHEMES, emptySet())
+                if (!externalSchemes.isNullOrEmpty() && analysisResult.matchResourcePattern(externalSchemes)) {
+                    WebActivity.show(requireContext(), analysisResult, null)
+                    activity?.finish()
+                    return
+                }
+                handleResult(requireActivity(), fromShortcut, analysisResult)
             } else {
                 pseudoNotificationView?.addContent(analysisResult)
             }
@@ -400,7 +518,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
         private val detecting = AtomicBoolean(false)
 
         override fun analyze(image: ImageProxy) {
-            if (!alreadyDetected && !image.planes.isNullOrEmpty() &&
+            if (!alreadyDetected && image.planes.isNotEmpty() &&
                 detecting.compareAndSet(false, true)
             ) {
                 try {
@@ -414,7 +532,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
             }
         }
 
-        @SuppressLint("UnsafeExperimentalUsageError")
+        @SuppressLint("UnsafeExperimentalUsageError", "UnsafeOptInUsageError")
         private fun decodeWithFirebaseVision(image: ImageProxy) {
             val processImage = image.image
             if (processImage == null) {
@@ -457,7 +575,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
             if (result != null) {
                 alreadyDetected = true
                 lifecycleScope.launch(Dispatchers.Main) {
-                    if (!isAdded) return@launch
+                    if (viewDestroyed()) return@launch
                     handleAnalysis(result)
                 }
             }
@@ -470,7 +588,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
             if (result != null) {
                 alreadyDetected = true
                 lifecycleScope.launch(Dispatchers.Main) {
-                    if (!isAdded) return@launch
+                    if (viewDestroyed()) return@launch
                     handleAnalysis(result)
                 }
             }
@@ -491,22 +609,21 @@ abstract class BaseCameraxFragment : VisionFragment() {
     class S : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         lateinit var listener: ScaleGestureDetector.OnScaleGestureListener
 
-        override fun onScale(detector: ScaleGestureDetector?): Boolean {
+        override fun onScale(detector: ScaleGestureDetector): Boolean {
             return listener.onScale(detector)
         }
     }
 
     inner class PinchToZoomGestureDetector(
         context: Context,
-        s: S = S()
+        s: S = S(),
     ) : ScaleGestureDetector(context, s), ScaleGestureDetector.OnScaleGestureListener {
         init {
             s.listener = this
         }
 
-        override fun onScale(detector: ScaleGestureDetector?): Boolean {
-            var scale = detector?.scaleFactor ?: return true
-
+        override fun onScale(detector: ScaleGestureDetector): Boolean {
+            var scale = detector.scaleFactor
             scale = if (scale > 1f) {
                 1.0f + (scale - 1.0f) * 2
             } else {
@@ -519,9 +636,9 @@ abstract class BaseCameraxFragment : VisionFragment() {
             return true
         }
 
-        override fun onScaleBegin(detector: ScaleGestureDetector?) = true
+        override fun onScaleBegin(detector: ScaleGestureDetector) = true
 
-        override fun onScaleEnd(detector: ScaleGestureDetector?) {
+        override fun onScaleEnd(detector: ScaleGestureDetector) {
         }
     }
 }
@@ -529,5 +646,5 @@ abstract class BaseCameraxFragment : VisionFragment() {
 val donateSupported = arrayOf(
     "bitcoin:", "bitcoincash:", "bitcoinsv:", "ethereum:",
     "litecoin:", "dash:", "ripple:", "zcash:", "horizen:", "monero:", "binancecoin:",
-    "stellar:", "dogecoin:"
+    "stellar:", "dogecoin:", "mobilecoin:",
 )

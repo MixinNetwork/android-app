@@ -1,22 +1,23 @@
 package one.mixin.android.jwt
 
-import net.i2p.crypto.eddsa.EdDSAPrivateKey
-import net.i2p.crypto.eddsa.EdDSAPublicKey
-import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
-import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
+import io.jsonwebtoken.EdDSAPrivateKey
+import io.jsonwebtoken.EdDSAPublicKey
+import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants.DELAY_SECOND
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.generateRSAKeyPair
 import one.mixin.android.crypto.getPrivateKeyPem
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.mock.mockAccount
 import one.mixin.android.mock.mockRequest
 import one.mixin.android.session.Session
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
 import java.security.Security
+import java.util.UUID
+import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class JwtTest {
 
@@ -25,42 +26,84 @@ class JwtTest {
     }
 
     @Test
-    fun testJwtRSA() {
+    fun testLegacyJwtRSA() {
         val rsaKey = generateRSAKeyPair(1024)
         val token = rsaKey.getPrivateKeyPem()
         val key = getRSAPrivateKeyFromString(token)
         val account = mockAccount()
-        val signToken = Session.signToken(account, mockRequest(), key)
-        val isExpire = Session.requestDelay(account, signToken, DELAY_SECOND, key).isExpire
+        val signToken =
+            Session.signLegacyToken(account, mockRequest(), UUID.randomUUID().toString(), key)
+        val isExpire = Session.requestLegacyDelay(account, signToken, DELAY_SECOND, key).isExpire
         assertFalse(isExpire)
         Thread.sleep(2000)
-        assertTrue(Session.requestDelay(account, signToken, 1, key).isExpire)
+        assertTrue(Session.requestLegacyDelay(account, signToken, 1, key).isExpire)
     }
 
     @Test
-    fun testJwtRSADefault() {
+    fun testLegacyJwtRSADefault() {
         val rsaKey = generateRSAKeyPair()
         val token = rsaKey.getPrivateKeyPem()
         val key = getRSAPrivateKeyFromString(token)
         val account = mockAccount()
-        val signToken = Session.signToken(account, mockRequest(), key)
-        val isExpire = Session.requestDelay(account, signToken, DELAY_SECOND, key).isExpire
+        val signToken =
+            Session.signLegacyToken(account, mockRequest(), UUID.randomUUID().toString(), key)
+        val isExpire = Session.requestLegacyDelay(account, signToken, DELAY_SECOND, key).isExpire
         assertFalse(isExpire)
         Thread.sleep(2000)
-        assertTrue(Session.requestDelay(account, signToken, 1, key).isExpire)
+        assertTrue(Session.requestLegacyDelay(account, signToken, 1, key).isExpire)
     }
+
     @Test
-    fun testJwtEdDSA() {
+    fun testLegacyJwtEdDSA() {
         val keyPair = generateEd25519KeyPair()
-        val seed = (keyPair.private as EdDSAPrivateKey).seed
-        val privateSpec = EdDSAPrivateKeySpec(seed, Session.ed25519)
-        val privateKey = EdDSAPrivateKey(privateSpec)
-        val publicKey = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, Session.ed25519))
+        val privateKey = EdDSAPrivateKey(keyPair.privateKey.toByteString())
+        val publicKey = EdDSAPublicKey(keyPair.publicKey.toByteString())
         val account = mockAccount()
-        val signToken = Session.signToken(account, mockRequest(), privateKey)
-        val isExpire = Session.requestDelay(account, signToken, DELAY_SECOND, publicKey).isExpire
+        val signToken = Session.signLegacyToken(account, mockRequest(), UUID.randomUUID().toString(), privateKey)
+        val isExpire = Session.requestLegacyDelay(account, signToken, DELAY_SECOND, publicKey).isExpire
         assertFalse(isExpire)
         Thread.sleep(2000)
-        assertTrue(Session.requestDelay(account, signToken, 1, publicKey).isExpire)
+        assertTrue(Session.requestLegacyDelay(account, signToken, 1, publicKey).isExpire)
+    }
+
+    @Test
+    fun testGoJwtRSA() {
+        val rsaKey = generateRSAKeyPair(1024)
+        val account = mockAccount()
+        val signToken = Session.signGoToken(account, mockRequest(), UUID.randomUUID().toString(), rsaKey.private.encoded.toPem(true).toByteArray())
+        val isExpire = Session.requestGoDelay(account, signToken, DELAY_SECOND, rsaKey.public.encoded.toPem(false).toByteArray()).isExpire
+        assertFalse(isExpire)
+        Thread.sleep(2000)
+        assertTrue(Session.requestGoDelay(account, signToken, 1, rsaKey.public.encoded.toPem(false).toByteArray()).isExpire)
+    }
+
+    @Test
+    fun testGoJwtRSADefault() {
+        val rsaKey = generateRSAKeyPair()
+        val account = mockAccount()
+        val signToken = Session.signGoToken(account, mockRequest(), UUID.randomUUID().toString(), rsaKey.private.encoded.toPem(true).toByteArray())
+        val isExpire = Session.requestGoDelay(account, signToken, DELAY_SECOND, rsaKey.public.encoded.toPem(false).toByteArray()).isExpire
+        assertFalse(isExpire)
+        Thread.sleep(2000)
+        assertTrue(Session.requestGoDelay(account, signToken, 1, rsaKey.public.encoded.toPem(false).toByteArray()).isExpire)
+    }
+
+    @Test
+    fun testGoJwtEdDSA() {
+        val keyPair = generateEd25519KeyPair()
+        val account = mockAccount()
+        val signToken = Session.signGoToken(account, mockRequest(), UUID.randomUUID().toString(), keyPair.privateKey)
+        val isExpire = Session.requestGoDelay(account, signToken, DELAY_SECOND, keyPair.publicKey).isExpire
+        assertFalse(isExpire)
+        Thread.sleep(2000)
+        assertTrue(Session.requestGoDelay(account, signToken, 1, keyPair.publicKey).isExpire)
+    }
+
+    private fun ByteArray.toPem(private: Boolean): String {
+        return if (private) {
+            "-----BEGIN RSA PRIVATE KEY-----\n" + this.base64Encode() + "\n-----END RSA PRIVATE KEY-----\n"
+        } else {
+            "-----BEGIN PUBLIC KEY-----\n" + this.base64Encode() + "\n-----END PUBLIC KEY-----\n"
+        }
     }
 }

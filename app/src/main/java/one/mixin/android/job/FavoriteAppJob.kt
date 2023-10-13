@@ -6,7 +6,7 @@ import one.mixin.android.db.insertUpdateList
 
 class FavoriteAppJob(vararg val userIds: String?) : BaseJob(
     Params(PRIORITY_UI_HIGH)
-        .addTags(GROUP).persist().requireNetwork()
+        .addTags(GROUP).persist().requireNetwork(),
 ) {
 
     companion object {

@@ -1,21 +1,25 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.view.Gravity
 import android.view.View
-import android.widget.LinearLayout
-import kotlinx.android.synthetic.main.item_chat_action_card.view.*
+import android.view.ViewGroup
+import androidx.constraintlayout.widget.ConstraintLayout
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatActionCardBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadRoundImage
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageItem
-import org.jetbrains.anko.dip
+import one.mixin.android.vo.isSecret
 
-class ActionCardHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
+    BaseViewHolder(binding.root) {
     private val radius by lazy {
-        itemView.context.dip(4)
+        4.dp
     }
 
     fun bind(
@@ -24,8 +28,10 @@ class ActionCardHolder constructor(containerView: View) : BaseViewHolder(contain
         isLast: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        isRepresentative: Boolean,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
+        super.bind(messageItem)
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
         if (hasSelect && isSelect) {
@@ -33,7 +39,7 @@ class ActionCardHolder constructor(containerView: View) : BaseViewHolder(contain
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        itemView.setOnLongClickListener {
+        val longClickListener = View.OnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -41,29 +47,47 @@ class ActionCardHolder constructor(containerView: View) : BaseViewHolder(contain
                 true
             }
         }
+        itemView.setOnLongClickListener(longClickListener)
+        binding.chatLayout.setOnLongClickListener(longClickListener)
+
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            messageItem.isPin ?: false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret(),
+        )
+
         if (isFirst && !isMe) {
-            itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            binding.chatName.visibility = View.VISIBLE
+            binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
-                itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-                itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
-                itemView.chat_name.setCompoundDrawables(null, null, null, null)
+                binding.chatName.setCompoundDrawables(null, null, null, null)
             }
-            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
-            itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+            binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
-            itemView.chat_name.visibility = View.GONE
+            binding.chatName.visibility = View.GONE
         }
-        val actionCard = GsonHelper.customGson.fromJson(messageItem.content, AppCardData::class.java)
-        itemView.chat_icon.loadRoundImage(actionCard.iconUrl, radius, R.drawable.holder_bot)
-        itemView.chat_title.text = actionCard.title
-        itemView.chat_description.text = actionCard.description
-        itemView.setOnClickListener {
+        val actionCard =
+            GsonHelper.customGson.fromJson(messageItem.content, AppCardData::class.java)
+        binding.chatIcon.loadRoundImage(actionCard.iconUrl, radius, R.drawable.holder_bot)
+        binding.chatTitle.text = actionCard.title
+        binding.chatDescription.text = actionCard.description
+        binding.chatLayout.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             } else {
                 onItemListener.onAppCardClick(actionCard, messageItem.userId)
+            }
+        }
+        itemView.setOnClickListener {
+            if (hasSelect) {
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
     }
@@ -73,31 +97,33 @@ class ActionCardHolder constructor(containerView: View) : BaseViewHolder(contain
         if (isMe) {
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatContentLayout,
                     R.drawable.bill_bubble_me_last,
-                    R.drawable.bill_bubble_me_last_night
+                    R.drawable.bill_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatContentLayout,
                     R.drawable.bill_bubble_me,
-                    R.drawable.bill_bubble_me_night
+                    R.drawable.bill_bubble_me_night,
                 )
             }
-            (itemView.chat_layout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.END
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
+            (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 16.dp
         } else {
-            (itemView.chat_layout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.START
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
+            (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 8.dp
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatContentLayout,
                     R.drawable.chat_bubble_other_last,
-                    R.drawable.chat_bubble_other_last_night
+                    R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatContentLayout,
                     R.drawable.chat_bubble_other,
-                    R.drawable.chat_bubble_other_night
+                    R.drawable.chat_bubble_other_night,
                 )
             }
         }

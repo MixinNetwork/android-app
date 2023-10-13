@@ -1,20 +1,17 @@
 package one.mixin.android.util.mention
 
 import android.graphics.Color
-import android.text.Editable
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
 import android.widget.EditText
 import androidx.collection.arraySetOf
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.mention.syntax.node.Node
-import one.mixin.android.util.mention.syntax.parser.Parser
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.User
+import one.mixin.android.widget.MentionEditText
+import java.lang.Integer.max
 import java.util.Stack
 import java.util.regex.Pattern
 
@@ -41,18 +38,17 @@ fun deleteMentionEnd(editText: EditText) {
     }
 }
 
-fun mentionReplace(source: Editable, user: User): CharSequence {
-
-    return when (val index = source.lastIndexOf("@")) {
-        -1 -> {
-            source
-        }
-        else -> {
-            source.apply {
-                source.replace(index, length, "@${user.identityNumber} ")
-                setSpan(ForegroundColorSpan(MENTION_COLOR), index, length - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            }
-        }
+fun mentionReplace(editText: MentionEditText, user: User, selectionEnd: Int) {
+    val edit = editText.text ?: return
+    val text = edit.substring(0, selectionEnd)
+    val index = text.lastIndexOf("@")
+    if (index >= 0) {
+        val replaceText = "@${user.identityNumber} "
+        val end = index + replaceText.length - 1
+        edit.replace(index, max(text.length, index), replaceText)
+        editText.mentionSet.add(user.identityNumber)
+        editText.renderMention()
+        editText.setSelection(end + 1)
     }
 }
 
@@ -62,13 +58,16 @@ fun parseMentionData(
     conversationId: String,
     userDao: UserDao,
     messageMentionDao: MessageMentionDao,
-    userId: String
+    userId: String,
 ): Pair<List<MentionUser>?, Boolean> {
     val matcher = mentionNumberPattern.matcher(text)
     val numbers = arraySetOf<String>()
     while (matcher.find()) {
         val identityNumber = matcher.group().replace("@", "").replace(" ", "")
         numbers.add(identityNumber)
+    }
+    if (numbers.isEmpty()) {
+        return Pair(null, false)
     }
     val account = Session.getAccount()
     val mentions = userDao.findUserByIdentityNumbers(numbers)
@@ -81,9 +80,29 @@ fun parseMentionData(
     return Pair(mentions, mentionMe)
 }
 
+fun parseMentionData(
+    text: String,
+    userDao: UserDao,
+): String? {
+    val matcher = mentionNumberPattern.matcher(text)
+    val numbers = arraySetOf<String>()
+    while (matcher.find()) {
+        val identityNumber = matcher.group().replace("@", "").replace(" ", "")
+        numbers.add(identityNumber)
+    }
+    if (numbers.isEmpty()) {
+        return null
+    }
+    val mentions = userDao.findUserByIdentityNumbers(numbers)
+    if (mentions.isEmpty()) {
+        return null
+    }
+    return GsonHelper.customGson.toJson(mentions)
+}
+
 fun rendMentionContent(
     text: String?,
-    userMap: Map<String, String>?
+    userMap: Map<String, String>?,
 ): String? {
     if (text == null || userMap == null) return text
     val matcher = mentionNumberPattern.matcher(text)
@@ -110,14 +129,6 @@ private val mentionEndPattern by lazy {
 val mentionNumberPattern: Pattern by lazy {
     Pattern.compile("@[\\d]{4,}")
 }
-
-val mentionMessageParser = Parser<MentionRenderContext, Node<MentionRenderContext>>()
-    .addRule(MentionRule())
-    .addRule(NormalRule())
-
-val mentionConversationParser = Parser<MentionRenderContext, Node<MentionRenderContext>>()
-    .addRule(MentionConversationRule())
-    .addRule(NormalRule())
 
 val MENTION_PRESS_COLOR by lazy { Color.parseColor("#665FA7E4") }
 val MENTION_COLOR by lazy { Color.parseColor("#5FA7E4") }

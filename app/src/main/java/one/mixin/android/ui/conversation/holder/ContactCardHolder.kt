@@ -1,22 +1,22 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.view.Gravity
 import android.view.View
-import android.widget.FrameLayout
-import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.date_wrapper.view.*
-import kotlinx.android.synthetic.main.item_chat_contact_card.view.*
+import android.view.ViewGroup
+import androidx.constraintlayout.widget.ConstraintLayout
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
-import one.mixin.android.extension.timeAgoClock
+import one.mixin.android.databinding.ItemChatContactCardBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import one.mixin.android.vo.showVerifiedOrBot
-import org.jetbrains.anko.dip
 
-class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
+class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolder(binding.root), Terminable {
 
     fun bind(
         messageItem: MessageItem,
@@ -25,49 +25,53 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
+        super.bind(messageItem)
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        itemView.avatar_iv.setInfo(
+
+        binding.avatarIv.setInfo(
             messageItem.sharedUserFullName,
             messageItem.sharedUserAvatarUrl,
             messageItem.sharedUserId
-                ?: "0"
+                ?: "0",
         )
-        itemView.name_tv.text = messageItem.sharedUserFullName
-        itemView.id_tv.text = messageItem.sharedUserIdentityNumber
-        itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        messageItem.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
+        binding.nameTv.text = messageItem.sharedUserFullName
+        binding.idTv.text = messageItem.sharedUserIdentityNumber
+        messageItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
 
         val isMe = Session.getAccountId() == messageItem.userId
         if (isFirst && !isMe) {
-            itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            binding.chatName.visibility = View.VISIBLE
+            binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
-                itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-                itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
-                itemView.chat_name.setCompoundDrawables(null, null, null, null)
+                binding.chatName.setCompoundDrawables(null, null, null, null)
             }
-            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
-            itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+            binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
-            itemView.chat_name.visibility = View.GONE
+            binding.chatName.visibility = View.GONE
         }
 
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
-            itemView.chat_flag.isVisible = statusIcon != null
-            itemView.chat_flag.setImageDrawable(statusIcon)
-            itemView.chat_secret.isVisible = secretIcon != null
-            itemView.chat_representative.isVisible = representativeIcon != null
-        }
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            messageItem.isPin ?: false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret(),
+        )
+
         chatLayout(isMe, isLast)
 
-        itemView.chat_layout.setOnClickListener {
+        binding.chatContentLayout.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onContactCardClick(messageItem.sharedUserId!!)
             } else {
@@ -87,7 +91,7 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
                 true
             }
         }
-        itemView.chat_layout.setOnLongClickListener {
+        binding.chatContentLayout.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -95,6 +99,7 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
                 true
             }
         }
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_layout)
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
@@ -102,31 +107,33 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
         if (isMe) {
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatContentLayout,
                     R.drawable.bill_bubble_me_last,
-                    R.drawable.bill_bubble_me_last_night
+                    R.drawable.bill_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatContentLayout,
                     R.drawable.bill_bubble_me,
-                    R.drawable.bill_bubble_me_night
+                    R.drawable.bill_bubble_me_night,
                 )
             }
-            (itemView.out_ll.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
+            (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 16.dp
         } else {
-            (itemView.out_ll.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
+            (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 8.dp
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatContentLayout,
                     R.drawable.chat_bubble_other_last,
-                    R.drawable.chat_bubble_other_last_night
+                    R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatContentLayout,
                     R.drawable.chat_bubble_other,
-                    R.drawable.chat_bubble_other_night
+                    R.drawable.chat_bubble_other_night,
                 )
             }
         }

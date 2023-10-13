@@ -7,12 +7,16 @@ import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import androidx.core.view.updateLayoutParams
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import org.jetbrains.anko.backgroundDrawable
-import org.jetbrains.anko.displayMetrics
+import one.mixin.android.extension.backgroundDrawable
+import one.mixin.android.extension.displayMetrics
+import one.mixin.android.extension.isTablet
+import one.mixin.android.extension.isWideScreen
 import kotlin.math.abs
 
 class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(context, theme) {
@@ -35,6 +39,13 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         container.backgroundDrawable = backDrawable
         backDrawable.alpha = 0
         sheetContainer = window!!.findViewById(com.google.android.material.R.id.design_bottom_sheet)
+        sheetContainer.updateLayoutParams<ViewGroup.LayoutParams> {
+            width = when {
+                context.isWideScreen() -> (context.displayMetrics.widthPixels * 0.5).toInt()
+                context.isTablet() -> (context.displayMetrics.widthPixels * 0.8).toInt()
+                else -> width
+            }
+        }
         behavior.addBottomSheetCallback(bottomSheetBehaviorCallback)
     }
 
@@ -43,10 +54,11 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
             super.show()
         } catch (ignored: Exception) {
         }
+        if (!::sheetContainer.isInitialized) return
 
         sheetContainer.measure(
             View.MeasureSpec.makeMeasureSpec(context.displayMetrics.widthPixels, View.MeasureSpec.AT_MOST),
-            View.MeasureSpec.makeMeasureSpec(context.displayMetrics.heightPixels, View.MeasureSpec.AT_MOST)
+            View.MeasureSpec.makeMeasureSpec(context.displayMetrics.heightPixels, View.MeasureSpec.AT_MOST),
         )
         if (isShown) return
         backDrawable.alpha = 0
@@ -73,14 +85,14 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
             ObjectAnimator.ofFloat(sheetContainer, "translationY", 0f),
-            ObjectAnimator.ofInt(backDrawable, "alpha", BACK_DRAWABLE_ALPHA)
+            ObjectAnimator.ofInt(backDrawable, "alpha", BACK_DRAWABLE_ALPHA),
         )
         animatorSet.duration = 200
         animatorSet.startDelay = 20
         animatorSet.interpolator = DecelerateInterpolator()
         animatorSet.addListener(
             object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
+                override fun onAnimationEnd(animation: Animator) {
                     if (curSheetAnimation != null && curSheetAnimation == animation) {
                         curSheetAnimation = null
                         container.setLayerType(View.LAYER_TYPE_NONE, null)
@@ -88,12 +100,12 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
                     }
                 }
 
-                override fun onAnimationCancel(animation: Animator?) {
+                override fun onAnimationCancel(animation: Animator) {
                     if (curSheetAnimation != null && curSheetAnimation == animation) {
                         curSheetAnimation = null
                     }
                 }
-            }
+            },
         )
         animatorSet.start()
         curSheetAnimation = animatorSet
@@ -109,11 +121,13 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
     }
 
     private fun dismissInternal() {
+        if (!::sheetContainer.isInitialized) return
+
         cancelSheetAnimation()
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
             ObjectAnimator.ofFloat(sheetContainer, "translationY", sheetContainer.measuredHeight.toFloat()),
-            ObjectAnimator.ofInt(backDrawable, "alpha", 0)
+            ObjectAnimator.ofInt(backDrawable, "alpha", 0),
         )
         animatorSet.duration = 180
         animatorSet.interpolator = AccelerateInterpolator()
@@ -133,7 +147,7 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
                         curSheetAnimation = null
                     }
                 }
-            }
+            },
         )
         animatorSet.start()
         curSheetAnimation = animatorSet

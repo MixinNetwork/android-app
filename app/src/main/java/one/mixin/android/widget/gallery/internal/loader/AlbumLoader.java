@@ -94,6 +94,9 @@ public class AlbumLoader extends CursorLoader {
 
     private static final String BUCKET_ORDER_BY = "datetaken DESC";
 
+    // workaround with device with too much albums
+    private static final int MAX_ALBUM_COUNT = 5000;
+
     private AlbumLoader(Context context, String selection, String[] selectionArgs) {
         super(
                 context,
@@ -130,11 +133,13 @@ public class AlbumLoader extends CursorLoader {
             int totalCount = 0;
             String allAlbumCoverPath = "";
             if (albums != null) {
+                int indexCount = albums.getColumnIndex(COLUMN_COUNT);
+                int indexData = albums.getColumnIndex(MediaStore.MediaColumns.DATA);
                 while (albums.moveToNext()) {
-                    totalCount += albums.getInt(albums.getColumnIndex(COLUMN_COUNT));
+                    totalCount += albums.getInt(indexCount);
                 }
                 if (albums.moveToFirst()) {
-                    allAlbumCoverPath = albums.getString(albums.getColumnIndex(MediaStore.MediaColumns.DATA));
+                    allAlbumCoverPath = albums.getString(indexData);
                 }
             }
 
@@ -147,13 +152,16 @@ public class AlbumLoader extends CursorLoader {
             String allAlbumCoverPath = "";
             SparseArray<Album> albumList = new SparseArray<>();
             if (albums != null) {
-                while (albums.moveToNext()) {
-                    String albumCoverPath = albums.getString(albums.getColumnIndex(MediaStore.MediaColumns.DATA));
+                while (albums.moveToNext() && totalCount < MAX_ALBUM_COUNT) {
+                    int indexBucket = albums.getColumnIndex(COLUMN_BUCKET_ID);
+                    int indexData = albums.getColumnIndex(MediaStore.MediaColumns.DATA);
+                    int indexName = albums.getColumnIndex(COLUMN_BUCKET_DISPLAY_NAME);
+                    String albumCoverPath = albums.getString(indexData);
                     if ("".equals(allAlbumCoverPath)) {
                         allAlbumCoverPath = albumCoverPath;
                     }
-                    int bucketId = albums.getInt(albums.getColumnIndex(COLUMN_BUCKET_ID));
-                    String bucketDisplayName = albums.getString(albums.getColumnIndex(COLUMN_BUCKET_DISPLAY_NAME));
+                    int bucketId = albums.getInt(indexBucket);
+                    String bucketDisplayName = albums.getString(indexName);
                     Album album = albumList.get(bucketId);
                     if (album == null) {
                         album = new Album(String.valueOf(bucketId), albumCoverPath, bucketDisplayName, 0);

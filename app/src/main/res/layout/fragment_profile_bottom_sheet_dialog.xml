@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/bg_upper_round"
     android:orientation="vertical">
 
@@ -37,9 +38,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:ellipsize="end"
+                android:gravity="center_horizontal"
                 android:maxWidth="280dp"
-                android:singleLine="true"
                 android:textColor="?attr/text_primary"
                 android:textSize="@dimen/bottom_name_text_size" />
 
@@ -53,7 +53,7 @@
                 android:maxLines="1"
                 android:textColor="?attr/text_minor" />
 
-            <one.mixin.android.widget.linktext.AutoLinkTextView
+            <one.mixin.android.widget.ExpandableTextView
                 android:id="@+id/detail_tv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -63,10 +63,12 @@
                 android:layout_marginEnd="32dp"
                 android:layout_marginBottom="16dp"
                 android:gravity="center"
-                android:maxLength="1024"
-                android:scrollbars="vertical"
                 android:textColor="?attr/text_primary"
-                android:textIsSelectable="true" />
+                android:maxLines="12"
+                android:scrollbars="vertical"
+                app:limitedMaxLines="6"
+                app:expandAction="@string/More"
+                app:expandActionColor="?attr/text_blue"/>
 
             <TextView
                 android:id="@+id/created_tv"

@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
     android:background="?attr/bg_window"
     android:clickable="true"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:focusable="true">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/logs" />
+        app:titleText="@string/Logs" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -25,18 +27,20 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="120dp"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            tools:ignore="UseCompoundDrawables">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_pin_empty" />
+                android:src="@drawable/ic_pin_empty"
+                android:contentDescription="@null" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin16"
-                android:text="@string/setting_logs_empty"
+                android:text="@string/No_logs"
                 android:textColor="?attr/text_minor" />
         </LinearLayout>
 

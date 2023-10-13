@@ -25,5 +25,5 @@ class Image(
     val webp: String,
 
     @SerializedName("webp_size:")
-    val webp_size: Int
+    val webp_size: Int,
 )

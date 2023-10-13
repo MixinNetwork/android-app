@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:background="?attr/bg_white"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <one.mixin.android.widget.AvatarView
+        android:id="@+id/search_avatar_iv"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center_vertical"
+        android:layout_margin="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/search_name"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/search_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:maxWidth="240dp"
+        android:singleLine="true"
+        android:textColor="?attr/text_primary"
+        android:textSize="16sp"
+        tools:text="name"/>
+
+    <ImageView
+        android:id="@+id/verified_iv"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_user_verified"
+        android:visibility="visible"
+        tools:ignore="ContentDescription"/>
+
+    <ImageView
+        android:id="@+id/bot_iv"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="8dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_bot"
+        android:visibility="visible"/>
+</LinearLayout>

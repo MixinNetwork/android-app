@@ -1,27 +1,26 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.annotation.SuppressLint
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.item_chat_action.view.*
-import one.mixin.android.R
-import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.Constants.Colors.SELECT_COLOR
+import one.mixin.android.databinding.ItemChatActionBinding
+import one.mixin.android.extension.bottomPadding
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.leftPadding
+import one.mixin.android.extension.rightPadding
+import one.mixin.android.extension.topPadding
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.ActionButton
-import org.jetbrains.anko.bottomPadding
-import org.jetbrains.anko.dip
-import org.jetbrains.anko.leftPadding
-import org.jetbrains.anko.rightPadding
-import org.jetbrains.anko.topPadding
 
-class ActionHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHolder(binding.root) {
 
     @SuppressLint("RestrictedApi")
     fun bind(
@@ -29,8 +28,9 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
         isFirst: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
+        super.bind(messageItem)
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
@@ -52,22 +52,22 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
         }
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
-            itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            binding.chatName.visibility = View.VISIBLE
+            binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
-                itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-                itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
-                itemView.chat_name.setCompoundDrawables(null, null, null, null)
+                binding.chatName.setCompoundDrawables(null, null, null, null)
             }
-            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
-            itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+            binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
-            itemView.chat_name.visibility = View.GONE
+            binding.chatName.visibility = View.GONE
         }
         if (itemView.tag != messageItem.content?.hashCode()) {
             val buttons = GsonHelper.customGson.fromJson(messageItem.content, Array<AppButtonData>::class.java)
-            itemView.flow_layout.removeAllViews()
+            binding.chatLayout.removeAllViews()
             for (b in buttons) {
                 val button = ActionButton(itemView.context)
                 button.setTextColor(
@@ -75,12 +75,11 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
                         ColorUtil.parseColor(b.color.trim())
                     } catch (e: Throwable) {
                         Color.BLACK
-                    }
+                    },
                 )
                 button.setTypeface(null, Typeface.BOLD)
                 button.text = b.label
-                button.supportBackgroundTintList = ColorStateList.valueOf(itemView.context.colorFromAttribute(R.attr.bg_bubble))
-                itemView.flow_layout.addView(button)
+                binding.chatLayout.addView(button)
                 (button.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp8
                 button.topPadding = dp8
                 button.bottomPadding = dp8

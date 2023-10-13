@@ -7,4 +7,4 @@
     android:orientation="vertical"
     android:padding="16dp"
     android:textColor="?attr/text_minor"
-    android:text="@string/contact_share_apps_tip" />
+    android:text="@string/profile_share_bot_hint" />

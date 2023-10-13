@@ -2,11 +2,11 @@ package one.mixin.android.ui.search.holder
 
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_search_header.view.*
+import one.mixin.android.databinding.ItemSearchHeaderBinding
 
-class HeaderHolder constructor(containerView: View) : RecyclerView.ViewHolder(containerView) {
+class HeaderHolder constructor(val binding: ItemSearchHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
     fun bind(text: String, showMore: Boolean) {
-        itemView.search_header_tv.text = text
-        itemView.search_header_more.visibility = if (showMore) View.VISIBLE else View.GONE
+        binding.searchHeaderTv.text = text
+        binding.searchHeaderMore.visibility = if (showMore) View.VISIBLE else View.GONE
     }
 }

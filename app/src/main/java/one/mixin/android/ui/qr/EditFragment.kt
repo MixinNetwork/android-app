@@ -1,18 +1,19 @@
 package one.mixin.android.ui.qr
 
 import android.Manifest
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.graphics.drawable.Drawable
-import android.net.Uri
+import android.media.MediaScannerConnection
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.load.DataSource
@@ -23,11 +24,11 @@ import com.google.mlkit.vision.common.InputImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_edit.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentEditBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.bounce
 import one.mixin.android.extension.copy
@@ -40,6 +41,7 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.GsonHelper
@@ -65,7 +67,7 @@ class EditFragment : VisionFragment() {
             path: String,
             isVideo: Boolean = false,
             fromGallery: Boolean = false,
-            fromScan: Boolean = false
+            fromScan: Boolean = false,
         ) = EditFragment().withArgs {
             putString(ARGS_PATH, path)
             putBoolean(IS_VIDEO, isVideo)
@@ -117,41 +119,55 @@ class EditFragment : VisionFragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_edit, container, false)
+    private var _binding: FragmentEditBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentEditBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        send_fl.post {
+        binding.sendFl.post {
             val navigationBarHeight = requireContext().navigationBarHeight()
-            send_fl.translationY = -navigationBarHeight.toFloat()
-            download_iv.translationY = -navigationBarHeight.toFloat()
+            binding.sendFl.translationY = -navigationBarHeight.toFloat()
+            binding.downloadIv.translationY = -navigationBarHeight.toFloat()
         }
-        close_iv.setOnClickListener { activity?.onBackPressed() }
-        download_iv.setOnClickListener {
-            RxPermissions(requireActivity())
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe { granted ->
-                    if (granted) {
-                        save()
-                    } else {
-                        context?.openPermissionSetting()
+        binding.closeIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.downloadIv.setOnClickListener {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe { granted ->
+                        if (granted) {
+                            save()
+                        } else {
+                            context?.openPermissionSetting()
+                        }
                     }
-                }
-            download_iv.bounce()
+            } else {
+                save()
+            }
+            binding.downloadIv.bounce()
         }
-        send_fl.setOnClickListener {
+        binding.sendFl.setOnClickListener {
             if (isVideo) {
                 ForwardActivity.show(
                     requireContext(),
                     arrayListOf(
                         ForwardMessage(
                             ForwardCategory.Video,
-                            GsonHelper.customGson.toJson(VideoMessagePayload(path))
-                        )
+                            GsonHelper.customGson.toJson(VideoMessagePayload(File(path).toUri().toString())),
+                        ),
                     ),
-                    ForwardAction.System(name = getString(R.string.send))
+                    ForwardAction.System(name = getString(R.string.Send), needEdit = false),
                 )
             } else {
                 ForwardActivity.show(
@@ -159,39 +175,45 @@ class EditFragment : VisionFragment() {
                     arrayListOf(
                         ForwardMessage(
                             ShareCategory.Image,
-                            GsonHelper.customGson.toJson(ShareImageData(path))
-                        )
+                            GsonHelper.customGson.toJson(ShareImageData(File(path).toUri().toString())),
+                        ),
                     ),
-                    ForwardAction.System(name = getString(R.string.send))
+                    ForwardAction.System(name = getString(R.string.Send), needEdit = false),
                 )
             }
         }
         if (fromScan) {
-            send_fl.isVisible = false
-            download_iv.isVisible = false
+            binding.sendFl.isVisible = false
+            binding.downloadIv.isVisible = false
         }
         if (isVideo) {
             setBg()
             mixinPlayer.loadVideo(path)
-            preview_video_texture.visibility = VISIBLE
-            mixinPlayer.setVideoTextureView(preview_video_texture)
+            binding.previewVideoTexture.visibility = VISIBLE
+            mixinPlayer.setVideoTextureView(binding.previewVideoTexture)
             mixinPlayer.start()
         } else {
-            preview_iv.visibility = VISIBLE
+            binding.previewIv.visibility = VISIBLE
             if (fromGallery) {
-                preview_iv.loadImage(path)
+                binding.previewIv.loadImage(path)
                 scan()
                 setBg()
             } else {
-                preview_iv.scaleType = ImageView.ScaleType.CENTER_CROP
-                preview_iv.loadImage(path, requestListener = glideRequestListener)
+                binding.previewIv.scaleType = ImageView.ScaleType.CENTER_CROP
+                binding.previewIv.loadImage(path, requestListener = glideRequestListener)
             }
         }
-        download_iv.isVisible = !fromGallery
+        binding.downloadIv.isVisible = !fromGallery
+    }
+
+    override fun onBackPressed(): Boolean {
+        val captureFragment = activity?.supportFragmentManager?.findFragmentByTag(CaptureFragment.TAG) as? CaptureFragment
+        captureFragment?.startImageAnalysisIfNeeded()
+        return super.onBackPressed()
     }
 
     private fun scan() = lifecycleScope.launch(Dispatchers.IO) {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         val bitmap = BitmapFactory.decodeFile(path) ?: return@launch
         try {
@@ -201,16 +223,16 @@ class EditFragment : VisionFragment() {
                     val content = result.firstOrNull()?.rawValue
                     if (!content.isNullOrBlank()) {
                         lifecycleScope.launch innerLaunch@{
-                            if (!isAdded) return@innerLaunch
+                            if (viewDestroyed()) return@innerLaunch
                             if (fromScan) {
-                                handleResult(content)
+                                handleResult(requireActivity(), fromShortcut, content)
                             } else {
                                 pseudoNotificationView?.addContent(content)
                             }
                         }
                     } else {
                         lifecycleScope.launch innerLaunch@{
-                            if (!isAdded) return@innerLaunch
+                            if (viewDestroyed()) return@innerLaunch
                             if (fromScan) {
                                 showNoResultDialog()
                             }
@@ -227,7 +249,7 @@ class EditFragment : VisionFragment() {
         if (!result.isNullOrBlank()) {
             withContext(Dispatchers.Main) {
                 if (fromScan) {
-                    handleResult(result)
+                    handleResult(requireActivity(), fromShortcut, result)
                 } else {
                     pseudoNotificationView?.addContent(result)
                 }
@@ -243,22 +265,22 @@ class EditFragment : VisionFragment() {
 
     private fun showNoResultDialog() {
         alertDialogBuilder()
-            .setMessage(getString(R.string.qr_not_found))
+            .setMessage(getString(R.string.QR_Code_not_found))
             .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                 dialog.dismiss()
             }
             .setOnDismissListener {
-                activity?.onBackPressed()
+                activity?.onBackPressedDispatcher?.onBackPressed()
             }
             .show()
     }
 
     private fun setBg() {
-        root_view?.setBackgroundColor(resources.getColor(R.color.black, null))
+        binding.rootView.setBackgroundColor(resources.getColor(R.color.black, null))
     }
 
     private fun save() = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         val outFile = if (isVideo) {
             requireContext().getPublicPicturePath().createVideoTemp("mp4", false)
@@ -268,8 +290,8 @@ class EditFragment : VisionFragment() {
         withContext(Dispatchers.IO) {
             File(path).copy(outFile)
         }
-        requireContext().sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
-        requireContext().toast(getString(R.string.save_to, outFile.absolutePath))
+        MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
+        toast(getString(R.string.Save_to, outFile.absolutePath))
     }
 
     private val videoListener = object : MixinPlayer.VideoPlayerListenerWrapper() {
@@ -283,7 +305,10 @@ class EditFragment : VisionFragment() {
             } else {
                 matrix.postScale(1f, screenWidth / ratio / screenHeight, screenWidth / 2f, screenHeight / 2f)
             }
-            preview_video_texture.setTransform(matrix)
+
+            if (viewDestroyed()) return
+
+            binding.previewVideoTexture.setTransform(matrix)
         }
     }
 
@@ -291,19 +316,19 @@ class EditFragment : VisionFragment() {
         override fun onLoadFailed(
             e: GlideException?,
             model: Any?,
-            target: Target<Drawable?>?,
-            isFirstResource: Boolean
+            target: Target<Drawable?>,
+            isFirstResource: Boolean,
         ): Boolean {
             setBg()
             return false
         }
 
         override fun onResourceReady(
-            resource: Drawable?,
-            model: Any?,
+            resource: Drawable,
+            model: Any,
             target: Target<Drawable?>?,
-            dataSource: DataSource?,
-            isFirstResource: Boolean
+            dataSource: DataSource,
+            isFirstResource: Boolean,
         ): Boolean {
             setBg()
             return false

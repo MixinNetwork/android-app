@@ -10,12 +10,10 @@ import androidx.navigation.findNavController
 import androidx.paging.PagedList
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_transactions_user.*
-import kotlinx.android.synthetic.main.layout_empty_transaction.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentTransactionsUserBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.wallet.BaseTransactionsFragment
@@ -23,8 +21,10 @@ import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.SnapshotItem
 
+@Suppress("DEPRECATION")
 @AndroidEntryPoint
 class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
 
@@ -39,11 +39,13 @@ class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? =
         layoutInflater.inflate(R.layout.fragment_transactions_user, container, false).apply {
             isClickable = true
         }
+
+    private val binding by viewBinding(FragmentTransactionsUserBinding::bind)
 
     private val adapter = SnapshotPagedAdapter()
 
@@ -53,13 +55,13 @@ class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
-        title_view.right_animator.visibility = View.GONE
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        binding.transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        binding.titleView.rightAnimator.visibility = View.GONE
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         adapter.listener = this
-        transactions_rv.adapter = adapter
+        binding.transactionsRv.adapter = adapter
         dataObserver = Observer {
-            if (it != null && it.isNotEmpty()) {
+            if (it.isNotEmpty()) {
                 showEmpty(false)
             } else {
                 showEmpty(true)
@@ -86,14 +88,14 @@ class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem
                             Bundle().apply {
                                 putParcelable(TransactionFragment.ARGS_SNAPSHOT, snapshot)
                                 putParcelable(TransactionsFragment.ARGS_ASSET, it)
-                            }
+                            },
                         )
                 } catch (e: IllegalStateException) {
                     val fragment = TransactionFragment.newInstance(snapshot, it)
                     activity?.addFragment(
                         this@UserTransactionsFragment,
                         fragment,
-                        TransactionFragment.TAG
+                        TransactionFragment.TAG,
                     )
                 }
             }
@@ -106,18 +108,18 @@ class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem
 
     private fun showEmpty(show: Boolean) {
         if (show) {
-            if (empty_rl.visibility == View.GONE) {
-                empty_rl.visibility = View.VISIBLE
+            if (binding.empty.emptyRl.visibility == View.GONE) {
+                binding.empty.emptyRl.visibility = View.VISIBLE
             }
-            if (transactions_rv.visibility == View.VISIBLE) {
-                transactions_rv.visibility = View.GONE
+            if (binding.transactionsRv.visibility == View.VISIBLE) {
+                binding.transactionsRv.visibility = View.GONE
             }
         } else {
-            if (empty_rl.visibility == View.VISIBLE) {
-                empty_rl.visibility = View.GONE
+            if (binding.empty.emptyRl.visibility == View.VISIBLE) {
+                binding.empty.emptyRl.visibility = View.GONE
             }
-            if (transactions_rv.visibility == View.GONE) {
-                transactions_rv.visibility = View.VISIBLE
+            if (binding.transactionsRv.visibility == View.GONE) {
+                binding.transactionsRv.visibility = View.VISIBLE
             }
         }
     }

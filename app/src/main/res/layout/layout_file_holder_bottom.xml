@@ -14,8 +14,8 @@
         android:textColor="@color/gray_50"
         android:textSize="12sp"/>
 
-    <androidx.appcompat.widget.AppCompatSeekBar
-        android:id="@+id/seek_bar"
+    <one.mixin.android.widget.NoSkipSeekBar
+        android:id="@+id/no_skip_seek_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 </merge>

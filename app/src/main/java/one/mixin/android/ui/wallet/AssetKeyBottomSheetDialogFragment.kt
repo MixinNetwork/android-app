@@ -2,14 +2,13 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_asset_key_bottom.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
-import one.mixin.android.R
+import one.mixin.android.databinding.FragmentAssetKeyBottomBinding
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
 
@@ -23,21 +22,27 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    private val binding by viewBinding(FragmentAssetKeyBottomBinding::inflate)
+
     private val asset: AssetItem by lazy {
-        requireArguments().getParcelable(ARGS_ASSET)!!
+        requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)!!
     }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_asset_key_bottom, null)
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
-        contentView.title_view.right_iv.setOnClickListener { dismiss() }
-        contentView.title_view.title_tv.text = asset.name
-        contentView.title_view.showBadgeCircleView(asset)
-        contentView.symbol_as_tv.text = asset.symbol
-        contentView.chain_as_tv.text = asset.chainName
-        contentView.asset_key_as_tv.text = asset.assetKey
+        binding.apply {
+            titleView.apply {
+                rightIv.setOnClickListener { dismiss() }
+                titleTv.text = asset.name
+            }
+            titleView.showBadgeCircleView(asset)
+            symbolAsTv.text = asset.symbol
+            chainAsTv.text = asset.chainName
+            assetKeyAsTv.text = asset.assetKey
+        }
     }
 }

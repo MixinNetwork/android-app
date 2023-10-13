@@ -2,14 +2,18 @@ package one.mixin.android.ui.conversation.holder
 
 import android.content.Context
 import android.graphics.Color
-import android.view.View
-import kotlinx.android.synthetic.main.item_chat_system.view.*
+import one.mixin.android.Constants.Colors.SELECT_COLOR
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.databinding.ItemChatSystemBinding
+import one.mixin.android.extension.highlightStarTag
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.websocket.SystemConversationAction
+import one.mixin.android.widget.picker.toTimeInterval
 
-class SystemHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHolder(binding.root) {
 
     var context: Context = itemView.context
     private fun getText(id: Int) = context.getText(id).toString()
@@ -18,10 +22,9 @@ class SystemHolder constructor(containerView: View) : BaseViewHolder(containerVi
         messageItem: MessageItem,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         val id = meId
-
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
@@ -43,76 +46,112 @@ class SystemHolder constructor(containerView: View) : BaseViewHolder(containerVi
 
         when (messageItem.actionName) {
             SystemConversationAction.CREATE.name -> {
-                itemView.chat_info.text =
+                binding.chatInfo.text =
                     String.format(
-                        getText(R.string.chat_group_create),
+                        getText(R.string.created_this_group),
                         if (id == messageItem.userId) {
-                            getText(R.string.chat_you_start)
+                            getText(R.string.You)
                         } else {
                             messageItem.userFullName
                         },
-                        messageItem.groupName
                     )
             }
             SystemConversationAction.ADD.name -> {
-                itemView.chat_info.text =
+                binding.chatInfo.text =
                     String.format(
                         getText(R.string.chat_group_add),
                         if (id == messageItem.userId) {
-                            getText(R.string.chat_you_start)
+                            getText(R.string.You)
                         } else {
                             messageItem.userFullName
                         },
                         if (id == messageItem.participantUserId) {
-                            getText(R.string.chat_you)
+                            getText(R.string.you)
                         } else {
                             messageItem.participantFullName
-                        }
+                        },
                     )
             }
             SystemConversationAction.REMOVE.name -> {
-                itemView.chat_info.text =
+                binding.chatInfo.text =
                     String.format(
                         getText(R.string.chat_group_remove),
                         if (id == messageItem.userId) {
-                            getText(R.string.chat_you_start)
+                            getText(R.string.You)
                         } else {
                             messageItem.userFullName
                         },
                         if (id == messageItem.participantUserId) {
-                            getText(R.string.chat_you)
+                            getText(R.string.you)
                         } else {
                             messageItem.participantFullName
-                        }
+                        },
                     )
             }
             SystemConversationAction.JOIN.name -> {
-                itemView.chat_info.text =
+                binding.chatInfo.text =
                     String.format(
                         getText(R.string.chat_group_join),
                         if (id == messageItem.participantUserId) {
-                            getText(R.string.chat_you_start)
+                            getText(R.string.You)
                         } else {
                             messageItem.participantFullName
-                        }
+                        },
                     )
             }
             SystemConversationAction.EXIT.name -> {
-                itemView.chat_info.text =
+                binding.chatInfo.text =
                     String.format(
                         getText(R.string.chat_group_exit),
                         if (id == messageItem.participantUserId) {
-                            getText(R.string.chat_you_start)
+                            getText(R.string.You)
                         } else {
                             messageItem.participantFullName
-                        }
+                        },
                     )
             }
             SystemConversationAction.ROLE.name -> {
-                itemView.chat_info.text = getText(R.string.group_role)
+                binding.chatInfo.text = getText(R.string.group_role)
+            }
+            SystemConversationAction.EXPIRE.name -> {
+                val timeInterval = messageItem.content?.toLongOrNull()
+                val name = if (id == messageItem.userId) {
+                    getText(R.string.You)
+                } else {
+                    messageItem.userFullName
+                }
+                binding.chatInfo.text =
+                    when {
+                        timeInterval == null -> { // Messages received in the old version
+                            String.format(
+                                getText(R.string.changed_disappearing_message_settings),
+                                name,
+                            )
+                        }
+                        timeInterval <= 0 -> {
+                            String.format(
+                                getText(R.string.disable_disappearing_message),
+                                name,
+                            )
+                        }
+                        else -> {
+                            String.format(
+                                getText(R.string.set_disappearing_message_time_to),
+                                name,
+                                toTimeInterval(timeInterval),
+                            )
+                        }
+                    }
             }
             else -> {
-                itemView.chat_info.text = getText(R.string.chat_not_support)
+                val learn: String = MixinApplication.get().getString(R.string.Learn_More)
+                val info = MixinApplication.get().getString(R.string.chat_not_support, "**$learn**")
+                val learnUrl = MixinApplication.get().getString(R.string.chat_not_support_url)
+                binding.chatInfo.highlightStarTag(
+                    info,
+                    arrayOf(learnUrl),
+                    onItemListener = onItemListener,
+                )
             }
         }
     }

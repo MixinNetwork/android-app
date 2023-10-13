@@ -1,7 +1,6 @@
 package one.mixin.android.crypto.storage
 
 import android.content.Context
-import android.util.Log
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.SessionDao
 import one.mixin.android.crypto.db.SignalDatabase
@@ -10,6 +9,7 @@ import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.protocol.CiphertextMessage
 import org.whispersystems.libsignal.state.SessionRecord
 import org.whispersystems.libsignal.state.SessionStore
+import timber.log.Timber
 import java.io.IOException
 
 class MixinSessionStore(context: Context) : SessionStore {
@@ -23,7 +23,7 @@ class MixinSessionStore(context: Context) : SessionStore {
                 try {
                     return SessionRecord(session.record)
                 } catch (e: IOException) {
-                    Log.w(TAG, "No existing session information found.")
+                    Timber.tag(TAG).w("No existing session information found.")
                 }
             }
             return SessionRecord()
@@ -91,7 +91,7 @@ class MixinSessionStore(context: Context) : SessionStore {
                     }
                 }
             } catch (e: IOException) {
-                Log.w(TAG, "archiveSiblingSessions new SessionRecord failed")
+                Timber.tag(TAG).w("archiveSiblingSessions new SessionRecord failed")
             }
         }
     }

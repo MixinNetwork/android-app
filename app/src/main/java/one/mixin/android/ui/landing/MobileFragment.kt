@@ -4,115 +4,145 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
+import android.text.Selection
 import android.text.TextWatcher
-import android.view.LayoutInflater
 import android.view.View
 import android.view.View.AUTOFILL_HINT_PHONE
 import android.view.View.GONE
-import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import com.google.i18n.phonenumbers.NumberParseException
+import androidx.lifecycle.lifecycleScope
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
 import com.mukesh.countrypicker.Country
 import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_mobile.*
-import kotlinx.android.synthetic.main.fragment_mobile.keyboard
-import one.mixin.android.Constants.KEYS
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
+import one.mixin.android.databinding.FragmentMobileBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.vibrate
+import one.mixin.android.extension.tickVibrate
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
+import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
+import one.mixin.android.util.isAnonymousNumber
+import one.mixin.android.util.isValidNumber
+import one.mixin.android.util.viewBinding
+import one.mixin.android.util.xinDialCode
+import one.mixin.android.widget.CaptchaView
 import one.mixin.android.widget.Keyboard
-import one.mixin.android.widget.RecaptchaView
+import timber.log.Timber
 
 @AndroidEntryPoint
-class MobileFragment : BaseFragment() {
+class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
     companion object {
         const val TAG: String = "MobileFragment"
         const val ARGS_PHONE_NUM = "args_phone_num"
+        const val ARGS_FROM = "args_from"
+        const val FROM_LANDING = 0
+        const val FROM_CHANGE_PHONE_ACCOUNT = 1
+        const val FROM_DELETE_ACCOUNT = 2
 
-        fun newInstance(pin: String? = null): MobileFragment = MobileFragment().apply {
-            val b = Bundle().apply {
-                if (pin != null) {
-                    putString(ARGS_PIN, pin)
+        fun newInstance(pin: String? = null, from: Int = FROM_LANDING): MobileFragment =
+            MobileFragment().apply {
+                val b = Bundle().apply {
+                    if (pin != null) {
+                        putString(ARGS_PIN, pin)
+                    }
+                    putInt(ARGS_FROM, from)
                 }
+                arguments = b
             }
-            arguments = b
-        }
     }
 
     private val mobileViewModel by viewModels<MobileViewModel>()
+    private val binding by viewBinding(FragmentMobileBinding::bind)
 
     private lateinit var countryPicker: CountryPicker
-    private lateinit var mCountry: Country
+    private var mCountry: Country? = null
     private val phoneUtil = PhoneNumberUtil.getInstance()
     private var phoneNumber: Phonenumber.PhoneNumber? = null
+    private var anonymousNumber: String? = null
 
     private var pin: String? = null
+    private val from: Int by lazy {
+        requireArguments().getInt(ARGS_FROM, FROM_LANDING)
+    }
 
-    private var recaptchaView: RecaptchaView? = null
+    private var captchaView: CaptchaView? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_mobile, container, false) as ViewGroup
+    private val mixinCountry by lazy {
+        Country().apply {
+            name = getString(R.string.Mixin)
+            code = getString(R.string.Mixin)
+            flag = com.mukesh.countrypicker.R.drawable.flag_mixin
+            dialCode = xinDialCode
+        }
+    }
 
     @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        pin = requireArguments().getString(ARGS_PIN)
-        if (pin != null) {
-            mobile_title_tv.setText(R.string.landing_enter_new_mobile_number)
-        }
-        back_iv.setOnClickListener { activity?.onBackPressed() }
-        country_icon_iv.setOnClickListener { showCountry() }
-        country_code_tv.setOnClickListener { showCountry() }
-        mobile_fab.setOnClickListener { showDialog() }
-        mobile_et.showSoftInputOnFocus = false
-        mobile_et.addTextChangedListener(mWatcher)
-        mobile_et.requestFocus()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mobile_et.setAutofillHints(AUTOFILL_HINT_PHONE)
-        }
-        mobile_cover.isClickable = true
+        binding.apply {
+            pin = requireArguments().getString(ARGS_PIN)
+            if (pin != null) {
+                titleSwitcher.setCurrentText(getString(R.string.Enter_new_phone_number))
+            }
+            backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            countryIconIv.setOnClickListener { showCountry() }
+            countryCodeEt.addTextChangedListener(countryCodeWatcher)
+            countryCodeEt.showSoftInputOnFocus = false
+            mobileFab.setOnClickListener { showDialog() }
+            mobileEt.showSoftInputOnFocus = false
+            mobileEt.addTextChangedListener(mWatcher)
+            mobileEt.requestFocus()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                mobileEt.setAutofillHints(AUTOFILL_HINT_PHONE)
+            }
+            mobileCover.isClickable = true
 
-        countryPicker = CountryPicker.newInstance()
-        countryPicker.setListener { _: String, code: String, dialCode: String, flagResId: Int ->
-            Unit
-            mCountry = Country()
-            mCountry.code = code
-            mCountry.dialCode = dialCode
-            mCountry.flag = flagResId
-            country_icon_iv.setImageResource(flagResId)
-            country_code_tv.text = dialCode
-            handleEditView(mobile_et.text.toString())
-            activity?.supportFragmentManager?.popBackStackImmediate()
-            country_icon_iv.hideKeyboard()
-        }
-        getUserCountryInfo()
+            countryPicker = CountryPicker.newInstance()
+            countryPicker.setListener { _: String, code: String, dialCode: String, flagResId: Int ->
+                mCountry = Country()
+                mCountry?.code = code
+                mCountry?.dialCode = dialCode
+                mCountry?.flag = flagResId
+                countryIconIv.setImageResource(flagResId)
+                countryCodeEt.setText(dialCode)
+                handleEditView()
+                activity?.supportFragmentManager?.popBackStackImmediate()
+                countryIconIv.hideKeyboard()
 
-        keyboard.setKeyboardKeys(KEYS)
-        keyboard.setOnClickKeyboardListener(mKeyboardListener)
-        keyboard.animate().translationY(0f).start()
+                mobileEt.requestFocus()
+                mobileEt.setSelection(mobileEt.text?.length ?: 0)
+                updateMobileOrAnonymous(dialCode)
+            }
+            getUserCountryInfo()
+
+            keyboard.tipTitleEnabled = false
+            keyboard.initPinKeys()
+            keyboard.setOnClickKeyboardListener(mKeyboardListener)
+            keyboard.animate().translationY(0f).start()
+        }
     }
 
     override fun onBackPressed(): Boolean {
-        if (recaptchaView?.isVisible() == true) {
+        if (captchaView?.isVisible() == true) {
             hideLoading()
             return true
         }
@@ -127,35 +157,53 @@ class MobileFragment : BaseFragment() {
         alertDialogBuilder()
             .setMessage(
                 getString(
-                    R.string.landing_invitation_dialog_content,
-                    mCountry.dialCode + " " + mobile_et.text.toString()
-                )
+                    if (anonymousNumber != null) R.string.landing_anonymous_dialog_content else R.string.landing_invitation_dialog_content,
+                    mCountry?.dialCode + " " + binding.mobileEt.text.toString(),
+                ),
             )
-            .setNegativeButton(R.string.change) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.confirm) { dialog, _ ->
+            .setNegativeButton(R.string.Change) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.Confirm) { dialog, _ ->
                 requestSend()
                 dialog.dismiss()
             }
             .show()
     }
 
-    private fun requestSend(gRecaptchaResponse: String? = null) {
-        if (!isAdded) return
+    private fun requestSend(captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null) {
+        if (viewDestroyed()) return
 
-        mobile_fab.show()
-        mobile_cover.visibility = VISIBLE
-        val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
+        binding.mobileFab.show()
+        binding.mobileCover.visibility = VISIBLE
+        val phoneNum = anonymousNumber ?: phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
         val verificationRequest = VerificationRequest(
             phoneNum,
-            if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name,
-            gRecaptchaResponse
+            when (from) {
+                FROM_DELETE_ACCOUNT -> {
+                    VerificationPurpose.DEACTIVATED.name
+                }
+
+                FROM_CHANGE_PHONE_ACCOUNT -> {
+                    VerificationPurpose.PHONE.name
+                }
+
+                else -> {
+                    VerificationPurpose.SESSION.name
+                }
+            },
         )
+        if (captchaResponse != null) {
+            if (captchaResponse.first.isG()) {
+                verificationRequest.gRecaptchaResponse = captchaResponse.second
+            } else {
+                verificationRequest.hCaptchaResponse = captchaResponse.second
+            }
+        }
         mobileViewModel.loginVerification(verificationRequest)
             .autoDispose(stopScope).subscribe(
                 { r: MixinResponse<VerificationResponse> ->
                     if (!r.isSuccess) {
-                        if (r.errorCode == NEED_RECAPTCHA) {
-                            initAndLoadRecaptcha()
+                        if (r.errorCode == NEED_CAPTCHA) {
+                            initAndLoadCaptcha()
                         } else {
                             hideLoading()
                             ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
@@ -164,73 +212,108 @@ class MobileFragment : BaseFragment() {
                     }
                     hideLoading()
                     val verificationResponse = r.data as VerificationResponse
-                    activity?.addFragment(
-                        this@MobileFragment,
-                        VerificationFragment.newInstance(
-                            verificationResponse.id,
-                            phoneNum,
-                            pin,
-                            verificationResponse.hasEmergencyContact
-                        ),
-                        VerificationFragment.TAG
-                    )
+                    if (!r.data?.deactivatedAt.isNullOrBlank() && from == FROM_LANDING) {
+                        LandingDeleteAccountFragment.newInstance(r.data?.deactivatedAt)
+                            .setContinueCallback {
+                                activity?.addFragment(
+                                    this@MobileFragment,
+                                    VerificationFragment.newInstance(
+                                        verificationResponse.id,
+                                        phoneNum,
+                                        pin,
+                                        verificationResponse.hasEmergencyContact,
+                                        from,
+                                    ),
+                                    VerificationFragment.TAG,
+                                )
+                            }.showNow(parentFragmentManager, LandingDeleteAccountFragment.TAG)
+                    } else {
+                        activity?.addFragment(
+                            this@MobileFragment,
+                            VerificationFragment.newInstance(
+                                verificationResponse.id,
+                                phoneNum,
+                                pin,
+                                verificationResponse.hasEmergencyContact,
+                                from,
+                            ),
+                            VerificationFragment.TAG,
+                        )
+                    }
                 },
                 { t: Throwable ->
                     hideLoading()
                     ErrorHandler.handleError(t)
-                }
+                },
             )
     }
 
-    private fun initAndLoadRecaptcha() {
-        if (recaptchaView == null) {
-            recaptchaView = RecaptchaView(
+    private fun initAndLoadCaptcha() = lifecycleScope.launch {
+        if (captchaView == null) {
+            captchaView = CaptchaView(
                 requireContext(),
-                object : RecaptchaView.Callback {
+                object : CaptchaView.Callback {
                     override fun onStop() {
-                        mobile_fab?.hide()
-                        mobile_cover?.visibility = GONE
+                        if (viewDestroyed()) return
+
+                        binding.mobileFab.hide()
+                        binding.mobileCover.visibility = GONE
                     }
 
-                    override fun onPostToken(value: String) {
+                    override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
                         requestSend(value)
                     }
-                }
+                },
             )
-            (view as ViewGroup).addView(recaptchaView?.webView, MATCH_PARENT, MATCH_PARENT)
+            (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
         }
-        recaptchaView?.loadRecaptcha()
+        captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
     }
 
     private fun hideLoading() {
-        mobile_fab?.hide()
-        mobile_cover?.visibility = GONE
-        recaptchaView?.hide()
+        if (viewDestroyed()) return
+
+        binding.mobileFab.hide()
+        binding.mobileCover.visibility = GONE
+        captchaView?.hide()
     }
 
-    private fun handleEditView(str: String) {
-        mobile_et.setSelection(mobile_et.text.toString().length)
-        if (str.isNotEmpty() && isValidNumber(mCountry.dialCode + str)) {
-            mobile_fab.visibility = VISIBLE
-        } else {
-            mobile_fab.visibility = INVISIBLE
+    private fun handleEditView() {
+        if (viewDestroyed()) return
+
+        binding.apply {
+            val country = mCountry
+            if (country == null) {
+                mobileFab.isVisible = false
+                return
+            }
+
+            val mobileText = mobileEt.text.toString()
+            mobileEt.setSelection(mobileText.length)
+            val dialCode = country.dialCode
+            val number = country.dialCode + mobileText
+            val valid = if (dialCode == xinDialCode) {
+                val r = isAnonymousNumber(number, dialCode)
+                anonymousNumber = if (r) number else null
+                r
+            } else {
+                anonymousNumber = null
+                val validResult = isValidNumber(phoneUtil, number, country.code, country.dialCode)
+                phoneNumber = validResult.second
+                validResult.first
+            }
+            mobileFab.isVisible = (countryCodeEt.text?.length ?: 0) > 1 && mobileText.isNotEmpty() && valid
         }
     }
 
     private fun getUserCountryInfo() {
-        mCountry = countryPicker.getUserCountryInfo(context)
-        country_icon_iv.setImageResource(mCountry.flag)
-        country_code_tv.text = mCountry.dialCode
-        countryPicker.setLocationCountry(mCountry)
-    }
+        if (viewDestroyed()) return
 
-    private fun isValidNumber(number: String): Boolean {
-        val phone = Phone(number)
-        return try {
-            phoneNumber = phoneUtil.parse(phone.phone, mCountry.code)
-            phoneUtil.isValidNumber(phoneNumber)
-        } catch (e: NumberParseException) {
-            false
+        countryPicker.getUserCountryInfo(context).apply {
+            mCountry = this
+            binding.countryIconIv.setImageResource(flag)
+            binding.countryCodeEt.setText(dialCode)
+            countryPicker.setLocationCountry(this)
         }
     }
 
@@ -241,52 +324,186 @@ class MobileFragment : BaseFragment() {
         }
     }
 
-    private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
-        override fun onKeyClick(position: Int, value: String) {
-            context?.vibrate(longArrayOf(0, 30))
-            if (!isAdded) {
-                return
-            }
-            val editable = mobile_et.text
-            val start = mobile_et.selectionStart
-            val end = mobile_et.selectionEnd
-            if (position == 11) {
-                if (editable.isNullOrEmpty()) return
+    private fun updateMobileOrAnonymous(dialCode: String) {
+        if (viewDestroyed()) return
 
-                if (start == end) {
-                    if (start == 0) {
-                        mobile_et.text?.delete(0, end)
+        binding.apply {
+            if (dialCode == xinDialCode) {
+                enterTip.isVisible = false
+                mobileEt.hint = getString(R.string.Anonymous_Number)
+                if (titleSwitcher.displayedChild != 1) {
+                    if (pin != null) {
+                        titleSwitcher.setText(getString(R.string.Enter_new_anonymous_number))
                     } else {
-                        mobile_et.text?.delete(start - 1, end)
+                        titleSwitcher.setText(getString(R.string.Enter_your_anonymous_number))
                     }
-                    if (start > 0) {
-                        mobile_et.setSelection(start - 1)
-                    }
-                } else {
-                    mobile_et.text?.delete(start, end)
-                    mobile_et.setSelection(start)
                 }
             } else {
-                mobile_et.text = editable?.insert(start, value)
-                mobile_et.setSelection(start + 1)
+                enterTip.isVisible = true
+                mobileEt.hint = getString(R.string.Phone_Number)
+                if (titleSwitcher.displayedChild != 0) {
+                    if (pin != null) {
+                        titleSwitcher.setText(getString(R.string.Enter_new_phone_number))
+                    } else {
+                        titleSwitcher.setText(getString(R.string.Enter_your_phone_number))
+                    }
+                }
+            }
+        }
+    }
+
+    private val mKeyboardListener: Keyboard.OnClickKeyboardListener =
+        object : Keyboard.OnClickKeyboardListener {
+            override fun onKeyClick(position: Int, value: String) {
+                context?.tickVibrate()
+                if (viewDestroyed()) {
+                    return
+                }
+                binding.apply {
+                    if (mobileEt.isFocused) {
+                        val editable = mobileEt.text
+                        val start = mobileEt.selectionStart
+                        val end = mobileEt.selectionEnd
+                        try {
+                            if (position == 11) {
+                                if (editable.isNullOrEmpty()) {
+                                    countryCodeEt.requestFocus()
+                                    countryCodeEt.setSelection(countryCodeEt.text?.length ?: 0)
+                                    return
+                                }
+
+                                if (start == end) {
+                                    if (start == 0) {
+                                        mobileEt.text?.delete(0, end)
+                                    } else {
+                                        mobileEt.text?.delete(start - 1, end)
+                                    }
+                                    if (start > 0) {
+                                        mobileEt.setSelection(start - 1)
+                                    }
+                                } else {
+                                    mobileEt.text?.delete(start, end)
+                                    mobileEt.setSelection(start)
+                                }
+                            } else {
+                                mobileEt.text = editable?.insert(start, value)
+                                mobileEt.setSelection(start + 1)
+                            }
+                        } catch (e: IndexOutOfBoundsException) {
+                            Timber.w(e)
+                        }
+                    } else if (countryCodeEt.isFocused) {
+                        val editable = countryCodeEt.text
+                        val start = countryCodeEt.selectionStart
+                        val end = countryCodeEt.selectionEnd
+                        try {
+                            if (position == 11) {
+                                if (editable.isNullOrEmpty() || editable.toString() == "+") return
+
+                                if (start == end) {
+                                    if (start <= 1) {
+                                        countryCodeEt.text?.delete(1, end)
+                                    } else {
+                                        countryCodeEt.text?.delete(start - 1, end)
+                                    }
+                                    if (start > 1) {
+                                        countryCodeEt.setSelection(start - 1)
+                                    }
+                                } else {
+                                    countryCodeEt.text?.delete(start, end)
+                                    countryCodeEt.setSelection(start)
+                                }
+                            } else {
+                                countryCodeEt.text = editable?.insert(start, value)
+                                if (start == 4) {
+                                    mobileEt.requestFocus()
+                                    mobileEt.setSelection(mobileEt.text?.length ?: 0)
+                                } else {
+                                    countryCodeEt.setSelection(start + 1)
+                                }
+                            }
+                        } catch (e: IndexOutOfBoundsException) {
+                            Timber.w(e)
+                        }
+                    }
+                }
+            }
+
+            override fun onLongClick(position: Int, value: String) {
+                context?.clickVibrate()
+                if (viewDestroyed()) {
+                    return
+                }
+                binding.apply {
+                    if (mobileEt.isFocused) {
+                        val editable = mobileEt.text
+                        if (position == 11) {
+                            if (editable.isNullOrEmpty()) {
+                                countryCodeEt.requestFocus()
+                                countryCodeEt.setSelection(countryCodeEt.text?.length ?: 0)
+                                return
+                            }
+
+                            mobileEt.text?.clear()
+                        } else {
+                            val start = mobileEt.selectionStart
+                            mobileEt.text = editable?.insert(start, value)
+                            mobileEt.setSelection(start + 1)
+                        }
+                    } else if (countryCodeEt.isFocused) {
+                        val editable = countryCodeEt.text
+                        if (position == 11) {
+                            if (editable.isNullOrEmpty() || editable.toString() == "+") return
+
+                            countryCodeEt.text?.clear()
+                        } else {
+                            val start = countryCodeEt.selectionStart
+                            countryCodeEt.text = editable?.insert(start, value)
+                            if (start == 4) {
+                                mobileEt.requestFocus()
+                                mobileEt.setSelection(mobileEt.text?.length ?: 0)
+                            } else {
+                                countryCodeEt.setSelection(start + 1)
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        override fun onLongClick(position: Int, value: String) {
-            context?.vibrate(longArrayOf(0, 30))
-            if (!isAdded) {
+    private val countryCodeWatcher: TextWatcher = object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+        }
+
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+        }
+
+        override fun afterTextChanged(s: Editable?) {
+            val et = binding.countryCodeEt
+            if (!s.toString().startsWith("+")) {
+                et.setText("+")
+                Selection.setSelection(et.text, et.text?.length ?: 0)
+            }
+            val dialCode = et.text.toString()
+            val country = if (dialCode == xinDialCode) {
+                mixinCountry
+            } else {
+                countryPicker.getCountryByDialCode(dialCode)
+            }
+            if (mCountry?.dialCode == country?.dialCode) {
+                handleEditView()
                 return
             }
-            val editable = mobile_et.text
-            if (position == 11) {
-                if (editable.isNullOrEmpty()) return
-
-                mobile_et.text?.clear()
-            } else {
-                val start = mobile_et.selectionStart
-                mobile_et.text = editable?.insert(start, value)
-                mobile_et.setSelection(start + 1)
+            mCountry = country
+            binding.apply {
+                if (country == null) {
+                    countryIconIv.setImageResource(R.drawable.ic_arrow_down_info)
+                } else {
+                    countryIconIv.setImageResource(country.flag)
+                }
             }
+            updateMobileOrAnonymous(dialCode)
+            handleEditView()
         }
     }
 
@@ -298,9 +515,7 @@ class MobileFragment : BaseFragment() {
         }
 
         override fun afterTextChanged(s: Editable?) {
-            handleEditView(s.toString())
+            handleEditView()
         }
     }
-
-    class Phone(var phone: String)
 }

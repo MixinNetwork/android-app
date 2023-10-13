@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/content_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="64dp"
+            android:layout_marginTop="4dp"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="?attr/text_primary"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintVertical_bias="0" />
+
+        <TextView
+            android:id="@+id/warning_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="64dp"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/colorRed"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/content_tv"
+            app:layout_constraintVertical_bias="0" />
+
+        <ImageView
+            android:id="@+id/copy_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:padding="8dp"
+            android:foreground="@drawable/mixin_ripple"
+            android:src="@drawable/ic_copy_gray"
+            android:scaleType="center"
+            app:layout_constraintTop_toTopOf="@id/content_tv"
+            app:layout_constraintBottom_toBottomOf="@id/content_tv"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:contentDescription="@string/copy"
+            tools:ignore="PrivateResource" />
+
+        <FrameLayout
+            android:id="@+id/qr_fl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="4dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/warning_tv">
+
+            <ImageView
+                android:id="@+id/qr"
+                android:layout_width="240dp"
+                android:layout_height="240dp"
+                tools:ignore="ContentDescription" />
+
+            <one.mixin.android.widget.BadgeCircleImageView
+                android:id="@+id/qr_avatar"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center" />
+        </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ProgressBar
+        android:id="@+id/pb"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:theme="@style/AppTheme.GrayProgress" />
+</merge>

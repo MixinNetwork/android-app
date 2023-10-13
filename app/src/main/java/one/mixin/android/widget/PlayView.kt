@@ -10,6 +10,7 @@ import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ProgressBar
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 
@@ -50,12 +51,13 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         view
     }
 
-    private val playDrawable: PlayPauseDrawable = PlayPauseDrawable().apply {
+    private val playDrawable = PlayPauseDrawable().apply {
         callback = this@PlayView
+        setFirstTimeNotAnimated(true)
     }
 
     private val refreshDrawable: Drawable by lazy {
-        resources.getDrawable(R.drawable.ic_refresh, context.theme).apply {
+        requireNotNull(ResourcesCompat.getDrawable(resources, R.drawable.ic_refresh, context.theme)).apply {
             callback = this@PlayView
         }
     }
@@ -77,6 +79,7 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         playDrawable.setBounds(0, 0, w, h)
+        playDrawable.setSize(w)
         refreshDrawable.setBounds(0, 0, w, h)
     }
 
@@ -99,7 +102,7 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         canvas.drawCircle(w / 2f, h / 2f, w / 2f, bgPaint)
         when (status) {
             STATUS_IDLE -> {
-                playDrawable.isPlay = true
+                playDrawable.setPause(false)
                 pb.visibility = GONE
                 playDrawable.draw(canvas)
             }
@@ -107,12 +110,12 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
                 pb.visibility = VISIBLE
             }
             STATUS_PAUSE -> {
-                playDrawable.isPlay = true
+                playDrawable.setPause(false)
                 pb.visibility = GONE
                 playDrawable.draw(canvas)
             }
             STATUS_PLAYING -> {
-                playDrawable.isPlay = false
+                playDrawable.setPause(true)
                 pb.visibility = GONE
                 playDrawable.draw(canvas)
             }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/bg_window"
@@ -10,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/add_people_title" />
+        app:titleText="@string/Add_Contact" />
 
     <EditText
         android:id="@+id/search_et"
@@ -19,7 +20,6 @@
         android:layout_below="@id/title_view"
         android:background="?attr/bg_white"
         android:drawablePadding="8dp"
-        android:drawableStart="@drawable/ic_search"
         android:inputType="number|phone"
         android:maxLines="1"
         android:hint="@string/add_people_search_hint"
@@ -27,7 +27,9 @@
         android:paddingEnd="@dimen/activity_horizontal_margin"
         android:textColor="?attr/text_primary"
         android:textColorHint="?attr/text_assist"
-        android:textSize="14sp" />
+        android:textSize="14sp"
+        app:drawableStartCompat="@drawable/ic_search"
+        tools:ignore="Autofill" />
 
     <TextView
         android:id="@+id/tip_tv"
@@ -36,7 +38,7 @@
         android:layout_below="@id/search_et"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:text="@string/add_people_tip"
+        android:text="@string/my_mixin_id"
         android:textColor="?attr/text_primary"
         android:textSize="12sp" />
 
@@ -55,7 +57,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:text="@string/search"
+            android:text="@string/Search"
             android:textColor="@color/colorBlue" />
 
         <ProgressBar

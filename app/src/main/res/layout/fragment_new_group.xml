@@ -11,48 +11,8 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:rightText="@string/create"
-        app:titleText="@string/group_new_title" />
-
-    <RelativeLayout
-        android:visibility="gone"
-        android:id="@+id/photo_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground">
-
-        <TextView
-            android:id="@+id/photo_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/group_new_photo"
-            tools:ignore="RelativeOverlap" />
-
-        <ImageView
-            android:id="@+id/photo_iv"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_chevron_right_gray_24dp"
-            tools:ignore="ContentDescription" />
-
-        <ImageView
-            android:id="@+id/new_group_avatar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_toStartOf="@id/photo_iv"
-            android:src="@drawable/ic_photo_camera"
-            tools:ignore="ContentDescription" />
-    </RelativeLayout>
+        app:rightText="@string/Create"
+        app:titleText="@string/New_Group" />
 
     <RelativeLayout
         android:id="@+id/name_rl"
@@ -67,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/group_new_name"
+            android:text="@string/Group_Name"
             tools:ignore="RelativeOverlap" />
 
         <EditText
@@ -83,11 +43,12 @@
             android:lines="1"
             android:maxLength="25"
             android:gravity="center_vertical|end"
-            android:hint="@string/group_new_name_tip"
+            android:hint="@string/new_group_name"
             android:textColor="?attr/text_primary"
             android:textColorHint="?attr/text_assist"
             android:ellipsize="end"
-            android:singleLine="true" />
+            android:singleLine="true"
+            tools:ignore="Autofill,TextFields" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -104,7 +65,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/group_new_notice"
+            android:text="@string/Group_Notice"
             tools:ignore="RelativeOverlap" />
 
         <EditText
@@ -118,9 +79,10 @@
             android:layout_toEndOf="@id/notice_tv"
             android:background="@null"
             android:gravity="center_vertical|end"
-            android:hint="@string/group_new_notice_tip"
+            android:hint="@string/About"
             android:textColor="?attr/text_minor"
-            android:textColorHint="?attr/text_remarks" />
+            android:textColorHint="?attr/text_remarks"
+            tools:ignore="Autofill,TextFields" />
     </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView

@@ -9,7 +9,7 @@ class MessageBuilder(
     val userId: String,
     val category: String,
     val status: String,
-    val createdAt: String
+    val createdAt: String,
 ) {
     private var content: String? = null
     private var mediaUrl: String? = null
@@ -161,6 +161,6 @@ class MessageBuilder(
             id, conversationId, userId, category, content, mediaUrl,
             mediaMimeType, mediaSize, mediaDuration, mediaWidth, mediaHeight, mediaHash,
             thumbImage, thumbUrl, mediaKey, mediaDigest, mediaStatus, status, createdAt,
-            action, participantId, snapshotId, hyperlink, name, albumId, stickerId, sharedUserId, mediaWaveform, null, quoteMessageId, quoteContent
+            action, participantId, snapshotId, hyperlink, name, albumId, stickerId, sharedUserId, mediaWaveform, null, quoteMessageId, quoteContent,
         )
 }

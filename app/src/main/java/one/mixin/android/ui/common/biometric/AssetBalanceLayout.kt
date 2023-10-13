@@ -2,13 +2,15 @@ package one.mixin.android.ui.common.biometric
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.text.SpannableStringBuilder
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.widget.LinearLayout
-import kotlinx.android.synthetic.main.layout_asset_balance.view.*
-import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
+import androidx.core.text.bold
+import androidx.core.view.isVisible
 import one.mixin.android.R
+import one.mixin.android.databinding.LayoutAssetBalanceBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
@@ -16,26 +18,51 @@ import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearLayout(context, attributeSet) {
+    private val binding = LayoutAssetBalanceBinding.inflate(LayoutInflater.from(context), this)
+
     init {
-        LayoutInflater.from(context).inflate(R.layout.layout_asset_balance, this, true)
         orientation = VERTICAL
         gravity = Gravity.CENTER_HORIZONTAL
     }
 
     @SuppressLint("SetTextI18n")
-    fun setInfo(t: BiometricItem) {
+    fun setInfo(t: AssetBiometricItem) {
         val asset = t.asset
         val amount = t.amount
-        asset_icon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        asset_icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-        val balanceText = amount.numberFormat() + " " + asset.symbol
-        balance.text = balanceText
-        if (t is WithdrawBiometricItem) {
-            val amountText = "${context.getString(R.string.amount)} $balanceText"
-            val feeText = "${context.getString(R.string.fee)} ${t.fee.numberFormat()} ${asset.chainSymbol}"
-            balance_as.text = "$amountText ${getValueText(amount, asset.priceFiat())}\n$feeText ${getValueText(t.fee, asset.chainPriceFiat())}"
-        } else {
-            balance_as.text = getValueText(amount, asset.priceFiat())
+        binding.apply {
+            assetIcon.isVisible = true
+            avatar.isVisible = false
+            assetIcon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
+            assetIcon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            val balanceText = amount.numberFormat() + " " + asset.symbol
+            balance.text = balanceText
+            if (t is WithdrawBiometricItem) {
+                val subText = SpannableStringBuilder()
+                    .append(context.getString(R.string.Amount))
+                    .append(" ")
+                    .bold { append(balanceText) }
+                    .append(" ")
+                    .append(getValueText(amount, asset.priceFiat()))
+                    .append("\n")
+                    .append(context.getString(R.string.Fee))
+                    .append(" ")
+                    .bold { append(t.fee.numberFormat()).append(" ").append(asset.chainSymbol).append(" ") }
+                    .append(getValueText(t.fee, asset.chainPriceFiat()))
+                balanceAs.text = subText
+            } else {
+                balanceAs.text = getValueText(amount, asset.priceFiat())
+            }
+        }
+    }
+
+    fun setInfoWithUser(t: TransferBiometricItem) {
+        binding.apply {
+            avatar.isVisible = true
+            assetIcon.isVisible = false
+            val u = t.user
+            avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
+            balance.text = u.fullName
+            balanceAs.text = context.getString(R.string.contact_mixin_id, u.identityNumber)
         }
     }
 

@@ -5,20 +5,20 @@ import android.util.AttributeSet
 import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatCheckedTextView
 import one.mixin.android.R
-import org.jetbrains.anko.dip
+import one.mixin.android.extension.dp
 
 class CheckedFlowItem @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyle: Int = 0
+    defStyle: Int = 0,
 ) : AppCompatCheckedTextView(context, attrs, defStyle) {
     init {
         layoutParams = ViewGroup.MarginLayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
+            ViewGroup.LayoutParams.WRAP_CONTENT,
         )
         setBackgroundResource(R.drawable.bg_selector_wallet_round_gray)
-        setPaddingRelative(dip(16), dip(8), dip(16), dip(8))
+        setPaddingRelative(16.dp, 8.dp, 16.dp, 8.dp)
         setOnClickListener {
             if (!isChecked) {
                 toggle()

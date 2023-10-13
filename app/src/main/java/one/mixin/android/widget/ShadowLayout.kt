@@ -12,7 +12,7 @@ class ShadowLayout : ViewGroup {
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     )
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -21,7 +21,7 @@ class ShadowLayout : ViewGroup {
         val firstLp = firstView.layoutParams as MarginLayoutParams
         setMeasuredDimension(
             firstView.measuredWidth + firstLp.marginStart + firstLp.marginEnd,
-            firstView.measuredHeight + firstLp.topMargin + firstLp.bottomMargin
+            firstView.measuredHeight + firstLp.topMargin + firstLp.bottomMargin,
         )
     }
 
@@ -38,19 +38,19 @@ class ShadowLayout : ViewGroup {
                     firstLp.marginStart,
                     firstLp.topMargin,
                     width - firstLp.marginEnd,
-                    height - firstLp.bottomMargin
+                    height - firstLp.bottomMargin,
                 )
                 secondView.layout(
                     width - secondView.measuredWidth - secondLp.marginEnd,
                     height - secondView.measuredHeight - secondLp.bottomMargin,
                     width - secondLp.marginEnd,
-                    height - secondLp.bottomMargin
+                    height - secondLp.bottomMargin,
                 )
                 thirdView.layout(
                     width - thirdView.measuredWidth - thirdLp.marginEnd,
                     thirdLp.topMargin,
                     width - thirdLp.marginEnd,
-                    thirdLp.topMargin + thirdView.measuredHeight
+                    thirdLp.topMargin + thirdView.measuredHeight,
                 )
             }
             firstLp.marginStart > 0 -> {
@@ -58,13 +58,13 @@ class ShadowLayout : ViewGroup {
                     firstLp.marginStart,
                     0,
                     firstLp.marginStart + firstView.measuredWidth,
-                    firstView.measuredHeight
+                    firstView.measuredHeight,
                 )
                 secondView.layout(
                     width - secondView.measuredWidth - secondLp.marginEnd,
                     height - secondView.measuredHeight - secondLp.bottomMargin,
                     width - secondLp.marginEnd,
-                    height - secondLp.bottomMargin
+                    height - secondLp.bottomMargin,
                 )
             }
             firstLp.marginEnd > 0 -> {
@@ -72,13 +72,13 @@ class ShadowLayout : ViewGroup {
                     width - firstLp.marginEnd - firstView.measuredWidth,
                     0,
                     width - firstLp.marginEnd,
-                    firstView.measuredHeight
+                    firstView.measuredHeight,
                 )
                 secondView.layout(
                     width - secondView.measuredWidth - secondLp.marginEnd,
                     height - secondView.measuredHeight - secondLp.bottomMargin,
                     width - secondLp.marginEnd,
-                    height - secondLp.bottomMargin
+                    height - secondLp.bottomMargin,
                 )
             }
             else -> {
@@ -87,7 +87,7 @@ class ShadowLayout : ViewGroup {
                     width - secondView.measuredWidth - secondLp.marginEnd,
                     height - secondView.measuredHeight - secondLp.bottomMargin,
                     width - secondLp.marginEnd,
-                    height - secondLp.bottomMargin
+                    height - secondLp.bottomMargin,
                 )
             }
         }

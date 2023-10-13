@@ -8,11 +8,9 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
-import android.graphics.Color
 import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.Gravity
@@ -33,24 +31,32 @@ import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.content.ContextCompat
+import androidx.core.view.doOnPreDraw
 import one.mixin.android.R
-import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.displayMetrics
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.getSystemWindowBottom
+import one.mixin.android.extension.getSystemWindowLeft
+import one.mixin.android.extension.getSystemWindowRight
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.util.SystemUIManager
-import org.jetbrains.anko.dip
-import org.jetbrains.anko.displayMetrics
+import one.mixin.android.widget.AndroidUtilities.dp
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 
 class BottomSheet(
     context: Context,
     private val focusable: Boolean,
-    private val softInputResize: Boolean
+    private val softInputResize: Boolean,
 ) : Dialog(context, R.style.TransparentDialog) {
 
     private var startAnimationRunnable: Runnable? = null
@@ -64,7 +70,7 @@ class BottomSheet(
     private var customView: View? = null
     private var customViewHeight: Int = 0
 
-    private val speed = context.dip(0.5f)
+    private val speed = 0.5f.dp
 
     private val backDrawable = ColorDrawable(-0x1000000)
 
@@ -103,24 +109,40 @@ class BottomSheet(
         }
 
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-            val width = MeasureSpec.getSize(widthMeasureSpec)
+            var width = MeasureSpec.getSize(widthMeasureSpec)
             var height = MeasureSpec.getSize(heightMeasureSpec)
+            val lastInsets = this@BottomSheet.lastInsets
             if (lastInsets != null) {
-                height -= lastInsets!!.systemWindowInsetBottom
+                height -= lastInsets.getSystemWindowBottom()
+                width -= lastInsets.getSystemWindowLeft() + lastInsets.getSystemWindowRight()
             }
             setMeasuredDimension(width, height)
-            val widthSpec = if (context.isTablet()) {
-                MeasureSpec.makeMeasureSpec(
-                    (minOf(context.displayMetrics.widthPixels, context.displayMetrics.heightPixels) * 0.8f).toInt(),
-                    MeasureSpec.EXACTLY
-                )
-            } else {
-                MeasureSpec.makeMeasureSpec(
-                    width,
-                    MeasureSpec.EXACTLY
-                )
+            val isPortrait = width < height
+            val widthSpec = when {
+                context.isTablet() -> {
+                    MeasureSpec.makeMeasureSpec(
+                        (minOf(context.displayMetrics.widthPixels, context.displayMetrics.heightPixels) * 0.8f).toInt(),
+                        MeasureSpec.EXACTLY,
+                    )
+                }
+                else -> {
+                    MeasureSpec.makeMeasureSpec(
+                        if (isPortrait) width else max((width * 0.6f).toInt(), min(dp(480f), width)),
+                        MeasureSpec.EXACTLY,
+                    )
+                }
             }
             sheetContainer.measure(widthSpec, MeasureSpec.makeMeasureSpec(height, AT_MOST))
+        }
+
+        override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+            val t = (bottom - top) - sheetContainer.measuredHeight
+            var l = (right - left - sheetContainer.measuredWidth) / 2
+            val lastInsets = this@BottomSheet.lastInsets
+            if (lastInsets != null) {
+                l += lastInsets.getSystemWindowLeft()
+            }
+            sheetContainer.layout(l, t, l + sheetContainer.measuredWidth, t + sheetContainer.measuredHeight)
         }
     }
 
@@ -132,6 +154,7 @@ class BottomSheet(
         fun canDismiss(): Boolean
     }
 
+    @Suppress("unused")
     open class BottomSheetListenerAdapter : BottomSheetListener {
         override fun onOpenAnimationStart() {
         }
@@ -146,7 +169,7 @@ class BottomSheet(
         window?.addFlags(
             WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
                 or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                or WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
+                or WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
         )
         container.background = backDrawable
         container.fitsSystemWindows = true
@@ -162,17 +185,15 @@ class BottomSheet(
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window?.setWindowAnimations(R.style.DialogNoAnimation)
-        if (Build.VERSION.SDK_INT >= 26) {
-            window?.decorView?.systemUiVisibility =
-                View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        }
         setContentView(container, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
-
         sheetContainer.fitsSystemWindows = true
         sheetContainer.visibility = INVISIBLE
         container.addView(sheetContainer, FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT, Gravity.BOTTOM))
-
+        window?.let { window ->
+            container.doOnPreDraw {
+                SystemUIManager.lightUI(window, !context.isNightMode())
+            }
+        }
         if (customView != null) {
             if (customView!!.parent != null) {
                 (customView!!.parent as ViewGroup).removeView(customView)
@@ -182,8 +203,8 @@ class BottomSheet(
                 FrameLayout.LayoutParams(
                     MATCH_PARENT,
                     if (customViewHeight > 0) customViewHeight else WRAP_CONTENT,
-                    Gravity.BOTTOM
-                )
+                    Gravity.BOTTOM,
+                ),
             )
         }
 
@@ -201,16 +222,6 @@ class BottomSheet(
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        window?.let { window ->
-            SystemUIManager.lightUI(
-                window,
-                !context.booleanFromAttribute(R.attr.flag_night)
-            )
-        }
-    }
-
     override fun show() {
         try {
             super.show()
@@ -223,7 +234,7 @@ class BottomSheet(
         cancelSheetAnimation()
         sheetContainer.measure(
             View.MeasureSpec.makeMeasureSpec(context.displayMetrics.widthPixels, AT_MOST),
-            View.MeasureSpec.makeMeasureSpec(context.displayMetrics.heightPixels, AT_MOST)
+            View.MeasureSpec.makeMeasureSpec(context.displayMetrics.heightPixels, AT_MOST),
         )
         if (isShown) return
         backDrawable.alpha = 0
@@ -250,14 +261,14 @@ class BottomSheet(
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
             ObjectAnimator.ofFloat(sheetContainer, "translationY", 0f),
-            ObjectAnimator.ofInt(backDrawable, "alpha", 51)
+            ObjectAnimator.ofInt(backDrawable, "alpha", 153),
         )
         animatorSet.duration = 200
         animatorSet.startDelay = 20
         animatorSet.interpolator = DecelerateInterpolator()
         animatorSet.addListener(
             object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
+                override fun onAnimationEnd(animation: Animator) {
                     if (curSheetAnimation != null && curSheetAnimation == animation) {
                         curSheetAnimation = null
                         bottomSheetListener?.onOpenAnimationEnd()
@@ -266,12 +277,12 @@ class BottomSheet(
                     }
                 }
 
-                override fun onAnimationCancel(animation: Animator?) {
+                override fun onAnimationCancel(animation: Animator) {
                     if (curSheetAnimation != null && curSheetAnimation == animation) {
                         curSheetAnimation = null
                     }
                 }
-            }
+            },
         )
         animatorSet.start()
         curSheetAnimation = animatorSet
@@ -288,13 +299,13 @@ class BottomSheet(
 
     fun fakeDismiss(
         fake: Boolean = true,
-        doOnEnd: (() -> Unit)? = null
+        doOnEnd: (() -> Unit)? = null,
     ) {
         cancelSheetAnimation()
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
             ObjectAnimator.ofFloat(sheetContainer, "translationY", sheetContainer.measuredHeight.toFloat()),
-            ObjectAnimator.ofInt(backDrawable, "alpha", 0)
+            ObjectAnimator.ofInt(backDrawable, "alpha", 0),
         )
         animatorSet.duration = 180
         animatorSet.interpolator = AccelerateInterpolator()
@@ -307,7 +318,7 @@ class BottomSheet(
                             if (!fake) {
                                 try {
                                     dismissInternal()
-                                } catch (e: Exception) {
+                                } catch (ignore: Exception) {
                                 }
                             }
                             doOnEnd?.invoke()
@@ -320,7 +331,7 @@ class BottomSheet(
                         curSheetAnimation = null
                     }
                 }
-            }
+            },
         )
         animatorSet.start()
         curSheetAnimation = animatorSet
@@ -347,7 +358,7 @@ class BottomSheet(
                     200
                 }
             },
-            200
+            200,
         ).toLong()
 
         if (duration == 0L) {
@@ -387,7 +398,7 @@ class BottomSheet(
     private fun dismissInternal() {
         try {
             super.dismiss()
-        } catch (e: Exception) {
+        } catch (ignore: Exception) {
         }
     }
 
@@ -424,7 +435,7 @@ class BottomSheet(
 fun BottomSheet.getMaxCustomViewHeight(): Int {
     val isNotchScreen = this.window?.isNotchScreen() ?: false
     val totalHeight = if (isNotchScreen) {
-        val bottom = this.lastInsets?.systemWindowInsetBottom ?: 0
+        val bottom = this.lastInsets?.getSystemWindowBottom() ?: 0
         context.realSize().y - bottom
     } else {
         val size = Point()
@@ -437,7 +448,7 @@ fun BottomSheet.getMaxCustomViewHeight(): Int {
 
 fun buildBottomSheetView(
     context: Context,
-    items: List<BottomSheetItem>
+    items: List<BottomSheetItem>,
 ): View {
     val linearLayout = LinearLayoutCompat(context).apply {
         orientation = LinearLayoutCompat.VERTICAL
@@ -451,15 +462,15 @@ fun buildBottomSheetView(
         if (index == 0) {
             textView.setBackgroundResource(R.drawable.bg_upper_round)
         } else {
-            textView.setBackgroundResource(R.color.white)
+            textView.setBackgroundColor(context.colorFromAttribute(R.attr.bg_white))
         }
-        textView.foreground = context.getDrawable(outValue.resourceId)
+        textView.foreground = ContextCompat.getDrawable(context, outValue.resourceId)
         bottomSheetItem.icon?.let {
             textView.setCompoundDrawables(it, null, null, null)
             textView.compoundDrawablePadding = padding
         }
         textView.text = bottomSheetItem.text
-        textView.setTextColor(Color.BLACK)
+        textView.setTextColor(context.colorFromAttribute(R.attr.text_default))
         textView.setPadding(padding, 0, padding, 0)
         textView.gravity = Gravity.CENTER_VERTICAL
         textView.setOnClickListener {
@@ -473,5 +484,5 @@ fun buildBottomSheetView(
 data class BottomSheetItem(
     val text: String,
     val clickAction: () -> Unit,
-    val icon: Drawable? = null
+    val icon: Drawable? = null,
 )

@@ -2,13 +2,26 @@ package one.mixin.android.util
 
 import android.app.KeyguardManager
 import android.content.Context
+import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
+import android.security.keystore.KeyProperties.AUTH_DEVICE_CREDENTIAL
+import android.security.keystore.KeyProperties.SECURITY_LEVEL_STRONGBOX
+import android.security.keystore.KeyProperties.SECURITY_LEVEL_TRUSTED_ENVIRONMENT
 import android.security.keystore.UserNotAuthenticatedException
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
+import androidx.biometric.BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE
+import androidx.biometric.BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED
+import androidx.biometric.BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE
+import androidx.biometric.BiometricManager.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED
+import androidx.biometric.BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED
+import androidx.biometric.BiometricManager.BIOMETRIC_STATUS_UNKNOWN
+import androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS
 import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
-import moe.feng.support.biometricprompt.BiometricPromptCompat
+import androidx.fragment.app.FragmentActivity
 import one.mixin.android.Constants
 import one.mixin.android.Constants.BIOMETRICS_ALIAS
 import one.mixin.android.R
@@ -32,33 +45,46 @@ object BiometricUtil {
 
     const val CRASHLYTICS_BIOMETRIC = "biometric"
 
-    private fun isSupport(ctx: Context): Boolean {
-        return BiometricPromptCompat.isHardwareDetected(ctx) && isKeyguardSecure(ctx) && isSecureHardware() && !RootUtil.isDeviceRooted
+    fun isSupport(ctx: Context): Boolean {
+        val biometricManager = BiometricManager.from(ctx)
+        return biometricManager.canAuthenticate(BIOMETRIC_STRONG) == BIOMETRIC_SUCCESS &&
+            isKeyguardSecure(ctx) && isSecureHardware() && !RootUtil.isDeviceRooted
     }
 
-    fun isSupportWithErrorInfo(ctx: Context): Pair<Boolean, String?> {
-        if (!BiometricPromptCompat.isHardwareDetected(ctx)) {
-            return Pair(false, "Low device software version")
+    fun isSupportWithErrorInfo(ctx: Context, type: Int): Pair<Boolean, String?> {
+        val biometricManager = BiometricManager.from(ctx)
+        val authStatusCode = biometricManager.canAuthenticate(type)
+        if (authStatusCode == BIOMETRIC_STATUS_UNKNOWN ||
+            authStatusCode == BIOMETRIC_ERROR_UNSUPPORTED ||
+            authStatusCode == BIOMETRIC_ERROR_NO_HARDWARE
+        ) {
+            return Pair(false, ctx.getString(R.string.Device_unsupported))
+        } else if (authStatusCode == BIOMETRIC_ERROR_HW_UNAVAILABLE) {
+            return Pair(false, ctx.getString(R.string.setting_biometric_error_hardware_unavailable))
+        } else if (authStatusCode == BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED) {
+            return Pair(false, ctx.getString(R.string.setting_biometric_error_not_secure))
+        } else if (authStatusCode == BIOMETRIC_ERROR_NONE_ENROLLED) {
+            return Pair(false, ctx.getString(R.string.setting_biometric_error_none_enrolled))
         }
         if (!isKeyguardSecure(ctx)) {
-            return Pair(false, "The PIN, pattern or password is NOT set or a SIM card is unlocked")
+            return Pair(false, ctx.getString(R.string.setting_biometric_error_pin_not_set))
         }
         if (!isSecureHardware()) {
-            return Pair(false, "The key NOT resides inside secure hardware (TEE)")
+            return Pair(false, ctx.getString(R.string.setting_biometric_error_not_secure))
         }
         if (RootUtil.isDeviceRooted) {
-            return Pair(false, "The device has been rooted")
+            return Pair(false, ctx.getString(R.string.setting_biometric_error_rooted))
         }
         return Pair(true, null)
     }
 
-    fun showAuthenticationScreen(fragment: Fragment) {
-        val intent = fragment.requireContext().getSystemService<KeyguardManager>()?.createConfirmDeviceCredentialIntent(
-            fragment.requireContext().getString(R.string.wallet_biometric_screen_lock),
-            fragment.requireContext().getString(R.string.wallet_biometric_screen_lock_desc)
+    fun showAuthenticationScreen(activity: FragmentActivity) {
+        val intent = activity.getSystemService<KeyguardManager>()?.createConfirmDeviceCredentialIntent(
+            activity.getString(R.string.Screen_Lock),
+            activity.getString(R.string.wallet_biometric_screen_lock_desc),
         )
         if (intent != null) {
-            fragment.activity?.startActivityForResult(intent, REQUEST_CODE_CREDENTIALS)
+            activity.startActivityForResult(intent, REQUEST_CODE_CREDENTIALS)
         }
     }
 
@@ -67,10 +93,10 @@ object BiometricUtil {
             getEncryptCipher()
         } catch (e: Exception) {
             when (e) {
-                is UserNotAuthenticatedException -> showAuthenticationScreen(fragment)
+                is UserNotAuthenticatedException -> showAuthenticationScreen(fragment.requireActivity())
                 is InvalidKeyException -> {
                     deleteKey(ctx)
-                    ctx.toast(R.string.wallet_biometric_invalid)
+                    toast(R.string.wallet_biometric_invalid)
                     reportException("$CRASHLYTICS_BIOMETRIC-getEncryptCipher", e)
                 }
                 else -> reportException("$CRASHLYTICS_BIOMETRIC-getEncryptCipher", e)
@@ -137,25 +163,31 @@ object BiometricUtil {
             if (key == null) {
                 val keyGenerator = KeyGenerator.getInstance(
                     KeyProperties.KEY_ALGORITHM_AES,
-                    "AndroidKeyStore"
+                    "AndroidKeyStore",
                 )
                 keyGenerator.init(
                     KeyGenParameterSpec.Builder(
                         BIOMETRICS_ALIAS,
-                        KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+                        KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
                     )
                         .setBlockModes(
                             KeyProperties.BLOCK_MODE_CBC,
                             KeyProperties.BLOCK_MODE_CTR,
-                            KeyProperties.BLOCK_MODE_GCM
+                            KeyProperties.BLOCK_MODE_GCM,
                         )
                         .setEncryptionPaddings(
                             KeyProperties.ENCRYPTION_PADDING_PKCS7,
-                            KeyProperties.ENCRYPTION_PADDING_NONE
+                            KeyProperties.ENCRYPTION_PADDING_NONE,
                         )
-                        .setUserAuthenticationRequired(true)
-                        .setUserAuthenticationValidityDurationSeconds(2 * 60 * 60)
-                        .build()
+                        .setUserAuthenticationRequired(true).apply {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                setUserAuthenticationParameters(2 * 60 * 60, AUTH_DEVICE_CREDENTIAL)
+                            } else {
+                                @Suppress("DEPRECATION")
+                                setUserAuthenticationValidityDurationSeconds(2 * 60 * 60)
+                            }
+                        }
+                        .build(),
                 )
                 key = keyGenerator.generateKey()
             }
@@ -184,6 +216,11 @@ object BiometricUtil {
 
         val factory = SecretKeyFactory.getInstance(key.algorithm, "AndroidKeyStore")
         val keyInfo = factory.getKeySpec(key, KeyInfo::class.java) as KeyInfo
-        return keyInfo.isInsideSecureHardware && keyInfo.isUserAuthenticationRequirementEnforcedBySecureHardware
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            keyInfo.securityLevel == SECURITY_LEVEL_TRUSTED_ENVIRONMENT || keyInfo.securityLevel == SECURITY_LEVEL_STRONGBOX
+        } else {
+            @Suppress("DEPRECATION")
+            keyInfo.isInsideSecureHardware
+        } && keyInfo.isUserAuthenticationRequirementEnforcedBySecureHardware
     }
 }

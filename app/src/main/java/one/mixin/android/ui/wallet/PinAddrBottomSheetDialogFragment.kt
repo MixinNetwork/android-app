@@ -2,22 +2,21 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.view.View
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet_address.view.*
-import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
-import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.ChainId.EOS_CHAIN_ID
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.databinding.FragmentPinBottomSheetAddressBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_ADDRESS
+import one.mixin.android.util.getChainName
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.widget.BottomSheet
 
@@ -34,7 +33,10 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         const val ARGS_ASSET_ID = "args_asset_id"
         const val ARGS_ASSET_NAME = "args_asset_name"
         const val ARGS_ASSET_URL = "args_asset_url"
+        const val ARGS_ASSET_SYMBOL = "args_asset_symbol"
+        const val ARGS_ASSET_KEY = "args_asset_key"
         const val ARGS_CHAIN_ID = "args_chain_id"
+        const val ARGS_CHAIN_NAME = "args_chain_name"
         const val ARGS_CHAIN_URL = "args_chain_url"
         const val ARGS_LABEL = "args_label"
         const val ARGS_DESTINATION = "args_destination"
@@ -46,25 +48,31 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             assetId: String? = null,
             assetName: String? = null,
             assetUrl: String? = null,
+            assetSymbol: String? = null,
+            assetKey: String? = null,
             chainId: String? = null,
+            chainName: String? = null,
             chainIconUrl: String? = null,
             label: String,
             destination: String,
             tag: String? = null,
             addressId: String? = null,
-            type: Int = ADD
+            type: Int = ADD,
         ) = PinAddrBottomSheetDialogFragment().apply {
             val b = bundleOf(
                 ARGS_ASSET_ID to assetId,
                 ARGS_ASSET_NAME to assetName,
                 ARGS_ASSET_URL to assetUrl,
+                ARGS_ASSET_SYMBOL to assetSymbol,
+                ARGS_ASSET_KEY to assetKey,
                 ARGS_CHAIN_ID to chainId,
+                ARGS_CHAIN_NAME to chainName,
                 ARGS_CHAIN_URL to chainIconUrl,
                 ARGS_LABEL to label,
                 ARGS_DESTINATION to destination,
                 ARGS_ADDRESS_ID to addressId,
                 ARGS_TYPE to type,
-                ARGS_TAG to tag
+                ARGS_TAG to tag,
             )
             arguments = b
         }
@@ -73,7 +81,10 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     private val assetId: String? by lazy { requireArguments().getString(ARGS_ASSET_ID) }
     private val assetName: String? by lazy { requireArguments().getString(ARGS_ASSET_NAME) }
     private val assetUrl: String? by lazy { requireArguments().getString(ARGS_ASSET_URL) }
+    private val assetSymbol: String? by lazy { requireArguments().getString(ARGS_ASSET_SYMBOL) }
+    private val assetKey: String? by lazy { requireArguments().getString(ARGS_ASSET_KEY) }
     private val chainId: String? by lazy { requireArguments().getString(ARGS_CHAIN_ID) }
+    private val chainName: String? by lazy { requireArguments().getString(ARGS_CHAIN_NAME) }
     private val chainIconUrl: String? by lazy { requireArguments().getString(ARGS_CHAIN_URL) }
     private val label: String? by lazy { requireArguments().getString(ARGS_LABEL) }
     private val destination: String? by lazy { requireArguments().getString(ARGS_DESTINATION) }
@@ -81,21 +92,24 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
     private val addressTag: String? by lazy { requireArguments().getString(ARGS_TAG) }
 
+    private val binding by viewBinding(FragmentPinBottomSheetAddressBinding::inflate)
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_pin_bottom_sheet_address, null)
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
         setBiometricLayout()
-
-        contentView.title_view.right_iv.setOnClickListener { dismiss() }
-        contentView.title.text = getTitle()
-        contentView.asset_icon.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)
-        contentView.asset_icon.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
-        contentView.asset_name.text = label
-        contentView.asset_address.text = destination
-        contentView.pay_tv.text = getTipText()
-        contentView.biometric_tv.text = getBiometricText()
+        binding.apply {
+            titleView.rightIv.setOnClickListener { dismiss() }
+            title.text = getTitle()
+            chain.text = getChainName(chainId, chainName, assetKey)
+            assetIcon.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)
+            assetIcon.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
+            assetName.text = label
+            assetAddress.text = if (addressTag.isNullOrBlank()) destination else "$destination:$addressTag"
+            biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
+        }
     }
 
     override fun getBiometricInfo(): BiometricInfo {
@@ -103,7 +117,6 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             getTitle(),
             label ?: "",
             destination ?: "",
-            getTipText()
         )
     }
 
@@ -122,29 +135,34 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             } else {
                 bottomViewModel.deleteLocalAddr(addressId!!)
             }
-            contentView.biometric_layout.showPin(false)
+            binding.biometricLayout.showPin(false)
         }
         return true
     }
 
-    override fun doWithMixinErrorCode(errorCode: Int): String? {
+    override suspend fun doWithMixinErrorCode(errorCode: Int, pin: String): String? {
         return if (errorCode == INVALID_ADDRESS) {
             getString(
-                if (chainId == EOS_CHAIN_ID) {
-                    R.string.error_invalid_address_eos
-                } else R.string.error_invalid_address,
-                INVALID_ADDRESS
+                R.string.error_invalid_address,
+                when (chainId) {
+                    ETHEREUM_CHAIN_ID -> "Ethereum(ERC20)"
+                    TRON_CHAIN_ID -> "TRON(TRC20)"
+                    else -> chainName
+                },
+                assetSymbol,
             )
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun getTitle() = getString(
         when (type) {
-            ADD -> R.string.withdrawal_addr_add
-            MODIFY -> R.string.withdrawal_addr_modify
-            else -> R.string.withdrawal_addr_delete
+            ADD -> R.string.Add_address
+            MODIFY -> R.string.edit_address
+            else -> R.string.Delete_withdraw_Address
         },
-        assetName
+        assetName,
     )
 
     private fun getTipText() = getString(
@@ -153,15 +171,6 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             DELETE -> R.string.withdrawal_addr_pin_delete
             MODIFY -> R.string.withdrawal_addr_pin_modify
             else -> R.string.withdrawal_addr_pin_add
-        }
-    )
-
-    private fun getBiometricText() = getString(
-        when (type) {
-            ADD -> R.string.withdrawal_addr_biometric_add
-            DELETE -> R.string.withdrawal_addr_biometric_delete
-            MODIFY -> R.string.withdrawal_addr_biometric_modify
-            else -> R.string.withdrawal_addr_biometric_add
-        }
+        },
     )
 }

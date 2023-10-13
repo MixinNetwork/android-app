@@ -1,66 +1,54 @@
 package one.mixin.android.extension
 
+import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.Outline
-import android.net.Uri
+import android.graphics.drawable.Drawable
+import android.media.MediaScannerConnection
 import android.os.Bundle
-import android.provider.MediaStore
-import android.text.Spanned
-import android.text.style.BackgroundColorSpan
 import android.util.Property
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import android.view.ViewAnimationUtils
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.Interpolator
 import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.widget.EditText
-import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.annotation.LayoutRes
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
 import androidx.core.view.ViewPropertyAnimatorListener
+import androidx.core.view.drawToBitmap
 import androidx.core.view.updateLayoutParams
+import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringConfig
 import com.facebook.rebound.SpringSystem
-import one.mixin.android.ui.conversation.holder.BaseViewHolder
-import one.mixin.android.util.mention.MentionRenderContext
-import one.mixin.android.util.mention.mentionConversationParser
-import one.mixin.android.util.mention.mentionMessageParser
-import one.mixin.android.util.mention.syntax.simple.SimpleRenderer
-import org.jetbrains.anko.dip
+import one.mixin.android.util.reportException
 import timber.log.Timber
-import java.io.FileNotFoundException
 import java.io.IOException
-import kotlin.jvm.Throws
+import java.lang.reflect.Field
+import kotlin.math.hypot
 
-const val ANIMATION_DURATION_SHORTEST = 260L
-
-const val FLAGS_FULLSCREEN =
-    View.SYSTEM_UI_FLAG_LOW_PROFILE or
-        View.SYSTEM_UI_FLAG_FULLSCREEN or
-        View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+const val ANIMATION_DURATION_SHORT = 260L
+const val ANIMATION_DURATION_SHORTEST = 120L
 
 fun View.hideKeyboard() {
     val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -68,13 +56,14 @@ fun View.hideKeyboard() {
 }
 
 fun View.showKeyboard() {
-    requestFocus()
-    val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    inputMethodManager.showSoftInput(this, SHOW_IMPLICIT)
+    if (requestFocus()) {
+        val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.showSoftInput(this, SHOW_IMPLICIT)
+    }
 }
 
 fun View.fadeIn(maxAlpha: Float = 1f) {
-    this.fadeIn(ANIMATION_DURATION_SHORTEST, maxAlpha)
+    this.fadeIn(ANIMATION_DURATION_SHORT, maxAlpha)
 }
 
 fun View.fadeIn(duration: Long, maxAlpha: Float = 1f) {
@@ -89,12 +78,12 @@ fun View.fadeIn(duration: Long, maxAlpha: Float = 1f) {
             }
 
             override fun onAnimationCancel(view: View) {}
-        }
+        },
     ).start()
 }
 
 fun View.fadeOut(isGone: Boolean = false) {
-    this.fadeOut(ANIMATION_DURATION_SHORTEST, isGone = isGone)
+    this.fadeOut(ANIMATION_DURATION_SHORT, isGone = isGone)
 }
 
 fun View.fadeOut(duration: Long, delay: Long = 0, isGone: Boolean = false) {
@@ -112,12 +101,12 @@ fun View.fadeOut(duration: Long, delay: Long = 0, isGone: Boolean = false) {
             }
 
             override fun onAnimationCancel(view: View) {}
-        }
+        },
     )
 }
 
 fun View.translationX(value: Float) {
-    this.translationX(value, ANIMATION_DURATION_SHORTEST)
+    this.translationX(value, ANIMATION_DURATION_SHORT)
 }
 
 fun View.translationX(value: Float, duration: Long) {
@@ -125,31 +114,31 @@ fun View.translationX(value: Float, duration: Long) {
 }
 
 fun View.translationY(value: Float, endAction: (() -> Unit)? = null) {
-    this.translationY(value, ANIMATION_DURATION_SHORTEST, endAction)
+    this.translationY(value, ANIMATION_DURATION_SHORT, endAction)
 }
 
 fun View.translationY(value: Float, duration: Long, endAction: (() -> Unit)? = null) {
     ViewCompat.animate(this).setDuration(duration).translationY(value)
         .setListener(
             object : ViewPropertyAnimatorListener {
-                override fun onAnimationEnd(view: View?) {
+                override fun onAnimationEnd(view: View) {
                     endAction?.let { it() }
                 }
 
-                override fun onAnimationCancel(view: View?) {
+                override fun onAnimationCancel(view: View) {
                     endAction?.let { it() }
                 }
 
-                override fun onAnimationStart(view: View?) {}
-            }
+                override fun onAnimationStart(view: View) {}
+            },
         )
         .start()
 }
 
 fun View.shaking() {
-    val dp20 = dip(20).toFloat()
-    val dp10 = dip(10).toFloat()
-    val dp5 = dip(5).toFloat()
+    val dp20 = 20.dp.toFloat()
+    val dp10 = 10.dp.toFloat()
+    val dp5 = 5.dp.toFloat()
     ObjectAnimator.ofFloat(this, "translationX", -dp20, dp20, -dp20, dp20, -dp10, dp10, -dp5, dp5, 0f)
         .setDuration(600).start()
 }
@@ -162,7 +151,7 @@ fun View.shakeAnimator() =
     }
 
 fun View.animateWidth(form: Int, to: Int) {
-    this.animateWidth(form, to, ANIMATION_DURATION_SHORTEST)
+    this.animateWidth(form, to, ANIMATION_DURATION_SHORT)
 }
 
 fun View.animateWidth(form: Int, to: Int, duration: Long) {
@@ -178,10 +167,10 @@ fun View.animateWidth(form: Int, to: Int, duration: Long) {
 fun View.animateHeight(
     from: Int,
     to: Int,
-    duration: Long = ANIMATION_DURATION_SHORTEST,
+    duration: Long = ANIMATION_DURATION_SHORT,
     interpolator: Interpolator = DecelerateInterpolator(),
     action: ((ValueAnimator) -> Unit)? = null,
-    onEndAction: (() -> Unit)? = null
+    onEndAction: (() -> Unit)? = null,
 ) {
     val anim = ValueAnimator.ofInt(from, to).apply {
         this.duration = duration
@@ -239,6 +228,17 @@ fun View.roundTopOrBottom(radius: Float, top: Boolean, bottom: Boolean) {
     this.clipToOutline = true
 }
 
+fun View.circularReveal() {
+    val centerX = width / 2
+    val centerY: Int = height / 2
+    val startRadius = 0f
+    val endRadius = hypot(width / 2f, height / 2f)
+
+    val circularReveal: Animator =
+        ViewAnimationUtils.createCircularReveal(this, centerX, centerY, startRadius, endRadius)
+    circularReveal.start()
+}
+
 fun EditText.showCursor() {
     this.requestFocus()
     this.isCursorVisible = true
@@ -251,13 +251,34 @@ fun EditText.hideCursor() {
 
 fun ViewGroup.inflate(
     @LayoutRes layoutRes: Int,
-    attachToRoot: Boolean = false
+    attachToRoot: Boolean = false,
 ) = LayoutInflater.from(context).inflate(layoutRes, this, attachToRoot)!!
+
+fun View.navigateUp() {
+    try {
+        findNavController().navigateUp()
+    } catch (e: IllegalArgumentException) {
+        // Workaround with https://issuetracker.google.com/issues/128881182
+    } catch (e: IllegalStateException) {
+        Timber.w("View $this does not have a NavController set")
+    }
+}
+
+fun NavController.safeNavigateUp(): Boolean {
+    return try {
+        navigateUp()
+    } catch (e: IllegalArgumentException) {
+        // Workaround with https://issuetracker.google.com/issues/128881182
+        false
+    } catch (e: IllegalStateException) {
+        false
+    }
+}
 
 fun View.navigate(
     resId: Int,
     bundle: Bundle? = null,
-    navOptions: NavOptions? = null
+    navOptions: NavOptions? = null,
 ) {
     try {
         findNavController().navigate(resId, bundle, navOptions)
@@ -269,24 +290,15 @@ fun View.navigate(
 }
 
 @Throws(IOException::class)
-fun View.capture(context: Context): String? {
-    val outFile = context.getPublicPicturePath().createImageTemp(false)
-    val b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-    val c = Canvas(b)
-    draw(c)
-    b.save(outFile)
-    return try {
-        MediaStore.Images.Media.insertImage(
-            context.contentResolver,
-            outFile.absolutePath,
-            outFile.name,
-            null
-        )
-        context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
+fun View.capture(context: Context): Result<String> {
+    return kotlin.runCatching {
+        val outFile = context.getPublicPicturePath().createImagePngTemp(false)
+        val b = drawToBitmap()
+        b.save(outFile)
+        MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
         outFile.absolutePath
-    } catch (e: FileNotFoundException) {
-        e.printStackTrace()
-        null
+    }.onFailure {
+        reportException(it)
     }
 }
 
@@ -303,7 +315,7 @@ fun View.bounce() {
                     scaleX = value
                     scaleY = value
                 }
-            }
+            },
         )
     spring.endValue = 1.0
 }
@@ -330,40 +342,86 @@ fun View.isActivityNotDestroyed(): Boolean {
     return true
 }
 
-fun TextView.renderConversation(text: CharSequence?, mentionRenderContext: MentionRenderContext?) {
-    if (text == null || mentionRenderContext == null) {
-        this.text = text
-        return
-    }
-    this.text = SimpleRenderer.render(
-        text,
-        parser = mentionConversationParser,
-        renderContext = mentionRenderContext
-    )
-}
-
-fun TextView.renderMessage(text: CharSequence?, mentionRenderContext: MentionRenderContext?, keyWord: String? = null) {
-    if (text == null || mentionRenderContext == null) {
-        this.text = text
-        return
-    }
-    val sp = SimpleRenderer.render(
-        text,
-        parser = mentionMessageParser,
-        renderContext = mentionRenderContext
-    )
-    if (keyWord != null) {
-        val start = sp.indexOf(keyWord, 0, true)
-        if (start >= 0) {
-            sp.setSpan(
-                BackgroundColorSpan(BaseViewHolder.HIGHLIGHTED),
-                start,
-                start + keyWord.length,
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-        }
-    }
-    this.text = sp
-}
-
 fun isDarkColor(@ColorInt color: Int) = ColorUtils.calculateLuminance(color) < 0.5
+
+@ColorInt
+fun Int.withAlpha(alpha: Float): Int {
+    val result = 255.coerceAtMost(0.coerceAtLeast((alpha * 255).toInt())) shl 24
+    val rgb = 0x00ffffff and this
+    return result + rgb
+}
+
+fun PopupMenu.showIcon() {
+    val menuHelper: Any
+    val argTypes: Array<Class<*>?>
+    try {
+        val fMenuHelper: Field = PopupMenu::class.java.getDeclaredField("mPopup")
+        fMenuHelper.isAccessible = true
+        menuHelper = fMenuHelper.get(this)
+        argTypes = arrayOf(Boolean::class.javaPrimitiveType)
+        menuHelper.javaClass.getDeclaredMethod("setForceShowIcon", *argTypes)
+            .invoke(menuHelper, true)
+    } catch (e: Exception) {
+    }
+}
+
+fun WindowManager.safeAddView(view: View?, params: ViewGroup.LayoutParams) {
+    if (view == null) return
+
+    try {
+        if (view.windowToken != null || view.parent != null) {
+            removeView(view)
+        }
+        addView(view, params)
+    } catch (e: Exception) {
+        Timber.e("add/remove view from windowManager meet ${e.stackTraceToString()}")
+    }
+}
+
+fun WindowManager.safeRemoveView(view: View) {
+    try {
+        removeView(view)
+    } catch (e: Exception) {
+        Timber.e("remove view from windowManager meet ${e.stackTraceToString()}")
+    }
+}
+
+var View.leftPadding: Int
+    inline get() = paddingLeft
+    set(value) = setPadding(value, paddingTop, paddingRight, paddingBottom)
+
+var View.topPadding: Int
+    inline get() = paddingTop
+    set(value) = setPadding(paddingLeft, value, paddingRight, paddingBottom)
+
+var View.rightPadding: Int
+    inline get() = paddingRight
+    set(value) = setPadding(paddingLeft, paddingTop, value, paddingBottom)
+
+var View.bottomPadding: Int
+    inline get() = paddingBottom
+    set(value) = setPadding(paddingLeft, paddingTop, paddingRight, value)
+
+var View.backgroundColor: Int
+    @Deprecated("Property does not have a getter")
+    get() = error("Property does not have a getter")
+    set(v) = setBackgroundColor(v)
+
+var View.backgroundDrawable: Drawable?
+    inline get() = background
+    set(value) = setBackgroundDrawable(value)
+
+var View.backgroundResource: Int
+    @Deprecated("Property does not have a getter")
+    get() = error("Property does not have a getter")
+    set(v) = setBackgroundResource(v)
+
+var ViewGroup.MarginLayoutParams.margin: Int
+    @Deprecated("Property does not have a getter")
+    get() = error("Property does not have a getter")
+    set(v) {
+        leftMargin = v
+        rightMargin = v
+        topMargin = v
+        bottomMargin = v
+    }

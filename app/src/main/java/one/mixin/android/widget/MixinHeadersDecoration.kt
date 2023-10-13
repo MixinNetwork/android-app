@@ -22,7 +22,7 @@ class MixinHeadersDecoration private constructor(
     private val mOrientationProvider: OrientationProvider,
     private val mDimensionCalculator: DimensionCalculator,
     private val mHeaderProvider: HeaderProvider,
-    private val mHeaderPositionCalculator: HeaderPositionCalculator
+    private val mHeaderPositionCalculator: HeaderPositionCalculator,
 ) : RecyclerView.ItemDecoration() {
     private val mHeaderRects = SparseArray<Rect>()
 
@@ -31,19 +31,19 @@ class MixinHeadersDecoration private constructor(
     constructor(adapter: MixinStickyRecyclerHeadersAdapter<*>) : this(
         adapter,
         LinearLayoutOrientationProvider(),
-        DimensionCalculator()
+        DimensionCalculator(),
     )
 
     private constructor(
         adapter: MixinStickyRecyclerHeadersAdapter<*>,
         orientationProvider: OrientationProvider,
-        dimensionCalculator: DimensionCalculator
+        dimensionCalculator: DimensionCalculator,
     ) : this(
         adapter,
         orientationProvider,
         dimensionCalculator,
         HeaderRenderer(orientationProvider),
-        HeaderViewCache(adapter, orientationProvider)
+        HeaderViewCache(adapter, orientationProvider),
     )
 
     private constructor(
@@ -51,7 +51,7 @@ class MixinHeadersDecoration private constructor(
         orientationProvider: OrientationProvider,
         dimensionCalculator: DimensionCalculator,
         headerRenderer: HeaderRenderer,
-        headerProvider: HeaderProvider
+        headerProvider: HeaderProvider,
     ) : this(
         adapter,
         headerRenderer,
@@ -62,8 +62,8 @@ class MixinHeadersDecoration private constructor(
             adapter,
             headerProvider,
             orientationProvider,
-            dimensionCalculator
-        )
+            dimensionCalculator,
+        ),
     )
 
     override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
@@ -115,7 +115,7 @@ class MixinHeadersDecoration private constructor(
             val hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(
                 itemView,
                 mOrientationProvider.getOrientation(parent),
-                position
+                position,
             )
             if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(position, mOrientationProvider.isReverseLayout(parent))) {
                 val header = mHeaderProvider.getHeader(parent, position)
@@ -144,7 +144,7 @@ class MixinHeadersDecoration private constructor(
             val hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(
                 itemView,
                 mOrientationProvider.getOrientation(parent),
-                position
+                position,
             )
             if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(position, mOrientationProvider.isReverseLayout(parent))) {
                 val header = mHeaderProvider.getHeader(parent, position)
@@ -184,7 +184,7 @@ class MixinHeadersDecoration private constructor(
             if (attachView.layoutParams == null) {
                 attachView.layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
                 )
             }
             val widthSpec = View.MeasureSpec.makeMeasureSpec(parent.width, View.MeasureSpec.EXACTLY)
@@ -192,12 +192,12 @@ class MixinHeadersDecoration private constructor(
             val childWidth = ViewGroup.getChildMeasureSpec(
                 widthSpec,
                 parent.paddingLeft + parent.paddingRight,
-                attachView.layoutParams.width
+                attachView.layoutParams.width,
             )
             val childHeight = ViewGroup.getChildMeasureSpec(
                 heightSpec,
                 parent.paddingTop + parent.paddingBottom,
-                attachView.layoutParams.height
+                attachView.layoutParams.height,
             )
             attachView.measure(childWidth, childHeight)
             attachView.layout(0, 0, attachView.measuredWidth, attachView.measuredHeight)

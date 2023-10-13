@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
@@ -14,33 +16,35 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_sticker.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentStickerBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.FooterAdapter
 import one.mixin.android.ui.conversation.StickerFragment.Companion.COLUMN
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.DraggableRecyclerView
-import org.jetbrains.anko.dip
 import retrofit2.HttpException
 import timber.log.Timber
 
 @AndroidEntryPoint
-class GiphyFragment : BaseFragment() {
+class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
     companion object {
         const val TAG = "GiphyFragment"
         fun newInstance() = GiphyFragment()
     }
 
     private val padding: Int by lazy {
-        requireContext().dip(StickerFragment.PADDING)
+        StickerFragment.PADDING.dp
     }
     private val giphyAdapter: GiphyAdapter by lazy { GiphyAdapter() }
 
@@ -49,71 +53,73 @@ class GiphyFragment : BaseFragment() {
     var callback: StickerAlbumAdapter.Callback? = null
     var rvCallback: DraggableRecyclerView.Callback? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_sticker, container, false)
+    private val binding by viewBinding(FragmentStickerBinding::bind)
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        sticker_rv.layoutManager = GridLayoutManager(context, COLUMN).apply {
-            spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                override fun getSpanSize(pos: Int): Int {
-                    return if (pos == giphyAdapter.itemCount - 1) {
-                        COLUMN
-                    } else {
-                        1
-                    }
-                }
-            }
-        }
-        val foot = layoutInflater.inflate(R.layout.view_giphy_foot, sticker_rv, false)
-        giphyAdapter.footerView = foot
-        sticker_rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
-        giphyAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
-        sticker_rv.adapter = giphyAdapter
-        giphyAdapter.setOnGiphyListener(
-            object : GiphyListener {
-                override fun onItemClick(pos: Int, image: Image, previewUrl: String) {
-                    callback?.onGiphyClick(image, previewUrl)
-                }
-
-                override fun onSearchClick() {
-                    val f = GiphyBottomSheetFragment.newInstance()
-                    f.showNow(parentFragmentManager, GiphyBottomSheetFragment.TAG)
-                    f.callback = object : GiphyBottomSheetFragment.Callback {
-                        override fun onGiphyClick(image: Image, previewUrl: String) {
-                            callback?.onGiphyClick(image, previewUrl)
+        binding.apply {
+            stickerRv.layoutManager = GridLayoutManager(context, COLUMN).apply {
+                spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                    override fun getSpanSize(pos: Int): Int {
+                        return if (pos == giphyAdapter.itemCount - 1) {
+                            COLUMN
+                        } else {
+                            1
                         }
                     }
                 }
             }
-        )
-        sticker_rv.callback = object : DraggableRecyclerView.Callback {
-            override fun onScroll(dis: Float) {
-                rvCallback?.onScroll(dis)
-            }
-
-            override fun onRelease(fling: Int) {
-                rvCallback?.onRelease(fling)
-            }
-        }
-        sticker_progress.visibility = View.VISIBLE
-        stickerViewModel.trendingGifs(26, 0)
-            .autoDispose(stopScope)
-            .subscribe(
-                { list ->
-                    if (!isAdded) return@subscribe
-                    giphyAdapter.data = list
-                    giphyAdapter.notifyDataSetChanged()
-                    sticker_progress.visibility = View.GONE
-                },
-                { t ->
-                    Timber.d("Trending gifs failed, t: ${t.printStackTrace()}")
-                    if (t is HttpException && t.code() == 429) {
-                        toast("Giphy API rate limit exceeded")
+            val foot = layoutInflater.inflate(R.layout.view_giphy_foot, stickerRv, false)
+            giphyAdapter.footerView = foot
+            stickerRv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
+            giphyAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
+            stickerRv.adapter = giphyAdapter
+            giphyAdapter.setOnGiphyListener(
+                object : GiphyListener {
+                    override fun onItemClick(pos: Int, image: Image, previewUrl: String) {
+                        callback?.onGiphyClick(image, previewUrl)
                     }
-                    sticker_progress.visibility = View.GONE
-                }
+
+                    override fun onSearchClick() {
+                        val f = GiphyBottomSheetFragment.newInstance()
+                        f.showNow(parentFragmentManager, GiphyBottomSheetFragment.TAG)
+                        f.callback = object : GiphyBottomSheetFragment.Callback {
+                            override fun onGiphyClick(image: Image, previewUrl: String) {
+                                callback?.onGiphyClick(image, previewUrl)
+                            }
+                        }
+                    }
+                },
             )
+            stickerRv.callback = object : DraggableRecyclerView.Callback {
+                override fun onScroll(dis: Float) {
+                    rvCallback?.onScroll(dis)
+                }
+
+                override fun onRelease(fling: Int) {
+                    rvCallback?.onRelease(fling)
+                }
+            }
+            stickerProgress.visibility = View.VISIBLE
+            stickerViewModel.trendingGifs(26, 0)
+                .autoDispose(stopScope)
+                .subscribe(
+                    { list ->
+                        if (viewDestroyed()) return@subscribe
+                        giphyAdapter.data = list
+                        giphyAdapter.notifyDataSetChanged()
+                        stickerProgress.visibility = View.GONE
+                    },
+                    { t ->
+                        Timber.d("Trending gifs failed, t: ${t.printStackTrace()}")
+                        if (t is HttpException && t.code() == 429) {
+                            toast("Giphy API rate limit exceeded")
+                        }
+                        stickerProgress.visibility = View.GONE
+                    },
+                )
+        }
     }
 
     private class GiphyAdapter : FooterAdapter<Gif>() {
@@ -133,11 +139,11 @@ class GiphyFragment : BaseFragment() {
             val item = (holder.itemView as ViewGroup).getChildAt(0) as ImageView
             if (position == 0) {
                 item.updateLayoutParams<FrameLayout.LayoutParams> {
-                    width = size - ctx.dip(20)
+                    width = size - 20.dp
                     height = (width * (3f / 4)).toInt()
                 }
                 Glide.with(item).clear(item)
-                item.setImageDrawable(ctx.getDrawable(R.drawable.ic_gif_search))
+                item.setImageDrawable(AppCompatResources.getDrawable(ctx, R.drawable.ic_gif_search))
                 item.setOnClickListener { listener?.onSearchClick() }
             } else {
                 val images = data!![position - 1].images
@@ -161,7 +167,7 @@ class GiphyFragment : BaseFragment() {
             {
                 if (footerView != null) it.size + 2 else it.size + 1
             },
-            0
+            0,
         )
 
         fun setOnGiphyListener(giphyListener: GiphyListener) {

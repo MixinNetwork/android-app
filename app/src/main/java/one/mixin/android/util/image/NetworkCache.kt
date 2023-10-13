@@ -52,7 +52,9 @@ class NetworkCache(context: Context) {
         val file = File(parentDir(), filenameForUrl(url, false))
         return if (file.exists()) {
             file
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun parentDir(): File {

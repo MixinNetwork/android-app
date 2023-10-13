@@ -4,12 +4,15 @@ import android.app.Application
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.components.SingletonComponent
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.pending.PendingDatabase
+import one.mixin.android.db.pending.PendingDatabaseImp
+import one.mixin.android.fts.FtsDatabase
 import javax.inject.Singleton
 
-@InstallIn(ApplicationComponent::class)
+@InstallIn(SingletonComponent::class)
 @Module
 internal object BaseDbModule {
 
@@ -19,11 +22,19 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
+    fun provideFtsDb(app: Application) = FtsDatabase.getDatabase(app)
+
+    @Singleton
+    @Provides
     fun provideRatchetSenderKeyDao(db: SignalDatabase) = db.ratchetSenderKeyDao()
 
     @Singleton
     @Provides
     fun provideDb(app: Application) = MixinDatabase.getDatabase(app)
+
+    @Singleton
+    @Provides
+    fun providePendingDatabase(app: Application, mixinDatabase: MixinDatabase): PendingDatabase = PendingDatabaseImp.getDatabase(app.applicationContext, mixinDatabase.floodMessageDao(), mixinDatabase.jobDao())
 
     @Singleton
     @Provides
@@ -40,6 +51,11 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun provideMessageDao(db: MixinDatabase) = db.messageDao()
+
+    @Singleton
+    @Provides
+    fun providePendingMessageDao(pendingDatabase: PendingDatabase) =
+        pendingDatabase.pendingMessageDao()
 
     @Singleton
     @Provides
@@ -83,11 +99,11 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun providesFloodMessageDao(db: MixinDatabase) = db.floodMessageDao()
+    fun providesFloodMessageDao(db: PendingDatabase) = db.floodMessageDao()
 
     @Singleton
     @Provides
-    fun providesJobDao(db: MixinDatabase) = db.jobDao()
+    fun providesJobDao(db: PendingDatabase) = db.jobDao()
 
     @Singleton
     @Provides
@@ -115,10 +131,6 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun providesMessageFts4Dao(db: MixinDatabase) = db.messageFts4Dao()
-
-    @Singleton
-    @Provides
     fun providesCircleDao(db: MixinDatabase) = db.circleDao()
 
     @Singleton
@@ -128,4 +140,32 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun providesTraceDao(db: MixinDatabase) = db.traceDao()
+
+    @Singleton
+    @Provides
+    fun providesTranscriptDao(db: MixinDatabase) = db.transcriptDao()
+
+    @Singleton
+    @Provides
+    fun providesPinMessageDao(db: MixinDatabase) = db.pinMessageDao()
+
+    @Singleton
+    @Provides
+    fun providesPropertyDao(db: MixinDatabase) = db.propertyDao()
+
+    @Singleton
+    @Provides
+    fun providesRemoteMessageStatusDao(db: MixinDatabase) = db.remoteMessageStatusDao()
+
+    @Singleton
+    @Provides
+    fun providesExpiredMessageDao(db: MixinDatabase) = db.expiredMessageDao()
+
+    @Singleton
+    @Provides
+    fun providesConversationExtDao(db: MixinDatabase) = db.conversationExtDao()
+
+    @Singleton
+    @Provides
+    fun providesChainDao(db: MixinDatabase) = db.chainDao()
 }

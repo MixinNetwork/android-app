@@ -1,12 +1,13 @@
 package one.mixin.android.ui.common.recyclerview
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 
-abstract class PagedHeaderAdapter<T>(diffCallback: DiffUtil.ItemCallback<T>) :
+abstract class PagedHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallback<T>) :
     SafePagedListAdapter<T, RecyclerView.ViewHolder>(diffCallback) {
     companion object {
         const val TYPE_HEADER = 0
@@ -44,6 +45,7 @@ abstract class PagedHeaderAdapter<T>(diffCallback: DiffUtil.ItemCallback<T>) :
 
     protected fun isShowHeader() = headerView != null && showHeader
 
+    @SuppressLint("NotifyDataSetChanged")
     fun setShowHeader(show: Boolean, rv: RecyclerView) {
         if (show != showHeader) {
             showHeader = show

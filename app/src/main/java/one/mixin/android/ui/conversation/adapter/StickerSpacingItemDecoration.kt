@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 class StickerSpacingItemDecoration(
     private val spanCount: Int,
     private val spacing: Int,
-    private val includeEdge: Boolean
+    private val includeEdge: Boolean,
 ) :
     RecyclerView.ItemDecoration() {
 

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.content.pm.ShortcutManagerCompat.FLAG_MATCH_CACHED
 import androidx.core.graphics.drawable.IconCompat
 import one.mixin.android.MixinApplication
 import kotlin.math.min
@@ -19,8 +20,11 @@ private const val dynamicShortcutCount = 4
 private const val staticShortcutCount = 2 // wallet and scan
 
 val shareCategories = setOf(
-    categoryTextShareTarget, categoryImageShareTarget,
-    categoryVideoShareTarget, categoryAudioShareTarget, categoryApplicationShareTarget
+    categoryTextShareTarget,
+    categoryImageShareTarget,
+    categoryVideoShareTarget,
+    categoryAudioShareTarget,
+    categoryApplicationShareTarget,
 )
 
 val maxDynamicShortcutCount by lazy {
@@ -29,26 +33,48 @@ val maxDynamicShortcutCount by lazy {
 }
 
 fun addPinShortcut(context: Context, conversationId: String, name: String, icon: Bitmap, launcher: Intent) {
-    val shortcut = ShortcutInfoCompat.Builder(context, conversationId)
+    ShortcutManagerCompat.getShortcuts(context, FLAG_MATCH_CACHED).forEach {
+        if (it.id == conversationId) {
+            ShortcutManagerCompat.removeLongLivedShortcuts(context, listOf("Pin-$conversationId", conversationId))
+        }
+    }
+    val shortcut = ShortcutInfoCompat.Builder(context, "Pin-$conversationId")
         .setShortLabel(name)
         .setIcon(IconCompat.createWithBitmap(icon))
         .setIntent(launcher)
         .build()
-    val successCallback = PendingIntent.getBroadcast(context, 0, ShortcutManagerCompat.createShortcutResultIntent(context, shortcut), 0)
+    val successCallback = PendingIntent.getBroadcast(context, 0, ShortcutManagerCompat.createShortcutResultIntent(context, shortcut), PendingIntent.FLAG_IMMUTABLE)
     ShortcutManagerCompat.requestPinShortcut(context, shortcut, successCallback.intentSender)
 }
 
-fun generateDynamicShortcut(context: Context, shortcutInfo: ShortcutInfo) =
-    ShortcutInfoCompat.Builder(context, shortcutInfo.conversationId)
-        .setShortLabel(shortcutInfo.name)
+fun generateDynamicShortcut(context: Context, shortcutInfo: ShortcutInfo): ShortcutInfoCompat {
+    var shortcutName = shortcutInfo.name
+    if (shortcutName.isEmpty()) {
+        shortcutName = "Mixin-${shortcutInfo.conversationId}"
+    }
+    return ShortcutInfoCompat.Builder(context, shortcutInfo.conversationId)
+        .setShortLabel(shortcutName)
         .setIntent(shortcutInfo.intent)
         .setIcon(IconCompat.createWithBitmap(shortcutInfo.icon))
         .setCategories(shareCategories)
         .build()
+}
+
+fun updateShortcuts(shortcuts: MutableList<ShortcutInfoCompat>) {
+    val exists = ShortcutManagerCompat.getDynamicShortcuts(MixinApplication.appContext)
+    val keepSize = maxDynamicShortcutCount - shortcuts.size
+    if (keepSize >= 0 && exists.size > keepSize) {
+        val removeIds = mutableListOf<String>()
+        exists.take(exists.size - keepSize)
+            .mapTo(removeIds) { it.id }
+        ShortcutManagerCompat.removeDynamicShortcuts(MixinApplication.appContext, removeIds)
+    }
+    ShortcutManagerCompat.addDynamicShortcuts(MixinApplication.appContext, shortcuts)
+}
 
 data class ShortcutInfo(
     var conversationId: String,
     var name: String,
     var icon: Bitmap,
-    var intent: Intent
+    var intent: Intent,
 )

@@ -1,5 +1,6 @@
 package one.mixin.android.widget
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
@@ -7,8 +8,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import one.mixin.android.R
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.forEachReversedWithIndex
 import one.mixin.android.extension.loadImage
-import org.jetbrains.anko.collections.forEachReversedWithIndex
 
 class FloatingAvatarsView : ViewGroup {
     companion object {
@@ -31,12 +32,14 @@ class FloatingAvatarsView : ViewGroup {
     private val overRatio = 1f / 6
 
     constructor(context: Context) : this(context, null)
+
+    @SuppressLint("CustomViewStyleable")
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.AvatarsView)
 
         borderWidth = ta.getDimensionPixelSize(
             R.styleable.AvatarsView_avatar_border_width,
-            DEFAULT_BORDER_WIDTH
+            DEFAULT_BORDER_WIDTH,
         )
         borderColor = ta.getColor(R.styleable.AvatarsView_avatar_border_color, DEFAULT_BORDER_COLOR)
         avatarSize =
@@ -70,14 +73,14 @@ class FloatingAvatarsView : ViewGroup {
         }
         setMeasuredDimension(
             MeasureSpec.makeMeasureSpec(parentWidth.toInt(), MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY)
+            MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY),
         )
 
         for (i in 0 until childCount) {
             val c = getChildAt(i)
             c.measure(
                 MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY),
-                MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY)
+                MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY),
             )
         }
     }
@@ -101,14 +104,14 @@ class FloatingAvatarsView : ViewGroup {
                     (itemOffset).toInt(),
                     0,
                     (avatarSize + itemOffset).toInt(),
-                    measuredHeight
+                    measuredHeight,
                 )
             } else {
                 c.layout(
                     (measuredWidth - avatarSize - itemOffset).toInt(),
                     0,
                     (measuredWidth - itemOffset).toInt(),
-                    measuredHeight
+                    measuredHeight,
                 )
             }
         }

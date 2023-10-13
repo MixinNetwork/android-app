@@ -7,6 +7,7 @@
     <color name="colorDarkBlue">#1987FF</color>
     <color name="colorLightBlue">#0D94FC</color>
     <color name="colorGray">#9B9B9B</color>
+    <color name="colorOnSurface">#212121</color>
 
     <color name="textPrimary">#333333</color>
     <color name="textMinor">#bbbbbb</color>
@@ -14,15 +15,22 @@
     <color name="textRemarks">#BCBEC3</color>
     <color name="textSubtitle">#BBBEC3</color>
 
+    <color name="textTranscript">#663B3C3E</color>
+    <color name="textTranscriptNight">#858f9c</color>
+    <color name="textTranscriptNightOther">#828589</color>
+
     <color name="colorIcon">#FF000000</color>
+    <color name="colorIconGoogleBlack">#3C4043</color>
     <color name="colorIconWhite">#FFFFFF</color>
     <color name="colorIconGray">#D2D4DA</color>
+    <color name="colorIconAction">@color/colorGray</color>
 
     <color name="badger">#3D75E3</color>
     <color name="badgerMute">#B8BDC7</color>
     <color name="badgerText">#FFFFFF</color>
     <color name="badgerTextMute">#FFFFFF</color>
 
+    <color name="bg_splash">#FFFFFF</color>
     <color name="bgInput">#F5F5F5</color>
     <color name="bgWhite">#FFFFFF</color>
     <color name="bgWindow">#F6F7FA</color>
@@ -34,8 +42,20 @@
     <color name="bgMenuBorder">#E5E7EC</color>
     <color name="bgGrayLight">#F5F7FA</color>
     <color name="bgBubble">#FFFFFF</color>
+    <color name="bgFlag">#FFFFFF</color>
     <color name="bgTranslucence">#EEFFFFFF</color>
     <color name="bgConfirmation">@color/wallet_blue_light</color>
+    <color name="bgChooseNetworkYellow">#4DFFF7AD</color>
+    <color name="bgChooseNetwork">#F6F7FA</color>
+
+    <color name="musicPlayed">#2F3032</color>
+    <color name="musicUnPlayed">#F6F7FA</color>
+    <color name="musicBuffered">#442F3032</color>
+    <color name="musicText">#B8BDC7</color>
+    <color name="musicFloatingBg">#F5F7FA</color>
+    <color name="musicPlayPauseBg">#2F3032</color>
+
+    <color name="highlight">#33333333</color>
 
     <color name="bgBlock">#F6F7FA</color>
     <color name="codeBorder">#EFEFEF</color>
@@ -54,11 +74,9 @@
     <color name="gray_50">#88888888</color>
     <color name="gray_light">#757575</color>
     <color name="color_chat_date">#ff7799A9</color>
-    <color name="bg_gray">#F5F5F5</color>
     <color name="text_white">#EFEFF4</color>
     <color name="white_50">#88FFFFFF</color>
     <color name="colorRed">#E55541</color>
-    <color name="dotRed">#FF001F</color>
     <color name="colorGreen">#00B56E</color>
     <color name="stateGreen">#55CD96</color>
     <color name="button_blue">#0D94FC</color>
@@ -72,13 +90,8 @@
     <color name="color_record_circle_bg">#EE1987FF</color>
     <color name="call_green">#46d23c</color>
     <color name="call_red">#e7575c</color>
-    <color name="call_gray">#595959</color>
-    <color name="call_bg">#aa595959</color>
-    <color name="call_btn_bg_unchecked">#33000000</color>
-    <color name="call_btn_checked">@color/white</color>
-    <color name="call_btn_icon_checked">#182435</color>
 
-    <color name="wallet_text_dark">#333333</color>
+    <color name="text_gray">#9B9B9B</color>
     <color name="wallet_text_gray">#bbbec3</color>
     <color name="wallet_blue">#46a1ff</color>
     <color name="wallet_blue_dark">#234afe</color>
@@ -90,13 +103,13 @@
     <color name="wallet_green">#29be73</color>
     <color name="wallet_blue_secondary">#397ee4</color>
     <color name="wallet_blue_light">#f2faff</color>
-    <color name="wallet_ripple">#F6F8FC</color>
     <color name="wallet_pending_text_color">#B8BDC7</color>
     <color name="gray_black">#3A3C3E</color>
     <color name="gray_black_50">#AA3A3C3E</color>
-    <color name="camera_notification_bg">#D8D8D8</color>
     <color name="text_color_error_tip">#F67070</color>
     <color name="call_light_green">#5DBC7A</color>
+
+    <color name="call_voice">#50BD5C</color>
 
     <array name="name_colors">
         <item>#8C8DFF</item>
@@ -200,4 +213,11 @@
         <item>#FFCCC0</item>
         <item>#CEA06B</item>
     </array>
+
+    <color name="viewfinder_mask">#60000000</color>
+    <color name="viewfinder_frame">#7F3D75E3</color>
+    <color name="viewfinder_corner">@color/colorBlue</color>
+    <color name="viewfinder_laser">@color/colorLightBlue</color>
+    <color name="viewfinder_point">@color/colorBlue</color>
+    <color name="viewfinder_text_color">#FFC0C0C0</color>
 </resources>

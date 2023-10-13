@@ -2,7 +2,7 @@ package one.mixin.android.vo
 
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class AppCardData(
@@ -14,7 +14,8 @@ data class AppCardData(
     var description: String,
     val action: String,
     @SerializedName("updated_at")
-    val updatedAt: String?
+    val updatedAt: String?,
+    val shareable: Boolean?,
 ) : Parcelable {
     init {
         title = title.take(36)

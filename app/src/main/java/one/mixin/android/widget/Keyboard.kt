@@ -6,39 +6,54 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_grid_keyboard.view.*
-import kotlinx.android.synthetic.main.view_keyboard.view.*
+import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemGridKeyboardBinding
+import one.mixin.android.databinding.ViewKeyboardBinding
+import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dpToPx
+import one.mixin.android.session.Session
 
 class Keyboard @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
 ) : RelativeLayout(context, attrs, defStyleAttr) {
 
     private var onClickKeyboardListener: OnClickKeyboardListener? = null
-    private var key: Array<String>? = null
+    private var key: List<String>? = null
+
+    var tipTitleEnabled = true
 
     private val keyboardAdapter = object : RecyclerView.Adapter<KeyboardHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): KeyboardHolder {
-            return KeyboardHolder(
-                if (viewType == 1) {
-                    LayoutInflater.from(context)
-                        .inflate(R.layout.item_grid_keyboard, parent, false)
+            return if (viewType == 1) {
+                NormalKeyboardHolder(ItemGridKeyboardBinding.inflate(LayoutInflater.from(context), parent, false))
+            } else {
+                if (this@Keyboard.isWhite) {
+                    KeyboardHolder(
+                        LayoutInflater.from(context)
+                            .inflate(R.layout.item_grid_keyboard_delete_white, parent, false),
+                    )
                 } else {
-                    LayoutInflater.from(context)
-                        .inflate(R.layout.item_grid_keyboard_delete, parent, false)
+                    KeyboardHolder(
+                        LayoutInflater.from(context)
+                            .inflate(R.layout.item_grid_keyboard_delete, parent, false),
+                    )
                 }
-            )
+            }
         }
 
         override fun getItemCount(): Int = key!!.size
 
         override fun onBindViewHolder(holder: KeyboardHolder, position: Int) {
             if (getItemViewType(position) == 1) {
-                holder.bind(key!![position])
+                (holder as NormalKeyboardHolder).bind(key!![position])
             }
 
             holder.itemView.setOnClickListener { _ ->
@@ -61,21 +76,23 @@ class Keyboard @JvmOverloads constructor(
         }
     }
 
-    class KeyboardHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    open class KeyboardHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
+    class NormalKeyboardHolder(val binding: ItemGridKeyboardBinding) : KeyboardHolder(binding.root) {
         fun bind(text: String?) {
-            itemView.tv_keyboard_keys.text = text
+            binding.root.isVisible = text != ""
+            binding.tvKeyboardKeys.text = text
             itemView.isEnabled = !text.isNullOrEmpty()
         }
     }
 
-    /**
-     * 初始化KeyboardView
-     */
+    private val binding = ViewKeyboardBinding.inflate(LayoutInflater.from(context), this, true)
+
     private fun initKeyboardView() {
-        View.inflate(context, R.layout.view_keyboard, this)
-        gv_keyboard.adapter = keyboardAdapter
-        gv_keyboard.layoutManager = GridLayoutManager(context, 3)
-        gv_keyboard.addItemDecoration(SpacesItemDecoration(1))
+        binding.gvKeyboard.adapter = keyboardAdapter
+        binding.gvKeyboard.layoutManager = GridLayoutManager(context, 3)
+        binding.gvKeyboard.addItemDecoration(SpacesItemDecoration(context.dpToPx(8f)))
+        binding.tipFl.isVisible = tipTitleEnabled && Session.getTipPub().isNullOrBlank().not()
     }
 
     interface OnClickKeyboardListener {
@@ -88,13 +105,33 @@ class Keyboard @JvmOverloads constructor(
         this.onClickKeyboardListener = onClickKeyboardListener
     }
 
-    /**
-     * 设置键盘所显示的内容
-     *
-     * @param key
-     */
-    fun setKeyboardKeys(key: Array<String>) {
-        this.key = key
-        initKeyboardView()
+    fun initPinKeys(context: Context? = null, key: List<String>? = null, force: Boolean = false, white: Boolean = false) {
+        if (white) {
+            isWhite = white
+            white(context ?: MixinApplication.appContext)
+        }
+        if (!force && context?.defaultSharedPreferences?.getBoolean(Constants.Account.PREF_RANDOM, false) == true) {
+            val list = mutableListOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
+            list.shuffle()
+            list.add(9, "")
+            list.add("<<")
+            this.key = list
+            initKeyboardView()
+        } else {
+            this.key = key ?: listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "<<")
+            initKeyboardView()
+        }
+    }
+
+    var isWhite = false
+        private set
+
+    fun white(context: Context) {
+        binding.gvKeyboard.setBackgroundColor(context.colorFromAttribute(R.attr.bg_white))
+        binding.diver.isVisible = false
+    }
+
+    fun disableNestedScrolling() {
+        binding.gvKeyboard.isNestedScrollingEnabled = false
     }
 }

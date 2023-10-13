@@ -1,5 +1,6 @@
 package one.mixin.android.ui.common
 
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ClipData
@@ -10,16 +11,14 @@ import android.view.ViewGroup
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.Constants.Mute.MUTE_1_HOUR
 import one.mixin.android.Constants.Mute.MUTE_1_WEEK
@@ -28,14 +27,15 @@ import one.mixin.android.Constants.Mute.MUTE_8_HOURS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.databinding.FragmentGroupBottomSheetBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -50,11 +50,13 @@ import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.group.GroupActivity.Companion.ARGS_EXPAND
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
+import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.SearchMessageItem
+import one.mixin.android.widget.picker.getTimeInterval
 import org.threeten.bp.Instant
 import java.io.File
 
@@ -64,10 +66,11 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     companion object {
         const val TAG = "GroupBottomSheetDialogFragment"
 
+        @SuppressLint("StaticFieldLeak")
         private var instant: GroupBottomSheetDialogFragment? = null
         fun newInstance(
             conversationId: String,
-            expand: Boolean = false
+            expand: Boolean = false,
         ): GroupBottomSheetDialogFragment {
             try {
                 instant?.dismiss()
@@ -90,6 +93,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     }
 
     var callback: Callback? = null
+    var sharedMediaCallback: (() -> Unit)? = null
 
     private val conversationId: String by lazy {
         requireArguments().getString(ARGS_CONVERSATION_ID)!!
@@ -101,20 +105,24 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
     override fun getLayoutId() = R.layout.fragment_group_bottom_sheet
 
+    private val binding by lazy {
+        FragmentGroupBottomSheetBinding.bind(contentView)
+    }
+
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView.title.right_iv.setOnClickListener { dismiss() }
-        contentView.member_fl.setOnClickListener {
+        binding.title.rightIv.setOnClickListener { dismiss() }
+        binding.memberFl.setOnClickListener {
             GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
             dismiss()
         }
-        contentView.send_fl.setOnClickListener {
+        binding.sendFl.setOnClickListener {
             if (conversationId != MixinApplication.conversationId) {
-                ConversationActivity.show(requireContext(), conversationId)
+                ConversationActivity.showAndClear(requireContext(), conversationId)
             }
             dismiss()
         }
-        setDetailsTv(contentView.detail_tv, contentView.scroll_view, conversationId)
+        setDetailsTv(binding.detailTv, binding.scrollView, conversationId)
         bottomViewModel.getConversationById(conversationId).observe(
             this,
             Observer { c ->
@@ -124,30 +132,45 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                     c.muteUntil != conversation.muteUntil
                 conversation = c
                 val icon = c.iconUrl
-                contentView.avatar.setGroup(icon)
-                if (BuildConfig.DEBUG) {
-                    contentView.avatar.setOnLongClickListener {
-                        context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, conversationId))
-                        true
-                    }
-                }
+                binding.avatar.setGroup(icon)
+                debugLongClick(
+                    binding.avatar,
+                    {
+                        context?.getClipboardManager()
+                            ?.setPrimaryClip(ClipData.newPlainText(null, conversationId))
+                    },
+                )
                 if (icon == null || !File(icon).exists()) {
                     bottomViewModel.startGenerateAvatar(c.conversationId)
                 }
-                contentView.name.text = c.name
+                binding.name.text = c.name
                 if (c.announcement.isNullOrBlank()) {
-                    contentView.detail_tv.isVisible = false
+                    binding.detailTv.isVisible = false
                 } else {
-                    contentView.detail_tv.isVisible = true
-                    contentView.detail_tv.text = c.announcement
+                    binding.detailTv.isVisible = true
+                    binding.detailTv.originalText = c.announcement
+                    binding.detailTv.heightDifferenceCallback = { heightDifference, duration ->
+                        if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
+                            behavior?.peekHeight?.let { peekHeight ->
+                                ValueAnimator.ofInt(peekHeight, peekHeight + heightDifference).apply {
+                                    interpolator = FastOutSlowInInterpolator()
+                                    setDuration(duration)
+                                    addUpdateListener { value ->
+                                        behavior?.peekHeight = value.animatedValue as Int
+                                    }
+                                    start()
+                                }
+                            }
+                        } else if (behavior?.state == BottomSheetBehavior.STATE_EXPANDED) {
+                            behavior?.peekHeight?.let { peekHeight ->
+                                behavior?.peekHeight = heightDifference + peekHeight
+                            }
+                        }
+                    }
                 }
                 initParticipant(changeMenu, c)
-            }
+            },
         )
-
-        contentView.post {
-            contentView.detail_tv.maxHeight = requireContext().screenHeight() / 3
-        }
 
         bottomViewModel.refreshConversation(conversationId)
     }
@@ -155,7 +178,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     @SuppressLint("SetTextI18n")
     private fun initParticipant(
         changeMenu: Boolean,
-        conversation: Conversation
+        conversation: Conversation,
     ) = lifecycleScope.launch {
         if (!isAdded) return@launch
 
@@ -167,7 +190,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         }
         if (!isAdded) return@launch
 
-        contentView.count_tv.text = getString(R.string.group_participants_count, participantCount)
+        binding.countTv.text = requireContext().resources.getQuantityString(R.plurals.title_participants, participantCount, participantCount)
         if (changeMenu || me != localMe) {
             lifecycleScope.launch {
                 val circleNames = bottomViewModel.findCirclesNameByConversationId(conversationId)
@@ -175,33 +198,43 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             }
         }
         me = localMe
+
+        if (!isAdded) return@launch
+
         if (me != null) {
-            contentView.ops_ll.isVisible = true
-            contentView.scroll_view.isEnabled = true
+            binding.opsLl.isVisible = true
+            binding.scrollView.isEnabled = true
         } else {
             val withoutCode = conversation.status == ConversationStatus.QUIT.ordinal
-            contentView.scroll_view.isEnabled = withoutCode
-            contentView.ops_ll.isVisible = withoutCode
+            binding.scrollView.isEnabled = withoutCode
+            binding.opsLl.isVisible = withoutCode
         }
 
         contentView.doOnPreDraw {
-            behavior?.peekHeight = contentView.title.height + contentView.scroll_content.height -
+            behavior?.peekHeight = binding.title.height + binding.scrollContent.height -
                 (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
         }
     }
 
     private fun initMenu(me: Participant?, circleNames: List<String>) {
+        if (!isAdded) return
+
         val list = menuList {
             menuGroup {
                 menu {
-                    title = getString(R.string.contact_other_shared_media)
+                    title = getString(R.string.Shared_Media)
                     action = {
-                        SharedMediaActivity.show(requireContext(), conversationId)
+                        val callback = this@GroupBottomSheetDialogFragment.sharedMediaCallback
+                        if (callback != null) {
+                            callback.invoke()
+                        } else {
+                            SharedMediaActivity.show(requireContext(), conversationId, false)
+                        }
                         dismiss()
                     }
                 }
                 menu {
-                    title = getString(R.string.contact_other_search_conversation)
+                    title = getString(R.string.Search_Conversation)
                     action = {
                         startSearchConversation()
                         dismiss()
@@ -213,9 +246,9 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         if (me != null) {
             if (me.role == ParticipantRole.OWNER.name || me.role == ParticipantRole.ADMIN.name) {
                 val announcementString = if (TextUtils.isEmpty(conversation.announcement)) {
-                    getString(R.string.group_info_add)
+                    getString(R.string.Add_group_description)
                 } else {
-                    getString(R.string.group_info_edit)
+                    getString(R.string.Edit_Group_Description)
                 }
                 list.groups.add(
                     menuGroup {
@@ -223,7 +256,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                             title = announcementString
                             action = {
                                 editDialog {
-                                    titleText = this@GroupBottomSheetDialogFragment.getString(R.string.group_info_edit)
+                                    titleText = this@GroupBottomSheetDialogFragment.getString(R.string.Edit_Group_Description)
                                     editText = conversation.announcement
                                     maxTextCount = 512
                                     editMaxLines = EditDialog.MAX_LINE.toInt()
@@ -235,10 +268,10 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                             }
                         }
                         menu {
-                            title = getString(R.string.group_edit_name)
+                            title = getString(R.string.Edit_group_name)
                             action = {
                                 editDialog {
-                                    titleText = this@GroupBottomSheetDialogFragment.getString(R.string.group_edit_name)
+                                    titleText = this@GroupBottomSheetDialogFragment.getString(R.string.Edit_group_name)
                                     editText = conversation.name
                                     maxTextCount = 40
                                     allowEmpty = false
@@ -248,53 +281,65 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                                 }
                             }
                         }
-                    }
+                    },
+                )
+
+                list.groups.add(
+                    menuGroup {
+                        menu {
+                            title = getString(R.string.disappearing_message)
+                            subtitle = conversation.expireIn.getTimeInterval()
+                            action = {
+                                showDisappearing()
+                            }
+                        }
+                    },
                 )
             }
             val muteMenu = if (conversation.muteUntil.notNullWithElse(
                     {
                         Instant.now().isBefore(Instant.parse(it))
                     },
-                    false
+                    false,
                 )
             ) {
                 menu {
-                    title = getString(R.string.un_mute)
-                    subtitle = getString(R.string.mute_until, conversation.muteUntil?.localTime())
+                    title = getString(R.string.Unmute)
+                    subtitle = getString(R.string.Mute_until, conversation.muteUntil?.localTime())
                     action = { unMute() }
                 }
             } else {
                 menu {
-                    title = getString(R.string.mute)
+                    title = getString(R.string.Mute)
                     action = { mute() }
                 }
             }
             list.groups.add(
                 menuGroup {
                     menu(muteMenu)
-                }
+                },
             )
         }
 
         list.groups.add(
             menuGroup {
                 menu {
-                    title = getString(R.string.circle)
+                    title = getString(R.string.Circles)
                     action = {
                         startCircleManager()
                         dismiss()
                     }
                     this.circleNames = circleNames
                 }
-            }
+            },
         )
 
         val deleteMenu = if (me != null) {
             menu {
-                title = getString(R.string.group_info_exit_group)
+                title = getString(R.string.Exit_Group)
                 style = MenuStyle.Danger
                 action = {
-                    requireContext().showConfirmDialog(getString(R.string.group_info_exit_group)) {
+                    requireContext().showConfirmDialog(getString(R.string.Exit_Group)) {
                         bottomViewModel.exitGroup(conversationId)
                         dismiss()
                     }
@@ -302,11 +347,11 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             }
         } else {
             menu {
-                title = getString(R.string.group_info_delete_group)
+                title = getString(R.string.Delete_Group)
                 style = MenuStyle.Danger
                 action = {
-                    requireContext().showConfirmDialog(getString(R.string.group_info_delete_group)) {
-                        bottomViewModel.deleteGroup(conversationId)
+                    requireContext().showConfirmDialog(getString(R.string.Delete_Group)) {
+                        bottomViewModel.deleteConversation(conversationId)
                         callback?.onDelete()
                     }
                 }
@@ -315,42 +360,45 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         list.groups.add(
             menuGroup {
                 menu {
-                    title = getString(R.string.group_info_clear_chat)
+                    title = getString(R.string.Clear_chat)
                     style = MenuStyle.Danger
                     action = {
-                        requireContext().showConfirmDialog(getString(R.string.group_info_clear_chat)) {
-                            bottomViewModel.deleteMessageByConversationId(conversationId)
+                        requireContext().showConfirmDialog(getString(R.string.Clear_chat)) {
+                            bottomViewModel.clearChat(conversationId)
                             dismiss()
                         }
                     }
                 }
                 menu(deleteMenu)
-            }
+            },
         )
 
         menuListLayout?.removeAllViews()
-        contentView.scroll_content.removeView(menuListLayout)
-        list.createMenuLayout(requireContext())
+        binding.scrollContent.removeView(menuListLayout)
+        list.createMenuLayout(
+            requireContext(),
+            getString(R.string.Created, conversation.createdAt.dayTime()),
+        )
             .let { layout ->
                 menuListLayout = layout
-                contentView.scroll_content.addView(layout)
+                binding.scrollContent.addView(layout)
                 layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     bottomMargin = requireContext().dpToPx(30f)
                 }
-                contentView.more_fl.setOnClickListener {
+                binding.moreFl.setOnClickListener {
                     if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
                         behavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                        contentView.more_iv.rotationX = 180f
+                        binding.moreIv.rotationX = 180f
                     } else {
                         behavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-                        contentView.scroll_view.smoothScrollTo(0, 0)
-                        contentView.more_iv.rotationX = 0f
+                        binding.scrollView.smoothScrollTo(0, 0)
+                        binding.moreIv.rotationX = 0f
                     }
                 }
             }
     }
 
-    private fun startSearchConversation() = lifecycleScope.launch(Dispatchers.IO) {
+    private fun startSearchConversation() = lifecycleScope.launch {
         bottomViewModel.getConversation(conversationId)?.let {
             val searchMessageItem = SearchMessageItem(
                 it.conversationId,
@@ -360,12 +408,12 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 "",
                 null,
                 null,
-                it.iconUrl
+                it.iconUrl,
             )
             activity?.addFragment(
                 this@GroupBottomSheetDialogFragment,
                 SearchMessageFragment.newInstance(searchMessageItem, ""),
-                SearchMessageFragment.TAG
+                SearchMessageFragment.TAG,
             )
         }
     }
@@ -374,7 +422,16 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         activity?.addFragment(
             this,
             CircleManagerFragment.newInstance(conversation.name, conversationId = conversation.conversationId),
-            CircleManagerFragment.TAG
+            CircleManagerFragment.TAG,
+        )
+    }
+
+    private fun showDisappearing() {
+        dismiss()
+        activity?.addFragment(
+            this,
+            DisappearingFragment.newInstance(conversation.conversationId),
+            DisappearingFragment.TAG,
         )
     }
 
@@ -392,8 +449,8 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                     },
                     successBlock = { response ->
                         bottomViewModel.updateGroupMuteUntil(conversationId, response.data!!.muteUntil)
-                        context?.toast(getString(R.string.un_mute) + " ${conversation.name}")
-                    }
+                        toast(getString(R.string.Unmute) + " ${conversation.name}")
+                    },
                 )
             }
         }
@@ -401,19 +458,19 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
     private fun showMuteDialog() {
         val choices = arrayOf(
-            getString(R.string.contact_mute_1hour),
-            getString(R.string.contact_mute_8hours),
-            getString(R.string.contact_mute_1week),
-            getString(R.string.contact_mute_1year)
+            getString(R.string.one_hour),
+            resources.getQuantityString(R.plurals.Hour, 8, 8),
+            getString(R.string.one_week),
+            getString(R.string.one_year),
         )
-        var duration = MUTE_8_HOURS
+        var duration = MUTE_1_HOUR
         var whichItem = 0
         alertDialogBuilder()
             .setTitle(getString(R.string.contact_mute_title))
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.confirm) { dialog, _ ->
+            .setPositiveButton(R.string.Confirm) { dialog, _ ->
                 val account = Session.getAccount()
                 account?.let {
                     lifecycleScope.launch {
@@ -421,13 +478,13 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                             invokeNetwork = {
                                 bottomViewModel.mute(
                                     duration.toLong(),
-                                    conversationId = conversationId
+                                    conversationId = conversationId,
                                 )
                             },
                             successBlock = { response ->
                                 bottomViewModel.updateGroupMuteUntil(conversationId, response.data!!.muteUntil)
-                                context?.toast(getString(R.string.contact_mute_title) + " ${conversation.name} " + choices[whichItem])
-                            }
+                                toast(getString(R.string.contact_mute_title) + " ${conversation.name} " + choices[whichItem])
+                            },
                         )
                     }
                 }
@@ -448,8 +505,8 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     override fun onStateChanged(bottomSheet: View, newState: Int) {
         when (newState) {
             BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
-            BottomSheetBehavior.STATE_COLLAPSED -> contentView.more_iv.rotationX = 0f
-            BottomSheetBehavior.STATE_EXPANDED -> contentView.more_iv.rotationX = 180f
+            BottomSheetBehavior.STATE_COLLAPSED -> binding.moreIv.rotationX = 0f
+            BottomSheetBehavior.STATE_EXPANDED -> binding.moreIv.rotationX = 180f
         }
     }
 

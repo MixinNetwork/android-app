@@ -1,14 +1,17 @@
 package one.mixin.android.ui.group
 
-import androidx.hilt.lifecycle.ViewModelInject
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.paging.LivePagedListBuilder
+import androidx.paging.PagedList
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantAction
 import one.mixin.android.api.request.ParticipantRequest
+import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_ADD
@@ -21,14 +24,18 @@ import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.User
 import java.util.UUID
+import javax.inject.Inject
 
-class GroupViewModel @ViewModelInject
+@HiltViewModel
+class GroupViewModel
+@Inject
 internal constructor(
     private val userRepository: UserRepository,
     private val conversationRepository: ConversationRepository,
-    private val jobManager: MixinJobManager
+    private val jobManager: MixinJobManager,
 ) : ViewModel() {
 
     fun getFriends() = userRepository.findFriends()
@@ -38,7 +45,7 @@ internal constructor(
         announcement: String,
         icon: String?,
         users: List<User>,
-        sender: User
+        sender: User,
     ): Conversation = withContext(Dispatchers.IO) {
         val conversationId = UUID.randomUUID().toString()
         val createdAt = nowInUtc()
@@ -61,7 +68,7 @@ internal constructor(
             groupName,
             icon,
             announcement,
-            participantRequestList
+            participantRequestList,
         )
         jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE))
 
@@ -70,27 +77,41 @@ internal constructor(
 
     fun getConversationStatusById(id: String) = conversationRepository.getConversationById(id)
 
-    fun getGroupParticipantsLiveData(conversationId: String) =
-        conversationRepository.getGroupParticipantsLiveData(conversationId)
+    fun observeGroupParticipants(conversationId: String): LiveData<PagedList<ParticipantItem>> {
+        return LivePagedListBuilder(
+            conversationRepository.observeGroupParticipants(conversationId),
+            PagedList.Config.Builder()
+                .setPrefetchDistance(Constants.PAGE_SIZE * 2)
+                .setPageSize(Constants.PAGE_SIZE)
+                .setEnablePlaceholders(true)
+                .build(),
+        )
+            .build()
+    }
+
+    fun fuzzySearchGroupParticipants(conversationId: String, query: String): LiveData<PagedList<ParticipantItem>> {
+        val escapedQuery = query.trim().escapeSql()
+        return LivePagedListBuilder(
+            conversationRepository.fuzzySearchGroupParticipants(conversationId, escapedQuery, escapedQuery),
+            PagedList.Config.Builder()
+                .setPrefetchDistance(Constants.PAGE_SIZE * 2)
+                .setPageSize(Constants.PAGE_SIZE)
+                .setEnablePlaceholders(true)
+                .build(),
+        )
+            .build()
+    }
 
     fun getConversationById(conversationId: String) =
         conversationRepository.getConversationById(conversationId)
-
-    fun findSelf() = userRepository.findSelf()
-
-    suspend fun getRealParticipants(conversationId: String) = conversationRepository.getRealParticipants(conversationId)
-
-    fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch {
-        conversationRepository.deleteMessageByConversationId(conversationId)
-    }
 
     fun mute(conversationId: String, duration: Long) {
         jobManager.addJobInBackground(
             ConversationJob(
                 conversationId = conversationId,
                 request = ConversationRequest(conversationId, ConversationCategory.GROUP.name, duration = duration),
-                type = ConversationJob.TYPE_MUTE
-            )
+                type = ConversationJob.TYPE_MUTE,
+            ),
         )
     }
 
@@ -117,4 +138,10 @@ internal constructor(
             return@withContext false
         }
     }
+
+    fun findParticipantById(conversationId: String, userId: String) =
+        conversationRepository.findParticipantById(conversationId, userId)
+
+    fun getGroupParticipants(conversationId: String) =
+        conversationRepository.getGroupParticipants(conversationId)
 }

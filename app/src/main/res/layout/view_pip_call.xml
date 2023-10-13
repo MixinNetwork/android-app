@@ -6,19 +6,21 @@
 
     <ImageView
         android:id="@+id/icon"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="24dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/time_tv"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/ic_pip_call" />
+        android:src="@drawable/ic_pip_call"
+        android:contentDescription="@null" />
 
     <TextView
         android:id="@+id/time_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
+        android:layout_alignParentBottom="true"
         android:layout_marginTop="4dp"
-        android:layout_below="@id/icon"
+        android:layout_marginBottom="16dp"
         android:textSize="12sp"
         android:textColor="@color/call_light_green"/>
 </RelativeLayout>

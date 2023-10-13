@@ -6,28 +6,34 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
+import androidx.core.text.bold
+import androidx.core.text.buildSpannedString
+import androidx.core.text.color
 import androidx.core.view.isVisible
 import com.sandro.bitcoinpaymenturi.BitcoinPaymentURI
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_address_add.*
-import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
+import one.mixin.android.Constants.ChainId.EOS_CHAIN_ID
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentAddressAddBinding
+import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.textColor
+import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
@@ -37,19 +43,18 @@ import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.AD
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
-import org.jetbrains.anko.textColor
+import one.mixin.android.vo.WithdrawalMemoPossibility
 
 @AndroidEntryPoint
-class AddressAddFragment() : BaseFragment() {
+class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
     companion object {
         const val ARGS_ADDRESS = "args_address"
     }
 
-    private val asset: AssetItem by lazy {
-        requireArguments().getParcelable(ARGS_ASSET)!!
-    }
+    lateinit var asset: AssetItem
     private var memoEnabled = true
 
     // for testing
@@ -64,37 +69,55 @@ class AddressAddFragment() : BaseFragment() {
     }
 
     lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
-
+    private lateinit var getScanMemoResult: ActivityResultLauncher<Pair<String, Boolean>>
+    private val binding by viewBinding(FragmentAddressAddBinding::bind)
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
+        if (!::resultRegistry.isInitialized) {
+            resultRegistry =
+                requireActivity().activityResultRegistry
+        }
 
-        getScanResult = registerForActivityResult(CaptureActivity.CaptureContract(), resultRegistry, ::callbackScan)
+        getScanResult = registerForActivityResult(
+            CaptureActivity.CaptureContract(),
+            resultRegistry,
+            ::callbackScan,
+        )
+        getScanMemoResult = registerForActivityResult(
+            CaptureActivity.CaptureContract(),
+            resultRegistry,
+            ::callbackScanMemo,
+        )
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(R.layout.fragment_address_add, container, false)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        asset = requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)!!
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.right_animator.isEnabled = false
-        title_view.left_ib.setOnClickListener {
-            if (!isAdded) return@setOnClickListener
+        binding.titleView.rightAnimator.isEnabled = false
+        binding.titleView.leftIb.setOnClickListener {
+            if (viewDestroyed()) return@setOnClickListener
 
-            if (label_et.isFocused) label_et.hideKeyboard()
-            if (addr_et.isFocused) addr_et.hideKeyboard()
-            if (tag_et.isFocused) tag_et.hideKeyboard()
-            activity?.onBackPressed()
+            if (binding.labelEt.isFocused) binding.labelEt.hideKeyboard()
+            if (binding.addrEt.isFocused) binding.addrEt.hideKeyboard()
+            if (binding.tagEt.isFocused) binding.tagEt.hideKeyboard()
+            activity?.onBackPressedDispatcher?.onBackPressed()
         }
-        title_view.title_tv.text = getString(R.string.withdrawal_addr_new, asset.symbol)
-        avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-        save_tv.setOnClickListener {
-            var destination = addr_et.text.toString()
+        binding.titleView.titleTv.text = getString(R.string.withdrawal_addr_new, asset.symbol)
+        binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
+        binding.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+        binding.saveTv.setOnClickListener {
+            if (memoEnabled) {
+                val memo = binding.tagEt.text.toString()
+                if (memo.toByteArray().size > 200) {
+                    toast(R.string.error_memo_too_long)
+                    return@setOnClickListener
+                }
+            }
+            var destination = binding.addrEt.text.toString()
             if (asset.chainId == BITCOIN_CHAIN_ID) {
                 val dest = BitcoinPaymentURI.parse(destination)
                 if (dest != null) {
@@ -106,89 +129,126 @@ class AddressAddFragment() : BaseFragment() {
                     asset.assetId,
                     asset.name,
                     assetUrl = asset.iconUrl,
+                    assetSymbol = asset.symbol,
+                    assetKey = asset.assetKey,
                     chainId = asset.chainId,
+                    chainName = asset.chainName,
                     chainIconUrl = asset.chainIconUrl,
-                    label = label_et.text.toString(),
+                    label = binding.labelEt.text.toString(),
                     destination = destination,
                     tag = if (memoEnabled) {
-                        tag_et.text.toString()
+                        binding.tagEt.text.toString()
                     } else {
                         ""
                     },
-                    type = ADD
+                    type = ADD,
                 )
 
             bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
-            bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback {
-                override fun onSuccess() {
-                    activity?.onBackPressed()
+            bottomSheet.setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
+                override fun onDismiss(success: Boolean) {
+                    if (success && !viewDestroyed()) {
+                        view.navigateUp()
+                    }
                 }
-            }
+            })
         }
 
         if (asset.assetId == RIPPLE_CHAIN_ID) {
-            tag_et.setHint(R.string.withdrawal_addr_tag_hint)
+            binding.tagEt.setHint(R.string.Tag)
         } else {
-            tag_et.setHint(R.string.withdrawal_addr_memo_hint)
+            binding.tagEt.setHint(R.string.withdrawal_memo)
         }
-        label_et.addTextChangedListener(mWatcher)
-        addr_et.addTextChangedListener(mWatcher)
-        tag_et.addTextChangedListener(mWatcher)
-        addr_iv.setOnClickListener { handleClick(true) }
-        handleMemo()
-        label_et.showKeyboard()
+        if (asset.chainId == EOS_CHAIN_ID) {
+            binding.tipTv.isVisible = true
+            binding.tipTv.text = buildSpannedString {
+                append(getString(R.string.wallet_address_add_tip))
+                bold {
+                    append(" ")
+                    color(requireContext().colorFromAttribute(R.attr.text_primary)) {
+                        append(getString(R.string.EOS_contract_address))
+                    }
+                }
+            }
+        } else {
+            binding.tipTv.isVisible = false
+        }
+        binding.labelEt.addTextChangedListener(mWatcher)
+        binding.addrEt.addTextChangedListener(mWatcher)
+        binding.tagEt.addTextChangedListener(mWatcher)
+        binding.addrIv.setOnClickListener { handleClick(true) }
+        when (asset.withdrawalMemoPossibility) {
+            WithdrawalMemoPossibility.NEGATIVE -> {
+                binding.info.isVisible = false
+                binding.tagRl.isVisible = false
+                memoEnabled = false
+            }
+            WithdrawalMemoPossibility.POSITIVE -> {
+                binding.info.isVisible = false
+                binding.tagRl.isVisible = true
+                binding.tagIv.setOnClickListener { handleClick(false) }
+                memoEnabled = true
+            }
+            else -> {
+                binding.info.isVisible = true
+                handleMemo()
+            }
+        }
+        binding.labelEt.showKeyboard()
     }
 
     private fun handleMemo(address: Address? = null) {
         if (memoEnabled) {
-            tag_et.isEnabled = memoEnabled
-            tag_rl.isVisible = memoEnabled
-            tag_et.setText(address?.tag ?: "")
-            tag_iv.isVisible = memoEnabled
-            tag_iv.setOnClickListener { handleClick(false) }
-            info.setOnClickListener {
+            binding.tagEt.isEnabled = memoEnabled
+            binding.tagRl.isVisible = memoEnabled
+            binding.tagEt.setText(address?.tag ?: "")
+            binding.tagIv.isVisible = memoEnabled
+            binding.tagIv.setOnClickListener { handleClick(false) }
+            binding.info.setOnClickListener {
                 memoEnabled = false
                 updateSaveButton()
                 handleMemo()
             }
-            info.setText(
+            binding.info.text = getString(
+                R.string.withdrawal_addr_has_memo_or_tag,
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    R.string.withdrawal_addr_tag
+                    getString(R.string.No_tag)
                 } else {
-                    R.string.withdrawal_addr_memo
-                }
+                    getString(R.string.withdrawal_no_memo)
+                },
             )
-            info.highLight(
+            binding.info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    getString(R.string.withdrawal_addr_tag_link)
+                    getString(R.string.No_tag)
                 } else {
-                    getString(R.string.withdrawal_addr_memo_link)
-                }
+                    getString(R.string.withdrawal_no_memo)
+                },
             )
         } else {
-            tag_et.isEnabled = memoEnabled
-            tag_rl.isVisible = memoEnabled
-            tag_et.setText(R.string.withdrawal_no_tag)
-            tag_iv.isVisible = memoEnabled
-            info.setOnClickListener {
+            binding.tagEt.isEnabled = memoEnabled
+            binding.tagRl.isVisible = memoEnabled
+            binding.tagEt.setText(R.string.No_Memo)
+            binding.tagIv.isVisible = memoEnabled
+            binding.info.setOnClickListener {
                 memoEnabled = true
                 updateSaveButton()
                 handleMemo()
-                tag_et.showKeyboard()
+                binding.tagEt.showKeyboard()
             }
-            info.setText(
+            binding.info.text = getString(
+                R.string.withdrawal_addr_no_memo_or_tag,
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    R.string.withdrawal_addr_no_tag
+                    getString(R.string.Add_Tag)
                 } else {
-                    R.string.withdrawal_addr_no_memo
-                }
+                    getString(R.string.Add_memo)
+                },
             )
-            info.highLight(
+            binding.info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    getString(R.string.withdrawal_addr_no_tag_link)
+                    getString(R.string.Add_Tag)
                 } else {
-                    getString(R.string.withdrawal_addr_no_memo_link)
-                }
+                    getString(R.string.Add_memo)
+                },
             )
         }
     }
@@ -199,28 +259,32 @@ class AddressAddFragment() : BaseFragment() {
             .autoDispose(stopScope)
             .subscribe { granted ->
                 if (granted) {
-                    this.isAddr = isAddr
-                    getScanResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
+                    if (isAddr) {
+                        getScanResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
+                    } else {
+                        getScanMemoResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
+                    }
                 } else {
                     context?.openPermissionSetting()
                 }
             }
     }
 
-    var isAddr = false
-        private set
+    private fun callbackScanMemo(data: Intent?) {
+        callbackScan(data, false)
+    }
 
-    private fun callbackScan(data: Intent?) {
+    private fun callbackScan(data: Intent?, isAddr: Boolean = true) {
         val text = data?.getStringExtra(ARGS_FOR_SCAN_RESULT)
         if (text != null) {
             if (isAddr) {
                 if (isIcapAddress(text)) {
-                    addr_et.setText(decodeICAP(text))
+                    binding.addrEt.setText(decodeICAP(text))
                 } else {
-                    addr_et.setText(text)
+                    binding.addrEt.setText(text)
                 }
             } else {
-                tag_et.setText(text)
+                binding.tagEt.setText(text)
             }
         }
     }
@@ -233,18 +297,18 @@ class AddressAddFragment() : BaseFragment() {
         }
 
         override fun afterTextChanged(s: Editable) {
-            if (!isAdded) return
+            if (viewDestroyed()) return
             updateSaveButton()
         }
     }
 
     private fun updateSaveButton() {
-        if (addr_et.text.isNotEmpty() && label_et.text.isNotEmpty() && (!memoEnabled || tag_et.text.isNotEmpty())) {
-            save_tv.isEnabled = true
-            save_tv.textColor = requireContext().getColor(R.color.white)
+        if (binding.addrEt.text.isNotEmpty() && binding.labelEt.text.isNotEmpty() && (!memoEnabled || binding.tagEt.text.isNotEmpty())) {
+            binding.saveTv.isEnabled = true
+            binding.saveTv.textColor = requireContext().getColor(R.color.white)
         } else {
-            save_tv.isEnabled = false
-            save_tv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+            binding.saveTv.isEnabled = false
+            binding.saveTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
         }
     }
 }

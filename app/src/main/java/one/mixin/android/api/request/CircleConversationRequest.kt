@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class CircleConversationPayload(
     val conversationId: String,
-    val userId: String? = null
+    val userId: String? = null,
 )
 
 data class CircleConversationRequest(
@@ -13,5 +13,5 @@ data class CircleConversationRequest(
     @SerializedName("user_id")
     val userId: String? = null,
     @SerializedName("action")
-    val action: String
+    val action: String,
 )

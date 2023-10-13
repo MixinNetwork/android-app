@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="@dimen/item_contact_height"
     xmlns:tools="http://schemas.android.com/tools"
     android:background="?attr/bg_white"
-    android:foreground="?attr/selectableItemBackground">
+    android:foreground="?android:attr/selectableItemBackground">
 
     <CheckBox
         android:id="@+id/cb"
@@ -12,42 +12,68 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:button="@drawable/cb_add_member"
-        android:layout_gravity="center_vertical"/>
+        android:layout_centerVertical="true" />
 
     <one.mixin.android.widget.AvatarView
         android:id="@+id/avatar"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_gravity="center_vertical"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"/>
+        android:layout_toEndOf="@id/cb"
+        android:layout_marginStart="@dimen/margin16"
+        android:layout_marginEnd="@dimen/margin16"
+        android:layout_centerVertical="true" />
 
-    <TextView
-        android:id="@+id/name"
+    <Space
+        android:id="@+id/center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:text="@string/app_name"
-        android:textColor="?attr/text_primary" />
+        android:layout_centerVertical="true"/>
 
-    <ImageView
-        android:id="@+id/bot_iv"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
-        android:layout_gravity="center_vertical"
-        android:layout_marginStart="8dp"
-        android:src="@drawable/ic_bot"
-        android:visibility="gone"
-        tools:ignore="ContentDescription" />
+    <TextView
+        android:id="@+id/normal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/avatar"
+        android:layout_above="@id/center"
+        android:layout_marginBottom="2dp"
+        android:maxWidth="240dp"
+        android:singleLine="true"
+        android:textColor="?attr/text_primary"
+        tools:text="name"/>
 
     <ImageView
         android:id="@+id/verified_iv"
         android:layout_width="12dp"
         android:layout_height="12dp"
-        android:layout_gravity="center_vertical"
+        android:layout_toEndOf="@id/normal"
+        android:layout_above="@id/center"
+        android:layout_marginBottom="4dp"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
         android:src="@drawable/ic_user_verified"
         android:visibility="gone"
-        tools:ignore="ContentDescription" />
-</LinearLayout>
+        tools:ignore="ContentDescription"/>
+
+    <ImageView
+        android:id="@+id/bot_iv"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_toEndOf="@id/verified_iv"
+        android:layout_above="@id/center"
+        android:layout_marginBottom="4dp"
+        android:layout_marginStart="8dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_bot"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/mixin_id_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_below="@id/center"
+        android:layout_toEndOf="@id/avatar"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textSize="12sp"
+        android:textColor="?attr/text_minor" />
+</RelativeLayout>

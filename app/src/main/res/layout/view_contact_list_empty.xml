@@ -9,7 +9,6 @@
         android:id="@+id/count_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:foreground="?attr/selectableItemBackground"
         android:background="?attr/bg_white">
 
         <TextView
@@ -17,7 +16,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="@string/contact_count"
             android:textColor="?text_primary"
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>
@@ -27,7 +25,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:layout_marginTop="@dimen/item_contact_header_height"
-        android:foreground="?attr/selectableItemBackground"
+        android:foreground="?android:attr/selectableItemBackground"
         android:background="?attr/bg_white">
 
         <TextView
@@ -35,7 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/contact_empty"
+            android:text="@string/Phone_Contact"
             android:textColor="@color/colorBlue"
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>

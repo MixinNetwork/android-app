@@ -1,71 +1,99 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'org.jetbrains.kotlin.android'
+    id 'dagger.hilt.android.plugin'
+    id 'kotlin-parcelize'
+    id 'com.google.firebase.firebase-perf'
+    id 'de.undercouch.download'
+    id "com.google.devtools.ksp"
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
+    id 'kotlinx-serialization'
+    id "com.google.protobuf" version "0.9.1"
+}
+
 def versionMajor = 0
-def versionMinor = 28
-def versionPatch = 0
+def versionMinor = 41
+def versionPatch = 7
 def versionBuild = 0
 
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'org.jetbrains.kotlin.android'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'com.google.firebase.crashlytics'
-apply plugin: 'dagger.hilt.android.plugin'
-
-
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.2"
-    ndkVersion "21.3.6528147"
+    compileSdk 34
+    ndkVersion "25.2.9519653"
+    namespace "one.mixin.android"
     defaultConfig {
         applicationId "one.mixin.messenger"
-        minSdkVersion 23
-        targetSdkVersion 29
+        minSdkVersion 24
+        targetSdkVersion 33
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         multiDexEnabled true
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments += [
-                        "room.schemaLocation": "$projectDir/schemas".toString()
-                ]
-            }
-        }
-
-        buildConfigField 'String', 'BUGSNAG_API_KEY', "\"${propOrEmpty('MIXIN_BUGSNAG_API_KEY')}\""
-        buildConfigField 'String', 'APPCENTER_API_KEY', "\"${propOrEmpty('MIXIN_APPCENTER_API_KEY')}\""
-        buildConfigField 'String', 'RECAPTCHA_KEY', "\"${propOrEmpty('MIXIN_RECAPTCHA_KEY')}\""
-        buildConfigField 'String', 'GIPHY_KEY', "\"${propOrEmpty('MIXIN_GIPHY_KEY')}\""
-        buildConfigField 'String', 'SafetyNet_API_KEY', "\"${propOrEmpty('MIXIN_SAFETYNET_API_KEY')}\""
-        buildConfigField 'String', 'FS_CLIENT_ID', "\"${propOrEmpty('MIXIN_FS_CLIENT_ID')}\""
-        buildConfigField 'String', 'FS_SECRET', "\"${propOrEmpty('MIXIN_FS_SECRET')}\""
-        buildConfigField 'String', 'GOOGLE_MAP_KEY', "\"${propOrEmpty('MIXIN_GOOGLE_MAP_KEY')}\""
-        resValue "string", "google_maps_key", propOrEmpty('MIXIN_GOOGLE_MAP_KEY')
+        testInstrumentationRunner "one.mixin.android.CustomTestRunner"
+        resourceConfigurations += ['en', 'es', 'in', 'ja', 'ms', 'ru', 'zh-rCN', 'zh-rTW']
 
         packagingOptions {
-            exclude 'kotlin/**'
             exclude '**/*.kotlin_metadata'
             exclude 'META-INF/*.kotlin_module'
             exclude 'META-INF/*.version'
+
+            // https://issuetracker.google.com/issues/127691101 explains bug but the solution is deprecated
+            // https://issuetracker.google.com/issues/174695257
+            jniLibs {
+                useLegacyPackaging = true
+            }
+
+            resources {
+                excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            }
         }
 
         kotlinOptions {
-            jvmTarget = '1.8'
-            freeCompilerArgs += ['-Xuse-experimental=kotlin.contracts.ExperimentalContracts']
+            jvmTarget = '17'
+            freeCompilerArgs += ['-opt-in=kotlin.contracts.ExperimentalContracts']
+        }
+
+        lintOptions{
+            disable 'MissingTranslation'
         }
 
         vectorDrawables.useSupportLibrary = true
     }
 
+    bundle {
+        language {
+            enableSplit = false
+        }
+        density {
+            enableSplit = false
+        }
+        abi {
+            enableSplit = true
+        }
+        storeArchive {
+            enable = false
+        }
+    }
+    buildFeatures {
+        viewBinding true
+        compose true
+        buildConfig = true
+    }
+
     sourceSets {
-        androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
+        String sharedTestDir = 'src/sharedTest/java'
+        test {
+            java.srcDirs += sharedTestDir
+        }
+        androidTest {
+            java.srcDirs += sharedTestDir
+            assets.srcDirs += files("$projectDir/schemas".toString())
+        }
     }
 
     compileOptions {
         coreLibraryDesugaringEnabled true
-        targetCompatibility JavaVersion.VERSION_1_8
-        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_17
     }
 
     dependenciesInfo {
@@ -99,11 +127,13 @@ android {
         }
     }
 
+    testBuildType "staging"
+
     buildTypes {
         if (project.hasProperty("RELEASE_STORE_FILE")) {
             release {
                 ndk {
-                    abiFilters "armeabi-v7a", "arm64-v8a"
+                    abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
                 }
                 debuggable false
                 jniDebuggable false
@@ -117,84 +147,136 @@ android {
             signingConfig signingConfigs.debug
             jniDebuggable false
             ndk {
-                abiFilters "arm64-v8a"
+                abiFilters "arm64-v8a", "x86_64"
             }
+        }
+        staging {
+            initWith debug
+            applicationIdSuffix ".test"
         }
     }
 
-    lintOptions {
-        abortOnError false
-    }
-    configurations {
-        ktlint
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
     }
 
-    configurations.all {
-        resolutionStrategy.force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10"
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.5.3'
+    }
+    lint {
+        abortOnError false
+    }
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
+        }
+    }
+
+    configurations.configureEach {
+        resolutionStrategy {
+            force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10"
+            force "com.github.mixinnetwork:tink-eddsa:0.0.13"
+
+            // keep version 1.69
+            // https://github.com/bcgit/bc-java/commit/9bf72343e1c515ac28fe6b32a5bfe27c6a96baf0
+            force "org.bouncycastle:bcprov-jdk15on:1.69"
+            force "org.bouncycastle:bcutil-jdk15on:1.69"
+            exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
+            exclude group: 'org.bouncycastle', module: 'bcprov-jdk15to18'
+        }
     }
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
+    arg("room.expandProjection", "true")
+}
+
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.0'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
+    implementation platform("com.google.firebase:firebase-bom:32.3.1")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
+    implementation("androidx.activity:activity-ktx:$activity_version")
     implementation "androidx.appcompat:appcompat:${appcompatVersion}"
     implementation "androidx.legacy:legacy-support-v4:${supportLibVersion}"
     implementation "com.google.android.material:material:${mdcVersion}"
     implementation "androidx.recyclerview:recyclerview:${recyclerViewVersion}"
     implementation "androidx.exifinterface:exifinterface:${exifinterfaceVersion}"
-    implementation "androidx.browser:browser:${browser_version}"
+    implementation "androidx.browser:browser:${browserVersion}"
     implementation "androidx.constraintlayout:constraintlayout:${constraintLayoutVersion}"
-    implementation "androidx.core:core-ktx:${ktxVersion}"
+    implementation "androidx.core:core-ktx:${androidxVersion}"
     implementation "androidx.collection:collection-ktx:${collectionx}"
-    implementation "androidx.preference:preference-ktx:${preference_version}"
+    implementation "androidx.preference:preference-ktx:${preferenceVersion}"
     implementation "androidx.viewpager2:viewpager2:${viewpagerVersion}"
     implementation "androidx.sharetarget:sharetarget:${sharetargetVersion}"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:${coordinatorVersion}"
+    implementation "androidx.biometric:biometric:${biometricVersion}"
+    implementation "androidx.security:security-crypto:1.0.0"
 
     implementation "androidx.camera:camera-core:${cameraxVersion}"
     implementation "androidx.camera:camera-camera2:${cameraxVersion}"
-    implementation "androidx.camera:camera-view:${cameraxviewVersion}"
+    implementation "androidx.camera:camera-view:${cameraxVersion}"
     implementation "androidx.camera:camera-lifecycle:${cameraxVersion}"
+    implementation "androidx.camera:camera-video:${cameraxVersion}"
 
     implementation "androidx.work:work-runtime-ktx:${workManagerVersion}"
     implementation "androidx.navigation:navigation-fragment-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-ui-ktx:${navigationVersion}"
+    implementation "androidx.navigation:navigation-compose:${navigationVersion}"
 
     // Architecture components
     implementation "androidx.paging:paging-runtime-ktx:${pagingVersion}"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:${lifecycle_version}"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:${lifecycle_version}"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:${lifecycle_version}"
-    implementation "androidx.lifecycle:lifecycle-service:${lifecycle_version}"
-    implementation "androidx.lifecycle:lifecycle-common-java8:${lifecycle_version}"
-    implementation "androidx.lifecycle:lifecycle-process:$lifecycle_version"
+    implementation "androidx.paging:paging-common-ktx:${pagingVersion}"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:${lifecycleVersion}"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:${lifecycleVersion}"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:${lifecycleVersion}"
+    implementation "androidx.lifecycle:lifecycle-service:${lifecycleVersion}"
+    implementation "androidx.lifecycle:lifecycle-common-java8:${lifecycleVersion}"
+    implementation "androidx.lifecycle:lifecycle-process:$lifecycleVersion"
     implementation "androidx.room:room-runtime:${roomVersion}"
-    kapt "androidx.room:room-compiler:${roomVersion}"
+    implementation "androidx.room:room-paging:${roomVersion}"
+    ksp "androidx.room:room-compiler:${roomVersion}"
     implementation "androidx.room:room-rxjava2:${roomVersion}"
     implementation "androidx.room:room-ktx:${roomVersion}"
-    androidTestImplementation "android.arch.persistence.room:testing:${roomVersion}"
+    androidTestImplementation "androidx.room:room-testing:${roomVersion}"
+
+    // media3
+    implementation "androidx.media3:media3-exoplayer:${media3Version}"
+    implementation "androidx.media3:media3-exoplayer-hls:${media3Version}"
+    implementation "androidx.media3:media3-ui:${media3Version}"
+    implementation "androidx.media3:media3-session:${media3Version}"
+    implementation "androidx.media3:media3-transformer:${media3Version}"
+    implementation "androidx.media3:media3-common:${media3Version}"
+
+    // emoji
+    implementation "androidx.emoji2:emoji2:${emojiVerison}"
+    implementation "androidx.emoji2:emoji2-views:${emojiVerison}"
+    implementation "androidx.emoji2:emoji2-bundled:${emojiVerison}"
+    implementation "androidx.emoji2:emoji2-views-helper:${emojiVerison}"
 
     // DI
     implementation "com.google.dagger:hilt-android:${hiltVersion}"
-    kapt "com.google.dagger:hilt-android-compiler:${hiltVersion}"
+    ksp "com.google.dagger:hilt-android-compiler:${hiltVersion}"
     implementation "androidx.hilt:hilt-work:${hiltAndroidxVersion}"
-    implementation "androidx.hilt:hilt-lifecycle-viewmodel:${hiltAndroidxVersion}"
-    kapt "androidx.hilt:hilt-compiler:${hiltAndroidxVersion}"
+    implementation "androidx.hilt:hilt-navigation-compose:${hiltAndroidxVersion}"
+    ksp "androidx.hilt:hilt-compiler:${hiltAndroidxVersion}"
 
     // RxJava
     implementation "io.reactivex.rxjava2:rxjava:${rxJavaVersion}"
     implementation "io.reactivex.rxjava2:rxandroid:${rxAndroidVersion}"
-    implementation 'com.github.MixinNetwork.jjwt:jjwt-api:d6feebe558'
 
-    runtimeOnly 'com.github.MixinNetwork.jjwt:jjwt-impl:d6feebe558'
-    runtimeOnly('com.github.MixinNetwork.jjwt:jjwt-orgjson:d6feebe558') {
+    implementation "com.github.mixinnetwork:tink-eddsa:0.0.13"
+    implementation "com.github.mixinnetwork.jjwt:jjwt-api:2b1c61aa2f"
+    runtimeOnly 'com.github.mixinnetwork.jjwt:jjwt-impl:2b1c61aa2f'
+    runtimeOnly('com.github.mixinnetwork.jjwt:jjwt-orgjson:2b1c61aa2f') {
         exclude group: 'org.json', module: 'json' //provided by Android natively
     }
+
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
-    implementation("com.bugsnag:bugsnag-android:${bugsnagVersion}") {
-        exclude group: "com.bugsnag", module: "bugsnag-plugin-android-anr"
-        exclude group: "com.bugsnag", module: "bugsnag-plugin-android-ndk"
-    }
 
     // retrofit
     implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
@@ -206,31 +288,40 @@ dependencies {
     implementation "com.jakewharton.rxbinding3:rxbinding:${rxbindingVersion}"
     implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:${coroutineAdapterVersion}")
 
+    implementation "com.google.net.cronet:cronet-okhttp:${cronetOkhttpVersion}"
+
     implementation "com.google.code.gson:gson:${gsonVersion}"
-    implementation "com.google.firebase:firebase-analytics:${firebaseVersion}"
-    implementation 'com.google.firebase:firebase-crashlytics:17.2.2'
-    implementation "com.google.firebase:firebase-messaging:${firebaseMessageVersion}"
-    implementation "com.google.firebase:firebase-dynamic-links:${firebaseDylinkVersion}"
-    implementation "com.google.mlkit:barcode-scanning:${mlkitBarcodeVersion}"
-    implementation("com.google.firebase:firebase-perf:${perfVersion}") {
-        exclude group: 'com.google.protobuf', module: 'protobuf-lite'
+
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${serializationVersion}"
+
+    implementation "com.google.firebase:firebase-messaging-ktx"
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.google.firebase:firebase-dynamic-links-ktx'
+    implementation 'com.google.firebase:firebase-perf-ktx'
+
+    implementation("com.google.protobuf:protobuf-javalite") {
+        version {
+            strictly '3.11.0'
+        }
     }
+
+    implementation "com.google.mlkit:barcode-scanning:${mlkitBarcodeVersion}"
     implementation "com.google.android.play:core:${playVersion}"
-    implementation "com.google.android.gms:play-services-safetynet:${google_play_services_version}"
-    implementation "com.google.android.gms:play-services-maps:${google_play_services_version}"
+    implementation "com.google.android.gms:play-services-safetynet:${googlePlayServicesVersion}"
+    implementation "com.google.android.gms:play-services-maps:18.1.0"
+    implementation "com.google.android.gms:play-services-location:21.0.1"
+    implementation "com.google.android.gms:play-services-cronet:${googlePlayServicesVersion}"
     implementation "com.google.zxing:core:${zxingVersion}"
     implementation "com.github.tougee:sticky-headers-recyclerview:${stickyheadersrecyclerviewVersion}"
     implementation "org.whispersystems:signal-protocol-android:${signalVersion}"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlin_version}"
-    implementation "org.jetbrains.anko:anko-commons:$anko_version"
-    implementation "org.jetbrains.anko:anko-sdk25:$anko_version"
-    implementation "org.jetbrains.anko:anko-appcompat-v7:$anko_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
-    implementation "com.zlc.glide:webpdecoder:$webpdecoderVesion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
+    implementation "com.github.zjupure:webpdecoder:2.6.4.16.0"
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     implementation("com.github.bumptech.glide:okhttp3-integration:$glideVersion")
-    kapt "com.github.bumptech.glide:compiler:$glideVersion"
+    ksp "com.github.bumptech.glide:ksp:$glideVersion"
     implementation "jp.wasabeef:glide-transformations:${glideTransformationsVersion}"
     implementation "com.jakewharton.timber:timber:${timberVersion}"
     implementation "com.github.tougee:FABProgressCircle:${fabprogresscircleVersion}"
@@ -247,12 +338,7 @@ dependencies {
     implementation "com.uber.autodispose:autodispose-android:${autodisposeVersion}"
     implementation "com.uber.autodispose:autodispose-android-archcomponents:${autodisposeVersion}"
     implementation "com.uber.autodispose:autodispose-lifecycle:${autodisposeVersion}"
-    implementation "com.google.android.exoplayer:exoplayer-core:${exoplayerVersion}"
-    implementation "com.google.android.exoplayer:exoplayer-hls:${exoplayerVersion}"
-    implementation "com.google.android.exoplayer:exoplayer-ui:${exoplayerVersion}"
     implementation "com.googlecode.mp4parser:isoparser:${isoparserVersion}"
-    implementation "com.github.SeniorZhai:LargeImage:${largeImageViewVersion}"
-    implementation "com.github.tougee:BiometricPromptCompat:${biometricpromptVersion}"
     implementation "io.noties.markwon:core:${markwonVersion}"
     implementation "io.noties.markwon:image:${markwonVersion}"
     implementation "io.noties.markwon:image-glide:${markwonVersion}"
@@ -260,6 +346,7 @@ dependencies {
     implementation "io.noties.markwon:recycler:${markwonVersion}"
     implementation "io.noties.markwon:ext-strikethrough:${markwonVersion}"
     implementation "io.noties.markwon:html:${markwonVersion}"
+    implementation "io.noties.markwon:editor:${markwonVersion}"
     implementation "io.noties:prism4j:${prism4jVersion}"
     implementation "io.noties.markwon:syntax-highlight:${markwonVersion}"
     implementation "io.noties.markwon:ext-tasklist:${markwonVersion}"
@@ -269,59 +356,139 @@ dependencies {
     implementation "dnsjava:dnsjava:${dnsVersion}"
     implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
     implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
-    implementation "com.twilio:audioswitch:$audioSwitchVersion"
+    implementation "com.github.SeniorZhai:audioswitch:${audioSwitchVersion}"
+    implementation "com.github.skydoves:balloon:$balloonVersion"
+    implementation "com.mapbox.maps:android:${mapboxSdkVersion}"
+    implementation "com.mapbox.plugin:maps-lifecycle:${mapboxSdkVersion}"
+    implementation "com.mattprecious.swirl:swirl:$swirlVersion"
+    implementation "com.github.warkiz.widget:indicatorseekbar:$indicatorseekbarVersion"
+    implementation "org.jetbrains:markdown:${markdownVersion}"
+    implementation "io.github.java-diff-utils:java-diff-utils:${diffUtilsVersion}"
+    implementation "com.lambdapioneer.argon2kt:argon2kt:${argon2ktVersion}"
+    implementation "com.github.komputing.khash:keccak-jvm:${keccakVersion}"
 
-    ktlint "com.pinterest:ktlint:${ktlintVersion}"
+    // compose
+    debugImplementation "androidx.compose.ui:ui-tooling:${composeVersion}"
+    implementation "androidx.compose.ui:ui:${composeVersion}"
+    implementation "androidx.compose.material:material:${composeVersion}"
+    implementation "androidx.compose.ui:ui-tooling-preview:${composeVersion}"
+    implementation "androidx.compose.runtime:runtime:${composeVersion}"
+    implementation "androidx.compose.runtime:runtime-livedata:${composeVersion}"
+    implementation "androidx.compose.runtime:runtime-rxjava2:${composeVersion}"
+    implementation 'androidx.activity:activity-compose:1.8.0'
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
+    
+    // accompanist
+    implementation "com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}"
+    implementation "com.google.accompanist:accompanist-pager:${accompanistVersion}"
+    implementation "com.google.accompanist:accompanist-pager-indicators:${accompanistVersion}"
+
+    // wallet connect && web3j
+    implementation "org.web3j:core:4.10.1" // ⚠️ dependabot unexpected behavior update to version 5.0.0
+    implementation "org.web3j:crypto:4.10.1"
+    implementation platform("com.walletconnect:android-bom:1.13.1")
+    implementation "com.walletconnect:android-core"
+    implementation "com.walletconnect:web3wallet"
+
+    implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
+
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
 
     testImplementation "junit:junit:${junitVersion}"
     testImplementation "androidx.test:core:${testCoreVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    androidTestImplementation "org.mockito:mockito-core:${mockitoVersion}"
+
+    testImplementation("org.robolectric:robolectric:${robolectricVersion}", {
+        exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
+    })
 
     // for jwt unit test
-    testImplementation "org.bouncycastle:bcprov-jdk16:${bcVersion}"
     testImplementation "org.json:json:${jsonVersion}"
 
     androidTestImplementation "junit:junit:${junitVersion}"
     androidTestImplementation("androidx.test.espresso:espresso-core:${espressoVersion}", {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:${espressoVersion}", {
+        exclude group: 'com.android.support', module: 'support-annotations'
+        exclude group: 'org.checkerframework', module: 'checker'
+    })
+    androidTestImplementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion"
     androidTestImplementation "androidx.test.ext:junit:${androidxJunitVersion}"
-    // Once https://issuetracker.google.com/127986458 is fixed this can be testImplementation
-    debugImplementation "androidx.fragment:fragment-testing:${fragmentVersion}"
+    androidTestImplementation "androidx.fragment:fragment-testing:${fragmentVersion}"
+    androidTestImplementation "androidx.navigation:navigation-testing:$navigationVersion"
 
     // Hilt testing
     androidTestImplementation "com.google.dagger:hilt-android-testing:$hiltVersion"
-    kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
-    kaptAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
+    kspAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
+    kspAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 
+    // ML Kit
+    implementation 'com.google.mlkit:entity-extraction:16.0.0-beta4'
+
+    testImplementation("com.google.protobuf:protobuf-javalite") {
+        version {
+            strictly '3.11.0'
+        }
+    }
+
+    // Leak Canary
+    debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanaryVerison"
+    implementation "com.squareup.leakcanary:leakcanary-android-process:$leakcanaryVerison"
+    releaseImplementation "com.squareup.leakcanary:leakcanary-android-release:$leakcanaryVerison"
+    releaseImplementation "com.squareup.leakcanary:leakcanary-object-watcher-android:$leakcanaryVerison"
+
+    // SumSub
+    implementation("com.sumsub.sns:idensic-mobile-sdk:$sumsubVersion") {
+        exclude group: 'com.twilio.audioswitch', module: 'AudioDevice'
+    }
+    // checkout
+    implementation "com.github.checkout:frames-android:$checkoutFramesVersion"
+    implementation "com.checkout:checkout-sdk-3ds-android:$checkoutSecureVersion"
+
+    // google pay
+    implementation "com.google.android.gms:play-services-wallet:$playWalletVersion"
+    implementation "com.google.android.gms:play-services-pay:$playPayVersion"
+
+    //Jetpack Datastore - Proto Datastore
+    implementation "androidx.datastore:datastore:$datastoreVersion"
 }
 
-task ktlint(type: JavaExec, group: "verification") {
-    description = "Check Kotlin code style."
-    classpath = configurations.ktlint
-    main = "com.pinterest.ktlint.Main"
-    args "src/**/*.kt"
-    // to generate report in checkstyle format prepend following args:
-    // "--reporter=plain", "--reporter=checkstyle,output=${buildDir}/ktlint.xml"
-    // see https://github.com/pinterest/ktlint#usage for more
-}
-check.dependsOn ktlint
-
-task ktlintFormat(type: JavaExec, group: "formatting") {
-    description = "Fix Kotlin code style deviations."
-    classpath = configurations.ktlint
-    main = "com.pinterest.ktlint.Main"
-    args "-F", "src/**/*.kt"
+secrets {
+    defaultPropertiesFileName = 'local.defaults.properties'
 }
 
 configurations.all {
     exclude group: 'org.jetbrains', module: 'annotations-java5'
 }
 
-// preBuild.dependsOn ktlint
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
 
-androidExtensions {
-    experimental = true
+task allTests(dependsOn: ['testStagingUnitTest', 'connectedStagingAndroidTest']) {
+    description = "Run unit tests and instrumentation tests"
 }
 
-apply plugin: 'com.google.gms.google-services'
+task syncStrings {
+    doLast {
+        ['en', 'zh', 'zh-TW', 'ja', 'ru', 'in', 'ms'].forEach { i ->
+            def lang = i
+            download.run {
+                src "https://raw.githubusercontent.com/Tougee/sync-google-sheet/master/generated/output/Android/value-$lang/strings.xml"
+
+                if (lang == 'en') {
+                    dest "src/main/res/values"
+                } else if (lang == 'zh') {
+                    dest "src/main/res/values-zh-rCN"
+                } else if (lang == 'zh-TW') {
+                    dest "src/main/res/values-zh-rTW"
+                } else if (lang == 'zh-HK') {
+                    dest "src/main/res/values-zh-rHK"
+                } else {
+                    dest "src/main/res/values-$lang"
+                }
+            }
+        }
+    }
+}

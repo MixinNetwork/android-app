@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName
 
 @Entity(
     tableName = "favorite_apps",
-    primaryKeys = ["app_id", "user_id"]
+    primaryKeys = ["app_id", "user_id"],
 )
 data class FavoriteApp(
 
@@ -20,5 +20,5 @@ data class FavoriteApp(
 
     @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
-    val createdAt: String
+    val createdAt: String,
 )

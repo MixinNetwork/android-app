@@ -4,14 +4,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_group_select.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemGroupSelectBinding
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.User
+import one.mixin.android.vo.isGroupConversation
 
 class ConversationCircleSelectAdapter(
-    val removeItem: (Any) -> Unit
+    val removeItem: (Any) -> Unit,
 ) : RecyclerView.Adapter<ConversationCircleSelectAdapter.SelectViewHolder>() {
 
     var checkedItems = mutableListOf<Any>()
@@ -29,17 +30,18 @@ class ConversationCircleSelectAdapter(
 
     override fun onBindViewHolder(holder: SelectViewHolder, position: Int) {
         val item = checkedItems[position]
+        val binding = ItemGroupSelectBinding.bind(holder.itemView)
         if (item is User) {
-            holder.itemView.avatar_view.setInfo(item.fullName, item.avatarUrl, item.userId)
-            holder.itemView.name_tv.text = item.fullName
-        } else if (item is ConversationItem) {
+            binding.avatarView.setInfo(item.fullName, item.avatarUrl, item.userId)
+            binding.nameTv.text = item.fullName
+        } else if (item is ConversationMinimal) {
             holder.itemView.apply {
-                if (item.isGroup()) {
-                    avatar_view.setGroup(item.groupIconUrl)
-                    name_tv.text = item.groupName
+                if (item.isGroupConversation()) {
+                    binding.avatarView.setGroup(item.groupIconUrl)
+                    binding.nameTv.text = item.groupName
                 } else {
-                    avatar_view.setInfo(item.getConversationName(), item.iconUrl(), item.ownerId)
-                    name_tv.text = item.name
+                    binding.avatarView.setInfo(item.getConversationName(), item.iconUrl(), item.ownerId)
+                    binding.nameTv.text = item.name
                 }
             }
         }

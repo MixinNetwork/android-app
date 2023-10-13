@@ -6,7 +6,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
+import java.math.BigDecimal
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -27,7 +28,12 @@ data class TopAssetItem(
     val chainId: String,
     @SerializedName("chain_icon_url")
     @ColumnInfo(name = "chain_icon_url")
-    val chainIconUrl: String?
+    val chainIconUrl: String?,
+    @SerializedName("asset_key")
+    @ColumnInfo(name = "asset_key")
+    val assetKey: String?,
+    val priceUsd: String,
+    val changeUsd: String,
 ) : Parcelable {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<TopAssetItem>() {
@@ -37,5 +43,11 @@ data class TopAssetItem(
             override fun areContentsTheSame(oldItem: TopAssetItem, newItem: TopAssetItem) =
                 oldItem == newItem
         }
+    }
+
+    fun priceFiat(): BigDecimal = if (priceUsd == "0") {
+        BigDecimal.ZERO
+    } else {
+        BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
     }
 }

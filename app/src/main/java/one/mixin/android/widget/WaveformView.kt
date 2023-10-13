@@ -6,15 +6,16 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
+import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ProgressEvent
+import one.mixin.android.extension.dp
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
-import org.jetbrains.anko.dip
 import kotlin.experimental.and
 import kotlin.experimental.or
 import kotlin.math.ceil
@@ -28,11 +29,13 @@ class WaveformView : View {
 
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
-    fun setWaveform(waveform: ByteArray) {
+    fun setWaveform(waveform: ByteArray, center: Boolean = false) {
         waveformBytes = waveform
+        this.center = center
     }
 
     private var waveformBytes: ByteArray? = null
+    private var center: Boolean = false
 
     private var innerColor = Color.parseColor("#DDDDDD")
     private var outerColor = Color.parseColor("#9B9B9B")
@@ -68,6 +71,7 @@ class WaveformView : View {
         if (disposable == null) {
             disposable = RxBus.listen(ProgressEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(this)
                 .subscribe {
                     if (it.id == mBindId) {
                         if (it.status == STATUS_PAUSE || it.status == STATUS_PLAY) {
@@ -102,7 +106,7 @@ class WaveformView : View {
         if (waveformBytes == null || width == 0) {
             return
         }
-        val totalBarsCount = (width / context.dip(3f)).toFloat()
+        val totalBarsCount = (width / 3.dp).toFloat()
         if (totalBarsCount <= 0.1f) {
             return
         }
@@ -115,7 +119,7 @@ class WaveformView : View {
         paintInner.color = if (isFresh && thumbX == 0) freshColor else innerColor
         paintOuter.color = outerColor
 
-        val y = height
+        val y = height.toFloat()
         var barNum = 0
         var lastBarNum: Int
         var drawBarCount: Int
@@ -142,27 +146,37 @@ class WaveformView : View {
                 value = (value.toInt() shl nextByteRest).toByte()
                 value = value or (waveformBytes!![byteNum + 1] and ((2 shl nextByteRest - 1) - 1).toByte())
             }
-
+            val offset = (max(1f, 14.0f * value / 31.0f).dp).toFloat()
+            val yTop = if (center) {
+                (y - offset) / 2
+            } else {
+                y - offset
+            }
+            val yBottom = if (center) {
+                (y + offset) / 2
+            } else {
+                y
+            }
             for (b in 0 until drawBarCount) {
-                val x = barNum * context.dip(3f)
-                if (x < thumbX && x + context.dip(2f) < thumbX) {
+                val x = barNum * 3.dp
+                if (x < thumbX && x + 2.dp < thumbX) {
                     canvas.drawRect(
                         x.toFloat(),
-                        (y - context.dip(max(1f, 14.0f * value / 31.0f))).toFloat(),
-                        (x + context.dip(2f)).toFloat(),
-                        (y).toFloat(),
-                        paintOuter
+                        yTop,
+                        (x + 2.dp).toFloat(),
+                        yBottom,
+                        paintOuter,
                     )
                 } else {
                     canvas.drawRect(
                         x.toFloat(),
-                        (y - context.dip(max(1f, 14.0f * value / 31.0f))).toFloat(),
-                        (x + context.dip(2f)).toFloat(),
-                        (y).toFloat(),
-                        paintInner
+                        yTop,
+                        (x + 2.dp).toFloat(),
+                        yBottom,
+                        paintInner,
                     )
                     if (x < thumbX) {
-                        canvas.drawRect(x.toFloat(), (y - context.dip(max(1f, 14.0f * value / 31.0f))).toFloat(), thumbX.toFloat(), (y).toFloat(), paintOuter)
+                        canvas.drawRect(x.toFloat(), yTop, thumbX.toFloat(), yBottom, paintOuter)
                     }
                 }
                 barNum++

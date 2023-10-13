@@ -8,12 +8,11 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import kotlinx.android.synthetic.main.view_avatar.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.forEachReversedWithIndex
 import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.User
-import org.jetbrains.anko.collections.forEachReversedWithIndex
 
 class AvatarsView : ViewGroup {
     companion object {
@@ -41,7 +40,7 @@ class AvatarsView : ViewGroup {
 
         borderWidth = ta.getDimensionPixelSize(
             R.styleable.AvatarsView_avatar_border_width,
-            DEFAULT_BORDER_WIDTH
+            DEFAULT_BORDER_WIDTH,
         )
         borderColor = ta.getColor(R.styleable.AvatarsView_avatar_border_color, DEFAULT_BORDER_COLOR)
         avatarSize =
@@ -71,14 +70,14 @@ class AvatarsView : ViewGroup {
         val parentWidth = avatarSize + (childCount - 1) * avatarSize * ratio
         setMeasuredDimension(
             MeasureSpec.makeMeasureSpec(parentWidth.toInt(), MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY)
+            MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY),
         )
 
         for (i in 0 until childCount) {
             val c = getChildAt(i)
             c.measure(
                 MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY),
-                MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY)
+                MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY),
             )
         }
     }
@@ -97,7 +96,7 @@ class AvatarsView : ViewGroup {
                 offsetLeft.toInt(),
                 0,
                 (offsetLeft + avatarSize).toInt(),
-                measuredHeight
+                measuredHeight,
             )
         }
     }
@@ -128,7 +127,7 @@ class AvatarsView : ViewGroup {
                         setBorderWidth(borderWidth)
                         setBorderColor(borderColor)
                     }
-                    avatarView.avatar_simple.setCircleBackgroundColorResource(R.color.white)
+                    avatarView.avatarSimple.setCircleBackgroundColorResource(R.color.white)
                     addView(avatarView)
                     avatarView.setInfo(t.fullName, t.avatarUrl, t.userId)
                 } else if (t is String) {
@@ -165,7 +164,7 @@ class AvatarsView : ViewGroup {
                 addView(
                     ImageView(context).apply {
                         setBackgroundResource(R.drawable.bg_multisigs_gray)
-                    }
+                    },
                 )
             }
         }
@@ -178,14 +177,14 @@ class AvatarsView : ViewGroup {
                         0 + offset * i,
                         0,
                         measuredWidth + offset * i,
-                        measuredHeight
+                        measuredHeight,
                     )
                 } else {
                     getChildAt(i).layout(
                         0 - i * offset,
                         0,
                         measuredWidth - i * offset,
-                        measuredHeight
+                        measuredHeight,
                     )
                 }
             }

@@ -19,7 +19,8 @@
             android:layout_width="18dp"
             android:layout_height="18dp"
             android:layout_gravity="center"
-            android:src="@drawable/ic_pip_call"/>
+            android:src="@drawable/ic_pip_call"
+            android:contentDescription="@null" />
     </FrameLayout>
 
     <LinearLayout
@@ -33,7 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="@string/group_call"
+            android:text="@string/Group_Call"
             android:textSize="16sp"
             android:textColor="?text_primary"/>
 
@@ -43,6 +44,6 @@
             android:layout_marginStart="8dp"
             android:textColor="?text_minor"
             android:textSize="12sp"
-            android:text="@string/chat_tap_join"/>
+            android:text="@string/Tap_to_join"/>
     </LinearLayout>
 </RelativeLayout>

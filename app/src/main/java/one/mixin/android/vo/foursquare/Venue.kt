@@ -6,7 +6,7 @@ class Venue(
     val id: String,
     val name: String,
     val location: Location,
-    val categories: List<Category>?
+    val categories: List<Category>?,
 )
 
 fun Venue.getImageUrl(): String? {

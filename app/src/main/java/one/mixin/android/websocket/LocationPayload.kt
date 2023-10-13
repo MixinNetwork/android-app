@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Parcelable
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.annotations.SerializedName
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 
@@ -16,7 +16,7 @@ data class LocationPayload(
     val name: String?,
     val address: String?,
     @SerializedName("venue_type")
-    val venueType: String? = null
+    val venueType: String? = null,
 ) : Parcelable
 
 fun LocationPayload.getImageUrl(): String? {

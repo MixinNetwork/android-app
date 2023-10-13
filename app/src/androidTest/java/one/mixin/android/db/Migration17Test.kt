@@ -13,7 +13,7 @@ class Migration17Test : BaseMigrationTest() {
             17,
             true,
             MixinDatabaseMigrations.MIGRATION_15_16,
-            MixinDatabaseMigrations.MIGRATION_16_17
+            MixinDatabaseMigrations.MIGRATION_16_17,
         )
     }
 
@@ -24,7 +24,7 @@ class Migration17Test : BaseMigrationTest() {
             Constants.DataBase.DB_NAME,
             17,
             true,
-            MixinDatabaseMigrations.MIGRATION_16_17
+            MixinDatabaseMigrations.MIGRATION_16_17,
         )
     }
 }

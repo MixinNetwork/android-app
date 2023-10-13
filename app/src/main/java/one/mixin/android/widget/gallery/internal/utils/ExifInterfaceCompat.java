@@ -1,20 +1,17 @@
 
 package one.mixin.android.widget.gallery.internal.utils;
 
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.text.TextUtils;
-import android.util.Log;
 import androidx.exifinterface.media.ExifInterface;
+import timber.log.Timber;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-import timber.log.Timber;
 
 
-@TargetApi(Build.VERSION_CODES.ECLAIR)
 final class ExifInterfaceCompat {
     private static final String TAG = ExifInterfaceCompat.class.getSimpleName();
     private static final int EXIF_DEGREE_FALLBACK_VALUE = -1;
@@ -35,7 +32,7 @@ final class ExifInterfaceCompat {
             // We should avoid such a situation by checking file path string.
             exif = newInstance(filepath);
         } catch (IOException ex) {
-            Log.e(TAG, "cannot read exif", ex);
+            Timber.tag(TAG).e(ex, "cannot read exif");
             return null;
         }
 
@@ -48,7 +45,7 @@ final class ExifInterfaceCompat {
             formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
             return formatter.parse(date);
         } catch (ParseException e) {
-            Log.d(TAG, "failed to parse date taken", e);
+            Timber.tag(TAG).d(e, "failed to parse date taken");
         }
         return null;
     }

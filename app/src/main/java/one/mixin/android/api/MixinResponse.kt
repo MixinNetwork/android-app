@@ -1,5 +1,6 @@
 package one.mixin.android.api
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.util.ErrorHandler
 import retrofit2.Response
@@ -35,48 +36,42 @@ class MixinResponse<T>() {
 
 suspend fun <T, R> handleMixinResponse(
     invokeNetwork: suspend () -> MixinResponse<T>,
-    switchContext: CoroutineContext? = null,
+    switchContext: CoroutineContext = Dispatchers.IO,
     successBlock: (suspend (MixinResponse<T>) -> R)? = null,
     failureBlock: (suspend (MixinResponse<T>) -> Boolean)? = null,
-    exceptionBlock: ((t: Throwable) -> Boolean)? = null,
+    exceptionBlock: (suspend (t: Throwable) -> Boolean)? = null,
     doAfterNetworkSuccess: (() -> Unit)? = null,
     defaultErrorHandle: (suspend (MixinResponse<T>) -> Unit) = {
         ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
     },
     defaultExceptionHandle: (suspend (t: Throwable) -> Unit) = {
         ErrorHandler.handleError(it)
-    }
+    },
+    endBlock: (() -> Unit)? = null,
 ): R? {
-    val response = if (switchContext != null) {
-        try {
-            withContext(switchContext) {
-                invokeNetwork()
-            }
-        } catch (t: Throwable) {
-            if (exceptionBlock?.invoke(t) != true) {
-                defaultExceptionHandle.invoke(t)
-            }
-            return null
-        }
-    } else {
-        try {
+    val response = try {
+        withContext(switchContext) {
             invokeNetwork()
-        } catch (t: Throwable) {
-            if (exceptionBlock?.invoke(t) != true) {
-                defaultExceptionHandle.invoke(t)
-            }
-            return null
         }
+    } catch (t: Throwable) {
+        if (exceptionBlock?.invoke(t) != true) {
+            defaultExceptionHandle.invoke(t)
+        }
+        endBlock?.invoke()
+        return null
     }
 
     doAfterNetworkSuccess?.invoke()
 
     return if (response.isSuccess) {
-        successBlock?.invoke(response)
+        val r = successBlock?.invoke(response)
+        endBlock?.invoke()
+        r
     } else {
         if (failureBlock?.invoke(response) != true) {
             defaultErrorHandle(response)
         }
+        endBlock?.invoke()
         null
     }
 }

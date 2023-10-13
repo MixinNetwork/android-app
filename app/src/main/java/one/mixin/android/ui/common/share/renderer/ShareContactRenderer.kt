@@ -1,52 +1,51 @@
 package one.mixin.android.ui.common.share.renderer
 
 import android.content.Context
-import android.view.Gravity
 import android.view.LayoutInflater
-import android.view.View
-import android.widget.FrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.date_wrapper.view.*
-import kotlinx.android.synthetic.main.item_chat_contact_card.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatContactCardBinding
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
 
-open class ShareContactRenderer(val context: Context) : ShareMessageRenderer {
+open class ShareContactRenderer(val context: Context) {
 
-    val contentView: View = LayoutInflater.from(context).inflate(R.layout.item_chat_contact_card, null)
-
+    private val binding = ItemChatContactCardBinding.inflate(LayoutInflater.from(context), null, false)
+    val contentView get() = binding.root
     init {
-        (contentView.out_ll.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.CENTER
-        contentView.chat_name.isVisible = false
+        (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0.5f
+        binding.chatName.isVisible = false
     }
 
     fun render(user: User, isNightMode: Boolean) {
-        contentView.avatar_iv.setInfo(
+        binding.avatarIv.setInfo(
             user.fullName,
             user.avatarUrl,
-            user.userId
+            user.userId,
         )
-        contentView.name_tv.text = user.fullName
-        contentView.id_tv.text = user.identityNumber
-        contentView.chat_time.timeAgoClock(nowInUtc())
-        user.showVerifiedOrBot(contentView.verified_iv, contentView.bot_iv)
+        binding.nameTv.text = user.fullName
+        binding.idTv.text = user.identityNumber
+        user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
 
-        setStatusIcon(context, MessageStatus.DELIVERED.name, isSecret = true, isWhite = true) { statusIcon, secretIcon ->
-            contentView.chat_flag.isVisible = statusIcon != null
-            contentView.chat_flag.setImageDrawable(statusIcon)
-            contentView.chat_secret.isVisible = secretIcon != null
-        }
+        binding.chatTime.load(
+            true,
+            nowInUtc(),
+            MessageStatus.DELIVERED.name,
+            isPin = false,
+            isRepresentative = false,
+            isSecret = true,
+            isWhite = true,
+        )
 
-        contentView.chat_layout.setBackgroundResource(
+        binding.chatContentLayout.setBackgroundResource(
             if (!isNightMode) {
                 R.drawable.bill_bubble_me_last
             } else {
                 R.drawable.bill_bubble_me_last_night
-            }
+            },
         )
     }
 }

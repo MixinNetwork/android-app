@@ -28,7 +28,7 @@ class MediaSelector(
     context: Context,
     loaderManager: LoaderManager,
     private var listener: MediaSelectorListener?,
-    onDismissListener: OnDismissListener
+    onDismissListener: OnDismissListener,
 ) : PopupWindow(context) {
 
     private var currentAnchor: View? = null
@@ -68,13 +68,34 @@ class MediaSelector(
         menuDown.setOnClickListener {
             dismiss()
         }
-        menuCamera.setOnClickListener { listener?.onClick(TYPE_CAMERA); dismiss() }
-        menuGallery.setOnClickListener { listener?.onClick(TYPE_GALLERY); dismiss() }
-        menuVideo.setOnClickListener { listener?.onClick(TYPE_VIDEO); dismiss() }
-        menuTransfer.setOnClickListener { listener?.onClick(TYPE_TRANSFER); dismiss() }
-        menuMusic.setOnClickListener { listener?.onClick(TYPE_MUSIC); dismiss() }
-        menuLocation.setOnClickListener { listener?.onClick(TYPE_LOCATION); dismiss() }
-        menuDocument.setOnClickListener { listener?.onClick(TYPE_DOCUMENT); dismiss() }
+        menuCamera.setOnClickListener {
+            listener?.onClick(TYPE_CAMERA)
+            dismiss()
+        }
+        menuGallery.setOnClickListener {
+            listener?.onClick(TYPE_GALLERY)
+            dismiss()
+        }
+        menuVideo.setOnClickListener {
+            listener?.onClick(TYPE_VIDEO)
+            dismiss()
+        }
+        menuTransfer.setOnClickListener {
+            listener?.onClick(TYPE_TRANSFER)
+            dismiss()
+        }
+        menuMusic.setOnClickListener {
+            listener?.onClick(TYPE_MUSIC)
+            dismiss()
+        }
+        menuLocation.setOnClickListener {
+            listener?.onClick(TYPE_LOCATION)
+            dismiss()
+        }
+        menuDocument.setOnClickListener {
+            listener?.onClick(TYPE_DOCUMENT)
+            dismiss()
+        }
     }
 
     fun show(anchor: View) {
@@ -87,7 +108,7 @@ class MediaSelector(
 
                     animateWindowInCircular(anchor, contentView)
                 }
-            }
+            },
         )
         animateButtonIn(menuCamera, ANIMATION_DURATION / 2)
         animateButtonIn(menuGallery, ANIMATION_DURATION / 2)
@@ -109,7 +130,7 @@ class MediaSelector(
             Animation.RELATIVE_TO_SELF,
             0.5f,
             Animation.RELATIVE_TO_SELF,
-            0.0f
+            0.0f,
         )
 
         animation.addAnimation(scale)
@@ -135,7 +156,7 @@ class MediaSelector(
             coordinates.first,
             coordinates.second,
             0f,
-            Math.max(contentView.width, contentView.height).toFloat()
+            Math.max(contentView.width, contentView.height).toFloat(),
         )
         animator.duration = ANIMATION_DURATION.toLong()
         animator.start()
@@ -148,7 +169,7 @@ class MediaSelector(
             coordinates.first,
             coordinates.second,
             Math.max(getContentView().width, getContentView().height).toFloat(),
-            0f
+            0f,
         )
 
         animator.duration = ANIMATION_DURATION.toLong()
@@ -163,7 +184,7 @@ class MediaSelector(
                 override fun onAnimationCancel(animation: Animator) {}
 
                 override fun onAnimationRepeat(animation: Animator) {}
-            }
+            },
         )
 
         animator.start()
@@ -181,7 +202,7 @@ class MediaSelector(
                 }
 
                 override fun onAnimationRepeat(animation: Animation) {}
-            }
+            },
         )
 
         getContentView().startAnimation(animation)

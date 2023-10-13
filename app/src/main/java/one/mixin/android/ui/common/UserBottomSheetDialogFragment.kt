@@ -1,6 +1,7 @@
 package one.mixin.android.ui.common
 
 import android.Manifest
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ClipData
@@ -13,9 +14,12 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.FragmentManager
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
@@ -29,10 +33,7 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.launch
-import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.Constants.Mute.MUTE_1_HOUR
@@ -45,6 +46,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
+import one.mixin.android.databinding.FragmentUserBottomSheetBinding
 import one.mixin.android.event.BotCloseEvent
 import one.mixin.android.event.BotEvent
 import one.mixin.android.extension.addFragment
@@ -52,6 +54,8 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
@@ -74,7 +78,10 @@ import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.addPinShortcut
+import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.vo.CallStateLiveData
+import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
@@ -84,11 +91,14 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.showVerifiedOrBot
 import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.websocket.ContactMessagePayload
+import one.mixin.android.widget.picker.getTimeInterval
 import org.threeten.bp.Instant
 import timber.log.Timber
+import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -98,13 +108,18 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     companion object {
         const val TAG = "UserBottomSheetDialogFragment"
 
+        @SuppressLint("StaticFieldLeak")
         private var instant: UserBottomSheetDialogFragment? = null
-        fun newInstance(user: User, conversationId: String? = null): UserBottomSheetDialogFragment {
+
+        fun newInstance(user: User, conversationId: String? = null): UserBottomSheetDialogFragment? {
             try {
                 instant?.dismiss()
             } catch (ignored: IllegalStateException) {
             }
             instant = null
+            if (user.notMessengerUser()) {
+                return null
+            }
             return UserBottomSheetDialogFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARGS_USER, user)
@@ -124,7 +139,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     private lateinit var user: User
 
     // bot need conversation id
-    private var conversationId: String? = null
+    private var botConversationId: String? = null
+    private val conversationId by lazy {
+        generateConversationId(Session.getAccountId()!!, user.userId)
+    }
     private var creator: User? = null
 
     @Inject
@@ -136,22 +154,27 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     private var menuListLayout: ViewGroup? = null
 
     var showUserTransactionAction: (() -> Unit)? = null
+    var sharedMediaCallback: (() -> Unit)? = null
 
     override fun getLayoutId() = R.layout.fragment_user_bottom_sheet
 
+    private val binding by lazy {
+        FragmentUserBottomSheetBinding.bind(contentView)
+    }
+
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        user = requireArguments().getParcelable(ARGS_USER)!!
-        conversationId = requireArguments().getString(ARGS_CONVERSATION_ID)
-        contentView.title.right_iv.setOnClickListener { dismiss() }
-        contentView.avatar.setOnClickListener {
+        user = requireArguments().getParcelableCompat(ARGS_USER, User::class.java)!!
+        botConversationId = requireArguments().getString(ARGS_CONVERSATION_ID)
+        binding.title.rightIv.setOnClickListener { dismiss() }
+        binding.avatar.setOnClickListener {
             if (!isAdded) return@setOnClickListener
 
             val avatar = user.avatarUrl
             if (avatar.isNullOrBlank()) {
                 return@setOnClickListener
             }
-            AvatarActivity.show(requireActivity(), avatar, contentView.avatar)
+            AvatarActivity.show(requireActivity(), avatar, binding.avatar)
             dismiss()
         }
 
@@ -161,39 +184,38 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 if (u == null) return@Observer
                 // prevent add self
                 if (u.userId == Session.getAccountId()) {
-                    ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, TAG)
+                    ProfileBottomSheetDialogFragment.newInstance()
+                        .showNow(parentFragmentManager, ProfileBottomSheetDialogFragment.TAG)
                     dismiss()
                     return@Observer
                 }
-                updateUserInfo(u)
+                // compare user info changes should refresh menu
                 if (menuListLayout == null ||
                     u.relationship != user.relationship ||
                     u.muteUntil != user.muteUntil ||
                     u.fullName != user.fullName
                 ) {
                     lifecycleScope.launch {
-                        val circleNames = bottomViewModel.findCirclesNameByConversationId(
-                            generateConversationId(
-                                Session.getAccountId()!!,
-                                u.userId
-                            )
-                        )
-                        initMenu(u, circleNames)
+                        val circleNames = bottomViewModel.findCirclesNameByConversationId(conversationId)
+                        val conversation = bottomViewModel.getConversation(conversationId)
+                        initMenu(u, circleNames, conversation)
                     }
                 }
+
                 user = u
+                updateUserInfo(u)
 
                 contentView.doOnPreDraw {
                     if (!isAdded) return@doOnPreDraw
 
                     behavior?.peekHeight =
-                        contentView.title.height +
-                        contentView.scroll_content.height -
+                        binding.title.height +
+                        binding.scrollContent.height -
                         (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
                 }
-            }
+            },
         )
-        contentView.transfer_fl.setOnClickListener {
+        binding.transferFl.setOnClickListener {
             if (Session.getAccount()?.hasPin == true) {
                 TransferFragment.newInstance(user.userId, supportSwitchAsset = true)
                     .showNow(parentFragmentManager, TransferFragment.TAG)
@@ -203,65 +225,69 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 toast(R.string.transfer_without_pin)
             }
         }
-        contentView.send_fl.setOnClickListener {
+        binding.sendFl.setOnClickListener {
             if (user.userId == Session.getAccountId()) {
                 toast(R.string.cant_talk_self)
                 return@setOnClickListener
             }
             context?.let { ctx ->
-                if (MixinApplication.conversationId == null || generateConversationId(
-                        user.userId,
-                        Session.getAccountId()!!
-                    ) != MixinApplication.conversationId
-                ) {
+                if (MixinApplication.conversationId == null || conversationId != MixinApplication.conversationId) {
                     RxBus.publish(BotCloseEvent())
-                    ConversationActivity.show(ctx, null, user.userId)
+                    ConversationActivity.showAndClear(ctx, conversationId = null, recipientId = user.userId)
                 }
+                dismiss()
             }
         }
-        setDetailsTv(contentView.detail_tv, contentView.scroll_view, conversationId)
+        binding.shareFl.setOnClickListener {
+            forwardContact(user)
+        }
+        setDetailsTv(binding.detailTv, binding.scrollView, conversationId)
         bottomViewModel.refreshUser(user.userId, true)
-        lifecycleScope.launch {
-            bottomViewModel.loadFavoriteApps(user.userId) { apps ->
-                contentView.avatar_ll.isVisible = !apps.isNullOrEmpty()
-                contentView.avatar_ll.setOnClickListener {
-                    if (!apps.isNullOrEmpty()) {
-                        AppListBottomSheetDialogFragment.newInstance(
-                            apps,
-                            getString(R.string.contact_share_apps_title, user.fullName)
-                        ).showNow(parentFragmentManager, AppListBottomSheetDialogFragment.TAG)
-                    }
+        bottomViewModel.loadFavoriteApps(user.userId)
+        bottomViewModel.observerFavoriteApps(user.userId).observe(this@UserBottomSheetDialogFragment) { apps ->
+            binding.avatarLl.isVisible = user.isDeactivated != true && !apps.isNullOrEmpty()
+            binding.avatarLl.setOnClickListener {
+                if (!apps.isNullOrEmpty()) {
+                    AppListBottomSheetDialogFragment.newInstance(
+                        apps,
+                        getString(R.string.contact_share_bots_title, user.fullName),
+                    ).showNow(parentFragmentManager, AppListBottomSheetDialogFragment.TAG)
                 }
-                if (BuildConfig.DEBUG) {
-                    contentView.avatar.setOnLongClickListener {
-                        context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, "mixin://users/${user.userId}"))
-                        true
-                    }
-                }
-                apps?.let {
-                    contentView.avatar_group.setApps(it)
-                    contentView.doOnPreDraw {
-                        behavior?.peekHeight =
-                            contentView.title.height + contentView.scroll_content.height -
-                            (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
-                    }
+            }
+            debugLongClick(
+                binding.avatar,
+                {
+                    context?.getClipboardManager()?.setPrimaryClip(
+                        ClipData.newPlainText(
+                            null,
+                            "mixin://users/${user.userId}",
+                        ),
+                    )
+                },
+            )
+            apps?.let {
+                binding.avatarGroup.setApps(it)
+                contentView.doOnPreDraw {
+                    behavior?.peekHeight =
+                        binding.title.height + binding.scrollContent.height -
+                        (
+                            menuListLayout?.height
+                                ?: 0
+                            ) - if (menuListLayout != null) 38.dp else 8.dp
                 }
             }
         }
     }
 
-    private fun initMenu(u: User, circleNames: List<String>) {
+    private fun initMenu(u: User, circleNames: List<String>, conversation: Conversation?) {
+        if (!isAdded) return
+
         val clearMenu = menu {
-            title = getString(R.string.group_info_clear_chat)
+            title = getString(R.string.Clear_chat)
             style = MenuStyle.Danger
             action = {
-                requireContext().showConfirmDialog(getString(R.string.group_info_clear_chat)) {
-                    bottomViewModel.deleteMessageByConversationId(
-                        generateConversationId(
-                            Session.getAccountId()!!,
-                            u.userId
-                        )
-                    )
+                requireContext().showConfirmDialog(getString(R.string.Clear_chat)) {
+                    bottomViewModel.clearChat(conversationId)
                     dismiss()
                 }
             }
@@ -270,22 +296,22 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 {
                     Instant.now().isBefore(Instant.parse(it))
                 },
-                false
+                false,
             )
         ) {
             menu {
-                title = getString(R.string.un_mute)
-                subtitle = getString(R.string.mute_until, u.muteUntil?.localTime())
+                title = getString(R.string.Unmute)
+                subtitle = getString(R.string.Mute_until, u.muteUntil?.localTime())
                 action = { unMute() }
             }
         } else {
             menu {
-                title = getString(R.string.mute)
+                title = getString(R.string.Mute)
                 action = { mute() }
             }
         }
         val transactionMenu = menu {
-            title = getString(R.string.contact_other_transactions)
+            title = getString(R.string.Transactions)
             action = {
                 if (showUserTransactionAction != null) {
                     showUserTransactionAction?.invoke()
@@ -294,18 +320,18 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     activity?.addFragment(
                         this@UserBottomSheetDialogFragment,
                         UserTransactionsFragment.newInstance(u.userId),
-                        UserTransactionsFragment.TAG
+                        UserTransactionsFragment.TAG,
                     )
                 }
                 dismiss()
             }
         }
         val editNameMenu = menu {
-            title = getString(R.string.edit_name)
+            title = getString(R.string.Edit_Name)
             action = { showDialog(u.fullName) }
         }
         val voiceCallMenu = menu {
-            title = getString(R.string.voice_call)
+            title = getString(R.string.Voice_call)
             action = {
                 startVoiceCall()
             }
@@ -314,7 +340,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         val telephoneCallMenu = if (!phoneNum.isNullOrEmpty()) {
             val phoneUri = Uri.parse("tel:$phoneNum")
             menu {
-                title = getString(R.string.phone_call)
+                title = getString(R.string.Phone_call)
                 subtitle = phoneNum
                 action = {
                     requireContext().showConfirmDialog(getString(R.string.call_who, phoneNum)) {
@@ -325,17 +351,18 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     }
                 }
             }
-        } else null
+        } else {
+            null
+        }
         val developerMenu = menu {
-            title = getString(R.string.developer)
+            title = getString(R.string.Developer)
             action = {
                 creator?.let {
                     if (it.userId == Session.getAccountId()) {
                         ProfileBottomSheetDialogFragment.newInstance()
                             .showNow(parentFragmentManager, TAG)
                     } else {
-                        UserBottomSheetDialogFragment.newInstance(it)
-                            .showNow(parentFragmentManager, TAG)
+                        showUserBottom(parentFragmentManager, it)
                     }
                 }
                 dismiss()
@@ -345,40 +372,28 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         val list = menuList {
             menuGroup {
                 menu {
-                    title = getString(R.string.contact_other_share)
+                    title = getString(R.string.Share_Contact)
                     action = {
-                        ForwardActivity.show(
-                            requireContext(),
-                            arrayListOf(
-                                ForwardMessage(
-                                    ShareCategory.Contact,
-                                    GsonHelper.customGson.toJson(ContactMessagePayload(u.userId))
-                                )
-                            ),
-                            ForwardAction.App.Resultless()
-                        )
-                        RxBus.publish(BotCloseEvent())
-                        dismiss()
+                        forwardContact(u)
                     }
                 }
             }
             menuGroup {
                 menu {
-                    title = getString(R.string.contact_other_shared_media)
+                    title = getString(R.string.Shared_Media)
                     action = {
-                        SharedMediaActivity.show(
-                            requireContext(),
-                            generateConversationId(
-                                user.userId,
-                                Session.getAccountId()!!
-                            )
-                        )
+                        val callback = this@UserBottomSheetDialogFragment.sharedMediaCallback
+                        if (callback != null) {
+                            callback.invoke()
+                        } else {
+                            SharedMediaActivity.show(requireContext(), conversationId, false)
+                        }
                         RxBus.publish(BotCloseEvent())
                         dismiss()
                     }
                 }
                 menu {
-                    title = getString(R.string.contact_other_search_conversation)
+                    title = getString(R.string.Search_Conversation)
                     action = {
                         startSearchConversation()
                         RxBus.publish(BotCloseEvent())
@@ -388,18 +403,30 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
         }
 
+        list.groups.add(
+            menuGroup {
+                menu {
+                    title = getString(R.string.disappearing_message)
+                    subtitle = conversation.notNullWithElse({ it.expireIn.getTimeInterval() }, "")
+                    action = {
+                        showDisappearing()
+                    }
+                }
+            },
+        )
+
         if (u.relationship == UserRelationship.FRIEND.name) {
             list.groups.add(
                 menuGroup {
                     menu(muteMenu)
                     menu(editNameMenu)
-                }
+                },
             )
         } else {
             list.groups.add(
                 menuGroup {
                     menu(muteMenu)
-                }
+                },
             )
         }
 
@@ -408,7 +435,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 list.groups.add(
                     menuGroup {
                         menu(telephoneCallMenu)
-                    }
+                    },
                 )
             }
         } else {
@@ -416,7 +443,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 menuGroup {
                     menu(voiceCallMenu)
                     telephoneCallMenu?.let { menu(it) }
-                }
+                },
             )
         }
 
@@ -425,20 +452,33 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 menuGroup {
                     menu(developerMenu)
                     menu(transactionMenu)
-                }
+                },
             )
         } else {
             list.groups.add(
                 menuGroup {
                     menu(transactionMenu)
-                }
+                },
             )
         }
 
         list.groups.add(
             menuGroup {
                 menu {
-                    title = getString(R.string.circle)
+                    title = getString(R.string.Groups_In_Common)
+                    action = {
+                        openGroupsInCommon()
+                        RxBus.publish(BotCloseEvent())
+                        dismiss()
+                    }
+                }
+            },
+        )
+
+        list.groups.add(
+            menuGroup {
+                menu {
+                    title = getString(R.string.Circles)
                     action = {
                         startCircleManager()
                         RxBus.publish(BotCloseEvent())
@@ -446,19 +486,19 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     }
                     this.circleNames = circleNames
                 }
-            }
+            },
         )
 
         list.groups.add(
             menuGroup {
                 menu {
-                    title = getString(R.string.add_shortcut)
+                    title = getString(R.string.Add_to_Home_screen)
                     action = {
                         addShortcut()
                         dismiss()
                     }
                 }
-            }
+            },
         )
 
         when (u.relationship) {
@@ -466,19 +506,19 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 list.groups.add(
                     menuGroup {
                         menu {
-                            title = getString(R.string.contact_other_unblock)
+                            title = getString(R.string.Unblock)
                             style = MenuStyle.Danger
                             action = {
                                 bottomViewModel.updateRelationship(
                                     RelationshipRequest(
                                         u.userId,
-                                        RelationshipAction.UNBLOCK.name
-                                    )
+                                        RelationshipAction.UNBLOCK.name,
+                                    ),
                                 )
                             }
                         }
                         menu(clearMenu)
-                    }
+                    },
                 )
             }
             UserRelationship.FRIEND.name -> {
@@ -487,10 +527,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         menu {
                             title = getString(
                                 if (user.isBot()) {
-                                    R.string.contact_other_remove_bot
+                                    R.string.Remove_Bot
                                 } else {
-                                    R.string.contact_other_remove
-                                }
+                                    R.string.Remove_Contact
+                                },
                             )
 
                             style = MenuStyle.Danger
@@ -498,11 +538,11 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                 requireContext().showConfirmDialog(
                                     getString(
                                         if (user.isBot()) {
-                                            R.string.contact_other_remove_bot
+                                            R.string.Remove_Bot
                                         } else {
-                                            R.string.contact_other_remove
-                                        }
-                                    )
+                                            R.string.Remove_Contact
+                                        },
+                                    ),
                                 ) {
                                     updateRelationship(UserRelationship.STRANGER.name)
                                     if (user.isBot()) {
@@ -512,22 +552,22 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             }
                         }
                         menu(clearMenu)
-                    }
+                    },
                 )
             }
             UserRelationship.STRANGER.name -> {
                 list.groups.add(
                     menuGroup {
                         menu {
-                            title = getString(R.string.contact_other_block)
+                            title = getString(R.string.Block)
                             style = MenuStyle.Danger
                             action = {
-                                requireContext().showConfirmDialog(getString(R.string.contact_other_block)) {
+                                requireContext().showConfirmDialog(getString(R.string.Block)) {
                                     bottomViewModel.updateRelationship(
                                         RelationshipRequest(
                                             u.userId,
-                                            RelationshipAction.BLOCK.name
-                                        )
+                                            RelationshipAction.BLOCK.name,
+                                        ),
                                     )
                                     if (user.isBot()) {
                                         RxBus.publish(BotEvent())
@@ -536,50 +576,45 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             }
                         }
                         menu(clearMenu)
-                    }
+                    },
                 )
             }
         }
         list.groups.add(
             menuGroup {
                 menu {
-                    title = getString(R.string.contact_other_report)
+                    title = getString(R.string.Report)
                     style = MenuStyle.Danger
                     action = {
                         reportUser(u.userId)
                     }
                 }
-            }
+            },
         )
 
         menuListLayout?.removeAllViews()
-        contentView.scroll_content.removeView(menuListLayout)
+        binding.scrollContent.removeView(menuListLayout)
         list.createMenuLayout(requireContext()).let { layout ->
             menuListLayout = layout
-            contentView.scroll_content.addView(layout)
+            binding.scrollContent.addView(layout)
             layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 bottomMargin = requireContext().dpToPx(30f)
             }
-            contentView.more_fl.setOnClickListener {
+            binding.moreFl.setOnClickListener {
                 if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
                     behavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                    contentView.more_iv.rotationX = 180f
+                    binding.moreIv.rotationX = 180f
                 } else {
                     behavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-                    contentView.scroll_view.smoothScrollTo(0, 0)
-                    contentView.more_iv.rotationX = 0f
+                    binding.scrollView.smoothScrollTo(0, 0)
+                    binding.moreIv.rotationX = 0f
                 }
             }
         }
     }
 
     private fun startSearchConversation() = lifecycleScope.launch {
-        bottomViewModel.getConversation(
-            generateConversationId(
-                user.userId,
-                Session.getAccountId()!!
-            )
-        )?.let {
+        bottomViewModel.getConversation(conversationId)?.let {
             val searchMessageItem = if (it.category == ConversationCategory.CONTACT.name) {
                 SearchMessageItem(
                     it.conversationId,
@@ -589,7 +624,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     user.userId,
                     user.fullName,
                     user.avatarUrl,
-                    null
+                    null,
                 )
             } else {
                 SearchMessageItem(
@@ -600,22 +635,45 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     "",
                     null,
                     null,
-                    it.iconUrl
+                    it.iconUrl,
                 )
             }
             activity?.addFragment(
                 this@UserBottomSheetDialogFragment,
                 SearchMessageFragment.newInstance(searchMessageItem, ""),
-                SearchMessageFragment.TAG
+                SearchMessageFragment.TAG,
             )
         }
+    }
+
+    private fun forwardContact(u: User) {
+        ForwardActivity.show(
+            requireContext(),
+            arrayListOf(
+                ForwardMessage(
+                    ShareCategory.Contact,
+                    GsonHelper.customGson.toJson(ContactMessagePayload(u.userId)),
+                ),
+            ),
+            ForwardAction.App.Resultless(),
+        )
+        RxBus.publish(BotCloseEvent())
+        dismiss()
+    }
+
+    private fun openGroupsInCommon() {
+        activity?.addFragment(
+            this@UserBottomSheetDialogFragment,
+            GroupsInCommonFragment.newInstance(user.userId),
+            GroupsInCommonFragment.TAG,
+        )
     }
 
     private fun startCircleManager() {
         activity?.addFragment(
             this@UserBottomSheetDialogFragment,
             CircleManagerFragment.newInstance(user.fullName, userId = user.userId),
-            CircleManagerFragment.TAG
+            CircleManagerFragment.TAG,
         )
     }
 
@@ -626,7 +684,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 CallActivity.show(requireContext())
             } else {
                 alertDialogBuilder()
-                    .setMessage(getString(R.string.chat_call_warning_call))
+                    .setMessage(getString(R.string.call_on_another_call_hint))
                     .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                         dialog.dismiss()
                     }
@@ -645,7 +703,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         }
                     },
                     {
-                    }
+                    },
                 )
         }
     }
@@ -654,32 +712,29 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         if (LinkState.isOnline(linkState.state)) {
             outgoingCall(
                 requireContext(),
-                generateConversationId(
-                    Session.getAccountId()!!,
-                    user.userId
-                ),
-                user
+                conversationId,
+                user,
             )
             RxBus.publish(BotCloseEvent())
             dismiss()
         } else {
-            toast(R.string.error_no_connection)
+            toast(R.string.No_network_connection)
         }
     }
 
     private fun reportUser(userId: String) {
         alertDialogBuilder()
-            .setMessage(getString(R.string.contact_other_report_warning))
+            .setMessage(getString(R.string.Report_and_block))
             .setNeutralButton(getString(android.R.string.cancel)) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setNegativeButton(getString(R.string.contact_other_report)) { dialog, _ ->
+            .setNegativeButton(getString(R.string.Report)) { dialog, _ ->
                 bottomViewModel.updateRelationship(
                     RelationshipRequest(
                         userId,
-                        RelationshipAction.BLOCK.name
+                        RelationshipAction.BLOCK.name,
                     ),
-                    true
+                    true,
                 )
                 if (user.isBot()) {
                     RxBus.publish(BotEvent())
@@ -691,59 +746,91 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             .show()
     }
 
+    private fun showDisappearing() {
+        dismiss()
+        activity?.addFragment(
+            this,
+            DisappearingFragment.newInstance(conversationId, user.userId),
+            DisappearingFragment.TAG,
+        )
+    }
+
     private fun updateUserInfo(user: User) = lifecycleScope.launch {
         if (!isAdded) return@launch
 
-        contentView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-        contentView.name.text = user.fullName
-        contentView.id_tv.text = getString(R.string.contact_mixin_id, user.identityNumber)
-        contentView.id_tv.setOnLongClickListener {
+        binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
+        binding.name.text = user.fullName
+        binding.idTv.text = getString(R.string.contact_mixin_id, user.identityNumber)
+        binding.idTv.setOnLongClickListener {
             context?.getClipboardManager()
                 ?.setPrimaryClip(ClipData.newPlainText(null, user.identityNumber))
-            context?.toast(R.string.copy_success)
+            toast(R.string.copied_to_clipboard)
             true
         }
         if (user.biography.isNotEmpty()) {
-            contentView.detail_tv.text = user.biography
-            contentView.detail_tv.visibility = VISIBLE
+            binding.detailTv.originalText = user.biography
+            binding.detailTv.visibility = VISIBLE
+            binding.detailTv.heightDifferenceCallback = { heightDifference, duration ->
+                if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
+                    behavior?.peekHeight?.let { peekHeight ->
+                        ValueAnimator.ofInt(peekHeight, peekHeight + heightDifference).apply {
+                            interpolator = FastOutSlowInInterpolator()
+                            setDuration(duration)
+                            addUpdateListener { value ->
+                                behavior?.peekHeight = value.animatedValue as Int
+                            }
+                            start()
+                        }
+                    }
+                } else if (behavior?.state == BottomSheetBehavior.STATE_EXPANDED) {
+                    behavior?.peekHeight?.let { peekHeight ->
+                        behavior?.peekHeight = heightDifference + peekHeight
+                    }
+                }
+            }
         } else {
-            contentView.detail_tv.visibility = GONE
+            binding.detailTv.visibility = GONE
         }
         updateUserStatus(user.relationship)
-        user.showVerifiedOrBot(contentView.verified_iv, contentView.bot_iv)
-        contentView.op_ll.isVisible = true
+        user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
+        binding.opLl.isVisible = true
         if (user.isBot()) {
-            contentView.open_fl.visibility = VISIBLE
-            contentView.transfer_fl.visibility = GONE
+            binding.openFl.visibility = VISIBLE
+            binding.transferFl.visibility = GONE
+            binding.shareFl.isVisible = false
             bottomViewModel.findAppById(user.appId!!)?.let { app ->
-                contentView.open_fl.clicks()
+                binding.openFl.clicks()
                     .observeOn(AndroidSchedulers.mainThread())
                     .throttleFirst(1, TimeUnit.SECONDS)
                     .autoDispose(stopScope).subscribe {
                         dismiss()
                         RxBus.publish(BotCloseEvent())
-                        WebActivity
-                            .show(requireActivity(), app.homeUri, conversationId, app)
+                        WebActivity.show(requireActivity(), app.homeUri, botConversationId, app)
+                        dismiss()
                     }
                 bottomViewModel.findUserById(app.creatorId)
                     .observe(
                         this@UserBottomSheetDialogFragment,
-                        Observer { u ->
-                            creator = u
-                            if (u == null) {
-                                bottomViewModel.refreshUser(app.creatorId, true)
-                            }
+                    ) { u ->
+                        creator = u
+                        if (u == null) {
+                            bottomViewModel.refreshUser(app.creatorId, true)
                         }
-                    )
+                    }
             }
+        } else if (user.isDeactivated == true) {
+            binding.transferFl.isVisible = false
+            binding.openFl.isVisible = false
+            binding.shareFl.isVisible = true
         } else {
-            contentView.open_fl.visibility = GONE
-            contentView.transfer_fl.visibility = VISIBLE
+            binding.openFl.visibility = GONE
+            binding.transferFl.visibility = VISIBLE
+            binding.shareFl.isVisible = false
         }
     }
 
     private val blockDrawable: Drawable by lazy {
-        val d = resources.getDrawable(R.drawable.ic_bottom_block, context?.theme)
+        val d = requireNotNull(ResourcesCompat.getDrawable(resources, R.drawable.ic_bottom_block, context?.theme))
         d.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
         d
     }
@@ -751,17 +838,24 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     private fun updateUserStatus(relationship: String) {
         if (!isAdded) return
 
+        if (user.isDeactivated == true) {
+            binding.addTv.isVisible = false
+            binding.detailTv.isVisible = false
+            binding.deletedTv.isVisible = true
+            return
+        }
+
         when (relationship) {
             UserRelationship.BLOCKING.name -> {
-                contentView.add_tv.visibility = VISIBLE
-                contentView.add_tv.text = getString(R.string.contact_other_unblock)
-                contentView.add_tv.setCompoundDrawables(blockDrawable, null, null, null)
-                contentView.add_tv.setOnClickListener {
+                binding.addTv.visibility = VISIBLE
+                binding.addTv.text = getString(R.string.Unblock)
+                binding.addTv.setCompoundDrawables(blockDrawable, null, null, null)
+                binding.addTv.setOnClickListener {
                     bottomViewModel.updateRelationship(
                         RelationshipRequest(
                             user.userId,
-                            RelationshipAction.UNBLOCK.name
-                        )
+                            RelationshipAction.UNBLOCK.name,
+                        ),
                     )
                     if (user.isBot()) {
                         RxBus.publish(BotEvent())
@@ -769,19 +863,19 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 }
             }
             UserRelationship.FRIEND.name -> {
-                contentView.add_tv.visibility = GONE
+                binding.addTv.visibility = GONE
             }
             UserRelationship.STRANGER.name -> {
-                contentView.add_tv.visibility = VISIBLE
-                contentView.add_tv.setCompoundDrawables(null, null, null, null)
-                contentView.add_tv.text = getString(
+                binding.addTv.visibility = VISIBLE
+                binding.addTv.setCompoundDrawables(null, null, null, null)
+                "+ ${getString(
                     if (user.isBot()) {
-                        R.string.add_bot
+                        R.string.Add_bot
                     } else {
-                        R.string.add_contact
-                    }
-                )
-                contentView.add_tv.setOnClickListener {
+                        R.string.Add_Contact
+                    },
+                )}".also { binding.addTv.text = it }
+                binding.addTv.setOnClickListener {
                     updateRelationship(UserRelationship.FRIEND.name)
                     if (user.isBot()) {
                         RxBus.publish(BotEvent())
@@ -798,7 +892,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         }
 
         editDialog {
-            titleText = this@UserBottomSheetDialogFragment.getString(R.string.edit_name)
+            titleText = this@UserBottomSheetDialogFragment.getString(R.string.Edit_Name)
             editText = name
             maxTextCount = 40
             allowEmpty = false
@@ -807,8 +901,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     RelationshipRequest(
                         user.userId,
                         RelationshipAction.UPDATE.name,
-                        it
-                    )
+                        it,
+                    ),
                 )
             }
         }
@@ -816,19 +910,19 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     private fun showMuteDialog() {
         val choices = arrayOf(
-            getString(R.string.contact_mute_1hour),
-            getString(R.string.contact_mute_8hours),
-            getString(R.string.contact_mute_1week),
-            getString(R.string.contact_mute_1year)
+            getString(R.string.one_hour),
+            resources.getQuantityString(R.plurals.Hour, 8, 8),
+            getString(R.string.one_week),
+            getString(R.string.one_year),
         )
-        var duration = MUTE_8_HOURS
+        var duration = MUTE_1_HOUR
         var whichItem = 0
         alertDialogBuilder()
             .setTitle(getString(R.string.contact_mute_title))
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.confirm) { dialog, _ ->
+            .setPositiveButton(R.string.Confirm) { dialog, _ ->
                 val account = Session.getAccount()
                 account?.let {
                     lifecycleScope.launch {
@@ -837,13 +931,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                 bottomViewModel.mute(
                                     duration.toLong(),
                                     senderId = it.userId,
-                                    recipientId = user.userId
+                                    recipientId = user.userId,
                                 )
                             },
                             successBlock = { response ->
                                 bottomViewModel.updateMuteUntil(user.userId, response.data!!.muteUntil)
-                                context?.toast(getString(R.string.contact_mute_title) + " ${user.fullName} " + choices[whichItem])
-                            }
+                                toast(getString(R.string.contact_mute_title) + " ${user.fullName} " + choices[whichItem])
+                            },
                         )
                     }
                 }
@@ -875,8 +969,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     },
                     successBlock = { response ->
                         bottomViewModel.updateMuteUntil(user.userId, response.data!!.muteUntil)
-                        context?.toast(getString(R.string.un_mute) + " ${user.fullName}")
-                    }
+                        toast(getString(R.string.Unmute) + " ${user.fullName}")
+                    },
                 )
             }
         }
@@ -888,9 +982,12 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         updateUserStatus(relationship)
         val request = RelationshipRequest(
             user.userId,
-            if (relationship == UserRelationship.FRIEND.name)
-                RelationshipAction.ADD.name else RelationshipAction.REMOVE.name,
-            user.fullName
+            if (relationship == UserRelationship.FRIEND.name) {
+                RelationshipAction.ADD.name
+            } else {
+                RelationshipAction.REMOVE.name
+            },
+            user.fullName,
         )
         bottomViewModel.updateRelationship(request)
     }
@@ -909,7 +1006,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 },
                 {
                     Timber.e(it)
-                }
+                },
             )
     }
 
@@ -920,24 +1017,24 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             .listener(
                 object : RequestListener<Bitmap> {
                     override fun onResourceReady(
-                        resource: Bitmap?,
-                        model: Any?,
+                        resource: Bitmap,
+                        model: Any,
                         target: Target<Bitmap>?,
-                        dataSource: DataSource?,
-                        isFirstResource: Boolean
+                        dataSource: DataSource,
+                        isFirstResource: Boolean,
                     ): Boolean {
                         user.fullName?.let {
-                            val conversationId = generateConversationId(Session.getAccountId()!!, user.userId)
-                            one.mixin.android.util.addPinShortcut(
+                            val conversationId = conversationId
+                            addPinShortcut(
                                 requireContext(),
                                 conversationId,
                                 it,
-                                resource!!,
+                                resource,
                                 ConversationActivity.getShortcutIntent(
                                     requireContext(),
                                     conversationId,
-                                    user.userId
-                                )
+                                    user.userId,
+                                ),
                             )
                         }
                         return false
@@ -946,21 +1043,42 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     override fun onLoadFailed(
                         e: GlideException?,
                         model: Any?,
-                        target: Target<Bitmap>?,
-                        isFirstResource: Boolean
+                        target: Target<Bitmap>,
+                        isFirstResource: Boolean,
                     ): Boolean {
-
                         return false
                     }
-                }
+                },
             ).submit()
+    }
+
+    private fun exportChat() {
+        lifecycleScope.launch {
+            val backupFile = File("${requireContext().getOtherPath().absolutePath}${File.separator}${user.fullName}-chats.txt")
+            bottomViewModel.exportChat(conversationId, backupFile)
+        }
     }
 
     override fun onStateChanged(bottomSheet: View, newState: Int) {
         when (newState) {
             BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
-            BottomSheetBehavior.STATE_COLLAPSED -> contentView.more_iv.rotationX = 0f
-            BottomSheetBehavior.STATE_EXPANDED -> contentView.more_iv.rotationX = 180f
+            BottomSheetBehavior.STATE_COLLAPSED -> binding.moreIv.rotationX = 0f
+            BottomSheetBehavior.STATE_EXPANDED -> binding.moreIv.rotationX = 180f
         }
+    }
+}
+
+fun showUserBottom(fragmentManager: FragmentManager, user: User, conversationId: String? = null, sharedMediaCallback: (() -> Unit)? = null) {
+    if (fragmentManager.isStateSaved) return
+
+    if (user.notMessengerUser()) {
+        NonMessengerUserBottomSheetDialogFragment.newInstance(user, conversationId)
+            .showNow(fragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)
+    } else {
+        UserBottomSheetDialogFragment.newInstance(user, conversationId)?.apply {
+            sharedMediaCallback?.let {
+                this.sharedMediaCallback = sharedMediaCallback
+            }
+        }?.showNow(fragmentManager, UserBottomSheetDialogFragment.TAG)
     }
 }

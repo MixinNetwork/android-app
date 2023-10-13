@@ -13,6 +13,7 @@ import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.text.TextPaint
 import androidx.collection.ArrayMap
+import androidx.core.content.res.ResourcesCompat
 import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
 import kotlinx.coroutines.runBlocking
@@ -20,23 +21,23 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.AvatarEvent
 import one.mixin.android.extension.CodeType
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.md5
 import one.mixin.android.extension.saveGroupAvatar
 import one.mixin.android.vo.User
 import one.mixin.android.widget.AvatarView
-import org.jetbrains.anko.dip
 import java.io.File
 import java.util.concurrent.TimeUnit
 
 class GenerateAvatarJob(
     private val groupId: String,
-    val list: List<String>? = null
+    val list: List<String>? = null,
 ) : BaseJob(
     Params(
-        PRIORITY_BACKGROUND
-    ).requireNetwork().persist().addTags(TAG)
+        PRIORITY_BACKGROUND,
+    ).requireNetwork().persist().addTags(TAG),
 ) {
     companion object {
         const val TAG = "GenerateAvatarJob"
@@ -94,8 +95,8 @@ class GenerateAvatarJob(
         val textSizeLarge = applicationContext.resources.getDimension(R.dimen.group_avatar_text_size)
         val textSizeMedium = applicationContext.resources.getDimension(R.dimen.group_avatar_text_medium)
         val textSizeSmall = applicationContext.resources.getDimension(R.dimen.group_avatar_text_small)
-        val textOffset = applicationContext.dip(5f).toFloat()
-        val dividerOffset = applicationContext.dip(.5f).toFloat()
+        val textOffset = 5f.dp.toFloat()
+        val dividerOffset = 0.5f.dp.toFloat()
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE
@@ -117,7 +118,7 @@ class GenerateAvatarJob(
             size / 2f,
             size / 2f - dividerOffset,
             size.toFloat(),
-            size / 2f + dividerOffset
+            size / 2f + dividerOffset,
         )
         val rectF = RectF()
 
@@ -149,7 +150,7 @@ class GenerateAvatarJob(
                             offset.toInt(),
                             offset.toInt(),
                             b.width - offset.toInt(),
-                            b.height - offset.toInt()
+                            b.height - offset.toInt(),
                         )
                         val dst = if (i == 0) {
                             RectF(0f, 0f, size / 2f, size.toFloat())
@@ -202,7 +203,7 @@ class GenerateAvatarJob(
                                 offset.toInt(),
                                 offset.toInt(),
                                 b.width - offset.toInt(),
-                                b.height - offset.toInt()
+                                b.height - offset.toInt(),
                             )
                             val dst = RectF(0f, 0f, size / 2f, size.toFloat())
                             canvas.drawBitmap(b, src, dst, null)
@@ -224,7 +225,7 @@ class GenerateAvatarJob(
                             offset.toInt(),
                             offset.toInt(),
                             b.width - offset.toInt(),
-                            b.height - offset.toInt()
+                            b.height - offset.toInt(),
                         )
                         val dst = when (i) {
                             1 -> {
@@ -275,7 +276,7 @@ class GenerateAvatarJob(
                         offset.toInt(),
                         offset.toInt(),
                         item.width - offset.toInt(),
-                        item.height - offset.toInt()
+                        item.height - offset.toInt(),
                     )
                     val dst = when (i) {
                         0 -> {
@@ -334,7 +335,7 @@ class GenerateAvatarJob(
                         .asBitmap()
                         .load(item)
                         .submit()
-                        .get(10, TimeUnit.SECONDS)
+                        .get(10, TimeUnit.SECONDS),
                 )
             }
         }
@@ -359,7 +360,7 @@ class GenerateAvatarJob(
             -1
         }
         if (color == -1) {
-            val d = applicationContext.resources.getDrawable(R.drawable.default_avatar, applicationContext.theme)
+            val d = requireNotNull(ResourcesCompat.getDrawable(applicationContext.resources, R.drawable.default_avatar, applicationContext.theme))
             if (d is BitmapDrawable) {
                 return d.bitmap
             }

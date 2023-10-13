@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.circle
 
+import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,16 +10,16 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_coversation_circle.*
-import kotlinx.android.synthetic.main.item_conversation_circle.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentConversationCircleBinding
+import one.mixin.android.databinding.ItemConversationCircleBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
@@ -31,6 +32,7 @@ import one.mixin.android.ui.home.ConversationListViewModel
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.ConversationCircleItem
 import one.mixin.android.vo.getCircleColor
@@ -52,30 +54,32 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
 
     private val conversationViewModel by viewModels<ConversationListViewModel>()
 
+    private val binding by viewBinding(FragmentConversationCircleBinding::bind)
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_coversation_circle, container, false)
+        layoutInflater.inflate(R.layout.fragment_conversation_circle, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        circle_rv.layoutManager = LinearLayoutManager(requireContext())
+        binding.circleRv.layoutManager = LinearLayoutManager(requireContext())
         conversationAdapter.currentCircleId = defaultSharedPreferences.getString(CIRCLE_ID, null)
         val callback: ItemTouchHelper.Callback = SimpleItemTouchHelperCallback(conversationAdapter)
         itemTouchHelper = ItemTouchHelper(callback)
-        circle_rv.adapter = conversationAdapter
-        itemTouchHelper.attachToRecyclerView(circle_rv)
+        binding.circleRv.adapter = conversationAdapter
+        itemTouchHelper.attachToRecyclerView(binding.circleRv)
         conversationViewModel.observeAllCircleItem().observe(
             viewLifecycleOwner,
             {
                 val list = mutableListOf<ConversationCircleItem>()
                 list.addAll(it)
                 conversationAdapter.conversationCircles = list
-            }
+            },
         )
         conversationViewModel.observeAllConversationUnread().observe(
             viewLifecycleOwner,
             {
                 conversationAdapter.allUnread = it
-            }
+            },
         )
     }
 
@@ -93,7 +97,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
             },
             {
                 conversationViewModel.sortCircleConversations(it)
-            }
+            },
         )
     }
 
@@ -114,10 +118,11 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
         val action: (String?, String?) -> Unit,
         val showMenu: (View, ConversationCircleItem) -> Unit,
         val sortAction: () -> Unit,
-        val updateAction: (List<CircleOrder>?) -> Unit
+        val updateAction: (List<CircleOrder>?) -> Unit,
     ) :
         RecyclerView.Adapter<ConversationCircleHolder>(), ItemTouchHelperAdapter {
         var conversationCircles: MutableList<ConversationCircleItem>? = null
+            @SuppressLint("NotifyDataSetChanged")
             set(value) {
                 if (sorting) return
                 field = value
@@ -126,6 +131,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
 
         var currentCircleId: String? = null
         var allUnread: Int? = null
+            @SuppressLint("NotifyDataSetChanged")
             set(value) {
                 field = value
                 if (currentCircleId != null) notifyDataSetChanged()
@@ -145,6 +151,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
         }
 
         var sorting = false
+            @SuppressLint("NotifyDataSetChanged")
             set(value) {
                 if (field != value) {
                     field = value
@@ -179,6 +186,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
             }
         }
 
+        @SuppressLint("ClickableViewAccessibility", "NotifyDataSetChanged")
         override fun onBindViewHolder(holder: ConversationCircleHolder, position: Int) {
             if (getItemViewType(position) == 1) {
                 val conversationCircleItem = getItem(position)
@@ -200,7 +208,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
                     holder.itemView.setOnTouchListener(null)
                     holder.itemView.setOnLongClickListener {
                         if (conversationCircleItem != null) {
-                            showMenu(it.circle_title, conversationCircleItem)
+                            showMenu(holder.circleTitle, conversationCircleItem)
                             true
                         } else {
                             false
@@ -253,7 +261,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
 
     private fun rename(conversationCircleItem: ConversationCircleItem) {
         editDialog {
-            titleText = this@CirclesFragment.getString(R.string.circle_menu_edit_name)
+            titleText = this@CirclesFragment.getString(R.string.Edit_Circle_Name)
             editText = conversationCircleItem.name
             maxTextCount = 64
             editMaxLines = EditDialog.MAX_LINE.toInt()
@@ -266,7 +274,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
     }
 
     private fun rename(circleId: String, name: String) {
-        conversationViewModel.viewModelScope.launch(errorHandler) {
+        lifecycleScope.launch(errorHandler) {
             val response = conversationViewModel.circleRename(circleId, name)
             if (response.isSuccess) {
                 response.data?.let { circle ->
@@ -284,18 +292,18 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
             this@CirclesFragment,
             ConversationCircleEditFragment.newInstance(conversationCircleItem),
             ConversationCircleEditFragment.TAG,
-            R.id.root_view
+            R.id.root_view,
         )
     }
 
     private fun delete(conversationCircleItem: ConversationCircleItem) {
         alertDialogBuilder()
             .setMessage(getString(R.string.circle_delete_tip, conversationCircleItem.name))
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.confirm) { _, _ ->
-                conversationViewModel.viewModelScope.launch(errorHandler) {
+            .setPositiveButton(R.string.Confirm) { _, _ ->
+                lifecycleScope.launch(errorHandler) {
                     val response = conversationViewModel.deleteCircle(conversationCircleItem.circleId)
                     if (response.isSuccess) {
                         conversationViewModel.deleteCircleById(conversationCircleItem.circleId)
@@ -315,26 +323,34 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
             itemView.shakeAnimator()
         }
 
+        val binding get() = ItemConversationCircleBinding.bind(itemView)
+        val circleTitle get() = binding.circleTitle
+
         fun bind(sorting: Boolean, currentCircleId: String?, conversationCircleItem: ConversationCircleItem?, allUnread: Int?) {
             if (sorting) {
                 shakeAnimator.start()
             } else {
                 shakeAnimator.cancel()
             }
-            if (conversationCircleItem == null) {
-                itemView.circle_title.setText(R.string.circle_mixin)
-                itemView.circle_subtitle.setText(R.string.circle_all_conversation)
-                itemView.circle_unread_tv.isVisible = currentCircleId != null && allUnread != 0 && allUnread != null
-                itemView.circle_unread_tv.text = "$allUnread"
-                itemView.circle_check.isVisible = currentCircleId == null
-            } else {
-                itemView.circle_title.text = conversationCircleItem.name
-                itemView.circle_subtitle.text = itemView.context.getString(R.string.circle_subtitle, conversationCircleItem.count)
-                itemView.circle_unread_tv.isVisible = currentCircleId != conversationCircleItem.circleId && conversationCircleItem.unseenMessageCount != 0
-                itemView.circle_unread_tv.text = "${conversationCircleItem.unseenMessageCount}"
-                itemView.circle_check.isVisible = currentCircleId == conversationCircleItem.circleId
+            binding.apply {
+                if (conversationCircleItem == null) {
+                    circleTitle.setText(R.string.app_name)
+                    circleSubtitle.setText(R.string.All_Conversations)
+                    circleUnreadTv.isVisible =
+                        currentCircleId != null && allUnread != 0 && allUnread != null
+                    circleUnreadTv.text = "$allUnread"
+                    circleCheck.isVisible = currentCircleId == null
+                } else {
+                    circleTitle.text = conversationCircleItem.name
+                    circleSubtitle.text = itemView.context.resources.getQuantityString(R.plurals.circle_subtitle, conversationCircleItem.count, conversationCircleItem.count)
+                    circleUnreadTv.isVisible =
+                        currentCircleId != conversationCircleItem.circleId && conversationCircleItem.unseenMessageCount != 0
+                    circleUnreadTv.text = "${conversationCircleItem.unseenMessageCount}"
+                    circleCheck.isVisible = currentCircleId == conversationCircleItem.circleId
+                }
+                circleIcon.imageTintList =
+                    ColorStateList.valueOf(getCircleColor(conversationCircleItem?.circleId))
             }
-            itemView.circle_icon.imageTintList = ColorStateList.valueOf(getCircleColor(conversationCircleItem?.circleId))
         }
     }
 

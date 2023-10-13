@@ -3,23 +3,31 @@ package one.mixin.android.session
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.jsonwebtoken.Claims
+import io.jsonwebtoken.EdDSAPrivateKey
+import io.jsonwebtoken.EdDSAPublicKey
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
-import net.i2p.crypto.eddsa.EdDSAPrivateKey
-import net.i2p.crypto.eddsa.EdDSAPublicKey
-import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
-import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
-import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
+import jwt.Jwt
 import okhttp3.Request
+import okio.ByteString.Companion.encode
+import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
-import one.mixin.android.crypto.aesEncrypt
+import one.mixin.android.crypto.EdKeyPair
+import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
+import one.mixin.android.crypto.newKeyPairFromSeed
+import one.mixin.android.crypto.privateKeyToCurve25519
+import one.mixin.android.crypto.useGoEd
+import one.mixin.android.extension.base64RawURLDecode
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.bodyToString
 import one.mixin.android.extension.clear
+import one.mixin.android.extension.currentTimeSeconds
 import one.mixin.android.extension.cutOut
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.hmacSha256
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
@@ -30,7 +38,6 @@ import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import timber.log.Timber
 import java.security.Key
-import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
 
@@ -38,7 +45,13 @@ object Session {
     const val PREF_EXTENSION_SESSION_ID = "pref_extension_session_id"
     const val PREF_SESSION = "pref_session"
 
+    var routePublicKey: String? = null
+
     private var self: Account? = null
+
+    private var seed: String? = null
+    private var edKeyPair: EdKeyPair? = null
+
     private const val PREF_PIN_ITERATOR = "pref_pin_iterator"
     private const val PREF_PIN_TOKEN = "pref_pin_token"
     private const val PREF_NAME_ACCOUNT = "pref_name_account"
@@ -57,7 +70,9 @@ object Session {
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         val json = preference.getString(PREF_NAME_ACCOUNT, "")
         if (!json.isNullOrBlank()) {
-            Gson().fromJson<Account>(json, object : TypeToken<Account>() {}.type)
+            Gson().fromJson<Account>(json, object : TypeToken<Account>() {}.type).also {
+                self = it
+            }
         } else {
             null
         }
@@ -69,14 +84,38 @@ object Session {
         preference.clear()
     }
 
-    fun storeEd25519PrivateKey(token: String) {
+    fun storeEd25519Seed(token: String) {
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.putString(PREF_ED25519_PRIVATE_KEY, token)
+        seed = token
+        this.edKeyPair = null
+        initEdKeypair(token)
     }
 
-    fun getEd25519PrivateKey(): String? {
-        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
-        return preference.getString(PREF_ED25519_PRIVATE_KEY, null)
+    fun getEd25519Seed(): String? {
+        if (seed != null) {
+            return seed
+        } else {
+            val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
+            seed = preference.getString(PREF_ED25519_PRIVATE_KEY, null)
+            return seed
+        }
+    }
+
+    fun getEd25519KeyPair(): EdKeyPair? {
+        if (edKeyPair != null) {
+            return edKeyPair
+        } else {
+            val seed = getEd25519Seed() ?: return null
+            return initEdKeypair(seed)
+        }
+    }
+
+    private fun initEdKeypair(seed: String): EdKeyPair {
+        val edKeyPair = newKeyPairFromSeed(seed.decodeBase64())
+
+        this.edKeyPair = edKeyPair
+        return edKeyPair
     }
 
     fun storeToken(token: String) {
@@ -141,22 +180,55 @@ object Session {
         return account?.sessionId
     }
 
+    fun getTipPub(): String? = getAccount()?.tipKeyBase64
+
+    fun getTipCounter(): Int = getAccount()?.tipCounter ?: 0
+
+    fun isTipFeatureEnabled(): Boolean = getAccount()?.features?.contains("tip") == true
+
     fun checkToken() = getAccount() != null && !getPinToken().isNullOrBlank()
 
-    fun shouldUpdateKey() = getEd25519PrivateKey().isNullOrBlank() &&
+    fun shouldUpdateKey() = getEd25519Seed().isNullOrBlank() &&
         !MixinApplication.appContext.defaultSharedPreferences
             .getBoolean(PREF_TRIED_UPDATE_KEY, false)
 
-    internal val ed25519 = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519)
+    fun signToken(acct: Account?, request: Request, xRequestId: String): String {
+        return if (useGoEd()) {
+            signGoToken(acct, request, xRequestId)
+        } else {
+            signLegacyToken(acct, request, xRequestId)
+        }
+    }
 
-    fun signToken(acct: Account?, request: Request, key: Key? = getJwtKey(true)): String {
-        if (acct == null) {
+    fun requestDelay(acct: Account?, string: String, offset: Int): JwtResult {
+        return if (useGoEd()) {
+            requestGoDelay(acct, string, offset)
+        } else {
+            requestLegacyDelay(acct, string, offset)
+        }
+    }
+
+    fun signGoToken(acct: Account?, request: Request, xRequestId: String, key: ByteArray? = getGoJwtKey(true)): String {
+        if (acct == null || key == null) {
             return ""
         }
-        key ?: return ""
 
-        val expire = System.currentTimeMillis() / 1000 + 1800
-        val iat = System.currentTimeMillis() / 1000
+        var content = "${request.method}${request.url.cutOut()}"
+        request.body?.apply {
+            if (contentLength() > 0) {
+                content += bodyToString()
+            }
+        }
+
+        return Jwt.signToken(xRequestId, acct.userId, acct.sessionId, content.sha256().toHex(), key)
+    }
+
+    fun signLegacyToken(acct: Account?, request: Request, xRequestId: String, key: Key? = getLegacyJwtKey(true)): String {
+        if (acct == null || key == null) {
+            return ""
+        }
+        val expire = currentTimeSeconds() + 1800
+        val iat = currentTimeSeconds()
 
         var content = "${request.method}${request.url.cutOut()}"
         request.body?.apply {
@@ -168,65 +240,110 @@ object Session {
         return Jwts.builder()
             .setClaims(
                 ConcurrentHashMap<String, Any>().apply {
-                    put(Claims.ID, UUID.randomUUID().toString())
+                    put(Claims.ID, xRequestId)
                     put(Claims.EXPIRATION, expire)
                     put(Claims.ISSUED_AT, iat)
                     put("uid", acct.userId)
                     put("sid", acct.sessionId)
-                    put("sig", content.sha256().toHex())
+                    put("sig", content.encode().sha256().hex())
                     put("scp", "FULL")
-                }
+                },
             )
             .signWith(key)
             .compact()
     }
 
-    fun requestDelay(acct: Account?, string: String, offset: Int, key: Key? = getJwtKey(false)): JwtResult {
-        if (acct == null) {
+    fun requestGoDelay(acct: Account?, string: String, offset: Int, key: ByteArray? = getGoJwtKey(false)): JwtResult {
+        if (acct == null || key == null) {
             return JwtResult(false)
         }
-        key ?: return JwtResult(false)
+        return when (val iat = Jwt.parseIat(string, key)) {
+            -1L -> {
+                Timber.w("ErrTokenExpired")
+                reportException(IllegalArgumentException("ErrTokenExpired"))
+                JwtResult(true)
+            }
+            0L -> {
+                Timber.e("")
+                JwtResult(false)
+            }
+            else -> {
+                JwtResult(abs(currentTimeSeconds() - iat) > offset, requestTime = iat)
+            }
+        }
+    }
 
-        return try {
+    fun requestLegacyDelay(acct: Account?, string: String, offset: Int, key: Key? = getLegacyJwtKey(false)): JwtResult {
+        if (acct == null || key == null) {
+            return JwtResult(false)
+        }
+        try {
             val iat = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(string).body[Claims.ISSUED_AT] as Int
-            JwtResult(abs(System.currentTimeMillis() / 1000 - iat) > offset, requestTime = iat.toLong())
+            return JwtResult(abs(currentTimeSeconds() - iat) > offset, requestTime = iat.toLong())
         } catch (e: ExpiredJwtException) {
             Timber.w(e)
             reportException(e)
-            JwtResult(true)
+            return JwtResult(true)
         } catch (e: Exception) {
             Timber.e(e)
             reportException(e)
-            JwtResult(false)
         }
+        return JwtResult(false)
     }
 
     fun getFiatCurrency() = getAccount()?.fiatCurrency ?: "USD"
 
-    private fun getJwtKey(isSign: Boolean): Key? {
-        val keyBase64 = getEd25519PrivateKey()
-        val isRsa = keyBase64.isNullOrBlank()
-        return if (isRsa) {
+    private fun getGoJwtKey(isSign: Boolean): ByteArray? {
+        val edPrivateKey = getEd25519KeyPair()?.privateKey
+        if (edPrivateKey == null) {
             val token = getToken()
             if (token.isNullOrBlank()) {
                 return null
             }
-            getRSAPrivateKeyFromString(token)
+            return token.toByteArray()
         } else {
-            val privateSpec = EdDSAPrivateKeySpec(keyBase64?.decodeBase64(), ed25519)
-            if (isSign) {
-                EdDSAPrivateKey(privateSpec)
+            val edPublicKey = getEd25519KeyPair()?.publicKey ?: return null
+            return if (isSign) {
+                edPrivateKey + edPublicKey
             } else {
-                EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
+                edPublicKey
             }
         }
     }
+
+    private fun getLegacyJwtKey(isSign: Boolean): Key? {
+        val edPrivateKey = getEd25519KeyPair()?.privateKey?.let { EdDSAPrivateKey(it.toByteString()) }
+        if (edPrivateKey == null) {
+            val token = getToken()
+            if (token.isNullOrBlank()) {
+                return null
+            }
+            return getRSAPrivateKeyFromString(token)
+        } else {
+            if (isSign) {
+                return edPrivateKey
+            }
+            return getEd25519KeyPair()?.publicKey?.let { EdDSAPublicKey(it.toByteString()) }
+        }
+    }
+
+    fun getRouteSignature(request: Request): Pair<Long, String> {
+        val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
+        val botPk = routePublicKey?.base64RawURLDecode() ?: return Pair(0L, "")
+        val private = privateKeyToCurve25519(edKeyPair.privateKey)
+        val sharedKey = calculateAgreement(botPk, private)
+        val ts = currentTimeSeconds()
+        var content = "$ts${request.method}${request.url.cutOut()}"
+        request.body?.apply {
+            if (contentLength() > 0) {
+                content += bodyToString()
+            }
+        }
+        return Pair(ts, (requireNotNull(getAccountId()).toByteArray() + content.hmacSha256(sharedKey)).base64RawURLEncode())
+    }
 }
 
-fun encryptPin(key: String, code: String?): String? {
-    val pinCode = code ?: return null
-    val iterator = Session.getPinIterator()
-    val based = aesEncrypt(key, iterator, pinCode)
-    Session.storePinIterator(iterator + 1)
-    return based
+fun decryptPinToken(serverPublicKey: ByteArray, privateKey: ByteArray): ByteArray {
+    val private = privateKeyToCurve25519(privateKey)
+    return calculateAgreement(serverPublicKey, private)
 }

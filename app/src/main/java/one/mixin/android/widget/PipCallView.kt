@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.graphics.PixelFormat
 import android.os.Build
@@ -14,6 +13,7 @@ import android.view.MotionEvent
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.Keep
 import androidx.core.content.ContextCompat
@@ -27,12 +27,15 @@ import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.runOnUiThread
+import one.mixin.android.extension.safeAddView
+import one.mixin.android.extension.safeRemoveView
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.Rect
 import one.mixin.android.ui.call.CallActivity
+import one.mixin.android.util.getLocalString
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.webrtc.TAG_CALL
-import org.jetbrains.anko.runOnUiThread
 import timber.log.Timber
 import java.util.Timer
 import java.util.TimerTask
@@ -51,6 +54,7 @@ class PipCallView {
 
         private const val SIZE = 80f
 
+        @SuppressLint("StaticFieldLeak")
         private var INSTANCE: PipCallView? = null
 
         fun get(): PipCallView {
@@ -84,7 +88,7 @@ class PipCallView {
                 getSideCoordinate(true, sideX, px, size, realX, realY),
                 getSideCoordinate(false, sideY, py, size, realX, realY),
                 size,
-                size
+                size,
             )
         }
 
@@ -106,23 +110,23 @@ class PipCallView {
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
 
     private var timeView: TextView? = null
+    private var iconView: ImageView? = null
 
     private val windowManager: WindowManager by lazy {
         appContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     }
 
     fun show(
-        activity: Activity,
         connectedTime: Long? = null,
-        callState: CallStateLiveData
+        callState: CallStateLiveData,
     ) {
-        windowView?.let { windowManager.removeView(it) }
+        windowView?.let { windowManager.safeRemoveView(it) }
 
         val isLandscape = appContext.isLandscape()
         val realSize = appContext.realSize()
         val realX = if (isLandscape) realSize.y else realSize.x
         val realY = if (isLandscape) realSize.x else realSize.y
-        windowView = object : FrameLayout(activity) {
+        windowView = object : FrameLayout(appContext) {
             private var startX: Float = 0f
             private var startY: Float = 0f
 
@@ -135,7 +139,7 @@ class PipCallView {
                 } else if (event.action == MotionEvent.ACTION_MOVE) {
                     if (abs(startX - x) >= appContext.getPixelsInCM(
                             0.3f,
-                            true
+                            true,
                         ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
                     ) {
                         startX = x
@@ -155,7 +159,7 @@ class PipCallView {
                     val dy = y - startY
                     windowLayoutParams.x = (windowLayoutParams.x + dx).toInt()
                     windowLayoutParams.y = (windowLayoutParams.y + dy).toInt()
-                    windowManager.updateViewLayout(windowView, windowLayoutParams)
+                    windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
                     startX = x
                     startY = y
                 } else if (event.action == MotionEvent.ACTION_UP) {
@@ -171,8 +175,11 @@ class PipCallView {
         view.setOnClickListener {
             CallActivity.show(appContext)
         }
+        val isNightMode = appContext.isNightMode()
+        iconView = view.findViewById(R.id.icon)
+        updateIcon(callState.isConnected() && !callState.audioEnable)
         timeView = view.findViewById(R.id.time_tv)
-        if (appContext.isNightMode()) {
+        if (isNightMode) {
             view.setBackgroundResource(R.drawable.bg_pip_call_dark)
             timeView?.setTextColor(ContextCompat.getColor(appContext, R.color.white))
         } else {
@@ -203,7 +210,7 @@ class PipCallView {
                     WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or
                     WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
             }
-            windowManager.addView(windowView, windowLayoutParams)
+            windowManager.safeAddView(windowView, windowLayoutParams)
             shown = true
         } catch (e: Exception) {
             Timber.e(e)
@@ -213,7 +220,7 @@ class PipCallView {
             if (connectedTime != null) {
                 startTimer(connectedTime)
             } else {
-                timeView?.text = appContext.getString(R.string.waiting)
+                timeView?.text = getLocalString(appContext, R.string.Waiting)
             }
         } else {
             close()
@@ -225,18 +232,15 @@ class PipCallView {
     fun close() {
         Timber.d("$TAG_CALL$shown")
         shown = false
-        if (windowView != null) {
-            try {
-                windowManager.removeView(windowView)
-            } catch (e: Exception) {
-                Timber.w("$TAG_CALL remove windowView throw $e")
-            }
-        }
+        windowView?.let { windowManager.safeRemoveView(it) }
+        timeView = null
+        iconView = null
         windowView = null
         stopTimer()
     }
 
     private var timer: Timer? = null
+    private var timerTask: TimerTask? = null
 
     fun startTimer(connectedTime: Long) {
         Timber.d("$TAG_CALL startTimer timer: $timer")
@@ -246,7 +250,8 @@ class PipCallView {
         }
 
         timer = Timer(true)
-        val timerTask = object : TimerTask() {
+        timerTask?.cancel()
+        timerTask = object : TimerTask() {
             override fun run() {
                 appContext.runOnUiThread {
                     setDuration(connectedTime)
@@ -258,9 +263,20 @@ class PipCallView {
 
     fun stopTimer() {
         Timber.d("$TAG_CALL stopTimer")
+        timerTask?.cancel()
         timer?.cancel()
         timer?.purge()
         timer = null
+    }
+
+    fun updateIcon(muted: Boolean) {
+        appContext.runOnUiThread {
+            if (muted) {
+                iconView?.setImageResource(R.drawable.ic_pip_call_mute)
+            } else {
+                iconView?.setImageResource(R.drawable.ic_pip_call)
+            }
+        }
     }
 
     private fun setDuration(connectedTime: Long) {
@@ -270,6 +286,8 @@ class PipCallView {
     }
 
     private var decelerateInterpolator: DecelerateInterpolator? = null
+
+    @SuppressLint("Recycle")
     private fun animateToBoundsMaybe() {
         val realSize = appContext.realSize()
         val isLandscape = appContext.isLandscape()

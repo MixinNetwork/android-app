@@ -6,134 +6,76 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import androidx.collection.ArrayMap
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_group_info.view.*
-import kotlinx.android.synthetic.main.view_group_info_header.view.*
 import one.mixin.android.R
-import one.mixin.android.ui.common.recyclerview.HeaderFilterAdapter
+import one.mixin.android.databinding.ItemGroupInfoBinding
 import one.mixin.android.ui.common.recyclerview.NormalHolder
-import one.mixin.android.ui.group.InviteActivity
-import one.mixin.android.vo.Conversation
-import one.mixin.android.vo.Participant
+import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
+import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
 
-class GroupInfoAdapter : HeaderFilterAdapter<User>() {
-
-    override var data: List<User>? = null
-        set(value) {
-            field = value
-            notifyDataSetChanged()
-        }
+class GroupInfoAdapter(private val self: User) : PagedHeaderAdapter<ParticipantItem>(ParticipantItem.DIFF_CALLBACK) {
 
     private var listener: GroupInfoListener? = null
-    var conversation: Conversation? = null
-    var self: User? = null
-    var participantsMap: ArrayMap<String, Participant>? = null
-
-    override fun getHeaderViewHolder(): HeadHolder = HeaderHolder(headerView!!)
 
     override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder =
         ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_group_info, parent, false))
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is ItemHolder) {
-            holder.bind(if (filtered() || position == 0) data!![position] else data!![position - 1], listener, self, participantsMap)
-        } else {
-            holder as HeaderHolder
-            var inGroup = true
-            val isAdmin = if (participantsMap != null && self != null) {
-                val me = participantsMap!![self!!.userId]
-                if (me == null) {
-                    inGroup = false
-                    false
-                } else {
-                    val role = me.role
-                    role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
-                }
-            } else {
-                false
+            getItem(getPos(position))?.let {
+                holder.bind(it, listener, self)
             }
-            holder.bind(conversation, listener, isAdmin, inGroup)
         }
     }
-
-    override fun filtered() = data?.size != participantsMap?.size
 
     fun setGroupInfoListener(listener: GroupInfoListener) {
         this.listener = listener
     }
 
-    class HeaderHolder(itemView: View) : HeadHolder(itemView) {
-        fun bind(
-            conversation: Conversation?,
-            listener: GroupInfoListener?,
-            isAdmin: Boolean,
-            inGroup: Boolean
-        ) {
-            conversation?.let { c ->
-                itemView.add_rl.setOnClickListener { listener?.onAdd() }
-                itemView.invite_item.setOnClickListener {
-                    InviteActivity.show(itemView.context, c.conversationId)
-                }
-                if (isAdmin) {
-                    itemView.add_rl.visibility = VISIBLE
-                    itemView.invite_item.visibility = VISIBLE
-                } else {
-                    itemView.add_rl.visibility = GONE
-                    itemView.invite_item.visibility = GONE
-                }
-                itemView.group_info_not_in.visibility = if (inGroup) GONE else VISIBLE
-            }
-        }
-    }
-
     class ItemHolder(itemView: View) : NormalHolder(itemView) {
+        private val binding by lazy {
+            ItemGroupInfoBinding.bind(itemView)
+        }
         fun bind(
-            user: User,
+            participant: ParticipantItem,
             listener: GroupInfoListener?,
             self: User?,
-            participantsMap: ArrayMap<String, Participant>?
         ) {
-            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            itemView.normal.text = user.fullName
-            itemView.bot_iv.visibility = if (user.appId != null) VISIBLE else GONE
-            itemView.verify_iv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE
-            participantsMap?.let {
-                val p = it[user.userId]
-                p?.let { partition ->
-                    when (partition.role) {
-                        ParticipantRole.OWNER.name -> {
-                            itemView.desc.setText(R.string.owner)
-                            itemView.desc.isVisible = true
-                        }
-                        ParticipantRole.ADMIN.name -> {
-                            itemView.desc.setText(R.string.admin)
-                            itemView.desc.isVisible = true
-                        }
-                        else -> {
-                            itemView.desc.isVisible = false
-                        }
-                    }
+            binding.avatar.setInfo(participant.fullName, participant.avatarUrl, participant.userId)
+            binding.normal.text = participant.fullName
+            binding.mixinIdTv.text = participant.identityNumber
+            binding.botIv.visibility = if (participant.appId != null) VISIBLE else GONE
+            binding.verifiedIv.visibility = if (participant.isVerified != null && participant.isVerified) VISIBLE else GONE
+            when (participant.role) {
+                ParticipantRole.OWNER.name -> {
+                    binding.desc.setText(R.string.Owner)
+                    binding.desc.isVisible = true
+                }
+                ParticipantRole.ADMIN.name -> {
+                    binding.desc.setText(R.string.Admin)
+                    binding.desc.isVisible = true
+                }
+                else -> {
+                    binding.desc.isVisible = false
                 }
             }
             itemView.setOnClickListener {
-                if (self?.userId != user.userId) {
-                    listener?.onClick(itemView.normal, user)
+                if (self?.userId != participant.userId) {
+                    listener?.onClick(binding.normal, participant)
                 }
             }
             itemView.setOnLongClickListener {
-                if (self?.userId == user.userId) return@setOnLongClickListener false
-                return@setOnLongClickListener listener?.onLongClick(itemView.normal, user) ?: false
+                if (self?.userId == participant.userId) return@setOnLongClickListener false
+                return@setOnLongClickListener listener?.onLongClick(binding.normal, participant) ?: false
             }
         }
     }
 
     interface GroupInfoListener {
-        fun onAdd()
-        fun onClick(name: View, user: User)
-        fun onLongClick(name: View, user: User): Boolean
+        fun onClick(name: View, participant: ParticipantItem)
+        fun onLongClick(name: View, participant: ParticipantItem): Boolean
     }
 }

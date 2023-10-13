@@ -3,12 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="?attr/bg_white">
 
-    <LinearLayout
+    <one.mixin.android.widget.surprise.SurpriseLinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/bg_white"
         android:orientation="vertical">
 
         <RelativeLayout
@@ -34,11 +34,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:fontFamily="@font/mixin_condensed"
+                android:fontFamily="@font/mixin_font"
+                android:textIsSelectable="true"
                 android:gravity="center"
                 android:textColor="?attr/text_primary"
                 android:textSize="40sp"
-                tools:text="12345.8" />
+                tools:text="12345.8"
+                tools:ignore="RelativeOverlap" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -56,7 +58,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:fontFamily="@font/mixin_condensed"
+                android:fontFamily="@font/mixin_font"
+                android:textIsSelectable="true"
                 android:textColor="?attr/text_primary"
                 android:textSize="18sp"
                 tools:text="0.123" />
@@ -87,10 +90,18 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginBottom="32dp"
+            android:layout_marginBottom="24dp"
             android:orientation="horizontal"
             android:visibility="gone" />
-    </LinearLayout>
+
+        <one.mixin.android.widget.SendReceiveView
+            android:id="@+id/send_receive_view"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginBottom="@dimen/margin16"
+            android:layout_marginStart="@dimen/margin20"
+            android:layout_marginEnd="@dimen/margin20"/>
+    </one.mixin.android.widget.surprise.SurpriseLinearLayout>
 
     <View
         android:layout_width="match_parent"

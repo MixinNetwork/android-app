@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
-        app:titleText="@string/invite_title" />
+        app:titleText="@string/Invite_to_Group_via_Link" />
 
     <TextView
         android:id="@+id/invite_info"
@@ -57,7 +57,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground"
+        android:foreground="?android:attr/selectableItemBackground"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@id/divider">
@@ -66,14 +66,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_forward_black_24dp"
+            android:src="@drawable/ic_msg_forward"
             tools:ignore="ContentDescription" />
 
         <TextView
             style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/invite_forward" />
+            android:text="@string/Forward_to_friend" />
 
     </LinearLayout>
 
@@ -82,7 +82,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground"
+        android:foreground="?android:attr/selectableItemBackground"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@id/invite_forward">
@@ -98,7 +98,32 @@
             style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/invite_copy" />
+            android:text="@string/Copy_invite" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/invite_qr"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/invite_forward">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/activity_horizontal_margin"
+            android:src="@drawable/ic_qr_code"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/QR_Code" />
 
     </LinearLayout>
 
@@ -107,7 +132,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground"
+        android:foreground="?android:attr/selectableItemBackground"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@id/invite_copy">
@@ -123,7 +148,7 @@
             style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/invite_share" />
+            android:text="@string/Share_Link" />
 
     </LinearLayout>
 
@@ -132,7 +157,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground"
+        android:foreground="?android:attr/selectableItemBackground"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@id/invite_share">
@@ -148,7 +173,7 @@
             style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/invite_revoke" />
+            android:text="@string/Reset_Link" />
 
     </LinearLayout>
 

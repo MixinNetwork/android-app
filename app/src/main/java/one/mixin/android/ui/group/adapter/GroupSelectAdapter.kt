@@ -4,8 +4,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_group_select.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemGroupSelectBinding
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.User
 
@@ -25,10 +25,11 @@ class GroupSelectAdapter(val removeUser: (User) -> Unit) : RecyclerView.Adapter<
     }
 
     override fun onBindViewHolder(holder: SelectViewHolder, position: Int) {
+        val binding = ItemGroupSelectBinding.bind(holder.itemView)
         checkedUsers?.let { list ->
             val user = list[position]
-            holder.itemView.avatar_view.setInfo(user.fullName, user.avatarUrl, user.userId)
-            holder.itemView.name_tv.text = user.fullName
+            binding.avatarView.setInfo(user.fullName, user.avatarUrl, user.userId)
+            binding.nameTv.text = user.fullName
         }
         holder.itemView.setOnClickListener {
             checkedUsers?.let { list ->

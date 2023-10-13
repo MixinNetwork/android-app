@@ -16,5 +16,5 @@ data class Hyperlink(
     @ColumnInfo(name = "site_description")
     val siteDescription: String?,
     @ColumnInfo(name = "site_image")
-    val siteImage: String?
+    val siteImage: String?,
 )

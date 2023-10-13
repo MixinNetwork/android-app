@@ -12,14 +12,14 @@
         android:layout_height="wrap_content"
         app:need_divider="false"
         app:rightIcon="@drawable/ic_add_black_24dp"
-        app:titleText="@string/address"/>
+        app:titleText="@string/Address"/>
 
     <TextView
         android:id="@+id/empty_tv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:text="@string/withdrawal_addr_add"
+        android:text="@string/Add_address"
         android:textColor="@color/wallet_blue"/>
 
     <LinearLayout
@@ -32,12 +32,12 @@
         <one.mixin.android.widget.SearchView
             android:id="@+id/search_et"
             android:layout_width="match_parent"
-            android:layout_height="?actionBarSize"
+            android:layout_height="?android:attr/actionBarSize"
             android:background="?attr/bg_white"
             android:drawablePadding="8dp"
-            android:drawableStart="@drawable/ic_asset_add_search"
             android:inputType="text"
-            android:hint="@string/label"
+            android:hint="@string/Label"
+            android:gravity="center_vertical"
             android:imeOptions="actionDone"
             android:maxLines="1"
             android:paddingEnd="@dimen/margin_start"

@@ -12,5 +12,5 @@ data class SessionRequest(
     @SerializedName("notification_token")
     val notificationToken: String? = null,
     @SerializedName("device_check_token")
-    val deviceCheckToken: String? = null
+    val deviceCheckToken: String? = null,
 )

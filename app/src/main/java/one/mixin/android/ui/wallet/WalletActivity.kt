@@ -3,27 +3,26 @@ package one.mixin.android.ui.wallet
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import androidx.navigation.NavArgument
-import androidx.navigation.NavController
+import androidx.annotation.VisibleForTesting
 import androidx.navigation.fragment.NavHostFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
-import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.sumsub.KycState
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class WalletActivity : BlazeBaseActivity() {
 
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     @Inject
     lateinit var jobManager: MixinJobManager
-
-    private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,45 +35,67 @@ class WalletActivity : BlazeBaseActivity() {
 
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.container) as NavHostFragment?
-        navController = navHostFragment!!.navController
+        val navController = navHostFragment?.navController ?: return
         val navGraph = navController.navInflater.inflate(R.navigation.nav_wallet)
-        asset.notNullWithElse(
-            {
-                navGraph.startDestination = R.id.transactions_fragment
-                navGraph.addArgument(ARGS_ASSET, NavArgument.Builder().setDefaultValue(it).build())
-            },
-            {
-                navGraph.startDestination = R.id.wallet_fragment
-            }
-        )
-        navController.graph = navGraph
-        jobManager.addJobInBackground(RefreshAssetsJob())
+        val currentAsset = asset
+        if (currentAsset != null) {
+            navGraph.setStartDestination(R.id.transactions_fragment) // change start destination
+            navController.setGraph(navGraph, Bundle().apply { putParcelable(ARGS_ASSET, currentAsset) })
+        } else if (isBuy) {
+            navGraph.setStartDestination(R.id.wallet_calculate)
+            navController.setGraph(navGraph, null)
+        } else {
+            navController.setGraph(navGraph, null)
+        }
     }
 
     private val asset: AssetItem? by lazy {
-        intent.extras?.getParcelable(ASSET)
+        intent.extras?.getParcelableCompat(ASSET, AssetItem::class.java)
     }
+
+    private val bottomAnim: Boolean by lazy {
+        intent.extras?.getBoolean(BOTTOM_ANIM) ?: true
+    }
+
+    private val isBuy: Boolean by lazy {
+        intent.extras?.getBoolean(BUY) ?: false
+    }
+
+    var kycState: String = KycState.INITIAL.value
+    var hideGooglePay = false
+    var supportCurrencies: List<Currency> = emptyList()
+    var supportAssetIds: List<String> = emptyList()
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(R.anim.stay, R.anim.slide_out_bottom)
+        if (bottomAnim) {
+            overridePendingTransition(R.anim.stay, R.anim.slide_out_bottom)
+        }
     }
 
     companion object {
         const val ASSET = "ASSET"
+        const val BOTTOM_ANIM = "bottom_anim"
+        const val BUY = "buy"
 
         fun show(
             activity: Activity,
-            assetItem: AssetItem? = null
+            assetItem: AssetItem? = null,
+            bottomAnim: Boolean = true,
+            buy: Boolean = false,
         ) {
             val myIntent = Intent(activity, WalletActivity::class.java)
             val bundle = Bundle()
             assetItem?.let {
                 bundle.putParcelable(ASSET, assetItem)
             }
+            bundle.putBoolean(BOTTOM_ANIM, bottomAnim)
+            bundle.putBoolean(BUY, buy)
             myIntent.putExtras(bundle)
             activity.startActivity(myIntent)
-            activity.overridePendingTransition(R.anim.slide_in_bottom, R.anim.stay)
+            if (bottomAnim) {
+                activity.overridePendingTransition(R.anim.slide_in_bottom, R.anim.stay)
+            }
         }
     }
 }

@@ -13,5 +13,5 @@ data class AccountRequest(
     val package_name: String = BuildConfig.APPLICATION_ID,
     var purpose: String = VerificationPurpose.SESSION.name,
     val pin: String? = null,
-    val session_secret: String? = null
+    val session_secret: String? = null,
 )

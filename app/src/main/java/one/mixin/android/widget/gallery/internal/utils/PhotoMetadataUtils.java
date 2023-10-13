@@ -7,10 +7,8 @@ import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.net.Uri;
-import android.os.Build;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
-import androidx.annotation.RequiresApi;
 import androidx.exifinterface.media.ExifInterface;
 import one.mixin.android.R;
 import one.mixin.android.widget.gallery.MimeType;
@@ -99,7 +97,8 @@ public final class PhotoMetadataUtils {
                 if (cursor == null || !cursor.moveToFirst()) {
                     return null;
                 }
-                return cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+                int indexData = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+                return cursor.getString(indexData);
             } finally {
                 if (cursor != null) {
                     cursor.close();
@@ -111,7 +110,7 @@ public final class PhotoMetadataUtils {
 
     public static IncapableCause isAcceptable(Context context, Item item) {
         if (!isSelectableType(context, item)) {
-            return new IncapableCause(context.getString(R.string.error_format));
+            return new IncapableCause(context.getString(R.string.Format_not_supported));
         }
 
         if (SelectionSpec.getInstance().filters != null) {
@@ -139,7 +138,6 @@ public final class PhotoMetadataUtils {
         return false;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.ECLAIR)
     private static boolean shouldRotate(ContentResolver resolver, Uri uri) {
         ExifInterface exif;
         try {

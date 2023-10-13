@@ -1,18 +1,4 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="14dp"
-    android:height="14dp"
-    android:viewportWidth="14"
-    android:viewportHeight="14">
-  <path
-      android:pathData="M7,0L7,0A7,7 0,0 1,14 7L14,7A7,7 0,0 1,7 14L7,14A7,7 0,0 1,0 7L0,7A7,7 0,0 1,7 0z"
-      android:strokeWidth="1"
-      android:fillColor="?attr/icon_gray"
-      android:fillType="evenOdd"
-      android:strokeColor="#00000000"/>
-  <path
-      android:pathData="M3.3753,5.6192L6.3753,3.2192C6.8066,2.8742 7.4359,2.9441 7.7809,3.3753C7.9227,3.5527 8,3.773 8,4L8,9.8388C8,10.3911 7.5523,10.8388 7,10.8388C6.7729,10.8388 6.5526,10.7615 6.3753,10.6197L3.3753,8.2197C3.1381,8.0299 3,7.7426 3,7.4388L3,6.4C3,6.0963 3.1381,5.8089 3.3753,5.6192ZM11.3284,7.0407L12.0355,7.7478C12.2308,7.9431 12.2308,8.2597 12.0355,8.4549C11.8403,8.6502 11.5237,8.6502 11.3284,8.4549L10.6213,7.7478L9.9142,8.4549C9.719,8.6502 9.4024,8.6502 9.2071,8.4549C9.0118,8.2597 9.0118,7.9431 9.2071,7.7478L9.9142,7.0407L9.2071,6.3336C9.0118,6.1384 9.0118,5.8218 9.2071,5.6265C9.4024,5.4313 9.719,5.4313 9.9142,5.6265L10.6213,6.3336L11.3284,5.6265C11.5237,5.4313 11.8403,5.4313 12.0355,5.6265C12.2308,5.8218 12.2308,6.1384 12.0355,6.3336L11.3284,7.0407Z"
-      android:strokeWidth="1"
-      android:fillColor="?attr/icon_white"
-      android:fillType="evenOdd"
-      android:strokeColor="#00000000"/>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="14dp" android:height="14dp" android:viewportWidth="14" android:viewportHeight="14">
+    <path android:pathData="M7 0a7 7 0 0 1 7 7 7 7 0 0 1-7 7 7 7 0 0 1-7-7 7 7 0 0 1 7-7z" android:strokeWidth="1" android:fillColor="?attr/icon_gray" android:fillType="evenOdd"/>
+    <path android:pathData="M3.375 5.62l3-2.4c0.432-0.346 1.06-0.276 1.406 0.155C7.923 3.553 8 3.773 8 4v5.839c0 0.552-0.448 1-1 1-0.227 0-0.447-0.078-0.625-0.22l-3-2.4C3.138 8.03 3 7.744 3 7.44V6.4c0-0.304 0.138-0.591 0.375-0.78zm7.953 1.42l0.708 0.708c0.195 0.195 0.195 0.512 0 0.707-0.196 0.195-0.512 0.195-0.708 0l-0.707-0.707-0.707 0.707c-0.195 0.195-0.512 0.195-0.707 0-0.195-0.195-0.195-0.512 0-0.707L9.914 7.04 9.207 6.334c-0.195-0.196-0.195-0.512 0-0.707 0.195-0.196 0.512-0.196 0.707 0l0.707 0.707 0.707-0.707c0.196-0.196 0.512-0.196 0.708 0 0.195 0.195 0.195 0.511 0 0.707L11.328 7.04z" android:strokeWidth="1" android:fillColor="?attr/icon_white" android:fillType="evenOdd"/>
 </vector>

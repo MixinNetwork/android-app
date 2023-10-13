@@ -1,0 +1,2 @@
+json_key_file("~/.gradle/xx.json")
+package_name("one.mixin.messenger")

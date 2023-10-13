@@ -5,32 +5,26 @@ import android.graphics.Color
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan
-import android.view.Gravity
 import android.view.View
-import android.widget.LinearLayout
 import android.widget.SeekBar
-import androidx.core.view.isVisible
-import com.google.android.exoplayer2.util.MimeTypes
-import kotlinx.android.synthetic.main.date_wrapper.view.*
-import kotlinx.android.synthetic.main.item_chat_file.view.*
-import kotlinx.android.synthetic.main.layout_file_holder_bottom.view.*
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.media3.common.MimeTypes
+import one.mixin.android.Constants.Colors.HIGHLIGHTED
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatFileBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.fileSize
-import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.AudioPlayer
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
+import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
-import org.jetbrains.anko.dip
-import org.jetbrains.anko.textResource
+import one.mixin.android.vo.isSecret
 
-class FileHolder constructor(containerView: View) : BaseViewHolder(containerView) {
-    init {
-        itemView.chat_flag.visibility = View.GONE
-    }
+class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(binding.root), Terminable {
 
     @SuppressLint("SetTextI18n")
     fun bind(
@@ -41,78 +35,75 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
+        super.bind(messageItem)
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        itemView.chat_secret.isVisible = messageItem.isSignal()
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {
-            itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            binding.chatName.visibility = View.VISIBLE
+            binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
-                itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-                itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
-                itemView.chat_name.setCompoundDrawables(null, null, null, null)
+                binding.chatName.setCompoundDrawables(null, null, null, null)
             }
-            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
-            itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+            binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
-            itemView.chat_name.visibility = View.GONE
+            binding.chatName.visibility = View.GONE
         }
-        itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        keyword.notNullWithElse(
-            { k ->
-                messageItem.mediaName?.let { str ->
-                    val start = str.indexOf(k, 0, true)
-                    if (start >= 0) {
-                        val sp = SpannableString(str)
-                        sp.setSpan(
-                            BackgroundColorSpan(HIGHLIGHTED),
-                            start,
-                            start + k.length,
-                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                        itemView.file_name_tv.text = sp
-                    } else {
-                        itemView.file_name_tv.text = messageItem.mediaName
-                    }
+        if (keyword != null) {
+            messageItem.mediaName?.let { str ->
+                val start = str.indexOf(keyword, 0, true)
+                if (start >= 0) {
+                    val sp = SpannableString(str)
+                    sp.setSpan(
+                        BackgroundColorSpan(HIGHLIGHTED),
+                        start,
+                        start + keyword.length,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+                    )
+                    binding.fileNameTv.text = sp
+                } else {
+                    binding.fileNameTv.text = messageItem.mediaName
                 }
-            },
-            {
-                itemView.file_name_tv.text = messageItem.mediaName
             }
-        )
+        } else {
+            binding.fileNameTv.text = messageItem.mediaName
+        }
         when (messageItem.mediaStatus) {
             MediaStatus.EXPIRED.name -> {
-                itemView.file_size_tv.textResource = R.string.chat_expired
+                binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(binding.root.context.getString(R.string.Expired))
             }
             MediaStatus.PENDING.name -> {
-                messageItem.mediaSize?.notNullWithElse(
-                    { it ->
-                        itemView.file_size_tv.setBindId(messageItem.messageId, it)
-                    },
-                    {
-                        itemView.file_size_tv.text = messageItem.mediaSize.fileSize()
-                    }
-                )
+                val mediaSize = messageItem.mediaSize
+                if (mediaSize != null) {
+                    binding.bottomLayout.fileSizeTv.setBindId(messageItem.messageId, mediaSize)
+                } else {
+                    binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(null)
+                }
             }
             else -> {
-                itemView.file_size_tv.text = "${messageItem.mediaSize?.fileSize()}"
+                binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(messageItem.mediaSize?.fileSize())
             }
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
-            itemView.chat_flag.isVisible = statusIcon != null
-            itemView.chat_flag.setImageDrawable(statusIcon)
-            itemView.chat_secret.isVisible = secretIcon != null
-            itemView.chat_representative.isVisible = representativeIcon != null
-        }
-        itemView.seek_bar.setOnSeekBarChangeListener(
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret(),
+            isWhite = false,
+        )
+        binding.bottomLayout.seekBar.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 }
@@ -122,60 +113,64 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
 
                 override fun onStopTrackingTouch(seekBar: SeekBar) {
                     if (MimeTypes.isAudio(messageItem.mediaMimeType) &&
-                        AudioPlayer.isPlay(messageItem.messageId)
+                        MusicPlayer.isPlay(messageItem.messageId)
                     ) {
-                        AudioPlayer.seekTo(seekBar.progress)
+                        MusicPlayer.seekTo(seekBar.progress)
                     }
                 }
-            }
+            },
         )
         messageItem.mediaStatus?.let {
             when (it) {
                 MediaStatus.EXPIRED.name -> {
-                    itemView.file_expired.visibility = View.VISIBLE
-                    itemView.file_progress.visibility = View.INVISIBLE
-                    itemView.chat_layout.setOnClickListener {
+                    binding.fileExpired.visibility = View.VISIBLE
+                    binding.fileProgress.visibility = View.INVISIBLE
+                    binding.bottomLayout.showText()
+                    binding.bottomLayout.bindId = null
+                    binding.chatLayout.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
                 MediaStatus.PENDING.name -> {
-                    itemView.file_expired.visibility = View.GONE
-                    itemView.file_progress.visibility = View.VISIBLE
-                    itemView.file_progress.enableLoading(getAttachmentProcess(messageItem.messageId))
-                    itemView.file_progress.setBindOnly(messageItem.messageId)
-                    itemView.file_progress.setOnClickListener {
+                    binding.fileExpired.visibility = View.GONE
+                    binding.fileProgress.visibility = View.VISIBLE
+                    binding.fileProgress.enableLoading(getAttachmentProcess(messageItem.messageId))
+                    binding.fileProgress.setBindOnly(messageItem.messageId)
+                    binding.bottomLayout.showText()
+                    binding.bottomLayout.bindId = null
+                    binding.fileProgress.setOnClickListener {
                         onItemListener.onCancel(messageItem.messageId)
                     }
-                    itemView.chat_layout.setOnClickListener {
+                    binding.chatLayout.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
                 MediaStatus.DONE.name, MediaStatus.READ.name -> {
-                    itemView.file_expired.visibility = View.GONE
-                    itemView.file_progress.visibility = View.VISIBLE
+                    binding.fileExpired.visibility = View.GONE
+                    binding.fileProgress.visibility = View.VISIBLE
                     if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
-                        itemView.file_progress.setBindOnly(messageItem.messageId)
-                        itemView.bottom_layout.bindId = messageItem.messageId
-                        if (AudioPlayer.isPlay(messageItem.messageId)) {
-                            itemView.file_progress.setPause()
-                            itemView.bottom_layout.showSeekBar()
+                        binding.fileProgress.setBindOnly(messageItem.messageId)
+                        binding.bottomLayout.bindId = messageItem.messageId
+                        if (MusicPlayer.isPlay(messageItem.messageId)) {
+                            binding.fileProgress.setPause()
+                            binding.bottomLayout.showSeekBar()
                         } else {
-                            itemView.file_progress.setPlay()
-                            itemView.bottom_layout.showText()
+                            binding.fileProgress.setPlay()
+                            binding.bottomLayout.showText()
                         }
-                        itemView.file_progress.setOnClickListener {
+                        binding.fileProgress.setOnClickListener {
                             onItemListener.onAudioFileClick(messageItem)
                         }
                     } else {
-                        itemView.file_progress.setDone()
-                        itemView.file_progress.setBindId(null)
-                        itemView.bottom_layout.bindId = null
-                        itemView.file_progress.setOnClickListener {
+                        binding.fileProgress.setDone()
+                        binding.fileProgress.setBindId(null)
+                        binding.bottomLayout.bindId = null
+                        binding.fileProgress.setOnClickListener {
                             handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                         }
                     }
-                    itemView.chat_layout.setOnClickListener {
-                        if (AudioPlayer.isPlay(messageItem.messageId)) {
+                    binding.chatLayout.setOnClickListener {
+                        if (MusicPlayer.isPlay(messageItem.messageId)) {
                             onItemListener.onAudioFileClick(messageItem)
                         } else {
                             handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
@@ -183,23 +178,25 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                     }
                 }
                 MediaStatus.CANCELED.name -> {
-                    itemView.file_expired.visibility = View.GONE
-                    itemView.file_progress.visibility = View.VISIBLE
+                    binding.fileExpired.visibility = View.GONE
+                    binding.fileProgress.visibility = View.VISIBLE
                     if (isMe && messageItem.mediaUrl != null) {
-                        itemView.file_progress.enableUpload()
+                        binding.fileProgress.enableUpload()
                     } else {
-                        itemView.file_progress.enableDownload()
+                        binding.fileProgress.enableDownload()
                     }
-                    itemView.file_progress.setBindId(messageItem.messageId)
-                    itemView.file_progress.setProgress(-1)
-                    itemView.file_progress.setOnClickListener {
+                    binding.fileProgress.setBindId(messageItem.messageId)
+                    binding.fileProgress.setProgress(-1)
+                    binding.bottomLayout.showText()
+                    binding.bottomLayout.bindId = null
+                    binding.fileProgress.setOnClickListener {
                         if (isMe && messageItem.mediaUrl != null) {
                             onItemListener.onRetryUpload(messageItem.messageId)
                         } else {
                             onItemListener.onRetryDownload(messageItem.messageId)
                         }
                     }
-                    itemView.chat_layout.setOnClickListener {
+                    binding.chatLayout.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
@@ -210,7 +207,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
-        itemView.chat_layout.setOnLongClickListener {
+        binding.chatLayout.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -226,6 +223,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                 true
             }
         }
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_msg_layout)
     }
 
     private fun handleClick(
@@ -233,7 +231,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         isSelect: Boolean,
         isMe: Boolean,
         messageItem: MessageItem,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         if (hasSelect) {
             onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
@@ -256,31 +254,31 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         if (isMe) {
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.bill_bubble_me_last,
-                    R.drawable.bill_bubble_me_last_night
+                    R.drawable.bill_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.bill_bubble_me,
-                    R.drawable.bill_bubble_me_night
+                    R.drawable.bill_bubble_me_night,
                 )
             }
-            (itemView.chat_layout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.END
+            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
         } else {
-            (itemView.chat_layout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.START
+            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_other_last,
-                    R.drawable.chat_bubble_other_last_night
+                    R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_other,
-                    R.drawable.chat_bubble_other_night
+                    R.drawable.chat_bubble_other_night,
                 )
             }
         }

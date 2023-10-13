@@ -2,10 +2,14 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
-    android:background="?attr/bg_translucence"
     android:layout_width="match_parent"
     android:orientation="vertical"
     android:layout_height="match_parent">
+
+    <View
+        android:id="@+id/background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
@@ -21,23 +25,24 @@
 
             <TextView
                 android:id="@+id/close"
-                android:textColor="@color/white"
+                android:textColor="?attr/text_primary"
                 android:layout_alignParentStart="true"
-                android:text="@string/web_close"
+                android:text="@string/Close"
                 android:padding="8dp"
-                android:foreground="?attr/selectableItemBackground"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/clear"
-                android:textColor="@color/white"
+                android:textColor="?attr/text_primary"
                 android:layout_alignParentEnd="true"
-                android:text="@string/web_clear"
+                android:text="@string/Remove_all"
                 android:padding="8dp"
-                android:foreground="?attr/selectableItemBackground"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                tools:ignore="RelativeOverlap" />
         </RelativeLayout>
 
         <one.mixin.android.widget.SixLayout

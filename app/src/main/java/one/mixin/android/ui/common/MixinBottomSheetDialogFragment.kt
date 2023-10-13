@@ -13,12 +13,12 @@ import one.mixin.android.R
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
-import java.lang.Exception
 
 abstract class MixinBottomSheetDialogFragment : DialogFragment() {
 
     protected lateinit var contentView: View
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
+    protected val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     protected val bottomViewModel by viewModels<BottomSheetViewModel>()
 
@@ -31,6 +31,7 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment() {
 
     override fun onDetach() {
         super.onDetach()
+        // UrlInterpreterActivity doesn't have a UI and needs it's son fragment to handle it's finish.
         if (activity is UrlInterpreterActivity) {
             var realFragmentCount = 0
             parentFragmentManager.fragments.forEach { f ->
@@ -60,12 +61,14 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment() {
                 try {
                     super.dismissAllowingStateLoss()
                 } catch (e: IllegalStateException) {
+                    Timber.w(e)
                 }
             }
         } else {
             try {
                 super.dismissAllowingStateLoss()
             } catch (e: IllegalStateException) {
+                Timber.w(e)
             }
         }
     }

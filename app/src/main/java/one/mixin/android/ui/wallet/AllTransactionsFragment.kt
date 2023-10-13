@@ -12,15 +12,15 @@ import androidx.navigation.findNavController
 import androidx.paging.PagedList
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_all_transactions.*
-import kotlinx.android.synthetic.main.layout_empty_transaction.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.extension.navigate
+import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -28,6 +28,7 @@ import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
+import one.mixin.android.vo.notMessengerUser
 
 @AndroidEntryPoint
 class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
@@ -36,21 +37,30 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         const val TAG = "AllTransactionsFragment"
     }
 
+    private var _binding: FragmentAllTransactionsBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
     private val adapter = SnapshotPagedAdapter()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_all_transactions, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentAllTransactionsBinding.inflate(layoutInflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { view.findNavController().navigateUp() }
-        title_view.right_animator.setOnClickListener { showFiltersSheet() }
         adapter.listener = this
-        transactions_rv.itemAnimator = null
-        transactions_rv.adapter = adapter
-        transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        binding.apply {
+            titleView.apply {
+                leftIb.setOnClickListener { view.findNavController().navigateUp() }
+                rightAnimator.setOnClickListener { showFiltersSheet() }
+            }
+            transactionsRv.itemAnimator = null
+            transactionsRv.adapter = adapter
+            transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        }
         dataObserver = Observer { pagedList ->
-            if (pagedList != null && pagedList.isNotEmpty()) {
+            if (pagedList.isNotEmpty()) {
                 showEmpty(false)
                 val opponentIds = pagedList.filter {
                     it?.opponentId != null
@@ -71,6 +81,11 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         bindLiveData()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     override fun <T> onNormalItemClick(item: T) {
         lifecycleScope.launch {
             val snapshot = item as SnapshotItem
@@ -78,14 +93,14 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 walletViewModel.simpleAssetItem(snapshot.assetId)
             }
             a?.let {
-                if (!isAdded) return@launch
+                if (viewDestroyed()) return@launch
 
                 view?.navigate(
                     R.id.action_all_transactions_fragment_to_transaction_fragment,
                     Bundle().apply {
                         putParcelable(ARGS_SNAPSHOT, snapshot)
                         putParcelable(ARGS_ASSET, it)
-                    }
+                    },
                 )
             }
         }
@@ -96,14 +111,19 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             val user = withContext(Dispatchers.IO) {
                 walletViewModel.getUser(userId)
             } ?: return@launch
-            val f = UserBottomSheetDialogFragment.newInstance(user)
-            f.showUserTransactionAction = {
-                view?.navigate(
-                    R.id.action_all_transactions_to_user_transactions,
-                    Bundle().apply { putString(Constants.ARGS_USER_ID, userId) }
-                )
+            if (user.notMessengerUser()) {
+                NonMessengerUserBottomSheetDialogFragment.newInstance(user)
+                    .showNow(parentFragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)
+            } else {
+                val f = UserBottomSheetDialogFragment.newInstance(user)
+                f?.showUserTransactionAction = {
+                    view?.navigate(
+                        R.id.action_all_transactions_to_user_transactions,
+                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) },
+                    )
+                }
+                f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
             }
-            f.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
         }
     }
 
@@ -129,8 +149,8 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                         SnapshotType.transfer.name,
                         SnapshotType.pending.name,
                         initialLoadKey = initialLoadKey,
-                        orderByAmount = orderByAmount
-                    )
+                        orderByAmount = orderByAmount,
+                    ),
                 )
             }
             R.id.filters_radio_deposit -> {
@@ -152,19 +172,21 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     }
 
     private fun showEmpty(show: Boolean) {
-        if (show) {
-            if (empty_rl.visibility == GONE) {
-                empty_rl.visibility = VISIBLE
-            }
-            if (transactions_rv.visibility == VISIBLE) {
-                transactions_rv.visibility = GONE
-            }
-        } else {
-            if (empty_rl.visibility == VISIBLE) {
-                empty_rl.visibility = GONE
-            }
-            if (transactions_rv.visibility == GONE) {
-                transactions_rv.visibility = VISIBLE
+        binding.apply {
+            if (show) {
+                if (empty.root.visibility == GONE) {
+                    empty.root.visibility = VISIBLE
+                }
+                if (transactionsRv.visibility == VISIBLE) {
+                    transactionsRv.visibility = GONE
+                }
+            } else {
+                if (empty.root.visibility == VISIBLE) {
+                    empty.root.visibility = GONE
+                }
+                if (transactionsRv.visibility == GONE) {
+                    transactionsRv.visibility = VISIBLE
+                }
             }
         }
     }

@@ -1,14 +1,15 @@
 package one.mixin.android.ui.address.adapter
 
 import android.graphics.Canvas
+import android.view.View
+import androidx.annotation.IdRes
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_address.view.*
 import one.mixin.android.R
 
-class ItemCallback(private val listener: ItemCallbackListener) :
+class ItemCallback(private val listener: ItemCallbackListener, private val movementFlags: ((viewHolder: RecyclerView.ViewHolder) -> Int)? = null) :
     ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.START or ItemTouchHelper.END) {
 
     override fun onMove(p0: RecyclerView, p1: RecyclerView.ViewHolder, p2: RecyclerView.ViewHolder): Boolean {
@@ -17,7 +18,7 @@ class ItemCallback(private val listener: ItemCallbackListener) :
 
     override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
         viewHolder?.let {
-            ItemTouchHelper.Callback.getDefaultUIUtil().onSelected(it.itemView.foreground_rl)
+            ItemTouchHelper.Callback.getDefaultUIUtil().onSelected(findView(viewHolder.itemView, R.id.foreground_rl))
         }
     }
 
@@ -28,19 +29,32 @@ class ItemCallback(private val listener: ItemCallbackListener) :
         dX: Float,
         dY: Float,
         actionState: Int,
-        isCurrentlyActive: Boolean
+        isCurrentlyActive: Boolean,
     ) {
         viewHolder?.let {
             ItemTouchHelper.Callback.getDefaultUIUtil()
-                .onDrawOver(c, recyclerView, it.itemView.foreground_rl, dX, dY, actionState, isCurrentlyActive)
+                .onDrawOver(c, recyclerView, findView(viewHolder.itemView, R.id.foreground_rl), dX, dY, actionState, isCurrentlyActive)
         }
     }
 
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
         direction = 0
-        ItemTouchHelper.Callback.getDefaultUIUtil().clearView(viewHolder.itemView.foreground_rl)
+        ItemTouchHelper.Callback.getDefaultUIUtil()
+            .clearView(findView(viewHolder.itemView, R.id.foreground_rl))
     }
 
+    private fun findView(view: View, @IdRes id: Int): View = view.findViewById(id)
+
+    override fun getMovementFlags(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder,
+    ): Int {
+        return if (movementFlags != null) {
+            makeMovementFlags(0, movementFlags.invoke(viewHolder))
+        } else {
+            super.getMovementFlags(recyclerView, viewHolder)
+        }
+    }
     override fun onChildDraw(
         c: Canvas,
         recyclerView: RecyclerView,
@@ -48,25 +62,25 @@ class ItemCallback(private val listener: ItemCallbackListener) :
         dX: Float,
         dY: Float,
         actionState: Int,
-        isCurrentlyActive: Boolean
+        isCurrentlyActive: Boolean,
     ) {
         if (dX > 0 && direction != ItemTouchHelper.START) {
             direction = ItemTouchHelper.START
-            viewHolder.itemView.background_rl.setBackgroundResource(R.color.colorRed)
-            viewHolder.itemView.delete_icon.isVisible = true
-            viewHolder.itemView.delete_tv.isVisible = true
-            viewHolder.itemView.delete_icon_copy.isGone = true
-            viewHolder.itemView.delete_tv_copy.isGone = true
+            findView(viewHolder.itemView, R.id.background_rl).setBackgroundResource(R.color.colorRed)
+            findView(viewHolder.itemView, R.id.delete_icon).isVisible = true
+            findView(viewHolder.itemView, R.id.delete_tv).isVisible = true
+            findView(viewHolder.itemView, R.id.delete_icon_copy).isGone = true
+            findView(viewHolder.itemView, R.id.delete_tv_copy).isGone = true
         } else if (dX < 0 && direction != ItemTouchHelper.END) {
             direction = ItemTouchHelper.END
-            viewHolder.itemView.background_rl.setBackgroundResource(R.color.colorRed)
-            viewHolder.itemView.delete_tv_copy.isVisible = true
-            viewHolder.itemView.delete_icon_copy.isVisible = true
-            viewHolder.itemView.delete_icon.isGone = true
-            viewHolder.itemView.delete_tv.isGone = true
+            findView(viewHolder.itemView, R.id.background_rl).setBackgroundResource(R.color.colorRed)
+            findView(viewHolder.itemView, R.id.delete_tv_copy).isVisible = true
+            findView(viewHolder.itemView, R.id.delete_icon_copy).isVisible = true
+            findView(viewHolder.itemView, R.id.delete_icon).isGone = true
+            findView(viewHolder.itemView, R.id.delete_tv).isGone = true
         }
         ItemTouchHelper.Callback.getDefaultUIUtil()
-            .onDraw(c, recyclerView, viewHolder.itemView.foreground_rl, dX, dY, actionState, isCurrentlyActive)
+            .onDraw(c, recyclerView, findView(viewHolder.itemView, R.id.foreground_rl), dX, dY, actionState, isCurrentlyActive)
     }
 
     private var direction: Int = 0

@@ -1,8 +1,6 @@
 package one.mixin.android.vo
 
 import android.content.Context
-import android.telephony.TelephonyManager
-import androidx.core.content.getSystemService
 import androidx.lifecycle.LiveData
 import one.mixin.android.session.Session
 import one.mixin.android.webrtc.CallService
@@ -16,7 +14,7 @@ import one.mixin.android.webrtc.localEnd
 
 data class GroupCallUser(
     val id: String,
-    var type: Type
+    var type: Type,
 ) {
     enum class Type {
         Joined, Pending
@@ -24,7 +22,7 @@ data class GroupCallUser(
 }
 
 data class GroupCallState(
-    var conversationId: String
+    var conversationId: String,
 ) {
     var inviter: String? = null
     var users: List<GroupCallUser>? = null
@@ -155,6 +153,8 @@ enum class CallType {
     None, Voice, Group
 }
 
+private const val JOIN_MUTE_MIC_COUNT = 7
+
 class CallStateLiveData : LiveData<CallService.CallState>() {
     var state: CallService.CallState = CallService.CallState.STATE_IDLE
         set(value) {
@@ -179,6 +179,12 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     var reconnecting = false
 
     var audioEnable = true
+        set(value) {
+            if (field == value) return
+
+            field = value
+            postValue(state)
+        }
     var speakerEnable = false
     var customAudioDeviceAvailable = false
         set(value) {
@@ -214,11 +220,9 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
 
     fun isGroupCall() = callType == CallType.Group
     fun isVoiceCall() = callType == CallType.Voice
+    fun isNoneCallType() = callType == CallType.None
 
-    fun isBusy(ctx: Context): Boolean {
-        val tm = ctx.getSystemService<TelephonyManager>()
-        return isNotIdle() || tm?.callState != TelephonyManager.CALL_STATE_IDLE
-    }
+    fun isBusy(): Boolean = isNotIdle()
 
     fun getGroupCallStateOrNull(conversationId: String): GroupCallState? {
         return groupCallStates.find {
@@ -266,6 +270,12 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         } ?: return null
         return groupCallState.userIds()
     }
+
+    fun needMuteWhenJoin(conversationId: String): Boolean =
+        getUsersCount(conversationId) > JOIN_MUTE_MIC_COUNT
+
+    fun needMuteWhenJoin(groupCallState: GroupCallState?): Boolean =
+        (groupCallState?.userIds()?.size ?: 0) > JOIN_MUTE_MIC_COUNT
 
     fun getUsersCount(conversationId: String): Int =
         getUsers(conversationId)?.size ?: 0
@@ -329,7 +339,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
                     mutableListOf<String>().apply {
                         add(self)
                         addAll(newUsers)
-                    }
+                    },
                 )
             } else {
                 groupCallState.setJoinedUsers(newUsers)
@@ -361,16 +371,18 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     fun isConnected() = state == CallService.CallState.STATE_CONNECTED
     fun isRinging() = state == CallService.CallState.STATE_RINGING
     fun isBeforeAnswering() = state < CallService.CallState.STATE_ANSWERING
+    fun isInUse() = state == CallService.CallState.STATE_DIALING || state == CallService.CallState.STATE_RINGING || state == CallService.CallState.STATE_ANSWERING || state == CallService.CallState.STATE_CONNECTED
 
     fun inConversationAndAtLeastAnswering(conversationId: String) =
         state >= CallService.CallState.STATE_ANSWERING && conversationId == this.conversationId
 
-    fun isPendingGroupCall(conversationId: String) =
-        if (this.conversationId == conversationId) {
-            isIdle()
-        } else {
-            groupCallStates.any { it.conversationId == conversationId }
+    fun isPendingGroupCall(conversationId: String): Boolean {
+        if (this.conversationId == conversationId && isNotIdle()) {
+            return false
         }
+        val groupCallState = groupCallStates.find { it.conversationId == conversationId } ?: return false
+        return groupCallState.users?.isNullOrEmpty() != true
+    }
 
     fun handleHangup(ctx: Context, join: Boolean = false) {
         when (state) {

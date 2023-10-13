@@ -14,7 +14,9 @@
     <color name="colorIconNight">#EAEAEB</color>
     <color name="colorIconWhiteNight">#22272B</color>
     <color name="colorIconGrayNight">#808691</color>
+    <color name="colorIconActionNight">@color/white</color>
     <color name="colorIconBlackNight">#FFFFFF</color>
+    <color name="colorIconGoogleBlackNight">#FFFFFF</color>
 
     <color name="badgerNight">#4191FF</color>
     <color name="badgeMuteNight">#808691</color>
@@ -29,6 +31,9 @@
     <color name="bgGrayNight">#3B3F44</color>
     <color name="bgBotNight">#4C5053</color>
     <color name="bgBubbleNight">#3B3F44</color>
+    <color name="bgChooseNetworkYellowNight">#2EFFF7AD</color>
+    <color name="bgChooseNetworkNight">#3B3F44</color>
+    <color name="bgFlagNight">#3E4148</color>
     <color name="bgTranslucenceNight">#EE2c3136</color>
 
     <color name="bgMenuNight">#23272B</color>
@@ -40,4 +45,13 @@
     <color name="codeBorderNight">#545859</color>
 
     <color name="dividerNight">#424649</color>
+
+    <color name="musicPlayedNight">#99FFFFFF</color>
+    <color name="musicUnPlayedNight">#41464A</color>
+    <color name="musicBufferedNight">#44FFFFFF</color>
+    <color name="musicTextNight">#B8BDC7</color>
+    <color name="musicFloatingBgNight">#62686C</color>
+    <color name="musicPlayPauseBgNight">#E6FFFFFF</color>
+
+    <color name="highlight_night">#33FFFFFF</color>
 </resources>

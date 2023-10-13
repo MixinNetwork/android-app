@@ -32,7 +32,7 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListene
 
         fun newInstance(conversationId: String) = FriendsFragment().apply {
             arguments = bundleOf(
-                CONVERSATION_ID to conversationId
+                CONVERSATION_ID to conversationId,
             )
         }
     }
@@ -44,7 +44,7 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListene
 
     private val conversationId: String by lazy { requireArguments().getString(CONVERSATION_ID)!! }
 
-    override fun getTitleResId() = R.string.contact_other_share
+    override fun getTitleResId() = R.string.Share_Contact
 
     override suspend fun getFriends() = viewModel.getFriends()
 
@@ -54,10 +54,18 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListene
         this.friendClick = friendClick
     }
 
+    override fun onBackPressed(): Boolean {
+        parentFragmentManager.popBackStackImmediate()
+        return true
+    }
+
     override fun onItemClick(user: User) {
         if (friendClick != null) {
-            friendClick!!(user)
-            parentFragmentManager.beginTransaction().remove(this).commit()
+            friendClick?.invoke(user)
+            try {
+                parentFragmentManager.beginTransaction().remove(this).commit()
+            } catch (ignored: IllegalStateException) {
+            }
         } else {
             val fw = ForwardMessage(ShareCategory.Contact, GsonHelper.customGson.toJson(ContactMessagePayload(user.userId), ContactMessagePayload::class.java))
             ForwardActivity.show(requireContext(), arrayListOf(fw), ForwardAction.App.Resultless(conversationId))

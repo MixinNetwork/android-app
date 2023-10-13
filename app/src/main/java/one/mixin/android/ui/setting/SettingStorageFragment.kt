@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.res.ColorStateList
@@ -9,37 +10,47 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.CompoundButton
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.PopupMenu
 import androidx.collection.ArraySet
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_storage.*
-import kotlinx.android.synthetic.main.item_contact_storage.view.*
-import kotlinx.android.synthetic.main.item_storage_check.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Storage.AUDIO
 import one.mixin.android.Constants.Storage.DATA
 import one.mixin.android.Constants.Storage.IMAGE
+import one.mixin.android.Constants.Storage.TRANSCRIPT
 import one.mixin.android.Constants.Storage.VIDEO
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentStorageBinding
+import one.mixin.android.databinding.ItemContactStorageBinding
+import one.mixin.android.databinding.ItemStorageCheckBinding
+import one.mixin.android.extension.FileSizeUnit
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.StorageCleanJob
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.debug.measureTimeMillis
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.StorageUsage
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
-class SettingStorageFragment : BaseFragment() {
+class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
     companion object {
         const val TAG = "SettingStorageFragment"
 
@@ -48,38 +59,48 @@ class SettingStorageFragment : BaseFragment() {
         }
     }
 
+    @Inject
+    lateinit var jobManager: MixinJobManager
     private val viewModel by viewModels<SettingStorageViewModel>()
+    private val binding by viewBinding(FragmentStorageBinding::bind)
 
     private val adapter = StorageAdapter {
         showMenu(it)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_storage, container, false)
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        b_rv.adapter = adapter
-        menuView.adapter = menuAdapter
-        viewModel.getConversationStorageUsage().autoDispose(stopScope)
-            .subscribe(
-                { list ->
-                    if (progress.visibility != View.GONE) {
-                        progress.visibility = View.GONE
+        binding.apply {
+            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            bRv.adapter = adapter
+            menuView.adapter = menuAdapter
+            titleView.rightIb.setOnClickListener {
+                if (viewDestroyed()) return@setOnClickListener
+                val popMenu = PopupMenu(requireActivity(), it)
+                popMenu.menuInflater.inflate(R.menu.deep_clean, popMenu.menu)
+                popMenu.setOnMenuItemClickListener { menu ->
+                    if (menu.itemId == R.id.clean) {
+                        if (!StorageCleanJob.isRunning) {
+                            jobManager.addJobInBackground(StorageCleanJob())
+                        }
                     }
-                    adapter.setData(list)
-                },
-                { error ->
-                    Timber.e(error)
+                    return@setOnMenuItemClickListener true
                 }
-            )
+                popMenu.show()
+            }
+        }
+        lifecycleScope.launch {
+            val list = measureTimeMillis("StorageUsage") { viewModel.getConversationStorageUsage(requireContext()) }
+            if (viewDestroyed()) return@launch
+            binding.progress.isVisible = false
+            adapter.setData(list)
+        }
     }
 
     private val dialog: Dialog by lazy {
         indeterminateProgressDialog(
-            message = R.string.pb_dialog_message,
-            title = R.string.setting_clearing
+            message = R.string.Please_wait_a_bit,
+            title = R.string.Clearing,
         ).apply {
             setCancelable(false)
         }
@@ -87,41 +108,38 @@ class SettingStorageFragment : BaseFragment() {
 
     private val selectSet: ArraySet<StorageUsage> = ArraySet()
     private fun showMenu(conversationId: String) {
-        viewModel.getStorageUsage(conversationId).autoDispose(stopScope).subscribe(
-            {
-                menuAdapter.setData(it)
-                selectSet.clear()
-                it?.let {
-                    for (item in it) {
-                        selectSet.add(item)
-                    }
-                }
-                menuDialog.show()
-            },
-            {
-                Timber.e(it)
+        lifecycleScope.launch {
+            val list = viewModel.getStorageUsage(requireContext(), conversationId)
+            menuAdapter.setData(list)
+            selectSet.clear()
+            for (item in list) {
+                selectSet.add(item)
             }
-        )
+            menuDialog.show()
+        }
     }
 
     private val menuDialog: AlertDialog by lazy {
         alertDialogBuilder()
             .setView(menuView)
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.setting_storage_bn_clear) { dialog, _ ->
+            .setPositiveButton(R.string.Clear) { dialog, _ ->
                 var sum = 0L
                 var size = 0L
-                selectSet.forEach { sum += it.count; size += it.mediaSize }
-                confirmDialog.setMessage(getString(R.string.setting_storage_clear, sum, size.fileSize()))
+                selectSet.forEach {
+                    sum += it.count
+                    size += it.mediaSize
+                }
+                confirmDialog.setMessage(requireContext().resources.getQuantityString(R.plurals.setting_storage_clear, sum.toInt(), sum, size.fileSize(FileSizeUnit.KB)))
                 confirmDialog.show()
                 dialog.dismiss()
             }.create().apply {
                 setOnShowListener {
                     val states = arrayOf(
                         intArrayOf(android.R.attr.state_enabled),
-                        intArrayOf(-android.R.attr.state_enabled)
+                        intArrayOf(-android.R.attr.state_enabled),
                     )
                     val colors = intArrayOf(Color.RED, Color.GRAY)
                     getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(ColorStateList(states, colors))
@@ -132,7 +150,7 @@ class SettingStorageFragment : BaseFragment() {
 
     private val confirmDialog: AlertDialog by lazy {
         alertDialogBuilder()
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
@@ -152,7 +170,7 @@ class SettingStorageFragment : BaseFragment() {
             .map {
                 for (item in selectSet) {
                     when (item.type) {
-                        IMAGE, VIDEO, AUDIO, DATA -> {
+                        IMAGE, VIDEO, AUDIO, DATA, TRANSCRIPT -> {
                             viewModel.clear(item.conversationId, item.type)
                         }
                         else -> {
@@ -165,13 +183,14 @@ class SettingStorageFragment : BaseFragment() {
             .autoDispose(stopScope)
             .subscribe(
                 {
+                    adapter.clearData(selectSet.first().conversationId, selectSet.sumOf { it.mediaSize })
                     dialog.dismiss()
                 },
                 {
                     Timber.e(it)
                     dialog.dismiss()
                     toast(getString(R.string.error_unknown_with_message, selectSet.toString()))
-                }
+                },
             )
     }
 
@@ -189,20 +208,21 @@ class SettingStorageFragment : BaseFragment() {
                     }
                     menuDialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = selectSet.size > 0
                 }
-            }
+            },
         )
     }
 
     class MenuAdapter(private val checkAction: (Boolean, StorageUsage) -> Unit) : RecyclerView.Adapter<CheckHolder>() {
         private var storageUsageList: List<StorageUsage>? = null
 
+        @SuppressLint("NotifyDataSetChanged")
         fun setData(users: List<StorageUsage>?) {
             this.storageUsageList = users
             notifyDataSetChanged()
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CheckHolder {
-            return CheckHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_storage_check, parent, false), checkAction)
+            return CheckHolder(ItemStorageCheckBinding.inflate(LayoutInflater.from(parent.context), parent, false), checkAction)
         }
 
         override fun getItemCount(): Int = storageUsageList?.size ?: 0
@@ -216,15 +236,28 @@ class SettingStorageFragment : BaseFragment() {
 
     class StorageAdapter(val action: ((String) -> Unit)) : RecyclerView.Adapter<ItemHolder>() {
 
-        private var conversationStorageUsageList: List<ConversationStorageUsage>? = null
+        private var conversationStorageUsageList: MutableList<ConversationStorageUsage>? = null
 
-        fun setData(users: List<ConversationStorageUsage>?) {
-            this.conversationStorageUsageList = users
+        @SuppressLint("NotifyDataSetChanged")
+        fun setData(usages: List<ConversationStorageUsage>?) {
+            this.conversationStorageUsageList = usages?.toMutableList()
+            notifyDataSetChanged()
+        }
+
+        @SuppressLint("NotifyDataSetChanged")
+        fun clearData(conversationId: String, size: Long) {
+            conversationStorageUsageList?.find { it.conversationId == conversationId }?.let {
+                if (it.mediaSize <= size) {
+                    conversationStorageUsageList?.remove(it)
+                } else {
+                    it.mediaSize -= size
+                }
+            }
             notifyDataSetChanged()
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder {
-            return ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_contact_storage, parent, false))
+            return ItemHolder(ItemContactStorageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
 
         override fun onBindViewHolder(holder: ItemHolder, position: Int) {
@@ -237,38 +270,41 @@ class SettingStorageFragment : BaseFragment() {
         override fun getItemCount(): Int = conversationStorageUsageList?.size ?: 0
     }
 
-    class CheckHolder(itemView: View, private val checkAction: (Boolean, StorageUsage) -> Unit) : RecyclerView.ViewHolder(itemView) {
+    class CheckHolder(private val itemBinding: ItemStorageCheckBinding, private val checkAction: (Boolean, StorageUsage) -> Unit) : RecyclerView.ViewHolder(itemBinding.root) {
         fun bind(storageUsage: StorageUsage) {
-            itemView.check_view.setName(
-                when (storageUsage.type) {
-                    IMAGE -> R.string.common_pic
-                    DATA -> R.string.common_file
-                    VIDEO -> R.string.common_video
-                    AUDIO -> R.string.common_audio
-                    else -> R.string.unknown
-                }
-            )
-            itemView.check_view.setSize(storageUsage.mediaSize)
-            itemView.check_view.isChecked = true
-            itemView.check_view.setOnCheckedChangeListener(
-                CompoundButton.OnCheckedChangeListener { _, checked ->
+            itemBinding.apply {
+                checkView.setName(
+                    when (storageUsage.type) {
+                        IMAGE -> R.string.Photo
+                        DATA -> R.string.Files
+                        VIDEO -> R.string.Video
+                        AUDIO -> R.string.Audio
+                        TRANSCRIPT -> R.string.Transcript
+                        else -> R.string.Unknown
+                    },
+                )
+                checkView.setSize(storageUsage.mediaSize)
+                checkView.isChecked = true
+                checkView.setOnCheckedChangeListener { _, checked ->
                     checkAction(checked, storageUsage)
                 }
-            )
+            }
         }
     }
 
-    class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ItemHolder(private val itemBinding: ItemContactStorageBinding) : RecyclerView.ViewHolder(itemBinding.root) {
         fun bind(conversationStorageUsage: ConversationStorageUsage, action: ((String) -> Unit)) {
-            if (conversationStorageUsage.category == ConversationCategory.GROUP.name) {
-                itemView.avatar.setGroup(conversationStorageUsage.groupIconUrl)
-                itemView.normal.text = conversationStorageUsage.groupName
-            } else {
-                itemView.normal.text = conversationStorageUsage.name
-                itemView.avatar.setInfo(conversationStorageUsage.name, conversationStorageUsage.avatarUrl, conversationStorageUsage.ownerId)
+            itemBinding.apply {
+                if (conversationStorageUsage.category == ConversationCategory.GROUP.name) {
+                    avatar.setGroup(conversationStorageUsage.groupIconUrl)
+                    normal.text = conversationStorageUsage.groupName
+                } else {
+                    normal.text = conversationStorageUsage.name
+                    avatar.setInfo(conversationStorageUsage.name, conversationStorageUsage.avatarUrl, conversationStorageUsage.ownerId)
+                }
+                storageTv.text = conversationStorageUsage.mediaSize.fileSize(FileSizeUnit.KB)
+                itemView.setOnClickListener { action(conversationStorageUsage.conversationId) }
             }
-            itemView.storage_tv.text = conversationStorageUsage.mediaSize.fileSize()
-            itemView.setOnClickListener { action(conversationStorageUsage.conversationId) }
         }
     }
 }

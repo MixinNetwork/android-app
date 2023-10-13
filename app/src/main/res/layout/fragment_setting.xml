@@ -7,12 +7,11 @@
     android:background="?attr/bg_window"
     android:orientation="vertical">
 
-
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_title" />
+        app:titleText="@string/Settings" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -24,11 +23,11 @@
             android:orientation="vertical">
 
             <RelativeLayout
-                android:id="@+id/privacy_rl"
+                android:id="@+id/account_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/privacy_tv"
@@ -38,7 +37,7 @@
                     android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_privacy_security"
+                    android:text="@string/Account"
                     tools:ignore="RelativeOverlap"
                     android:drawablePadding="@dimen/margin12"
                     app:drawableStartCompat="@drawable/ic_setting_privacy" />
@@ -49,7 +48,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/notification_tv"
@@ -59,7 +58,7 @@
                     android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_notification_confirmation"
+                    android:text="@string/Notification_and_Confirmation"
                     tools:ignore="RelativeOverlap"
                     android:drawablePadding="@dimen/margin12"
                     app:drawableStartCompat="@drawable/ic_setting_notification" />
@@ -70,7 +69,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/backup_tv"
@@ -80,7 +79,7 @@
                     android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_backup"
+                    android:text="@string/Chat"
                     tools:ignore="RelativeOverlap"
                     android:drawablePadding="@dimen/margin12"
                     app:drawableStartCompat="@drawable/ic_setting_backup" />
@@ -91,7 +90,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/storage_tv"
@@ -101,7 +100,7 @@
                     android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_data_storage"
+                    android:text="@string/Data_and_Storage_Usage"
                     tools:ignore="RelativeOverlap"
                     android:drawablePadding="@dimen/margin12"
                     app:drawableStartCompat="@drawable/ic_setting_data" />
@@ -117,7 +116,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/appearance_tv"
@@ -127,7 +126,7 @@
                     android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_appearance"
+                    android:text="@string/Appearance"
                     tools:ignore="RelativeOverlap"
                     android:drawablePadding="@dimen/margin12"
                     app:drawableStartCompat="@drawable/ic_setting_appearance" />
@@ -143,7 +142,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/desktop_tv"
@@ -153,7 +152,7 @@
                     android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_desktop"
+                    android:text="@string/Mixin_Messenger_Desktop"
                     tools:ignore="RelativeOverlap"
                     android:drawablePadding="@dimen/margin12"
                     app:drawableStartCompat="@drawable/ic_setting_desktop" />
@@ -169,7 +168,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/feedback_tv"
@@ -179,7 +178,7 @@
                     android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_feedback"
+                    android:text="@string/Feedback"
                     tools:ignore="RelativeOverlap"
                     android:drawablePadding="@dimen/margin12"
                     app:drawableStartCompat="@drawable/ic_setting_feedback" />
@@ -190,7 +189,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/share_tv"
@@ -200,7 +199,7 @@
                     android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_share"
+                    android:text="@string/Invite_a_Friend"
                     tools:ignore="RelativeOverlap"
                     android:drawablePadding="@dimen/margin12"
                     app:drawableStartCompat="@drawable/ic_setting_share" />
@@ -216,7 +215,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/about_tv"
@@ -226,7 +225,7 @@
                     android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/about"
+                    android:text="@string/About"
                     tools:ignore="RelativeOverlap"
                     android:drawablePadding="@dimen/margin12"
                     app:drawableStartCompat="@drawable/ic_setting_about" />

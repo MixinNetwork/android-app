@@ -10,7 +10,7 @@ import kotlinx.coroutines.runBlocking
 class RefreshUserJob(
     private val userIds: List<String>,
     private val conversationId: String? = null,
-    private val forceRefresh: Boolean = false
+    private val forceRefresh: Boolean = false,
 ) : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requireNetwork().persist()) {
 
     companion object {
@@ -26,7 +26,6 @@ class RefreshUserJob(
             refreshUsers(userIds)
             return@runBlocking
         }
-
         val existUsers = userDao.findUserExist(userIds)
         val queryUsers = userIds.filter {
             !existUsers.contains(it)
@@ -39,11 +38,21 @@ class RefreshUserJob(
     }
 
     private suspend fun refreshUsers(userIds: List<String>) {
-        val response = userService.getUsers(userIds).execute().body()
-        if (response != null && response.isSuccess) {
-            response.data?.let { data ->
-                userRepo.upsertList(data)
-                refreshConversationAvatar()
+        if (userIds.size == 1) {
+            val response = userService.getUserById(userIds[0]).execute().body()
+            if (response != null && response.isSuccess) {
+                response.data?.let { data ->
+                    userRepo.upsert(data)
+                    refreshConversationAvatar()
+                }
+            }
+        } else {
+            val response = userService.getUsers(userIds).execute().body()
+            if (response != null && response.isSuccess) {
+                response.data?.let { data ->
+                    userRepo.upsertList(data)
+                    refreshConversationAvatar()
+                }
             }
         }
     }

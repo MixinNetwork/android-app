@@ -10,7 +10,7 @@ data class SystemCircleMessagePayload(
     @SerializedName("conversation_id")
     val conversationId: String?,
     @SerializedName("user_id")
-    val userId: String?
+    val userId: String?,
 )
 
 enum class SystemCircleMessageAction { CREATE, DELETE, UPDATE, ADD, REMOVE }

@@ -16,7 +16,7 @@ class Migration22Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_18_19,
             MixinDatabaseMigrations.MIGRATION_19_20,
             MixinDatabaseMigrations.MIGRATION_20_21,
-            MixinDatabaseMigrations.MIGRATION_21_22
+            MixinDatabaseMigrations.MIGRATION_21_22,
         )
     }
 
@@ -30,7 +30,7 @@ class Migration22Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_18_19,
             MixinDatabaseMigrations.MIGRATION_19_20,
             MixinDatabaseMigrations.MIGRATION_20_21,
-            MixinDatabaseMigrations.MIGRATION_21_22
+            MixinDatabaseMigrations.MIGRATION_21_22,
         )
     }
 
@@ -45,7 +45,7 @@ class Migration22Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_18_19,
             MixinDatabaseMigrations.MIGRATION_19_20,
             MixinDatabaseMigrations.MIGRATION_20_21,
-            MixinDatabaseMigrations.MIGRATION_21_22
+            MixinDatabaseMigrations.MIGRATION_21_22,
         )
     }
 
@@ -59,7 +59,7 @@ class Migration22Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_18_19,
             MixinDatabaseMigrations.MIGRATION_19_20,
             MixinDatabaseMigrations.MIGRATION_20_21,
-            MixinDatabaseMigrations.MIGRATION_21_22
+            MixinDatabaseMigrations.MIGRATION_21_22,
         )
     }
 
@@ -72,7 +72,7 @@ class Migration22Test : BaseMigrationTest() {
             true,
             MixinDatabaseMigrations.MIGRATION_19_20,
             MixinDatabaseMigrations.MIGRATION_20_21,
-            MixinDatabaseMigrations.MIGRATION_21_22
+            MixinDatabaseMigrations.MIGRATION_21_22,
         )
     }
 
@@ -84,7 +84,7 @@ class Migration22Test : BaseMigrationTest() {
             22,
             true,
             MixinDatabaseMigrations.MIGRATION_20_21,
-            MixinDatabaseMigrations.MIGRATION_21_22
+            MixinDatabaseMigrations.MIGRATION_21_22,
         )
     }
 
@@ -95,7 +95,7 @@ class Migration22Test : BaseMigrationTest() {
             Constants.DataBase.DB_NAME,
             22,
             true,
-            MixinDatabaseMigrations.MIGRATION_21_22
+            MixinDatabaseMigrations.MIGRATION_21_22,
         )
     }
 }

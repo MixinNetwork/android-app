@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="?actionBarSize"
+    android:layout_height="?android:attr/actionBarSize"
     android:background="@drawable/bg_upper_round">
 
     <FrameLayout
@@ -71,7 +71,8 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toEndOf="@id/left_fl"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:ignore="RelativeOverlap">
 
         <TextView
             android:id="@+id/title_tv"

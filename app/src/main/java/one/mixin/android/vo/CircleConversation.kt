@@ -7,7 +7,7 @@ import com.google.gson.annotations.SerializedName
 
 @Entity(
     tableName = "circle_conversations",
-    primaryKeys = ["conversation_id", "circle_id"]
+    primaryKeys = ["conversation_id", "circle_id"],
 )
 data class CircleConversation(
     @ColumnInfo(name = "conversation_id")
@@ -24,7 +24,7 @@ data class CircleConversation(
     val createdAt: String,
     @Expose
     @ColumnInfo(name = "pin_time")
-    val pinTime: String?
+    val pinTime: String?,
 )
 
 enum class CircleConversationAction { ADD, REMOVE }

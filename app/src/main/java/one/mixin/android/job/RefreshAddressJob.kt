@@ -4,7 +4,7 @@ import com.birbit.android.jobqueue.Params
 
 class RefreshAddressJob(private val assetId: String) : BaseJob(
     Params(PRIORITY_UI_HIGH)
-        .addTags(GROUP).requireNetwork()
+        .addTags(GROUP).requireNetwork(),
 ) {
 
     companion object {
@@ -13,7 +13,7 @@ class RefreshAddressJob(private val assetId: String) : BaseJob(
     }
 
     override fun onRun() {
-        val response = assetService.addresses(assetId).execute().body()
+        val response = addressService.addresses(assetId).execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             response.data?.let {
                 addressDao.insertList(it)

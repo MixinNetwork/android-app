@@ -1,28 +1,27 @@
 package one.mixin.android.ui.media
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ViewAnimator
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.layout_recycler_view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.databinding.LayoutRecyclerViewBinding
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.AudioPlayer
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.mediaDownloaded
 
 @AndroidEntryPoint
-class AudioFragment : BaseFragment() {
+class AudioFragment : BaseFragment(R.layout.layout_recycler_view) {
     companion object {
         const val TAG = "AudioFragment"
 
@@ -32,6 +31,8 @@ class AudioFragment : BaseFragment() {
     }
 
     private val viewModel by viewModels<SharedMediaViewModel>()
+    private val binding by viewBinding(LayoutRecyclerViewBinding::bind)
+    var onLongClickListener: ((String) -> Unit)? = null
 
     private val conversationId: String by lazy {
         requireArguments().getString(Constants.ARGS_CONVERSATION_ID)!!
@@ -43,14 +44,14 @@ class AudioFragment : BaseFragment() {
                 messageItem.mediaStatus == MediaStatus.CANCELED.name -> {
                     if (Session.getAccountId() == messageItem.userId) {
                         viewModel.retryUpload(messageItem.messageId) {
-                            toast(R.string.error_retry_upload)
+                            toast(R.string.Retry_upload_failed)
                         }
                     } else {
                         viewModel.retryDownload(messageItem.messageId)
                     }
                 }
                 messageItem.mediaStatus == MediaStatus.PENDING.name -> {
-                    viewModel.cancel(messageItem.messageId)
+                    viewModel.cancel(messageItem.messageId, messageItem.conversationId)
                 }
                 mediaDownloaded(messageItem.mediaStatus) ->
                     if (AudioPlayer.isPlay(messageItem.messageId)) {
@@ -59,32 +60,28 @@ class AudioFragment : BaseFragment() {
                         AudioPlayer.play(messageItem, continuePlayOnlyToday = true)
                     }
             }
-        }
+        },
+        fun(messageId: String) {
+            onLongClickListener?.invoke(messageId)
+        },
     )
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.layout_recycler_view, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        recycler_view.layoutManager = LinearLayoutManager(requireContext())
-        recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
-        recycler_view.adapter = adapter
-        empty_iv.setImageResource(R.drawable.ic_empty_audio)
-        empty_tv.setText(R.string.no_audio)
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerView.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        binding.recyclerView.adapter = adapter
+        binding.emptyIv.setImageResource(R.drawable.ic_empty_audio)
+        binding.emptyTv.setText(R.string.NO_AUDIO)
         viewModel.getAudioMessages(conversationId).observe(
             viewLifecycleOwner,
-            {
-                if (it.size <= 0) {
-                    (view as ViewAnimator).displayedChild = 1
-                } else {
-                    (view as ViewAnimator).displayedChild = 0
-                }
-                adapter.submitList(it)
+        ) {
+            if (it.size <= 0) {
+                (view as ViewAnimator).displayedChild = 1
+            } else {
+                (view as ViewAnimator).displayedChild = 0
             }
-        )
+            adapter.submitList(it)
+        }
     }
 }

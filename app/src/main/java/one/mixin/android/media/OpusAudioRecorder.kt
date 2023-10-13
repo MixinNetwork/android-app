@@ -9,22 +9,22 @@ import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import androidx.core.content.getSystemService
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
+import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.createAudioPreviewTemp
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.getAudioPath
-import one.mixin.android.extension.vibrate
+import one.mixin.android.extension.getAudioPreviewTemp
+import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.util.DispatchQueue
+import one.mixin.android.util.GsonHelper
+import timber.log.Timber
 import java.io.File
 import java.util.UUID
 
 class OpusAudioRecorder private constructor(private val ctx: Context) {
     companion object {
-        init {
-            System.loadLibrary("mixin")
-        }
-
         private const val SAMPLE_RATE = 16000
         private const val BUFFER_SIZE_FACTOR = 2
 
@@ -48,7 +48,40 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
             INSTANCE?.initConversation(conversationId)
             return INSTANCE as OpusAudioRecorder
         }
+
+        fun getAudioPreview(context: Context, conversationId: String): AudioPreview? {
+            val audioPreviewFile = context.getAudioPath().getAudioPreviewTemp(conversationId)
+            if (!audioPreviewFile.exists()) return null
+
+            audioPreviewFile.bufferedReader().use { br ->
+                val data = br.readText()
+                return try {
+                    GsonHelper.customGson.fromJson(data, AudioPreview::class.java)
+                } catch (e: Exception) {
+                    Timber.i("deserialize AudioPreview fails ${e.stackTraceToString()}")
+                    null
+                }
+            }
+        }
+
+        fun deletePreviewAudio(context: Context, conversationId: String) {
+            val audioPreviewFile = context.getAudioPath().getAudioPreviewTemp(conversationId)
+            if (audioPreviewFile.exists()) {
+                try {
+                    audioPreviewFile.delete()
+                } catch (e: Exception) {
+                    Timber.i("delete AudioPreview fails ${e.stackTraceToString()}")
+                }
+            }
+        }
     }
+
+    data class AudioPreview(
+        val messageId: String,
+        val path: String,
+        val duration: Long,
+        val waveForm: ByteArray,
+    )
 
     private var audioRecord: AudioRecord? = null
     private var recordBufferSize: Int
@@ -87,7 +120,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
             val phoneStateListener = object : PhoneStateListener() {
                 override fun onCallStateChanged(state: Int, incomingNumber: String?) {
                     if (state != TelephonyManager.CALL_STATE_IDLE) {
-                        stopRecording(false)
+                        stopRecording(AudioEndStatus.CANCEL)
                         callback?.onCancel()
                     }
                 }
@@ -143,18 +176,25 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                             recordTimeCount += len / 16
 
                             if (recordTimeCount >= MAX_RECORD_DURATION) {
-                                stopRecording(true, false)
+                                stopRecording(AudioEndStatus.SEND, false)
                             }
-                        }
+                        },
                     )
                     recordQueue.postRunnable(recordRunnable)
                 } else {
-                    stopRecordingInternal(sendAfterDone)
+                    stopRecordingInternal(
+                        if (sendAfterDone) {
+                            AudioEndStatus.SEND
+                        } else {
+                            AudioEndStatus.CANCEL
+                        },
+                    )
                 }
             }
         }
     }
 
+    @SuppressLint("MissingPermission")
     private val recodeStartRunnable = Runnable {
         if (audioRecord != null) {
             return@Runnable
@@ -174,7 +214,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                 SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT,
-                recordBufferSize * BUFFER_SIZE_FACTOR
+                recordBufferSize * BUFFER_SIZE_FACTOR,
             )
 
             if (audioRecord == null || audioRecord!!.state != AudioRecord.STATE_INITIALIZED) {
@@ -190,7 +230,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                 audioRecord = null
                 return@Runnable
             }
-            ctx.vibrate(longArrayOf(0, 10))
+            ctx.heavyClickVibrate()
             state = STATE_RECORDING
         } catch (e: Exception) {
             recordingAudioFile?.delete()
@@ -212,50 +252,77 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
         recordQueue.postRunnable(recodeStartRunnable)
     }
 
-    fun stopRecording(send: Boolean, vibrate: Boolean = true) {
+    fun stopRecording(endStatus: AudioEndStatus, vibrate: Boolean = true, notify: Boolean = true) {
         recordQueue.cancelRunnable(recodeStartRunnable)
         if (vibrate) {
-            ctx.vibrate(longArrayOf(0, 10))
+            ctx.clickVibrate()
         }
         recordQueue.postRunnable(
-            Runnable {
+            {
                 audioRecord?.let { audioRecord ->
                     try {
-                        sendAfterDone = send
+                        sendAfterDone = endStatus == AudioEndStatus.SEND
                         if (audioRecord.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
                             audioRecord.stop()
                         }
                     } catch (e: Exception) {
                         recordingAudioFile?.delete()
                     }
-                    stopRecordingInternal(send)
+                    stopRecordingInternal(endStatus, notify)
                 }
-            }
+            },
         )
     }
 
     fun stop() {
         callback = null
-        stopRecording(false, false)
+        stopRecording(AudioEndStatus.CANCEL, false)
     }
 
-    private fun stopRecordingInternal(send: Boolean) {
+    private fun stopRecordingInternal(endStatus: AudioEndStatus, notify: Boolean = true) {
         callStop = true
         // if not send no need to stopping record after all encoding runnable run completed.
-        if (send) {
+        if (endStatus != AudioEndStatus.CANCEL) {
             fileEncodingQueue.postRunnable(
-                Runnable {
+                {
                     stopRecord()
                     val duration = recordTimeCount
                     val waveForm = getWaveform2(recordSamples, recordSamples.size)
-                    GlobalScope.launch(Dispatchers.Main) {
-                        if (recordingAudioFile != null) {
-                            callback?.sendAudio(messageId!!, recordingAudioFile!!, duration, waveForm)
+                    val conversationId = this.conversationId ?: return@postRunnable
+                    val messageId = this.messageId ?: return@postRunnable
+                    val recordingAudioFile = this.recordingAudioFile ?: return@postRunnable
+
+                    if (endStatus != AudioEndStatus.SEND && duration >= 500) {
+                        val audioPreview = AudioPreview(
+                            messageId,
+                            recordingAudioFile.absolutePath,
+                            duration,
+                            waveForm,
+                        )
+                        val previewFile = ctx.getAudioPath().createAudioPreviewTemp(conversationId)
+                        previewFile.bufferedWriter().use { fos ->
+                            val data = GsonHelper.customGson.toJson(audioPreview)
+                            fos.write(data)
+                            fos.flush()
+                        }
+                    }
+
+                    if (!notify) {
+                        callback = null
+                        this@OpusAudioRecorder.recordingAudioFile = null
+                        return@postRunnable
+                    }
+
+                    MixinApplication.get().applicationScope.launch(Dispatchers.Main) {
+                        if (endStatus == AudioEndStatus.SEND) {
+                            callback?.sendAudio(messageId, recordingAudioFile, duration, waveForm)
+                        } else if (endStatus == AudioEndStatus.PREVIEW) {
+                            callback?.previewAudio(messageId, recordingAudioFile, duration, waveForm)
                         }
                         callback = null
-                        recordingAudioFile = null
+                        this@OpusAudioRecorder.recordingAudioFile = null
                     }
-                }
+                },
             )
         }
         state = STATE_IDLE
@@ -274,5 +341,6 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
     interface Callback {
         fun onCancel()
         fun sendAudio(messageId: String, file: File, duration: Long, waveForm: ByteArray)
+        fun previewAudio(messageId: String, file: File, duration: Long, waveForm: ByteArray)
     }
 }

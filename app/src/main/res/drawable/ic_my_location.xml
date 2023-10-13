@@ -1,20 +1,6 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="60dp"
-    android:height="60dp"
-    android:viewportWidth="60"
-    android:viewportHeight="60">
-    <path
-        android:fillColor="?attr/icon_white"
-        android:pathData="M30,50C41.0457,50 50,41.0457 50,30C50,18.9543 41.0457,10 30,10C18.9543,10 10,18.9543 10,30C10,41.0457 18.9543,50 30,50Z" />
-    <path
-        android:fillColor="?attr/icon_default"
-        android:pathData="M31,20C31,19.4477 30.5523,19 30,19C29.4477,19 29,19.4477 29,20V22C29,22.5523 29.4477,23 30,23C30.5523,23 31,22.5523 31,22V20ZM38,29C37.4477,29 37,29.4477 37,30C37,30.5523 37.4477,31 38,31H40C40.5523,31 41,30.5523 41,30C41,29.4477 40.5523,29 40,29H38ZM30,37C30.5523,37 31,37.4477 31,38V40C31,40.5523 30.5523,41 30,41C29.4477,41 29,40.5523 29,40V38C29,37.4477 29.4477,37 30,37ZM20,29C19.4477,29 19,29.4477 19,30C19,30.5523 19.4477,31 20,31H22C22.5523,31 23,30.5523 23,30C23,29.4477 22.5523,29 22,29H20Z" />
-    <path
-        android:fillColor="?attr/icon_white"
-        android:pathData="M30,38C34.4183,38 38,34.4183 38,30C38,25.5817 34.4183,22 30,22C25.5817,22 22,25.5817 22,30C22,34.4183 25.5817,38 30,38Z"
-        android:strokeWidth="2"
-        android:strokeColor="?attr/icon_default" />
-    <path
-        android:fillColor="?attr/icon_default"
-        android:pathData="M30,33C31.6569,33 33,31.6569 33,30C33,28.3431 31.6569,27 30,27C28.3431,27 27,28.3431 27,30C27,31.6569 28.3431,33 30,33Z" />
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="60dp" android:height="60dp" android:viewportWidth="60" android:viewportHeight="60">
+    <path android:fillColor="?attr/icon_white" android:pathData="M30 50c11.046 0 20-8.954 20-20s-8.954-20-20-20-20 8.954-20 20 8.954 20 20 20z"/>
+    <path android:fillColor="?attr/icon_default" android:pathData="M31 20c0-0.552-0.448-1-1-1s-1 0.448-1 1v2c0 0.552 0.448 1 1 1s1-0.448 1-1v-2zm7 9c-0.552 0-1 0.448-1 1s0.448 1 1 1h2c0.552 0 1-0.448 1-1s-0.448-1-1-1h-2zm-8 8c0.552 0 1 0.448 1 1v2c0 0.552-0.448 1-1 1s-1-0.448-1-1v-2c0-0.552 0.448-1 1-1zm-10-8c-0.552 0-1 0.448-1 1s0.448 1 1 1h2c0.552 0 1-0.448 1-1s-0.448-1-1-1h-2z"/>
+    <path android:fillColor="?attr/icon_white" android:pathData="M30 38c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z" android:strokeWidth="2" android:strokeColor="?attr/icon_default"/>
+    <path android:fillColor="?attr/icon_default" android:pathData="M30 33c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z"/>
 </vector>

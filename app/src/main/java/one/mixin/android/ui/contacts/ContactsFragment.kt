@@ -1,14 +1,13 @@
 package one.mixin.android.ui.contacts
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.work.WorkManager
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
@@ -17,15 +16,16 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import ir.mirrajabi.rxcontacts.Contact
 import ir.mirrajabi.rxcontacts.RxContacts
-import kotlinx.android.synthetic.main.fragment_contacts.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentContactsBinding
+import one.mixin.android.databinding.ViewContactHeaderBinding
+import one.mixin.android.databinding.ViewContactListEmptyBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshContactJob
 import one.mixin.android.job.UploadContactsJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
@@ -36,14 +36,14 @@ import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
-import one.mixin.android.worker.RefreshContactWorker
-import java.util.Collections
+import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ContactsFragment : BaseFragment() {
+class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -60,32 +60,35 @@ class ContactsFragment : BaseFragment() {
         fun newInstance() = ContactsFragment()
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(R.layout.fragment_contacts, container, false)
+    private val binding by viewBinding(FragmentContactsBinding::bind)
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        contact_recycler_view.adapter = contactAdapter
-        contact_recycler_view.setHasFixedSize(true)
-        contact_recycler_view.layoutManager = LinearLayoutManager(context)
-        contact_recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(contactAdapter))
-        val header = LayoutInflater.from(context).inflate(R.layout.view_contact_header, contact_recycler_view, false)
-        contactAdapter.setHeader(header)
-        val footer = LayoutInflater.from(context)
-            .inflate(R.layout.view_contact_list_empty, contact_recycler_view, false)
-        contactAdapter.setFooter(footer)
-        if (!hasContactPermission()) {
-            contactAdapter.showEmptyFooter()
-        } else {
-            contactAdapter.hideEmptyFooter()
+        binding.apply {
+            contactRecyclerView.adapter = contactAdapter
+            contactRecyclerView.setHasFixedSize(true)
+            contactRecyclerView.layoutManager = LinearLayoutManager(context)
+            contactRecyclerView.addItemDecoration(StickyRecyclerHeadersDecoration(contactAdapter))
+            val header = ViewContactHeaderBinding.inflate(LayoutInflater.from(context), contactRecyclerView, false)
+            contactAdapter.setHeader(header)
+            val footer = ViewContactListEmptyBinding.inflate(LayoutInflater.from(context), contactRecyclerView, false)
+            contactAdapter.setFooter(footer)
+            if (!hasContactPermission()) {
+                contactAdapter.showEmptyFooter()
+            } else {
+                contactAdapter.hideEmptyFooter()
+            }
+            contactAdapter.setContactListener(mContactListener)
+            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            titleView.rightAnimator.setOnClickListener {
+                SettingActivity.show(requireContext(), compose = false)
+            }
+            titleView.rightAnimator.setOnLongClickListener {
+                SettingActivity.show(requireContext())
+                true
+            }
         }
-        contactAdapter.setContactListener(mContactListener)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title_view.right_animator.setOnClickListener { SettingActivity.show(requireContext()) }
 
         if (hasContactPermission() &&
             !defaultSharedPreferences.getBoolean(PREF_DELETE_MOBILE_CONTACTS, false)
@@ -95,41 +98,40 @@ class ContactsFragment : BaseFragment() {
 
         contactsViewModel.findContacts().observe(
             viewLifecycleOwner,
-            { users ->
-                if (users != null && users.isNotEmpty()) {
-                    if (!hasContactPermission()) {
-                        contactAdapter.friendSize = users.size
-                        contactAdapter.users = users
-                    } else {
-                        val newList = arrayListOf<User>().apply {
-                            addAll(users)
-                            addAll(contactAdapter.users.filter { it.relationship != UserRelationship.FRIEND.name })
-                        }
-                        contactAdapter.friendSize = users.size
-                        contactAdapter.users = newList
-                    }
+        ) { users ->
+            if (users != null && users.isNotEmpty()) {
+                if (!hasContactPermission()) {
+                    contactAdapter.friendSize = users.size
+                    contactAdapter.users = users
                 } else {
-                    if (!hasContactPermission()) {
-                        contactAdapter.users = Collections.emptyList()
+                    val newList = arrayListOf<User>().apply {
+                        addAll(users)
+                        addAll(contactAdapter.users.filter { it.relationship != UserRelationship.FRIEND.name })
                     }
+                    contactAdapter.friendSize = users.size
+                    contactAdapter.users = newList
                 }
-                contactAdapter.notifyDataSetChanged()
+            } else {
+                if (!hasContactPermission()) {
+                    contactAdapter.users = Collections.emptyList()
+                }
             }
-        )
+            contactAdapter.notifyDataSetChanged()
+        }
         contactsViewModel.findSelf().observe(
             viewLifecycleOwner,
-            { self ->
-                if (self != null) {
-                    contactAdapter.me = self
-                    contactAdapter.notifyDataSetChanged()
-                }
+        ) { self ->
+            if (self != null) {
+                contactAdapter.me = self
+                contactAdapter.notifyDataSetChanged()
             }
-        )
+        }
     }
 
     private fun hasContactPermission() =
         requireContext().checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun fetchContacts() {
         RxContacts.fetch(requireContext())
             .toSortedList(Contact::compareTo)
@@ -144,7 +146,7 @@ class ContactsFragment : BaseFragment() {
                             User(
                                 "",
                                 "", "contact", "", item.displayName,
-                                "", it, false, "", null
+                                "", it, false, "", null,
                             )
                         }
                     }
@@ -152,7 +154,7 @@ class ContactsFragment : BaseFragment() {
                     contactAdapter.users = mutableList
                     contactAdapter.notifyDataSetChanged()
                 },
-                { }
+                { },
             )
         jobManager.addJobInBackground(UploadContactsJob())
     }
@@ -162,7 +164,7 @@ class ContactsFragment : BaseFragment() {
         override fun onHeaderRl() {
             ProfileBottomSheetDialogFragment.newInstance().showNow(
                 parentFragmentManager,
-                UserBottomSheetDialogFragment.TAG
+                UserBottomSheetDialogFragment.TAG,
             )
         }
 
@@ -183,9 +185,7 @@ class ContactsFragment : BaseFragment() {
                         contactAdapter.hideEmptyFooter()
                         jobManager.addJobInBackground(UploadContactsJob())
                         fetchContacts()
-                        context?.let { context ->
-                            WorkManager.getInstance(context).enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
-                        }
+                        jobManager.addJobInBackground(RefreshContactJob())
                     } else {
                         context?.openPermissionSetting()
                     }

@@ -20,7 +20,7 @@ import kotlin.math.min
 class FloatingLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyle: Int = 0
+    defStyle: Int = 0,
 ) : RelativeLayout(context, attrs, defStyle) {
     private var mode: Mode = Mode.MIN
         set(value) {
@@ -46,7 +46,7 @@ class FloatingLayout @JvmOverloads constructor(
                 override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
                     return !itemClickEnable
                 }
-            }
+            },
         )
     }
 
@@ -158,7 +158,7 @@ class FloatingLayout @JvmOverloads constructor(
     enum class Mode {
         MIN,
         PART,
-        MAX
+        MAX,
     }
 
     companion object {

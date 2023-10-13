@@ -1,11 +1,8 @@
 package one.mixin.android.ui.conversation
 
 import android.database.Cursor
-import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.GridLayoutManager
@@ -13,30 +10,33 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDispose
-import kotlinx.android.synthetic.main.fragment_draggable_recycler_view.*
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.databinding.FragmentDraggableRecyclerViewBinding
 import one.mixin.android.event.DragReleaseEvent
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.isWideScreen
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.conversation.adapter.GalleryCallback
 import one.mixin.android.ui.conversation.adapter.GalleryItemAdapter
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
+import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_TOP_2_BOTTOM
 import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.internal.model.AlbumMediaCollection
-import org.jetbrains.anko.dip
 
-class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks {
+class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view), AlbumMediaCollection.AlbumMediaCallbacks {
     companion object {
         const val TAG = "GalleryItemFragment"
         const val ARGS_ALBUM = "args_album"
         const val ARGS_NEED_CAMERA = "args_need_camera"
         const val PADDING = 10
-        const val COLUMN = 3
+        var COLUMN = 3
 
         fun newInstance(album: Album, needCamera: Boolean) = GalleryItemFragment().withArgs {
             putParcelable(ARGS_ALBUM, album)
@@ -49,11 +49,11 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
 
     private val stopScope = scope(Lifecycle.Event.ON_STOP)
 
-    private val album: Album by lazy { requireArguments().getParcelable<Album>(ARGS_ALBUM)!! }
+    private val album: Album by lazy { requireArguments().getParcelableCompat(ARGS_ALBUM, Album::class.java)!! }
     private val needCamera: Boolean by lazy { requireArguments().getBoolean(ARGS_NEED_CAMERA) }
 
     private val padding: Int by lazy {
-        requireContext().dip(PADDING)
+        PADDING.dp
     }
 
     private val adapter: GalleryItemAdapter by lazy {
@@ -62,40 +62,46 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
 
     private val albumMediaCollection = AlbumMediaCollection()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_draggable_recycler_view, container, false)
+    private val binding by viewBinding(FragmentDraggableRecyclerViewBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        rv.layoutManager = GridLayoutManager(context, COLUMN)
-        rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
-        adapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
-        rv.adapter = adapter
-        adapter.listener = object : GalleryCallback {
-            override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean) {
-                callback?.onItemClick(pos, uri, isVideo)
-            }
-
-            override fun onCameraClick() {
-                callback?.onCameraClick()
-            }
+        COLUMN = if (requireContext().isWideScreen()) {
+            5
+        } else {
+            3
         }
-        rv.addOnScrollListener(
-            object : RecyclerView.OnScrollListener() {
-                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                    if (rv.scrollState != SCROLL_STATE_IDLE) {
-                        adapter.hideBLur()
-                    }
+        binding.apply {
+            rv.layoutManager = GridLayoutManager(context, COLUMN)
+            rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
+            adapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
+            rv.adapter = adapter
+            adapter.listener = object : GalleryCallback {
+                override fun onItemClick(pos: Int, item: Item, send: Boolean) {
+                    callback?.onItemClick(pos, item, send)
+                }
+
+                override fun onCameraClick() {
+                    callback?.onCameraClick()
                 }
             }
-        )
-        rv.callback = object : DraggableRecyclerView.Callback {
-            override fun onScroll(dis: Float) {
-                rvCallback?.onScroll(dis)
-            }
+            rv.addOnScrollListener(
+                object : RecyclerView.OnScrollListener() {
+                    override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                        if (rv.scrollState != SCROLL_STATE_IDLE) {
+                            adapter.hideBLur()
+                        }
+                    }
+                },
+            )
+            rv.callback = object : DraggableRecyclerView.Callback {
+                override fun onScroll(dis: Float) {
+                    rvCallback?.onScroll(dis)
+                }
 
-            override fun onRelease(fling: Int) {
-                rvCallback?.onRelease(fling)
+                override fun onRelease(fling: Int) {
+                    rvCallback?.onRelease(fling)
+                }
             }
         }
 
@@ -105,7 +111,7 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
         RxBus.listen(DragReleaseEvent::class.java)
             .autoDispose(stopScope)
             .subscribe {
-                rv?.direction = if (it.isExpand) DIRECTION_TOP_2_BOTTOM else DIRECTION_NONE
+                binding.rv.direction = if (it.isExpand) DIRECTION_TOP_2_BOTTOM else DIRECTION_NONE
             }
     }
 
@@ -114,16 +120,22 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
         albumMediaCollection.onDestroy()
     }
 
-    override fun onAlbumMediaLoad(cursor: Cursor) {
-        if (cursor.isClosed) return
+    override fun onDestroy() {
+        super.onDestroy()
+        callback = null
+        rvCallback = null
+    }
 
-        rv?.post {
+    override fun onAlbumMediaLoad(cursor: Cursor?) {
+        if (!isAdded || cursor == null || cursor.isClosed) return
+
+        binding.rv.post {
             val itemList = arrayListOf<Item>()
-            while (cursor.moveToNext()) {
+            while (!cursor.isClosed && cursor.moveToNext()) {
                 val item = Item.valueOf(cursor)
                 itemList.add(item)
             }
-            if (itemList.isNullOrEmpty()) return@post
+            if (itemList.isEmpty()) return@post
 
             adapter.items = itemList
         }

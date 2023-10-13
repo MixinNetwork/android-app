@@ -8,9 +8,9 @@ import androidx.core.view.updateLayoutParams
 import com.jakewharton.rxbinding3.view.clicks
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.item_shared_media_header.view.*
-import kotlinx.android.synthetic.main.item_shared_media_link.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemSharedMediaHeaderBinding
+import one.mixin.android.databinding.ItemSharedMediaLinkBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
@@ -20,7 +20,7 @@ import one.mixin.android.vo.HyperlinkItem
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
-class LinkAdapter(private val onClickListener: (url: String) -> Unit) :
+class LinkAdapter(private val onClickListener: (url: String) -> Unit, private val onLongClickListener: (String) -> Unit) :
     SafePagedListAdapter<HyperlinkItem, LinkHolder>(HyperlinkItem.DIFF_CALLBACK),
     StickyRecyclerHeadersAdapter<MediaHeaderViewHolder> {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
@@ -28,13 +28,13 @@ class LinkAdapter(private val onClickListener: (url: String) -> Unit) :
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_shared_media_link,
                 parent,
-                false
-            )
+                false,
+            ),
         )
 
     override fun onBindViewHolder(holder: LinkHolder, position: Int) {
         getItem(position)?.let {
-            holder.bind(it, onClickListener)
+            holder.bind(it, onClickListener, onLongClickListener)
         }
     }
 
@@ -45,7 +45,8 @@ class LinkAdapter(private val onClickListener: (url: String) -> Unit) :
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): MediaHeaderViewHolder {
         val view = parent.inflate(R.layout.item_shared_media_header, false)
-        view.date_tv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+        val binding = ItemSharedMediaHeaderBinding.bind(view)
+        binding.dateTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             val margin = parent.context.dpToPx(20f)
             marginStart = margin
             marginEnd = margin
@@ -60,15 +61,20 @@ class LinkAdapter(private val onClickListener: (url: String) -> Unit) :
 }
 
 class LinkHolder(itemView: View) : NormalHolder(itemView) {
+    private val binding = ItemSharedMediaLinkBinding.bind(itemView)
 
     @SuppressLint("CheckResult")
-    fun bind(item: HyperlinkItem, onClickListener: (url: String) -> Unit) {
-        itemView.link_tv.text = item.hyperlink
+    fun bind(item: HyperlinkItem, onClickListener: (url: String) -> Unit, onLongClickListener: (messageId: String) -> Unit) {
+        binding.linkTv.text = item.hyperlink
         itemView.clicks()
             .observeOn(AndroidSchedulers.mainThread())
             .throttleFirst(1, TimeUnit.SECONDS)
             .subscribe {
                 item.hyperlink.let(onClickListener)
             }
+        itemView.setOnLongClickListener {
+            item.messageId.let(onLongClickListener)
+            true
+        }
     }
 }

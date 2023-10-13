@@ -1,5 +1,6 @@
 package one.mixin.android.ui.group
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
 import android.text.Editable
@@ -8,28 +9,31 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_group.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentGroupBinding
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.equalsIgnoreCase
+import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.textColor
 import one.mixin.android.job.ConversationJob.Companion.TYPE_ADD
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
 import one.mixin.android.job.ConversationJob.Companion.TYPE_REMOVE
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.group.adapter.GroupFriendAdapter
 import one.mixin.android.ui.group.adapter.GroupSelectAdapter
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
-import org.jetbrains.anko.textColor
 
+@SuppressLint("NotifyDataSetChanged")
 @AndroidEntryPoint
 class GroupFragment : BaseFragment() {
 
@@ -44,7 +48,7 @@ class GroupFragment : BaseFragment() {
         fun newInstance(
             from: Int? = 0,
             alreadyUsers: ArrayList<User>? = null,
-            conversationId: String? = null
+            conversationId: String? = null,
         ): GroupFragment {
             val f = GroupFragment()
             val b = Bundle()
@@ -69,7 +73,7 @@ class GroupFragment : BaseFragment() {
     }
 
     private val alreadyUsers: ArrayList<User>? by lazy {
-        requireArguments().getParcelableArrayList<User>(ARGS_ALREADY_USERS)
+        requireArguments().getParcelableArrayListCompat(ARGS_ALREADY_USERS, User::class.java)
     }
 
     private val conversationId: String? by lazy {
@@ -95,64 +99,65 @@ class GroupFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? =
         inflater.inflate(R.layout.fragment_group, container, false)
 
+    private val binding by viewBinding(FragmentGroupBinding::bind)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener {
-            activity?.onBackPressed()
+        binding.titleView.leftIb.setOnClickListener {
+            activity?.onBackPressedDispatcher?.onBackPressed()
         }
         if (from == TYPE_ADD || from == TYPE_REMOVE) {
-            title_view.right_tv.text = getString(R.string.done)
+            binding.titleView.rightTv.text = getString(R.string.Done)
             updateTitle(alreadyUsers?.size ?: 0)
         } else if (from == TYPE_CREATE) {
             updateTitle(0)
         }
-        select_rv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-        select_rv.adapter = groupAdapter
+        binding.selectRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        binding.selectRv.adapter = groupAdapter
         groupAdapter.checkedUsers = checkedUsers
-        title_view.right_animator.setOnClickListener {
-            search_et.hideKeyboard()
+        binding.titleView.rightAnimator.setOnClickListener {
+            binding.searchEt.hideKeyboard()
             if (from == TYPE_ADD || from == TYPE_REMOVE) {
                 handleAddOrRemove()
             } else {
                 activity?.addFragment(
                     this@GroupFragment,
                     NewGroupFragment.newInstance(ArrayList(checkedUsers)),
-                    NewGroupFragment.TAG
+                    NewGroupFragment.TAG,
                 )
             }
         }
-        title_view.right_animator.isEnabled = false
+        binding.titleView.rightAnimator.isEnabled = false
         groupFriendAdapter.setGroupFriendListener(mGroupFriendListener)
         alreadyUsers?.let {
             val alreadyUserIds = mutableListOf<String>()
             it.mapTo(alreadyUserIds) { it.userId }
             groupFriendAdapter.alreadyUserIds = alreadyUserIds
         }
-        group_rv.adapter = groupFriendAdapter
-        group_rv.addItemDecoration(StickyRecyclerHeadersDecoration(groupFriendAdapter))
+        binding.groupRv.adapter = groupFriendAdapter
+        binding.groupRv.addItemDecoration(StickyRecyclerHeadersDecoration(groupFriendAdapter))
 
         if (from == TYPE_ADD || from == TYPE_CREATE) {
             groupViewModel.getFriends().observe(
                 viewLifecycleOwner,
-                Observer {
-                    users = it
-                    filterAndSet(search_et.text.toString(), it)
-                }
-            )
+            ) {
+                users = it
+                filterAndSet(binding.searchEt.text.toString(), it)
+            }
         } else {
             users = alreadyUsers
-            filterAndSet(search_et.text.toString(), alreadyUsers)
+            filterAndSet(binding.searchEt.text.toString(), alreadyUsers)
         }
-        search_et.addTextChangedListener(mWatcher)
+        binding.searchEt.addTextChangedListener(mWatcher)
 
-        search_et.isFocusableInTouchMode = false
-        search_et.isFocusable = false
-        search_et.post {
-            search_et?.let {
+        binding.searchEt.isFocusableInTouchMode = false
+        binding.searchEt.isFocusable = false
+        binding.searchEt.post {
+            binding.searchEt.let {
                 it.isFocusableInTouchMode = true
                 it.isFocusable = true
             }
@@ -162,10 +167,10 @@ class GroupFragment : BaseFragment() {
     private fun filterAndSet(keyword: String, userList: List<User>?) {
         groupFriendAdapter.setData(
             userList?.filter {
-                it.fullName!!.contains(keyword, true) ||
-                    it.identityNumber.contains(keyword, true)
-            }?.sortedByDescending { it.fullName == keyword || it.identityNumber == keyword },
-            keyword.isEmpty()
+                it.fullName!!.containsIgnoreCase(keyword) ||
+                    it.identityNumber.containsIgnoreCase(keyword)
+            }?.sortedByDescending { it.fullName.equalsIgnoreCase(keyword) || it.identityNumber.equalsIgnoreCase(keyword) },
+            keyword.isEmpty(),
         )
     }
 
@@ -177,10 +182,10 @@ class GroupFragment : BaseFragment() {
     private fun handleAddOrRemove() = lifecycleScope.launch {
         if (dialog == null) {
             val title =
-                if (from == TYPE_ADD) R.string.group_adding else R.string.group_removing
+                if (from == TYPE_ADD) R.string.Adding else R.string.Removing
             dialog = indeterminateProgressDialog(
-                message = R.string.pb_dialog_message,
-                title = title
+                message = R.string.Please_wait_a_bit,
+                title = title,
             ).apply {
                 setCancelable(false)
             }
@@ -198,36 +203,40 @@ class GroupFragment : BaseFragment() {
     }
 
     private fun updateTitle(size: Int) {
-        title_view.setSubTitle(
+        binding.titleView.setSubTitle(
             when (from) {
-                TYPE_REMOVE -> getString(R.string.group_info_remove_member)
-                else -> getString(R.string.group_add)
+                TYPE_REMOVE -> getString(R.string.Remove_Participants)
+                else -> getString(R.string.Add_participants)
             },
-            "$size/$MAX_USER"
+            "$size/$MAX_USER",
         )
     }
 
     private val mGroupFriendListener = object : GroupFriendAdapter.GroupFriendListener {
+        @SuppressLint("NotifyDataSetChanged")
         override fun onItemClick(user: User, checked: Boolean) {
             if (checked) {
                 checkedUsers.add(user)
-                search_et?.text?.clear()
+                binding.searchEt.text?.clear()
             } else {
                 checkedUsers.remove(user)
             }
             val existCount = if (alreadyUsers == null) 0 else alreadyUsers!!.size
             updateTitle(
-                if (from == TYPE_ADD || from == TYPE_CREATE)
-                    checkedUsers.size + existCount else existCount - checkedUsers.size
+                if (from == TYPE_ADD || from == TYPE_CREATE) {
+                    checkedUsers.size + existCount
+                } else {
+                    existCount - checkedUsers.size
+                },
             )
             groupAdapter.notifyDataSetChanged()
-            select_rv.layoutManager?.scrollToPosition(checkedUsers.size - 1)
+            binding.selectRv.layoutManager?.scrollToPosition(checkedUsers.size - 1)
             if (checkedUsers.isEmpty()) {
-                title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)
-                title_view.right_animator.isEnabled = false
+                binding.titleView.rightTv.textColor = resources.getColor(R.color.text_gray, null)
+                binding.titleView.rightAnimator.isEnabled = false
             } else {
-                title_view.right_tv.textColor = resources.getColor(R.color.colorBlue, null)
-                title_view.right_animator.isEnabled = true
+                binding.titleView.rightTv.textColor = resources.getColor(R.color.colorBlue, null)
+                binding.titleView.rightAnimator.isEnabled = true
             }
         }
     }

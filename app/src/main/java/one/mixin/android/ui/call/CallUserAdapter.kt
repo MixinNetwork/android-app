@@ -1,96 +1,169 @@
 package one.mixin.android.ui.call
 
+import android.annotation.SuppressLint
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_call_user.view.*
+import com.uber.autodispose.android.autoDispose
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.databinding.ItemCallAddBinding
+import one.mixin.android.databinding.ItemCallUserBinding
+import one.mixin.android.event.FrameKeyEvent
+import one.mixin.android.event.VoiceEvent
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.inflate
 import one.mixin.android.extension.round
-import one.mixin.android.vo.User
+import one.mixin.android.vo.CallUser
 
-class CallUserAdapter(private val self: User) : ListAdapter<User, CallUserHolder>(User.DIFF_CALLBACK) {
+class CallUserAdapter(private val self: CallUser, private val callClicker: (String?) -> Unit) :
+    ListAdapter<CallUser, RecyclerView.ViewHolder>(CallUser.DIFF_CALLBACK) {
     var guestsNotConnected: List<String>? = null
 
-    var rvWidth = 0f
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        CallUserHolder(parent.inflate(R.layout.item_call_user))
+        if (viewType == 1) {
+            CallUserHolder(
+                ItemCallUserBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false,
+                ),
+            )
+        } else {
+            AddUserHolder(
+                ItemCallAddBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false,
+                ),
+            )
+        }
 
-    override fun onBindViewHolder(holder: CallUserHolder, position: Int) {
-        getItem(position)?.let {
-            holder.bind(it, self, guestsNotConnected, itemCount, rvWidth)
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (getItemViewType(position) == 1) {
+            getItem(position - 1)?.let {
+                (holder as CallUserHolder).bind(it, self, guestsNotConnected, callClicker)
+            }
+        } else {
+            (holder as AddUserHolder).bind(callClicker)
         }
     }
 
-    override fun onCurrentListChanged(previousList: MutableList<User>, currentList: MutableList<User>) {
-        val p = previousList.size
-        val c = currentList.size
-        if ((p <= 2 && c > 2) ||
-            (p > 2 && c <= 2) ||
-            (p in 3..9 && c !in 3..9) ||
-            (p !in 3..9 && c in 3..9)
-        ) {
+    override fun getItemViewType(position: Int): Int {
+        return if (position == 0) {
+            0
+        } else {
+            1
+        }
+    }
+
+    override fun getItemCount(): Int {
+        return super.getItemCount() + 1
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    override fun onCurrentListChanged(
+        previousList: MutableList<CallUser>,
+        currentList: MutableList<CallUser>,
+    ) {
+        if (previousList != currentList) {
             notifyDataSetChanged()
+        }
+    }
+
+    override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
+        if (holder is CallUserHolder) {
+            getItem(holder.layoutPosition - 1)?.let {
+                holder.listen(holder.itemView, it.userId)
+            }
+        }
+    }
+
+    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
+        if (holder is CallUserHolder) {
+            holder.stopListen()
         }
     }
 }
 
-class CallUserHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    private val max = 96.dp
-    private val mid = 76.dp
-    private val min = 64.dp
+class AddUserHolder(val binding: ItemCallAddBinding) : RecyclerView.ViewHolder(binding.root) {
+    fun bind(callClicker: (String?) -> Unit) {
+        itemView.setOnClickListener {
+            callClicker(null)
+        }
+    }
+}
 
-    fun bind(user: User, self: User, guestsNotConnected: List<String>?, renderSize: Int, rvWidth: Float) {
+class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder(binding.root) {
+
+    init {
+        binding.loading.round(64.dp)
+    }
+
+    fun bind(
+        user: CallUser,
+        self: CallUser,
+        guestsNotConnected: List<String>?,
+        callClicker: (String?) -> Unit,
+    ) {
         itemView.apply {
-            val size = getSize(renderSize)
-            updateLayoutParams<ViewGroup.LayoutParams> {
-                height = size + getOffset(renderSize, rvWidth)
+            binding.avatarView.setInfo(user.fullName, user.avatarUrl, user.userId)
+            binding.nameTv.text = user.fullName
+            binding.loading.setAutoRepeat(true)
+            binding.loading.setAnimation(R.raw.anim_call_loading, 64.dp, 64.dp)
+            binding.loading.playAnimation()
+            val vis =
+                user.userId != self.userId && guestsNotConnected?.contains(user.userId) == true
+            binding.loading.isVisible = vis
+            binding.blinkRing.setColor(R.color.call_voice)
+            binding.ring.setColor(R.color.colorRed)
+            binding.cover.isVisible = vis
+            setOnClickListener {
+                callClicker(user.userId)
             }
-            avatar_view.updateLayoutParams<ViewGroup.LayoutParams> {
-                width = size
-                height = size
-            }
-            loading.updateLayoutParams<ViewGroup.LayoutParams> {
-                width = size
-                height = size
-            }
-            cover.updateLayoutParams<ViewGroup.LayoutParams> {
-                width = size
-                height = size
-            }
-            avatar_view.setInfo(user.fullName, user.avatarUrl, user.userId)
-            loading.round(size)
-            loading.setAutoRepeat(true)
-            loading.setAnimation(R.raw.anim_call_loading, size, size)
-            loading.playAnimation()
-            val vis = user.userId != self.userId && guestsNotConnected?.contains(user.userId) == true
-            loading.isVisible = vis
-            cover.isVisible = vis
         }
     }
 
-    private fun getSize(itemCount: Int) = when {
-        itemCount <= 2 -> max
-        itemCount <= 9 -> mid
-        else -> min
+    private var blinkDisposable: Disposable? = null
+    private var disposable: Disposable? = null
+
+    fun listen(view: View, userId: String) {
+        if (blinkDisposable == null) {
+            blinkDisposable = RxBus.listen(VoiceEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(view)
+                .subscribe {
+                    if (it.userId == userId) {
+                        binding.blinkRing.updateAudioLevel(it.audioLevel)
+                        if (it.audioLevel != 0f) {
+                            binding.ring.isVisible = false
+                        }
+                    }
+                }
+        }
+        if (disposable == null) {
+            disposable = RxBus.listen(FrameKeyEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(view)
+                .subscribe {
+                    if (it.userId == userId) {
+                        binding.ring.isVisible = !it.hasKey
+                        if (!it.hasKey) {
+                            binding.blinkRing.isVisible = false
+                        }
+                    }
+                }
+        }
     }
 
-    private fun getOffset(itemCount: Int, rvWidth: Float): Int {
-        val itemW = when {
-            itemCount <= 1 -> rvWidth
-            itemCount <= 2 -> rvWidth / 2f
-            itemCount <= 9 -> rvWidth / 3f
-            else -> rvWidth / 4f
-        }
-        return when {
-            itemCount <= 2 -> (itemW - max) * 3 / 4
-            itemCount <= 9 -> (itemW - mid) * 3 / 4
-            else -> itemW - min
-        }.toInt()
+    fun stopListen() {
+        blinkDisposable?.dispose()
+        blinkDisposable = null
+        disposable?.dispose()
+        disposable = null
     }
 }

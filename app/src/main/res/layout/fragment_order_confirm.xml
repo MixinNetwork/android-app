@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_white"
+    android:orientation="vertical">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:need_divider="false" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <one.mixin.android.widget.BadgeCircleImageView
+                android:id="@+id/asset_avatar"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="72dp" />
+
+            <TextView
+                android:id="@+id/asset_name"
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:lines="1"
+                android:textSize="14sp"
+                android:textColor="@color/colorGreen"
+                android:layout_marginTop="14dp"
+                android:layout_marginBottom="48dp"
+                android:text="0"
+                android:visibility="invisible"
+                tools:text="+51.23 USDC" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="12dp"
+                android:padding="18dp"
+                android:background="@drawable/bg_round_window_8dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:text="@string/Payment_Method"
+                        android:textColor="?attr/text_minor"
+                        android:layout_width="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/pay_with"
+                        android:textColor="?attr/text_primary"
+                        tools:text="Visa...4242"
+                        android:gravity="center_vertical"
+                        android:drawablePadding="6dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:drawableStartCompat="@drawable/ic_visa" />
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_marginTop="14dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:text="@string/Token_Amount"
+                        android:textColor="?attr/text_minor"
+                        android:layout_width="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/token_tv"
+                        tools:text="50 USD"
+                        android:gravity="center_vertical"
+                        android:textColor="?attr/text_primary"
+                        android:layout_alignParentEnd="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/price_rl"
+                    android:layout_marginTop="14dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/price"
+                        android:text="@string/Exchange_Rate"
+                        android:textColor="?attr/text_minor"
+                        android:layout_width="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/time_tv"
+                        android:textColor="@color/colorBlue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:layout_toEndOf="@id/price"
+                        android:drawablePadding="4dp"
+                        android:gravity="center_vertical"
+                        android:layout_centerVertical="true"
+                        app:drawableStartCompat="@drawable/ic_time" />
+
+                    <TextView
+                        android:id="@+id/price_tv"
+                        android:textColor="?attr/text_primary"
+                        tools:text="1 USD = 0.996USDC"
+                        android:lines="1"
+                        android:gravity="center_vertical|end"
+                        android:layout_toEndOf="@id/time_tv"
+                        android:layout_marginStart="2dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </RelativeLayout>
+
+
+                <RelativeLayout
+                    android:id="@+id/fee_rl"
+                    android:layout_marginTop="14dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:text="@string/Fees_by_Gateway"
+                        android:textColor="?attr/text_minor"
+                        android:layout_width="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="6dp" />
+
+                    <TextView
+                        android:id="@+id/fee_tv"
+                        tools:text="1.23 USD"
+                        android:gravity="center_vertical"
+                        android:textColor="?attr/text_primary"
+                        android:layout_alignParentEnd="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/fee_mixin_rl"
+                    android:layout_marginTop="14dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:text="@string/Fees_by_Mixin"
+                        android:textColor="?attr/text_minor"
+                        android:layout_width="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="6dp" />
+
+                    <TextView
+                        android:id="@+id/fee_mixin_tv"
+                        tools:text="0 USD"
+                        android:gravity="center_vertical"
+                        android:textColor="?attr/text_primary"
+                        android:layout_alignParentEnd="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/purchase_total_rl"
+                    android:layout_marginTop="14dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:text="@string/Purchase_Total_Amount"
+                        android:textColor="?attr/text_minor"
+                        android:layout_width="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="6dp" />
+
+                    <TextView
+                        android:id="@+id/purchase_total_tv"
+                        tools:text="1.23 USD"
+                        android:gravity="center_vertical"
+                        android:textColor="?attr/text_primary"
+                        android:layout_alignParentEnd="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </RelativeLayout>
+            </LinearLayout>
+
+            <TextView
+                android:layout_gravity="center_horizontal"
+                android:text="@string/Fees_tip"
+                android:textColor="?attr/text_minor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp" />
+
+            <ViewAnimator
+                android:id="@+id/buy_va"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:layout_marginTop="64dp"
+                android:inAnimation="@anim/fade_in"
+                android:outAnimation="@anim/fade_out">
+
+                <TextView
+                    android:layout_gravity="center"
+                    android:id="@+id/continue_tv"
+                    android:layout_width="152dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_round_blue_btn_40"
+                    android:gravity="center"
+                    android:text="@string/Continue"
+                    android:textColor="@color/white"
+                    android:textSize="14sp" />
+
+                <com.google.android.gms.wallet.button.PayButton
+                    android:id="@+id/googlePayButton"
+                    android:layout_width="200dp"
+                    android:layout_gravity="center"
+                    android:layout_height="wrap_content" />
+
+                <ProgressBar
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:theme="@style/AppTheme.BlueAccent" />
+            </ViewAnimator>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

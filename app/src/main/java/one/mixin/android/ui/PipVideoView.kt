@@ -5,7 +5,6 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context.WINDOW_SERVICE
 import android.graphics.PixelFormat
 import android.os.Build
@@ -23,11 +22,12 @@ import android.widget.ImageView
 import androidx.annotation.Keep
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
-import com.google.android.exoplayer2.ExoPlaybackException
-import com.google.android.exoplayer2.Player.STATE_BUFFERING
-import com.google.android.exoplayer2.Player.STATE_ENDED
-import com.google.android.exoplayer2.Player.STATE_IDLE
-import com.google.android.exoplayer2.Player.STATE_READY
+import androidx.media3.common.Player.STATE_BUFFERING
+import androidx.media3.common.Player.STATE_ENDED
+import androidx.media3.common.Player.STATE_IDLE
+import androidx.media3.common.Player.STATE_READY
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlaybackException
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -40,8 +40,11 @@ import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.round
+import one.mixin.android.extension.safeAddView
+import one.mixin.android.extension.safeRemoveView
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.media.pager.MediaPagerActivity
+import one.mixin.android.util.RomUtil
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.video.MixinPlayer
@@ -51,11 +54,11 @@ import one.mixin.android.widget.PlayView.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView.Companion.STATUS_LOADING
 import one.mixin.android.widget.PlayView.Companion.STATUS_PAUSE
 import one.mixin.android.widget.PlayView.Companion.STATUS_PLAYING
-import org.jetbrains.anko.dip
 import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.round
 
+@UnstableApi
 @SuppressLint("InvalidWakeLockTag")
 class PipVideoView {
 
@@ -97,7 +100,7 @@ class PipVideoView {
                 getSideCoord(true, sidex, px, videoWidth, realX, realY).toFloat(),
                 getSideCoord(false, sidey, py, videoHeight, realX, realY).toFloat(),
                 videoWidth.toFloat(),
-                videoHeight.toFloat()
+                videoHeight.toFloat(),
             )
         }
 
@@ -130,9 +133,13 @@ class PipVideoView {
             }
             return localInstance!!
         }
+
+        fun release() {
+            Instance?.close(true)
+        }
     }
 
-    private lateinit var windowView: FrameLayout
+    private var windowView: FrameLayout? = null
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
     private var videoWidth: Int = 0
     private var videoHeight: Int = 0
@@ -153,26 +160,26 @@ class PipVideoView {
     private val aodWakeLock by lazy {
         powerManager.newWakeLock(
             PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE,
-            "mixin"
+            "mixin",
         )
     }
 
     fun show(
-        activity: Activity,
         aspectRatio: Float,
         rotation: Int,
         conversationId: String,
         messageId: String,
         isVideo: Boolean,
-        excludeLive: Boolean,
-        mediaUrl: String?
+        mediaSource: MediaPagerActivity.MediaSource,
+        mediaUrl: String?,
     ): TextureView {
+        windowView?.let { windowManager.safeRemoveView(it) }
         this.mediaUrl = mediaUrl
         val isLandscape = appContext.isLandscape()
         val realSize = appContext.realSize()
         val realX = if (isLandscape) realSize.y else realSize.x
         val realY = if (isLandscape) realSize.x else realSize.y
-        windowView = object : FrameLayout(activity) {
+        windowView = object : FrameLayout(appContext) {
             private var startX: Float = 0f
             private var startY: Float = 0f
 
@@ -185,7 +192,7 @@ class PipVideoView {
                 } else if (event.action == MotionEvent.ACTION_MOVE) {
                     if (abs(startX - x) >= appContext.getPixelsInCM(
                             0.3f,
-                            true
+                            true,
                         ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
                     ) {
                         startX = x
@@ -218,8 +225,8 @@ class PipVideoView {
                         alpha =
                             1.0f - (windowLayoutParams.x - realX + windowLayoutParams.width) / maxDiff.toFloat() * 0.5f
                     }
-                    if (windowView.alpha != alpha) {
-                        windowView.alpha = alpha
+                    if (windowView?.alpha != alpha) {
+                        windowView?.alpha = alpha
                     }
                     maxDiff = 0
                     if (windowLayoutParams.y < -maxDiff) {
@@ -228,7 +235,7 @@ class PipVideoView {
                         windowLayoutParams.y =
                             realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff
                     }
-                    windowManager.updateViewLayout(windowView, windowLayoutParams)
+                    windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
                     startX = x
                     startY = y
                 } else if (event.action == MotionEvent.ACTION_UP) {
@@ -248,42 +255,42 @@ class PipVideoView {
                 videoHeight = (videoWidth / aspectRatio).toInt()
             }
         }
-        val aspectRatioFrameLayout = AspectRatioFrameLayout(activity)
+        val aspectRatioFrameLayout = AspectRatioFrameLayout(appContext)
         aspectRatioFrameLayout.setAspectRatio(aspectRatio, rotation)
         aspectRatioFrameLayout.round(8.dp)
-        windowView.addView(aspectRatioFrameLayout, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, Gravity.CENTER))
-        val textureView = TextureView(activity)
+        windowView?.addView(aspectRatioFrameLayout, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, Gravity.CENTER))
+        val textureView = TextureView(appContext)
         aspectRatioFrameLayout.addView(textureView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
 
-        inlineButton = ImageView(activity).apply {
+        inlineButton = ImageView(appContext).apply {
             scaleType = ImageView.ScaleType.CENTER
             visibility = GONE
             setImageResource(R.drawable.ic_pip_maximum)
-            windowView.addView(
+            windowView?.addView(
                 this,
-                FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.END)
+                FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.END),
             )
             setOnClickListener {
-                if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
-                    appContext.toast(R.string.need_background_permission)
+                if (RomUtil.isMiui && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
+                    toast(R.string.need_background_permission)
                 }
                 MediaPagerActivity.show(
                     MixinApplication.appContext,
                     conversationId,
                     messageId,
                     aspectRatio,
-                    excludeLive
+                    mediaSource,
                 )
             }
         }
 
-        closeButton = ImageView(activity).apply {
+        closeButton = ImageView(appContext).apply {
             scaleType = ImageView.ScaleType.CENTER
             visibility = GONE
             setImageResource(R.drawable.ic_close_white_24dp)
-            windowView.addView(
+            windowView?.addView(
                 this,
-                FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.START)
+                FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.START),
             )
             setOnClickListener {
                 close(true)
@@ -292,8 +299,9 @@ class PipVideoView {
         }
 
         val dp42 = appContext.dpToPx(42f)
-        playView = PlayView(activity).apply {
-            windowView.addView(this, FrameLayout.LayoutParams(dp42, dp42, Gravity.CENTER))
+        playView = PlayView(appContext).apply {
+            setBackgroundResource(R.drawable.bg_play_control)
+            windowView?.addView(this, FrameLayout.LayoutParams(dp42, dp42, Gravity.CENTER))
             val playbackState = VideoPlayer.player().player.playbackState
             status = when (playbackState) {
                 STATE_IDLE, STATE_ENDED -> {
@@ -382,7 +390,7 @@ class PipVideoView {
                                 playView?.status = STATUS_PAUSE
                             }
                             if (!aodWakeLock.isHeld) {
-                                aodWakeLock.acquire()
+                                aodWakeLock.acquire(10 * 60 * 1000L)
                             }
                         }
                         STATE_BUFFERING -> {
@@ -391,7 +399,7 @@ class PipVideoView {
                         }
                     }
                 }
-            }
+            },
         )
 
         textureView.setOnClickListener {
@@ -421,14 +429,14 @@ class PipVideoView {
             }
             windowLayoutParams.flags =
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-            windowManager.addView(windowView, windowLayoutParams)
+            windowManager.safeAddView(windowView, windowLayoutParams)
             shown = true
         } catch (e: Exception) {
             Timber.e(e)
         }
-        windowView.keepScreenOn = true
+        windowView?.keepScreenOn = true
         if (!aodWakeLock.isHeld) {
-            aodWakeLock.acquire()
+            aodWakeLock.acquire(10 * 60 * 1000L)
         }
         return textureView
     }
@@ -444,9 +452,13 @@ class PipVideoView {
             if (aodWakeLock.isHeld) {
                 aodWakeLock.release()
             }
-            windowManager.removeView(windowView)
-        } catch (e: Exception) {
+            windowView?.let { windowManager.safeRemoveView(it) }
+        } catch (ignored: Exception) {
         }
+        windowView = null
+        playView = null
+        inlineButton = null
+        closeButton = null
     }
 
     private fun fadeIn() {
@@ -481,15 +493,15 @@ class PipVideoView {
         val endY = getSideCoord(false, 1, 0f, videoHeight, realX, realY)
         var animators: ArrayList<Animator>? = null
         val editor = appContext.defaultSharedPreferences.edit()
-        val maxDiff = appContext.dip(20f)
+        val maxDiff = 20f.dp
         var slideOut = false
         if (abs(startX - windowLayoutParams.x) <= maxDiff || windowLayoutParams.x < 0 && windowLayoutParams.x > -videoWidth * 2 / 5) {
             if (animators == null) {
                 animators = ArrayList()
             }
             editor.putInt(SIDEX, 0)
-            if (windowView.alpha != 1.0f) {
-                animators.add(ObjectAnimator.ofFloat(windowView, "alpha", 1.0f))
+            if (windowView?.alpha != 1.0f) {
+                animators.add(ObjectAnimator.ofFloat(windowView!!, "alpha", 1.0f))
             }
             animators.add(ObjectAnimator.ofInt(this, "x", startX))
         } else if (abs(endX - windowLayoutParams.x) <= maxDiff || windowLayoutParams.x > realX - videoWidth &&
@@ -499,11 +511,11 @@ class PipVideoView {
                 animators = ArrayList()
             }
             editor.putInt(SIDEX, 1)
-            if (windowView.alpha != 1.0f) {
-                animators.add(ObjectAnimator.ofFloat(windowView, "alpha", 1.0f))
+            if (windowView?.alpha != 1.0f) {
+                animators.add(ObjectAnimator.ofFloat(windowView!!, "alpha", 1.0f))
             }
             animators.add(ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, endX))
-        } else if (windowView.alpha != 1.0f) {
+        } else if (windowView?.alpha != 1.0f) {
             if (animators == null) {
                 animators = ArrayList()
             }
@@ -548,14 +560,14 @@ class PipVideoView {
             animatorSet.interpolator = decelerateInterpolator
             animatorSet.duration = 150
             if (slideOut) {
-                animators.add(ObjectAnimator.ofFloat(windowView, "alpha", 0.0f))
+                animators.add(ObjectAnimator.ofFloat(windowView!!, "alpha", 0.0f))
                 animatorSet.addListener(
                     object : AnimatorListenerAdapter() {
                         override fun onAnimationEnd(animation: Animator) {
                             close(true)
                             VideoPlayer.destroy()
                         }
-                    }
+                    },
                 )
             }
             animatorSet.playTogether(animators)
@@ -591,12 +603,12 @@ class PipVideoView {
     @Keep
     fun setX(value: Int) {
         windowLayoutParams.x = value
-        windowManager.updateViewLayout(windowView, windowLayoutParams)
+        windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
     }
 
     @Keep
     fun setY(value: Int) {
         windowLayoutParams.y = value
-        windowManager.updateViewLayout(windowView, windowLayoutParams)
+        windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
     }
 }

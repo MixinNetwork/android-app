@@ -9,6 +9,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.util.reportException
+import timber.log.Timber
+import java.io.File
 
 suspend fun getLastUserId(context: Context): String? = withContext(Dispatchers.IO) {
     val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
@@ -22,7 +24,7 @@ suspend fun getLastUserId(context: Context): String? = withContext(Dispatchers.I
         db = SQLiteDatabase.openDatabase(
             dbFile.absolutePath,
             null,
-            SQLiteDatabase.OPEN_READONLY
+            SQLiteDatabase.OPEN_READONLY,
         )
         c = db.rawQuery("SELECT user_id FROM users WHERE relationship = 'ME'", null)
         var userId: String? = null
@@ -40,6 +42,53 @@ suspend fun getLastUserId(context: Context): String? = withContext(Dispatchers.I
 
 @SuppressLint("ObsoleteSdkInt")
 suspend fun clearDatabase(context: Context) = withContext(Dispatchers.IO) {
+    try {
+        clearFts(context)
+        clearPending(context)
+        val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
+        if (!dbFile.exists()) {
+            return@withContext
+        }
+        dbFile.parent?.let {
+            File("$it${File.separator}${Constants.DataBase.DB_NAME}-shm").delete()
+            File("$it${File.separator}${Constants.DataBase.DB_NAME}-wal").delete()
+            File("$it${File.separator}${Constants.DataBase.DB_NAME}-journal").delete()
+        }
+        dbFile.delete()
+    } catch (e: Exception) {
+        Timber.e(e)
+    }
+}
+
+@SuppressLint("ObsoleteSdkInt")
+suspend fun clearPending(context: Context) = withContext(Dispatchers.IO) {
+    val dbFile = context.getDatabasePath(Constants.DataBase.PENDING_DB_NAME)
+    if (!dbFile.exists()) {
+        return@withContext
+    }
+    dbFile.parent?.let {
+        File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-shm").delete()
+        File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-wal").delete()
+        File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-journal").delete()
+    }
+    dbFile.delete()
+}
+
+suspend fun clearFts(context: Context) = withContext(Dispatchers.IO) {
+    val dbFile = context.getDatabasePath(Constants.DataBase.FTS_DB_NAME)
+    if (!dbFile.exists()) {
+        return@withContext
+    }
+    dbFile.parent?.let {
+        File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-shm").delete()
+        File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-wal").delete()
+        File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-journal").delete()
+    }
+    dbFile.delete()
+}
+
+@SuppressLint("ObsoleteSdkInt")
+suspend fun clearJobs(context: Context) = withContext(Dispatchers.IO) {
     val supportsDeferForeignKeys = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
     val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
     if (!dbFile.exists()) {
@@ -50,7 +99,7 @@ suspend fun clearDatabase(context: Context) = withContext(Dispatchers.IO) {
         db = SQLiteDatabase.openDatabase(
             dbFile.absolutePath,
             null,
-            SQLiteDatabase.OPEN_READWRITE
+            SQLiteDatabase.OPEN_READWRITE,
         )
         if (!supportsDeferForeignKeys) {
             db.execSQL("PRAGMA foreign_keys = FALSE")
@@ -59,33 +108,7 @@ suspend fun clearDatabase(context: Context) = withContext(Dispatchers.IO) {
             db.execSQL("PRAGMA defer_foreign_keys = TRUE")
         }
         db.beginTransaction()
-        db.execSQL("DELETE FROM `users`")
-        db.execSQL("DELETE FROM `conversations`")
-        db.execSQL("DELETE FROM `messages`")
-        db.execSQL("DELETE FROM `participants`")
-        db.execSQL("DELETE FROM `participant_session`")
-        db.execSQL("DELETE FROM `offsets`")
-        db.execSQL("DELETE FROM `assets`")
-        db.execSQL("DELETE FROM `assets_extra`")
-        db.execSQL("DELETE FROM `snapshots`")
-        db.execSQL("DELETE FROM `messages_history`")
-        db.execSQL("DELETE FROM `sent_sender_keys`")
-        db.execSQL("DELETE FROM `stickers`")
-        db.execSQL("DELETE FROM `sticker_albums`")
-        db.execSQL("DELETE FROM `apps`")
-        db.execSQL("DELETE FROM `hyperlinks`")
-        db.execSQL("DELETE FROM `flood_messages`")
-        db.execSQL("DELETE FROM `addresses`")
-        db.execSQL("DELETE FROM `resend_messages`")
-        db.execSQL("DELETE FROM `resend_session_messages`")
-        db.execSQL("DELETE FROM `sticker_relationships`")
-        db.execSQL("DELETE FROM `top_assets`")
-        db.execSQL("DELETE FROM `favorite_apps`")
         db.execSQL("DELETE FROM `jobs`")
-        db.execSQL("DELETE FROM `message_mentions`")
-        db.execSQL("DELETE FROM `messages_fts4`")
-        db.execSQL("DELETE FROM `circles`")
-        db.execSQL("DELETE FROM `circle_conversations`")
         db.setTransactionSuccessful()
     } catch (e: Exception) {
         reportException(e)
@@ -95,8 +118,5 @@ suspend fun clearDatabase(context: Context) = withContext(Dispatchers.IO) {
             db?.execSQL("PRAGMA foreign_keys = TRUE")
         }
         db?.rawQuery("PRAGMA wal_checkpoint(FULL)", null)?.close()
-        if (db?.inTransaction() == false) {
-            db.execSQL("VACUUM")
-        }
     }
 }

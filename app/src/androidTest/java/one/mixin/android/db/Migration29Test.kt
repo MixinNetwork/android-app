@@ -23,7 +23,7 @@ class Migration29Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_25_26,
             MixinDatabaseMigrations.MIGRATION_26_27,
             MixinDatabaseMigrations.MIGRATION_27_28,
-            MixinDatabaseMigrations.MIGRATION_28_29
+            MixinDatabaseMigrations.MIGRATION_28_29,
         )
     }
 
@@ -44,7 +44,7 @@ class Migration29Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_25_26,
             MixinDatabaseMigrations.MIGRATION_26_27,
             MixinDatabaseMigrations.MIGRATION_27_28,
-            MixinDatabaseMigrations.MIGRATION_28_29
+            MixinDatabaseMigrations.MIGRATION_28_29,
         )
     }
 
@@ -64,7 +64,7 @@ class Migration29Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_25_26,
             MixinDatabaseMigrations.MIGRATION_26_27,
             MixinDatabaseMigrations.MIGRATION_27_28,
-            MixinDatabaseMigrations.MIGRATION_28_29
+            MixinDatabaseMigrations.MIGRATION_28_29,
         )
     }
 
@@ -83,7 +83,7 @@ class Migration29Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_25_26,
             MixinDatabaseMigrations.MIGRATION_26_27,
             MixinDatabaseMigrations.MIGRATION_27_28,
-            MixinDatabaseMigrations.MIGRATION_28_29
+            MixinDatabaseMigrations.MIGRATION_28_29,
         )
     }
 
@@ -101,7 +101,7 @@ class Migration29Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_25_26,
             MixinDatabaseMigrations.MIGRATION_26_27,
             MixinDatabaseMigrations.MIGRATION_27_28,
-            MixinDatabaseMigrations.MIGRATION_28_29
+            MixinDatabaseMigrations.MIGRATION_28_29,
         )
     }
 
@@ -118,7 +118,7 @@ class Migration29Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_25_26,
             MixinDatabaseMigrations.MIGRATION_26_27,
             MixinDatabaseMigrations.MIGRATION_27_28,
-            MixinDatabaseMigrations.MIGRATION_28_29
+            MixinDatabaseMigrations.MIGRATION_28_29,
         )
     }
 
@@ -134,7 +134,7 @@ class Migration29Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_25_26,
             MixinDatabaseMigrations.MIGRATION_26_27,
             MixinDatabaseMigrations.MIGRATION_27_28,
-            MixinDatabaseMigrations.MIGRATION_28_29
+            MixinDatabaseMigrations.MIGRATION_28_29,
         )
     }
 
@@ -149,7 +149,7 @@ class Migration29Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_25_26,
             MixinDatabaseMigrations.MIGRATION_26_27,
             MixinDatabaseMigrations.MIGRATION_27_28,
-            MixinDatabaseMigrations.MIGRATION_28_29
+            MixinDatabaseMigrations.MIGRATION_28_29,
         )
     }
 
@@ -163,7 +163,7 @@ class Migration29Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_25_26,
             MixinDatabaseMigrations.MIGRATION_26_27,
             MixinDatabaseMigrations.MIGRATION_27_28,
-            MixinDatabaseMigrations.MIGRATION_28_29
+            MixinDatabaseMigrations.MIGRATION_28_29,
         )
     }
 
@@ -178,7 +178,7 @@ class Migration29Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_25_26,
             MixinDatabaseMigrations.MIGRATION_26_27,
             MixinDatabaseMigrations.MIGRATION_27_28,
-            MixinDatabaseMigrations.MIGRATION_28_29
+            MixinDatabaseMigrations.MIGRATION_28_29,
         )
     }
 
@@ -192,7 +192,7 @@ class Migration29Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_25_26,
             MixinDatabaseMigrations.MIGRATION_26_27,
             MixinDatabaseMigrations.MIGRATION_27_28,
-            MixinDatabaseMigrations.MIGRATION_28_29
+            MixinDatabaseMigrations.MIGRATION_28_29,
         )
     }
 
@@ -205,7 +205,7 @@ class Migration29Test : BaseMigrationTest() {
             true,
             MixinDatabaseMigrations.MIGRATION_26_27,
             MixinDatabaseMigrations.MIGRATION_27_28,
-            MixinDatabaseMigrations.MIGRATION_28_29
+            MixinDatabaseMigrations.MIGRATION_28_29,
         )
     }
 
@@ -217,7 +217,7 @@ class Migration29Test : BaseMigrationTest() {
             29,
             true,
             MixinDatabaseMigrations.MIGRATION_27_28,
-            MixinDatabaseMigrations.MIGRATION_28_29
+            MixinDatabaseMigrations.MIGRATION_28_29,
         )
     }
 
@@ -228,7 +228,7 @@ class Migration29Test : BaseMigrationTest() {
             Constants.DataBase.DB_NAME,
             29,
             true,
-            MixinDatabaseMigrations.MIGRATION_28_29
+            MixinDatabaseMigrations.MIGRATION_28_29,
         )
     }
 }

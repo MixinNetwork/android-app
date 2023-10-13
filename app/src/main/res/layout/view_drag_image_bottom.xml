@@ -5,50 +5,62 @@
               android:orientation="vertical">
 
     <TextView
-            android:id="@+id/save"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="@drawable/bg_upper_round"
-            android:foreground="?attr/selectableItemBackground"
-            android:gravity="center_vertical"
-            android:paddingEnd="16dp"
-            android:paddingStart="16dp"
-            android:textColor="?attr/text_primary"
-            android:text="@string/save"/>
+        android:id="@+id/save"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@drawable/bg_upper_round"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:textColor="?attr/text_primary"
+        android:text="@string/Save"/>
+
+    <TextView
+        android:id="@+id/show_in_chat"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:textColor="?attr/text_primary"
+        android:text="@string/Show_in_chat"/>
 
     <TextView
         android:id="@+id/share_image"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground"
+        android:foreground="?android:attr/selectableItemBackground"
         android:gravity="center_vertical"
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/share"/>
+        android:text="@string/Share"/>
 
     <TextView
             android:id="@+id/decode"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground"
+            android:foreground="?android:attr/selectableItemBackground"
             android:gravity="center_vertical"
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-            android:text="@string/contact_sq_scan_title"/>
+            android:text="@string/Extract_QR_Code"/>
 
     <TextView
             android:id="@+id/cancel"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground"
+            android:foreground="?android:attr/selectableItemBackground"
             android:gravity="center_vertical"
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
             android:textColor="?attr/text_primary"
-            android:text="@string/cancel"/>
+            android:text="@string/Cancel"/>
 </LinearLayout>

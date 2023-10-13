@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/bg_upper_round"
     android:orientation="vertical">
 
     <one.mixin.android.widget.RoundTitleView
         android:id="@+id/title"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:right_icon="@drawable/ic_circle_close" />
+        android:layout_height="wrap_content" />
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll_view"
@@ -43,9 +42,8 @@
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginBottom="4dp"
-                android:ellipsize="end"
-                android:maxLength="30"
-                android:singleLine="true"
+                android:gravity="center_horizontal"
+                android:maxWidth="280dp"
                 android:textColor="?attr/text_primary"
                 android:textSize="18sp" />
 
@@ -58,18 +56,19 @@
                 android:textColor="?attr/text_minor"
                 android:textSize="12sp" />
 
-            <one.mixin.android.widget.linktext.AutoLinkTextView
+            <one.mixin.android.widget.ExpandableTextView
                 android:id="@+id/detail_tv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
                 android:layout_marginEnd="32dp"
                 android:gravity="center_horizontal"
-                android:maxHeight="300dp"
-                android:maxLength="1024"
-                android:scrollbars="vertical"
                 android:textColor="?attr/text_primary"
-                android:textIsSelectable="true" />
+                android:maxLines="12"
+                android:scrollbars="vertical"
+                app:limitedMaxLines="6"
+                app:expandAction="@string/More"
+                app:expandActionColor="?attr/text_blue"/>
 
             <LinearLayout
                 android:id="@+id/ops_ll"
@@ -90,7 +89,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:background="@drawable/mixin_ripple"
-                        android:contentDescription="@string/share"
+                        android:contentDescription="@string/Share"
                         android:src="@drawable/ic_group_member" />
                 </FrameLayout>
 
@@ -105,7 +104,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:background="@drawable/mixin_ripple"
-                        android:contentDescription="@string/contact_other_send"
+                        android:contentDescription="@string/Send_Message"
                         android:src="@drawable/ic_user_send" />
                 </FrameLayout>
 
@@ -121,7 +120,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:background="@drawable/mixin_ripple"
-                        android:contentDescription="@string/more"
+                        android:contentDescription="@string/More"
                         android:src="@drawable/ic_arrow_down_info" />
                 </FrameLayout>
             </LinearLayout>

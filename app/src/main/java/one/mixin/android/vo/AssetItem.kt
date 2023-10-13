@@ -3,7 +3,8 @@ package one.mixin.android.vo
 import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import java.math.BigDecimal
 
 @SuppressLint("ParcelCreator")
@@ -14,8 +15,9 @@ data class AssetItem(
     val name: String,
     val iconUrl: String,
     val balance: String,
-    val destination: String,
-    val tag: String?,
+    private val destination: String,
+    val depositEntries: List<DepositEntry>?,
+    private val tag: String?,
     val priceBtc: String,
     val priceUsd: String,
     val chainId: String,
@@ -23,12 +25,13 @@ data class AssetItem(
     val changeBtc: String,
     var hidden: Boolean?,
     val confirmations: Int,
-    val chainIconUrl: String?,
-    val chainSymbol: String?,
-    val chainName: String?,
-    val chainPriceUsd: String?,
+    var chainIconUrl: String?,
+    var chainSymbol: String?,
+    var chainName: String?,
+    var chainPriceUsd: String?,
     val assetKey: String?,
-    val reserve: String?
+    val reserve: String?,
+    val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
 ) : Parcelable {
     fun fiat(): BigDecimal {
         return BigDecimal(balance).multiply(priceFiat())
@@ -36,15 +39,55 @@ data class AssetItem(
 
     fun priceFiat(): BigDecimal = if (priceUsd == "0") {
         BigDecimal.ZERO
-    } else BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
+    } else {
+        BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
+    }
 
     fun chainPriceFiat(): BigDecimal = if (chainPriceUsd == null || chainPriceUsd == "0") {
         BigDecimal.ZERO
-    } else BigDecimal(chainPriceUsd).multiply(BigDecimal(Fiats.getRate()))
+    } else {
+        BigDecimal(chainPriceUsd).multiply(BigDecimal(Fiats.getRate()))
+    }
 
     fun btc(): BigDecimal = if (priceBtc == "0") {
         BigDecimal.ZERO
-    } else BigDecimal(balance).multiply(BigDecimal(priceBtc))
+    } else {
+        BigDecimal(balance).multiply(BigDecimal(priceBtc))
+    }
+
+    fun getDestination(): String {
+        return if (assetId == BITCOIN_CHAIN_ID) {
+            depositEntries?.firstOrNull { depositEntry ->
+                depositEntry.properties != null && depositEntry.destination.isNotBlank() && depositEntry.properties.any { property ->
+                    property.equals(
+                        "SegWit",
+                        false,
+                    )
+                }
+            }?.destination ?: destination
+        } else if (!depositEntries.isNullOrEmpty()) {
+            depositEntries.first().destination
+        } else {
+            destination
+        }
+    }
+
+    fun getTag(): String? {
+        return if (assetId == BITCOIN_CHAIN_ID) {
+            depositEntries?.firstOrNull { depositEntry ->
+                depositEntry.properties != null && depositEntry.destination.isNotBlank() && depositEntry.properties.any { property ->
+                    property.equals(
+                        "SegWit",
+                        false,
+                    )
+                }
+            }?.tag
+        } else if (!depositEntries.isNullOrEmpty()) {
+            depositEntries.first().tag
+        } else {
+            tag
+        }
+    }
 
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<AssetItem>() {
@@ -57,14 +100,18 @@ data class AssetItem(
     }
 }
 
+fun AssetItem.toPriceAndChange(): PriceAndChange {
+    return PriceAndChange(assetId, priceBtc, priceUsd, changeUsd, changeBtc)
+}
+
 fun AssetItem.differentProcess(
     keyAction: () -> Unit,
     memoAction: () -> Unit,
-    errorAction: () -> Unit
+    errorAction: () -> Unit,
 ) {
     when {
-        destination.isNotEmpty() && !tag.isNullOrEmpty() -> memoAction()
-        destination.isNotEmpty() -> keyAction()
+        getDestination().isNotEmpty() && !getTag().isNullOrEmpty() -> memoAction()
+        getDestination().isNotEmpty() -> keyAction()
         else -> errorAction()
     }
 }

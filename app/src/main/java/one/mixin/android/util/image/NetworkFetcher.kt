@@ -5,12 +5,13 @@ import androidx.annotation.WorkerThread
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
+import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
 class NetworkFetcher private constructor(
     context: Context,
-    private val url: String
+    private val url: String,
 ) {
     private val networkCache: NetworkCache = NetworkCache(context)
 
@@ -69,7 +70,11 @@ class NetworkFetcher private constructor(
     }
 
     private fun getResultFromConnection(connection: HttpURLConnection): ImageResult<File> {
-        val file = networkCache.writeTempCacheFile(url, connection.inputStream)
+        return getResultFromStream(connection.inputStream)
+    }
+
+    private fun getResultFromStream(inputStream: InputStream): ImageResult<File> {
+        val file = networkCache.writeTempCacheFile(url, inputStream)
         val result = ImageResult(file)
         if (result.value != null) {
             networkCache.renameTempFile(url)

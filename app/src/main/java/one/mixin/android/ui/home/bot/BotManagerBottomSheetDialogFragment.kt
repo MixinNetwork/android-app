@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
 import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -22,10 +23,10 @@ import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.fragment_bot_manager.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.databinding.FragmentBotManagerBinding
 import one.mixin.android.event.BotCloseEvent
 import one.mixin.android.event.BotEvent
 import one.mixin.android.extension.booleanFromAttribute
@@ -34,9 +35,10 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.setting.WalletPasswordFragment
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.GsonHelper
@@ -45,6 +47,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
 import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.bot.BotDock
+import timber.log.Timber
 
 @AndroidEntryPoint
 class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock.OnDockListener {
@@ -67,10 +70,14 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         }
     }
 
+    private var _binding: FragmentBotManagerBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_bot_manager, null)
+        _binding = FragmentBotManagerBinding.inflate(LayoutInflater.from(context), null, false)
+        contentView = binding.root
         dialog.setContentView(contentView)
         val params = (contentView.parent as View).layoutParams as CoordinatorLayout.LayoutParams
         val behavior = params.behavior as BottomSheetBehavior<*>
@@ -98,13 +105,14 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         dialog?.window?.let { window ->
             SystemUIManager.lightUI(
                 window,
-                !requireContext().booleanFromAttribute(R.attr.flag_night)
+                !requireContext().booleanFromAttribute(R.attr.flag_night),
             )
         }
     }
 
     override fun onDetach() {
         super.onDetach()
+        // UrlInterpreterActivity doesn't have a UI and needs it's son fragment to handle it's finish.
         if (activity is UrlInterpreterActivity) {
             var realFragmentCount = 0
             parentFragmentManager.fragments.forEach { f ->
@@ -118,15 +126,23 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         }
     }
 
+    override fun dismissAllowingStateLoss() {
+        try {
+            super.dismissAllowingStateLoss()
+        } catch (e: IllegalStateException) {
+            Timber.w(e)
+        }
+    }
+
     private fun initView() {
-        contentView.bot_close.setOnClickListener {
+        binding.botClose.setOnClickListener {
             dismiss()
         }
-        contentView.bot_dock.setOnDragListener(bottomListAdapter.dragInstance)
-        contentView.bot_rv.layoutManager = GridLayoutManager(requireContext(), 4)
-        contentView.bot_rv.adapter = bottomListAdapter
-        contentView.bot_rv.setOnDragListener(bottomListAdapter.dragInstance)
-        contentView.bot_dock.setOnDockListener(this)
+        binding.botDock.setOnDragListener(bottomListAdapter.dragInstance)
+        binding.botRv.layoutManager = GridLayoutManager(requireContext(), 4)
+        binding.botRv.adapter = bottomListAdapter
+        binding.botRv.setOnDragListener(bottomListAdapter.dragInstance)
+        binding.botDock.setOnDockListener(this)
     }
 
     private fun loadData() {
@@ -160,15 +176,15 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
                 }
             }
 
-            contentView.bot_dock.apps = topApps
+            binding.botDock.apps = topApps
             val notTopApps = botManagerViewModel.getNotTopApps(topIds)
             if (notTopApps.isNullOrEmpty()) {
-                contentView.empty_fl.isVisible = true
-                contentView.bot_rv.updateLayoutParams<ViewGroup.LayoutParams> {
+                binding.emptyFl.isVisible = true
+                binding.botRv.updateLayoutParams<ViewGroup.LayoutParams> {
                     height = ViewGroup.LayoutParams.WRAP_CONTENT
                 }
             } else {
-                contentView.empty_fl.isVisible = false
+                binding.emptyFl.isVisible = false
                 defaultApps.addAll(notTopApps)
             }
             bottomListAdapter.list = defaultApps
@@ -192,8 +208,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         if (app is App) {
             lifecycleScope.launch {
                 botManagerViewModel.findUserByAppId(app.appId)?.let { user ->
-                    UserBottomSheetDialogFragment.newInstance(user)
-                        .show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                    showUserBottom(parentFragmentManager, user)
                 }
             }
         } else if (app is Bot) {
@@ -202,10 +217,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
                     if (Session.getAccount()?.hasPin == true) {
                         WalletActivity.show(requireActivity())
                     } else {
-                        parentFragmentManager.beginTransaction()
-                            .replace(R.id.root_view, WalletPasswordFragment.newInstance(false))
-                            .addToBackStack(null)
-                            .commitAllowingStateLoss()
+                        TipActivity.show(requireActivity(), TipType.Create, false)
                     }
                     dismissAllowingStateLoss()
                 }

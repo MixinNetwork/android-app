@@ -1,52 +1,53 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.view.Gravity
-import android.view.View
 import android.widget.FrameLayout
-import kotlinx.android.synthetic.main.item_chat_waiting.view.*
+import androidx.core.view.isVisible
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.extension.highlightLinkText
-import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.databinding.ItemChatWaitingBinding
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.highlightStarTag
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
-import org.jetbrains.anko.dip
+import one.mixin.android.vo.isSignal
 
 class WaitingHolder constructor(
-    containerView: View,
-    private val onItemListener: ConversationAdapter.OnItemListener
-) : BaseViewHolder(containerView) {
+    val binding: ItemChatWaitingBinding,
+    private val onItemListener: MessageAdapter.OnItemListener,
+) : BaseViewHolder(binding.root) {
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
-            (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
+            (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_me_last,
-                    R.drawable.chat_bubble_me_last_night
+                    R.drawable.chat_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_me,
-                    R.drawable.chat_bubble_me_night
+                    R.drawable.chat_bubble_me_night,
                 )
             }
         } else {
-            (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
+            (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_other_last,
-                    R.drawable.chat_bubble_other_last_night
+                    R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_other,
-                    R.drawable.chat_bubble_other_night
+                    R.drawable.chat_bubble_other_night,
                 )
             }
         }
@@ -56,44 +57,45 @@ class WaitingHolder constructor(
         messageItem: MessageItem,
         isLast: Boolean,
         isFirst: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         val isMe = meId == messageItem.userId
-        itemView.chat_time.timeAgoClock(messageItem.createdAt)
-
-        val learn: String = MixinApplication.get().getString(R.string.chat_learn)
-        val info =
-            MixinApplication.get().getString(
-                R.string.chat_waiting,
-                if (isMe) {
-                    MixinApplication.get().getString(R.string.chat_waiting_desktop)
-                } else {
-                    messageItem.userFullName
-                },
-                learn
+        if (messageItem.isSignal()) {
+            val learn: String = MixinApplication.get().getString(R.string.Learn_More)
+            val info =
+                MixinApplication.get().getString(
+                    R.string.chat_waiting,
+                    if (isMe) {
+                        MixinApplication.get().getString(R.string.desktop)
+                    } else {
+                        messageItem.userFullName
+                    },
+                    "**$learn**",
+                )
+            val learnUrl = MixinApplication.get().getString(R.string.secret_url)
+            binding.chatTv.highlightStarTag(
+                info,
+                arrayOf(learnUrl),
+                onItemListener = onItemListener,
             )
-        val learnUrl = MixinApplication.get().getString(R.string.chat_waiting_url)
-        itemView.chat_tv.highlightLinkText(
-            info,
-            arrayOf(learn),
-            arrayOf(learnUrl),
-            onItemListener = onItemListener
-        )
-
-        if (isFirst) {
-            itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
-            if (messageItem.appId != null) {
-                itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-                itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
-            } else {
-                itemView.chat_name.setCompoundDrawables(null, null, null, null)
-            }
-            itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
-            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
         } else {
-            itemView.chat_name.visibility = View.GONE
+            binding.chatTv.setText(R.string.chat_decryption_failed)
+        }
+        if (isFirst) {
+            binding.chatName.isVisible = !isMe
+            binding.chatName.text = messageItem.userFullName
+            if (messageItem.appId != null) {
+                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+                binding.chatName.compoundDrawablePadding = 3.dp
+            } else {
+                binding.chatName.setCompoundDrawables(null, null, null, null)
+            }
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+            binding.chatName.setTextColor(getColorById(messageItem.userId))
+        } else {
+            binding.chatName.isVisible = false
         }
         chatLayout(isMe, isLast)
+        binding.chatTime.chatStatus.isVisible = false
     }
 }

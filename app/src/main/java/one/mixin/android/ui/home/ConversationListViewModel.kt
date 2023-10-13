@@ -1,11 +1,11 @@
 package one.mixin.android.ui.home
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -21,35 +21,44 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.TranscriptDeleteJob
+import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
+import javax.inject.Inject
 
-class ConversationListViewModel @ViewModelInject
+@HiltViewModel
+class ConversationListViewModel
+@Inject
 internal constructor(
     private val messageRepository: ConversationRepository,
     private val userRepository: UserRepository,
     private val conversationRepository: ConversationRepository,
-    private val jobManager: MixinJobManager
+    private val assetRepository: AssetRepository,
+    private val jobManager: MixinJobManager,
+    private val cleanMessageHelper: CleanMessageHelper,
 ) : ViewModel() {
 
     fun observeConversations(circleId: String?): LiveData<PagedList<ConversationItem>> {
         return LivePagedListBuilder(
-            messageRepository.conversations(circleId),
+            messageRepository.observeConversations(circleId),
             PagedList.Config.Builder()
                 .setPrefetchDistance(CONVERSATION_PAGE_SIZE * 2)
                 .setPageSize(CONVERSATION_PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
+                .build(),
         ).build()
     }
 
@@ -63,7 +72,7 @@ internal constructor(
             val conversation = Conversation(
                 c.conversationId, c.ownerId, c.category, c.name, c.iconUrl,
                 c.announcement, null, c.payType, createAt, null, null,
-                null, 0, ConversationStatus.START.ordinal, null
+                null, 0, ConversationStatus.START.ordinal, null,
             )
             viewModelScope.launch {
                 messageRepository.insertConversation(conversation, mutableList)
@@ -77,14 +86,18 @@ internal constructor(
                 it.name,
                 it.iconUrl,
                 it.announcement,
-                participantRequestList
+                participantRequestList,
             )
             jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE))
         }
     }
 
-    fun deleteConversation(conversationId: String) = viewModelScope.launch {
-        messageRepository.deleteConversationById(conversationId)
+    fun deleteConversation(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
+        val ids = messageRepository.findTranscriptIdByConversationId(conversationId)
+        if (ids.isNotEmpty()) {
+            jobManager.addJobInBackground(TranscriptDeleteJob(ids))
+        }
+        cleanMessageHelper.deleteMessageByConversationId(conversationId, true)
     }
 
     fun updateConversationPinTimeById(conversationId: String, circleId: String?, pinTime: String?) = viewModelScope.launch {
@@ -95,7 +108,7 @@ internal constructor(
         duration: Long,
         conversationId: String? = null,
         senderId: String? = null,
-        recipientId: String? = null
+        recipientId: String? = null,
     ): MixinResponse<ConversationResponse> {
         require(conversationId != null || (senderId != null && recipientId != null)) {
             "error data"
@@ -113,7 +126,7 @@ internal constructor(
                 cid,
                 ConversationCategory.CONTACT.name,
                 duration = duration,
-                participants = listOf(participantRequest)
+                participants = listOf(participantRequest),
             )
             return conversationRepository.muteSuspend(cid, request)
         }
@@ -153,10 +166,10 @@ internal constructor(
 
     suspend fun getFriends(): List<User> = userRepository.getFriends()
 
-    suspend fun successConversationList() = conversationRepository.successConversationList()
+    suspend fun successConversationList(): List<ConversationMinimal> =
+        conversationRepository.successConversationList()
 
-    suspend fun findConversationItemByCircleId(circleId: String) =
-        userRepository.findConversationItemByCircleId(circleId)
+    suspend fun findConversationItemByCircleId(circleId: String) = userRepository.findConversationItemByCircleId(circleId)
 
     suspend fun updateCircleConversations(id: String, circleConversationRequests: List<CircleConversationRequest>) = withContext(Dispatchers.IO) {
         userRepository.updateCircleConversations(id, circleConversationRequests)
@@ -167,7 +180,7 @@ internal constructor(
     suspend fun saveCircle(
         circleId: String,
         addCircleConversation: List<CircleConversation>?,
-        removeCircleConversation: Set<CircleConversationPayload>
+        removeCircleConversation: Set<CircleConversationPayload>,
     ) {
         addCircleConversation?.forEach { circleConversation ->
             userRepository.insertCircleConversation(circleConversation)
@@ -186,4 +199,6 @@ internal constructor(
     suspend fun getCircleConversationCount(conversationId: String) = userRepository.getCircleConversationCount(conversationId)
 
     suspend fun findAppById(appId: String) = userRepository.findAppById(appId)
+
+    suspend fun findTotalUSDBalance() = assetRepository.findTotalUSDBalance()
 }

@@ -1,8 +1,10 @@
 package one.mixin.android.ui.sticker
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,41 +12,42 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.CheckBox
-import android.widget.ImageView
 import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_sticker_management.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentStickerManagementBinding
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.isWideScreen
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.openGalleryFromSticker
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.textColor
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.conversation.StickerFragment.Companion.ARGS_ALBUM_ID
 import one.mixin.android.ui.conversation.StickerFragment.Companion.PADDING
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
+import one.mixin.android.util.reportException
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Sticker
-import org.jetbrains.anko.dip
-import org.jetbrains.anko.textColor
+import one.mixin.android.widget.lottie.RLottieImageView
 
 @AndroidEntryPoint
 class StickerManagementFragment : BaseFragment() {
     companion object {
         const val TAG = "StickerManagementFragment"
-        const val COLUMN = 3
+        var COLUMN = 3
 
         fun newInstance(id: String?) = StickerManagementFragment().apply {
             arguments = bundleOf(ARGS_ALBUM_ID to id)
@@ -53,7 +56,7 @@ class StickerManagementFragment : BaseFragment() {
 
     private val stickerViewModel by viewModels<ConversationViewModel>()
 
-    private val padding: Int by lazy { requireContext().dip(PADDING) }
+    private val padding: Int by lazy { PADDING.dp }
 
     private val albumId: String? by lazy { requireArguments().getString(ARGS_ALBUM_ID) }
 
@@ -65,33 +68,46 @@ class StickerManagementFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_sticker_management, container, false)
 
+    private val binding by viewBinding(FragmentStickerManagementBinding::bind)
+
+    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { requireActivity().onBackPressed() }
-        title_view.right_tv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
-        title_view.right_animator.setOnClickListener {
+        COLUMN = if (requireContext().isWideScreen()) {
+            5
+        } else {
+            3
+        }
+        binding.titleView.leftIb.setOnClickListener { requireActivity().onBackPressed() }
+        binding.titleView.rightTv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
+        binding.titleView.rightAnimator.setOnClickListener {
             if (stickerAdapter.editing) {
-                title_view.right_tv.text = getString(R.string.select)
+                binding.titleView.rightTv.text = getString(R.string.Select)
                 if (stickerAdapter.checkedList.isNotEmpty()) {
                     stickerViewModel.removeStickers(stickerAdapter.checkedList)
                 }
             } else {
-                title_view.right_tv.text = getString(R.string.conversation_delete)
+                binding.titleView.rightTv.text = getString(R.string.Delete)
             }
             stickerAdapter.editing = !stickerAdapter.editing
             stickerAdapter.notifyDataSetChanged()
         }
-        sticker_rv.layoutManager = GridLayoutManager(context, COLUMN)
-        sticker_rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
+        binding.stickerRv.layoutManager = GridLayoutManager(context, COLUMN)
+        binding.stickerRv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
         stickerAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
-        sticker_rv.adapter = stickerAdapter
+        binding.stickerRv.adapter = stickerAdapter
         stickerAdapter.setOnStickerListener(
             object : StickerListener {
                 override fun onAddClick() {
                     RxPermissions(activity!!)
                         .request(
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.READ_EXTERNAL_STORAGE
+                            *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                mutableListOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+                            } else {
+                                mutableListOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                            }.apply {
+                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            }.toTypedArray(),
                         )
                         .autoDispose(stopScope)
                         .subscribe(
@@ -103,40 +119,39 @@ class StickerManagementFragment : BaseFragment() {
                                 }
                             },
                             {
-                                Bugsnag.notify(it)
-                            }
+                                reportException(it)
+                            },
                         )
                 }
 
                 override fun onDelete() {
-                    title_view.right_tv.text = getString(R.string.conversation_delete)
+                    binding.titleView.rightTv.text = getString(R.string.Delete)
                 }
-            }
+            },
         )
 
         if (albumId == null) { // not add any personal sticker yet
             stickerViewModel.observePersonalStickers().observe(
                 viewLifecycleOwner,
-                Observer {
-                    it?.let { updateStickers(it) }
-                }
-            )
+            ) {
+                it?.let { updateStickers(it) }
+            }
         } else {
             stickerViewModel.observeStickers(albumId!!).observe(
                 viewLifecycleOwner,
-                Observer {
-                    it?.let { updateStickers(it) }
-                }
-            )
+            ) {
+                it?.let { updateStickers(it) }
+            }
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onBackPressed(): Boolean {
         if (stickerAdapter.editing) {
             stickerAdapter.editing = !stickerAdapter.editing
             stickerAdapter.checkedList.clear()
             stickerAdapter.notifyDataSetChanged()
-            title_view.right_tv.text = getString(R.string.select)
+            binding.titleView.rightTv.text = getString(R.string.Select)
 
             return true
         }
@@ -150,15 +165,16 @@ class StickerManagementFragment : BaseFragment() {
                 requireActivity().addFragment(
                     this@StickerManagementFragment,
                     StickerAddFragment.newInstance(it.toString(), true),
-                    StickerAddFragment.TAG
+                    StickerAddFragment.TAG,
                 )
             }
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Synchronized
     private fun updateStickers(list: List<Sticker>) {
-        if (!isAdded) return
+        if (viewDestroyed()) return
         stickers.clear()
         stickers.addAll(list)
         stickerAdapter.notifyDataSetChanged()
@@ -170,6 +186,7 @@ class StickerManagementFragment : BaseFragment() {
         var editing = false
         val checkedList = arrayListOf<String>()
 
+        @SuppressLint("NotifyDataSetChanged")
         override fun onBindViewHolder(holder: StickerViewHolder, position: Int) {
             val s = if (editing) {
                 stickers[position]
@@ -181,13 +198,12 @@ class StickerManagementFragment : BaseFragment() {
                 }
             }
             val v = holder.itemView
-            val ctx = v.context
 
             val params = v.layoutParams
             params.height = size
             params.width = size
             v.layoutParams = params
-            val imageView = (v as ViewGroup).getChildAt(0) as ImageView
+            val imageView = (v as ViewGroup).getChildAt(0) as RLottieImageView
             val cover = v.getChildAt(1)
             val cb = v.getChildAt(2) as CheckBox
             if (editing) {
@@ -206,8 +222,8 @@ class StickerManagementFragment : BaseFragment() {
                 imageView.setImageResource(R.drawable.ic_add_stikcer)
                 imageView.setOnClickListener { listener?.onAddClick() }
                 imageView.updateLayoutParams<ViewGroup.LayoutParams> {
-                    width = size - ctx.dip(50)
-                    height = size - ctx.dip(50)
+                    width = size - 50.dp
+                    height = size - 50.dp
                 }
             } else {
                 imageView.updateLayoutParams<ViewGroup.LayoutParams> {
@@ -215,7 +231,7 @@ class StickerManagementFragment : BaseFragment() {
                     height = size
                 }
                 if (s != null) {
-                    imageView.loadSticker(s.assetUrl, s.assetType)
+                    imageView.loadSticker(s.assetUrl, s.assetType, "${s.assetUrl}${s.stickerId}")
                     imageView.setOnClickListener {
                         handleChecked(cb, cover, s.stickerId)
                     }

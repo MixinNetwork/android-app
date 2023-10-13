@@ -16,11 +16,11 @@ import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.uber.autodispose.android.lifecycle.scope
+import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.ui.common.BottomSheetViewModel
-import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.widget.MixinBottomSheetDialog
@@ -33,6 +33,8 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
     protected lateinit var contentView: View
 
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
+
+    protected val pauseScope = scope(Lifecycle.Event.ON_PAUSE)
 
     protected val bottomViewModel by viewModels<BottomSheetViewModel>()
 
@@ -60,14 +62,16 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
                 val titleView = contentView.findViewById<View>(R.id.title)
                 scrollContent.measure(
                     View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-                    ViewGroup.LayoutParams.WRAP_CONTENT
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
                 )
                 titleView.measure(
                     View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-                    ViewGroup.LayoutParams.WRAP_CONTENT
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
                 )
                 scrollContent.measuredHeight + titleView.measuredHeight
-            } else defaultPeekHeight
+            } else {
+                defaultPeekHeight
+            }
             behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             dialog.window?.setGravity(Gravity.BOTTOM)
@@ -79,13 +83,14 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         dialog?.window?.let { window ->
             SystemUIManager.lightUI(
                 window,
-                !requireContext().booleanFromAttribute(R.attr.flag_night)
+                !requireContext().booleanFromAttribute(R.attr.flag_night),
             )
         }
     }
 
     override fun onDetach() {
         super.onDetach()
+        // UrlInterpreterActivity doesn't have a UI and needs it's son fragment to handle it's finish.
         if (activity is UrlInterpreterActivity) {
             var realFragmentCount = 0
             parentFragmentManager.fragments.forEach { f ->
@@ -115,11 +120,11 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
     protected fun setDetailsTv(
         detailsTv: AutoLinkTextView,
         scrollView: NestedScrollView,
-        conversationId: String?
+        conversationId: String?,
     ) {
         detailsTv.movementMethod = LinkMovementMethod()
         detailsTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        detailsTv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
+        detailsTv.setUrlModeColor(LINK_COLOR)
         detailsTv.setAutoLinkOnClickListener { _, url ->
             url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
             dismiss()

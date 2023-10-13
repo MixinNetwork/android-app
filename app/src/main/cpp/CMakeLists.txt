@@ -5,22 +5,21 @@ set(distribution_OPUS_DIR ${CMAKE_SOURCE_DIR}/opus)
 
 add_library(lib_opus STATIC IMPORTED)
 set_target_properties(lib_opus PROPERTIES IMPORTED_LOCATION
-    ${distribution_OPUS_DIR}/lib/${ANDROID_ABI}/libopus.a)
+        ${distribution_OPUS_DIR}/lib/${ANDROID_ABI}/libopus.a)
 
 add_library(lib_ogg STATIC IMPORTED)
 set_target_properties(lib_ogg PROPERTIES IMPORTED_LOCATION
-    ${distribution_OPUS_DIR}/lib/${ANDROID_ABI}/libogg.a)
+        ${distribution_OPUS_DIR}/lib/${ANDROID_ABI}/libogg.a)
 
 add_library(lib_opusenc STATIC IMPORTED)
 set_target_properties(lib_opusenc PROPERTIES IMPORTED_LOCATION
-    ${distribution_OPUS_DIR}/lib/${ANDROID_ABI}/libopusenc.a)
+        ${distribution_OPUS_DIR}/lib/${ANDROID_ABI}/libopusenc.a)
 
 add_library(mixin SHARED
-            audio.c
-        )
+            audio.c)
 
 target_include_directories(mixin PRIVATE
-                           ${distribution_OPUS_DIR}/include)
+        ${distribution_OPUS_DIR}/include)
 
 target_link_libraries(mixin
                       android

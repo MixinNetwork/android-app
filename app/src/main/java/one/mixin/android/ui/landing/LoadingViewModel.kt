@@ -1,9 +1,9 @@
 package one.mixin.android.ui.landing
 
 import androidx.collection.ArrayMap
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -13,6 +13,7 @@ import one.mixin.android.Constants.ALLOW_INTERVAL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.SessionSecretRequest
+import one.mixin.android.api.response.UserSession
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.UserService
@@ -25,14 +26,15 @@ import one.mixin.android.extension.getDeviceId
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.vo.ParticipantSession
+import javax.inject.Inject
 import kotlin.math.abs
 
-class LoadingViewModel @ViewModelInject internal
-constructor(
+@HiltViewModel
+class LoadingViewModel @Inject internal constructor(
     private val signalKeyService: SignalKeyService,
     private val accountService: AccountService,
     private val userService: UserService,
-    private val conversationRepo: ConversationRepository
+    private val conversationRepo: ConversationRepository,
 ) : ViewModel() {
     private val sessionDao: SessionDao =
         SignalDatabase.getDatabase(MixinApplication.appContext).sessionDao()
@@ -57,17 +59,17 @@ constructor(
             val userIds = sessions.map { it.address }
             val response = userService.fetchSessionsSuspend(userIds)
             val sessionMap = ArrayMap<String, Int>()
-            val userSessionMap = ArrayMap<String, String>()
+            val userSessionMap = ArrayMap<String, UserSession>()
             if (response.isSuccess) {
                 response.data?.asSequence()?.forEach { item ->
                     if (item.platform == "Android" || item.platform == "iOS") {
                         val deviceId = item.sessionId.getDeviceId()
                         sessionMap[item.userId] = deviceId
-                        userSessionMap[item.userId] = item.sessionId
+                        userSessionMap[item.userId] = item
                     }
                 }
             }
-            if (sessionMap.isEmpty) {
+            if (sessionMap.isEmpty()) {
                 return@withContext
             }
             val newSession = mutableListOf<Session>()
@@ -91,8 +93,8 @@ constructor(
             val participants = conversationRepo.getAllParticipants()
             val newParticipantSession = mutableListOf<ParticipantSession>()
             participants.forEach { p ->
-                userSessionMap[p.userId]?.let {
-                    val ps = ParticipantSession(p.conversationId, p.userId, it)
+                userSessionMap[p.userId]?.let { userSession ->
+                    val ps = ParticipantSession(p.conversationId, p.userId, sessionId = userSession.sessionId, publicKey = userSession.publicKey)
                     newParticipantSession.add(ps)
                 }
             }

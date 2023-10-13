@@ -1,15 +1,19 @@
 package one.mixin.android.ui.forward
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
-import kotlinx.android.synthetic.main.item_contact_header.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.inflate
-import one.mixin.android.vo.ConversationItem
+import one.mixin.android.databinding.ItemContactHeaderBinding
+import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.equalsIgnoreCase
+import one.mixin.android.extension.startsWithIgnoreCase
+import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.User
+import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.ConversationCheckView
 
 class ForwardAdapter(private val disableCheck: Boolean = false) :
@@ -25,44 +29,45 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
     var selectItem = ArrayList<Any>()
 
     private var listener: ForwardListener? = null
-    var conversations: List<ConversationItem>? = null
+    var conversations: List<ConversationMinimal>? = null
     var friends: List<User>? = null
     var bots: List<User>? = null
 
-    var sourceConversations: List<ConversationItem>? = null
+    var sourceConversations: List<ConversationMinimal>? = null
     var sourceFriends: List<User>? = null
     var sourceBots: List<User>? = null
 
     var showHeader: Boolean = true
     var keyword: CharSequence? = null
 
+    @SuppressLint("NotifyDataSetChanged")
     fun changeData() {
         if (!keyword.isNullOrBlank()) {
             conversations = sourceConversations?.filter {
-                if (it.isGroup()) {
-                    it.groupName != null && (it.groupName.contains(keyword.toString(), ignoreCase = true))
+                if (it.isGroupConversation()) {
+                    it.groupName != null && (it.groupName.containsIgnoreCase(keyword))
                 } else {
-                    it.name.contains(keyword.toString(), ignoreCase = true) ||
-                        it.ownerIdentityNumber.startsWith(keyword.toString(), ignoreCase = true)
+                    it.name.containsIgnoreCase(keyword) ||
+                        it.ownerIdentityNumber.startsWithIgnoreCase(keyword)
                 }
             }?.sortedByDescending {
-                if (it.isGroup()) {
-                    it.groupName == keyword
+                if (it.isGroupConversation()) {
+                    it.groupName.equalsIgnoreCase(keyword)
                 } else {
-                    it.name == keyword || it.ownerIdentityNumber == keyword
+                    it.name.equalsIgnoreCase(keyword) || it.ownerIdentityNumber.equalsIgnoreCase(keyword)
                 }
             }
             friends = sourceFriends?.filter {
-                (it.fullName != null && it.fullName.contains(keyword.toString(), ignoreCase = true)) ||
-                    it.identityNumber.startsWith(keyword.toString(), ignoreCase = true)
+                (it.fullName != null && it.fullName.containsIgnoreCase(keyword)) ||
+                    it.identityNumber.startsWithIgnoreCase(keyword)
             }?.sortedByDescending {
-                it.fullName == keyword || it.identityNumber == keyword
+                it.fullName.equalsIgnoreCase(keyword) || it.identityNumber.equalsIgnoreCase(keyword)
             }
             bots = sourceBots?.filter {
-                (it.fullName != null && it.fullName.contains(keyword.toString(), ignoreCase = true)) ||
-                    it.identityNumber.startsWith(keyword.toString(), ignoreCase = true)
+                (it.fullName != null && it.fullName.containsIgnoreCase(keyword)) ||
+                    it.identityNumber.startsWithIgnoreCase(keyword)
             }?.sortedByDescending {
-                it.fullName == keyword || it.identityNumber == keyword
+                it.fullName.equalsIgnoreCase(keyword) || it.identityNumber.equalsIgnoreCase(keyword)
             }
             showHeader = false
         } else {
@@ -115,20 +120,19 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
         if (conversations.isNullOrEmpty() && friends.isNullOrEmpty() && bots.isNullOrEmpty()) {
             return
         }
-        holder.itemView.header.text = holder.itemView.context.getString(
+        ItemContactHeaderBinding.bind(holder.itemView).header.text = holder.itemView.context.getString(
             if (conversations != null && conversations!!.isNotEmpty() && position < conversations!!.size) {
-                R.string.chat_item_title
+                R.string.recent_chats
             } else if (friends != null && friends!!.isNotEmpty() && position < conversations!!.size + friends!!.size) {
-                R.string.contact_item_title
+                R.string.CONTACTS
             } else {
-                R.string.bot_item_title
-            }
+                R.string.bots_title
+            },
         )
     }
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): HeaderViewHolder {
-        val view = parent.inflate(R.layout.item_contact_header, false)
-        return HeaderViewHolder(view)
+        return HeaderViewHolder(ItemContactHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -161,12 +165,12 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
                     LayoutInflater.from(parent.context).inflate(
                         R.layout.item_forward_conversation,
                         parent,
-                        false
+                        false,
                     ).apply {
                         if (disableCheck) {
                             (this as ConversationCheckView).disableCheck()
                         }
-                    }
+                    },
                 )
             }
             TYPE_FRIEND -> {
@@ -174,12 +178,12 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
                     LayoutInflater.from(parent.context).inflate(
                         R.layout.item_contact_friend,
                         parent,
-                        false
+                        false,
                     ).apply {
                         if (disableCheck) {
                             (this as ConversationCheckView).disableCheck()
                         }
-                    }
+                    },
                 )
             }
             else -> {
@@ -187,12 +191,12 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
                     LayoutInflater.from(parent.context).inflate(
                         R.layout.item_contact_friend,
                         parent,
-                        false
+                        false,
                     ).apply {
                         if (disableCheck) {
                             (this as ConversationCheckView).disableCheck()
                         }
-                    }
+                    },
                 )
             }
         }
@@ -221,7 +225,7 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
     }
 
     class ConversationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(item: ConversationItem, listener: ForwardListener?, isCheck: Boolean) {
+        fun bind(item: ConversationMinimal, listener: ForwardListener?, isCheck: Boolean) {
             (itemView as ConversationCheckView).let {
                 it.isChecked = isCheck
                 it.bind(item, listener)
@@ -229,10 +233,10 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
         }
     }
 
-    class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    class HeaderViewHolder(binding: ItemContactHeaderBinding) : RecyclerView.ViewHolder(binding.root)
 
     interface ForwardListener {
         fun onUserItemClick(user: User)
-        fun onConversationItemClick(item: ConversationItem)
+        fun onConversationClick(item: ConversationMinimal)
     }
 }

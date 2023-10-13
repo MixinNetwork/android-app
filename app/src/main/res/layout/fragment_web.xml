@@ -5,13 +5,13 @@
     android:clickable="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/bg_white"
     android:focusable="true">
 
     <LinearLayout
         android:id="@+id/web_ll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/ph"
         android:orientation="vertical">
 
         <LinearLayout
@@ -20,7 +20,7 @@
             android:layout_height="44dp"
             android:orientation="horizontal"
             android:background="?attr/bg_white"
-            tools:ignore="UseCompoundDrawables">
+            tools:ignore="UseCompoundDrawables,UselessParent">
 
             <ImageView
                 android:id="@+id/icon_iv"
@@ -44,7 +44,6 @@
                 android:textSize="18sp"
                 android:textColor="?attr/text_primary" />
         </LinearLayout>
-
     </LinearLayout>
 
     <FrameLayout
@@ -58,15 +57,13 @@
         android:id="@+id/suspicious_link_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"
-        android:layout_below="@id/ph" />
+        android:visibility="gone" />
 
     <one.mixin.android.widget.FailLoadView
         android:id="@+id/fail_load_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"
-        android:layout_below="@id/ph" />
+        android:visibility="gone" />
 
     <ProgressBar
         android:id="@+id/pb"

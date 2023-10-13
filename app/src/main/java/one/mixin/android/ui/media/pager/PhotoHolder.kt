@@ -7,7 +7,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import one.mixin.android.R
@@ -17,6 +16,7 @@ import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.absolutePath
 import one.mixin.android.widget.CircleProgress
 import one.mixin.android.widget.PhotoView.PhotoView
 import one.mixin.android.widget.gallery.MimeType
@@ -25,21 +25,21 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
     fun bind(
         messageItem: MessageItem,
         needPostTransition: Boolean,
-        mediaPagerAdapterListener: MediaPagerAdapterListener
+        mediaPagerAdapterListener: MediaPagerAdapterListener,
     ) {
         val imageView = (itemView as ViewGroup).getChildAt(0) as PhotoView
         val photoViewAttacher = imageView.attacher
         val circleProgress = itemView.findViewById<CircleProgress>(R.id.circle_progress)
         if (messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
             imageView.loadGif(
-                messageItem.mediaUrl,
-                object : RequestListener<GifDrawable?> {
+                messageItem.absolutePath(),
+                object : RequestListener<Drawable?> {
                     override fun onResourceReady(
-                        resource: GifDrawable?,
-                        model: Any?,
-                        target: Target<GifDrawable?>?,
-                        dataSource: DataSource?,
-                        isFirstResource: Boolean
+                        resource: Drawable,
+                        model: Any,
+                        target: Target<Drawable?>?,
+                        dataSource: DataSource,
+                        isFirstResource: Boolean,
                     ): Boolean {
                         photoViewAttacher.isZoomable = true
                         if (needPostTransition) {
@@ -52,27 +52,27 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                     override fun onLoadFailed(
                         e: GlideException?,
                         model: Any?,
-                        target: Target<GifDrawable?>?,
-                        isFirstResource: Boolean
+                        target: Target<Drawable?>,
+                        isFirstResource: Boolean,
                     ): Boolean {
                         return false
                     }
                 },
                 base64Holder = messageItem.thumbImage,
                 overrideWidth = Target.SIZE_ORIGINAL,
-                overrideHeight = Target.SIZE_ORIGINAL
+                overrideHeight = Target.SIZE_ORIGINAL,
             )
         } else {
             imageView.loadImage(
-                messageItem.mediaUrl,
+                messageItem.absolutePath(),
                 messageItem.thumbImage,
                 object : RequestListener<Drawable?> {
                     override fun onResourceReady(
-                        resource: Drawable?,
-                        model: Any?,
+                        resource: Drawable,
+                        model: Any,
                         target: Target<Drawable?>?,
-                        dataSource: DataSource?,
-                        isFirstResource: Boolean
+                        dataSource: DataSource,
+                        isFirstResource: Boolean,
                     ): Boolean {
                         photoViewAttacher.isZoomable = true
                         if (needPostTransition) {
@@ -85,14 +85,14 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                     override fun onLoadFailed(
                         e: GlideException?,
                         model: Any?,
-                        target: Target<Drawable?>?,
-                        isFirstResource: Boolean
+                        target: Target<Drawable?>,
+                        isFirstResource: Boolean,
                     ): Boolean {
                         return false
                     }
                 },
                 overrideWidth = Target.SIZE_ORIGINAL,
-                overrideHeight = Target.SIZE_ORIGINAL
+                overrideHeight = Target.SIZE_ORIGINAL,
             )
         }
         if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {

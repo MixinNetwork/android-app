@@ -7,6 +7,22 @@
     android:clickable="true"
     android:focusable="true">
 
+    <ImageView
+        android:id="@+id/chat_reply"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:background="@drawable/bg_circle_reply"
+        android:layout_marginStart="16dp"
+        android:padding="4dp"
+        android:alpha="0"
+        android:scaleX="0"
+        android:scaleY="0"
+        android:src="@drawable/ic_reply_white"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/chat_layout"
+        app:layout_constraintBottom_toBottomOf="@id/chat_layout"
+        tools:ignore="ContentDescription" />
+
     <LinearLayout
         android:id="@+id/chat_layout"
         android:layout_width="wrap_content"
@@ -89,7 +105,11 @@
                 tools:text="When we do automatic pings it’d be nice to fail the connection if the peer isn’t ponging back. As-is a server that blackholes pings is not sufficient to consider the connection healthy. See also #3197" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <include layout="@layout/date_wrapper" />
+        <one.mixin.android.widget.bubble.TimeBubble
+            android:id="@+id/chat_time"
+            android:layout_gravity="end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

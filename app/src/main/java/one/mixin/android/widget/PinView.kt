@@ -9,18 +9,14 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.animation.AlphaAnimation
-import android.view.animation.AnimationSet
-import android.view.animation.OvershootInterpolator
-import android.view.animation.TranslateAnimation
 import android.widget.LinearLayout
 import android.widget.TextView
-import kotlinx.android.synthetic.main.layout_pin.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewPinBinding
 import one.mixin.android.extension.colorFromAttribute
-import org.jetbrains.anko.dip
-import org.jetbrains.anko.hintTextColor
-import org.jetbrains.anko.textColor
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.hintTextColor
+import one.mixin.android.extension.textColor
 
 class PinView : LinearLayout {
 
@@ -31,6 +27,7 @@ class PinView : LinearLayout {
 
     private var color = context.colorFromAttribute(R.attr.text_primary)
     private var count = DEFAULT_COUNT
+
     // control tip_tv and line visibility
     private var tipVisible = true
 
@@ -39,17 +36,19 @@ class PinView : LinearLayout {
     private var mid = count / 2
     private var index = 0
     private var listener: OnPinListener? = null
+    private var finishListener: OnPinFinishListener? = null
     private val textSize = 26f
     private val starSize = 18f
+
+    private val binding = ViewPinBinding.inflate(LayoutInflater.from(context), this)
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
-        LayoutInflater.from(context).inflate(R.layout.layout_pin, this, true) as LinearLayout
         val ta = context.obtainStyledAttributes(attrs, R.styleable.PinView)
         if (ta.hasValue(R.styleable.PinView_pin_color)) {
             color = ta.getColor(R.styleable.PinView_pin_color, Color.BLACK)
@@ -60,8 +59,8 @@ class PinView : LinearLayout {
         if (ta.hasValue(R.styleable.PinView_pin_tipVisible)) {
             tipVisible = ta.getBoolean(R.styleable.PinView_pin_tipVisible, true)
             if (!tipVisible) {
-                tip_tv.visibility = View.GONE
-                line.visibility = View.GONE
+                binding.tipTv.visibility = View.GONE
+                binding.line.visibility = View.GONE
             }
         }
         ta.recycle()
@@ -69,7 +68,7 @@ class PinView : LinearLayout {
         mid = count / 2
         for (i in 0..count) {
             if (i == mid) {
-                container_ll.addView(View(context), LayoutParams(context.dip(20), MATCH_PARENT))
+                binding.containerLl.addView(View(context), LayoutParams(20.dp, MATCH_PARENT))
             } else {
                 val item = TextView(context)
                 item.textSize = starSize
@@ -82,7 +81,7 @@ class PinView : LinearLayout {
                 val params = LayoutParams(0, MATCH_PARENT)
                 params.weight = 1f
                 params.gravity = Gravity.BOTTOM
-                container_ll.addView(item, params)
+                binding.containerLl.addView(item, params)
                 views.add(item)
             }
         }
@@ -90,29 +89,29 @@ class PinView : LinearLayout {
 
     fun append(s: String) {
         if (index >= views.size) return
-        if (tipVisible && tip_tv.visibility == View.VISIBLE) {
-            tip_tv.visibility = View.INVISIBLE
-        }
-
-        if (index > 0) {
-            val preItem = views[index - 1]
-            toStar(preItem)
+        if (tipVisible && binding.tipTv.visibility == View.VISIBLE) {
+            binding.tipTv.visibility = View.INVISIBLE
         }
 
         val curItem = views[index]
-        animIn(curItem, s)
+        curItem.text = STAR
+        curItem.textSize = textSize
         codes.append(index, s)
-        toStar(curItem, 1500)
         index++
 
         listener?.onUpdate(index)
+        if (index == 6) {
+            finishListener?.onPinFinish()
+        }
     }
 
     fun set(s: String) {
         if (s.length != count) return
         for (i in 0 until count) {
             val c = s[i]
-            toStar(views[i])
+            val v = views[i]
+            v.text = STAR
+            v.textSize = textSize
             codes.append(i, c.toString())
         }
         listener?.onUpdate(count)
@@ -149,8 +148,8 @@ class PinView : LinearLayout {
     fun error(tip: String) {
         if (!tipVisible) return
 
-        tip_tv.text = tip
-        tip_tv.visibility = View.VISIBLE
+        binding.tipTv.text = tip
+        binding.tipTv.visibility = View.VISIBLE
         clear()
     }
 
@@ -160,38 +159,15 @@ class PinView : LinearLayout {
 
     fun getCount() = count
 
-    private fun animIn(codeView: TextView, s: String) {
-        val translateIn = TranslateAnimation(0f, 0f, codeView.height.toFloat(), 0f)
-        translateIn.interpolator = OvershootInterpolator()
-        translateIn.duration = 500
-
-        val fadeIn = AlphaAnimation(0f, 1f)
-        fadeIn.duration = 200
-
-        val animationSet = AnimationSet(false)
-        animationSet.addAnimation(fadeIn)
-        animationSet.addAnimation(translateIn)
-        animationSet.reset()
-        animationSet.startTime = 0
-
-        codeView.text = s
-        codeView.textSize = textSize
-        codeView.clearAnimation()
-        codeView.startAnimation(animationSet)
-    }
-
-    private fun toStar(codeView: TextView, delay: Long = 0) {
-        codeView.postDelayed(
-            {
-                if (codeView.text.isNotEmpty()) {
-                    codeView.text = STAR
-                }
-            },
-            delay
-        )
-    }
-
     interface OnPinListener {
         fun onUpdate(index: Int)
+    }
+
+    fun setOnPinFinishListener(listener: OnPinFinishListener) {
+        this.finishListener = listener
+    }
+
+    interface OnPinFinishListener {
+        fun onPinFinish()
     }
 }

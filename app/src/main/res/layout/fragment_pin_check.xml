@@ -29,7 +29,7 @@
                     android:paddingEnd="24dp"
                     android:paddingStart="24dp"
                     android:paddingTop="16dp"
-                    android:text="@string/pin_check_title"
+                    android:text="@string/Enter_your_PIN"
                     android:textColor="@color/white"
                     android:textSize="18sp"/>
         </FrameLayout>
@@ -88,7 +88,7 @@
                     android:padding="10dp"
                     android:layout_gravity="center"
                     android:gravity="center"
-                    android:text="@string/got_it"
+                    android:text="@string/Got_it"
                     android:textSize="14sp"
                     android:textColor="@color/colorBlue"/>
         </ViewAnimator>

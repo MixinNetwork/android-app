@@ -1,12 +1,18 @@
 package one.mixin.android.di
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ContentResolver
-import android.provider.Settings
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
+import androidx.datastore.dataStoreFile
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
-import com.google.firebase.iid.FirebaseInstanceId
+import com.google.android.gms.net.CronetProviderInstaller
+import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import com.google.net.cronet.okhttptransport.MixinCronetInterceptor
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.twilio.audioswitch.AudioDevice
 import com.twilio.audioswitch.AudioSwitch
@@ -14,7 +20,13 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
-import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
@@ -23,13 +35,17 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ALLOW_INTERVAL
 import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
+import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_URL
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
+import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
@@ -42,24 +58,40 @@ import one.mixin.android.api.service.FoursquareService
 import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.ProvisioningService
+import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.SignalKeyService
+import one.mixin.android.api.service.TipNodeService
+import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.crypto.EncryptedProtocol
+import one.mixin.android.crypto.JobSenderKey
+import one.mixin.android.crypto.PinCipher
 import one.mixin.android.crypto.SignalProtocol
-import one.mixin.android.db.ConversationDao
-import one.mixin.android.db.FloodMessageDao
-import one.mixin.android.db.JobDao
-import one.mixin.android.db.MessageDao
-import one.mixin.android.db.OffsetDao
+import one.mixin.android.db.MessageHistoryDao
+import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.ParticipantSessionDao
+import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.extension.filterNonAscii
+import one.mixin.android.extension.getStringDeviceId
+import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.show
+import one.mixin.android.extension.toUri
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
+import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.JwtResult
 import one.mixin.android.session.Session
+import one.mixin.android.tip.Ephemeral
+import one.mixin.android.tip.Identity
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipConstants
+import one.mixin.android.tip.TipNode
+import one.mixin.android.ui.transfer.status.TransferStatusLiveData
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
 import one.mixin.android.util.GsonHelper
@@ -67,36 +99,37 @@ import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
+import one.mixin.android.vo.SafeBox
+import one.mixin.android.vo.route.serializer.SafeBoxSerializer
+import one.mixin.android.webrtc.CallDebugLiveData
 import one.mixin.android.websocket.ChatWebSocket
+import org.chromium.net.CronetEngine
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
-import java.net.ConnectException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import kotlin.math.abs
 
-@InstallIn(ApplicationComponent::class)
+@InstallIn(SingletonComponent::class)
 @Module(includes = [(BaseDbModule::class)])
 object AppModule {
 
+    private const val xServerTime = "X-Server-Time"
+    private const val xRequestId = "X-Request-Id"
+    private const val authorization = "Authorization"
+
+    private const val mrAccessSign = "MR-ACCESS-SIGN"
+    private const val mrAccessTimestamp = "MR-ACCESS-TIMESTAMP"
+
+    @SuppressLint("ConstantLocale")
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
     private val API_UA = (
-        "Mixin/" + BuildConfig.VERSION_NAME +
-            " (Android " + android.os.Build.VERSION.RELEASE + "; " + android.os.Build.FINGERPRINT + "; " + LOCALE + ")"
+        "Mixin/" + "${BuildConfig.VERSION_NAME}" +
+            " (Android " + android.os.Build.VERSION.RELEASE + "; " + android.os.Build.FINGERPRINT + "; " + "${BuildConfig.VERSION_CODE}" + "; " + LOCALE + ")"
         ).filterNonAscii()
-
-    private fun getDeviceId(resolver: ContentResolver): String {
-        var deviceId = Settings.Secure.getString(resolver, Settings.Secure.ANDROID_ID)
-        if (deviceId == null || deviceId == "9774d56d682e549c") {
-            deviceId = FirebaseInstanceId.getInstance().id
-        }
-        return UUID.nameUUIDFromBytes(deviceId.toByteArray()).toString()
-    }
 
     @Singleton
     @Provides
@@ -111,33 +144,60 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideOkHttp(resolver: ContentResolver, httpLoggingInterceptor: HttpLoggingInterceptor?): OkHttpClient {
-        val builder = OkHttpClient.Builder()
-        builder.addInterceptor(HostSelectionInterceptor.get())
-        httpLoggingInterceptor?.let { interceptor ->
-            builder.addNetworkInterceptor(interceptor)
+    fun provideCronetEngine(app: Application): CronetEngine? {
+        val ctx = app.applicationContext
+        if (!ctx.isGooglePlayServicesAvailable()) {
+            return null
         }
+        if (!CronetProviderInstaller.isInstalled()) {
+            return null
+        }
+
+        return try {
+            CronetEngine.Builder(ctx)
+                .addQuicHint(URL.toUri().host, 443, 443)
+                .addQuicHint(Mixin_URL.toUri().host, 443, 443)
+                .enableQuic(true)
+                .enableHttp2(true)
+                .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 10 * 1024)
+                .build()
+        } catch (e: UnsatisfiedLinkError) {
+            reportException(e)
+            null
+        } catch (e: Exception) {
+            reportException(e)
+            null
+        }
+    }
+
+    @Singleton
+    @Provides
+    fun provideOkHttp(resolver: ContentResolver, httpLoggingInterceptor: HttpLoggingInterceptor?, engine: CronetEngine?): OkHttpClient {
+        val builder = OkHttpClient.Builder()
         builder.connectTimeout(10, TimeUnit.SECONDS)
         builder.writeTimeout(10, TimeUnit.SECONDS)
         builder.readTimeout(10, TimeUnit.SECONDS)
         builder.pingInterval(15, TimeUnit.SECONDS)
         builder.retryOnConnectionFailure(false)
+        builder.followRedirects(false)
         builder.dns(DNS)
-
+        // Interceptor
         builder.addInterceptor { chain ->
+            val requestId = UUID.randomUUID().toString()
             val sourceRequest = chain.request()
             val request = sourceRequest.newBuilder()
                 .addHeader("User-Agent", API_UA)
                 .addHeader("Accept-Language", Locale.getDefault().language)
-                .addHeader("Mixin-Device-Id", getDeviceId(resolver))
-                .addHeader("Authorization", "Bearer ${Session.signToken(Session.getAccount(), sourceRequest)}")
+                .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
+                .addHeader(xRequestId, requestId)
+                .addHeader(authorization, "Bearer ${Session.signToken(Session.getAccount(), sourceRequest, requestId)}")
                 .build()
             if (MixinApplication.appContext.networkConnected()) {
                 var response = try {
                     chain.proceed(request)
                 } catch (e: Exception) {
                     throw e.apply {
-                        if (this is SocketTimeoutException || this is UnknownHostException || this is ConnectException) {
+                        if (e.isNeedSwitch()) {
                             HostSelectionInterceptor.get().switch(request)
                         }
                     }
@@ -156,10 +216,12 @@ object AppModule {
                 var jwtResult: JwtResult? = null
                 response.body?.run {
                     val bytes = this.bytes()
-                    val contentType = this.contentType()
-                    val body = bytes.toResponseBody(contentType)
+                    val body = bytes.toResponseBody(this.contentType())
                     response = response.newBuilder().body(body).build()
                     if (bytes.isEmpty()) return@run
+                    if (request.header(xRequestId) != response.header(xRequestId)) {
+                        throw DataErrorException()
+                    }
                     val mixinResponse = try {
                         GsonHelper.customGson.fromJson(String(bytes), MixinResponse::class.java)
                     } catch (e: JsonSyntaxException) {
@@ -170,7 +232,7 @@ object AppModule {
                         MixinApplication.get().gotoOldVersionAlert()
                         return@run
                     } else if (mixinResponse.errorCode != AUTHENTICATION) return@run
-                    val authorization = response.request.header("Authorization")
+                    val authorization = response.request.header(authorization)
                     if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
                         val jwt = authorization.substring(7)
                         jwtResult = Session.requestDelay(Session.getAccount(), jwt, Constants.DELAY_SECOND)
@@ -180,8 +242,8 @@ object AppModule {
                     }
                 }
 
-                if (MixinApplication.get().onlining.get()) {
-                    response.header("X-Server-Time")?.toLong()?.let { serverTime ->
+                if (MixinApplication.get().isOnline.get()) {
+                    response.header(xServerTime)?.toLong()?.let { serverTime ->
                         val currentTime = System.currentTimeMillis()
                         if (abs(serverTime / 1000000 - System.currentTimeMillis()) >= ALLOW_INTERVAL) {
                             MixinApplication.get().gotoTimeWrong(serverTime)
@@ -200,18 +262,25 @@ object AppModule {
                 throw NetworkException()
             }
         }
+        builder.addInterceptor(HostSelectionInterceptor.get())
+        httpLoggingInterceptor?.let { interceptor ->
+            builder.addInterceptor(interceptor)
+        }
+        if (engine != null) {
+            builder.addInterceptor(MixinCronetInterceptor.newBuilder(engine).build())
+        }
         return builder.build()
     }
 
     @Singleton
     @Provides
-    fun provideHttpService(okHttp: OkHttpClient): Retrofit {
+    fun provideHttpService(okHttp: OkHttpClient, gson: Gson): Retrofit {
         val builder = Retrofit.Builder()
             .baseUrl(URL)
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addCallAdapterFactory(LiveDataCallAdapterFactory())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .client(okHttp)
         return builder.build()
     }
@@ -268,6 +337,16 @@ object AppModule {
 
     @Singleton
     @Provides
+    fun provideTipService(retrofit: Retrofit) =
+        retrofit.create(TipService::class.java) as TipService
+
+    @Singleton
+    @Provides
+    fun provideTipNodeService(retrofit: Retrofit) =
+        retrofit.create(TipNodeService::class.java) as TipNodeService
+
+    @Singleton
+    @Provides
     fun provideContentResolver(app: Application) = app.contentResolver as ContentResolver
 
     @Provides
@@ -294,7 +373,7 @@ object AppModule {
             .networkUtil(jobNetworkUtil)
         builder.scheduler(
             FrameworkJobSchedulerService
-                .createSchedulerFor(app.applicationContext, MyJobService::class.java)
+                .createSchedulerFor(app.applicationContext, MyJobService::class.java),
         )
         return MixinJobManager(builder.build())
     }
@@ -309,19 +388,20 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideEncryptedProtocol() = EncryptedProtocol()
+
+    @Provides
+    @Singleton
     fun provideChatWebSocket(
+        @ApplicationScope applicationScope: CoroutineScope,
         okHttp: OkHttpClient,
-        app: Application,
         accountService: AccountService,
-        conversationDao: ConversationDao,
-        messageDao: MessageDao,
-        offsetDao: OffsetDao,
-        floodMessageDao: FloodMessageDao,
+        mixinDatabase: MixinDatabase,
+        pendingDatabase: PendingDatabase,
         jobManager: MixinJobManager,
         linkState: LinkState,
-        jobDao: JobDao
     ): ChatWebSocket =
-        ChatWebSocket(okHttp, app, accountService, conversationDao, messageDao, offsetDao, floodMessageDao, jobManager, linkState, jobDao)
+        ChatWebSocket(applicationScope, okHttp, accountService, mixinDatabase, pendingDatabase, jobManager, linkState)
 
     @Provides
     @Singleton
@@ -342,7 +422,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFoursquareService(httpLoggingInterceptor: HttpLoggingInterceptor??): FoursquareService {
+    fun provideFoursquareService(httpLoggingInterceptor: HttpLoggingInterceptor?): FoursquareService {
         val client = OkHttpClient.Builder().apply {
             httpLoggingInterceptor?.let { interceptor ->
                 addNetworkInterceptor(interceptor)
@@ -357,20 +437,160 @@ object AppModule {
         return retrofit.create(FoursquareService::class.java)
     }
 
+    @Singleton
+    @Provides
+    fun provideRouteService(resolver: ContentResolver, httpLoggingInterceptor: HttpLoggingInterceptor?): RouteService {
+        val builder = OkHttpClient.Builder()
+        builder.connectTimeout(10, TimeUnit.SECONDS)
+        builder.writeTimeout(10, TimeUnit.SECONDS)
+        builder.readTimeout(10, TimeUnit.SECONDS)
+        builder.dns(DNS)
+        val client = builder.apply {
+            addInterceptor { chain ->
+                val requestId = UUID.randomUUID().toString()
+                val sourceRequest = chain.request()
+                val builder = sourceRequest.newBuilder()
+                builder.addHeader("User-Agent", API_UA)
+                    .addHeader("Accept-Language", Locale.getDefault().language)
+                    .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
+                    .addHeader(xRequestId, requestId)
+                val (ts, signature) = Session.getRouteSignature(sourceRequest)
+                if (!sourceRequest.url.toString().endsWith("checkout/ticker")) {
+                    builder.addHeader(mrAccessTimestamp, ts.toString())
+                    builder.addHeader(mrAccessSign, signature)
+                }
+                val request = builder.build()
+                return@addInterceptor chain.proceed(request)
+            }
+            httpLoggingInterceptor?.let { interceptor ->
+                addNetworkInterceptor(interceptor)
+            }
+        }.build()
+        val retrofit = Retrofit.Builder()
+            .baseUrl(ROUTE_BOT_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .client(client)
+            .build()
+        return retrofit.create(RouteService::class.java)
+    }
+
     @Provides
     @Singleton
     fun provideCallState() = CallStateLiveData()
 
     @Provides
     @Singleton
+    fun provideCallDebugState() = CallDebugLiveData()
+
+    @Provides
+    @Singleton
     fun provideAudioSwitch(app: Application): AudioSwitch =
         AudioSwitch(
-            app.applicationContext, BuildConfig.DEBUG,
+            app.applicationContext,
+            BuildConfig.DEBUG,
             preferredDeviceList = listOf(
                 AudioDevice.BluetoothHeadset::class.java,
                 AudioDevice.WiredHeadset::class.java,
                 AudioDevice.Speakerphone::class.java,
-                AudioDevice.Earpiece::class.java
-            )
+                AudioDevice.Earpiece::class.java,
+            ),
         )
+
+    @Provides
+    @Singleton
+    fun provideIdentity(tipService: TipService) = Identity(tipService)
+
+    @Provides
+    @Singleton
+    fun provideEphemeral(tipService: TipService) = Ephemeral(tipService)
+
+    @Provides
+    @Singleton
+    fun provideTipNode(tipNodeService: TipNodeService, tipConfig: TipConfig, gson: Gson) = TipNode(tipNodeService, tipConfig, gson)
+
+    @Provides
+    @Singleton
+    fun provideTipConfig() = TipConstants.tipConfig
+
+    @Provides
+    @Singleton
+    fun provideTip(ephemeral: Ephemeral, identity: Identity, tipNode: TipNode, tipService: TipService, accountService: AccountService, tipCounterSyncedLiveData: TipCounterSyncedLiveData) =
+        Tip(ephemeral, identity, tipService, accountService, tipNode, tipCounterSyncedLiveData)
+
+    @Provides
+    @Singleton
+    fun providePinCipher(tip: Tip) = PinCipher(tip)
+
+    @Provides
+    @Singleton
+    fun provideTipCounterSynced() = TipCounterSyncedLiveData()
+
+    @Provides
+    @Singleton
+    fun provideTransferStatus() = TransferStatusLiveData()
+
+    @DefaultDispatcher
+    @Provides
+    fun providesDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
+
+    @ApplicationScope
+    @Singleton
+    @Provides
+    fun providesApplicationScope(
+        @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
+    ): CoroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
+
+    @Provides
+    @Singleton
+    fun provideGson() = GsonHelper.customGson
+
+    @Provides
+    @Singleton
+    fun provideJson() = Json {
+        ignoreUnknownKeys = true
+        explicitNulls = false
+        encodeDefaults = false
+        coerceInputValues = true
+        isLenient = true
+    }
+
+    @Provides
+    @Singleton
+    fun provideJobSenderKey(
+        participantSessionDao: ParticipantSessionDao,
+        signalProtocol: SignalProtocol,
+        conversationApi: ConversationService,
+        participantDao: ParticipantDao,
+        chatWebSocket: ChatWebSocket,
+        linkState: LinkState,
+        messageHistoryDao: MessageHistoryDao,
+    ) = JobSenderKey(
+        participantSessionDao,
+        signalProtocol,
+        conversationApi,
+        participantDao,
+        chatWebSocket,
+        linkState,
+        messageHistoryDao,
+    )
+
+    private const val DATA_STORE_FILE_NAME = "safe_box_%s.store"
+
+    @Singleton
+    @Provides
+    fun providesDataStore(@ApplicationContext appContext: Context): DataStore<SafeBox> {
+        return DataStoreFactory.create(
+            serializer = SafeBoxSerializer,
+            produceFile = {
+                appContext.dataStoreFile(
+                    String.format(
+                        DATA_STORE_FILE_NAME,
+                        Session.getAccountId(),
+                    ),
+                )
+            },
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+        )
+    }
 }

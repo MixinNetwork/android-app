@@ -2,7 +2,7 @@ package one.mixin.android.vo
 
 import android.os.Parcelable
 import androidx.room.ColumnInfo
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 class ConversationCircleManagerItem(
@@ -11,5 +11,5 @@ class ConversationCircleManagerItem(
     @ColumnInfo(name = "name")
     val name: String,
     @ColumnInfo(name = "count")
-    val count: Int
+    val count: Int,
 ) : Parcelable

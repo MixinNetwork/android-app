@@ -1,75 +1,85 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.style.BackgroundColorSpan
+import android.util.TypedValue
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.date_wrapper.view.*
-import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
-import kotlinx.android.synthetic.main.item_chat_text.view.*
+import one.mixin.android.Constants
+import one.mixin.android.Constants.Colors.LINK_COLOR
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.event.MentionReadEvent
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.doubleClickVibrate
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.initChatMode
 import one.mixin.android.extension.maxItemWidth
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.renderMessage
-import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseMentionHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.linktext.AutoLinkMode
-import org.jetbrains.anko.dip
 
-class TextHolder constructor(containerView: View) : BaseMentionHolder(containerView) {
+class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHolder(binding.root), Terminable {
 
     init {
-        itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        itemView.chat_tv.setUrlModeColor(LINK_COLOR)
-        itemView.chat_tv.setMentionModeColor(LINK_COLOR)
-        itemView.chat_layout.setMaxWidth(itemView.context.maxItemWidth())
+        binding.root.context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14).apply {
+            if (this != 14) {
+                val textSize = this.toFloat()
+                binding.chatTime.changeSize(textSize - 4f)
+                binding.chatName.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
+                binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
+            }
+        }
+        binding.chatTv.initChatMode(LINK_COLOR)
+        binding.chatTv.setSelectedStateColor(SELECT_COLOR)
+        binding.chatLayout.setMaxWidth(itemView.context.maxItemWidth())
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
-        val lp = (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams)
+        val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
             lp.horizontalBias = 1f
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_me_last,
-                    R.drawable.chat_bubble_me_last_night
+                    R.drawable.chat_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_me,
-                    R.drawable.chat_bubble_me_night
+                    R.drawable.chat_bubble_me_night,
                 )
             }
         } else {
             lp.horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_other_last,
-                    R.drawable.chat_bubble_other_last_night
+                    R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_other,
-                    R.drawable.chat_bubble_other_night
+                    R.drawable.chat_bubble_other_night,
                 )
             }
         }
     }
 
-    private var onItemListener: ConversationAdapter.OnItemListener? = null
+    private var onItemListener: MessageAdapter.OnItemListener? = null
 
     fun bind(
         messageItem: MessageItem,
@@ -79,8 +89,9 @@ class TextHolder constructor(containerView: View) : BaseMentionHolder(containerV
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
+        super.bind(messageItem)
         this.onItemListener = onItemListener
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
@@ -88,17 +99,28 @@ class TextHolder constructor(containerView: View) : BaseMentionHolder(containerV
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
 
-        itemView.chat_tv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
+        binding.chatTv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
             when (autoLinkMode) {
                 AutoLinkMode.MODE_URL -> {
                     onItemListener.onUrlClick(matchedText)
+                }
+                AutoLinkMode.MODE_MENTION, AutoLinkMode.MODE_BOT -> {
+                    onItemListener.onMentionClick(matchedText)
+                }
+                AutoLinkMode.MODE_PHONE -> {
+                    onItemListener.onPhoneClick(matchedText)
+                }
+                AutoLinkMode.MODE_EMAIL -> {
+                    onItemListener.onEmailClick(matchedText)
                 }
                 else -> {
                 }
             }
         }
 
-        itemView.chat_tv.setAutoLinkOnLongClickListener { autoLinkMode, matchedText ->
+        binding.chatTv.setAutoLinkOnLongClickListener { autoLinkMode, matchedText ->
+            textGestureListener?.longPressed = true
+
             when (autoLinkMode) {
                 AutoLinkMode.MODE_URL -> {
                     onItemListener.onUrlLongClick(matchedText)
@@ -108,22 +130,7 @@ class TextHolder constructor(containerView: View) : BaseMentionHolder(containerV
             }
         }
 
-        itemView.chat_tv.setOnLongClickListener {
-            if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
-            } else {
-                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
-                true
-            }
-        }
-
-        itemView.chat_tv.setOnClickListener {
-            if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
-            }
-        }
-
-        itemView.setOnLongClickListener {
+        binding.chatTv.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -138,67 +145,71 @@ class TextHolder constructor(containerView: View) : BaseMentionHolder(containerV
             }
         }
 
+        itemView.setOnLongClickListener {
+            if (!hasSelect) {
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
+            } else {
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+                true
+            }
+        }
+
+        if (textGestureListener == null) {
+            textGestureListener = TextGestureListener(itemView, messageItem, hasSelect, isSelect, onItemListener, absoluteAdapterPosition)
+        } else {
+            textGestureListener?.apply {
+                this.messageItem = messageItem
+                this.hasSelect = hasSelect
+                this.isSelect = isSelect
+                this.onItemListener = onItemListener
+                this.absoluteAdapterPosition = this@TextHolder.absoluteAdapterPosition
+            }
+        }
+        binding.chatLayout.listener = textGestureListener
+
         if (messageItem.mentions?.isNotBlank() == true) {
             val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
-                messageItem.mentions
-            ) { identityNumber ->
-                onItemListener.onMentionClick(identityNumber)
-            }
-            itemView.chat_tv.renderMessage(messageItem.content, mentionRenderContext, keyword)
-        } else {
-            keyword.notNullWithElse(
-                { k ->
-                    messageItem.content?.let { str ->
-                        val start = str.indexOf(k, 0, true)
-                        if (start >= 0) {
-                            val sp = SpannableString(str)
-                            sp.setSpan(
-                                BackgroundColorSpan(HIGHLIGHTED),
-                                start,
-                                start + k.length,
-                                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                            )
-                            itemView.chat_tv.text = sp
-                        } else {
-                            itemView.chat_tv.text = str
-                        }
-                    }
-                },
-                {
-                    itemView.chat_tv.text = messageItem.content
-                }
+                messageItem.mentions,
             )
+            binding.chatTv.renderMessage(messageItem.content, keyword, mentionRenderContext)
+        } else {
+            binding.chatTv.renderMessage(messageItem.content, keyword)
         }
 
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
-            itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            binding.chatName.visibility = View.VISIBLE
+            binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
-                itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-                itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
-                itemView.chat_name.setCompoundDrawables(null, null, null, null)
+                binding.chatName.setCompoundDrawables(null, null, null, null)
             }
-            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
-            itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+            binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
-            itemView.chat_name.visibility = View.GONE
+            binding.chatName.visibility = View.GONE
         }
 
         if (messageItem.appId != null) {
-            itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-            itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+            binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+            binding.chatName.compoundDrawablePadding = 3.dp
         } else {
-            itemView.chat_name.setCompoundDrawables(null, null, null, null)
+            binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-        itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
-            itemView.chat_flag.isVisible = statusIcon != null
-            itemView.chat_flag.setImageDrawable(statusIcon)
-            itemView.chat_secret.isVisible = secretIcon != null
-            itemView.chat_representative.isVisible = representativeIcon != null
-        }
+
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            messageItem.isPin ?: false,
+            isRepresentative,
+            messageItem.isSecret(),
+        )
+
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_layout)
+
         chatLayout(isMe, isLast)
 
         attachAction = if (messageItem.mentionRead == false) {
@@ -208,6 +219,45 @@ class TextHolder constructor(containerView: View) : BaseMentionHolder(containerV
             }
         } else {
             null
+        }
+    }
+
+    private var textGestureListener: TextGestureListener? = null
+
+    private class TextGestureListener(
+        var view: View,
+        var messageItem: MessageItem,
+        var hasSelect: Boolean = false,
+        var isSelect: Boolean = false,
+        var onItemListener: MessageAdapter.OnItemListener,
+        var absoluteAdapterPosition: Int = 0,
+    ) : GestureDetector.SimpleOnGestureListener() {
+        var longPressed = false
+
+        override fun onDoubleTap(e: MotionEvent): Boolean {
+            view.context.doubleClickVibrate()
+            onItemListener.onTextDoubleClick(messageItem)
+            return true
+        }
+
+        override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+            if (hasSelect) {
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+            }
+            return true
+        }
+
+        override fun onLongPress(e: MotionEvent) {
+            if (longPressed) {
+                longPressed = false
+                return
+            }
+
+            if (!hasSelect) {
+                view.performLongClick()
+            } else {
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+            }
         }
     }
 }

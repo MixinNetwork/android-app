@@ -17,7 +17,9 @@ import android.util.AttributeSet
 import android.view.View
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
-import org.jetbrains.anko.collections.forEachWithIndex
+import one.mixin.android.extension.forEachWithIndex
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 class PercentView : View {
 
@@ -32,7 +34,7 @@ class PercentView : View {
         colorFilter = ColorMatrixColorFilter(
             ColorMatrix().apply {
                 setScale(SHADOW_SCALE_RGB, SHADOW_SCALE_RGB, SHADOW_SCALE_RGB, SHADOW_SCALE_ALPHA)
-            }
+            },
         )
     }
     private val strokeHeight = context.dpToPx(4f)
@@ -120,7 +122,7 @@ class PercentView : View {
             blurShadow = Bitmap.createBitmap(
                 shadowBounds.width().toInt(),
                 (shadowBounds.height() * 1.5f).toInt(),
-                Bitmap.Config.ARGB_8888
+                Bitmap.Config.ARGB_8888,
             )
         } else {
             blurShadow?.eraseColor(Color.TRANSPARENT)
@@ -190,3 +192,6 @@ class PercentView : View {
 
     data class PercentItem(val name: String, val percent: Float)
 }
+
+fun BigDecimal.calcPercent(totalUSD: BigDecimal): Float =
+    (this.divide(totalUSD, 16, RoundingMode.HALF_UP)).setScale(2, RoundingMode.DOWN).toFloat()

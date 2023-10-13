@@ -45,5 +45,5 @@ class ImageSet(
     val original: Image,
 
     @SerializedName("original_still")
-    val original_still: Image
+    val original_still: Image,
 )

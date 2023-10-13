@@ -1,10 +1,9 @@
 package one.mixin.android.ui.search
 
 import android.os.Bundle
-import android.view.LayoutInflater
+import android.os.CancellationSignal
 import android.view.View
 import android.view.View.VISIBLE
-import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
@@ -16,31 +15,36 @@ import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.fragment_search_message.*
-import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentSearchMessageBinding
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.ConversationFragment
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import one.mixin.android.ui.search.SearchSingleFragment.Companion.ARGS_QUERY
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import java.util.concurrent.TimeUnit
 
+@Suppress("DEPRECATION")
 @AndroidEntryPoint
-class SearchMessageFragment : BaseFragment() {
+class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     companion object {
         const val TAG = "SearchMessageFragment"
         const val ARGS_SEARCH_MESSAGE = "args_search_message"
 
         fun newInstance(
             searchMessageItem: SearchMessageItem,
-            query: String
+            query: String,
         ) = SearchMessageFragment().withArgs {
             putParcelable(ARGS_SEARCH_MESSAGE, searchMessageItem)
             putString(ARGS_QUERY, query)
@@ -50,8 +54,9 @@ class SearchMessageFragment : BaseFragment() {
     private val searchViewModel by viewModels<SearchViewModel>()
 
     private val searchMessageItem: SearchMessageItem by lazy {
-        requireArguments().getParcelable(ARGS_SEARCH_MESSAGE)!!
+        requireArguments().getParcelableCompat(ARGS_SEARCH_MESSAGE, SearchMessageItem::class.java)!!
     }
+
     private val query by lazy { requireArguments().getString(ARGS_QUERY)!! }
 
     private val adapter by lazy { SearchMessageAdapter() }
@@ -59,107 +64,157 @@ class SearchMessageFragment : BaseFragment() {
     private var observer: Observer<PagedList<SearchMessageDetailItem>>? = null
     private var curLiveData: LiveData<PagedList<SearchMessageDetailItem>>? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_search_message, container, false)
+    private val binding by viewBinding(FragmentSearchMessageBinding::bind)
+
+    private var searchJob: Job? = null
+
+    private var cancellationSignal: CancellationSignal? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener {
-            search_rv.hideKeyboard()
+        binding.titleView.leftIb.setOnClickListener {
+            binding.searchRv.hideKeyboard()
             requireActivity().onBackPressed()
         }
-        title_view.avatar_iv.visibility = VISIBLE
-        title_view.avatar_iv.setTextSize(16f)
+        binding.titleView.avatarIv.visibility = VISIBLE
+        binding.titleView.avatarIv.setTextSize(16f)
         if (searchMessageItem.conversationCategory == ConversationCategory.CONTACT.name) {
-            title_view.title_tv.text = searchMessageItem.userFullName
-            title_view.avatar_iv.setInfo(
+            binding.titleView.titleTv.text = searchMessageItem.userFullName
+            binding.titleView.avatarIv.setInfo(
                 searchMessageItem.userFullName,
                 searchMessageItem.userAvatarUrl,
-                searchMessageItem.userId
+                searchMessageItem.userId,
             )
         } else {
-            title_view.title_tv.text = searchMessageItem.conversationName
-            title_view.avatar_iv.setGroup(searchMessageItem.conversationAvatarUrl)
+            binding.titleView.titleTv.text = searchMessageItem.conversationName
+            binding.titleView.avatarIv.setGroup(searchMessageItem.conversationAvatarUrl)
         }
 
-        search_rv.layoutManager = LinearLayoutManager(requireContext())
+        binding.searchRv.layoutManager = LinearLayoutManager(requireContext())
         adapter.callback = object : SearchMessageAdapter.SearchMessageCallback {
             override fun onItemClick(item: SearchMessageDetailItem) {
                 searchViewModel.findConversationById(searchMessageItem.conversationId)
                     .autoDispose(stopScope)
                     .subscribe {
-                        search_et.hideKeyboard()
-                        ConversationActivity.show(
-                            requireContext(),
-                            conversationId = searchMessageItem.conversationId,
-                            messageId = item.messageId,
-                            keyword = search_et.text.toString()
-                        )
-                        if (isConversationSearch()) {
-                            parentFragmentManager.popBackStack()
+                        binding.searchEt.hideKeyboard()
+                        val activity = requireActivity()
+                        val conversationFragment = activity.supportFragmentManager.findFragmentByTag(ConversationFragment.TAG) as? ConversationFragment
+                        if (activity is ConversationActivity && conversationFragment != null) {
+                            lifecycleScope.launch {
+                                activity.supportFragmentManager.inTransaction {
+                                    setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
+                                    show(conversationFragment)
+                                    hide(this@SearchMessageFragment)
+                                    addToBackStack(null)
+                                }
+                                conversationFragment.updateConversationInfo(item.messageId, binding.searchEt.text.toString())
+                            }
+                        } else {
+                            ConversationActivity.show(
+                                requireContext(),
+                                conversationId = searchMessageItem.conversationId,
+                                messageId = item.messageId,
+                                keyword = binding.searchEt.text.toString(),
+                            )
+                            if (isConversationSearch()) {
+                                parentFragmentManager.popBackStack()
+                            }
                         }
                     }
             }
         }
-        search_rv.adapter = adapter
+        binding.searchRv.adapter = adapter
 
-        clear_ib.setOnClickListener { search_et.setText("") }
-        search_et.setText(query)
-        search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
+        binding.clearIb.setOnClickListener { binding.searchEt.setText("") }
+        binding.searchEt.setText(query)
+        binding.searchEt.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe(
                 {
-                    clear_ib.isVisible = it.isNotEmpty()
-                    onTextChanged(it.toString())
+                    binding.clearIb.isVisible = it.isNotEmpty()
+                    searchJob?.cancel()
+                    searchJob = onTextChanged(it.toString())
                 },
-                {}
+                {},
             )
-        search_et.postDelayed(
+        binding.searchEt.postDelayed(
             {
-                onTextChanged(query)
+                searchJob = onTextChanged(query)
             },
-            50
+            50,
         )
         if (isConversationSearch()) {
-            search_et.postDelayed(
+            binding.searchEt.postDelayed(
                 {
-                    search_et?.showKeyboard()
+                    binding.searchEt.showKeyboard()
                 },
-                500
+                500,
             )
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        cancellationSignal?.cancel()
+    }
+
+    override fun onBackPressed(): Boolean {
+        if (requireActivity() is ConversationActivity) {
+            val conversationFragment = requireActivity().supportFragmentManager.findFragmentByTag(ConversationFragment.TAG) as? ConversationFragment
+            if (conversationFragment != null) {
+                requireActivity().supportFragmentManager.inTransaction {
+                    conversationFragment.updateConversationInfo(null, null)
+                    show(conversationFragment)
+                }
+            }
+        }
+        return super.onBackPressed()
+    }
+
     private fun isConversationSearch() = searchMessageItem.messageCount == 0
 
-    private fun onTextChanged(s: String) {
-        if (s == adapter.query) return
+    private fun onTextChanged(s: String) = lifecycleScope.launch {
+        if (s == adapter.query) {
+            return@launch
+        }
 
         adapter.query = s
         if (s.isEmpty()) {
+            removeObserverAndCancel()
+            cancellationSignal = null
             observer?.let {
                 curLiveData?.removeObserver(it)
             }
             observer = null
             curLiveData = null
+            binding.progress.isVisible = false
             adapter.submitList(null)
-            return
+            return@launch
         }
 
-        lifecycleScope.launch {
-            if (!isAdded) return@launch
+        bindAndSearch(s)
+    }
 
-            observer?.let {
-                curLiveData?.removeObserver(it)
-            }
-            curLiveData = searchViewModel.fuzzySearchMessageDetailAsync(s, searchMessageItem.conversationId)
-            observer = Observer {
-                adapter.submitList(it)
-            }
-            observer?.let {
-                curLiveData?.observe(viewLifecycleOwner, it)
-            }
+    private fun bindAndSearch(s: String) {
+        binding.progress.isVisible = true
+
+        removeObserverAndCancel()
+        cancellationSignal = CancellationSignal()
+        curLiveData = searchViewModel.observeFuzzySearchMessageDetail(s, searchMessageItem.conversationId, cancellationSignal!!)
+        observer = Observer {
+            if (s != binding.searchEt.text.toString()) return@Observer
+            binding.progress.isVisible = false
+
+            adapter.submitList(it)
         }
+        observer?.let {
+            curLiveData?.observe(viewLifecycleOwner, it)
+        }
+    }
+
+    private fun removeObserverAndCancel() {
+        cancellationSignal?.cancel()
+        observer?.let { curLiveData?.removeObserver(it) }
     }
 }

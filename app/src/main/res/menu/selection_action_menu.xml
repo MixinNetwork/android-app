@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/bold"
+        android:icon="@drawable/ic_menu_select_bold"
+        android:title="@string/bold" />
+    <item
+        android:id="@+id/italic"
+        android:icon="@drawable/ic_menu_select_italic"
+        android:title="@string/italic" />
+    <item
+        android:id="@+id/strikethrough"
+        android:icon="@drawable/ic_menu_select_strikethrough"
+        android:title="@string/strikethrough" />
+    <item
+        android:id="@+id/code"
+        android:icon="@drawable/ic_menu_select_code"
+        android:title="@string/quote" />
+
+</menu>

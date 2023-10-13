@@ -11,7 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_gradient_bar"
-        android:paddingTop="24dp"
         android:visibility="gone">
 
         <ImageView
@@ -61,13 +60,14 @@
             android:textColor="@color/white"
             android:textSize="10sp"
             android:visibility="gone"
-            tools:ignore="HardcodedText" />
+            tools:ignore="HardcodedText,SmallSp" />
     </FrameLayout>
 
     <one.mixin.android.widget.PlayView2
         android:id="@+id/play_view"
         android:layout_width="56dp"
         android:layout_height="56dp"
+        android:background="@drawable/bg_play_control"
         android:layout_gravity="center" />
 
     <LinearLayout
@@ -75,11 +75,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="@drawable/bg_gradient_bottom_bar"
-        android:paddingStart="12dp"
-        android:paddingTop="24dp"
-        android:paddingEnd="12dp"
-        android:paddingBottom="24dp">
+        android:background="@drawable/bg_gradient_bottom_bar">
 
         <TextView
             android:id="@id/exo_position"
@@ -90,7 +86,7 @@
             android:text="@string/default_time"
             android:textColor="@color/transparent_white" />
 
-        <com.google.android.exoplayer2.ui.DefaultTimeBar
+        <androidx.media3.ui.DefaultTimeBar
             android:id="@id/exo_progress"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

@@ -7,10 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
-import kotlinx.android.synthetic.main.fragment_friends.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
-import one.mixin.android.R
+import one.mixin.android.databinding.FragmentFriendsBinding
+import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.vo.User
@@ -32,47 +32,59 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder> : BaseFragment() 
 
     protected val userCallback = UserItemCallback("")
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
-        layoutInflater.inflate(R.layout.fragment_friends, container, false)
+    private var _binding: FragmentFriendsBinding? = null
+    protected val binding get() = requireNotNull(_binding)
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentFriendsBinding.inflate(layoutInflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.title_tv.text = getString(getTitleResId())
-        title_view.left_ib.setOnClickListener {
-            search_et.hideKeyboard()
-            activity?.onBackPressed()
-        }
-        friends_rv.adapter = adapter
-        lifecycleScope.launch {
-            users = getFriends()
-        }
-
-        search_et.addTextChangedListener(
-            object : TextWatcher {
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-                override fun afterTextChanged(s: Editable) {
-                    keyWord = s.toString()
-                    adapter.filter = keyWord
-                    userCallback.filter = keyWord
-                }
+        binding.apply {
+            titleView.titleTv.text = getString(getTitleResId())
+            titleView.leftIb.setOnClickListener {
+                binding.searchEt.hideKeyboard()
+                activity?.onBackPressedDispatcher?.onBackPressed()
             }
-        )
+            friendsRv.adapter = adapter
+            lifecycleScope.launch {
+                users = getFriends()
+            }
+
+            searchEt.addTextChangedListener(
+                object : TextWatcher {
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+                    override fun afterTextChanged(s: Editable) {
+                        keyWord = s.toString()
+                        adapter.filter = keyWord
+                        userCallback.filter = keyWord
+                    }
+                },
+            )
+        }
     }
 
     private fun dataChange() {
         adapter.submitList(
             if (keyWord.isNotBlank()) {
                 users.filter {
-                    it.fullName?.contains(keyWord, true) == true ||
-                        it.identityNumber.contains(keyWord, true)
-                }.sortedByDescending { it.fullName == keyWord || it.identityNumber == keyWord }
+                    it.fullName?.containsIgnoreCase(keyWord) == true ||
+                        it.identityNumber.containsIgnoreCase(keyWord)
+                }.sortedByDescending { it.fullName.equalsIgnoreCase(keyWord) || it.identityNumber.equalsIgnoreCase(keyWord) }
             } else {
                 users
-            }
+            },
         )
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     abstract fun getTitleResId(): Int

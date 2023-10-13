@@ -1,9 +1,15 @@
 name: Android CI
 
 on:
- push:
-  branches:
-   - master
+  push:
+    branches:
+    - master
+    - bugfix/*
+    - feature/*
+  pull_request_target:
+    branches: [ master ]
+
+
 
 jobs:
   build:
@@ -12,13 +18,26 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: set up JDK 1.8
-      uses: actions/setup-java@v1
+    - name: set up JDK 17
+      uses: actions/setup-java@v3
       with:
-        java-version: 1.8
+        java-version: 17
+        distribution: 'adopt'
     - name: Make Gradle executable
       run: chmod +x ./gradlew
-    - name: Build with Gradle
-      run: ./gradlew build
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug
+
+    - name: Set mapbox token
+      env:
+        MAPBOX_DOWNLOADS_TOKEN: ${{ secrets.MAPBOX_DOWNLOADS_TOKEN }}
+      shell: bash
+      run: echo MAPBOX_DOWNLOADS_TOKEN=${MAPBOX_DOWNLOADS_TOKEN} >> gradle.properties
+
+    - name: Create google-service.json file
+      run: cat /home/runner/work/android-app/android-app/app/src/debug/google-services.json | base64
+    - name: Set google-service.json data
+      env:
+        DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      run: echo $DATA > /home/runner/work/android-app/android-app/app/src/debug/google-services.json
+
+    - name: Build
+      run: ./gradlew clean assembleDebug --stacktrace

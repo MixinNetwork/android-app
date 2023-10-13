@@ -12,7 +12,7 @@ import java.util.Locale
 
 class AutoFillPhoneText(
     context: Context,
-    attributeSet: AttributeSet
+    attributeSet: AttributeSet,
 ) : AppCompatEditText(context, attributeSet) {
 
     @TargetApi(Build.VERSION_CODES.O)

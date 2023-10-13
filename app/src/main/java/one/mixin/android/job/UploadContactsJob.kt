@@ -28,11 +28,15 @@ class UploadContactsJob : BaseJob(Params(PRIORITY_BACKGROUND).requireNetwork()) 
                     runBlocking {
                         handleMixinResponse(
                             invokeNetwork = { contactService.syncContacts(mutableList) },
-                            successBlock = {}
+                            successBlock = {},
                         )
                     }
                 },
-                { }
+                { },
             )
+    }
+
+    companion object {
+        private var serialVersionUID: Long = 1L
     }
 }

@@ -2,20 +2,22 @@ package one.mixin.android.ui.common.info
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.TypedValue
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.layout_menu.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.LayoutMenuBinding
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.extension.textColor
 import one.mixin.android.vo.App
 import one.mixin.android.widget.FlowLayout
-import org.jetbrains.anko.colorAttr
 
 @DslMarker
 annotation class MenuDsl
@@ -66,11 +68,11 @@ class MenuBuilder {
 }
 
 data class MenuList(
-    val groups: ArrayList<MenuGroup>
+    val groups: ArrayList<MenuGroup>,
 )
 
 data class MenuGroup(
-    val menus: ArrayList<Menu>
+    val menus: ArrayList<Menu>,
 )
 
 data class Menu(
@@ -80,16 +82,17 @@ data class Menu(
     val action: (() -> Unit)? = null,
     val icon: Int? = null,
     val apps: List<App>? = null,
-    val circleNames: List<String>? = null
+    val circleNames: List<String>? = null,
 )
 
 enum class MenuStyle {
-    Normal, Danger
+    Normal, Danger, Info
 }
 
 @SuppressLint("InflateParams")
 fun MenuList.createMenuLayout(
-    context: Context
+    context: Context,
+    createdAt: String? = null,
 ): ViewGroup {
     val listLayout = LinearLayout(context).apply {
         orientation = LinearLayout.VERTICAL
@@ -103,63 +106,80 @@ fun MenuList.createMenuLayout(
             orientation = LinearLayout.VERTICAL
         }
         group.menus.forEachIndexed { index, menu ->
-            val menuLayout = LayoutInflater.from(context).inflate(R.layout.layout_menu, null, false)
-            menuLayout.title_tv.text = menu.title
-            menuLayout.subtitle_tv.text = menu.subtitle
-            menuLayout.title_tv.setTextColor(
-                if (menu.style == MenuStyle.Normal) {
-                    context.colorFromAttribute(R.attr.text_primary)
-                } else {
-                    context.resources.getColor(R.color.colorRed, context.theme)
-                }
-            )
-            menu.icon.notNullWithElse(
-                {
-                    menuLayout.icon.isVisible = true
-                    menuLayout.icon.setImageResource(it)
+            val menuBinding = LayoutMenuBinding.inflate(LayoutInflater.from(context), null, false)
+            menuBinding.titleTv.text = menu.title
+            menuBinding.subtitleTv.text = menu.subtitle
+            menuBinding.titleTv.setTextColor(
+                when (menu.style) {
+                    MenuStyle.Normal -> {
+                        context.colorFromAttribute(R.attr.text_primary)
+                    }
+                    MenuStyle.Info -> {
+                        context.resources.getColor(R.color.colorBlue, context.theme)
+                    }
+                    else -> {
+                        context.resources.getColor(R.color.colorRed, context.theme)
+                    }
                 },
-                {
-                    menuLayout.icon.isVisible = false
-                }
             )
-            menu.apps.notNullWithElse(
-                {
-                    menuLayout.avatar_group.isVisible = true
-                    menuLayout.avatar_group.setApps(it)
-                },
-                {
-                    menuLayout.avatar_group.isVisible = false
-                }
-            )
-            menu.circleNames.notNullWithElse(
-                {
-                    menuLayout.flow_layout.isVisible = true
-                    addCirclesLayout(context, it, menuLayout.flow_layout)
-                },
-                {
-                    menuLayout.flow_layout.isVisible = false
-                }
-            )
+            val icon = menu.icon
+            if (icon != null) {
+                menuBinding.icon.isVisible = true
+                menuBinding.icon.setImageResource(icon)
+            } else {
+                menuBinding.icon.isVisible = false
+            }
+            val apps = menu.apps
+            if (apps != null) {
+                menuBinding.avatarGroup.isVisible = true
+                menuBinding.avatarGroup.setApps(apps)
+            } else {
+                menuBinding.avatarGroup.isVisible = false
+            }
+            val circleNames = menu.circleNames
+            if (circleNames != null) {
+                menuBinding.flowLayout.isVisible = true
+                addCirclesLayout(context, circleNames, menuBinding.flowLayout)
+            } else {
+                menuBinding.flowLayout.isVisible = false
+            }
             val top = index == 0
             val bottom = index == group.menus.size - 1
-            menuLayout.roundTopOrBottom(dp13.toFloat(), top, bottom)
-            menuLayout.setOnClickListener { menu.action?.invoke() }
+            menuBinding.root.roundTopOrBottom(dp13.toFloat(), top, bottom)
+            menuBinding.root.setOnClickListener { menu.action?.invoke() }
             groupLayout.addView(
-                menuLayout,
-                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp56)
+                menuBinding.root,
+                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp56),
             )
         }
+
         listLayout.addView(
             groupLayout,
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                ViewGroup.LayoutParams.WRAP_CONTENT,
             ).apply {
                 marginStart = dp16
                 marginEnd = dp16
                 topMargin = dp5
                 bottomMargin = dp5
-            }
+            },
+        )
+    }
+    if (createdAt != null) {
+        listLayout.addView(
+            TextView(context).apply {
+                text = createdAt
+                textColor = context.colorFromAttribute(R.attr.text_minor)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                gravity = Gravity.CENTER
+            },
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                topMargin = dp5
+            },
         )
     }
     return listLayout
@@ -168,7 +188,7 @@ fun MenuList.createMenuLayout(
 private fun addCirclesLayout(
     context: Context,
     circles: List<String>,
-    flowLayout: FlowLayout
+    flowLayout: FlowLayout,
 ) {
     val dp12 = context.dpToPx(12f)
     val dp4 = context.dpToPx(4f)

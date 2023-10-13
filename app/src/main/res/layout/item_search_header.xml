@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingStart="16dp"
@@ -18,10 +19,11 @@
 
     <TextView
         android:id="@+id/search_header_more"
-        android:text="@string/search_title_more"
+        android:text="@string/More"
         android:textColor="@color/wallet_blue_secondary"
         android:layout_centerVertical="true"
         android:layout_alignParentEnd="true"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        tools:ignore="RelativeOverlap" />
 </RelativeLayout>

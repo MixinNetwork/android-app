@@ -1,14 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/chat_msg_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:paddingTop="1.5dp"
-    tools:ignore="UselessParent">
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:clickable="true"
+    android:focusable="true">
+
+    <ImageView
+        android:id="@+id/chat_reply"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:background="@drawable/bg_circle_reply"
+        android:layout_marginStart="16dp"
+        android:padding="4dp"
+        android:alpha="0"
+        android:scaleX="0"
+        android:scaleY="0"
+        android:src="@drawable/ic_reply_white"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/chat_msg_layout"
+        app:layout_constraintBottom_toBottomOf="@id/chat_msg_layout"
+        tools:ignore="ContentDescription,NotSibling" />
+
+    <ImageView
+        android:id="@+id/chat_jump"
+        android:padding="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_chat_jump"
+        android:foreground="@drawable/jump_ripple"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/chat_msg_layout"
+        app:layout_constraintTop_toTopOf="@id/chat_msg_layout"
+        app:layout_constraintBottom_toBottomOf="@id/chat_msg_layout"
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/chat_name"
@@ -22,106 +52,117 @@
         android:lines="1"
         android:minWidth="30dp"
         android:textColor="#19BEF1"
-        android:textSize="14sp" />
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@id/chat_msg_layout"
+        app:layout_constraintStart_toStartOf="@id/chat_msg_layout" />
 
-    <FrameLayout
-        android:id="@+id/chat_layout"
+    <LinearLayout
+        android:id="@+id/chat_msg_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="3dp"
-        android:layout_marginEnd="3dp">
+        android:orientation="vertical"
+        android:paddingTop="1.5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chat_name"
+        app:layout_constraintVertical_bias="0"
+        app:layout_goneMarginBottom="0dp"
+        tools:ignore="UselessParent">
 
-        <one.mixin.android.widget.QuoteLayout
-            android:id="@+id/chat_quote_layout"
+        <FrameLayout
+            android:id="@+id/chat_layout"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:layout_marginEnd="3dp">
 
-            <one.mixin.android.widget.QuoteView
-                android:id="@+id/chat_quote"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/chat_audio_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:layout_marginStart="6dp"
-                android:layout_marginTop="1.5dp"
-                android:layout_marginEnd="6dp"
-                android:padding="3dp">
-
-                <one.mixin.android.widget.CircleProgress
-                    android:id="@+id/audio_progress"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="8dp"
-                    android:src="@drawable/ic_avatar_place_holder"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:progressColor="@color/colorDarkBlue"
-                    app:progressWidth="1.5dp"
-                    app:shadowColor="@color/progress_gary"
-                    app:size="40dp" />
-
-                <ImageView
-                    android:id="@+id/audio_expired"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="8dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/ic_expired"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <one.mixin.android.widget.WaveformView
-                    android:id="@+id/audio_waveform"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_marginStart="8dp"
-                    android:textColor="?attr/text_primary"
-                    android:textSize="16sp"
-                    app:layout_constraintBottom_toTopOf="@id/audio_duration"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/audio_progress"
-                    app:layout_constraintTop_toTopOf="@id/audio_progress" />
-
-                <TextView
-                    android:id="@+id/audio_duration"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="12dp"
-                    android:ellipsize="end"
-                    android:singleLine="true"
-                    android:textColor="@color/gray_50"
-                    android:textSize="12sp"
-                    app:layout_constraintBottom_toBottomOf="@id/audio_progress"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/audio_progress" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <TextView
-                android:id="@+id/chat_time"
+            <one.mixin.android.widget.QuoteLayout
+                android:id="@+id/chat_quote_layout"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="4dp"
-                android:layout_marginBottom="4dp"
-                android:drawablePadding="3dp"
-                android:fontFamily="@font/roboto_light"
-                android:gravity="end|bottom"
-                android:textColor="@color/color_chat_date"
-                android:textSize="@dimen/chat_date_size"
-                tools:text="7:48AM" />
+                android:layout_height="wrap_content">
 
-        </one.mixin.android.widget.QuoteLayout>
-    </FrameLayout>
-</LinearLayout>
+                <one.mixin.android.widget.QuoteView
+                    android:id="@+id/chat_quote"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/chat_audio_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginTop="1.5dp"
+                    android:layout_marginEnd="6dp"
+                    android:padding="3dp">
+
+                    <one.mixin.android.widget.CircleProgress
+                        android:id="@+id/audio_progress"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:src="@drawable/ic_avatar_place_holder"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:progressColor="@color/colorDarkBlue"
+                        app:progressWidth="1.5dp"
+                        app:shadowColor="@color/progress_gary"
+                        app:size="40dp" />
+
+                    <ImageView
+                        android:id="@+id/audio_expired"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_expired"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:contentDescription="@string/Expired" />
+
+                    <one.mixin.android.widget.WaveformView
+                        android:id="@+id/audio_waveform"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_marginStart="8dp"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="16sp"
+                        app:layout_constraintBottom_toTopOf="@id/audio_duration"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/audio_progress"
+                        app:layout_constraintTop_toTopOf="@id/audio_progress" />
+
+                    <TextView
+                        android:id="@+id/audio_duration"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="12dp"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:textColor="@color/gray_50"
+                        android:textSize="12sp"
+                        app:layout_constraintBottom_toBottomOf="@id/audio_progress"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/audio_progress" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <one.mixin.android.widget.bubble.TimeBubble
+                    android:id="@+id/chat_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="4dp"
+                    android:layout_marginBottom="4dp"
+                    android:gravity="end|bottom" />
+            </one.mixin.android.widget.QuoteLayout>
+        </FrameLayout>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

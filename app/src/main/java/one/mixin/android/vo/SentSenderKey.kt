@@ -15,5 +15,5 @@ class SentSenderKey(
     @ColumnInfo(name = "sender_key_id")
     val senderKeyId: Int? = null,
     @ColumnInfo(name = "created_at")
-    val createdAt: String? = nowInUtc()
+    val createdAt: String? = nowInUtc(),
 )

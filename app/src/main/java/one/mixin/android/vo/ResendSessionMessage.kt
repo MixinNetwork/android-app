@@ -14,5 +14,5 @@ class ResendSessionMessage(
     @ColumnInfo(name = "status")
     val status: Int,
     @ColumnInfo(name = "created_at")
-    val createdAt: String
+    val createdAt: String,
 )

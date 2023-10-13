@@ -2,7 +2,7 @@ package one.mixin.android.api.response
 
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 class MultisigsResponse(
@@ -27,13 +27,5 @@ class MultisigsResponse(
     val rawTransaction: String,
     @SerializedName("created_at")
     val createdAt: String,
-    val memo: String?
+    val memo: String?,
 ) : Parcelable
-
-enum class MultisigsAction {
-    cancel, sign, unlock
-}
-
-enum class MultisigsState {
-    initial, unlocked, signed
-}

@@ -1,12 +1,19 @@
 @file:Suppress("NOTHING_TO_INLINE")
+
 package one.mixin.android.crypto
 
 import android.os.Build
-import net.i2p.crypto.eddsa.EdDSAPrivateKey
+import com.lambdapioneer.argon2kt.Argon2Kt
+import com.lambdapioneer.argon2kt.Argon2KtResult
+import com.lambdapioneer.argon2kt.Argon2Mode
+import ed25519.Ed25519
 import okhttp3.tls.HeldCertificate
+import okio.ByteString.Companion.toByteString
 import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.toLeByteArray
-import one.mixin.android.util.reportException
+import one.mixin.eddsa.Ed25519Sign
+import one.mixin.eddsa.Field25519
+import org.komputing.khash.keccak.KeccakParameter
+import org.komputing.khash.keccak.extensions.digestKeccak
 import org.whispersystems.curve25519.Curve25519
 import org.whispersystems.curve25519.Curve25519.BEST
 import java.security.KeyFactory
@@ -18,6 +25,7 @@ import java.security.SecureRandom
 import java.security.spec.MGF1ParameterSpec
 import java.security.spec.PKCS8EncodedKeySpec
 import javax.crypto.Cipher
+import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.OAEPParameterSpec
 import javax.crypto.spec.PSource
@@ -25,31 +33,154 @@ import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.and
 import kotlin.experimental.or
 
+val secureRandom: SecureRandom = SecureRandom()
+private const val GCM_IV_LENGTH = 12
+
+// https://github.com/google/tink/issues/403
+fun useGoEd() = Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1
+
 fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
     val kpg = KeyPairGenerator.getInstance("RSA")
     kpg.initialize(keyLength)
     return kpg.genKeyPair()
 }
 
-fun generateEd25519KeyPair(): KeyPair {
-    return net.i2p.crypto.eddsa.KeyPairGenerator().generateKeyPair()
+fun generateEd25519KeyPair(): EdKeyPair {
+    return if (useGoEd()) {
+        val priv = Ed25519.generateKey()
+        EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
+    } else {
+        val keyPair = one.mixin.eddsa.KeyPair.newKeyPair(true)
+        EdKeyPair(keyPair.publicKey.toByteArray(), keyPair.privateKey.toByteArray())
+    }
 }
 
-fun calculateAgreement(publicKey: ByteArray, privateKey: EdDSAPrivateKey): ByteArray? =
-    try {
-        Curve25519.getInstance(BEST).calculateAgreement(publicKey, privateKeyToCurve25519(privateKey.seed))
-    } catch (t: Throwable) {
-        reportException("Calculates an ECDH agreement exception", t)
-        null
+fun newKeyPairFromSeed(seed: ByteArray): EdKeyPair {
+    return if (useGoEd()) {
+        val priv = Ed25519.newKeyFromSeed(seed)
+        EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
+    } else {
+        val keyPair = one.mixin.eddsa.KeyPair.newKeyPairFromSeed(seed.toByteString(), checkOnCurve = true)
+        EdKeyPair(keyPair.publicKey.toByteArray(), keyPair.privateKey.toByteArray())
     }
+}
 
-fun privateKeyToCurve25519(edSeed: ByteArray): ByteArray {
+fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
+    return Curve25519.getInstance(BEST).calculateAgreement(publicKey, privateKey)
+}
+
+fun initFromSeedAndSign(seed: ByteArray, signTarget: ByteArray): ByteArray {
+    return if (useGoEd()) {
+        Ed25519.sign(signTarget, seed)
+    } else {
+        val keyPair = newKeyPairFromSeed(seed)
+        val signer = Ed25519Sign(keyPair.privateKey.toByteString(), checkOnCurve = true)
+        signer.sign(signTarget.toByteString(), checkOnCurve = true).toByteArray()
+    }
+}
+
+fun privateKeyToCurve25519(privateKey: ByteArray): ByteArray {
     val md = MessageDigest.getInstance("SHA-512")
-    val h = md.digest(edSeed).sliceArray(IntRange(0, 31))
+    val h = md.digest(privateKey).sliceArray(IntRange(0, 31))
     h[0] = h[0] and 248.toByte()
     h[31] = h[31] and 127
     h[31] = h[31] or 64
     return h
+}
+
+fun publicKeyToCurve25519(publicKey: ByteArray): ByteArray {
+    return if (useGoEd()) {
+        Ed25519.publicKeyToCurve25519(publicKey)
+    } else {
+        val p = publicKey.map { it.toInt().toByte() }.toByteArray()
+        val x = edwardsToMontgomeryX(Field25519.expand(p))
+        Field25519.contract(x)
+    }
+}
+private fun edwardsToMontgomeryX(y: LongArray): LongArray {
+    val oneMinusY = LongArray(Field25519.LIMB_CNT)
+    oneMinusY[0] = 1
+    Field25519.sub(oneMinusY, oneMinusY, y)
+    Field25519.inverse(oneMinusY, oneMinusY)
+
+    val outX = LongArray(Field25519.LIMB_CNT)
+    outX[0] = 1
+    Field25519.sum(outX, y)
+
+    Field25519.mult(outX, outX, oneMinusY)
+    return outX
+}
+
+fun ByteArray.sha3Sum256(): ByteArray {
+    return digestKeccak(KeccakParameter.SHA3_256)
+}
+
+fun Argon2Kt.argon2IdHash(pin: String, seed: String): Argon2KtResult =
+    argon2IdHash(pin, seed.toByteArray())
+
+fun Argon2Kt.argon2IdHash(pin: String, seed: ByteArray): Argon2KtResult {
+    return hash(
+        mode = Argon2Mode.ARGON2_I,
+        password = pin.toByteArray(),
+        salt = seed,
+        tCostInIterations = 4,
+        mCostInKibibyte = 1024,
+        hashLengthInBytes = 32,
+    )
+}
+
+fun generateEphemeralSeed(): ByteArray {
+    val key = ByteArray(32)
+    secureRandom.nextBytes(key)
+    return key
+}
+
+fun generateAesKey(len: Int = 16): ByteArray {
+    val key = ByteArray(len)
+    secureRandom.nextBytes(key)
+    return key
+}
+
+fun aesGcmEncrypt(plain: ByteArray, key: ByteArray): ByteArray {
+    val iv = ByteArray(GCM_IV_LENGTH)
+    secureRandom.nextBytes(iv)
+    val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+    val parameterSpec = GCMParameterSpec(128, iv) // 128 bit auth tag length
+    val secretKey = SecretKeySpec(key, "AES")
+    cipher.init(Cipher.ENCRYPT_MODE, secretKey, parameterSpec)
+    val result = cipher.doFinal(plain)
+    return iv.plus(result)
+}
+
+fun aesGcmDecrypt(cipherMessage: ByteArray, key: ByteArray): ByteArray {
+    val secretKey = SecretKeySpec(key, "AES")
+    val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+    val gcmIv = GCMParameterSpec(128, cipherMessage, 0, GCM_IV_LENGTH)
+    cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmIv)
+    return cipher.doFinal(cipherMessage, GCM_IV_LENGTH, cipherMessage.size - GCM_IV_LENGTH)
+}
+
+fun aesEncrypt(key: ByteArray, plain: ByteArray): ByteArray {
+    val keySpec = SecretKeySpec(key, "AES")
+    val iv = ByteArray(16)
+    secureRandom.nextBytes(iv)
+    val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+    cipher.init(Cipher.ENCRYPT_MODE, keySpec, IvParameterSpec(iv))
+    val result = cipher.doFinal(plain)
+    return iv.plus(result)
+}
+
+fun aesDecrypt(key: ByteArray, iv: ByteArray, ciphertext: ByteArray): ByteArray {
+    val keySpec = SecretKeySpec(key, "AES")
+    val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+    cipher.init(Cipher.DECRYPT_MODE, keySpec, IvParameterSpec(iv))
+    return cipher.doFinal(ciphertext)
+}
+
+fun aesDecrypt(key: ByteArray, ciphertext: ByteArray): ByteArray {
+    val iv = ciphertext.slice(0..15).toByteArray()
+    val cipherContent = ciphertext.slice(16 until ciphertext.size).toByteArray()
+    return aesDecrypt(key, iv, cipherContent)
 }
 
 inline fun KeyPair.getPublicKey(): ByteArray {
@@ -61,18 +192,6 @@ inline fun KeyPair.getPrivateKeyPem(): String {
     return heldCertificate.privateKeyPkcs1Pem()
 }
 
-fun aesEncrypt(key: String, iterator: Long, code: String): String? {
-    val keySpec = SecretKeySpec(Base64.decode(key), "AES")
-    val iv = ByteArray(16)
-    SecureRandom().nextBytes(iv)
-
-    val pinByte = code.toByteArray() + (System.currentTimeMillis() / 1000).toLeByteArray() + iterator.toLeByteArray()
-    val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-    cipher.init(Cipher.ENCRYPT_MODE, keySpec, IvParameterSpec(iv))
-    val result = cipher.doFinal(pinByte)
-    return iv.plus(result).base64Encode()
-}
-
 fun rsaDecrypt(privateKey: PrivateKey, iv: String, pinToken: String): String {
     val deCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
     deCipher.init(
@@ -82,8 +201,8 @@ fun rsaDecrypt(privateKey: PrivateKey, iv: String, pinToken: String): String {
             "SHA-256",
             "MGF1",
             MGF1ParameterSpec.SHA256,
-            PSource.PSpecified(iv.toByteArray())
-        )
+            PSource.PSpecified(iv.toByteArray()),
+        ),
     )
     return deCipher.doFinal(Base64.decode(pinToken)).base64Encode()
 }

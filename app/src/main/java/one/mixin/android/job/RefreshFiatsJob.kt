@@ -5,7 +5,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.vo.Fiats
 
 class RefreshFiatsJob : BaseJob(
-    Params(PRIORITY_UI_HIGH).addTags(GROUP).persist().requireNetwork()
+    Params(PRIORITY_UI_HIGH).addTags(GROUP).persist().requireNetwork(),
 ) {
     companion object {
         private const val serialVersionUID = 1L

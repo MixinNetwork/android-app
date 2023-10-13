@@ -1,51 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<one.mixin.android.widget.keyboard.InputAwareLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<one.mixin.android.widget.keyboard.KeyboardLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/input_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    app:input_aera_id="@id/input_area">
+
+    <FrameLayout
+        android:id="@+id/bar_fl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <one.mixin.android.widget.TitleView
+            android:id="@+id/action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <one.mixin.android.widget.ToolView
+            android:id="@+id/tool_view"
+            android:layout_width="match_parent"
+            android:layout_height="?android:attr/actionBarSize"
+            android:visibility="gone" />
+    </FrameLayout>
 
     <RelativeLayout
+        android:layout_weight="1"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <FrameLayout
-            android:id="@+id/bar_fl"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <one.mixin.android.widget.TitleView
-                android:id="@+id/action_bar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <one.mixin.android.widget.ToolView
-                android:id="@+id/tool_view"
-                android:layout_width="match_parent"
-                android:layout_height="?actionBarSize"
-                android:visibility="gone" />
-        </FrameLayout>
+        android:layout_height="match_parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/root_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/bar_fl">
+            android:layout_height="match_parent">
 
             <one.mixin.android.widget.DraggableRecyclerView
-                android:id="@+id/chat_rv"
+                android:id="@+id/message_rv"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
                 android:paddingBottom="6dp"
-                android:scrollbars="vertical"
+                android:scrollbars="none"
                 app:layout_constraintBottom_toTopOf="@id/chat_control"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -68,12 +68,13 @@
                 android:clipToPadding="false"
                 android:padding="8dp"
                 android:translationY="130dp"
-                app:layout_constraintBottom_toBottomOf="@id/chat_rv"
+                app:layout_constraintBottom_toBottomOf="@id/message_rv"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="1"
                 app:layout_constraintStart_toStartOf="parent" />
 
             <LinearLayout
+                android:id="@+id/group_flag_layout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -85,11 +86,12 @@
                     android:id="@+id/group_flag"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
                     android:background="@drawable/bg_notice"
                     android:clipChildren="false"
                     android:clipToPadding="false"
                     android:padding="12dp"
-                    android:translationZ="1dp"
+                    android:translationZ="4dp"
                     android:visibility="gone">
 
                     <ImageView
@@ -131,11 +133,12 @@
                     android:id="@+id/scam_flag"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
                     android:background="@drawable/bg_notice"
                     android:clipChildren="false"
                     android:clipToPadding="false"
                     android:padding="12dp"
-                    android:translationZ="1dp"
+                    android:translationZ="4dp"
                     android:visibility="gone"
                     tools:visibility="visible">
 
@@ -178,12 +181,16 @@
                         app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <View
-                    android:id="@+id/driver"
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="?attr/bg_divider" />
             </LinearLayout>
+
+            <one.mixin.android.widget.PinMessageLayout
+                android:id="@+id/pin_message_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/group_flag_layout" />
 
             <one.mixin.android.widget.FloatingLayout
                 android:id="@+id/floating_layout"
@@ -198,18 +205,11 @@
                     android:id="@+id/mention_rv"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
                     android:layout_alignWithParentIfMissing="true"
-                    android:layout_above="@id/reply_view"
                     android:background="?attr/bg_white"
                     android:visibility="gone" />
 
-                <one.mixin.android.widget.ReplyView
-                    android:id="@+id/reply_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:visibility="gone"
-                    tools:ignore="MissingConstraints" />
             </one.mixin.android.widget.FloatingLayout>
 
             <FrameLayout
@@ -220,7 +220,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/chat_rv">
+                app:layout_constraintTop_toBottomOf="@id/message_rv">
 
                 <View
                     android:layout_width="match_parent"
@@ -251,7 +251,7 @@
                     android:gravity="center"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp"
-                    android:text="@string/setting_unblock"
+                    android:text="@string/Unblock"
                     android:textColor="@color/colorBlue"
                     android:textSize="16sp"
                     android:visibility="gone" />
@@ -264,7 +264,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/chat_rv" />
+                app:layout_constraintTop_toBottomOf="@id/message_rv" />
 
             <one.mixin.android.widget.RecordCircleView
                 android:id="@+id/record_circle"
@@ -293,36 +293,39 @@
         <include
             android:id="@+id/tap_join_view"
             android:visibility="gone"
-            layout="@layout/layout_conversation_group_call"/>
+            layout="@layout/layout_conversation_group_call" />
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/bar_layout"
+            android:layout_alignParentBottom="true"
+            android:background="@android:color/transparent" />
+
     </RelativeLayout>
 
-    <one.mixin.android.widget.InputAwareFrameLayout
-        android:id="@+id/sticker_container"
+    <FrameLayout
+        android:id="@+id/input_area"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/chat_control" />
+        android:background="?attr/bg_white"
+        android:layout_height="0dp">
 
-    <one.mixin.android.widget.InputAwareFrameLayout
-        android:id="@+id/menu_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/chat_control" />
+        <FrameLayout
+            android:id="@+id/sticker_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
 
-    <one.mixin.android.widget.InputAwareFrameLayout
-        android:id="@+id/gallery_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/chat_control" />
-</one.mixin.android.widget.keyboard.InputAwareLayout>
+        <FrameLayout
+            android:id="@+id/menu_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:id="@+id/gallery_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+    </FrameLayout>
+</one.mixin.android.widget.keyboard.KeyboardLayout>

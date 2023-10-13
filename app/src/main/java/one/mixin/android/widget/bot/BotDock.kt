@@ -14,9 +14,9 @@ import androidx.core.view.ViewPropertyAnimatorCompat
 import androidx.core.view.ViewPropertyAnimatorListener
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.item_dock.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.vibrate
+import one.mixin.android.databinding.ItemDockBinding
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.vo.BotInterface
 import java.lang.Exception
 import kotlin.math.max
@@ -31,7 +31,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         val layoutInflater = LayoutInflater.from(context)
         addView(layoutInflater.inflate(R.layout.item_dock_empty, null))
@@ -44,13 +44,15 @@ class BotDock : ViewGroup, View.OnLongClickListener {
                         2 -> R.id.dock_3
                         else -> R.id.dock_4
                     }
-                }
+                },
             )
         }
         clipChildren = false
         clipToPadding = false
         render()
     }
+
+    private fun getItemDock(view: View) = ItemDockBinding.bind(view)
 
     private var itemWidth = 0
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -99,7 +101,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
             @Suppress("DEPRECATION")
             v.startDrag(data, shadowBuilder, v, 0)
         }
-        v.context.vibrate(longArrayOf(0, 30L))
+        v.context.clickVibrate()
         v.alpha = 0f
         return false
     }
@@ -133,7 +135,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
             }
         }
         for (i in 1..4) {
-            val avatar = getChildAt(i).apply {
+            val avatar = getItemDock(getChildAt(i)).apply {
                 avatar.alpha = 1f
                 avatar.translationX = 0f
             }.avatar
@@ -195,9 +197,9 @@ class BotDock : ViewGroup, View.OnLongClickListener {
             currentShoveIndex = index
             for (i in 1..4) {
                 if (i <= index) {
-                    viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).start()
+                    viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).start()
                 } else {
-                    viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).translationX(itemWidth.toFloat()).start()
+                    viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).translationX(itemWidth.toFloat()).start()
                 }
             }
         }
@@ -211,24 +213,24 @@ class BotDock : ViewGroup, View.OnLongClickListener {
                 appIndex + 1 > index -> {
                     for (i in 1..4) { // forward
                         if (i >= appIndex + 1 || i < index) {
-                            viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).start()
+                            viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).start()
                         } else {
-                            viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).translationX(itemWidth.toFloat()).start()
+                            viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).translationX(itemWidth.toFloat()).start()
                         }
                     }
                 }
                 appIndex + 1 < index -> { // backward
                     for (i in 1..4) {
                         if (i <= appIndex + 1 || i > index) {
-                            viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).start()
+                            viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).start()
                         } else {
-                            viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).translationX(-itemWidth.toFloat()).start()
+                            viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).translationX(-itemWidth.toFloat()).start()
                         }
                     }
                 }
                 else -> { // hold
                     for (i in 1..4) {
-                        viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).start()
+                        viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).start()
                     }
                 }
             }
@@ -252,7 +254,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
                     view.translationX = 0f
                     animatorSet.remove(animator)
                 }
-            }
+            },
         )
     }
 

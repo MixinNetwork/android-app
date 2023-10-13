@@ -17,12 +17,12 @@ abstract class BitmapTransformation : Transformation<Bitmap> {
         context: Context,
         resource: Resource<Bitmap>,
         outWidth: Int,
-        outHeight: Int
+        outHeight: Int,
     ): Resource<Bitmap> {
         if (!Util.isValidDimensions(outWidth, outHeight)) {
             throw IllegalArgumentException(
                 "Cannot apply transformation on width: " + outWidth + " or height: " + outHeight +
-                    " less than or equal to zero and not Target.SIZE_ORIGINAL"
+                    " less than or equal to zero and not Target.SIZE_ORIGINAL",
             )
         }
         val bitmapPool = Glide.get(context).bitmapPool
@@ -43,7 +43,7 @@ abstract class BitmapTransformation : Transformation<Bitmap> {
         pool: BitmapPool,
         toTransform: Bitmap,
         outWidth: Int,
-        outHeight: Int
+        outHeight: Int,
     ): Bitmap
 
     abstract override fun updateDiskCacheKey(messageDigest: MessageDigest)

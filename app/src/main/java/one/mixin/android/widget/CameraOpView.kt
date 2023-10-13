@@ -15,20 +15,22 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import one.mixin.android.R
-import org.jetbrains.anko.dip
+import one.mixin.android.extension.dp
 
 class CameraOpView : View, GestureDetector.OnGestureListener {
 
     private enum class Mode {
         NONE,
         EXPAND,
-        PROGRESS
+        PROGRESS,
     }
 
     private var ringColor = Color.WHITE
     private var circleColor = context.getColor(R.color.colorDarkBlue)
-    private var ringStrokeWidth = dip(5).toFloat()
-    private var progressStrokeWidth = dip(5f).toFloat()
+    private var ringStrokeWidth = 5.dp.toFloat()
+
+    @Suppress("unused")
+    private var progressStrokeWidth = 5f.dp.toFloat()
     private var circleWidth = -10f // initial value less than 0 for delay
     private var maxCircleWidth = 0f
     private var circleInterval = 3f
@@ -44,6 +46,8 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
 
     private var mode = Mode.NONE
 
+    var time = 0f
+
     private val gestureDetector = GestureDetector(context, this)
     private var callback: CameraOpCallback? = null
 
@@ -56,7 +60,8 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
                         curSweepAngle = 360f
                         invalidate()
                         stop()
-                        callback?.onProgressStop(curSweepAngle / progressInterval / 10)
+                        time = curSweepAngle / progressInterval / 10
+                        callback?.onProgressStop(time)
                         clean()
                     } else {
                         invalidate()
@@ -114,7 +119,7 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
             maxCircleWidth = radius - ringStrokeWidth
             midX = width / 2f
             midY = width / 2f
-            val maxRadius = rawRadius * expand.toFloat()
+            val maxRadius = rawRadius * expand
             progressRect = RectF(midX - maxRadius, midY - maxRadius, midX + maxRadius, midY + maxRadius)
         }
     }
@@ -150,7 +155,8 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 if (mode == Mode.PROGRESS) {
                     stop()
-                    callback?.onProgressStop(curSweepAngle / progressInterval / 10)
+                    time = curSweepAngle / progressInterval / 10
+                    callback?.onProgressStop(time)
                 }
                 clean()
                 return true
@@ -159,34 +165,33 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
         return super.onTouchEvent(event)
     }
 
-    override fun onShowPress(e: MotionEvent?) {
+    override fun onShowPress(e: MotionEvent) {
     }
 
-    override fun onSingleTapUp(e: MotionEvent?): Boolean {
+    override fun onSingleTapUp(e: MotionEvent): Boolean {
         animateValue(expand, 1f)
         clean()
         callback?.onClick()
         return true
     }
 
-    override fun onDown(e: MotionEvent?): Boolean {
+    override fun onDown(e: MotionEvent): Boolean {
         animateValue(1f, expand)
         mode = Mode.EXPAND
         return true
     }
 
-    override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+    override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
         return false
     }
 
-    override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
+    override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
         return false
     }
 
-    override fun onLongPress(e: MotionEvent?) {
-//        mode = Mode.PROGRESS
-//        start()
-//        callback?.onProgressStart()
+    override fun onLongPress(e: MotionEvent) {
+        mode = Mode.PROGRESS
+        callback?.readyForProgress()
     }
 
     private fun clean() {
@@ -197,17 +202,23 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
         invalidate()
     }
 
+    fun startProgress() {
+        start()
+    }
+
     fun setMaxDuration(duration: Int) {
-        progressInterval = 360f / (duration + 0.5f) / 10
+        progressInterval = 360f / duration / 10
     }
 
     fun setCameraOpCallback(callback: CameraOpCallback) {
         this.callback = callback
     }
 
+    fun isRecording() = mode == Mode.PROGRESS
+
     interface CameraOpCallback {
         fun onClick()
-        fun onProgressStart()
+        fun readyForProgress()
         fun onProgressStop(time: Float)
     }
 }

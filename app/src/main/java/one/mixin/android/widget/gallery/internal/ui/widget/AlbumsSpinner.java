@@ -1,5 +1,6 @@
 package one.mixin.android.widget.gallery.internal.ui.widget;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -19,25 +20,21 @@ public class AlbumsSpinner {
     private static final int MAX_SHOWN_COUNT = 6;
     private CursorAdapter mAdapter;
     private TextView mSelected;
-    private ListPopupWindow mListPopupWindow;
+    private final ListPopupWindow mListPopupWindow;
     private AdapterView.OnItemSelectedListener mOnItemSelectedListener;
 
     public AlbumsSpinner(@NonNull Context context) {
-        mListPopupWindow = new ListPopupWindow(context, null, R.attr.listPopupWindowStyle);
+        mListPopupWindow = new ListPopupWindow(context, null, androidx.appcompat.R.attr.listPopupWindowStyle);
         mListPopupWindow.setModal(true);
         float density = context.getResources().getDisplayMetrics().density;
         mListPopupWindow.setContentWidth((int) (216 * density));
         mListPopupWindow.setHorizontalOffset((int) (16 * density));
         mListPopupWindow.setVerticalOffset((int) (-48 * density));
 
-        mListPopupWindow.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                AlbumsSpinner.this.onItemSelected(parent.getContext(), position);
-                if (mOnItemSelectedListener != null) {
-                    mOnItemSelectedListener.onItemSelected(parent, view, position, id);
-                }
+        mListPopupWindow.setOnItemClickListener((parent, view, position, id) -> {
+            AlbumsSpinner.this.onItemSelected(parent.getContext(), position);
+            if (mOnItemSelectedListener != null) {
+                mOnItemSelectedListener.onItemSelected(parent, view, position, id);
             }
         });
     }
@@ -74,6 +71,7 @@ public class AlbumsSpinner {
         mAdapter = adapter;
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     public void setSelectedTextView(TextView textView) {
         mSelected = textView;
         // tint dropdown arrow icon

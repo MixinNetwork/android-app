@@ -1,15 +1,20 @@
 package one.mixin.android.job
 
+import android.util.LruCache
 import com.birbit.android.jobqueue.Params
+import one.mixin.android.db.makeMessageStatus
 import one.mixin.android.extension.getEpochNano
+import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
 import java.util.UUID
 
+var pendingMessageStatusLruCache = LruCache<String, String>(2000)
+
 class RefreshOffsetJob : MixinJob(
     Params(PRIORITY_UI_HIGH)
         .setSingleId(GROUP).requireNetwork(),
-    UUID.randomUUID().toString()
+    UUID.randomUUID().toString(),
 ) {
     override fun cancel() {
     }
@@ -24,21 +29,38 @@ class RefreshOffsetJob : MixinJob(
     }
 
     override fun onRun() {
-
         val statusOffset = offsetDao.getStatusOffset()
         var status = statusOffset?.getEpochNano() ?: firstInstallTime
+
         while (true) {
             val response = messageService.messageStatusOffset(status).execute().body()
             if (response != null && response.isSuccess && response.data != null) {
                 val blazeMessages = response.data!!
-                if (blazeMessages.count() == 0) {
+                if (blazeMessages.isEmpty()) {
                     break
                 }
                 for (m in blazeMessages) {
-                    makeMessageStatus(m.status, m.messageId)
+                    val callback = block@{
+                        val mh = messageHistoryDao.findMessageHistoryById(m.messageId)
+                        if (mh != null) {
+                            return@block
+                        }
+                        val pendingMessageStatus = pendingMessageStatusLruCache[m.messageId]
+                        if (pendingMessageStatus != null) {
+                            val currentStatus = MessageStatus.entries.firstOrNull { it.name == m.status }?.ordinal ?: return@block
+                            val localStatus = MessageStatus.entries.firstOrNull { it.name == pendingMessageStatus }?.ordinal ?: return@block
+                            if (currentStatus > localStatus) {
+                                pendingMessageStatusLruCache.put(m.messageId, m.status)
+                            }
+                        } else {
+                            pendingMessageStatusLruCache.put(m.messageId, m.status)
+                        }
+                    }
+                    pendingDatabase.makeMessageStatus(m.status, m.messageId, callback)
+                    mixinDatabase.makeMessageStatus(m.status, m.messageId, callback)
                     offsetDao.insert(Offset(STATUS_OFFSET, m.updatedAt))
                 }
-                if (blazeMessages.count() > 0 && blazeMessages.last().updatedAt.getEpochNano() == status) {
+                if (blazeMessages.isNotEmpty() && blazeMessages.last().updatedAt.getEpochNano() == status) {
                     break
                 }
                 status = blazeMessages.last().updatedAt.getEpochNano()

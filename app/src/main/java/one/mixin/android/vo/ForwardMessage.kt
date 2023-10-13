@@ -3,136 +3,180 @@ package one.mixin.android.vo
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Parcelable
-import androidx.core.net.toUri
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.fileExists
 import one.mixin.android.extension.getAttachment
-import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.websocket.AudioMessagePayload
+import one.mixin.android.websocket.ContactMessagePayload
+import one.mixin.android.websocket.DataMessagePayload
+import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
+import one.mixin.android.websocket.toLocationData
+import java.util.UUID
 
 @SuppressLint("ParcelCreator")
 @Parcelize
-data class ForwardMessage<T : ForwardCategory>(
-    val category: T,
-    val content: String
+data class ForwardMessage(
+    val category: ForwardCategory,
+    val content: String,
+    val messageId: String? = null,
 ) : Parcelable
 
 sealed class ForwardCategory : Parcelable {
-    @Parcelize object Sticker : ForwardCategory() {
-        override fun toString() = "Sticker"
-    }
-    @Parcelize object Video : ForwardCategory() {
+    @Parcelize
+    object Video : ForwardCategory() {
         override fun toString() = "Video"
     }
-    @Parcelize object Data : ForwardCategory() {
+
+    @Parcelize
+    object Data : ForwardCategory() {
         override fun toString() = "Data"
     }
-    @Parcelize object Audio : ForwardCategory() {
+
+    @Parcelize
+    object Audio : ForwardCategory() {
         override fun toString() = "Audio"
     }
-    @Parcelize object Location : ForwardCategory() {
+
+    @Parcelize
+    object Location : ForwardCategory() {
         override fun toString() = "Location"
+    }
+
+    @Parcelize
+    object Transcript : ForwardCategory() {
+        override fun toString() = "Transcript"
     }
 }
 
 sealed class ShareCategory : ForwardCategory() {
-    @Parcelize object Text : ShareCategory() {
+    @Parcelize
+    object Text : ShareCategory() {
         override fun toString() = "Text"
     }
-    @Parcelize object Post : ShareCategory() {
+
+    @Parcelize
+    object Post : ShareCategory() {
         override fun toString() = "Post"
     }
-    @Parcelize object Image : ShareCategory() {
-        override fun toString() = "Image"
 
+    @Parcelize
+    object Image : ShareCategory() {
+        override fun toString() = "Image"
         fun getErrorStringOrNull(code: Int) =
             when (code) {
-                -1 -> R.string.error_image
-                -2 -> R.string.error_format
+                -1 -> R.string.File_error
+                -2 -> R.string.Format_not_supported
                 else -> null
             }
     }
-    @Parcelize object Live : ShareCategory() {
+
+    @Parcelize
+    object Sticker : ShareCategory() {
+        override fun toString() = "Sticker"
+    }
+
+    @Parcelize
+    object Live : ShareCategory() {
         override fun toString() = "Live"
     }
-    @Parcelize object Contact : ShareCategory() {
+
+    @Parcelize
+    object Contact : ShareCategory() {
         override fun toString() = "Contact"
     }
-    @Parcelize object AppCard : ShareCategory() {
+
+    @Parcelize
+    object AppCard : ShareCategory() {
         override fun toString() = "App_Card"
+    }
+
+    @Parcelize
+    object Transcript : ShareCategory() {
+        override fun toString() = "Transcript"
     }
 }
 
 sealed class ForwardAction(
     open val conversationId: String? = null,
-    open val name: String? = null
+    open val name: String? = null,
 ) : Parcelable {
-    @Parcelize data class System(
+    @Parcelize
+    data class System(
         override val conversationId: String? = null,
-        override val name: String? = null
+        override val name: String? = null,
+        val needEdit: Boolean = true,
+    ) : ForwardAction()
+
+    @Parcelize
+    data class Combine(
+        override val conversationId: String? = null,
+        override val name: String? = null,
     ) : ForwardAction()
 
     sealed class App(
         override val conversationId: String? = null,
-        override val name: String? = null
+        override val name: String? = null,
     ) : ForwardAction(conversationId, name) {
         @Parcelize
         data class Resultful(
             override val conversationId: String? = null,
-            override val name: String? = null
+            override val name: String? = null,
         ) : App()
 
         @Parcelize
         data class Resultless(
             override val conversationId: String? = null,
-            override val name: String? = null
+            override val name: String? = null,
         ) : App()
     }
 }
 
-inline fun <reified T : ForwardCategory> ForwardMessage<T>.addTo(list: MutableList<ForwardMessage<T>>) {
+fun ForwardMessage.addTo(list: MutableList<ForwardMessage>) {
     list.add(this)
 }
 
-inline fun <reified T : ForwardCategory> Uri.systemMediaToMessage(category: T): ForwardMessage<ForwardCategory>? {
-    val url = this.getFilePath(MixinApplication.appContext) ?: return null
-    return url.systemMediaToMessage(category)
-}
-
-inline fun <reified T : ForwardCategory> String.systemMediaToMessage(category: T): ForwardMessage<ForwardCategory>? =
+inline fun <reified T : ForwardCategory> Uri.systemMediaToMessage(
+    category: T,
+    name: String? = null,
+    mimeType: String? = null,
+): ForwardMessage =
     ForwardMessage(
         category,
         GsonHelper.customGson.toJson(
             when (category) {
-                ShareCategory.Image -> ShareImageData(this)
-                ForwardCategory.Video -> VideoMessagePayload(this)
+                ShareCategory.Image -> ShareImageData(this.toString())
+                ForwardCategory.Video -> VideoMessagePayload(this.toString())
                 ForwardCategory.Data -> {
-                    val attachment = MixinApplication.get().getAttachment(this.toUri())
-                    attachment?.toDataMessagePayload()
+                    val attachment = MixinApplication.get().getAttachment(this, mimeType)
+                    attachment?.toDataMessagePayload(name)
                 }
                 else -> null
-            }
-        )
+            },
+        ),
     )
 
 val ShareCategories = arrayOf(
     ShareCategory.Text,
     ShareCategory.Image,
+    ShareCategory.Sticker,
     ShareCategory.Live,
     ShareCategory.Contact,
     ShareCategory.Post,
-    ShareCategory.AppCard
+    ShareCategory.AppCard,
+    ShareCategory.Transcript,
 )
-
 val ForwardCategories = arrayOf(
     ShareCategories,
-    ForwardCategory.Sticker,
     ForwardCategory.Video,
     ForwardCategory.Data,
     ForwardCategory.Audio,
-    ForwardCategory.Location
+    ForwardCategory.Location,
 )
 
 fun String.getShareCategory() =
@@ -140,3 +184,143 @@ fun String.getShareCategory() =
 
 fun String.getForwardCategory() =
     ForwardCategories.any { this.contains(it.toString(), true) }
+
+fun generateForwardMessage(m: Message): ForwardMessage? {
+    return when {
+        m.isText() ->
+            m.content.notNullWithElse<String, ForwardMessage?>(
+                { c ->
+                    ForwardMessage(ShareCategory.Text, c, m.messageId)
+                },
+                { null },
+            )
+        m.isImage() ->
+            m.mediaUrl.notNullWithElse<String, ForwardMessage?>(
+                {
+                    ForwardMessage(
+                        ShareCategory.Image,
+                        GsonHelper.customGson.toJson(
+                            ShareImageData(
+                                requireNotNull(m.absolutePath()),
+                                m.content,
+                            ),
+                        ),
+                    )
+                },
+                { null },
+            )
+        m.isData() -> {
+            if (m.absolutePath()?.fileExists() != true) {
+                return null
+            }
+            m.name ?: return null
+            m.mediaMimeType ?: return null
+            m.mediaSize ?: return null
+            val dataMessagePayload = DataMessagePayload(
+                requireNotNull(m.absolutePath()),
+                m.name,
+                m.mediaMimeType,
+                m.mediaSize,
+                m.content,
+            )
+            ForwardMessage(
+                ForwardCategory.Data,
+                GsonHelper.customGson.toJson(dataMessagePayload),
+                m.messageId,
+            )
+        }
+        m.isVideo() -> {
+            if (m.absolutePath()?.fileExists() != true) {
+                return null
+            }
+            val videoData = VideoMessagePayload(
+                requireNotNull(m.absolutePath()),
+                UUID.randomUUID().toString(),
+                nowInUtc(),
+                m.content,
+            )
+            ForwardMessage(ForwardCategory.Video, GsonHelper.customGson.toJson(videoData), m.messageId)
+        }
+        m.isContact() -> {
+            val shareUserId = m.sharedUserId ?: return null
+            val contactData = ContactMessagePayload(shareUserId)
+            ForwardMessage(ShareCategory.Contact, GsonHelper.customGson.toJson(contactData), m.messageId)
+        }
+        m.isSticker() -> {
+            ForwardMessage(ShareCategory.Sticker, requireNotNull(m.stickerId))
+        }
+        m.isAudio() -> {
+            if (m.absolutePath()?.fileExists() != true) {
+                return null
+            }
+            val duration = m.mediaDuration?.toLongOrNull() ?: return null
+            val waveForm = m.mediaWaveform ?: return null
+            val audioData = AudioMessagePayload(
+                UUID.randomUUID().toString(),
+                requireNotNull(m.absolutePath()),
+                duration,
+                waveForm,
+                m.content,
+            )
+            ForwardMessage(ForwardCategory.Audio, GsonHelper.customGson.toJson(audioData), m.messageId)
+        }
+        m.isLive() -> {
+            if (m.mediaWidth == null ||
+                m.mediaWidth == 0 ||
+                m.mediaHeight == null ||
+                m.mediaHeight == 0 ||
+                m.mediaUrl.isNullOrBlank()
+            ) {
+                return null
+            }
+            val shareable = try {
+                GsonHelper.customGson.fromJson(m.content, LiveMessagePayload::class.java).shareable
+            } catch (e: Exception) {
+                null
+            }
+            val liveData = LiveMessagePayload(
+                m.mediaWidth,
+                m.mediaHeight,
+                m.thumbUrl ?: "",
+                m.mediaUrl,
+                shareable,
+            )
+            ForwardMessage(ShareCategory.Live, GsonHelper.customGson.toJson(liveData), m.messageId)
+        }
+        m.isPost() ->
+            m.content.notNullWithElse<String, ForwardMessage?>(
+                { c ->
+                    ForwardMessage(ShareCategory.Post, c, m.messageId)
+                },
+                { null },
+            )
+        m.isLocation() ->
+            m.content.notNullWithElse<String, ForwardMessage?>(
+                { c ->
+                    ForwardMessage(
+                        ForwardCategory.Location,
+                        GsonHelper.customGson.toJson(
+                            toLocationData(c),
+                        ),
+                        m.messageId,
+                    )
+                },
+                { null },
+            )
+        m.isAppCard() ->
+            m.content.notNullWithElse<String, ForwardMessage?>(
+                { c ->
+                    ForwardMessage(ShareCategory.AppCard, c, m.messageId)
+                },
+                { null },
+            )
+        m.isTranscript() ->
+            m.content.notNullWithElse<String, ForwardMessage?>(
+                { c ->
+                    ForwardMessage(ForwardCategory.Transcript, c, m.messageId)
+                },
+                { null },
+            )
+        else -> null
+    }
+}

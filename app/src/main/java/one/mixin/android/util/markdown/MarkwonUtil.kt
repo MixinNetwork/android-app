@@ -32,7 +32,9 @@ import one.mixin.android.extension.isActivityNotDestroyed
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.postOptimize
+import one.mixin.android.util.getLocalString
 import one.mixin.android.util.markdown.table.TableEntryPlugin
+import one.mixin.android.widget.markdown.SimplePlugin
 import org.commonmark.node.FencedCodeBlock
 import org.commonmark.node.Link
 import org.commonmark.node.SoftLineBreak
@@ -40,16 +42,22 @@ import org.commonmark.node.SoftLineBreak
 class MarkwonUtil {
     companion object {
 
+        val simpleMarkwon by lazy {
+            Markwon.builderNoCore(MixinApplication.appContext).usePlugin(SimplePlugin()).build()
+        }
+
         fun getMarkwon(
             context: Activity,
             mixinLinkResolver: (String) -> Unit,
-            linkResolver: (String) -> Unit
+            linkResolver: (String) -> Unit,
         ): Markwon {
             val isNightMode = context.isNightMode()
             val prism4j = Prism4j(LanguageGrammerLocator())
             val prism4jTheme = if (isNightMode) {
                 Prism4jThemeDarkula.create()
-            } else Prism4jThemeDefault.create()
+            } else {
+                Prism4jThemeDefault.create()
+            }
             return Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
                 .usePlugin(HtmlPlugin.create())
@@ -62,14 +70,29 @@ class MarkwonUtil {
                     object : AbstractMarkwonPlugin() {
                         override fun configureTheme(builder: MarkwonTheme.Builder) {
                             builder.headingBreakHeight(0)
-                                .headingTextSizeMultipliers(floatArrayOf(1.32F, 1.24F, 1.18F, 1.1F, 1.0F, 0.9F))
+                                .headingTextSizeMultipliers(
+                                    floatArrayOf(
+                                        1.32F,
+                                        1.24F,
+                                        1.18F,
+                                        1.1F,
+                                        1.0F,
+                                        0.9F,
+                                    ),
+                                )
                         }
 
                         override fun configureSpansFactory(builder: MarkwonSpansFactory.Builder) {
                             val spansFactory = builder.getFactory(Link::class.java)
                             if (spansFactory != null) {
                                 builder.setFactory(Link::class.java) { configuration, props ->
-                                    arrayOf(RemoveUnderlineSpan(), spansFactory.getSpans(configuration, props))
+                                    arrayOf(
+                                        RemoveUnderlineSpan(),
+                                        spansFactory.getSpans(
+                                            configuration,
+                                            props,
+                                        ),
+                                    )
                                 }
                             }
                         }
@@ -80,7 +103,7 @@ class MarkwonUtil {
                                     .syntaxHighlight()
                                     .highlight(
                                         fencedCodeBlock.info,
-                                        fencedCodeBlock.literal.trim { it <= ' ' }
+                                        fencedCodeBlock.literal.trim { it <= ' ' },
                                     )
                                 visitor.builder().append(code)
                             }
@@ -99,10 +122,10 @@ class MarkwonUtil {
                                             linkResolver.invoke(link)
                                         }
                                     }
-                                }
+                                },
                             )
                         }
-                    }
+                    },
                 ).build()
         }
 
@@ -111,7 +134,9 @@ class MarkwonUtil {
             val prism4j = Prism4j(LanguageGrammerLocator())
             val prism4jTheme = if (isNightMode) {
                 Prism4jThemeDarkula.create()
-            } else Prism4jThemeDefault.create()
+            } else {
+                Prism4jThemeDefault.create()
+            }
             return Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
                 .usePlugin(HtmlPlugin.create())
@@ -126,7 +151,16 @@ class MarkwonUtil {
                             builder.headingBreakHeight(0)
                                 .codeBlockBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
                                 .codeBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
-                                .headingTextSizeMultipliers(floatArrayOf(1.32F, 1.24F, 1.18F, 1.1F, 1.0F, 0.9F))
+                                .headingTextSizeMultipliers(
+                                    floatArrayOf(
+                                        1.32F,
+                                        1.24F,
+                                        1.18F,
+                                        1.1F,
+                                        1.0F,
+                                        0.9F,
+                                    ),
+                                )
                         }
 
                         override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
@@ -137,7 +171,13 @@ class MarkwonUtil {
                             val spansFactory = builder.getFactory(Link::class.java)
                             if (spansFactory != null) {
                                 builder.setFactory(Link::class.java) { configuration, props ->
-                                    arrayOf(RemoveUnderlineSpan(), spansFactory.getSpans(configuration, props))
+                                    arrayOf(
+                                        RemoveUnderlineSpan(),
+                                        spansFactory.getSpans(
+                                            configuration,
+                                            props,
+                                        ),
+                                    )
                                 }
                             }
                         }
@@ -148,7 +188,7 @@ class MarkwonUtil {
                                     .syntaxHighlight()
                                     .highlight(
                                         fencedCodeBlock.info,
-                                        fencedCodeBlock.literal.trim { it <= ' ' }
+                                        fencedCodeBlock.literal.trim { it <= ' ' },
                                     )
                                 visitor.builder().append(code)
                             }
@@ -156,7 +196,7 @@ class MarkwonUtil {
                                 visitor.forceNewLine()
                             }
                         }
-                    }
+                    },
                 )
                 .build()
         }
@@ -166,22 +206,23 @@ class MarkwonUtil {
         }
 
         fun parseContent(content: String?): String {
-            content ?: return MixinApplication.appContext.getString(R.string.conversation_status_post)
+            content ?: return getLocalString(MixinApplication.appContext, R.string.content_post)
             return markwon.toMarkdown(content.postOptimize()).toString()
         }
 
-        private fun createGlidePlugin(context: Context): GlideImagesPlugin = GlideImagesPlugin.create(
-            object : GlideStore {
-                override fun cancel(target: com.bumptech.glide.request.target.Target<*>) {
-                    if (context.isActivityNotDestroyed()) {
-                        Glide.with(context).clear(target)
+        private fun createGlidePlugin(context: Context): GlideImagesPlugin =
+            GlideImagesPlugin.create(
+                object : GlideStore {
+                    override fun cancel(target: com.bumptech.glide.request.target.Target<*>) {
+                        if (context.isActivityNotDestroyed()) {
+                            Glide.with(context).clear(target)
+                        }
                     }
-                }
 
-                override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
-                    return Glide.with(context).load(drawable.destination)
-                }
-            }
-        )
+                    override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
+                        return Glide.with(context).load(drawable.destination)
+                    }
+                },
+            )
     }
 }

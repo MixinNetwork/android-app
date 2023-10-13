@@ -9,16 +9,15 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_invite.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentInviteBinding
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.group.InviteActivity.Companion.ARGS_ID
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
 class InviteFragment : BaseFragment() {
@@ -44,6 +43,7 @@ class InviteFragment : BaseFragment() {
 
     private val inviteViewModel by viewModels<InviteViewModel>()
 
+    private val binding by viewBinding(FragmentInviteBinding::bind)
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_invite, container, false)
 
@@ -54,55 +54,62 @@ class InviteFragment : BaseFragment() {
                     inviteViewModel.updateCodeUrl(conversationId, it.data!!.codeUrl)
                 }
             },
-            { ErrorHandler.handleError(it) }
+            { ErrorHandler.handleError(it) },
         )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
 
         inviteViewModel.getConversation(conversationId).observe(
             viewLifecycleOwner,
-            {
-                it.notNullWithElse(
-                    { c ->
-                        val url = c.codeUrl
-                        invite_link.text = url
-                        invite_forward.setOnClickListener {
-                            url?.let { ForwardActivity.show(requireContext(), url) }
-                        }
-                        invite_copy.setOnClickListener {
-                            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, url))
-                            context?.toast(R.string.copy_success)
-                        }
-                        invite_share.setOnClickListener {
-                            val sendIntent = Intent()
-                            sendIntent.action = Intent.ACTION_SEND
-                            sendIntent.putExtra(Intent.EXTRA_TEXT, url)
-                            sendIntent.type = "text/plain"
-                            startActivity(Intent.createChooser(sendIntent, resources.getText(R.string.invite_title)))
-                        }
-                    },
-                    {
-                        context?.toast(R.string.invite_invalid)
-                    }
-                )
+        ) {
+            val c = it
+            if (c != null) {
+                val url = c.codeUrl
+                binding.inviteLink.text = url
+                binding.inviteForward.setOnClickListener {
+                    url?.let { ForwardActivity.show(requireContext(), url) }
+                }
+                binding.inviteCopy.setOnClickListener {
+                    context?.getClipboardManager()
+                        ?.setPrimaryClip(ClipData.newPlainText(null, url))
+                    toast(R.string.copied_to_clipboard)
+                }
+                binding.inviteQr.setOnClickListener {
+                    InviteQrBottomFragment.newInstance(c.name, c.iconUrl, url)
+                        .show(parentFragmentManager, InviteQrBottomFragment.TAG)
+                }
+                binding.inviteShare.setOnClickListener {
+                    val sendIntent = Intent()
+                    sendIntent.action = Intent.ACTION_SEND
+                    sendIntent.putExtra(Intent.EXTRA_TEXT, url)
+                    sendIntent.type = "text/plain"
+                    startActivity(
+                        Intent.createChooser(
+                            sendIntent,
+                            resources.getText(R.string.Invite_to_Group_via_Link),
+                        ),
+                    )
+                }
+            } else {
+                toast(R.string.Invalid_Link)
             }
-        )
+        }
 
-        invite_revoke.setOnClickListener {
+        binding.inviteRevoke.setOnClickListener {
             inviteViewModel.rotate(conversationId).autoDispose(stopScope).subscribe(
                 {
                     if (it.isSuccess) {
                         val cr = it.data!!
-                        invite_link.text = cr.codeUrl
+                        binding.inviteLink.text = cr.codeUrl
                         inviteViewModel.updateCodeUrl(cr.conversationId, cr.codeUrl)
                     }
                 },
                 {
                     ErrorHandler.handleError(it)
-                }
+                },
             )
         }
 

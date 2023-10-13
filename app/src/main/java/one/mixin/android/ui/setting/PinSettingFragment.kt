@@ -1,122 +1,125 @@
 package one.mixin.android.ui.setting
 
-import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricManager
 import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_pin_setting.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
 import one.mixin.android.Constants.BIOMETRIC_INTERVAL
 import one.mixin.android.Constants.BIOMETRIC_INTERVAL_DEFAULT
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentPinSettingBinding
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.BiometricTimeFragment.Companion.X_HOUR
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
-class PinSettingFragment : BaseFragment() {
+class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
     companion object {
         const val TAG = "PinSettingFragment"
 
         fun newInstance() = PinSettingFragment()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_pin_setting, container, false)
+    private val binding by viewBinding(FragmentPinSettingBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title.left_ib.setOnClickListener { activity?.onBackPressed() }
-        change_tv.setOnClickListener {
-            navTo(OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)
-        }
-        time_rl.setOnClickListener {
-            navTo(BiometricTimeFragment.newInstance(), BiometricTimeFragment.TAG)
-        }
-        biometrics_sc.isClickable = false
-        biometrics_rl.setOnClickListener(biometricsClickListener)
-        val open = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-        if (open) {
-            biometrics_sc.isChecked = true
-            time_rl.visibility = VISIBLE
-            setTimeDesc()
-        } else {
-            biometrics_sc.isChecked = false
-            time_rl.visibility = GONE
-        }
-    }
+        binding.apply {
+            title.apply {
+                leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            }
+            changeTv.setOnClickListener {
+                TipActivity.show(requireActivity(), TipType.Change)
+            }
+            timeRl.setOnClickListener {
+                navTo(BiometricTimeFragment.newInstance(), BiometricTimeFragment.TAG)
+            }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == BiometricUtil.REQUEST_CODE_CREDENTIALS && resultCode == AppCompatActivity.RESULT_OK) {
-            updateWhenSuccess()
+            randomSc.isClickable = false
+            randomRl.setOnClickListener(randomClickListener)
+            val randomKeyboardEnabled = defaultSharedPreferences.getBoolean(Constants.Account.PREF_RANDOM, false)
+            randomSc.isChecked = randomKeyboardEnabled
+
+            biometricsSc.isClickable = false
+            biometricsRl.setOnClickListener(biometricsClickListener)
+            val open = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
+            if (open) {
+                biometricsSc.isChecked = true
+                timeRl.visibility = VISIBLE
+                setTimeDesc()
+            } else {
+                biometricsSc.isChecked = false
+                timeRl.visibility = GONE
+            }
+            val url = Constants.HelpLink.TIP
+            val desc = getString(R.string.wallet_pin_tops_desc)
+            tipTv.highlightStarTag(desc, arrayOf(url))
         }
     }
 
     fun setTimeDesc() {
         val biometricInterval = defaultSharedPreferences.getLong(BIOMETRIC_INTERVAL, BIOMETRIC_INTERVAL_DEFAULT)
         val hour = biometricInterval / X_HOUR.toFloat()
-        time_desc_tv.text = if (hour < 1) {
-            getString(R.string.wallet_pin_pay_interval_minutes, (hour * 60).toInt())
+        binding.timeDescTv.text = if (hour < 1) {
+            requireContext().resources.getQuantityString(R.plurals.Minute, (hour * 60).toInt(), (hour * 60).toInt())
         } else {
-            getString(R.string.wallet_pin_pay_interval_hours, hour.toInt())
+            requireContext().resources.getQuantityString(R.plurals.Hour, hour.toInt(), hour.toInt())
         }
     }
 
+    private val randomClickListener = View.OnClickListener {
+        binding.randomSc.isChecked = !binding.randomSc.isChecked
+        defaultSharedPreferences.putBoolean(Constants.Account.PREF_RANDOM, binding.randomSc.isChecked)
+    }
+
     private val biometricsClickListener = View.OnClickListener {
-        val isSupportWithErrorInfo = BiometricUtil.isSupportWithErrorInfo(requireContext())
+        val isSupportWithErrorInfo = BiometricUtil.isSupportWithErrorInfo(requireContext(), BiometricManager.Authenticators.BIOMETRIC_STRONG)
         val isSupport = isSupportWithErrorInfo.first
         if (!isSupport) {
             isSupportWithErrorInfo.second?.let {
-                biometric_error_tv.text = it
-                biometric_error_tv.isVisible = true
+                binding.biometricErrorTv.text = it
+                binding.biometricErrorTv.isVisible = true
             }
             resetBiometricLayout()
             return@OnClickListener
         } else {
-            biometric_error_tv.isVisible = false
+            binding.biometricErrorTv.isVisible = false
         }
-        if (biometrics_sc.isChecked) {
+        if (binding.biometricsSc.isChecked) {
             resetBiometricLayout()
         } else {
-            val bottomSheet =
-                PinBiometricsBottomSheetDialogFragment.newInstance(true)
-            bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback {
-                override fun onSuccess() {
-                    updateWhenSuccess()
-                }
+            val bottomSheet = PinBiometricsBottomSheetDialogFragment.newInstance(true)
+            bottomSheet.onSavePinSuccess = {
+                updateWhenSuccess()
             }
-            bottomSheet.showNow(
-                parentFragmentManager,
-                PinBiometricsBottomSheetDialogFragment.TAG
-            )
+            bottomSheet.showNow(parentFragmentManager, PinBiometricsBottomSheetDialogFragment.TAG)
         }
     }
 
     private fun updateWhenSuccess() {
-        biometrics_sc.isChecked = true
-        time_rl.visibility = VISIBLE
+        binding.biometricsSc.isChecked = true
+        binding.timeRl.visibility = VISIBLE
         setTimeDesc()
         defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
         defaultSharedPreferences.putBoolean(Constants.Account.PREF_BIOMETRICS, true)
     }
 
     private fun resetBiometricLayout() {
-        biometrics_sc.isChecked = false
-        time_rl.visibility = GONE
+        binding.biometricsSc.isChecked = false
+        binding.timeRl.visibility = GONE
         BiometricUtil.deleteKey(requireContext())
     }
 }

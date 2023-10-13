@@ -14,9 +14,11 @@ import android.os.Looper
 import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
+import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_gallery.*
+import androidx.media3.common.util.UnstableApi
 import one.mixin.android.R
+import one.mixin.android.databinding.ActivityGalleryBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
@@ -32,6 +34,7 @@ import one.mixin.android.widget.gallery.internal.ui.adapter.AlbumsAdapter
 import one.mixin.android.widget.gallery.internal.ui.widget.AlbumsSpinner
 import one.mixin.android.widget.gallery.internal.utils.MediaStoreCompat
 
+@UnstableApi
 class GalleryActivity :
     AppCompatActivity(),
     AlbumCollection.AlbumCallbacks,
@@ -57,6 +60,7 @@ class GalleryActivity :
         return R.style.AppTheme_NoActionBar
     }
 
+    private lateinit var binding: ActivityGalleryBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         if (isNightMode()) {
             setTheme(getNightThemeId())
@@ -75,7 +79,8 @@ class GalleryActivity :
             finish()
             return
         }
-        setContentView(R.layout.activity_gallery)
+        binding = ActivityGalleryBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         if (mSpec.needOrientationRestriction()) {
             requestedOrientation = mSpec.orientation
@@ -83,16 +88,17 @@ class GalleryActivity :
 
         if (mSpec.capture) {
             mMediaStoreCompat = MediaStoreCompat(this)
-            if (mSpec.captureStrategy == null)
+            if (mSpec.captureStrategy == null) {
                 throw RuntimeException("Don't forget to set CaptureStrategy.")
+            }
             mMediaStoreCompat.setCaptureStrategy(mSpec.captureStrategy)
         }
 
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar)
         val actionBar = supportActionBar!!
         actionBar.setDisplayShowTitleEnabled(false)
         actionBar.setDisplayHomeAsUpEnabled(true)
-        val navigationIcon = toolbar.navigationIcon!!
+        val navigationIcon = binding.toolbar.navigationIcon!!
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             navigationIcon.colorFilter = BlendModeColorFilter(colorFromAttribute(R.attr.icon_black), BlendMode.SRC_IN)
         } else {
@@ -105,12 +111,15 @@ class GalleryActivity :
         mAlbumsAdapter = AlbumsAdapter(this, null, false)
         mAlbumsSpinner = AlbumsSpinner(this)
         mAlbumsSpinner.setOnItemSelectedListener(this)
-        mAlbumsSpinner.setSelectedTextView(selected_album)
-        mAlbumsSpinner.setPopupAnchorView(toolbar)
+        mAlbumsSpinner.setSelectedTextView(binding.selectedAlbum)
+        mAlbumsSpinner.setPopupAnchorView(binding.toolbar)
         mAlbumsSpinner.setAdapter(mAlbumsAdapter)
         mAlbumCollection.onCreate(this, this)
         mAlbumCollection.onRestoreInstanceState(savedInstanceState)
         mAlbumCollection.loadAlbums()
+        onBackPressedDispatcher.addCallback(enabled = false) {
+            setResult(Activity.RESULT_CANCELED)
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -123,20 +132,15 @@ class GalleryActivity :
         super.onDestroy()
         mAlbumCollection.onDestroy()
         mSpec.onSelectedListener = null
-        previewVideoDialogFragment?.release()
+        previewVideoDialogFragment = null
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
-            onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
             return true
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    override fun onBackPressed() {
-        setResult(Activity.RESULT_CANCELED)
-        super.onBackPressed()
     }
 
     override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
@@ -152,14 +156,16 @@ class GalleryActivity :
     override fun onNothingSelected(parent: AdapterView<*>) {
     }
 
-    override fun onAlbumLoad(cursor: Cursor) {
+    override fun onAlbumLoad(cursor: Cursor?) {
+        if (cursor == null || cursor.isClosed) return
+
         mAlbumsAdapter.swapCursor(cursor)
         val handler = Handler(Looper.getMainLooper())
         handler.post {
             cursor.moveToPosition(mAlbumCollection.currentSelection)
             mAlbumsSpinner.setSelection(
                 this@GalleryActivity,
-                mAlbumCollection.currentSelection
+                mAlbumCollection.currentSelection,
             )
             val album = Album.valueOf(cursor)
             if (album.isAll && SelectionSpec.getInstance().capture) {
@@ -175,11 +181,11 @@ class GalleryActivity :
 
     private fun onAlbumSelected(album: Album) {
         if (album.isAll && album.isEmpty) {
-            container.visibility = View.GONE
-            empty_view.visibility = View.VISIBLE
+            binding.container.visibility = View.GONE
+            binding.emptyView.visibility = View.VISIBLE
         } else {
-            container.visibility = View.VISIBLE
-            empty_view.visibility = View.GONE
+            binding.container.visibility = View.VISIBLE
+            binding.emptyView.visibility = View.GONE
             val fragment = MediaSelectionFragment.newInstance(album)
             supportFragmentManager
                 .beginTransaction()
@@ -192,27 +198,27 @@ class GalleryActivity :
         if (mSpec.onSelectedListener != null) {
             mSpec.onSelectedListener.onSelected(
                 mSelectedCollection.asListOfUri(),
-                mSelectedCollection.asListOfString()
+                mSelectedCollection.asListOfString(),
             )
         }
     }
 
     private var previewDialogFragment: PreviewDialogFragment? = null
 
-    private fun showPreview(uri: Uri, action: (Uri) -> Unit) {
+    private fun showPreview(uri: Uri, action: (Uri, Float, Float) -> Unit) {
         if (previewDialogFragment == null) {
             previewDialogFragment = PreviewDialogFragment.newInstance()
         }
-        previewDialogFragment?.show(supportFragmentManager, uri, action)
+        previewDialogFragment?.show(supportFragmentManager, uri, okText = null, action)
     }
 
     private var previewVideoDialogFragment: PreviewDialogFragment? = null
 
-    private fun showVideoPreview(uri: Uri, action: (Uri) -> Unit) {
+    private fun showVideoPreview(uri: Uri, action: (Uri, Float, Float) -> Unit) {
         if (previewVideoDialogFragment == null) {
             previewVideoDialogFragment = PreviewDialogFragment.newInstance(true)
         }
-        previewVideoDialogFragment?.show(supportFragmentManager, uri, action)
+        previewVideoDialogFragment?.show(supportFragmentManager, uri, okText = null, action)
     }
 
     override fun onMediaClick(album: Album, item: Item, adapterPosition: Int) {
@@ -225,17 +231,17 @@ class GalleryActivity :
             setResult(Activity.RESULT_OK, result)
             finish()
         } else if (item.isVideo) {
-            showVideoPreview(item.uri) {
+            showVideoPreview(item.uri) { uri, _, _ ->
                 val result = Intent()
-                result.data = item.uri
+                result.data = uri
                 result.putExtra(IS_VIDEO, true)
                 setResult(Activity.RESULT_OK, result)
                 finish()
             }
         } else {
-            showPreview(item.uri) {
+            showPreview(item.uri) { uri, _, _ ->
                 val result = Intent()
-                result.data = item.uri
+                result.data = uri
                 setResult(Activity.RESULT_OK, result)
                 finish()
             }

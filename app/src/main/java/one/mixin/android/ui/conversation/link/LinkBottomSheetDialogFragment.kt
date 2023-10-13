@@ -3,7 +3,6 @@ package one.mixin.android.ui.conversation.link
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.net.Uri
-import android.os.Build
 import android.view.Gravity
 import android.view.View
 import android.view.View.GONE
@@ -15,18 +14,14 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -34,45 +29,75 @@ import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
+import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.getScopes
+import one.mixin.android.databinding.FragmentBottomSheetBinding
+import one.mixin.android.extension.appendQueryParamsFromOtherUri
+import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.isDonateUrl
+import one.mixin.android.extension.isExternalScheme
+import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.getIconUrlName
+import one.mixin.android.pay.addSlashesIfNeeded
+import one.mixin.android.pay.parseExternalTransferUri
 import one.mixin.android.repository.QrCodeType
 import one.mixin.android.session.Session
+import one.mixin.android.tip.TAG_TIP_SIGN
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipSignAction
+import one.mixin.android.tip.matchTipSignAction
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
+import one.mixin.android.ui.common.NftBottomSheetDialogFragment
+import one.mixin.android.ui.common.OutputBottomSheetDialogFragment
+import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.BiometricItem
+import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.Multi2MultiBiometricItem
+import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_LINK
+import one.mixin.android.ui.conversation.TransferFragment
+import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.vo.Address
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.generateConversationId
 import timber.log.Timber
+import java.io.IOException
+import java.io.UnsupportedEncodingException
+import java.net.SocketTimeoutException
+import java.net.URLDecoder
+import java.net.UnknownHostException
+import java.nio.charset.StandardCharsets.UTF_8
 import java.util.UUID
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -86,13 +111,16 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this, Lifecycle.Event.ON_STOP) }
+    @Inject
+    lateinit var tip: Tip
 
     private var authOrPay = false
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
     private val linkViewModel by viewModels<BottomSheetViewModel>()
+
+    private val binding by viewBinding(FragmentBottomSheetBinding::inflate)
 
     private lateinit var code: String
     private lateinit var contentView: View
@@ -107,22 +135,20 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         dialog?.window?.let { window ->
             SystemUIManager.lightUI(
                 window,
-                !requireContext().booleanFromAttribute(R.attr.flag_night)
+                !requireContext().booleanFromAttribute(R.attr.flag_night),
             )
         }
     }
 
-    private fun getUserOrAppNotFoundTip(isApp: Boolean) = if (isApp) R.string.error_app_not_found else R.string.error_user_not_found
+    private fun getUserOrAppNotFoundTip(isApp: Boolean) = if (isApp) R.string.Bot_not_found else R.string.User_not_found
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        if (Build.VERSION.SDK_INT >= 26) {
-            dialog.window?.decorView?.systemUiVisibility =
-                View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        dialog.window?.let { window ->
+            SystemUIManager.lightUI(window, requireContext().isNightMode())
         }
-        contentView = View.inflate(context, R.layout.fragment_bottom_sheet, null)
+        contentView = binding.root
         dialog.setContentView(contentView)
         val behavior = ((contentView.parent as View).layoutParams as? CoordinatorLayout.LayoutParams)?.behavior
         if (behavior != null && behavior is BottomSheetBehavior<*>) {
@@ -137,245 +163,317 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (isUserScheme || isAppScheme) {
             val uri = url.toUri()
             val segments = uri.pathSegments
+            if (segments.isEmpty()) return
+
             val userId = if (segments.size >= 2) {
                 segments[1]
             } else {
                 segments[0]
             }
             if (!userId.isUUID()) {
-                context?.toast(getUserOrAppNotFoundTip(isAppScheme))
+                toast(getUserOrAppNotFoundTip(isAppScheme))
                 dismiss()
             } else {
-                lifecycleScope.launch {
-                    var user = linkViewModel.suspendFindUserById(userId)
+                lifecycleScope.launch(errorHandler) {
+                    val user = linkViewModel.refreshUser(userId)
                     if (user == null) {
-                        val response = try {
-                            withContext(Dispatchers.IO) {
-                                linkViewModel.getUser(userId).execute()
-                            }
-                        } catch (t: Throwable) {
-                            context?.toast(getUserOrAppNotFoundTip(isAppScheme))
-                            dismiss()
-                            return@launch
-                        }
-                        if (response.isSuccessful) {
-                            user = response.body()?.data
-                        }
-                        if (user == null) {
-                            context?.toast(getUserOrAppNotFoundTip(isAppScheme))
-                            dismiss()
-                            return@launch
-                        }
+                        toast(getUserOrAppNotFoundTip(isAppScheme))
+                        dismiss()
+                        return@launch
                     }
                     val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
                     if (isOpenApp && user.appId != null) {
-                        lifecycleScope.launch {
+                        lifecycleScope.launch(errorHandler) {
                             val app = linkViewModel.findAppById(user.appId!!)
                             if (app != null) {
-                                WebActivity.show(requireActivity(), app.homeUri, null, app)
+                                val url = try {
+                                    app.homeUri.appendQueryParamsFromOtherUri(uri)
+                                } catch (e: Exception) {
+                                    app.homeUri
+                                }
+                                WebActivity.show(requireActivity(), url, null, app)
                             } else {
-                                UserBottomSheetDialogFragment.newInstance(user)
-                                    .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                showUserBottom(parentFragmentManager, user)
                             }
                         }
                     } else {
-                        UserBottomSheetDialogFragment.newInstance(user)
-                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                        showUserBottom(parentFragmentManager, user)
                     }
+                    dismiss()
+                }
+            }
+        } else if (url.startsWith(Scheme.TRANSFER, true) || url.startsWith(Scheme.HTTPS_TRANSFER, true)) {
+            if (checkHasPin()) return
+
+            val uri = url.toUri()
+            val segments = uri.pathSegments
+            if (segments.isEmpty()) return
+
+            val userId = if (segments.size >= 2) {
+                segments[1]
+            } else {
+                segments[0]
+            }
+            if (!userId.isUUID()) {
+                toast(R.string.User_not_found)
+                dismiss()
+            } else if (userId == Session.getAccountId()) {
+                toast(R.string.cant_transfer_self)
+                dismiss()
+            } else {
+                lifecycleScope.launch(errorHandler) {
+                    val user = linkViewModel.refreshUser(userId)
+                    if (user == null) {
+                        toast(R.string.User_not_found)
+                        dismiss()
+                        return@launch
+                    }
+                    TransferFragment.newInstance(userId, supportSwitchAsset = true)
+                        .showNow(parentFragmentManager, TransferFragment.TAG)
                     dismiss()
                 }
             }
         } else if (url.startsWith(Scheme.HTTPS_PAY, true) ||
             url.startsWith(Scheme.PAY, true)
         ) {
-            if (Session.getAccount()?.hasPin == false) {
-                MainActivity.showWallet(requireContext())
-                dismiss()
-                return
-            }
-            lifecycleScope.launch {
+            if (checkHasPin()) return
+
+            lifecycleScope.launch(errorHandler) {
                 if (!showTransfer(url)) {
-                    showError(R.string.bottom_sheet_invalid_payment)
+                    showError(R.string.Invalid_payment_link)
                 } else {
                     dismiss()
                 }
             }
         } else if (url.startsWith(Scheme.HTTPS_CODES, true) || url.startsWith(Scheme.CODES, true)) {
             val segments = Uri.parse(url).pathSegments
+            if (segments.isEmpty()) return
+
             code = if (segments.size >= 2) {
                 segments[1]
             } else {
                 segments[0]
             }
-            linkViewModel.searchCode(code).autoDispose(scopeProvider).subscribe(
-                { result ->
-                    when (result.first) {
-                        QrCodeType.conversation.name -> {
-                            val response = result.second as ConversationResponse
-                            val found = response.participants.find { it.userId == Session.getAccountId() }
-                            if (found != null) {
-                                linkViewModel.refreshConversation(response.conversationId)
-                                context?.toast(R.string.group_already_in)
-                                context?.let { ConversationActivity.show(it, response.conversationId) }
-                                dismiss()
-                            } else {
-                                lifecycleScope.launch {
-                                    val avatarUserIds = mutableListOf<String>()
-                                    val notExistsUserIdList = mutableListOf<String>()
-                                    for (p in response.participants) {
-                                        val u = linkViewModel.suspendFindUserById(p.userId)
-                                        if (u == null) {
-                                            notExistsUserIdList.add(p.userId)
-                                        }
-                                        if (avatarUserIds.size < 4) {
-                                            avatarUserIds.add(p.userId)
-                                        }
-                                    }
-                                    val avatar4List = avatarUserIds.take(4)
-                                    val iconUrl = if (notExistsUserIdList.isNotEmpty()) {
-                                        linkViewModel.refreshUsers(notExistsUserIdList, response.conversationId, avatar4List)
-                                        null
-                                    } else {
-                                        val avatarUsers = linkViewModel.findMultiUsersByIds(avatar4List.toSet())
-                                        linkViewModel.startGenerateAvatar(response.conversationId, avatar4List)
-
-                                        val name = getIconUrlName(response.conversationId, avatarUsers)
-                                        val f = requireContext().getGroupAvatarPath(name, false)
-                                        f.absolutePath
-                                    }
-                                    val joinGroupConversation = JoinGroupConversation(
-                                        response.conversationId,
-                                        response.name,
-                                        response.announcement,
-                                        response.participants.size,
-                                        iconUrl
-                                    )
-                                    JoinGroupBottomSheetDialogFragment.newInstance(joinGroupConversation, code)
-                                        .showNow(parentFragmentManager, JoinGroupBottomSheetDialogFragment.TAG)
-                                    dismiss()
+            lifecycleScope.launch(errorHandler) {
+                val result = linkViewModel.searchCode(code)
+                when (result.first) {
+                    QrCodeType.conversation.name -> {
+                        val response = result.second as ConversationResponse
+                        val found =
+                            response.participants.find { it.userId == Session.getAccountId() }
+                        if (found != null) {
+                            linkViewModel.refreshConversation(response.conversationId)
+                            toast(R.string.group_already_in)
+                            context?.let { ConversationActivity.show(it, response.conversationId) }
+                            dismiss()
+                        } else {
+                            val avatarUserIds = mutableListOf<String>()
+                            val notExistsUserIdList = mutableListOf<String>()
+                            for (p in response.participants) {
+                                val u = linkViewModel.suspendFindUserById(p.userId)
+                                if (u == null) {
+                                    notExistsUserIdList.add(p.userId)
+                                }
+                                if (avatarUserIds.size < 4) {
+                                    avatarUserIds.add(p.userId)
                                 }
                             }
-                        }
-                        QrCodeType.user.name -> {
-                            val user = result.second as User
-                            val account = Session.getAccount()
-                            if (account != null && account.userId == (result.second as User).userId) {
-                                context?.toast("It's your QR Code, please try another.")
+                            val avatar4List = avatarUserIds.take(4)
+                            val iconUrl = if (notExistsUserIdList.isNotEmpty()) {
+                                linkViewModel.refreshUsers(
+                                    notExistsUserIdList,
+                                    response.conversationId,
+                                )
+                                null
                             } else {
-                                UserBottomSheetDialogFragment.newInstance(user)
-                                    .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                val avatarUsers =
+                                    linkViewModel.findMultiUsersByIds(avatar4List.toSet())
+                                linkViewModel.startGenerateAvatar(
+                                    response.conversationId,
+                                    avatar4List,
+                                )
+
+                                val name = getIconUrlName(response.conversationId, avatarUsers)
+                                val f = requireContext().getGroupAvatarPath(name, false)
+                                f.absolutePath
                             }
+                            val joinGroupConversation = JoinGroupConversation(
+                                response.conversationId,
+                                response.name,
+                                response.announcement,
+                                response.participants.size,
+                                iconUrl,
+                            )
+                            JoinGroupBottomSheetDialogFragment.newInstance(
+                                joinGroupConversation,
+                                code,
+                            ).showNow(
+                                parentFragmentManager,
+                                JoinGroupBottomSheetDialogFragment.TAG,
+                            )
                             dismiss()
                         }
-                        QrCodeType.authorization.name -> {
-                            val authorization = result.second as AuthorizationResponse
-                            lifecycleScope.launch {
-                                val assets = linkViewModel.simpleAssetsWithBalance()
-                                activity?.let {
-                                    val scopes = authorization.getScopes(it, assets)
-                                    AuthBottomSheetDialogFragment.newInstance(scopes, authorization)
-                                        .showNow(parentFragmentManager, AuthBottomSheetDialogFragment.TAG)
-                                    authOrPay = true
-                                    dismiss()
-                                }
-                            }
-                        }
-                        QrCodeType.multisig_request.name -> {
-                            val multisigs = result.second as MultisigsResponse
-                            lifecycleScope.launch {
-                                var asset = linkViewModel.findAssetItemById(multisigs.assetId)
-                                if (asset == null) {
-                                    asset = linkViewModel.refreshAsset(multisigs.assetId)
-                                }
-                                if (asset != null) {
-                                    val multisigsBiometricItem = Multi2MultiBiometricItem(
-                                        requestId = multisigs.requestId,
-                                        action = multisigs.action,
-                                        senders = multisigs.senders,
-                                        receivers = multisigs.receivers,
-                                        threshold = multisigs.threshold,
-                                        asset = asset,
-                                        amount = multisigs.amount,
-                                        pin = null,
-                                        traceId = null,
-                                        memo = multisigs.memo,
-                                        state = multisigs.state
-                                    )
-                                    MultisigsBottomSheetDialogFragment.newInstance(multisigsBiometricItem)
-                                        .showNow(parentFragmentManager, MultisigsBottomSheetDialogFragment.TAG)
-                                    dismiss()
-                                } else {
-                                    showError()
-                                }
-                            }
-                        }
-                        QrCodeType.payment.name -> {
-                            val paymentCodeResponse = result.second as PaymentCodeResponse
-                            lifecycleScope.launch {
-                                var asset = linkViewModel.findAssetItemById(paymentCodeResponse.assetId)
-                                if (asset == null) {
-                                    asset = linkViewModel.refreshAsset(paymentCodeResponse.assetId)
-                                }
-                                if (asset != null) {
-                                    val multisigsBiometricItem = One2MultiBiometricItem(
-                                        threshold = paymentCodeResponse.threshold,
-                                        senders = arrayOf(Session.getAccountId()!!),
-                                        receivers = paymentCodeResponse.receivers,
-                                        asset = asset!!,
-                                        amount = paymentCodeResponse.amount,
-                                        pin = null,
-                                        traceId = paymentCodeResponse.traceId,
-                                        memo = paymentCodeResponse.memo,
-                                        state = paymentCodeResponse.status
-                                    )
-                                    MultisigsBottomSheetDialogFragment.newInstance(multisigsBiometricItem)
-                                        .showNow(parentFragmentManager, MultisigsBottomSheetDialogFragment.TAG)
-                                    dismiss()
-                                } else {
-                                    showError()
-                                }
-                            }
-                        }
-                        else -> showError()
                     }
-                },
-                {
-                    showError()
+                    QrCodeType.user.name -> {
+                        val user = result.second as User
+                        val account = Session.getAccount()
+                        if (account != null && account.userId == (result.second as User).userId) {
+                            toast("It's your QR Code, please try another.")
+                        } else {
+                            showUserBottom(parentFragmentManager, user)
+                        }
+                        dismiss()
+                    }
+                    QrCodeType.authorization.name -> {
+                        val authorization = result.second as AuthorizationResponse
+
+                        activity?.let {
+                            if (it.isFinishing) return@let
+                            it.supportFragmentManager.findFragmentByTag(AuthBottomSheetDialogFragment.TAG)?.let { f ->
+                                (f as? AuthBottomSheetDialogFragment)?.dismiss()
+                            }
+                            val scopes = authorization.getScopes(it)
+                            AuthBottomSheetDialogFragment.newInstance(
+                                scopes,
+                                authorization.app.name,
+                                authorization.app.appNumber,
+                                authorization.app.iconUrl,
+                                authorization.authorizationId,
+                            )
+                                .showNow(
+                                    parentFragmentManager,
+                                    AuthBottomSheetDialogFragment.TAG,
+                                )
+                            authOrPay = true
+                            dismiss()
+                        }
+                    }
+                    QrCodeType.multisig_request.name -> {
+                        if (checkHasPin())return@launch
+
+                        val multisigs = result.second as MultisigsResponse
+                        val asset = checkAsset(multisigs.assetId)
+                        if (asset != null) {
+                            val multisigsBiometricItem = Multi2MultiBiometricItem(
+                                requestId = multisigs.requestId,
+                                action = multisigs.action,
+                                senders = multisigs.senders,
+                                receivers = multisigs.receivers,
+                                threshold = multisigs.threshold,
+                                asset = asset,
+                                amount = multisigs.amount,
+                                pin = null,
+                                traceId = null,
+                                memo = multisigs.memo,
+                                state = multisigs.state,
+                            )
+                            MultisigsBottomSheetDialogFragment.newInstance(
+                                multisigsBiometricItem,
+                            ).showNow(
+                                parentFragmentManager,
+                                MultisigsBottomSheetDialogFragment.TAG,
+                            )
+                            dismiss()
+                        } else {
+                            showError()
+                        }
+                    }
+                    QrCodeType.non_fungible_request.name -> {
+                        if (checkHasPin()) return@launch
+                        val nfoResponse = result.second as NonFungibleOutputResponse
+                        val nftBiometricItem = NftBiometricItem(
+                            requestId = nfoResponse.requestId,
+                            action = nfoResponse.action,
+                            tokenId = nfoResponse.tokenId,
+                            senders = nfoResponse.senders,
+                            receivers = nfoResponse.receivers,
+                            sendersThreshold = nfoResponse.sendersThreshold,
+                            receiversThreshold = nfoResponse.receiversThreshold,
+                            rawTransaction = nfoResponse.rawTransaction,
+                            amount = nfoResponse.amount,
+                            pin = null,
+                            memo = nfoResponse.memo,
+                            state = nfoResponse.state,
+                        )
+                        NftBottomSheetDialogFragment.newInstance(nftBiometricItem)
+                            .showNow(parentFragmentManager, NftBottomSheetDialogFragment.TAG)
+                        dismiss()
+                    }
+                    QrCodeType.payment.name -> {
+                        if (checkHasPin()) return@launch
+
+                        val paymentCodeResponse = result.second as PaymentCodeResponse
+                        val asset = checkAsset(paymentCodeResponse.assetId)
+                        if (asset != null) {
+                            if (paymentCodeResponse.receivers.isEmpty()) {
+                                showError()
+                            } else if (paymentCodeResponse.receivers.size == 1 && paymentCodeResponse.threshold == 1) { // Transfer when there is only one recipient
+                                val user = linkViewModel.refreshUser(paymentCodeResponse.receivers.first())
+                                if (user == null) {
+                                    showError(R.string.User_not_found)
+                                    return@launch
+                                }
+                                showTransferBottom(user, paymentCodeResponse.amount, asset, paymentCodeResponse.traceId, paymentCodeResponse.status, paymentCodeResponse.memo, null)
+                            } else if (paymentCodeResponse.receivers.size > 1) {
+                                val multisigsBiometricItem = One2MultiBiometricItem(
+                                    threshold = paymentCodeResponse.threshold,
+                                    senders = arrayOf(Session.getAccountId()!!),
+                                    receivers = paymentCodeResponse.receivers,
+                                    asset = asset,
+                                    amount = paymentCodeResponse.amount,
+                                    pin = null,
+                                    traceId = paymentCodeResponse.traceId,
+                                    memo = paymentCodeResponse.memo,
+                                    state = paymentCodeResponse.status,
+                                )
+                                MultisigsBottomSheetDialogFragment.newInstance(
+                                    multisigsBiometricItem,
+                                ).showNow(
+                                    parentFragmentManager,
+                                    MultisigsBottomSheetDialogFragment.TAG,
+                                )
+                            }
+                            dismiss()
+                        } else {
+                            showError()
+                        }
+                    }
+                    else -> showError()
                 }
-            )
-        } else if (url.startsWith(Scheme.HTTPS_ADDRESS, true) || url.startsWith(Scheme.ADDRESS, true)) {
-            if (Session.getAccount()?.hasPin == false) {
-                MainActivity.showWallet(requireContext())
-                dismiss()
-                return
             }
+        } else if (url.startsWith(Scheme.HTTPS_ADDRESS, true) || url.startsWith(Scheme.ADDRESS, true)) {
+            if (checkHasPin()) return
+
             val uri = Uri.parse(url)
             val action = uri.getQueryParameter("action")
             if (action != null && action == "delete") {
                 val assetId = uri.getQueryParameter("asset")
                 val addressId = uri.getQueryParameter("address")
                 if (assetId != null && assetId.isUUID() && addressId != null && addressId.isUUID()) {
-                    lifecycleScope.launch {
-                        val address = linkViewModel.findAddressById(addressId, assetId)
-                        if (address == null) {
+                    lifecycleScope.launch(errorHandler) {
+                        val pair = linkViewModel.findAddressById(addressId, assetId)
+                        val address = pair.first
+                        if (pair.second) {
                             showError(R.string.error_address_exists)
+                        } else if (address == null) {
+                            showError(R.string.error_address_not_sync)
                         } else {
-                            var asset = linkViewModel.findAssetItemById(assetId)
-                            if (asset == null) {
-                                asset = linkViewModel.refreshAsset(assetId)
-                            }
+                            val asset = checkAsset(assetId)
                             if (asset != null) {
                                 PinAddrBottomSheetDialogFragment.newInstance(
                                     assetId = assetId,
-                                    assetUrl = asset!!.iconUrl,
-                                    chainId = asset!!.chainId,
-                                    chainIconUrl = asset!!.chainIconUrl,
-                                    assetName = asset!!.name,
+                                    assetUrl = asset.iconUrl,
+                                    assetSymbol = asset.symbol,
+                                    assetKey = asset.assetKey,
+                                    chainId = asset.chainId,
+                                    chainName = asset.chainName,
+                                    chainIconUrl = asset.chainIconUrl,
+                                    assetName = asset.name,
                                     addressId = addressId,
                                     label = address.label,
                                     destination = address.destination,
                                     tag = address.tag,
-                                    type = PinAddrBottomSheetDialogFragment.DELETE
+                                    type = PinAddrBottomSheetDialogFragment.DELETE,
                                 ).showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
                                 dismiss()
                             } else {
@@ -396,22 +494,22 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     Uri.decode(this)
                 }
                 if (assetId != null && assetId.isUUID() && !destination.isNullOrEmpty() && !label.isNullOrEmpty()) {
-                    lifecycleScope.launch {
-                        var asset = linkViewModel.findAssetItemById(assetId)
-                        if (asset == null) {
-                            asset = linkViewModel.refreshAsset(assetId)
-                        }
+                    lifecycleScope.launch(errorHandler) {
+                        val asset = checkAsset(assetId)
                         if (asset != null) {
                             PinAddrBottomSheetDialogFragment.newInstance(
                                 assetId = assetId,
-                                assetUrl = asset!!.iconUrl,
-                                chainId = asset!!.chainId,
-                                chainIconUrl = asset!!.chainIconUrl,
-                                assetName = asset!!.name,
+                                assetUrl = asset.iconUrl,
+                                assetSymbol = asset.symbol,
+                                assetKey = asset.assetKey,
+                                chainId = asset.chainId,
+                                chainName = asset.chainName,
+                                chainIconUrl = asset.chainIconUrl,
+                                assetName = asset.name,
                                 label = label,
                                 destination = destination,
                                 tag = tag,
-                                type = PinAddrBottomSheetDialogFragment.ADD
+                                type = PinAddrBottomSheetDialogFragment.ADD,
                             )
                                 .showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
                             dismiss()
@@ -424,15 +522,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
         } else if (url.startsWith(Scheme.SNAPSHOTS, true)) {
-            if (Session.getAccount()?.hasPin == false) {
-                MainActivity.showWallet(requireContext())
-                dismiss()
-                return
-            }
+            if (checkHasPin()) return
+
             val uri = Uri.parse(url)
             val traceId = uri.getQueryParameter("trace")
             if (!traceId.isNullOrEmpty() && traceId.isUUID()) {
-                lifecycleScope.launch {
+                lifecycleScope.launch(errorHandler) {
                     val result = linkViewModel.getSnapshotByTraceId(traceId)
                     if (result != null) {
                         dismiss()
@@ -448,7 +543,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             if (snapshotId.isNullOrEmpty() || !snapshotId.isUUID()) {
                 showError()
             } else {
-                lifecycleScope.launch {
+                lifecycleScope.launch(errorHandler) {
                     val result = linkViewModel.getSnapshotAndAsset(snapshotId)
                     if (result != null) {
                         dismiss()
@@ -460,15 +555,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
         } else if (url.startsWith(Scheme.HTTPS_WITHDRAWAL, true) || url.startsWith(Scheme.WITHDRAWAL, true)) {
-            if (Session.getAccount()?.hasPin == false) {
-                MainActivity.showWallet(requireContext())
-                dismiss()
-                return
-            }
-            val uri = Uri.parse(url)
+            if (checkHasPin()) return
 
+            val uri = Uri.parse(url)
             val assetId = uri.getQueryParameter("asset")
-            val amount = uri.getQueryParameter("amount")
+            val amount = uri.getQueryParameter("amount")?.stripAmountZero()
             val memo = uri.getQueryParameter("memo")?.run {
                 Uri.decode(this)
             }
@@ -480,26 +571,26 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             ) {
                 showError()
             } else {
-                lifecycleScope.launch {
-                    val address = linkViewModel.findAddressById(addressId, assetId)
-                    var asset = linkViewModel.findAssetItemById(assetId)
-                    if (asset == null) {
-                        asset = linkViewModel.refreshAsset(assetId)
-                    }
+                lifecycleScope.launch(errorHandler) {
+                    val pair = linkViewModel.refreshAndGetAddress(addressId, assetId)
+                    val address = pair.first
+                    val asset = checkAsset(assetId)
                     if (asset != null) {
                         when {
-                            address == null -> showError(R.string.error_address_exists)
-                            asset == null -> showError(R.string.error_asset_exists)
+                            pair.second -> {
+                                showError(R.string.error_address_exists)
+                            }
+                            address == null -> {
+                                showError(R.string.error_address_not_sync)
+                            }
                             else -> {
-                                val dust = address.dust?.toDoubleOrNull()
-                                val amountDouble = amount.toDoubleOrNull()
-                                if (dust != null && amountDouble != null && amountDouble < dust) {
-                                    val errorString = getString(R.string.bottom_withdrawal_least_tip, address.dust, asset!!.symbol)
+                                val dust = address.dust?.toBigDecimal()
+                                if (dust != null && amount.toBigDecimal().compareTo(dust) == -1) {
+                                    val errorString = getString(R.string.withdrawal_minimum_amount, address.dust, asset.symbol)
                                     showError(errorString)
                                     toast(errorString)
                                     return@launch
                                 }
-
                                 val transferRequest = TransferRequest(assetId, null, amount, null, traceId, memo, addressId)
                                 handleMixinResponse(
                                     invokeNetwork = {
@@ -507,38 +598,59 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     },
                                     successBlock = { r ->
                                         val response = r.data ?: return@handleMixinResponse false
-
-                                        showWithdrawalBottom(address, amount, asset!!, traceId, response.status, memo)
+                                        showWithdrawalBottom(address.addressId, address.destination, address.tag, address.label, address.fee, amount, asset, traceId, response.status, memo)
                                     },
                                     failureBlock = {
-                                        showError(R.string.bottom_sheet_invalid_payment)
+                                        showError(R.string.Invalid_payment_link)
                                         return@handleMixinResponse false
                                     },
                                     exceptionBlock = {
-                                        showError(R.string.bottom_sheet_check_payment_info)
+                                        showError(R.string.Checking_payment_info)
                                         return@handleMixinResponse false
-                                    }
+                                    },
                                 )
                             }
                         }
                     } else {
-                        showError()
+                        showError(R.string.Asset_not_found)
                     }
                 }
             }
-        } else if (url.isDonateUrl()) {
-            if (Session.getAccount()?.hasPin == false) {
-                MainActivity.showWallet(requireContext())
-                dismiss()
+        } else if (url.startsWith(Scheme.CONVERSATIONS, true)) {
+            val uri = Uri.parse(url)
+            val segments = uri.pathSegments
+            if (segments.isEmpty()) return
+
+            val conversationId = segments[0]
+            if (conversationId.isEmpty() || !conversationId.isUUID()) {
+                showError()
                 return
             }
-            lifecycleScope.launch {
-                val newUrl = url.replaceFirst(":", "://")
-                if (!showTransfer(newUrl)) {
-                    QrScanBottomSheetDialogFragment.newInstance(url)
-                        .show(parentFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+            val userId = uri.getQueryParameter("user")
+            lifecycleScope.launch(errorHandler) {
+                if (userId != null) {
+                    val user = linkViewModel.refreshUser(userId)
+                    when {
+                        user == null -> {
+                            showError(R.string.User_not_found)
+                        }
+                        conversationId != generateConversationId(requireNotNull(Session.getAccountId()), userId) -> {
+                            showError()
+                        }
+                        else -> {
+                            ConversationActivity.show(requireContext(), conversationId, userId)
+                            dismiss()
+                        }
+                    }
+                } else {
+                    val conversation = linkViewModel.getAndSyncConversation(conversationId)
+                    if (conversation != null) {
+                        ConversationActivity.show(requireContext(), conversation.conversationId)
+                        dismiss()
+                    } else {
+                        showError(R.string.Conversation_not_found)
+                    }
                 }
-                dismiss()
             }
         } else if (url.startsWith(Scheme.SEND, true)) {
             val uri = Uri.parse(url)
@@ -550,11 +662,51 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 afterShareData = { dismiss() },
                 onError = { err ->
                     showError(err)
-                }
+                },
             )
+        } else if (url.startsWith(Scheme.DEVICE, true)) {
+            contentView.post {
+                ConfirmBottomFragment.show(requireContext(), parentFragmentManager, url)
+                dismiss()
+            }
+        } else if (url.startsWith(Scheme.BUY, true)) {
+            WalletActivity.show(requireActivity(), buy = true)
+            dismiss()
+        } else if (url.startsWith(Scheme.TIP, true)) {
+            val uri = Uri.parse(url)
+            handleTipScheme(uri)
         } else {
-            showError()
+            val isDonateUrl = url.isDonateUrl()
+            val isExternalTransferUrl = url.isExternalTransferUrl()
+            if (isDonateUrl || isExternalTransferUrl) {
+                if (checkHasPin()) return
+
+                lifecycleScope.launch(errorHandler) {
+                    val newUrl = url.addSlashesIfNeeded()
+                    if (isDonateUrl && showTransfer(newUrl)) {
+                        dismiss()
+                    } else if (isExternalTransferUrl) {
+                        parseExternalTransferUrl(url)
+                    } else {
+                        showError()
+                    }
+                }
+            } else if (url.isExternalScheme(requireContext())) {
+                WebActivity.show(requireContext(), url, null)
+                dismiss()
+            } else {
+                showError()
+            }
         }
+    }
+
+    private fun checkHasPin(): Boolean {
+        if (Session.getAccount()?.hasPin == false) {
+            MainActivity.showWallet(requireContext())
+            dismiss()
+            return true
+        }
+        return false
     }
 
     override fun dismiss() {
@@ -577,6 +729,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun onDetach() {
         super.onDetach()
+        // UrlInterpreterActivity doesn't have a UI and needs it's son fragment to handle it's finish.
         if (activity is UrlInterpreterActivity) {
             var realFragmentCount = 0
             parentFragmentManager.fragments.forEach { f ->
@@ -585,14 +738,163 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
             if (realFragmentCount <= 0) {
-                activity?.finish()
+                if (isAdded) {
+                    activity?.finish()
+                }
             }
+        }
+    }
+
+    private suspend fun parseExternalTransferUrl(url: String) {
+        var errorMsg: String? = null
+        val result = parseExternalTransferUri(url, { assetId, destination ->
+            handleMixinResponse(
+                invokeNetwork = {
+                    linkViewModel.getExternalAddressFee(assetId, destination, null)
+                },
+                successBlock = {
+                    return@handleMixinResponse it.data
+                },
+            )
+        }, { assetKey ->
+            val assetId = linkViewModel.findAssetIdByAssetKey(assetKey)
+            if (assetId == null) {
+                errorMsg = getString(R.string.external_pay_no_asset_found)
+            }
+            return@parseExternalTransferUri assetId
+        }, { assetId ->
+            handleMixinResponse(
+                invokeNetwork = {
+                    linkViewModel.getAssetPrecisionById(assetId)
+                },
+                successBlock = {
+                    return@handleMixinResponse it.data
+                },
+            )
+        })
+
+        errorMsg?.let {
+            showError(it)
+            return
+        }
+
+        if (result == null) {
+            QrScanBottomSheetDialogFragment.newInstance(url)
+                .show(parentFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+        } else {
+            val asset = checkAsset(result.assetId)
+            if (asset == null) {
+                showError(R.string.Asset_not_found)
+                dismiss()
+                return
+            }
+
+            val traceId = UUID.randomUUID().toString()
+            val amount = result.amount
+            val destination = result.destination
+            handleMixinResponse(
+                invokeNetwork = {
+                    // raw_payment_url support
+                    val transferRequest = TransferRequest(result.assetId, null, amount, null, traceId, result.memo, null, destination)
+                    linkViewModel.paySuspend(transferRequest)
+                },
+                successBlock = { r ->
+                    val response = r.data ?: return@handleMixinResponse false
+                    showWithdrawalBottom(
+                        null,
+                        destination,
+                        null,
+                        null,
+                        result.fee?.toPlainString() ?: "0",
+                        amount,
+                        asset,
+                        traceId,
+                        response.status,
+                        result.memo,
+                    )
+                },
+                failureBlock = {
+                    showError(R.string.Invalid_payment_link)
+                    return@handleMixinResponse false
+                },
+                exceptionBlock = {
+                    showError(R.string.Checking_payment_info)
+                    return@handleMixinResponse false
+                },
+            )
+        }
+        dismiss()
+    }
+    private fun handleTipScheme(uri: Uri) {
+        val segments = uri.pathSegments
+        if (segments.isEmpty()) return
+
+        val action = segments[0]
+        if (action.isBlank()) {
+            showError()
+            return
+        }
+        val id = uri.getQueryParameter("id")
+        if (id.isNullOrBlank() || !id.isUUID()) {
+            showError()
+            return
+        }
+        val alg = uri.getQueryParameter("alg")
+        val crv = uri.getQueryParameter("crv")
+        if (alg.isNullOrBlank() || crv.isNullOrBlank()) {
+            showError()
+            return
+        }
+        val signAction = matchTipSignAction(action, alg, crv)
+        if (signAction == null) {
+            showError()
+            return
+        }
+        val data: ByteArray? = if (signAction is TipSignAction.Signature) {
+            val d = uri.getQueryParameter("data")
+            if (d.isNullOrBlank()) {
+                showError()
+                return
+            } else {
+                d.base64RawURLDecode()
+            }
+        } else {
+            null
+        }
+
+        contentView.post {
+            PinInputBottomSheetDialogFragment.newInstance().setOnPinComplete { pin ->
+                lifecycleScope.launch(errorHandler) {
+                    tip.getOrRecoverTipPriv(requireContext(), pin)
+                        .onSuccess { priv ->
+                            val res: String = when (signAction) {
+                                is TipSignAction.Public -> {
+                                    val pub = signAction(priv)
+                                    Timber.d("$TAG_TIP_SIGN pub: $pub")
+                                    pub
+                                }
+                                is TipSignAction.Signature -> {
+                                    val sig = signAction(priv, requireNotNull(data) { "Signature action data can not be null" })
+                                    Timber.d("$TAG_TIP_SIGN sig: $sig")
+                                    sig
+                                }
+                            }
+                            val endpoint = uri.getQueryParameter("notify") ?: Constants.API.DEFAULT_TIP_SIGN_ENDPOINT
+                            val notifyUrl = "$endpoint?id=$id&res=$res"
+                            Timber.d("$TAG_TIP_SIGN notify url: $notifyUrl")
+                        }.onFailure {
+                            Timber.d("$TAG_TIP_SIGN ${it.stackTraceToString()}")
+                        }
+                }
+            }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
+            dismiss()
         }
     }
 
     private suspend fun showTransfer(text: String): Boolean {
         val uri = text.toUri()
-        val amount = uri.getQueryParameter("amount")?.toDoubleOrNull()?.toString() ?: return false
+        val amount = uri.getQueryParameter("amount")?.stripAmountZero() ?: return false
+        if (amount.toBigDecimalOrNull() == null) return false
         val userId = uri.getQueryParameter("recipient")
         if (userId == null || !userId.isUUID()) {
             return false
@@ -602,12 +904,18 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             return false
         }
         val trace = uri.getQueryParameter("trace") ?: UUID.randomUUID().toString()
-        val memo = uri.getQueryParameter("memo")
-
-        var asset = linkViewModel.findAssetItemById(assetId)
-        if (asset == null) {
-            asset = linkViewModel.refreshAsset(assetId) ?: return false
+        val memo = uri.getQueryParameter("memo")?.run {
+            Uri.decode(this)
         }
+        val returnTo = uri.getQueryParameter("return_to")?.run {
+            try {
+                URLDecoder.decode(this, UTF_8.name())
+            } catch (e: UnsupportedEncodingException) {
+                this
+            }
+        }
+
+        val asset: AssetItem = checkAsset(assetId) ?: return false
 
         val user = linkViewModel.refreshUser(userId) ?: return false
 
@@ -619,41 +927,41 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             successBlock = { r ->
                 val response = r.data ?: return@handleMixinResponse false
 
-                showTransferBottom(user, amount, asset, trace, response.status, memo)
+                showTransferBottom(user, amount, asset, trace, response.status, memo, returnTo)
                 return@handleMixinResponse true
-            }
+            },
         ) ?: false
     }
 
-    private suspend fun showTransferBottom(user: User, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
+    private suspend fun showTransferBottom(user: User, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?, returnTo: String?) {
         val pair = linkViewModel.findLatestTrace(user.userId, null, null, amount, asset.assetId)
         if (pair.second) {
-            showError(getString(R.string.bottom_sheet_check_trace_failed))
+            showError(getString(R.string.check_trace_failed))
             return
         }
-        val biometricItem = TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first)
+        val biometricItem = TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first, returnTo)
         showPreconditionBottom(biometricItem)
     }
 
-    private suspend fun showWithdrawalBottom(address: Address, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
-        val pair = linkViewModel.findLatestTrace(null, address.destination, address.tag, amount, asset.assetId)
+    private suspend fun showWithdrawalBottom(addressId: String?, destination: String, tag: String?, label: String?, fee: String, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
+        val pair = linkViewModel.findLatestTrace(null, destination, tag, amount, asset.assetId)
         if (pair.second) {
-            showError(getString(R.string.bottom_sheet_check_trace_failed))
+            showError(getString(R.string.check_trace_failed))
             return
         }
         val biometricItem = WithdrawBiometricItem(
-            address.destination, address.tag, address.addressId, address.label, address.fee,
-            asset, amount, null, traceId, memo, status, pair.first
+            destination, tag, addressId, label, fee,
+            asset, amount, null, traceId, memo, status, pair.first,
         )
         showPreconditionBottom(biometricItem)
     }
 
-    private fun showPreconditionBottom(biometricItem: BiometricItem) {
-        val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem)
+    private fun showPreconditionBottom(biometricItem: AssetBiometricItem) {
+        val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, FROM_LINK)
         preconditionBottom.callback = object : PreconditionBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
-                val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
-                bottom.show(preconditionBottom.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                val bottom = OutputBottomSheetDialogFragment.newInstance(biometricItem)
+                bottom.show(preconditionBottom.parentFragmentManager, OutputBottomSheetDialogFragment.TAG)
                 dismiss()
             }
 
@@ -664,26 +972,67 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         preconditionBottom.showNow(parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
     }
 
-    private fun showError(@StringRes errorRes: Int = R.string.link_error) {
-        contentView.link_error_info.setText(errorRes)
-        contentView.link_loading.visibility = GONE
-        contentView.link_error_info.visibility = VISIBLE
+    private suspend fun checkAsset(assetId: String): AssetItem? {
+        var asset = linkViewModel.findAssetItemById(assetId)
+        if (asset == null) {
+            asset = linkViewModel.refreshAsset(assetId)
+        }
+        if (asset != null && asset.assetId != asset.chainId && linkViewModel.findAssetItemById(asset.chainId) == null) {
+            linkViewModel.refreshAsset(asset.chainId)
+        }
+        return linkViewModel.findAssetItemById(assetId)
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun showError(@StringRes errorRes: Int = R.string.Invalid_Link) {
+        if (!isAdded) return
+
+        binding.apply {
+            if (errorRes == R.string.Invalid_Link) {
+                linkErrorInfo.text = "${getString(R.string.Invalid_Link)}\n\n$url"
+            } else {
+                linkErrorInfo.setText(errorRes)
+            }
+            linkLoading.visibility = GONE
+            linkErrorInfo.visibility = VISIBLE
+            linkErrorInfo.setTextIsSelectable(true)
+        }
     }
 
     private fun showError(error: String) {
-        contentView.link_error_info.text = error
-        contentView.link_loading.visibility = GONE
-        contentView.link_error_info.visibility = VISIBLE
+        if (!isAdded) return
+
+        binding.apply {
+            linkErrorInfo.text = error
+            linkLoading.visibility = GONE
+            linkErrorInfo.visibility = VISIBLE
+        }
     }
 
     private val mBottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
 
         override fun onStateChanged(bottomSheet: View, newState: Int) {
             if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                dismissAllowingStateLoss()
+                try {
+                    dismissAllowingStateLoss()
+                } catch (e: IllegalStateException) {
+                    Timber.w(e)
+                }
             }
         }
 
         override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+    }
+
+    private val errorHandler = CoroutineExceptionHandler { _, error ->
+        when (error) {
+            is SocketTimeoutException -> showError(R.string.error_connection_timeout)
+            is UnknownHostException -> showError(R.string.No_network_connection)
+            is IOException -> showError(R.string.No_network_connection)
+            else -> {
+                ErrorHandler.handleError(error)
+                showError(R.string.Network_error)
+            }
+        }
     }
 }

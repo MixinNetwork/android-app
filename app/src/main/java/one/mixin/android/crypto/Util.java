@@ -1,17 +1,18 @@
 package one.mixin.android.crypto;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import one.mixin.android.crypto.attachment.CancelationSignal;
-import one.mixin.android.crypto.attachment.OutputStreamFactory;
-import one.mixin.android.crypto.attachment.PushAttachmentData;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.SecureRandom;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import one.mixin.android.crypto.attachment.CancelationSignal;
+import one.mixin.android.crypto.attachment.DigestingRequestBody;
+import one.mixin.android.crypto.attachment.OutputStreamFactory;
+import one.mixin.android.crypto.attachment.PushAttachmentData;
 
 public class Util {
 
@@ -88,9 +89,10 @@ public class Util {
         return (int) value;
     }
 
+    private static final OkHttpClient client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
+
     public static byte[] uploadAttachment(String url, InputStream data, long dataSize, OutputStreamFactory outputStreamFactory, PushAttachmentData.ProgressListener listener, CancelationSignal cancelationSignal) throws IOException {
-        OkHttpClient client = new OkHttpClient.Builder().build();
-        DigestingRequestBody requestBody = new DigestingRequestBody(data, outputStreamFactory, "application/octet-stream", dataSize, listener, cancelationSignal);
+        DigestingRequestBody requestBody = new DigestingRequestBody(data, outputStreamFactory, "application/octet-stream", dataSize, listener, cancelationSignal, 0);
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("x-amz-acl", "public-read")
@@ -100,7 +102,6 @@ public class Util {
         Response response = client.newCall(request).execute();
         if (response.isSuccessful()) {
             return requestBody.getTransmittedDigest();
-        }
-        return null;
+        } else throw new IOException(response.message());
     }
 }

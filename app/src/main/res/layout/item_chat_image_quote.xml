@@ -1,13 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/chat_msg_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingTop="1.5dp"
-    tools:ignore="UselessParent">
+    android:clickable="true"
+    android:focusable="true">
+
+    <ImageView
+        android:id="@+id/chat_reply"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:background="@drawable/bg_circle_reply"
+        android:layout_marginStart="16dp"
+        android:padding="4dp"
+        android:alpha="0"
+        android:scaleX="0"
+        android:scaleY="0"
+        android:src="@drawable/ic_reply_white"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/chat_msg_layout"
+        app:layout_constraintBottom_toBottomOf="@id/chat_msg_layout"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/chat_jump"
+        android:padding="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_chat_jump"
+        android:foreground="@drawable/jump_ripple"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/chat_msg_layout"
+        app:layout_constraintTop_toTopOf="@id/chat_msg_layout"
+        app:layout_constraintBottom_toBottomOf="@id/chat_msg_layout"
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/chat_name"
@@ -21,81 +50,94 @@
         android:lines="1"
         android:minWidth="30dp"
         android:textColor="#19BEF1"
-        android:textSize="14sp" />
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@id/chat_msg_layout"
+        app:layout_constraintStart_toStartOf="@id/chat_msg_layout" />
 
-    <FrameLayout
-        android:id="@+id/chat_layout"
+    <LinearLayout
+        android:id="@+id/chat_msg_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp">
+        android:orientation="vertical"
+        android:paddingTop="1.5dp"
+        tools:ignore="UselessParent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chat_name"
+        app:layout_constraintVertical_bias="0"
+        app:layout_goneMarginBottom="0dp">
 
-        <one.mixin.android.widget.QuoteLayout
-            android:id="@+id/chat_quote_layout"
+        <FrameLayout
+            android:id="@+id/chat_layout"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp">
 
-            <one.mixin.android.widget.QuoteView
-                android:id="@+id/chat_quote"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <FrameLayout
-                android:id="@+id/chat_image_layout"
-                android:layout_width="match_parent"
+            <one.mixin.android.widget.QuoteLayout
+                android:id="@+id/chat_quote_layout"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
-                <ImageView
-                    android:id="@+id/chat_image"
+                <one.mixin.android.widget.QuoteView
+                    android:id="@+id/chat_quote"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:contentDescription="@null" />
+                    android:layout_height="wrap_content" />
 
-                <one.mixin.android.widget.CircleProgress
-                    android:id="@+id/progress"
+                <FrameLayout
+                    android:id="@+id/chat_image_layout"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    app:progressColor="@color/white"
-                    app:progressWidth="1.5dp"
-                    app:shadowColor="@color/black_70"
-                    app:size="40dp" />
-
-                <LinearLayout
-                    android:id="@+id/chat_warning"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:gravity="center_horizontal"
-                    android:orientation="vertical">
+                    android:layout_height="wrap_content">
 
                     <ImageView
-                        android:layout_width="wrap_content"
+                        android:id="@+id/chat_image"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/ic_expired" />
+                        android:contentDescription="@null" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
-                        android:text="@string/chat_expired"
-                        android:textColor="@color/text_white" />
-                </LinearLayout>
-            </FrameLayout>
+                    <one.mixin.android.widget.CircleProgress
+                        android:id="@+id/progress"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        app:progressColor="@color/white"
+                        app:progressWidth="1.5dp"
+                        app:shadowColor="@color/black_70"
+                        app:size="40dp" />
 
-            <TextView
-                android:id="@+id/chat_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:background="@drawable/bg_bubble_shadow"
-                android:drawablePadding="3dp"
-                android:fontFamily="@font/roboto_light"
-                android:gravity="end|bottom"
-                android:textColor="@color/white"
-                android:textSize="@dimen/chat_date_size"
-                tools:text="7:48AM" />
+                    <LinearLayout
+                        android:id="@+id/chat_warning"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
+                        tools:ignore="UseCompoundDrawables">
 
-        </one.mixin.android.widget.QuoteLayout>
-    </FrameLayout>
-</LinearLayout>
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_expired"
+                            android:contentDescription="@string/Expired" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:text="@string/Expired"
+                            android:textColor="@color/text_white" />
+                    </LinearLayout>
+                </FrameLayout>
+
+                <one.mixin.android.widget.bubble.TimeBubble
+                    android:id="@+id/chat_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:background="@drawable/bg_bubble_shadow"
+                    android:fontFamily="@font/roboto_light" />
+
+            </one.mixin.android.widget.QuoteLayout>
+        </FrameLayout>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

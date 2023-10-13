@@ -27,6 +27,14 @@
             tools:ignore="ContentDescription"/>
     </FrameLayout>
 
+    <include
+        android:id="@+id/empty_view"
+        layout="@layout/view_empty"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_fl" />
+
     <one.mixin.android.widget.DraggableRecyclerView
         android:id="@+id/message_rv"
         android:layout_width="0dp"
@@ -40,14 +48,6 @@
         app:layout_constraintTop_toBottomOf="@id/top_fl"
         tools:listitem="@layout/item_list_conversation" />
 
-    <include
-        android:id="@+id/empty_view"
-        layout="@layout/view_empty"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/top_fl" />
-
     <FrameLayout
         android:id="@+id/shadow_fl"
         android:layout_width="match_parent"
@@ -60,7 +60,7 @@
         <one.mixin.android.widget.ShadowCircleView
             android:id="@+id/shadow_view"
             android:layout_width="wrap_content"
-            android:layout_height="88dp"
+            android:layout_height="72dp"
             android:layout_gravity="center_horizontal"/>
     </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

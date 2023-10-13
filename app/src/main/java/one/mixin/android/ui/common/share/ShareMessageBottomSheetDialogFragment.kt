@@ -3,22 +3,26 @@ package one.mixin.android.ui.common.share
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.os.Build
 import android.view.Gravity
-import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.manager.SupportRequestManagerFragment
+import com.google.gson.JsonSyntaxException
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_share_message_bottom_sheet.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentShareMessageBottomSheetBinding
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -29,10 +33,13 @@ import one.mixin.android.ui.common.share.renderer.ShareContactRenderer
 import one.mixin.android.ui.common.share.renderer.ShareImageRenderer
 import one.mixin.android.ui.common.share.renderer.ShareLiveRenderer
 import one.mixin.android.ui.common.share.renderer.SharePostRenderer
+import one.mixin.android.ui.common.share.renderer.ShareStickerRenderer
 import one.mixin.android.ui.common.share.renderer.ShareTextRenderer
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.reportException
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
@@ -41,7 +48,9 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
+import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 
 @AndroidEntryPoint
 class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -53,7 +62,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val CONVERSATION_ID = "conversation_id"
         private const val APP = "app"
         private const val HOST = "host"
-        fun newInstance(shareMessage: ForwardMessage<ShareCategory>, conversationId: String?, app: App? = null, host: String? = null) =
+        fun newInstance(shareMessage: ForwardMessage, conversationId: String?, app: App? = null, host: String? = null) =
             ShareMessageBottomSheetDialogFragment().withArgs {
                 putString(CONVERSATION_ID, conversationId)
                 putParcelable(SHARE_MESSAGE, shareMessage)
@@ -67,7 +76,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val viewModel by viewModels<BottomSheetViewModel>()
 
     private val app by lazy {
-        arguments?.getParcelable<App>(APP)
+        arguments?.getParcelableCompat(APP, App::class.java)
     }
 
     private val host by lazy {
@@ -78,54 +87,77 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         arguments?.getString(CONVERSATION_ID)
     }
 
-    private val shareMessage: ForwardMessage<ShareCategory> by lazy {
-        requireNotNull(arguments?.getParcelable(SHARE_MESSAGE)) {
+    private val shareMessage: ForwardMessage by lazy {
+        requireNotNull(arguments?.getParcelableCompat(SHARE_MESSAGE, ForwardMessage::class.java)) {
             "error data"
         }
     }
 
+    private val binding by viewBinding(FragmentShareMessageBottomSheetBinding::inflate)
+
     @SuppressLint("RestrictedApi", "StringFormatInvalid")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_share_message_bottom_sheet, null)
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
-        contentView.close.setOnClickListener {
+        binding.close.setOnClickListener {
             dismiss()
         }
         try {
-            loadData()
+            contentView.doOnPreDraw {
+                loadData()
+            }
         } catch (e: Exception) {
-            toast(R.string.error_data)
+            Timber.e("Load \"${shareMessage.content}\" ERROR!!!")
+            if (app != null || host != null) {
+                reportException(IllegalArgumentException("app:${app?.appNumber} host:$host ${e.message}"))
+            }
+            toast(getString(R.string.error_unknown_with_message, "${e.javaClass.name} ${shareMessage.content}"))
             dismiss()
             return
         }
         when {
             app != null -> {
-                contentView.share_title.text = getString(R.string.share_message_description, "${app?.name}(${app?.appNumber})", getMessageCategory())
+                binding.shareTitle.text = getString(R.string.share_message_description, "${app?.name}(${app?.appNumber})", getMessageCategory())
             }
             host != null -> {
-                contentView.share_title.text = getString(R.string.share_message_description, host, getMessageCategory())
+                binding.shareTitle.text = getString(R.string.share_message_description, host, getMessageCategory())
             }
             else -> {
-                contentView.share_title.text = getString(R.string.share_message_description_empty, getMessageCategory())
+                binding.shareTitle.text = getString(R.string.share_message_description_empty, getMessageCategory())
             }
         }
-        contentView.send.setOnClickListener {
+
+        if (conversationId == null) {
+            binding.send.text = getString(R.string.Forward)
+        }
+        binding.send.setOnClickListener {
             if (shareMessage.category == ShareCategory.Image) {
-                RxPermissions(requireActivity())
-                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .autoDispose(stopScope)
-                    .subscribe(
-                        { granted ->
-                            if (granted) {
-                                sendMessage()
-                            } else {
-                                context?.openPermissionSetting()
-                            }
-                        },
-                        {
-                        }
-                    )
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                    RxPermissions(requireActivity())
+                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .autoDispose(stopScope)
+                        .subscribe(
+                            { granted ->
+                                if (granted) {
+                                    sendMessage()
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            },
+                            {
+                            },
+                        )
+                } else {
+                    sendMessage()
+                }
+            } else if (shareMessage.category == ShareCategory.AppCard) {
+                val appCardData = GsonHelper.customGson.fromJson(shareMessage.content, AppCardData::class.java)
+                if (appCardData.title.length in 1..36 && appCardData.description.length in 1..128) {
+                    sendMessage()
+                } else {
+                    toast(R.string.Data_error)
+                }
             } else {
                 sendMessage()
             }
@@ -138,25 +170,29 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 getString(R.string.message)
             }
             ShareCategory.Image -> {
-                getString(R.string.photo)
+                getString(R.string.Photo)
+            }
+            ShareCategory.Sticker -> {
+                getString(R.string.Sticker)
             }
             ShareCategory.Contact -> {
-                getString(R.string.contact)
+                getString(R.string.Contact)
             }
             ShareCategory.Post -> {
-                getString(R.string.post)
+                getString(R.string.Post)
             }
             ShareCategory.AppCard -> {
-                getString(R.string.card)
+                getString(R.string.Card)
             }
             ShareCategory.Live -> {
-                getString(R.string.live)
+                getString(R.string.Live)
             }
+            else -> throw IllegalArgumentException()
         }
     }
 
     private fun sendMessage() {
-        ForwardActivity.show(requireContext(), arrayListOf(shareMessage), ForwardAction.App.Resultful(conversationId, getString(R.string.send)))
+        ForwardActivity.show(requireContext(), arrayListOf(shareMessage), ForwardAction.App.Resultful(conversationId, getString(if (conversationId == null) R.string.Forward else R.string.Send)))
         dismiss()
     }
 
@@ -168,6 +204,9 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             ShareCategory.Image -> {
                 loadImage(content)
+            }
+            ShareCategory.Sticker -> {
+                loadSticker(content)
             }
             ShareCategory.Contact -> {
                 loadContact(content)
@@ -181,59 +220,87 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             ShareCategory.Live -> {
                 loadLive(content)
             }
+            else -> {
+                throw IllegalArgumentException("Unknown category")
+            }
         }
     }
 
     private fun loadText(content: String) {
-        val renderer = ShareTextRenderer(requireContext())
-        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
+        val renderer = ShareTextRenderer(requireContext(), binding.contentLayout.width)
+        binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(content, requireContext().isNightMode())
     }
 
     private fun loadImage(content: String) {
         val shareImageData = GsonHelper.customGson.fromJson(content, ShareImageData::class.java)
         val renderer = ShareImageRenderer(requireContext())
-        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
+        binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(shareImageData)
+    }
+
+    private fun loadSticker(content: String) {
+        if (!content.isUUID()) {
+            toast(R.string.Data_error)
+            return
+        }
+        lifecycleScope.launch {
+            binding.progress.isVisible = true
+            val stickerId = try {
+                GsonHelper.customGson.fromJson(content, StickerMessagePayload::class.java).stickerId
+            } catch (e: JsonSyntaxException) {
+                content
+            }
+            val sticker = viewModel.refreshSticker(stickerId)
+            if (sticker == null) {
+                toast(R.string.error_not_found)
+                binding.progress.isVisible = false
+                return@launch
+            }
+            val renderer = ShareStickerRenderer(requireContext())
+            binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
+            renderer.render(sticker)
+            binding.progress.isVisible = false
+        }
     }
 
     private fun loadContact(content: String) {
         lifecycleScope.launch {
             val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java)
-            contentView.progress.isVisible = true
+            binding.progress.isVisible = true
             val user = viewModel.refreshUser(contactData.userId)
             if (user == null) {
                 toast(R.string.error_not_found)
                 return@launch
             }
             val renderer = ShareContactRenderer(requireContext())
-            contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
+            binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
             renderer.render(user, requireContext().isNightMode())
-            contentView.progress.isVisible = false
+            binding.progress.isVisible = false
         }
     }
 
     private fun loadPost(content: String) {
         val renderer = SharePostRenderer(requireActivity())
-        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
+        binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(content, requireContext().isNightMode())
     }
 
     private fun loadAppCard(content: String) {
         val appCardData = GsonHelper.customGson.fromJson(content, AppCardData::class.java)
         val renderer = ShareAppCardRenderer(requireContext())
-        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
+        binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(appCardData, requireContext().isNightMode())
     }
 
     private fun loadLive(content: String) {
         val liveData = GsonHelper.customGson.fromJson(content, LiveMessagePayload::class.java)
         if (liveData.width <= 0 || liveData.height <= 0) {
-            toast(R.string.error_data)
+            toast(getString(R.string.error_unknown_with_message, "Illegal size"))
             dismiss()
         }
         val renderer = ShareLiveRenderer(requireContext())
-        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
+        binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(liveData)
     }
 
@@ -245,6 +312,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     override fun onDetach() {
         super.onDetach()
+        // UrlInterpreterActivity doesn't have a UI and needs it's son fragment to handle it's finish.
         if (activity is UrlInterpreterActivity) {
             var realFragmentCount = 0
             parentFragmentManager.fragments.forEach { f ->
