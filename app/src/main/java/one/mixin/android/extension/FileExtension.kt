@@ -375,7 +375,11 @@ fun File.createNoMediaDir() {
         mkdirs()
     }
     if (!no.exists()) {
-        no.createNewFile()
+        try {
+            no.createNewFile()
+        } catch (e: IOException) {
+            Timber.e(e)
+        }
     }
 }
 

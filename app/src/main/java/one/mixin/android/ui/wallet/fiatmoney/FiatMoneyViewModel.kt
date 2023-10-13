@@ -13,11 +13,13 @@ import com.google.android.gms.wallet.PaymentsClient
 import com.google.android.gms.wallet.TransactionInfo
 import com.google.android.gms.wallet.WalletConstants
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
@@ -37,8 +39,10 @@ import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.PaymentsUtil
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Card
+import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.route.RoutePaymentRequest
+import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.Call
 import timber.log.Timber
@@ -170,4 +174,21 @@ internal constructor(
     }
 
     suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
+
+    suspend fun profile(): MixinResponse<ProfileResponse> = assetRepository.profile()
+
+    suspend fun saveSession(participantSession: ParticipantSession) {
+        userRepository.saveSession(participantSession)
+    }
+
+    suspend fun findBotPublicKey(conversationId: String, botId: String) = userRepository.findBotPublicKey(conversationId, botId)
+
+    suspend fun syncNoExistAsset(assetIds: List<String>) = withContext(Dispatchers.IO) {
+        assetIds.forEach { id ->
+            if (assetRepository.findAssetItemById(id) == null) {
+                assetRepository.findOrSyncAsset(id)
+            }
+        }
+    }
+
 }

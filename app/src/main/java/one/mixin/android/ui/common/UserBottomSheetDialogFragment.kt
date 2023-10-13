@@ -1069,6 +1069,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 }
 
 fun showUserBottom(fragmentManager: FragmentManager, user: User, conversationId: String? = null, sharedMediaCallback: (() -> Unit)? = null) {
+    if (fragmentManager.isStateSaved) return
+
     if (user.notMessengerUser()) {
         NonMessengerUserBottomSheetDialogFragment.newInstance(user, conversationId)
             .showNow(fragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)

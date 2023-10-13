@@ -9,13 +9,13 @@ import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.core.text.bold
 import androidx.core.view.isVisible
+import java.math.BigDecimal
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutAssetBalanceBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.Fiats
-import java.math.BigDecimal
 
 class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearLayout(context, attributeSet) {
     private val binding = LayoutAssetBalanceBinding.inflate(LayoutInflater.from(context), this)

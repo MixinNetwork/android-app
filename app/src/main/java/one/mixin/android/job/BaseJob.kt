@@ -7,6 +7,9 @@ import com.birbit.android.jobqueue.RetryConstraint
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import java.io.IOException
+import java.net.SocketTimeoutException
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.ExpiredTokenException
@@ -69,9 +72,6 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
-import java.io.IOException
-import java.net.SocketTimeoutException
-import javax.inject.Inject
 
 abstract class BaseJob(params: Params) : Job(params) {
 

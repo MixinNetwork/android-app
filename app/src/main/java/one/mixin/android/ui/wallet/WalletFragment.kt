@@ -331,11 +331,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             }
         }
         checkPin()
-
-        if (arguments?.getBoolean(WalletActivity.BUY) == true) {
-            arguments?.remove(WalletActivity.BUY)
-            toBuy()
-        }
     }
 
     override fun onStop() {

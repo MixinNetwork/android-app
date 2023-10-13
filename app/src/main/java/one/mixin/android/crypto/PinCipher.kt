@@ -1,10 +1,10 @@
 package one.mixin.android.crypto
 
+import javax.inject.Inject
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
-import javax.inject.Inject
 
 class PinCipher @Inject internal constructor(val tip: Tip) : BasePinCipher() {
 

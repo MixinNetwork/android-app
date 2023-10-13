@@ -57,6 +57,7 @@ import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.vo.StickerAlbumOrder
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -348,6 +349,8 @@ constructor(
         appIds.filter { id ->
             appDao.findAppById(id) == null || userDao.suspendFindUserById(id) == null
         }.let { ids ->
+            if (ids.isEmpty()) return
+
             val response = userService.fetchUsers(ids)
             if (response.isSuccess) {
                 response.data?.apply {

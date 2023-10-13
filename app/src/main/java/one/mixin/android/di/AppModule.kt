@@ -38,6 +38,7 @@ import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.ExpiredTokenException
@@ -481,7 +482,7 @@ object AppModule {
             }
         }.build()
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://api.route.mixin.one")
+            .baseUrl(ROUTE_BOT_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .client(client)

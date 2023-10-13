@@ -10,7 +10,7 @@ import timber.log.Timber
 fun getDefaultCurrency(context: Context, supportCurrencies: List<Currency>): String {
     val currency = context.defaultSharedPreferences.getString(
         CalculateFragment.CURRENT_CURRENCY,
-        getCurrencyFromPhone(Session.getAccount()?.phone),
+        getCurrencyFromPhoneNumber(Session.getAccount()?.phone),
     ).let {
         if (it == null) {
             val localCurrency = Session.getFiatCurrency()
@@ -24,7 +24,21 @@ fun getDefaultCurrency(context: Context, supportCurrencies: List<Currency>): Str
 }
 
 private val phoneNumberUtil by lazy { PhoneNumberUtil.getInstance() }
-fun getCurrencyFromPhone(phone: String?): String? {
+
+fun getCountryCodeFromPhoneNumber(phone: String?): String? {
+    if (phone == null) {
+        return null
+    }
+    return try {
+        val number = phoneNumberUtil.parse(phone, "")
+        val countryCode = number.countryCode
+        phoneNumberUtil.getRegionCodeForCountryCode(countryCode)
+    } catch (e: Exception) {
+        null
+    }
+}
+
+fun getCurrencyFromPhoneNumber(phone: String?): String? {
     if (phone == null) {
         return null
     }
@@ -32,7 +46,6 @@ fun getCurrencyFromPhone(phone: String?): String? {
         val number = phoneNumberUtil.parse(phone, "")
         val countryCode = number.countryCode
         val country = phoneNumberUtil.getRegionCodeForCountryCode(countryCode)
-
         if (country == "AE") {
             "AED"
         } else if (country == "AU") {

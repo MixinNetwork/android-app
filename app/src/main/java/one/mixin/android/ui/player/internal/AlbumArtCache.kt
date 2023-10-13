@@ -1,9 +1,9 @@
 package one.mixin.android.ui.player.internal
 
 import android.graphics.BitmapFactory
+import java.io.File
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.toBytes
-import java.io.File
 
 object AlbumArtCache {
     const val DEFAULT_ALBUM_ART = "android.resource://one.mixin.messenger/drawable/ic_music_place_holder"

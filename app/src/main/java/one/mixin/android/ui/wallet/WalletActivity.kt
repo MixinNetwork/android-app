@@ -42,7 +42,8 @@ class WalletActivity : BlazeBaseActivity() {
             navGraph.setStartDestination(R.id.transactions_fragment) // change start destination
             navController.setGraph(navGraph, Bundle().apply { putParcelable(ARGS_ASSET, currentAsset) })
         } else if (isBuy) {
-            navController.setGraph(navGraph, Bundle().apply { putBoolean(BUY, true) })
+            navGraph.setStartDestination(R.id.wallet_calculate)
+            navController.setGraph(navGraph, null)
         } else {
             navController.setGraph(navGraph, null)
         }
