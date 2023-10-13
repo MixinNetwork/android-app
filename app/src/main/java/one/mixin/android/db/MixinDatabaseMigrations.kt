@@ -375,11 +375,11 @@ class MixinDatabaseMigrations private constructor() {
 
         val MIGRATION_50_51: Migration = object : Migration(50, 51) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS `outputs` (`utxo_id` TEXT NOT NULL, `type` TEXT NOT NULL, `user_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `amount` TEXT NOT NULL, `members` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `memo` TEXT, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`utxo_id`))")
+                database.execSQL("CREATE TABLE IF NOT EXISTS `outputs` (`output_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `asset` TEXT NOT NULL, `amount` TEXT NOT NULL, `mask` TEXT NOT NULL, `keys` TEXT NOT NULL, `members_hash` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `members` TEXT NOT NULL, `extra` TEXT NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `signed_by` TEXT NOT NULL, `signed_at` TEXT NOT NULL, `spent_by` TEXT NOT NULL, `spent_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))")
                 database.execSQL("CREATE TABLE IF NOT EXISTS `tokens` (`asset_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `price_btc` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `change_btc` TEXT NOT NULL, `confirmations` INTEGER NOT NULL, `asset_key` TEXT, `reserve` TEXT, `deposit_entries` TEXT, `withdrawal_memo_possibility` TEXT, PRIMARY KEY(`asset_id`))")
                 database.execSQL("ALTER TABLE `assets_extra` ADD COLUMN `balance` TEXT")
                 database.execSQL("ALTER TABLE `assets_extra` ADD COLUMN `updated_at` TEXT")
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_outputs_asset_id_state_created_at` ON `outputs` (`asset_id`, `state`, `created_at`)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_outputs_asset_id_state_created_at` ON `outputs` (`asset`, `state`, `created_at`)")
                 database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_outputs_transaction_hash_output_index` ON `outputs` (`transaction_hash`, `output_index`)")
             }
         }

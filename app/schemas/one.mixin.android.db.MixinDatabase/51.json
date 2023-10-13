@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "407d0cf6abb2c6c2944ba37013579cda",
+    "identityHash": "2f264abba2a1b9752a6f7fcd84ceae68",
     "entities": [
       {
         "tableName": "users",
@@ -2320,29 +2320,11 @@
       },
       {
         "tableName": "outputs",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`utxo_id` TEXT NOT NULL, `type` TEXT NOT NULL, `user_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `amount` TEXT NOT NULL, `members` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `memo` TEXT, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`utxo_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`output_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `asset` TEXT NOT NULL, `amount` TEXT NOT NULL, `mask` TEXT NOT NULL, `keys` TEXT NOT NULL, `members_hash` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `members` TEXT NOT NULL, `extra` TEXT NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `signed_by` TEXT NOT NULL, `signed_at` TEXT NOT NULL, `spent_by` TEXT NOT NULL, `spent_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))",
         "fields": [
           {
-            "fieldPath": "utxoId",
-            "columnName": "utxo_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "type",
-            "columnName": "type",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "userId",
-            "columnName": "user_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "assetId",
-            "columnName": "asset_id",
+            "fieldPath": "outputId",
+            "columnName": "output_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -2359,14 +2341,32 @@
             "notNull": true
           },
           {
+            "fieldPath": "asset",
+            "columnName": "asset",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "amount",
             "columnName": "amount",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "members",
-            "columnName": "members",
+            "fieldPath": "mask",
+            "columnName": "mask",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "keys",
+            "columnName": "keys",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "membersHash",
+            "columnName": "members_hash",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -2377,10 +2377,16 @@
             "notNull": true
           },
           {
-            "fieldPath": "memo",
-            "columnName": "memo",
+            "fieldPath": "members",
+            "columnName": "members",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
+          },
+          {
+            "fieldPath": "extra",
+            "columnName": "extra",
+            "affinity": "TEXT",
+            "notNull": true
           },
           {
             "fieldPath": "state",
@@ -2399,25 +2405,49 @@
             "columnName": "updated_at",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "signedBy",
+            "columnName": "signed_by",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "signedAt",
+            "columnName": "signed_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "spentBy",
+            "columnName": "spent_by",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "spentAt",
+            "columnName": "spent_at",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "utxo_id"
+            "output_id"
           ]
         },
         "indices": [
           {
-            "name": "index_outputs_asset_id_state_created_at",
+            "name": "index_outputs_asset_state_created_at",
             "unique": false,
             "columnNames": [
-              "asset_id",
+              "asset",
               "state",
               "created_at"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_outputs_asset_id_state_created_at` ON `${TABLE_NAME}` (`asset_id`, `state`, `created_at`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_outputs_asset_state_created_at` ON `${TABLE_NAME}` (`asset`, `state`, `created_at`)"
           },
           {
             "name": "index_outputs_transaction_hash_output_index",
@@ -2534,7 +2564,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '407d0cf6abb2c6c2944ba37013579cda')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2f264abba2a1b9752a6f7fcd84ceae68')"
     ]
   }
 }

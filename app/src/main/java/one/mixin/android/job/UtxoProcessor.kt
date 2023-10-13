@@ -93,30 +93,30 @@ class UtxoProcessor(
             return
         }
         outputs.forEach { output ->
-            val exists = tokenDao.checkExists(output.assetId)
+            val exists = tokenDao.checkExists(output.asset)
             if (exists == null) {
                 // TODO new asset API?
-                val r = assetService.getAssetByIdSuspend(output.assetId)
+                val r = assetService.getAssetByIdSuspend(output.asset)
                 if (!r.isSuccess || r.data == null) return // TODO
                 val token = requireNotNull(r.data).toToken()
                 tokenDao.insertSuspend(token)
             }
-            val assetsExtra = assetsExtraDao.findByAssetId(output.assetId)
+            val assetsExtra = assetsExtraDao.findByAssetId(output.asset)
             mixinDatabase.withTransaction {
                 if (assetsExtra == null) {
-                    assetsExtraDao.insertSuspend(AssetsExtra(output.assetId, false, output.amount, output.createdAt))
+                    assetsExtraDao.insertSuspend(AssetsExtra(output.asset, false, output.amount, output.createdAt))
                 } else {
                     val old = BigDecimal(assetsExtra.balance ?: "0")
                     val new = BigDecimal(output.amount).plus(old)
-                    assetsExtraDao.updateBalanceByAssetId(output.assetId, new.toPlainString(), output.createdAt)
+                    assetsExtraDao.updateBalanceByAssetId(output.asset, new.toPlainString(), output.createdAt)
                 }
-                propertyDao.updateValueByKey(keyProcessUtxoId, output.utxoId)
+                propertyDao.updateValueByKey(keyProcessUtxoId, output.outputId)
             }
         }
 
-        changedAssetIds.addAll(outputs.groupBy { it.assetId }.keys)
+        changedAssetIds.addAll(outputs.groupBy { it.asset }.keys)
         if (outputs.size <= processUtxoLimit) {
-            processUtxo(changedAssetIds, outputs.last().utxoId)
+            processUtxo(changedAssetIds, outputs.last().outputId)
         }
     }
 }

@@ -27,7 +27,7 @@ class SyncOutputJob : BaseJob(
         Timber.d("$TAG sync outputs latestOutputCreatedAt: $latestOutputCreatedAt")
         val userId = requireNotNull(Session.getAccountId())
         val members = buildHashMembers(listOf(userId))
-        val resp = utxoService.getOutputs(members, 1, latestOutputCreatedAt?.getRFC3339Nano(), syncOutputLimit)
+        val resp = utxoService.getOutputs(members, 1, latestOutputCreatedAt?.getRFC3339Nano(), syncOutputLimit, state = "unspent")
         if (!resp.isSuccess || resp.data.isNullOrEmpty()) {
             Timber.d("$TAG getOutputs ${resp.isSuccess}, ${resp.data.isNullOrEmpty()}")
             return
@@ -43,6 +43,6 @@ class SyncOutputJob : BaseJob(
         return ids.sortedBy { it }
             .joinToString("")
             .sha3Sum256()
-            .commonToUtf8String()
+            .joinToString("") { "%02x".format(it) }
     }
 }

@@ -36,6 +36,7 @@ import one.mixin.android.Constants.ALLOW_INTERVAL
 import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.Mixin_URL
+import one.mixin.android.Constants.API.OUTPUT_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_URL
@@ -348,17 +349,26 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideUtxoService(okHttp: OkHttpClient, gson: Gson): UtxoService {
-        val builder = Retrofit.Builder()
-            .baseUrl(URL)
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-            .addCallAdapterFactory(LiveDataCallAdapterFactory())
+    fun provideUtxoService(httpLoggingInterceptor: HttpLoggingInterceptor?): UtxoService {
+        val builder = OkHttpClient.Builder()
+        builder.connectTimeout(10, TimeUnit.SECONDS)
+        builder.writeTimeout(10, TimeUnit.SECONDS)
+        builder.readTimeout(10, TimeUnit.SECONDS)
+        builder.dns(DNS)
+        val client = builder.apply {
+            httpLoggingInterceptor?.let { interceptor ->
+                addNetworkInterceptor(interceptor)
+            }
+        }.build()
+        val retrofit = Retrofit.Builder()
+            .baseUrl(OUTPUT_URL)
+            .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .client(okHttp)
-        val retrofit = builder.build()
-        return retrofit.create(UtxoService::class.java) as UtxoService
+            .client(client)
+            .build()
+        return retrofit.create(UtxoService::class.java)
     }
+
 
     @Singleton
     @Provides
