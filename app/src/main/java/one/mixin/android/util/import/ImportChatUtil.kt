@@ -5,6 +5,12 @@ import android.net.Uri
 import androidx.collection.ArrayMap
 import androidx.collection.ArraySet
 import androidx.collection.arrayMapOf
+import java.io.BufferedReader
+import java.io.File
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.util.UUID
+import java.util.regex.Pattern
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.getFileName
@@ -14,12 +20,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.TranscriptMessage
 import timber.log.Timber
-import java.io.BufferedReader
-import java.io.File
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.util.UUID
-import java.util.regex.Pattern
 
 class ImportChatUtil {
 

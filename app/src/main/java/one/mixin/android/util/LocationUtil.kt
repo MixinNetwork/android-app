@@ -1,12 +1,12 @@
 package one.mixin.android.util
 
 import com.google.android.gms.maps.model.LatLng
-import one.mixin.android.R
 import java.lang.Math.toRadians
 import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
+import one.mixin.android.R
 
 fun calculationByDistance(StartP: LatLng, EndP: LatLng): Double {
     val radius = 6371 // radius of earth in Km

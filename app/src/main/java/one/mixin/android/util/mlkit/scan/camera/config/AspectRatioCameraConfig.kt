@@ -6,8 +6,8 @@ import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
-import timber.log.Timber
 import kotlin.math.abs
+import timber.log.Timber
 
 class AspectRatioCameraConfig(context: Context) : CameraConfig() {
     private val aspectRatio: Int

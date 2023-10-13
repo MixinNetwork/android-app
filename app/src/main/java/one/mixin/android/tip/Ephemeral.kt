@@ -1,6 +1,7 @@
 package one.mixin.android.tip
 
 import android.content.Context
+import javax.inject.Inject
 import one.mixin.android.Constants
 import one.mixin.android.api.request.TipRequest
 import one.mixin.android.api.service.TipService
@@ -18,7 +19,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.exception.TipNullException
 import timber.log.Timber
-import javax.inject.Inject
 
 class Ephemeral @Inject internal constructor(private val tipService: TipService) {
 

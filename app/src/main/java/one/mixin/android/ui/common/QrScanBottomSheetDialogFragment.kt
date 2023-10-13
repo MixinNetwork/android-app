@@ -12,6 +12,7 @@ import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import java.util.concurrent.TimeUnit
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
@@ -26,7 +27,6 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
-import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {

@@ -1,15 +1,6 @@
 package one.mixin.android.ui.transfer
 
 import UUIDUtils
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
-import one.mixin.android.RxBus
-import one.mixin.android.api.ChecksumException
-import one.mixin.android.event.SpeedEvent
-import one.mixin.android.extension.base64Encode
-import one.mixin.android.ui.transfer.vo.TransferCommand
-import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.EOFException
 import java.io.File
@@ -24,6 +15,15 @@ import javax.crypto.Mac
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.text.Charsets.UTF_8
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
+import one.mixin.android.RxBus
+import one.mixin.android.api.ChecksumException
+import one.mixin.android.event.SpeedEvent
+import one.mixin.android.extension.base64Encode
+import one.mixin.android.ui.transfer.vo.TransferCommand
+import timber.log.Timber
 
 /*
  * Command packet format:

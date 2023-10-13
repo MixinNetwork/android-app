@@ -5,13 +5,13 @@ import android.graphics.Paint
 import android.view.View
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
-import one.mixin.android.extension.dp
 import java.util.ArrayList
 import java.util.Random
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
+import one.mixin.android.extension.dp
 
 class SnowflakesEffect {
     private val particlePaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)

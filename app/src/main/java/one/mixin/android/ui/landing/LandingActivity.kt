@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -14,7 +15,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_CHANGE_PHONE_ACCOUNT
 import one.mixin.android.util.viewBinding
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class LandingActivity : BaseActivity() {
