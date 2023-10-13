@@ -6,6 +6,8 @@ import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_BACKUP
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST
 import one.mixin.android.Constants.Account.PREF_BACKUP
+import one.mixin.android.Constants.Account.PREF_CLEANUP_QUOTE_CONTENT
+import one.mixin.android.Constants.Account.PREF_CLEANUP_THUMB
 import one.mixin.android.Constants.Account.PREF_DUPLICATE_TRANSFER
 import one.mixin.android.Constants.Account.PREF_STRANGER_TRANSFER
 import one.mixin.android.Constants.BackUp.BACKUP_LAST_TIME
@@ -46,6 +48,20 @@ object PropertyHelper {
     suspend fun checkTranscriptAttachmentUpdated(action: () -> Unit) {
         val value = findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST, 0L)
         if (value > 0) {
+            action.invoke()
+        }
+    }
+
+    suspend fun checkCleanupThumb(action: () -> Unit) {
+        val value = findValueByKey(PREF_CLEANUP_THUMB, true)
+        if (value) {
+            action.invoke()
+        }
+    }
+
+    suspend fun checkCleanupQuoteContent(action: () -> Unit) {
+        val value = findValueByKey(PREF_CLEANUP_QUOTE_CONTENT, true)
+        if (value) {
             action.invoke()
         }
     }
@@ -95,6 +111,11 @@ object PropertyHelper {
 
     suspend fun updateKeyValue(key: String, value: Boolean) {
         updateKeyValue(key, value.toString())
+    }
+
+    suspend fun deleteKeyValue(key: String) {
+        val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
+        propertyDao.deletePropertyByKey(key)
     }
 
     suspend fun <T> findValueByKey(key: String, default: T): T {

@@ -7,8 +7,8 @@ import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.extension.decodeBase64
-import one.mixin.android.extension.getParcelableExtra
-import one.mixin.android.extension.getSerializableExtra
+import one.mixin.android.extension.getParcelableExtraCompat
+import one.mixin.android.extension.getSerializableExtraCompat
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.ui.call.CallActivity
@@ -55,8 +55,8 @@ class VoiceCallService : CallService() {
     }
 
     private fun handleCallIncoming(intent: Intent) {
-        val blazeMessageData = getSerializableExtra(intent, EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
-        val user = getParcelableExtra(intent, ARGS_USER, User::class.java)
+        val blazeMessageData = intent.getSerializableExtraCompat(EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
+        val user = intent.getParcelableExtraCompat(ARGS_USER, User::class.java)
 
         if (user?.userId == callState.user?.userId) {
             peerConnectionClient.createAnswer(
@@ -71,7 +71,7 @@ class VoiceCallService : CallService() {
 
         if (callState.isBusy()) {
             val category = MessageCategory.WEBRTC_AUDIO_BUSY.name
-            val bmd = getSerializableExtra(intent, EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
+            val bmd = intent.getSerializableExtraCompat(EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
             val m = createCallMessage(
                 UUID.randomUUID().toString(),
                 bmd.conversationId,
@@ -132,7 +132,7 @@ class VoiceCallService : CallService() {
             val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
             require(cid != null)
             callState.conversationId = cid
-            val user = getParcelableExtra(intent, ARGS_USER, User::class.java)
+            val user = intent.getParcelableExtraCompat(ARGS_USER, User::class.java)
             callState.user = user
             updateForegroundNotification()
             callState.isOffer = true
@@ -164,10 +164,9 @@ class VoiceCallService : CallService() {
             audioManager.stop()
         }
         if (callState.isOffer) {
-            val bmd = getSerializableExtra(intent, EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
-            val blazeMessageData = bmd as BlazeMessageData
-            this.blazeMessageData = blazeMessageData
-            peerConnectionClient.setAnswerSdp(getRemoteSdp(Base64.decode(blazeMessageData.data)))
+            val bmd = intent.getSerializableExtraCompat(EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
+            this.blazeMessageData = bmd
+            peerConnectionClient.setAnswerSdp(getRemoteSdp(Base64.decode(bmd.data)))
         } else {
             getTurnServer { turns ->
                 val bmd = this.blazeMessageData
@@ -187,7 +186,7 @@ class VoiceCallService : CallService() {
     }
 
     private fun handleCandidate(intent: Intent) {
-        val blazeMessageData = getSerializableExtra(intent, EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
+        val blazeMessageData = intent.getSerializableExtraCompat(EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
         val json = String(Base64.decode(blazeMessageData.data))
         val ices = gson.fromJson(json, Array<IceCandidate>::class.java)
         ices.forEach {

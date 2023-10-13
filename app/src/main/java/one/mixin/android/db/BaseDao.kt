@@ -16,6 +16,12 @@ interface BaseDao<T> {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg obj: T)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertIgnore(vararg obj: T)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertIgnoreReturn(obj: T): Long
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertReturn(obj: T): Long
 
@@ -35,7 +41,10 @@ interface BaseDao<T> {
     fun deleteList(obj: List<T>)
 
     @Upsert
-    suspend fun upsert(entity: T)
+    fun upsert(entity: T)
+
+    @Upsert
+    suspend fun upsertSuspend(entity: T)
 
     @Upsert
     suspend fun upsertList(obj: List<T>)

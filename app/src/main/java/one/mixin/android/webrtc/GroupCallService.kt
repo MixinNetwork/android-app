@@ -23,7 +23,7 @@ import one.mixin.android.event.SenderKeyChange
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.getDeviceId
-import one.mixin.android.extension.getSerializableExtra
+import one.mixin.android.extension.getSerializableExtraCompat
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.nowInUtc
@@ -120,7 +120,7 @@ class GroupCallService : CallService() {
     }
 
     private fun handleReceivePublish(intent: Intent) {
-        val blazeMessageData = getSerializableExtra(intent, EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
+        val blazeMessageData = intent.getSerializableExtraCompat(EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
         val cid = blazeMessageData.conversationId
         val userId = blazeMessageData.userId
         callState.addUser(cid, userId)

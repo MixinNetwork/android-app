@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_upper_round"
+    android:gravity="center_horizontal"
+    tools:ignore="UseCompoundDrawables">
+    
+    <ImageView
+        android:layout_width="76dp"
+        android:layout_height="76dp"
+        android:layout_marginTop="70dp"
+        android:src="@drawable/ic_price_expired"
+        android:contentDescription="@string/Price_Expired"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:textSize="18sp"
+        android:textColor="?attr/text_primary"
+        android:text="@string/Price_Expired"/>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="24dp"
+        android:padding="24dp"
+        android:background="@drawable/bg_round_window_8dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/price_title"
+                android:text="@string/Price"
+                android:textColor="?attr/text_minor"
+                android:layout_width="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/asset_price_tv"
+                android:textColor="?attr/text_minor"
+                tools:text="≈ 1 USD"
+                android:layout_alignParentEnd="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_marginTop="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="@string/Payment_Receive"
+                android:textColor="?attr/text_minor"
+                android:layout_width="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/asset_amount_tv"
+                android:textColor="?attr/text_minor"
+                tools:text="100 USDT"
+                android:layout_alignParentEnd="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_marginTop="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="@string/Total_Amount"
+                android:textColor="?attr/text_minor"
+                android:layout_width="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/pay_amount"
+                android:textColor="?attr/text_minor"
+                tools:text="109 USD"
+                android:layout_alignParentEnd="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <Button
+        style="@style/AppTheme.MaterialButton"
+        android:id="@+id/continue_tv"
+        android:layout_width="152dp"
+        android:layout_height="42dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/Use_New_Price"
+        android:textColor="@color/white"
+        android:layout_marginTop="32dp"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/cancel_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:padding="12dp"
+        android:layout_marginBottom="30dp"
+        android:text="@string/Cancel"
+        android:textColor="@color/colorBlue"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:textSize="14sp" />
+</LinearLayout>

@@ -88,6 +88,8 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun assetItems(): LiveData<List<AssetItem>> = assetRepository.assetItems()
 
+    fun assetItems(assetIds: List<String>): LiveData<List<AssetItem>> = assetRepository.assetItems(assetIds)
+
     fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
 
     suspend fun transfer(
@@ -131,7 +133,7 @@ class BottomSheetViewModel @Inject internal constructor(
             amount,
             pinCipher.encryptPin(
                 code,
-                TipBody.forWithdrawalCreate(addressId ?: generateAddressId(requireNotNull(Session.getAccountId()), assetId ?: "", destination ?: "", tag), amount, fee, traceId, memo),
+                TipBody.forWithdrawalCreate(if (addressId.isNullOrBlank()) generateAddressId(requireNotNull(Session.getAccountId()), assetId ?: "", destination ?: "", tag) else addressId, amount, fee, traceId, memo),
             ),
             traceId,
             memo,

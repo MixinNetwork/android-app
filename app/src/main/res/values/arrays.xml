@@ -16,12 +16,15 @@
         <item>@drawable/ic_flag_gbp</item>
         <item>@drawable/ic_flag_hkd</item>
         <item>@drawable/ic_flag_idr</item>
+        <item>@drawable/ic_flag_inr</item>
         <item>@drawable/ic_flag_jpy</item>
         <item>@drawable/ic_flag_krw</item>
         <item>@drawable/ic_flag_myr</item>
         <item>@drawable/ic_flag_php</item>
         <item>@drawable/ic_flag_sgd</item>
+        <item>@drawable/ic_flag_try</item>
         <item>@drawable/ic_flag_twd</item>
+        <item>@drawable/ic_flag_vnd</item>
         <item>@drawable/ic_flag_usd</item>
     </integer-array>
     <string-array name="currency_names">
@@ -33,12 +36,15 @@
         <item>GBP</item>
         <item>HKD</item>
         <item>IDR</item>
+        <item>INR</item>
         <item>JPY</item>
         <item>KRW</item>
         <item>MYR</item>
         <item>PHP</item>
         <item>SGD</item>
+        <item>TRY</item>
         <item>TWD</item>
+        <item>VND</item>
         <item>USD</item>
     </string-array>
     <string-array name="currency_symbols">
@@ -50,12 +56,15 @@
         <item>£</item>
         <item>HK$</item>
         <item>Rp</item>
+        <item>₹</item>
         <item>¥</item>
         <item>₩</item>
         <item>RM</item>
         <item>₱</item>
         <item>S$</item>
+        <item>₺</item>
         <item>NT$</item>
+        <item>₫</item>
         <item>$</item>
     </string-array>
 

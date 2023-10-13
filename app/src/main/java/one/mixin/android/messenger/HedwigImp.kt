@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.pending.PendingDatabase
@@ -15,12 +16,11 @@ import one.mixin.android.job.DecryptCallMessage
 import one.mixin.android.job.DecryptMessage
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshUserJob
-import one.mixin.android.job.pendingMessageStatusMap
+import one.mixin.android.job.pendingMessageStatusLruCache
 import one.mixin.android.session.Session
 import one.mixin.android.util.FLOOD_THREAD
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.PENDING_DB_THREAD
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.Conversation
@@ -160,7 +160,7 @@ class HedwigImp(
                     messageDecrypt.onRun(data)
                 }
                 pendingDatabase.deleteFloodMessage(message)
-                pendingMessageStatusMap.remove(data.messageId)
+                pendingMessageStatusLruCache.remove(data.messageId)
             }
             processFloodMessage()
         } else {
@@ -199,7 +199,7 @@ class HedwigImp(
                     pendingDatabase.deletePendingMessageByIds(messages.map { it.messageId })
                     conversationExtDao.increment(conversationId, messages.size)
                     messages.filter { message ->
-                        !message.isMine() && message.status != MessageStatus.READ.name && (pendingMessageStatusMap[message.messageId] != MessageStatus.READ.name)
+                        !message.isMine() && message.status != MessageStatus.READ.name && (pendingMessageStatusLruCache[message.messageId] != MessageStatus.READ.name)
                     }.map { message ->
                         RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name)
                     }.let { remoteMessageStatus ->
@@ -209,7 +209,7 @@ class HedwigImp(
                         conversationDao.updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
                     }
                     remoteMessageStatusDao.updateConversationUnseen(conversationId)
-                    InvalidateFlow.emit(conversationId)
+                    MessageFlow.insert(conversationId, messages.map { it.messageId })
                 }
                 if (list.size == 100) {
                     runPendingJob()
@@ -244,7 +244,7 @@ class HedwigImp(
                     } else if (conversationData.category == ConversationCategory.GROUP.name) {
                         jobManager.addJobInBackground(RefreshUserJob(listOf(conversationData.creatorId)))
                     }
-                    conversationDao.insert(
+                    conversationDao.upsert(
                         ConversationBuilder(conversationData.conversationId, conversationData.createdAt, status)
                             .setOwnerId(ownerId)
                             .setCategory(conversationData.category)

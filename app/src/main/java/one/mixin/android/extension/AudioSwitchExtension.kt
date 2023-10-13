@@ -17,15 +17,21 @@ fun AudioDevice?.isSpeakerOrEarpiece(): Boolean =
     this is AudioDevice.Speakerphone ||
         this is AudioDevice.Earpiece
 
-fun AudioSwitch.selectSpeakerphone() =
+fun AudioSwitch.selectSpeakerphone() = try {
     this.availableAudioDevices
         .find { it is AudioDevice.Speakerphone }
         ?.let { this.selectDevice(it) }
+} catch (e: ConcurrentModificationException) {
+    Timber.w("$TAG_AUDIO AudioSwitch call selectSpeakerphone() meet $e")
+}
 
-fun AudioSwitch.selectEarpiece() =
+fun AudioSwitch.selectEarpiece() = try {
     this.availableAudioDevices
         .find { it is AudioDevice.Earpiece }
         ?.let { this.selectDevice(it) }
+} catch (e: ConcurrentModificationException) {
+    Timber.w("$TAG_AUDIO AudioSwitch call selectEarpiece() meet $e")
+}
 
 fun AudioSwitch.safeActivate() = try {
     activate()

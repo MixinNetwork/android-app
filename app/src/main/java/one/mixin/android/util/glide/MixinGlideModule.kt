@@ -7,7 +7,7 @@ import com.bumptech.glide.Registry
 import com.bumptech.glide.annotation.GlideModule
 import com.bumptech.glide.module.AppGlideModule
 import com.caverock.androidsvg.SVG
-import one.mixin.android.widget.RLottieDrawable
+import one.mixin.android.widget.lottie.RLottieDrawable
 import java.io.InputStream
 
 @GlideModule

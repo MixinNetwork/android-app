@@ -6,9 +6,8 @@ import android.os.Build
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2KtResult
 import com.lambdapioneer.argon2kt.Argon2Mode
-import io.jsonwebtoken.EdDSAPrivateKey
+import ed25519.Ed25519
 import okhttp3.tls.HeldCertificate
-import okio.ByteString
 import okio.ByteString.Companion.toByteString
 import one.mixin.android.extension.base64Encode
 import one.mixin.eddsa.Ed25519Sign
@@ -34,8 +33,11 @@ import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.and
 import kotlin.experimental.or
 
-private val secureRandom: SecureRandom = SecureRandom()
+val secureRandom: SecureRandom = SecureRandom()
 private const val GCM_IV_LENGTH = 12
+
+// https://github.com/google/tink/issues/403
+fun useGoEd() = Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1
 
 fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
     val kpg = KeyPairGenerator.getInstance("RSA")
@@ -43,8 +45,24 @@ fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
     return kpg.genKeyPair()
 }
 
-fun generateEd25519KeyPair(): one.mixin.eddsa.KeyPair {
-    return one.mixin.eddsa.KeyPair.newKeyPair()
+fun generateEd25519KeyPair(): EdKeyPair {
+    return if (useGoEd()) {
+        val priv = Ed25519.generateKey()
+        EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
+    } else {
+        val keyPair = one.mixin.eddsa.KeyPair.newKeyPair(true)
+        EdKeyPair(keyPair.publicKey.toByteArray(), keyPair.privateKey.toByteArray())
+    }
+}
+
+fun newKeyPairFromSeed(seed: ByteArray): EdKeyPair {
+    return if (useGoEd()) {
+        val priv = Ed25519.newKeyFromSeed(seed)
+        EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
+    } else {
+        val keyPair = one.mixin.eddsa.KeyPair.newKeyPairFromSeed(seed.toByteString(), checkOnCurve = true)
+        EdKeyPair(keyPair.publicKey.toByteArray(), keyPair.privateKey.toByteArray())
+    }
 }
 
 fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
@@ -52,13 +70,13 @@ fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
 }
 
 fun initFromSeedAndSign(seed: ByteArray, signTarget: ByteArray): ByteArray {
-    val keyPair = one.mixin.eddsa.KeyPair.newKeyPairFromSeed(seed.toByteString())
-    return signWithSk(EdDSAPrivateKey(keyPair.privateKey), signTarget)
-}
-
-private fun signWithSk(privateKey: EdDSAPrivateKey, signTarget: ByteArray): ByteArray {
-    val signer = Ed25519Sign(privateKey.privateKey)
-    return signer.sign(signTarget.toByteString()).toByteArray()
+    return if (useGoEd()) {
+        Ed25519.sign(signTarget, seed)
+    } else {
+        val keyPair = newKeyPairFromSeed(seed)
+        val signer = Ed25519Sign(keyPair.privateKey.toByteString(), checkOnCurve = true)
+        signer.sign(signTarget.toByteString(), checkOnCurve = true).toByteArray()
+    }
 }
 
 fun privateKeyToCurve25519(privateKey: ByteArray): ByteArray {
@@ -71,9 +89,13 @@ fun privateKeyToCurve25519(privateKey: ByteArray): ByteArray {
 }
 
 fun publicKeyToCurve25519(publicKey: ByteArray): ByteArray {
-    val p = publicKey.map { it.toInt().toByte() }.toByteArray()
-    val x = edwardsToMontgomeryX(Field25519.expand(p))
-    return Field25519.contract(x)
+    return if (useGoEd()) {
+        Ed25519.publicKeyToCurve25519(publicKey)
+    } else {
+        val p = publicKey.map { it.toInt().toByte() }.toByteArray()
+        val x = edwardsToMontgomeryX(Field25519.expand(p))
+        Field25519.contract(x)
+    }
 }
 private fun edwardsToMontgomeryX(y: LongArray): LongArray {
     val oneMinusY = LongArray(Field25519.LIMB_CNT)
@@ -88,8 +110,6 @@ private fun edwardsToMontgomeryX(y: LongArray): LongArray {
     Field25519.mult(outX, outX, oneMinusY)
     return outX
 }
-
-fun seedFromPrivateKey(privateKey: ByteString): ByteArray = privateKey.substring(0, 32).toByteArray()
 
 fun ByteArray.sha3Sum256(): ByteArray {
     return digestKeccak(KeccakParameter.SHA3_256)

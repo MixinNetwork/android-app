@@ -11,7 +11,7 @@
     <string name="a_transcript">メッセージ履歴</string>
     <string name="a_video">動画</string>
     <string name="About">Mixinについて</string>
-    <string name="about_version">バージョン%1$s</string>
+    <string name="about_version">バージョン %1$s (%2$d)</string>
     <string name="Accept">確認</string>
     <string name="Access_denied">アクセスが拒否されました</string>
     <string name="access_your_bots_list">あなたのミニアプリ一覧へのアクセス</string>
@@ -170,7 +170,6 @@
     </plurals>
     <string name="chat_delete_url">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
     <string name="chat_group_add">%1$sが%2$sを追加しました</string>
-    <string name="chat_group_call_cancel">%1$sがグループ通話をキャンセルしました</string>
     <string name="chat_group_call_decline">%1$sグループ通話が終了しました</string>
     <string name="chat_group_call_end">グループ通話が終了しました </string>
     <string name="chat_group_call_invite">%1$sからグループ通話の招待がきています</string>
@@ -846,7 +845,7 @@
     <string name="share_message_description">%1$sから%2$sを送信しますか？</string>
     <string name="share_message_description_empty">%1$sを送信しますか？</string>
     <string name="Share_QR_Code">QRコードを共有</string>
-    <string name="share_to">共有する</string>
+    <string name="share_to">共有する %1$s</string>
     <string name="Shared_Media">共有されたメディア</string>
     <string name="Show">表示</string>
     <string name="Show_in_chat">チャット内で表示</string>
@@ -1018,14 +1017,12 @@
     <string name="When_roaming">ローミング時</string>
     <string name="withdraw_Address">アドレス</string>
     <string name="Withdrawal">出金</string>
-    <string name="withdrawal_addr_memo">宛先タグやID番号やメモがない場合は、「メモなし」に設定することができます。</string>
+    <string name="withdrawal_addr_has_memo_or_tag">宛先タグやID番号やメモがない場合は、「%1$s」に設定することができます。</string>
     <string name="withdrawal_addr_new">新しい%1$sアドレス</string>
-    <string name="withdrawal_addr_no_memo">宛先タグ、ID番号、またはメモを入力する必要がある場合は、「メモを追加」に設定することができます。</string>
-    <string name="withdrawal_addr_no_tag">宛先タグ、ID番号、またはメモを入力する必要がある場合は、「タグを追加」に設定することができます。</string>
+    <string name="withdrawal_addr_no_memo_or_tag">宛先タグ、ID番号、またはメモを入力する必要がある場合は、「%1$s」に設定することができます。</string>
     <string name="withdrawal_addr_pin_add">PINコードを入力してアドレスを保存</string>
     <string name="withdrawal_addr_pin_delete">PINコードを入力してアドレスを削除</string>
     <string name="withdrawal_addr_pin_modify">PINコードを入力してアドレスを修正</string>
-    <string name="withdrawal_addr_tag">宛先タグまたはID番号またはメモを入力して下さい。それ以外の場合「タグなし」に設定できます。</string>
     <string name="withdrawal_address_tips">新しいアドレスへの最初の出金は必ず少額で行ってください。アドレスが間違っていると資産は失われます。</string>
     <string name="withdrawal_label">ラベル (例. 取引所, ウォレットなど)</string>
     <string name="withdrawal_memo">メモ</string>

@@ -1,6 +1,5 @@
 package one.mixin.android.ui.forward
 
-import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity.RESULT_OK
 import android.app.Dialog
@@ -8,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -41,6 +41,9 @@ import one.mixin.android.event.AppAuthEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.getExtensionName
+import one.mixin.android.extension.getParcelableArrayListCompat
+import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.notNullWithElse
@@ -82,6 +85,7 @@ import one.mixin.android.vo.copy
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isContactConversation
 import one.mixin.android.vo.isGroupConversation
+import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.toCategory
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.SelectItem
@@ -92,6 +96,7 @@ import one.mixin.android.websocket.DataMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.VideoMessagePayload
+import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import java.util.UUID
@@ -136,15 +141,15 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     }
 
     private val messages: ArrayList<ForwardMessage> by lazy {
-        requireNotNull(requireArguments().getParcelableArrayList(ARGS_MESSAGES))
+        requireNotNull(requireArguments().getParcelableArrayListCompat(ARGS_MESSAGES, ForwardMessage::class.java))
     }
 
     private val combineMessages: ArrayList<TranscriptMessage> by lazy {
-        requireNotNull(requireArguments().getParcelableArrayList(ARGS_COMBINE_MESSAGES))
+        requireNotNull(requireArguments().getParcelableArrayListCompat(ARGS_COMBINE_MESSAGES, TranscriptMessage::class.java))
     }
 
     private val action: ForwardAction by lazy {
-        requireNotNull(requireArguments().getParcelable(ARGS_ACTION))
+        requireNotNull(requireArguments().getParcelableCompat(ARGS_ACTION, ForwardAction::class.java))
     }
 
     private val sender = Session.getAccount()?.toUser()
@@ -358,7 +363,12 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 } else {
                     transcripts[0].transcriptId
                 }
-                chatViewModel.sendTranscriptMessage(conversationId, messageId, sender, transcripts, encryptCategory)
+                try {
+                    chatViewModel.sendTranscriptMessage(conversationId, messageId, sender, transcripts, encryptCategory)
+                } catch (e: Exception) {
+                    toast(R.string.Data_error)
+                    Timber.e(e)
+                }
             }
         }
         val result = Intent().apply {
@@ -369,22 +379,23 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     }
 
     private fun checkPermission(afterGranted: () -> Job) {
-        RxPermissions(requireActivity())
-            .request(
-                WRITE_EXTERNAL_STORAGE,
-                READ_EXTERNAL_STORAGE,
-            )
-            .autoDispose(stopScope)
-            .subscribe(
-                { granted ->
-                    if (granted) {
-                        afterGranted.invoke()
-                    } else {
-                        requireContext().openPermissionSetting()
-                    }
-                },
-                {},
-            )
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            RxPermissions(requireActivity())
+                .request(WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            afterGranted.invoke()
+                        } else {
+                            requireContext().openPermissionSetting()
+                        }
+                    },
+                    {},
+                )
+        } else {
+            afterGranted.invoke()
+        }
     }
 
     private suspend fun sendMessageInternal(item: SelectItem): ArrayList<String>? {
@@ -525,7 +536,12 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         m.messageId?.let { messageId ->
                             val id = UUID.randomUUID().toString()
                             val list = chatViewModel.getTranscripts(messageId, id)
-                            chatViewModel.sendTranscriptMessage(conversationId, id, sender, list, encryptCategory)
+                            try {
+                                chatViewModel.sendTranscriptMessage(conversationId, id, sender, list, encryptCategory)
+                            } catch (e: Exception) {
+                                toast(R.string.Data_error)
+                                Timber.e(e)
+                            }
                         }
                     }
                     else -> {
@@ -563,7 +579,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             }
             val category = getCategory.invoke()
             val message = chatViewModel.findMessageById(messageId)
-            if (message == null || category != message.category) {
+            if (message == null || category != message.category || (!message.isPlain() && (message.mediaKey == null || message.mediaDigest == null))) {
                 fallbackAction.invoke()
                 return@withContext
             }
@@ -780,7 +796,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     }
 
     private fun callbackEditor(data: Intent?) {
-        val uri = data?.getParcelableExtra<Uri>(ImageEditorActivity.ARGS_EDITOR_RESULT)
+        val uri = data?.getParcelableExtraCompat(ImageEditorActivity.ARGS_EDITOR_RESULT, Uri::class.java)
         if (uri != null) {
             lifecycleScope.launch {
                 sendImageByUri(uri)

@@ -12,4 +12,4 @@ Mixin Android messenger, crypto wallet and light node to the Mixin Network
 
  ### Code style
 
-This project uses [ktlint](https://github.com/shyiko/ktlint)
+This project uses [ktlint](https://github.com/pinterest/ktlint)

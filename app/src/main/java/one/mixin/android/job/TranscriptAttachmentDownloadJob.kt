@@ -12,6 +12,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.AttachmentResponse
 import one.mixin.android.crypto.attachment.AttachmentCipherInputStream
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.getExtensionName
@@ -19,7 +20,6 @@ import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.TranscriptMessage
@@ -103,7 +103,7 @@ class TranscriptAttachmentDownloadJob(
         if (transcriptMessageDao.hasUploadedAttachment(transcriptMessage.transcriptId) == 0) {
             messageDao.findMessageById(transcriptMessage.transcriptId)?.let {
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, transcriptMessage.transcriptId)
-                InvalidateFlow.emit(it.conversationId)
+                MessageFlow.update(it.conversationId, it.messageId)
             }
         }
     }
@@ -147,7 +147,7 @@ class TranscriptAttachmentDownloadJob(
             sink.close()
             when {
                 transcriptMessage.type.endsWith("_IMAGE") -> {
-                    val attachmentCipherInputStream = if (!isNullOrEmpty(transcriptMessage.mediaKey) && !isNullOrEmpty(transcriptMessage.mediaDigest)) {
+                    val attachmentCipherInputStream = if (!transcriptMessage.mediaKey.isNullOrEmpty() && !transcriptMessage.mediaDigest.isNullOrEmpty()) {
                         AttachmentCipherInputStream.createForAttachment(destination, 0, transcriptMessage.mediaKey, transcriptMessage.mediaDigest)
                     } else {
                         FileInputStream(destination)
@@ -199,7 +199,7 @@ class TranscriptAttachmentDownloadJob(
                     )
                 }
                 transcriptMessage.type.endsWith("_DATA") -> {
-                    val attachmentCipherInputStream = if (!isNullOrEmpty(transcriptMessage.mediaKey) && !isNullOrEmpty(transcriptMessage.mediaDigest)) {
+                    val attachmentCipherInputStream = if (!transcriptMessage.mediaKey.isNullOrEmpty() && !transcriptMessage.mediaDigest.isNullOrEmpty()) {
                         AttachmentCipherInputStream.createForAttachment(destination, 0, transcriptMessage.mediaKey, transcriptMessage.mediaDigest)
                     } else {
                         FileInputStream(destination)
@@ -220,7 +220,7 @@ class TranscriptAttachmentDownloadJob(
                     )
                 }
                 transcriptMessage.type.endsWith("_VIDEO") -> {
-                    val attachmentCipherInputStream = if (!isNullOrEmpty(transcriptMessage.mediaKey) && !isNullOrEmpty(transcriptMessage.mediaDigest)) {
+                    val attachmentCipherInputStream = if (!transcriptMessage.mediaKey.isNullOrEmpty() && !transcriptMessage.mediaDigest.isNullOrEmpty()) {
                         AttachmentCipherInputStream.createForAttachment(destination, 0, transcriptMessage.mediaKey, transcriptMessage.mediaDigest)
                     } else {
                         FileInputStream(destination)
@@ -243,7 +243,7 @@ class TranscriptAttachmentDownloadJob(
                     )
                 }
                 transcriptMessage.type.endsWith("_AUDIO") -> {
-                    val attachmentCipherInputStream = if (!isNullOrEmpty(transcriptMessage.mediaKey) && !isNullOrEmpty(transcriptMessage.mediaDigest)) {
+                    val attachmentCipherInputStream = if (!transcriptMessage.mediaKey.isNullOrEmpty() && !transcriptMessage.mediaDigest.isNullOrEmpty()) {
                         AttachmentCipherInputStream.createForAttachment(destination, 0, transcriptMessage.mediaKey, transcriptMessage.mediaDigest)
                     } else {
                         FileInputStream(destination)

@@ -1,5 +1,6 @@
 package one.mixin.android.extension
 
+import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.app.Activity
@@ -14,8 +15,10 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import android.view.ViewAnimationUtils
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.Interpolator
 import android.view.inputmethod.InputMethodManager
@@ -31,6 +34,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.ViewPropertyAnimatorListener
 import androidx.core.view.drawToBitmap
 import androidx.core.view.updateLayoutParams
+import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import com.facebook.rebound.SimpleSpringListener
@@ -41,6 +45,7 @@ import one.mixin.android.util.reportException
 import timber.log.Timber
 import java.io.IOException
 import java.lang.reflect.Field
+import kotlin.math.hypot
 
 const val ANIMATION_DURATION_SHORT = 260L
 const val ANIMATION_DURATION_SHORTEST = 120L
@@ -223,6 +228,17 @@ fun View.roundTopOrBottom(radius: Float, top: Boolean, bottom: Boolean) {
     this.clipToOutline = true
 }
 
+fun View.circularReveal() {
+    val centerX = width / 2
+    val centerY: Int = height / 2
+    val startRadius = 0f
+    val endRadius = hypot(width / 2f, height / 2f)
+
+    val circularReveal: Animator =
+        ViewAnimationUtils.createCircularReveal(this, centerX, centerY, startRadius, endRadius)
+    circularReveal.start()
+}
+
 fun EditText.showCursor() {
     this.requestFocus()
     this.isCursorVisible = true
@@ -245,6 +261,17 @@ fun View.navigateUp() {
         // Workaround with https://issuetracker.google.com/issues/128881182
     } catch (e: IllegalStateException) {
         Timber.w("View $this does not have a NavController set")
+    }
+}
+
+fun NavController.safeNavigateUp(): Boolean {
+    return try {
+        navigateUp()
+    } catch (e: IllegalArgumentException) {
+        // Workaround with https://issuetracker.google.com/issues/128881182
+        false
+    } catch (e: IllegalStateException) {
+        false
     }
 }
 
@@ -335,6 +362,27 @@ fun PopupMenu.showIcon() {
         menuHelper.javaClass.getDeclaredMethod("setForceShowIcon", *argTypes)
             .invoke(menuHelper, true)
     } catch (e: Exception) {
+    }
+}
+
+fun WindowManager.safeAddView(view: View?, params: ViewGroup.LayoutParams) {
+    if (view == null) return
+
+    try {
+        if (view.windowToken != null || view.parent != null) {
+            removeView(view)
+        }
+        addView(view, params)
+    } catch (e: Exception) {
+        Timber.e("add/remove view from windowManager meet ${e.stackTraceToString()}")
+    }
+}
+
+fun WindowManager.safeRemoveView(view: View) {
+    try {
+        removeView(view)
+    } catch (e: Exception) {
+        Timber.e("remove view from windowManager meet ${e.stackTraceToString()}")
     }
 }
 

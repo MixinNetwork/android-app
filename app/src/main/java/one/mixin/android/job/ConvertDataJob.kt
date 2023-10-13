@@ -3,13 +3,13 @@ package one.mixin.android.job
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.MixinApplication
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createDocumentTemp
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageStatus
@@ -26,13 +26,13 @@ class ConvertDataJob(
 
     override fun onAdded() {
         appDatabase.insertMessage(message)
-        InvalidateFlow.emit(message.conversationId)
+        MessageFlow.insert(message.conversationId, message.messageId)
     }
 
     override fun cancel() {
         isCancelled = true
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-        InvalidateFlow.emit(message.conversationId)
+        MessageFlow.update(message.conversationId, message.messageId)
         removeJob()
     }
 
@@ -50,7 +50,7 @@ class ConvertDataJob(
             val file = MixinApplication.appContext.getDocumentPath().createDocumentTemp(message.conversationId, message.messageId, extensionName)
             file.copyFromInputStream(inputStream)
             messageDao.updateMediaMessageUrl(file.name, message.messageId)
-            InvalidateFlow.emit(message.conversationId)
+            MessageFlow.update(message.conversationId, message.messageId)
 
             jobManager.addJobInBackground(
                 SendAttachmentMessageJob(

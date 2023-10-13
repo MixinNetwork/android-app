@@ -21,7 +21,9 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -36,6 +38,7 @@ import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.withArgs
@@ -84,7 +87,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private val scopes: List<Scope> by lazy {
-        requireArguments().getParcelableArrayList(ARGS_SCOPES)!!
+        requireArguments().getParcelableArrayListCompat(ARGS_SCOPES, Scope::class.java)!!
     }
 
     private val authorizationId: String by lazy {
@@ -110,20 +113,21 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var step by mutableStateOf(AuthStep.DEFAULT)
 
+    private var errorContent by mutableStateOf("")
+    private var savedScopes: List<String>? = null
     init {
-        lifecycleScope.launchWhenCreated {
-            snapshotFlow { step }.collect { value ->
-                if (value == AuthStep.INPUT) {
-                    dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                } else {
-                    dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                snapshotFlow { step }.collect { value ->
+                    if (value == AuthStep.INPUT) {
+                        dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    } else {
+                        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    }
                 }
             }
         }
     }
-
-    private var errorContent by mutableStateOf("")
-    private var savedScopes: List<String>? = null
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

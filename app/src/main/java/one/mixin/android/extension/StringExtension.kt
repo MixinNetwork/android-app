@@ -12,9 +12,10 @@ import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.text.Editable
 import android.text.SpannableStringBuilder
+import android.text.TextUtils
 import android.text.style.BackgroundColorSpan
 import androidx.core.net.toUri
-import com.google.android.exoplayer2.util.Util
+import androidx.media3.common.util.Util
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonSyntaxException
@@ -39,6 +40,7 @@ import java.io.ObjectOutputStream
 import java.io.Serializable
 import java.math.BigDecimal
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.text.DecimalFormat
 import java.util.Arrays
@@ -47,6 +49,9 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
+import kotlin.NullPointerException
 import kotlin.collections.set
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -216,6 +221,15 @@ inline fun String.sha256(): ByteArray = toByteArray().sha256()
 inline fun ByteArray.sha256(): ByteArray {
     val md = MessageDigest.getInstance("SHA256")
     return md.digest(this)
+}
+
+inline fun String.hmacSha256(key: ByteArray) = toByteArray().hmacSha256(key)
+
+inline fun ByteArray.hmacSha256(key: ByteArray): ByteArray {
+    val alg = "HmacSHA256"
+    val mac = Mac.getInstance(alg)
+    mac.init(SecretKeySpec(key, alg))
+    return mac.doFinal(this)
 }
 
 inline fun String.isWebUrl(): Boolean {
@@ -454,16 +468,25 @@ fun String.getColorCode(codeType: CodeType): Int {
         is CodeType.Name -> idNameCodeMap
         is CodeType.Avatar -> idAvatarCodeMap
     }
-    var code = cacheMap[this]
+    var code = try {
+        cacheMap[this]
+    } catch (e: NullPointerException) {
+        null
+    }
     if (code != null) return code
 
     val hashcode = try {
         UUID.fromString(this).hashCode()
     } catch (e: IllegalArgumentException) {
         hashCode()
+    } catch (e: NullPointerException) {
+        0
     }
     code = abs(hashcode).rem(codeType.count)
-    cacheMap[this] = code
+    try {
+        cacheMap[this] = code
+    } catch (ignored: NullPointerException) {
+    }
     return code
 }
 
@@ -622,4 +645,45 @@ fun String.matchResourcePattern(resourcePatterns: Collection<String>?): Boolean 
     val uri = toSchemeHostOrNull(this)
     return resourcePatterns?.mapNotNull { pattern -> toSchemeHostOrNull(pattern) }
         ?.find { pattern -> uri.equals(pattern, true) } != null
+}
+
+// Copy from hidden API android.os.FileUtils.buildValidExtFilename
+fun String.toValidFileName(): String {
+    if (TextUtils.isEmpty(this) || "." == this || ".." == this) {
+        return "(invalid)"
+    }
+    val res = java.lang.StringBuilder(this.length)
+    for (element in this) {
+        if (element.isValidFatFilenameChar()) {
+            res.append(element)
+        } else {
+            res.append('_')
+        }
+    }
+    trimFilename(res)
+    return res.toString()
+}
+
+private fun Char.isValidFatFilenameChar(): Boolean {
+    return if (code in 0x00..0x1f) {
+        false
+    } else {
+        when (this) {
+            '"', '*', '/', ':', '<', '>', '?', '\\', '|', 0x7F.toChar() -> false
+            else -> true
+        }
+    }
+}
+
+private fun trimFilename(res: java.lang.StringBuilder) {
+    var mb = 255
+    var raw = res.toString().toByteArray(StandardCharsets.UTF_8)
+    if (raw.size > mb) {
+        mb -= 3
+        while (raw.size > mb) {
+            res.deleteCharAt(res.length / 2)
+            raw = res.toString().toByteArray(StandardCharsets.UTF_8)
+        }
+        res.insert(res.length / 2, "...")
+    }
 }

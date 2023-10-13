@@ -1,7 +1,10 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import one.mixin.android.Constants.DEFAULT_THUMB_IMAGE
+import one.mixin.android.Constants.MAX_THUMB_IMAGE_LENGTH
 import one.mixin.android.RxBus
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
@@ -15,7 +18,6 @@ import one.mixin.android.fts.deleteByMessageId
 import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.reportException
@@ -95,7 +97,7 @@ open class SendMessageJob(
                 }
                 if (!message.isTranscript()) {
                     mixinDatabase.insertMessage(message)
-                    InvalidateFlow.emit(message.conversationId)
+                    MessageFlow.insert(message.conversationId, message.messageId)
                     ftsDatabase.insertOrReplaceMessageFts4(message)
                 }
 
@@ -135,16 +137,22 @@ open class SendMessageJob(
                 }
             }
 
-            messageDao.findMessageItemById(message.conversationId, msg.messageId)?.let { quoteMsg ->
+            messageDao.findQuoteMessageItemById(message.conversationId, msg.messageId)?.let { quoteMsg ->
+                quoteMsg.thumbImage = if ((quoteMsg.thumbImage?.length ?: 0) > MAX_THUMB_IMAGE_LENGTH) {
+                    DEFAULT_THUMB_IMAGE
+                } else {
+                    quoteMsg.thumbImage
+                }
                 messageDao.updateQuoteContentByQuoteId(
                     message.conversationId,
                     msg.messageId,
                     GsonHelper.customGson.toJson(quoteMsg),
                 )
             }
+            MessageFlow.update(conversationId, messageDao.findQuoteMessageIdByQuoteId(conversationId, recallMessageId))
             jobManager.cancelJobByMixinJobId(msg.messageId)
         }
-        InvalidateFlow.emit(conversationId)
+        MessageFlow.update(conversationId, recallMessageId)
         ftsDatabase.deleteByMessageId(recallMessageId)
     }
 

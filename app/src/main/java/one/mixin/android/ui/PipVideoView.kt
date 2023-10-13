@@ -22,11 +22,12 @@ import android.widget.ImageView
 import androidx.annotation.Keep
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
-import com.google.android.exoplayer2.ExoPlaybackException
-import com.google.android.exoplayer2.Player.STATE_BUFFERING
-import com.google.android.exoplayer2.Player.STATE_ENDED
-import com.google.android.exoplayer2.Player.STATE_IDLE
-import com.google.android.exoplayer2.Player.STATE_READY
+import androidx.media3.common.Player.STATE_BUFFERING
+import androidx.media3.common.Player.STATE_ENDED
+import androidx.media3.common.Player.STATE_IDLE
+import androidx.media3.common.Player.STATE_READY
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlaybackException
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -39,6 +40,8 @@ import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.round
+import one.mixin.android.extension.safeAddView
+import one.mixin.android.extension.safeRemoveView
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.RomUtil
@@ -55,6 +58,7 @@ import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.round
 
+@UnstableApi
 @SuppressLint("InvalidWakeLockTag")
 class PipVideoView {
 
@@ -169,6 +173,7 @@ class PipVideoView {
         mediaSource: MediaPagerActivity.MediaSource,
         mediaUrl: String?,
     ): TextureView {
+        windowView?.let { windowManager.safeRemoveView(it) }
         this.mediaUrl = mediaUrl
         val isLandscape = appContext.isLandscape()
         val realSize = appContext.realSize()
@@ -424,7 +429,7 @@ class PipVideoView {
             }
             windowLayoutParams.flags =
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-            windowView?.let { windowManager.addView(it, windowLayoutParams) }
+            windowManager.safeAddView(windowView, windowLayoutParams)
             shown = true
         } catch (e: Exception) {
             Timber.e(e)
@@ -447,8 +452,8 @@ class PipVideoView {
             if (aodWakeLock.isHeld) {
                 aodWakeLock.release()
             }
-            windowView?.let { windowManager.removeView(it) }
-        } catch (e: Exception) {
+            windowView?.let { windowManager.safeRemoveView(it) }
+        } catch (ignored: Exception) {
         }
         windowView = null
         playView = null

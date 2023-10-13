@@ -16,6 +16,7 @@ import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentMultisigsBottomSheetBinding
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricItem
@@ -40,7 +41,7 @@ class MultisigsBottomSheetDialogFragment :
     }
 
     private val t: MultisigsBiometricItem by lazy {
-        requireArguments().getParcelable(ARGS_BIOMETRIC_ITEM)!!
+        requireArguments().getParcelableCompat(ARGS_BIOMETRIC_ITEM, MultisigsBiometricItem::class.java)!!
     }
 
     private var success: Boolean = false

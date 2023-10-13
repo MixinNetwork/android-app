@@ -17,7 +17,8 @@ interface AssetDao : BaseDao<Asset> {
             "a1.balance, a1.destination AS destination, a1.deposit_entries as depositEntries ,a1.tag AS tag, a1.price_btc AS priceBtc, a1.price_usd AS priceUsd, " +
             "a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden, a2.price_usd as chainPriceUsd," +
             "a1.confirmations, a1.reserve as reserve, c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName, " +
-            "a1.asset_key AS assetKey FROM assets a1 " +
+            "a1.asset_key AS assetKey, a1.withdrawal_memo_possibility AS withdrawalMemoPossibility " +
+            "FROM assets a1 " +
             "LEFT JOIN assets a2 ON a1.chain_id = a2.asset_id " +
             "LEFT JOIN chains c ON a1.chain_id = c.chain_id " +
             "LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id "
@@ -55,6 +56,10 @@ interface AssetDao : BaseDao<Asset> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM")
     fun assetItems(): LiveData<List<AssetItem>>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("""$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:assetIds) $POSTFIX_ASSET_ITEM """)
+    fun assetItems(assetIds: List<String>): LiveData<List<AssetItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
@@ -117,4 +122,16 @@ interface AssetDao : BaseDao<Asset> {
 
     @Query("SELECT asset_id FROM assets WHERE asset_key = :assetKey COLLATE NOCASE")
     suspend fun findAssetIdByAssetKey(assetKey: String): String?
+
+    @Query("SELECT a.* FROM assets a WHERE a.rowid > :rowId ORDER BY a.rowid ASC LIMIT :limit")
+    fun getAssetByLimitAndRowId(limit: Int, rowId: Long): List<Asset>
+
+    @Query("SELECT rowid FROM assets WHERE asset_id = :assetId")
+    fun getAssetRowId(assetId: String): Long?
+
+    @Query("SELECT count(1) FROM assets")
+    fun countAssets(): Long
+
+    @Query("SELECT count(1) FROM assets WHERE rowid > :rowId")
+    fun countAssets(rowId: Long): Long
 }

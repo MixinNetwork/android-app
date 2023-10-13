@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar.Bridge">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">?attr/color_primary</item>
         <item name="colorPrimaryDark">?attr/color_primary_dark</item>
@@ -35,6 +35,7 @@
         <item name="icon_default">@color/colorIcon</item>
         <item name="icon_white">@color/colorIconWhite</item>
         <item name="icon_black">@color/colorIcon</item>
+        <item name="icon_google_black">@color/colorIconGoogleBlack</item>
         <item name="icon_gray">@color/colorIconGray</item>
         <item name="icon_action">@color/colorIconAction</item>
 

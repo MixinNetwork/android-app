@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.event.PinMessageEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.copyFromInputStream
@@ -352,13 +353,15 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         conversationId: String,
         senderId: String,
         uri: Uri,
+        start: Float,
+        end: Float,
         encryptCategory: EncryptCategory,
         messageId: String? = null,
         createdAt: String? = null,
         replyMessage: MessageItem? = null,
     ) {
         val mid = messageId ?: UUID.randomUUID().toString()
-        jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, encryptCategory, mid, createdAt, replyMessage))
+        jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, start, end, encryptCategory, mid, createdAt, replyMessage))
     }
 
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
@@ -450,6 +453,8 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 }
             }
         }
+        // Notify pin message
+        MessageFlow.update(conversationId, list.map { it.messageId })
         jobManager.addJobInBackground(
             SendMessageJob(
                 message,

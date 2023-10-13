@@ -8,6 +8,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.hardware.display.DisplayManager
+import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Size
@@ -153,20 +154,24 @@ abstract class BaseCameraxFragment : VisionFragment() {
             flash.bounce()
         }
         galleryIv.setOnClickListener {
-            RxPermissions(requireActivity())
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            openGallery()
-                        } else {
-                            context?.openPermissionSetting()
-                        }
-                    },
-                    {
-                    },
-                )
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                openGallery()
+                            } else {
+                                context?.openPermissionSetting()
+                            }
+                        },
+                        {
+                        },
+                    )
+            } else {
+                openGallery()
+            }
         }
         checkFlash()
 
@@ -251,6 +256,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             data?.data?.let {
+                @Suppress("DEPRECATION")
                 val path = it.getFilePath(MixinApplication.get())
                 if (path == null) {
                     toast(R.string.File_error)
@@ -477,9 +483,22 @@ abstract class BaseCameraxFragment : VisionFragment() {
             return
         }
         if (analysisResult.startsWith(Constants.Scheme.DEVICE)) {
-            ConfirmBottomFragment.show(requireContext(), parentFragmentManager, analysisResult) {
-                activity?.finish()
+            ConfirmBottomFragment.show(requireContext(), parentFragmentManager, analysisResult) { _, complete ->
+                if (complete) {
+                    activity?.finish()
+                }
             }
+            // } else if (analysisResult.startsWith(Constants.Scheme.DEVICE_TRANSFER)) {
+            //     val uri = analysisResult.toUri()
+            //     if (uri == Uri.EMPTY) {
+            //         handleResult(requireActivity(), fromShortcut, analysisResult)
+            //         return
+            //     }
+            //     TransferActivity.parseUri(requireContext(), false, uri, {
+            //         activity?.finish()
+            //     }) {
+            //         handleResult(requireActivity(), fromShortcut, analysisResult)
+            //     }
         } else {
             if (fromScan()) {
                 val externalSchemes = requireContext().defaultSharedPreferences.getStringSet(PREF_EXTERNAL_SCHEMES, emptySet())
@@ -488,7 +507,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                     activity?.finish()
                     return
                 }
-                handleResult(analysisResult)
+                handleResult(requireActivity(), fromShortcut, analysisResult)
             } else {
                 pseudoNotificationView?.addContent(analysisResult)
             }

@@ -19,7 +19,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.initChatMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseMentionHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.util.mention.MentionRenderCache
@@ -79,7 +79,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         }
     }
 
-    private var onItemListener: ConversationAdapter.OnItemListener? = null
+    private var onItemListener: MessageAdapter.OnItemListener? = null
 
     fun bind(
         messageItem: MessageItem,
@@ -89,7 +89,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         this.onItemListener = onItemListener
@@ -229,7 +229,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         var messageItem: MessageItem,
         var hasSelect: Boolean = false,
         var isSelect: Boolean = false,
-        var onItemListener: ConversationAdapter.OnItemListener,
+        var onItemListener: MessageAdapter.OnItemListener,
         var absoluteAdapterPosition: Int = 0,
     ) : GestureDetector.SimpleOnGestureListener() {
         var longPressed = false

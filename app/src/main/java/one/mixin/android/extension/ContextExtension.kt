@@ -7,6 +7,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.BUBBLE_PREFERENCE_NONE
 import android.app.PendingIntent
+import android.app.UiModeManager
 import android.content.ActivityNotFoundException
 import android.content.ClipboardManager
 import android.content.ComponentName
@@ -16,7 +17,7 @@ import android.content.Context.ACTIVITY_SERVICE
 import android.content.ContextWrapper
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -36,6 +37,7 @@ import android.os.VibrationEffect.EFFECT_DOUBLE_CLICK
 import android.os.VibrationEffect.EFFECT_HEAVY_CLICK
 import android.os.VibrationEffect.EFFECT_TICK
 import android.os.Vibrator
+import android.os.VibratorManager
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
 import android.provider.Browser
@@ -49,11 +51,13 @@ import android.view.WindowManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
+import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
+import androidx.core.database.getStringOrNull
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -84,7 +88,8 @@ import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
 import timber.log.Timber
 import java.io.File
-import java.io.Serializable
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ExecutorService
@@ -124,6 +129,20 @@ fun Context.runOnUiThread(f: Context.() -> Unit, delay: Long = 0L) {
     } else {
         uiHandler.postDelayed({ f() }, delay)
     }
+}
+
+fun Throwable.getStackTraceInfo(): String {
+    val trace: String
+    try {
+        val writer = StringWriter()
+        val pw = PrintWriter(writer)
+        this.printStackTrace(pw)
+        trace = writer.toString()
+        pw.close()
+    } catch (e: Exception) {
+        return ""
+    }
+    return trace
 }
 
 fun Context.runOnUiThread(f: Context.() -> Unit) {
@@ -197,12 +216,20 @@ fun Context.isActivityNotDestroyed(): Boolean {
 }
 
 fun Context.vibrate(effect: VibrationEffect?, pattern: LongArray = longArrayOf(0, 20L)) {
-    if (effect != null && Build.VERSION.SDK_INT >= 26) {
-        (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(effect)
-    } else if (Build.VERSION.SDK_INT >= 26) {
-        (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(VibrationEffect.createWaveform(pattern, -1))
+    val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+        vibratorManager.defaultVibrator
     } else {
-        (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(pattern, -1)
+        @Suppress("DEPRECATION")
+        getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    }
+    if (effect != null && Build.VERSION.SDK_INT >= 26) {
+        vibrator.vibrate(effect)
+    } else if (Build.VERSION.SDK_INT >= 26) {
+        vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
+    } else {
+        @Suppress("DEPRECATION")
+        vibrator.vibrate(pattern, -1)
     }
 }
 fun Context.tickVibrate() {
@@ -263,7 +290,7 @@ var Context.displayMetrics: DisplayMetrics
     get() = resources.displayMetrics
 
     @Deprecated("Property does not have a setter")
-    private set(value) = error("Property does not have a setter")
+    private set(@Suppress("UNUSED_PARAMETER") value) = error("Property does not have a setter")
 
 @ColorInt
 fun Context.colorAttr(@AttrRes attribute: Int): Int = theme.color(attribute)
@@ -333,12 +360,8 @@ fun Context.displayRatio(): Float {
 }
 
 fun Context.getUriForFile(file: File): Uri {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        val authority = String.format("%s.provider", this.packageName)
-        FileProvider.getUriForFile(this, authority, file)
-    } else {
-        Uri.fromFile(file)
-    }
+    val authority = String.format("%s.provider", this.packageName)
+    return FileProvider.getUriForFile(this, authority, file)
 }
 
 fun Context.maxItemWidth(): Int {
@@ -387,6 +410,8 @@ const val REQUEST_CAMERA = 0x03
 const val REQUEST_FILE = 0x04
 const val REQUEST_AUDIO = 0x05
 const val REQUEST_LOCATION = 0x06
+
+@Suppress("unused")
 fun Fragment.openImage(output: Uri) {
     val cameraIntents = ArrayList<Intent>()
     val captureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -413,6 +438,7 @@ fun Fragment.openImage(output: Uri) {
     }
 }
 
+@SuppressLint("ObsoleteSdkInt")
 fun Fragment.openCamera(output: Uri) {
     val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
@@ -436,11 +462,11 @@ fun Fragment.openCamera(output: Uri) {
 }
 
 fun String.isFileUri(): Boolean {
-    try {
+    return try {
         val uri = Uri.parse(this)
-        return uri.scheme == ContentResolver.SCHEME_FILE
+        uri.scheme == ContentResolver.SCHEME_FILE
     } catch (e: Exception) {
-        return false
+        false
     }
 }
 
@@ -526,14 +552,14 @@ fun Fragment.selectMediaType(type: String, extraMimeType: Array<String>?, reques
     try {
         startActivityForResult(intent, requestCode)
         return
-    } catch (e: ActivityNotFoundException) {
+    } catch (_: ActivityNotFoundException) {
     }
 
     intent.action = Intent.ACTION_GET_CONTENT
     try {
         startActivityForResult(intent, requestCode)
-    } catch (e: ActivityNotFoundException) {
-    } catch (e: SecurityException) {
+    } catch (_: ActivityNotFoundException) {
+    } catch (_: SecurityException) {
     }
 }
 
@@ -585,8 +611,7 @@ fun Context.getAttachment(local: Uri, mimeType: String? = null): Attachment? {
         }
         cursor = contentResolver.query(uri, null, null, null, null)
         if (cursor != null && cursor.moveToFirst()) {
-            val fileName = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
-
+            val fileName = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME)) ?: "File"
             val copyPath = uri.copyFileUrlWithAuthority(this, fileName)
             val resultUri = if (copyPath == null) {
                 return null
@@ -596,7 +621,7 @@ fun Context.getAttachment(local: Uri, mimeType: String? = null): Attachment? {
             val fileSize = File(copyPath).length()
             return Attachment(resultUri, fileName, mimeType ?: contentResolver.getType(uri) ?: "", fileSize)
         }
-    } catch (e: SecurityException) {
+    } catch (e: Exception) {
         toast(R.string.File_does_not_exist)
     } finally {
         cursor?.close()
@@ -610,6 +635,7 @@ private val maxVideoSize by lazy {
 
 fun getVideoModel(uri: Uri): VideoEditedInfo? {
     try {
+        @Suppress("DEPRECATION")
         val path = uri.getFilePath() ?: return null
         val m = MediaMetadataRetriever().apply {
             setDataSource(path)
@@ -676,7 +702,11 @@ fun Context.openUrl(url: String) {
         val actionIntent = Intent(this, ShareBroadcastReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(this, 0, actionIntent, PendingIntent.FLAG_IMMUTABLE)
         val customTabsIntent = CustomTabsIntent.Builder()
-            .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
+            .setDefaultColorSchemeParams(
+                CustomTabColorSchemeParams.Builder()
+                    .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
+                    .build(),
+            )
             .setShowTitle(true)
             .setActionButton(
                 BitmapFactory.decodeResource(this.resources, R.drawable.ic_share),
@@ -818,6 +848,7 @@ fun supportsOreo(code: () -> Unit, elseAction: (() -> Unit)) {
     }
 }
 
+@SuppressLint("ObsoleteSdkInt")
 inline fun supportsNougat(code: () -> Unit) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         code()
@@ -857,6 +888,25 @@ fun Context.showConfirmDialog(
         .setNegativeButton(R.string.Cancel) { dialog, _ ->
             dialog.dismiss()
         }.setPositiveButton(R.string.OK) { dialog, _ ->
+            action.invoke()
+            dialog.dismiss()
+        }.create().apply {
+            setOnShowListener {
+                getButton(DialogInterface.BUTTON_POSITIVE).textColorResource = R.color.colorRed
+            }
+        }.show()
+}
+
+fun Context.showConfirmDialog(
+    message: String,
+    cancelable: Boolean,
+    action: () -> Unit,
+) {
+    alertDialogBuilder()
+        .setMessage(message).setCancelable(cancelable)
+        .setNegativeButton(R.string.Cancel) { dialog, _ ->
+            dialog.dismiss()
+        }.setPositiveButton(R.string.Confirm) { dialog, _ ->
             action.invoke()
             dialog.dismiss()
         }.create().apply {
@@ -942,13 +992,20 @@ fun Context.checkInlinePermissions(showAlert: () -> Unit): Boolean {
 
 fun Context.isPlayStoreInstalled(): Boolean {
     return try {
-        packageManager
-            .getPackageInfo(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE, 0)
+        packageManager.getPackageInfoCompat(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE, 0)
         true
     } catch (e: PackageManager.NameNotFoundException) {
         false
     }
 }
+
+fun PackageManager.getPackageInfoCompat(packageName: String, flags: Int = 0): PackageInfo =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(flags.toLong()))
+    } else {
+        @Suppress("DEPRECATION")
+        getPackageInfo(packageName, flags)
+    }
 
 fun Context.openMarket() {
     if (isPlayStoreInstalled()) {
@@ -996,7 +1053,7 @@ fun Activity.showPipPermissionNotification(targetActivity: Class<*>, title: Stri
 }
 
 @SuppressLint("HardwareIds")
-fun getDeviceId(resolver: ContentResolver): String {
+fun getStringDeviceId(resolver: ContentResolver): String {
     var deviceId = Settings.Secure.getString(resolver, Settings.Secure.ANDROID_ID)
     if (deviceId == null || deviceId == "9774d56d682e549c") {
         deviceId = FirebaseInstallations.getInstance().id.result
@@ -1004,8 +1061,8 @@ fun getDeviceId(resolver: ContentResolver): String {
     return UUID.nameUUIDFromBytes(deviceId.toByteArray()).toString()
 }
 
-fun Context.getDeviceId(): String {
-    return getDeviceId(contentResolver)
+fun Context.getStringDeviceId(): String {
+    return getStringDeviceId(contentResolver)
 }
 
 fun Context.handleIgnoreBatteryOptimization(newTask: Boolean = false) {
@@ -1021,7 +1078,7 @@ fun Context.requestIgnoreBatteryOptimization(newTask: Boolean = false) {
         action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
         data = Uri.parse("package:$packageName")
         if (newTask) {
-            addFlags(FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         try {
             startActivity(this)
@@ -1035,7 +1092,7 @@ fun Context.openIgnoreBatteryOptimizationSetting(newTask: Boolean = false) {
     Intent().apply {
         action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
         if (newTask) {
-            addFlags(FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         try {
             startActivity(this)
@@ -1123,6 +1180,7 @@ fun Context.shareMedia(isVideo: Boolean, url: String) {
         action = Intent.ACTION_SEND
         uri = Uri.parse(url)
         if (ContentResolver.SCHEME_FILE == uri.scheme) {
+            @Suppress("DEPRECATION")
             val path = uri.getFilePath(this@shareMedia)
             if (path == null) {
                 toast(R.string.File_does_not_exist)
@@ -1161,7 +1219,7 @@ fun Context.openEmail(email: String) {
 fun Context.callPhone(phone: String) {
     try {
         val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
-        intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
     } catch (e: Exception) {
         Timber.e(e)
@@ -1179,20 +1237,7 @@ fun Context.findFragmentActivityOrNull(): FragmentActivity? {
     return null
 }
 
-@SuppressWarnings("deprecation")
-fun <T : Serializable?> getSerializableExtra(intent: Intent, name: String, clazz: Class<T>): T? {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        intent.getSerializableExtra(name, clazz)
-    } else {
-        intent.getSerializableExtra(name) as? T
-    }
-}
-
-@SuppressWarnings("deprecation")
-fun <T> getParcelableExtra(intent: Intent, name: String, clazz: Class<T>): T? {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        intent.getParcelableExtra(name, clazz)
-    } else {
-        intent.getParcelableExtra(name) as T?
-    }
+fun Context.isAuto(): Boolean {
+    val uiModeManager = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+    return uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_CAR
 }

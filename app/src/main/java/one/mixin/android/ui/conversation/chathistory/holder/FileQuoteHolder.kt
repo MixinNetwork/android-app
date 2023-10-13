@@ -3,7 +3,7 @@ package one.mixin.android.ui.conversation.chathistory.holder
 import android.view.View
 import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.exoplayer2.util.MimeTypes
+import androidx.media3.common.MimeTypes
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileQuoteBinding
 import one.mixin.android.extension.dp
@@ -12,12 +12,10 @@ import one.mixin.android.extension.textResource
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.QuoteMessageItem
 
 class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : MediaHolder(binding.root) {
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
@@ -166,7 +164,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
             }
         }
 
-        binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java))
+        binding.chatQuote.bind(fromJsonQuoteMessage(messageItem.quoteContent))
 
         binding.chatQuote.setOnClickListener {
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

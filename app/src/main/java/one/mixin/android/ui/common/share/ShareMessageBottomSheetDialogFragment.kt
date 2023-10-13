@@ -3,6 +3,7 @@ package one.mixin.android.ui.common.share
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.os.Build
 import android.view.Gravity
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -19,6 +20,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentShareMessageBottomSheetBinding
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.openPermissionSetting
@@ -74,7 +76,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val viewModel by viewModels<BottomSheetViewModel>()
 
     private val app by lazy {
-        arguments?.getParcelable<App>(APP)
+        arguments?.getParcelableCompat(APP, App::class.java)
     }
 
     private val host by lazy {
@@ -86,7 +88,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val shareMessage: ForwardMessage by lazy {
-        requireNotNull(arguments?.getParcelable(SHARE_MESSAGE)) {
+        requireNotNull(arguments?.getParcelableCompat(SHARE_MESSAGE, ForwardMessage::class.java)) {
             "error data"
         }
     }
@@ -131,20 +133,24 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         binding.send.setOnClickListener {
             if (shareMessage.category == ShareCategory.Image) {
-                RxPermissions(requireActivity())
-                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .autoDispose(stopScope)
-                    .subscribe(
-                        { granted ->
-                            if (granted) {
-                                sendMessage()
-                            } else {
-                                context?.openPermissionSetting()
-                            }
-                        },
-                        {
-                        },
-                    )
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                    RxPermissions(requireActivity())
+                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .autoDispose(stopScope)
+                        .subscribe(
+                            { granted ->
+                                if (granted) {
+                                    sendMessage()
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            },
+                            {
+                            },
+                        )
+                } else {
+                    sendMessage()
+                }
             } else if (shareMessage.category == ShareCategory.AppCard) {
                 val appCardData = GsonHelper.customGson.fromJson(shareMessage.content, AppCardData::class.java)
                 if (appCardData.title.length in 1..36 && appCardData.description.length in 1..128) {

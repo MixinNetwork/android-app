@@ -20,6 +20,7 @@ import one.mixin.android.databinding.FragmentGroupBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
+import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.textColor
@@ -72,7 +73,7 @@ class GroupFragment : BaseFragment() {
     }
 
     private val alreadyUsers: ArrayList<User>? by lazy {
-        requireArguments().getParcelableArrayList<User>(ARGS_ALREADY_USERS)
+        requireArguments().getParcelableArrayListCompat(ARGS_ALREADY_USERS, User::class.java)
     }
 
     private val conversationId: String? by lazy {

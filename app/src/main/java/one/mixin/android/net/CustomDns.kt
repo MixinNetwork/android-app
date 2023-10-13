@@ -19,9 +19,12 @@ class CustomDns(val dnsHostname: String) : Dns {
         val resolver: Resolver = SimpleResolver(dnsHostname)
         val lookup: Lookup = doLookup(hostname)
         lookup.setResolver(resolver)
-        val records: Array<Record> = try {
+        val records: Array<Record>? = try {
             lookup.run()
         } catch (e: NullPointerException) {
+            throw UnknownHostException(hostname)
+        }
+        if (records.isNullOrEmpty()) {
             throw UnknownHostException(hostname)
         }
         val ipAddresses = records.filter { it.type == Type.A || it.type == Type.AAAA }

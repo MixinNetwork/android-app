@@ -28,9 +28,12 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.runOnUiThread
+import one.mixin.android.extension.safeAddView
+import one.mixin.android.extension.safeRemoveView
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.Rect
 import one.mixin.android.ui.call.CallActivity
+import one.mixin.android.util.getLocalString
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.webrtc.TAG_CALL
 import timber.log.Timber
@@ -117,7 +120,7 @@ class PipCallView {
         connectedTime: Long? = null,
         callState: CallStateLiveData,
     ) {
-        windowView?.let { windowManager.removeView(it) }
+        windowView?.let { windowManager.safeRemoveView(it) }
 
         val isLandscape = appContext.isLandscape()
         val realSize = appContext.realSize()
@@ -207,7 +210,7 @@ class PipCallView {
                     WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or
                     WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
             }
-            windowView?.let { windowManager.addView(it, windowLayoutParams) }
+            windowManager.safeAddView(windowView, windowLayoutParams)
             shown = true
         } catch (e: Exception) {
             Timber.e(e)
@@ -217,7 +220,7 @@ class PipCallView {
             if (connectedTime != null) {
                 startTimer(connectedTime)
             } else {
-                timeView?.text = appContext.getString(R.string.Waiting)
+                timeView?.text = getLocalString(appContext, R.string.Waiting)
             }
         } else {
             close()
@@ -229,13 +232,7 @@ class PipCallView {
     fun close() {
         Timber.d("$TAG_CALL$shown")
         shown = false
-        if (windowView != null) {
-            try {
-                windowManager.removeView(windowView)
-            } catch (e: Exception) {
-                Timber.w("$TAG_CALL remove windowView throw $e")
-            }
-        }
+        windowView?.let { windowManager.safeRemoveView(it) }
         timeView = null
         iconView = null
         windowView = null

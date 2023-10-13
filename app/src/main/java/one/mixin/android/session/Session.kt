@@ -7,28 +7,35 @@ import io.jsonwebtoken.EdDSAPrivateKey
 import io.jsonwebtoken.EdDSAPublicKey
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
+import jwt.Jwt
 import okhttp3.Request
-import okio.ByteString
 import okio.ByteString.Companion.encode
 import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
+import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
+import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.privateKeyToCurve25519
+import one.mixin.android.crypto.useGoEd
+import one.mixin.android.extension.base64RawURLDecode
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.bodyToString
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.currentTimeSeconds
 import one.mixin.android.extension.cutOut
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.hmacSha256
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
+import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
+import one.mixin.android.extension.toHex
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
-import one.mixin.eddsa.KeyPair
 import timber.log.Timber
 import java.security.Key
 import java.util.concurrent.ConcurrentHashMap
@@ -38,10 +45,12 @@ object Session {
     const val PREF_EXTENSION_SESSION_ID = "pref_extension_session_id"
     const val PREF_SESSION = "pref_session"
 
+    var routePublicKey: String? = null
+
     private var self: Account? = null
 
     private var seed: String? = null
-    private var edKeyPair: KeyPair? = null
+    private var edKeyPair: EdKeyPair? = null
 
     private const val PREF_PIN_ITERATOR = "pref_pin_iterator"
     private const val PREF_PIN_TOKEN = "pref_pin_token"
@@ -93,7 +102,7 @@ object Session {
         }
     }
 
-    fun getEd25519KeyPair(): KeyPair? {
+    fun getEd25519KeyPair(): EdKeyPair? {
         if (edKeyPair != null) {
             return edKeyPair
         } else {
@@ -102,8 +111,9 @@ object Session {
         }
     }
 
-    private fun initEdKeypair(seed: String): KeyPair {
-        val edKeyPair = KeyPair.newKeyPairFromSeed(seed.decodeBase64().toByteString())
+    private fun initEdKeypair(seed: String): EdKeyPair {
+        val edKeyPair = newKeyPairFromSeed(seed.decodeBase64())
+
         this.edKeyPair = edKeyPair
         return edKeyPair
     }
@@ -174,13 +184,46 @@ object Session {
 
     fun getTipCounter(): Int = getAccount()?.tipCounter ?: 0
 
+    fun isTipFeatureEnabled(): Boolean = getAccount()?.features?.contains("tip") == true
+
     fun checkToken() = getAccount() != null && !getPinToken().isNullOrBlank()
 
     fun shouldUpdateKey() = getEd25519Seed().isNullOrBlank() &&
         !MixinApplication.appContext.defaultSharedPreferences
             .getBoolean(PREF_TRIED_UPDATE_KEY, false)
 
-    fun signToken(acct: Account?, request: Request, xRequestId: String, key: Key? = getJwtKey(true)): String {
+    fun signToken(acct: Account?, request: Request, xRequestId: String): String {
+        return if (useGoEd()) {
+            signGoToken(acct, request, xRequestId)
+        } else {
+            signLegacyToken(acct, request, xRequestId)
+        }
+    }
+
+    fun requestDelay(acct: Account?, string: String, offset: Int): JwtResult {
+        return if (useGoEd()) {
+            requestGoDelay(acct, string, offset)
+        } else {
+            requestLegacyDelay(acct, string, offset)
+        }
+    }
+
+    fun signGoToken(acct: Account?, request: Request, xRequestId: String, key: ByteArray? = getGoJwtKey(true)): String {
+        if (acct == null || key == null) {
+            return ""
+        }
+
+        var content = "${request.method}${request.url.cutOut()}"
+        request.body?.apply {
+            if (contentLength() > 0) {
+                content += bodyToString()
+            }
+        }
+
+        return Jwt.signToken(xRequestId, acct.userId, acct.sessionId, content.sha256().toHex(), key)
+    }
+
+    fun signLegacyToken(acct: Account?, request: Request, xRequestId: String, key: Key? = getLegacyJwtKey(true)): String {
         if (acct == null || key == null) {
             return ""
         }
@@ -210,7 +253,27 @@ object Session {
             .compact()
     }
 
-    fun requestDelay(acct: Account?, string: String, offset: Int, key: Key? = getJwtKey(false)): JwtResult {
+    fun requestGoDelay(acct: Account?, string: String, offset: Int, key: ByteArray? = getGoJwtKey(false)): JwtResult {
+        if (acct == null || key == null) {
+            return JwtResult(false)
+        }
+        return when (val iat = Jwt.parseIat(string, key)) {
+            -1L -> {
+                Timber.w("ErrTokenExpired")
+                reportException(IllegalArgumentException("ErrTokenExpired"))
+                JwtResult(true)
+            }
+            0L -> {
+                Timber.e("")
+                JwtResult(false)
+            }
+            else -> {
+                JwtResult(abs(currentTimeSeconds() - iat) > offset, requestTime = iat)
+            }
+        }
+    }
+
+    fun requestLegacyDelay(acct: Account?, string: String, offset: Int, key: Key? = getLegacyJwtKey(false)): JwtResult {
         if (acct == null || key == null) {
             return JwtResult(false)
         }
@@ -230,8 +293,26 @@ object Session {
 
     fun getFiatCurrency() = getAccount()?.fiatCurrency ?: "USD"
 
-    private fun getJwtKey(isSign: Boolean): Key? {
-        val edPrivateKey = getEd25519KeyPair()?.privateKey?.let { EdDSAPrivateKey(it) }
+    private fun getGoJwtKey(isSign: Boolean): ByteArray? {
+        val edPrivateKey = getEd25519KeyPair()?.privateKey
+        if (edPrivateKey == null) {
+            val token = getToken()
+            if (token.isNullOrBlank()) {
+                return null
+            }
+            return token.toByteArray()
+        } else {
+            val edPublicKey = getEd25519KeyPair()?.publicKey ?: return null
+            return if (isSign) {
+                edPrivateKey + edPublicKey
+            } else {
+                edPublicKey
+            }
+        }
+    }
+
+    private fun getLegacyJwtKey(isSign: Boolean): Key? {
+        val edPrivateKey = getEd25519KeyPair()?.privateKey?.let { EdDSAPrivateKey(it.toByteString()) }
         if (edPrivateKey == null) {
             val token = getToken()
             if (token.isNullOrBlank()) {
@@ -242,12 +323,27 @@ object Session {
             if (isSign) {
                 return edPrivateKey
             }
-            return getEd25519KeyPair()?.publicKey?.let { EdDSAPublicKey(it) }
+            return getEd25519KeyPair()?.publicKey?.let { EdDSAPublicKey(it.toByteString()) }
         }
+    }
+
+    fun getRouteSignature(request: Request): Pair<Long, String> {
+        val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
+        val botPk = routePublicKey?.base64RawURLDecode() ?: return Pair(0L, "")
+        val private = privateKeyToCurve25519(edKeyPair.privateKey)
+        val sharedKey = calculateAgreement(botPk, private)
+        val ts = currentTimeSeconds()
+        var content = "$ts${request.method}${request.url.cutOut()}"
+        request.body?.apply {
+            if (contentLength() > 0) {
+                content += bodyToString()
+            }
+        }
+        return Pair(ts, (requireNotNull(getAccountId()).toByteArray() + content.hmacSha256(sharedKey)).base64RawURLEncode())
     }
 }
 
-fun decryptPinToken(serverPublicKey: ByteArray, privateKey: ByteString): ByteArray {
-    val private = privateKeyToCurve25519(privateKey.toByteArray())
+fun decryptPinToken(serverPublicKey: ByteArray, privateKey: ByteArray): ByteArray {
+    val private = privateKeyToCurve25519(privateKey)
     return calculateAgreement(serverPublicKey, private)
 }

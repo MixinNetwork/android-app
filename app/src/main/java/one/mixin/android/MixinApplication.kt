@@ -39,6 +39,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getStackTraceInfo
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.putBoolean
@@ -57,6 +58,7 @@ import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
+import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.web.FloatingWebClip
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.clips
@@ -137,6 +139,7 @@ open class MixinApplication :
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
         appContext = applicationContext
         RxJavaPlugins.setErrorHandler {}
+        Analytics.setTransmissionInterval(60)
         AppCenter.start(
             this,
             BuildConfig.APPCENTER_API_KEY,
@@ -152,7 +155,7 @@ open class MixinApplication :
 
         registerComponentCallbacks(MemoryCallback())
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-            Timber.e("${thread.name}-${throwable.message}")
+            Timber.e("${thread.name}-${throwable.getStackTraceInfo()}")
             exitProcess(2)
         }
 
@@ -234,6 +237,12 @@ open class MixinApplication :
     }
 
     fun closeAndClear(force: Boolean = false) {
+        val activity = currentActivity
+        if (activity is TransferActivity) {
+            activity.shouldLogout = true
+            return
+        }
+
         if (force || isOnline.compareAndSet(true, false)) {
             val sessionId = Session.getSessionId()
             BlazeMessageService.stopService(this)

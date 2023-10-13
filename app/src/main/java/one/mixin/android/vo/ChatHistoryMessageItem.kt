@@ -8,8 +8,8 @@ import android.view.View
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
+import androidx.media3.common.MimeTypes
 import androidx.recyclerview.widget.DiffUtil
-import com.google.android.exoplayer2.util.MimeTypes
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.copyFromInputStream
@@ -25,6 +25,7 @@ import one.mixin.android.extension.isFileUri
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.toast
 import one.mixin.android.util.VideoPlayer
+import one.mixin.android.util.getLocalString
 import one.mixin.android.util.reportException
 import java.io.File
 import java.io.FileInputStream
@@ -130,7 +131,7 @@ fun ChatHistoryMessageItem.saveToLocal(context: Context) {
     }
     outFile.copyFromInputStream(FileInputStream(file))
     MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
-    toast(MixinApplication.appContext.getString(R.string.Save_to, outFile.absolutePath))
+    toast(getLocalString(MixinApplication.appContext, R.string.Save_to, outFile.absolutePath))
 }
 
 fun ChatHistoryMessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {

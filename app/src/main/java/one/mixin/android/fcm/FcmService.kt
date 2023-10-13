@@ -3,6 +3,7 @@ package one.mixin.android.fcm
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.MixinApplication
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshFcmJob
 import one.mixin.android.session.Session
@@ -20,7 +21,7 @@ class FcmService : FirebaseMessagingService() {
     }
 
     override fun onNewToken(token: String) {
-        if (Session.checkToken()) {
+        if (Session.checkToken() && MixinApplication.get().isOnline.get()) {
             jobManager.addJobInBackground(RefreshFcmJob(token))
         }
     }

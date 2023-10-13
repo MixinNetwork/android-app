@@ -3,6 +3,8 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RoomWarnings
+import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.vo.MessageMention
 
 @Dao
@@ -41,4 +43,27 @@ interface MessageMentionDao : BaseDao<MessageMention> {
 
     @Query("SELECT * FROM message_mentions WHERE message_id = :id")
     fun findMessageMentionById(id: String): MessageMention?
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("SELECT mm.* FROM message_mentions mm WHERE mm.rowid > :rowId ORDER BY mm.rowid ASC LIMIT :limit")
+    fun getMessageMentionByLimitAndRowId(limit: Int, rowId: Long): List<TransferMessageMention>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("SELECT mm.* FROM message_mentions mm WHERE mm.rowid > :rowId AND conversation_id IN (:conversationIds) ORDER BY mm.rowid ASC LIMIT :limit")
+    fun getMessageMentionByLimitAndRowId(limit: Int, rowId: Long, conversationIds: Collection<String>): List<TransferMessageMention>
+
+    @Query("SELECT rowid FROM message_mentions WHERE message_id = :messageId")
+    fun getMessageMentionRowId(messageId: String): Long?
+
+    @Query("SELECT count(1) FROM message_mentions")
+    fun countMessageMention(): Long
+
+    @Query("SELECT count(1) FROM message_mentions WHERE conversation_id IN (:conversationIds)")
+    fun countMessageMention(conversationIds: Collection<String>): Long
+
+    @Query("SELECT count(1) FROM message_mentions WHERE rowid > :rowId")
+    fun countMessageMention(rowId: Long): Long
+
+    @Query("SELECT count(1) FROM message_mentions WHERE rowid > :rowId AND conversation_id IN (:conversationIds)")
+    fun countMessageMention(rowId: Long, conversationIds: Collection<String>): Long
 }

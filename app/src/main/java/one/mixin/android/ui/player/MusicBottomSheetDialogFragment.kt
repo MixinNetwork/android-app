@@ -3,6 +3,7 @@ package one.mixin.android.ui.player
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.MediaMetadataCompat
 import android.view.View
@@ -14,12 +15,13 @@ import androidx.core.view.setPadding
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED
+import androidx.media3.common.Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT
+import androidx.media3.common.util.UnstableApi
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED
-import com.google.android.exoplayer2.Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -52,6 +54,8 @@ import one.mixin.android.widget.MixinBottomSheetDialog
 import kotlin.math.max
 import kotlin.math.min
 
+@Suppress("DEPRECATION")
+@UnstableApi
 @AndroidEntryPoint
 class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
@@ -163,6 +167,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                     viewModel.conversationLiveData(conversationId, index)
                         .observe(this@MusicBottomSheetDialogFragment) { list ->
+                            if (list.isEmpty()) return@observe
                             listAdapter.submitList(list)
                             pb.isVisible = false
 
@@ -249,21 +254,27 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun download(mediaId: String) {
-        RxPermissions(requireActivity())
-            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .autoDispose(stopScope)
-            .subscribe(
-                { granted ->
-                    if (granted) {
-                        lifecycleScope.launch {
-                            viewModel.download(mediaId)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            lifecycleScope.launch {
+                                viewModel.download(mediaId)
+                            }
+                        } else {
+                            context?.openPermissionSetting()
                         }
-                    } else {
-                        context?.openPermissionSetting()
-                    }
-                },
-                {},
-            )
+                    },
+                    {},
+                )
+        } else {
+            lifecycleScope.launch {
+                viewModel.download(mediaId)
+            }
+        }
     }
 
     private val playerListener = object : Player.Listener {

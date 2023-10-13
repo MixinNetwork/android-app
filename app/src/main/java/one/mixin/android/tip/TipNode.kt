@@ -1,8 +1,6 @@
 package one.mixin.android.tip
 
 import com.google.gson.Gson
-import crypto.Crypto
-import crypto.Scalar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -29,6 +27,8 @@ import one.mixin.android.tip.exception.NotEnoughPartialsException
 import one.mixin.android.tip.exception.TipNodeException
 import retrofit2.HttpException
 import timber.log.Timber
+import tip.Scalar
+import tip.Tip
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
@@ -53,8 +53,8 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         failedSigners: List<TipSigner>? = null,
         forRecover: Boolean = false,
         callback: Callback? = null,
-    ): ByteArray {
-        val suite = Crypto.newSuiteBn256()
+    ): Pair<ByteArray, Long> {
+        val suite = Tip.newSuiteBn256()
         val userSk = suite.scalar()
         userSk.setBytes(identityPriv)
 
@@ -69,7 +69,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         }
 
         Timber.e("tip get node sig failedSigners size ${failedSigners?.size}, assigneeSk != null: ${assigneeSk != null}")
-        val pair = if (!failedSigners.isNullOrEmpty() && assigneeSk != null) {
+        val pair = if (!failedSigners.isNullOrEmpty() && failedSigners.size != tipConfig.signers.size && assigneeSk != null) {
             // should sign successful signers before failed signers,
             // prevent signing failed signers with different identities.
             val successfulSigners = tipConfig.signers - failedSigners
@@ -94,12 +94,12 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
         if (!forRecover && data.size < nodeCount) {
             Timber.e("not all signer success ${data.size}")
-            throw NotAllSignerSuccessException("", data.size, tipNodeError)
+            throw NotAllSignerSuccessException("", data.size, false, tipNodeError)
         }
 
         if (data.size < tipConfig.commitments.size) {
             Timber.e("not all signer success ${data.size}")
-            throw NotAllSignerSuccessException("", data.size, tipNodeError)
+            throw NotAllSignerSuccessException("", data.size, forRecover, tipNodeError)
         }
 
         val (assignor, partials) = parseAssignorAndPartials(data)
@@ -107,12 +107,17 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
         if (partials.size < tipConfig.commitments.size) {
             Timber.e("not enough partials ${partials.size} ${tipConfig.commitments.size}")
-            throw NotEnoughPartialsException(partials.size, tipNodeError)
+            throw NotEnoughPartialsException(partials.size, forRecover, tipNodeError)
         }
 
         val hexSigs = partials.joinToString(",") { it.toHex() }
         val commitments = tipConfig.commitments.joinToString(",")
-        return Crypto.recoverSignature(hexSigs, commitments, assignor, nodeCount.toLong())
+        val signature = Tip.recoverSignature(hexSigs, commitments, assignor, nodeCount.toLong())
+        val maxCounter = requireNotNull(data.maxByOrNull { it.counter }?.counter) {
+            "required max counter can not be null"
+        }
+        Timber.e("sign maxCounter: $maxCounter")
+        return Pair(signature, maxCounter)
     }
 
     suspend fun watch(watcher: ByteArray, callback: Callback? = null): Pair<List<TipNodeCounter>, String> {
@@ -129,6 +134,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
 
                     while (retryCount < maxRequestCount) {
                         val (counter, code) = watchTipNode(signer, watcher)
+                        Timber.e("watch tip node ${signer.index} counter: $counter, code: $code")
                         if (code == 429 || code == 500) {
                             Timber.e("watch tip node failed, ${signer.index} ${signer.api} meet $code")
                             nodeFailedInfo.append("[${signer.index}, $code] ")
@@ -206,7 +212,15 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     private suspend fun watchTipNode(tipSigner: TipSigner, watcher: ByteArray): Pair<Int, Int> {
         val tipWatchRequest = TipWatchRequest(watcher.toHex())
         return try {
-            val tipWatchResponse = tipNodeService.watch(tipWatchRequest, tipNodeApi2Path(tipSigner.api))
+            val response = tipNodeService.watch(tipWatchRequest, tipNodeApi2Path(tipSigner.api))
+            val requestId = response.headers()["x-request-id"] ?: ""
+            Timber.e("watch tip node requestId: $requestId to ${tipSigner.info()}")
+            if (response.isSuccessful.not()) {
+                return Pair(-1, response.code())
+            }
+            val tipWatchResponse = requireNotNull(response.body()) {
+                "watch tip node response success but body is null"
+            }
             return Pair(tipWatchResponse.counter, -1)
         } catch (e: Exception) {
             Timber.d(e)
@@ -233,7 +247,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             if (resError != null) {
                 return Pair(null, resError.code.toTipNodeError(tipSigner.index, requestId, resError.description))
             }
-            val signerPk = Crypto.pubKeyFromBase58(tipSigner.identity)
+            val signerPk = Tip.pubKeyFromBase58(tipSigner.identity)
             val msg = gson.toJson(tipSignResponse.data).toByteArray()
             try {
                 signerPk.verify(msg, tipSignResponse.signature.hexStringToByteArray())
@@ -274,8 +288,8 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
     }
 
     private fun parseNodeSigResp(userSk: Scalar, signer: TipSigner, resp: TipSignResponse): TipSignRespData {
-        val signerPk = Crypto.pubKeyFromBase58(signer.identity)
-        val plain = Crypto.decrypt(signerPk, userSk, resp.data.cipher.hexStringToByteArray())
+        val signerPk = Tip.pubKeyFromBase58(signer.identity)
+        val plain = Tip.decrypt(signerPk, userSk, resp.data.cipher.hexStringToByteArray())
         val nonceBytes = plain.slice(0..7).toByteArray()
         var offset = 8
         val partial = plain.slice(offset..offset + 65).toByteArray()
@@ -295,12 +309,12 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
         val time = buffer.readLong()
         buffer.write(counterBytes)
         val counter = buffer.readLong()
-        Timber.d("tip sign node ${signer.index} counter $counter")
+        Timber.e("sign tip node ${signer.index} counter $counter")
         return TipSignRespData(partial, assignor.toHex(), counter)
     }
 
     private fun genTipSignRequest(userSk: Scalar, tipSigner: TipSigner, ephemeral: ByteArray, watcher: ByteArray, nonce: Long, grace: Long, assignee: ByteArray?): TipSignRequest {
-        val signerPk = Crypto.pubKeyFromBase58(tipSigner.identity)
+        val signerPk = Tip.pubKeyFromBase58(tipSigner.identity)
         val userPk = userSk.publicKey()
         val esum = (ephemeral + tipSigner.identity.toByteArray()).sha3Sum256()
         var msg = userPk.publicKeyBytes() + esum + nonce.toBeByteArray() + grace.toBeByteArray()
@@ -320,7 +334,7 @@ class TipNode @Inject internal constructor(private val tipNodeService: TipNodeSe
             grace = grace,
         )
         val dataJson = gson.toJson(data).toByteArray()
-        val cipher = Crypto.encrypt(signerPk, userSk, dataJson)
+        val cipher = Tip.encrypt(signerPk, userSk, dataJson)
         return TipSignRequest(sig, userPkStr, cipher.base64RawURLEncode(), watcherHex)
     }
 

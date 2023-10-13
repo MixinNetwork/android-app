@@ -18,6 +18,7 @@ import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.seedFromPrivateKey
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
+import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.clickVibrate
@@ -25,6 +26,7 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.moveTo
+import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.fts.FtsDatabase
@@ -85,7 +87,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
 
     protected suspend fun handleAccount(
         response: MixinResponse<Account>,
-        sessionKey: KeyPair,
+        sessionKey: EdKeyPair,
         action: () -> Unit,
     ) = withContext(Dispatchers.Main) {
         if (!response.isSuccess) {
@@ -106,11 +108,10 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
 
         val privateKey = sessionKey.privateKey
         val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
-        Session.storeEd25519Seed(seedFromPrivateKey(privateKey).base64Encode())
-
+        Session.storeEd25519Seed(privateKey.base64Encode())
         Session.storePinToken(pinToken.base64Encode())
         Session.storeAccount(account) // After that, you can use the database.
-        defaultSharedPreferences.putString(DEVICE_ID, requireContext().getDeviceId())
+        defaultSharedPreferences.putString(DEVICE_ID, requireContext().getStringDeviceId())
 
         verificationKeyboard.animate().translationY(300f).start()
         MixinApplication.get().isOnline.set(true)
@@ -133,6 +134,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
                     }
                 }
                 SignalDatabase.release()
+
             }
             when {
                 account.fullName.isNullOrBlank() -> {

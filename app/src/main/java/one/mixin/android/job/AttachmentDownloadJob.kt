@@ -12,6 +12,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.AttachmentResponse
 import one.mixin.android.crypto.attachment.AttachmentCipherInputStream
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.event.ProgressEvent.Companion.loadingEvent
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createAudioTemp
@@ -30,7 +31,6 @@ import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
@@ -75,7 +75,7 @@ class AttachmentDownloadJob(
             }
         }
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-        InvalidateFlow.emit(message.conversationId)
+        MessageFlow.update(message.conversationId, message.messageId)
         attachmentProcess.remove(message.messageId)
         removeJob()
     }
@@ -89,6 +89,7 @@ class AttachmentDownloadJob(
             removeJob()
             return
         }
+
         jobManager.saveJob(this)
         var shareable: Boolean? = null
         attachmentCall = conversationApi.getAttachment(
@@ -118,7 +119,7 @@ class AttachmentDownloadJob(
             removeJob()
             Log.e(TAG, "get attachment url failed")
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-            InvalidateFlow.emit(message.conversationId)
+            MessageFlow.update(message.conversationId, message.messageId)
             attachmentProcess.remove(message.messageId)
         }
     }
@@ -126,7 +127,7 @@ class AttachmentDownloadJob(
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {
         super.onCancel(cancelReason, throwable)
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-        InvalidateFlow.emit(message.conversationId)
+        MessageFlow.update(message.conversationId, message.messageId)
         attachmentProcess.remove(message.messageId)
         removeJob()
     }
@@ -134,7 +135,7 @@ class AttachmentDownloadJob(
     override fun onAdded() {
         super.onAdded()
         messageDao.updateMediaStatus(MediaStatus.PENDING.name, message.messageId)
-        InvalidateFlow.emit(message.conversationId)
+        MessageFlow.update(message.conversationId, message.messageId)
         RxBus.publish(loadingEvent(message.messageId, 0f))
     }
 
@@ -172,14 +173,14 @@ class AttachmentDownloadJob(
             call!!.execute()
         } catch (e: Exception) {
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-            InvalidateFlow.emit(message.conversationId)
+            MessageFlow.update(message.conversationId, message.messageId)
             attachmentProcess.remove(message.messageId)
             destination.delete()
             return false
         }
         if (response.code == 404) {
             messageDao.updateMediaStatus(MediaStatus.EXPIRED.name, message.messageId)
-            InvalidateFlow.emit(message.conversationId)
+            MessageFlow.update(message.conversationId, message.messageId)
             attachmentProcess.remove(message.messageId)
             destination.delete()
             return true
@@ -188,7 +189,7 @@ class AttachmentDownloadJob(
             sink.writeAll(response.body!!.source())
             sink.close()
             if (message.category.endsWith("_IMAGE")) {
-                val attachmentCipherInputStream = if (!isNullOrEmpty(message.mediaKey) && !isNullOrEmpty(message.mediaDigest)) {
+                val attachmentCipherInputStream = if (!message.mediaKey.isNullOrEmpty() && !message.mediaDigest.isNullOrEmpty()) {
                     AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
                 } else {
                     FileInputStream(destination)
@@ -212,10 +213,10 @@ class AttachmentDownloadJob(
                 }
                 imageFile.copyFromInputStream(attachmentCipherInputStream)
                 messageDao.updateMedia(message.messageId, imageFile.name, imageFile.length(), MediaStatus.DONE.name)
-                InvalidateFlow.emit(message.conversationId)
+                MessageFlow.update(message.conversationId, message.messageId)
                 attachmentProcess.remove(message.messageId)
             } else if (message.category.endsWith("_DATA")) {
-                val attachmentCipherInputStream = if (!isNullOrEmpty(message.mediaKey) && !isNullOrEmpty(message.mediaDigest)) {
+                val attachmentCipherInputStream = if (!message.mediaKey.isNullOrEmpty() && !message.mediaDigest.isNullOrEmpty()) {
                     AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
                 } else {
                     FileInputStream(destination)
@@ -225,10 +226,10 @@ class AttachmentDownloadJob(
                     .createDocumentTemp(message.conversationId, message.messageId, extensionName)
                 dataFile.copyFromInputStream(attachmentCipherInputStream)
                 messageDao.updateMedia(message.messageId, dataFile.name, dataFile.length(), MediaStatus.DONE.name)
-                InvalidateFlow.emit(message.conversationId)
+                MessageFlow.update(message.conversationId, message.messageId)
                 attachmentProcess.remove(message.messageId)
             } else if (message.category.endsWith("_VIDEO")) {
-                val attachmentCipherInputStream = if (!isNullOrEmpty(message.mediaKey) && !isNullOrEmpty(message.mediaDigest)) {
+                val attachmentCipherInputStream = if (!message.mediaKey.isNullOrEmpty() && !message.mediaDigest.isNullOrEmpty()) {
                     AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
                 } else {
                     FileInputStream(destination)
@@ -240,10 +241,10 @@ class AttachmentDownloadJob(
                     .createVideoTemp(message.conversationId, message.messageId, extensionName)
                 videoFile.copyFromInputStream(attachmentCipherInputStream)
                 messageDao.updateMedia(message.messageId, videoFile.name, videoFile.length(), MediaStatus.DONE.name)
-                InvalidateFlow.emit(message.conversationId)
+                MessageFlow.update(message.conversationId, message.messageId)
                 attachmentProcess.remove(message.messageId)
             } else if (message.category.endsWith("_AUDIO")) {
-                val attachmentCipherInputStream = if (!isNullOrEmpty(message.mediaKey) && !isNullOrEmpty(message.mediaDigest)) {
+                val attachmentCipherInputStream = if (!message.mediaKey.isNullOrEmpty() && !message.mediaDigest.isNullOrEmpty()) {
                     AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
                 } else {
                     FileInputStream(destination)
@@ -252,14 +253,13 @@ class AttachmentDownloadJob(
                     .createAudioTemp(message.conversationId, message.messageId, "ogg")
                 audioFile.copyFromInputStream(attachmentCipherInputStream)
                 messageDao.updateMedia(message.messageId, audioFile.name, audioFile.length(), MediaStatus.DONE.name)
-                InvalidateFlow.emit(message.conversationId)
+                MessageFlow.update(message.conversationId, message.messageId)
                 attachmentProcess.remove(message.messageId)
             }
             destination.delete()
             return true
         } else {
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-            InvalidateFlow.emit(message.conversationId)
             attachmentProcess.remove(message.messageId)
             destination.delete()
             return false

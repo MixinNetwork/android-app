@@ -17,12 +17,13 @@ import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.exoplayer2.util.MimeTypes
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -75,6 +76,7 @@ import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.copy
@@ -88,6 +90,7 @@ import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.toMessageItem
 import one.mixin.android.vo.toUser
+import one.mixin.android.vo.toVideoClip
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.PinAction
 import one.mixin.android.widget.BottomSheet
@@ -98,7 +101,7 @@ import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 
-@AndroidEntryPoint
+@UnstableApi @AndroidEntryPoint
 class ChatHistoryActivity : BaseActivity() {
     private lateinit var binding: ActivityChatHistoryBinding
     override fun getNightThemeId(): Int = R.style.AppTheme_Night_NoActionBar
@@ -420,20 +423,24 @@ class ChatHistoryActivity : BaseActivity() {
                                 )
                             }
                     } else {
-                        RxPermissions(this@ChatHistoryActivity)
-                            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            .autoDispose(stopScope)
-                            .subscribe(
-                                { granted ->
-                                    if (granted) {
-                                        retryDownload(messageId)
-                                    } else {
-                                        this@ChatHistoryActivity.openPermissionSetting()
-                                    }
-                                },
-                                {
-                                },
-                            )
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                            RxPermissions(this@ChatHistoryActivity)
+                                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                .autoDispose(stopScope)
+                                .subscribe(
+                                    { granted ->
+                                        if (granted) {
+                                            retryDownload(messageId)
+                                        } else {
+                                            this@ChatHistoryActivity.openPermissionSetting()
+                                        }
+                                    },
+                                    {
+                                    },
+                                )
+                        } else {
+                            retryDownload(messageId)
+                        }
                     }
                 }
             }
@@ -451,22 +458,28 @@ class ChatHistoryActivity : BaseActivity() {
                                 )
                             }
                     } else {
-                        RxPermissions(this@ChatHistoryActivity)
-                            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            .autoDispose(stopScope)
-                            .subscribe(
-                                { granted ->
-                                    if (granted) {
-                                        retryUpload(messageId) {
-                                            toast(R.string.Retry_upload_failed)
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                            RxPermissions(this@ChatHistoryActivity)
+                                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                .autoDispose(stopScope)
+                                .subscribe(
+                                    { granted ->
+                                        if (granted) {
+                                            retryUpload(messageId) {
+                                                toast(R.string.Retry_upload_failed)
+                                            }
+                                        } else {
+                                            this@ChatHistoryActivity.openPermissionSetting()
                                         }
-                                    } else {
-                                        this@ChatHistoryActivity.openPermissionSetting()
-                                    }
-                                },
-                                {
-                                },
-                            )
+                                    },
+                                    {
+                                    },
+                                )
+                        } else {
+                            retryUpload(messageId) {
+                                toast(R.string.Retry_upload_failed)
+                            }
+                        }
                     }
                 }
             }
@@ -516,22 +529,7 @@ class ChatHistoryActivity : BaseActivity() {
             }
 
             override fun onFileClick(messageItem: ChatHistoryMessageItem) {
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
-                    messageItem.mediaMimeType.equals(
-                        "application/vnd.android.package-archive",
-                        true,
-                    )
-                ) {
-                    if (this@ChatHistoryActivity.packageManager.canRequestPackageInstalls()) {
-                        openMedia(messageItem)
-                    } else {
-                        startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES))
-                    }
-                } else if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
-                    showBottomSheet(messageItem)
-                } else {
-                    openMedia(messageItem)
-                }
+                showBottomSheet(messageItem)
             }
 
             override fun onUserClick(userId: String?) {
@@ -704,11 +702,22 @@ class ChatHistoryActivity : BaseActivity() {
                 ),
             )
         }
+        // Android O requires installation permissions
+        if (!(messageItem.mediaMimeType.equals("application/vnd.android.package-archive", true) && Build.VERSION.SDK_INT > Build.VERSION_CODES.O)) {
+            items.add(
+                BottomSheetItem(
+                    getString(R.string.Open),
+                    {
+                        this.openMedia(messageItem)
+                        bottomSheet?.dismiss()
+                    },
+                ),
+            )
+        }
         items.add(
             BottomSheetItem(
-                getString(R.string.Open),
+                getString(R.string.Cancel),
                 {
-                    openMedia(messageItem)
                     bottomSheet?.dismiss()
                 },
             ),
@@ -720,20 +729,24 @@ class ChatHistoryActivity : BaseActivity() {
     }
 
     private fun checkWritePermissionAndSave(messageItem: ChatHistoryMessageItem) {
-        RxPermissions(this)
-            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .autoDispose(stopScope)
-            .subscribe(
-                { granted ->
-                    if (granted) {
-                        messageItem.saveToLocal(this)
-                    } else {
-                        openPermissionSetting()
-                    }
-                },
-                {
-                },
-            )
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            RxPermissions(this)
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            messageItem.saveToLocal(this)
+                        } else {
+                            openPermissionSetting()
+                        }
+                    },
+                    {
+                    },
+                )
+        } else {
+            messageItem.saveToLocal(this)
+        }
     }
 
     @SuppressLint("AutoDispose")
@@ -777,54 +790,57 @@ class ChatHistoryActivity : BaseActivity() {
 
     private fun retryUpload(id: String, onError: () -> Unit) {
         lifecycleScope.launch(Dispatchers.IO) {
-            conversationRepository.findMessageById(id)?.let {
-                if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
+            conversationRepository.findMessageById(id)?.let { message ->
+                if (message.isVideo() && message.mediaSize != null && message.mediaSize == 0L) {
                     try {
-                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.messageId, it.conversationId)
+                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, message.messageId, message.conversationId)
+                        val videoClip = toVideoClip(message.content, message.mediaUrl)
                         jobManager.addJobInBackground(
                             ConvertVideoJob(
-                                it.conversationId,
-                                it.userId,
-                                Uri.parse(it.mediaUrl),
+                                message.conversationId,
+                                message.userId,
+                                Uri.parse(videoClip.uri),
+                                videoClip.startProgress,
+                                videoClip.endProgress,
                                 when {
-                                    it.isSignal() -> EncryptCategory.SIGNAL
-                                    it.isEncrypted() -> EncryptCategory.ENCRYPTED
+                                    message.isSignal() -> EncryptCategory.SIGNAL
+                                    message.isEncrypted() -> EncryptCategory.ENCRYPTED
                                     else -> EncryptCategory.PLAIN
                                 },
-                                it.messageId,
-                                it.createdAt,
+                                message.messageId,
+                                message.createdAt,
                             ),
                         )
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
-                } else if (it.isImage() && it.mediaSize != null && it.mediaSize == 0L) { // un-downloaded GIPHY
+                } else if (message.isImage() && message.mediaSize != null && message.mediaSize == 0L) { // un-downloaded GIPHY
                     val category = when {
-                        it.isSignal() -> MessageCategory.SIGNAL_IMAGE
-                        it.isEncrypted() -> MessageCategory.ENCRYPTED_IMAGE
+                        message.isSignal() -> MessageCategory.SIGNAL_IMAGE
+                        message.isEncrypted() -> MessageCategory.ENCRYPTED_IMAGE
                         else -> MessageCategory.PLAIN_IMAGE
                     }.name
                     try {
                         jobManager.addJobInBackground(
                             SendGiphyJob(
-                                it.conversationId,
-                                it.userId,
-                                it.mediaUrl!!,
-                                it.mediaWidth!!,
-                                it.mediaHeight!!,
-                                it.mediaSize,
+                                message.conversationId,
+                                message.userId,
+                                message.mediaUrl!!,
+                                message.mediaWidth!!,
+                                message.mediaHeight!!,
+                                message.mediaSize,
                                 category,
-                                it.messageId,
-                                it.thumbImage ?: "",
-                                it.createdAt,
+                                message.messageId,
+                                message.thumbImage ?: "",
+                                message.createdAt,
                             ),
                         )
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
                 } else {
-                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.messageId, it.conversationId)
-                    jobManager.addJobInBackground(SendAttachmentMessageJob(it))
+                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, message.messageId, message.conversationId)
+                    jobManager.addJobInBackground(SendAttachmentMessageJob(message))
                 }
             }
         }

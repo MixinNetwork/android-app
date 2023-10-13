@@ -38,3 +38,9 @@ class ChecksumException : IOException() {
         private var serialVersionUID: Long = 1L
     }
 }
+
+class MixinResponseException(val errorCode: Int, val errorDescription: String) : IOException() {
+    companion object {
+        private var serialVersionUID: Long = 1L
+    }
+}

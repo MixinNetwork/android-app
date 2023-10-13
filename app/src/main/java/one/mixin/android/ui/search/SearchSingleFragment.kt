@@ -21,6 +21,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchSingleBinding
 import one.mixin.android.databinding.ViewHeadSearchSingleBinding
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
@@ -54,7 +55,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
     private val searchViewModel by viewModels<SearchViewModel>()
 
     private val data by lazy {
-        requireArguments().getParcelableArrayList<Parcelable>(ARGS_LIST)
+        requireArguments().getParcelableArrayListCompat(ARGS_LIST, Parcelable::class.java)
     }
 
     private val query by lazy {

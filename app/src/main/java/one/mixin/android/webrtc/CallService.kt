@@ -158,7 +158,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         Timber.d("$TAG_CALL disconnect")
         if (isDisconnected.compareAndSet(false, true)) {
             Timber.d("$TAG_CALL real disconnect")
-            stopForeground(true)
+            stopForeground(STOP_FOREGROUND_REMOVE)
             callState.reset()
             callDebugState.reset()
             audioManager.reset()

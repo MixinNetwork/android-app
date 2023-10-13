@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.graphics.drawable.Drawable
 import android.media.MediaScannerConnection
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -140,16 +141,20 @@ class EditFragment : VisionFragment() {
         }
         binding.closeIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.downloadIv.setOnClickListener {
-            RxPermissions(requireActivity())
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe { granted ->
-                    if (granted) {
-                        save()
-                    } else {
-                        context?.openPermissionSetting()
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe { granted ->
+                        if (granted) {
+                            save()
+                        } else {
+                            context?.openPermissionSetting()
+                        }
                     }
-                }
+            } else {
+                save()
+            }
             binding.downloadIv.bounce()
         }
         binding.sendFl.setOnClickListener {
@@ -220,7 +225,7 @@ class EditFragment : VisionFragment() {
                         lifecycleScope.launch innerLaunch@{
                             if (viewDestroyed()) return@innerLaunch
                             if (fromScan) {
-                                handleResult(content)
+                                handleResult(requireActivity(), fromShortcut, content)
                             } else {
                                 pseudoNotificationView?.addContent(content)
                             }
@@ -244,7 +249,7 @@ class EditFragment : VisionFragment() {
         if (!result.isNullOrBlank()) {
             withContext(Dispatchers.Main) {
                 if (fromScan) {
-                    handleResult(result)
+                    handleResult(requireActivity(), fromShortcut, result)
                 } else {
                     pseudoNotificationView?.addContent(result)
                 }
@@ -311,7 +316,7 @@ class EditFragment : VisionFragment() {
         override fun onLoadFailed(
             e: GlideException?,
             model: Any?,
-            target: Target<Drawable?>?,
+            target: Target<Drawable?>,
             isFirstResource: Boolean,
         ): Boolean {
             setBg()
@@ -319,10 +324,10 @@ class EditFragment : VisionFragment() {
         }
 
         override fun onResourceReady(
-            resource: Drawable?,
-            model: Any?,
+            resource: Drawable,
+            model: Any,
             target: Target<Drawable?>?,
-            dataSource: DataSource?,
+            dataSource: DataSource,
             isFirstResource: Boolean,
         ): Boolean {
             setBg()

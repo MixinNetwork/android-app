@@ -132,7 +132,7 @@ class CallNotificationBuilder {
                 else -> {
                     builder.setContentText(context.getString(R.string.in_connecting))
                     val action = if (isGroupCall) {
-                        ACTION_KRAKEN_CANCEL
+                        if (callState.isOffer) ACTION_KRAKEN_CANCEL else ACTION_KRAKEN_DECLINE
                     } else {
                         if (callState.isOffer) ACTION_CALL_CANCEL else ACTION_CALL_DECLINE
                     }

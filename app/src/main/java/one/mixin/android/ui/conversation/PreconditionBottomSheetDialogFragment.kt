@@ -23,6 +23,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.textColor
@@ -57,7 +58,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val t: AssetBiometricItem by lazy {
-        requireArguments().getParcelable(ValuableBiometricBottomSheetDialogFragment.ARGS_BIOMETRIC_ITEM)!!
+        requireArguments().getParcelableCompat(ValuableBiometricBottomSheetDialogFragment.ARGS_BIOMETRIC_ITEM, AssetBiometricItem::class.java)!!
     }
     private val from: Int by lazy { requireArguments().getInt(ARGS_FROM, FROM_LINK) }
 

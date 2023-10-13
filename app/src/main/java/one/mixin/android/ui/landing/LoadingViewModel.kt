@@ -30,8 +30,7 @@ import javax.inject.Inject
 import kotlin.math.abs
 
 @HiltViewModel
-class LoadingViewModel @Inject internal
-constructor(
+class LoadingViewModel @Inject internal constructor(
     private val signalKeyService: SignalKeyService,
     private val accountService: AccountService,
     private val userService: UserService,
@@ -70,7 +69,7 @@ constructor(
                     }
                 }
             }
-            if (sessionMap.isEmpty) {
+            if (sessionMap.isEmpty()) {
                 return@withContext
             }
             val newSession = mutableListOf<Session>()

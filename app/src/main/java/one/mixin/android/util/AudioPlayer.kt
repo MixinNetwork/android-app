@@ -1,9 +1,10 @@
 package one.mixin.android.util
 
 import android.media.AudioManager
-import com.google.android.exoplayer2.ExoPlaybackException
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.source.UnrecognizedInputFormatException
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlaybackException
+import androidx.media3.exoplayer.source.UnrecognizedInputFormatException
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -14,6 +15,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.event.ProgressEvent.Companion.errorEvent
 import one.mixin.android.event.ProgressEvent.Companion.pauseEvent
 import one.mixin.android.event.ProgressEvent.Companion.playEvent
@@ -23,7 +25,6 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
@@ -41,7 +42,7 @@ import org.threeten.bp.ZonedDateTime
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
-class AudioPlayer private constructor() {
+@UnstableApi class AudioPlayer private constructor() {
     companion object {
         @Synchronized
         private fun get(): AudioPlayer {
@@ -330,7 +331,7 @@ class AudioPlayer private constructor() {
         val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
         if (currentMessage.mediaStatus == MediaStatus.DONE.name) {
             messageDao.updateMediaStatus(MediaStatus.READ.name, currentMessage.messageId)
-            InvalidateFlow.emit(currentMessage.conversationId)
+            MessageFlow.update(currentMessage.conversationId, currentMessage.messageId)
         }
         val message = messageDao.findNextAudioMessage(
             currentMessage.conversationId,

@@ -1,4 +1,4 @@
-@file:Suppress("ktlint:enum-entry-name-case", "EnumEntryName")
+@file:Suppress("ktlint:standard:enum-entry-name-case", "EnumEntryName")
 
 package one.mixin.android.api.response.signature
 

@@ -32,6 +32,7 @@ import one.mixin.android.extension.isActivityNotDestroyed
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.postOptimize
+import one.mixin.android.util.getLocalString
 import one.mixin.android.util.markdown.table.TableEntryPlugin
 import one.mixin.android.widget.markdown.SimplePlugin
 import org.commonmark.node.FencedCodeBlock
@@ -205,8 +206,7 @@ class MarkwonUtil {
         }
 
         fun parseContent(content: String?): String {
-            content
-                ?: return MixinApplication.appContext.getString(R.string.content_post)
+            content ?: return getLocalString(MixinApplication.appContext, R.string.content_post)
             return markwon.toMarkdown(content.postOptimize()).toString()
         }
 

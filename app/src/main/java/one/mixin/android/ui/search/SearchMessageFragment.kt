@@ -19,9 +19,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchMessageBinding
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.observeOnceAtMost
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -35,6 +35,7 @@ import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import java.util.concurrent.TimeUnit
 
+@Suppress("DEPRECATION")
 @AndroidEntryPoint
 class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     companion object {
@@ -53,7 +54,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     private val searchViewModel by viewModels<SearchViewModel>()
 
     private val searchMessageItem: SearchMessageItem by lazy {
-        requireArguments().getParcelable(ARGS_SEARCH_MESSAGE)!!
+        requireArguments().getParcelableCompat(ARGS_SEARCH_MESSAGE, SearchMessageItem::class.java)!!
     }
 
     private val query by lazy { requireArguments().getString(ARGS_QUERY)!! }
@@ -61,7 +62,6 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     private val adapter by lazy { SearchMessageAdapter() }
 
     private var observer: Observer<PagedList<SearchMessageDetailItem>>? = null
-    private var queryObserver: Observer<PagedList<SearchMessageDetailItem>>? = null
     private var curLiveData: LiveData<PagedList<SearchMessageDetailItem>>? = null
 
     private val binding by viewBinding(FragmentSearchMessageBinding::bind)
@@ -101,14 +101,13 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
                         val conversationFragment = activity.supportFragmentManager.findFragmentByTag(ConversationFragment.TAG) as? ConversationFragment
                         if (activity is ConversationActivity && conversationFragment != null) {
                             lifecycleScope.launch {
-                                val unreadCount = searchViewModel.findMessageIndex(searchMessageItem.conversationId, item.messageId)
                                 activity.supportFragmentManager.inTransaction {
                                     setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
                                     show(conversationFragment)
                                     hide(this@SearchMessageFragment)
                                     addToBackStack(null)
                                 }
-                                conversationFragment.updateConversationInfo(item.messageId, binding.searchEt.text.toString(), unreadCount)
+                                conversationFragment.updateConversationInfo(item.messageId, binding.searchEt.text.toString())
                             }
                         } else {
                             ConversationActivity.show(
@@ -165,7 +164,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
             val conversationFragment = requireActivity().supportFragmentManager.findFragmentByTag(ConversationFragment.TAG) as? ConversationFragment
             if (conversationFragment != null) {
                 requireActivity().supportFragmentManager.inTransaction {
-                    conversationFragment.updateConversationInfo(null, null, 0)
+                    conversationFragment.updateConversationInfo(null, null)
                     show(conversationFragment)
                 }
             }
@@ -184,7 +183,9 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
         if (s.isEmpty()) {
             removeObserverAndCancel()
             cancellationSignal = null
-            queryObserver = null
+            observer?.let {
+                curLiveData?.removeObserver(it)
+            }
             observer = null
             curLiveData = null
             binding.progress.isVisible = false
@@ -208,13 +209,12 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
             adapter.submitList(it)
         }
         observer?.let {
-            queryObserver = curLiveData?.observeOnceAtMost(viewLifecycleOwner, it)
+            curLiveData?.observe(viewLifecycleOwner, it)
         }
     }
 
     private fun removeObserverAndCancel() {
         cancellationSignal?.cancel()
         observer?.let { curLiveData?.removeObserver(it) }
-        queryObserver?.let { curLiveData?.removeObserver(it) }
     }
 }

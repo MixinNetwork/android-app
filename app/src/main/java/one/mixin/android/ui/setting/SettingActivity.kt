@@ -21,6 +21,7 @@ class SettingActivity : ThemeActivity() {
         const val FROM_NOTIFICATION = "notification"
         const val EXTRA_SHOW_PIN_SETTING = "extra_show_pin_setting"
         const val EXTRA_EMERGENCY_CONTACT = "extra_emergency_contact"
+        const val EXTRA_MIGRATE_RESTORE = "extra_migrate_restore"
         const val EXTRA_SHOW_PERMISSION_LIST = "extra_show_permission_list"
         const val EXTRA_SHOW_COMPOSE = "extra_show_compose"
         const val EXTRA_APP = "extra_app"
@@ -50,6 +51,14 @@ class SettingActivity : ThemeActivity() {
                 },
             )
         }
+
+        fun showMigrateRestore(context: Context) {
+            context.startActivity(
+                Intent(context, SettingActivity::class.java).apply {
+                    putExtra(EXTRA_MIGRATE_RESTORE, true)
+                },
+            )
+        }
     }
 
     private val binding by viewBinding(ActivityContactBinding::inflate)
@@ -67,6 +76,8 @@ class SettingActivity : ThemeActivity() {
             replaceFragment(PermissionListFragment.newInstance(app, auth), R.id.container, PermissionListFragment.TAG)
         } else if (intent.getBooleanExtra(EXTRA_SHOW_COMPOSE, false)) {
             replaceFragment(SettingComposeFragment.newInstance(), R.id.container, SettingComposeFragment.TAG)
+        } else if (intent.getBooleanExtra(EXTRA_MIGRATE_RESTORE, false)) {
+            replaceFragment(MigrateRestoreFragment.newInstance(), R.id.container, MigrateRestoreFragment.TAG)
         } else {
             val fragment = SettingFragment.newInstance()
             replaceFragment(fragment, R.id.container, SettingFragment.TAG)

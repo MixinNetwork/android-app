@@ -169,6 +169,10 @@
         <attr name="expandAction" format="string" />
         <attr name="expandActionColor" format="string" />
     </declare-styleable>
+    <declare-styleable name="HeadTailView">
+        <attr name="head" format="string" />
+        <attr name="tail" format="string" />
+    </declare-styleable>
 
     <declare-styleable name="ViewfinderView">
         <attr name="maskColor" format="color" />

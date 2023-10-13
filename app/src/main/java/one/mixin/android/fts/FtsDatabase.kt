@@ -33,6 +33,7 @@ abstract class FtsDatabase : RoomDatabase() {
                         object : Callback() {
                             override fun onOpen(db: SupportSQLiteDatabase) {
                                 super.onOpen(db)
+                                db.execSQL("PRAGMA synchronous = NORMAL")
                                 supportSQLiteDatabase = db
                             }
                         },

@@ -11,7 +11,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.initChatMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
@@ -62,7 +62,7 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
         }
     }
 
-    private var onItemListener: ConversationAdapter.OnItemListener? = null
+    private var onItemListener: MessageAdapter.OnItemListener? = null
 
     fun bind(
         messageItem: MessageItem,
@@ -72,7 +72,7 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         this.onItemListener = onItemListener

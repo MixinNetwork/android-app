@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.view.View
 import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.exoplayer2.util.MimeTypes
+import androidx.media3.common.MimeTypes
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileBinding
 import one.mixin.android.extension.dp

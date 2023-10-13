@@ -3,6 +3,7 @@ package one.mixin.android.ui.web
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
@@ -27,6 +28,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.webkit.GeolocationPermissions
 import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
@@ -47,6 +49,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
+import androidx.core.view.drawToBitmap
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -81,6 +84,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isDarkColor
@@ -99,6 +103,12 @@ import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipSignSpec
+import one.mixin.android.tip.tipPrivToAddress
+import one.mixin.android.tip.tipPrivToPrivateKey
+import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.info.createMenuLayout
@@ -117,6 +127,8 @@ import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
+import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
+import one.mixin.android.ui.tip.wc.showWalletConnectBottomSheetDialogFragment
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getCountry
@@ -136,6 +148,7 @@ import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class WebFragment : BaseFragment() {
@@ -179,7 +192,7 @@ class WebFragment : BaseFragment() {
     }
     private var app: App? = null
     private val appCard: AppCardData? by lazy {
-        requireArguments().getParcelable(ARGS_APP_CARD)
+        requireArguments().getParcelableCompat(ARGS_APP_CARD, AppCardData::class.java)
     }
     private val shareable: Boolean by lazy {
         requireArguments().getBoolean(ARGS_SHAREABLE, true)
@@ -195,6 +208,9 @@ class WebFragment : BaseFragment() {
             this.index = -1
         }
     }
+
+    @Inject
+    lateinit var tip: Tip
 
     private lateinit var getPermissionResult: ActivityResultLauncher<Pair<App, AuthorizationResponse>>
 
@@ -331,7 +347,7 @@ class WebFragment : BaseFragment() {
             ),
         )
 
-        app = requireArguments().getParcelable(ARGS_APP)
+        app = requireArguments().getParcelableCompat(ARGS_APP, App::class.java)
 
         initView()
 
@@ -676,6 +692,31 @@ class WebFragment : BaseFragment() {
                 )
                 return true
             }
+
+            override fun onGeolocationPermissionsShowPrompt(
+                origin: String?,
+                callback: GeolocationPermissions.Callback?,
+            ) {
+                PermissionBottomSheetDialogFragment.requestLocation(
+                    binding.titleTv.text.toString(),
+                    app?.appNumber,
+                    app?.iconUrl,
+                )
+                    .setCancelAction {
+                        callback?.invoke(origin, false, false)
+                    }.setGrantedAction {
+                        RxPermissions(requireActivity())
+                            .request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+                            .autoDispose(stopScope)
+                            .subscribe { granted ->
+                                if (granted) {
+                                    callback?.invoke(origin, true, false)
+                                } else {
+                                    requireContext().openPermissionSetting()
+                                }
+                            }
+                    }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
+            }
         }
 
         webView.setDownloadListener { url, _, _, _, _ ->
@@ -741,6 +782,12 @@ class WebFragment : BaseFragment() {
                         closeSelf()
                     }
                 },
+                getTipAddressAction = { chainId, callback ->
+                    getTipAddress(chainId, callback)
+                },
+                tipSignAction = { chainId, message, callback ->
+                    tipSign(chainId, message, callback)
+                },
             )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
@@ -790,6 +837,85 @@ class WebFragment : BaseFragment() {
             webView.evaluateJavascript(themeColorScript) {
                 setStatusBarColor(it)
             }
+        }
+    }
+
+    private fun getTipAddress(chainId: String, callbackFunction: String) {
+        if (viewDestroyed()) return
+        if (!WalletConnect.isEnabled(requireContext())) return
+
+        lifecycleScope.launch {
+            WalletConnectTIP.peer = getPeerUI()
+            showWalletConnectBottomSheetDialogFragment(
+                tip,
+                requireActivity(),
+                WalletConnect.RequestType.SessionProposal,
+                WalletConnect.Version.TIP,
+                null,
+                onReject = {
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction('')") {}
+                    }
+                },
+                callback = {
+                    val address = try {
+                        tipPrivToAddress(it, chainId)
+                    } catch (e: IllegalArgumentException) {
+                        Timber.d("${WalletConnectTIP.TAG} ${e.stackTraceToString()}")
+                        ""
+                    }
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction('$address')") {}
+                    }
+                },
+            )
+        }
+    }
+
+    private fun tipSign(chainId: String, message: String, callbackFunction: String) {
+        if (viewDestroyed()) return
+        if (!WalletConnect.isEnabled(requireContext())) return
+
+        lifecycleScope.launch {
+            WalletConnectTIP.peer = getPeerUI()
+            WalletConnectTIP.signData = WalletConnect.WCSignData.TIPSignData(message)
+            showWalletConnectBottomSheetDialogFragment(
+                tip,
+                requireActivity(),
+                WalletConnect.RequestType.SessionRequest,
+                WalletConnect.Version.TIP,
+                null,
+                onReject = {
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction('')") {}
+                    }
+                },
+                callback = {
+                    val sig = TipSignSpec.Ecdsa.Secp256k1.sign(tipPrivToPrivateKey(it, chainId), message.toByteArray())
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                    }
+                },
+            )
+        }
+    }
+
+    private fun getPeerUI(): PeerUI {
+        val a = app
+        return if (a != null) {
+            PeerUI(
+                uri = a.homeUri,
+                name = a.name,
+                icon = a.iconUrl,
+                desc = a.description,
+            )
+        } else {
+            PeerUI(
+                uri = webView.url ?: url,
+                name = webView.title ?: "",
+                icon = "",
+                desc = "",
+            )
         }
     }
 
@@ -856,6 +982,8 @@ class WebFragment : BaseFragment() {
                 }
             }
         }
+        progressDialog?.dismiss()
+        permissionAlert?.dismiss()
         unregisterForContextMenu(webView)
         binding.webLl.removeView(webView)
         processor.close()
@@ -977,6 +1105,14 @@ class WebFragment : BaseFragment() {
                 bottomSheet.dismiss()
             }
         }
+        val scanMenu = menu {
+            title = getString(R.string.Scan_QR_Code)
+            icon = R.drawable.ic_bot_category_scan
+            action = {
+                tryScanQRCode()
+                bottomSheet.dismiss()
+            }
+        }
         val copyMenu = menu {
             title = getString(R.string.Copy_link)
             icon = R.drawable.ic_content_copy
@@ -1059,6 +1195,7 @@ class WebFragment : BaseFragment() {
                     menu(refreshMenu)
                 }
                 menuGroup {
+                    menu(scanMenu)
                     menu(copyMenu)
                     menu(openMenu)
                 }
@@ -1134,6 +1271,31 @@ class WebFragment : BaseFragment() {
         }
     }
 
+    private var progressDialog: Dialog? = null
+
+    private fun tryScanQRCode() {
+        progressDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+            show()
+        }
+        val bitmap = webView.drawToBitmap()
+        processor.detect(
+            lifecycleScope,
+            bitmap,
+            onSuccess = { result ->
+                result.openAsUrlOrQrScan(
+                    requireActivity(),
+                    parentFragmentManager,
+                    lifecycleScope,
+                )
+                progressDialog?.dismiss()
+            },
+            onFailure = {
+                toast(R.string.can_not_recognize_qr_code)
+                progressDialog?.dismiss()
+            },
+        )
+    }
+
     override fun onPause() {
         if (!requireActivity().isInMultiWindowMode) {
             webView.onPause()
@@ -1152,49 +1314,62 @@ class WebFragment : BaseFragment() {
 
     private fun saveImageFromUrl(url: String?) {
         if (viewDestroyed()) return
-        RxPermissions(requireActivity())
-            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .autoDispose(stopScope)
-            .subscribe { granted ->
-                if (granted) {
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        try {
-                            val outFile = requireContext().getPublicPicturePath()
-                                .createImageTemp(noMedia = false)
-                            val encodingPrefix = "base64,"
-                            val prefixIndex = url?.indexOf(encodingPrefix)
-                            if (url != null && prefixIndex != null && prefixIndex != -1) {
-                                val dataStartIndex = prefixIndex + encodingPrefix.length
-                                val imageData =
-                                    Base64.decode(url.substring(dataStartIndex), Base64.DEFAULT)
-                                outFile.copyFromInputStream(ByteArrayInputStream(imageData))
-                            } else {
-                                val file = Glide.with(MixinApplication.appContext)
-                                    .asFile()
-                                    .load(url)
-                                    .submit()
-                                    .get(10, TimeUnit.SECONDS)
-                                outFile.copyFromInputStream(FileInputStream(file))
-                            }
-                            MediaScannerConnection.scanFile(requireContext(), arrayOf(outFile.toString()), null, null)
-                            withContext(Dispatchers.Main) {
-                                if (isAdded) {
-                                    toast(
-                                        getString(
-                                            R.string.Save_to,
-                                            outFile.absolutePath,
-                                        ),
-                                    )
-                                }
-                            }
-                        } catch (e: Exception) {
-                            withContext(Dispatchers.Main) { if (isAdded) toast(R.string.Save_failure) }
+
+        fun afterGranted() {
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    val outFile = requireContext().getPublicPicturePath()
+                        .createImageTemp(noMedia = false)
+                    val encodingPrefix = "base64,"
+                    val prefixIndex = url?.indexOf(encodingPrefix)
+                    if (url != null && prefixIndex != null && prefixIndex != -1) {
+                        val dataStartIndex = prefixIndex + encodingPrefix.length
+                        val imageData =
+                            Base64.decode(url.substring(dataStartIndex), Base64.DEFAULT)
+                        outFile.copyFromInputStream(ByteArrayInputStream(imageData))
+                    } else {
+                        val file = Glide.with(MixinApplication.appContext)
+                            .asFile()
+                            .load(url)
+                            .submit()
+                            .get(10, TimeUnit.SECONDS)
+                        outFile.copyFromInputStream(FileInputStream(file))
+                    }
+                    MediaScannerConnection.scanFile(
+                        requireContext(),
+                        arrayOf(outFile.toString()),
+                        null,
+                        null,
+                    )
+                    withContext(Dispatchers.Main) {
+                        if (isAdded) {
+                            toast(
+                                getString(
+                                    R.string.Save_to,
+                                    outFile.absolutePath,
+                                ),
+                            )
                         }
                     }
-                } else {
-                    context?.openPermissionSetting()
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) { if (isAdded) toast(R.string.Save_failure) }
                 }
             }
+        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe { granted ->
+                    if (granted) {
+                        afterGranted()
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }
+        } else {
+            afterGranted()
+        }
     }
 
     private fun setStatusBarColor(content: String) {
@@ -1336,6 +1511,8 @@ class WebFragment : BaseFragment() {
         var reloadThemeAction: (() -> Unit)? = null,
         var playlistAction: ((Array<String>) -> Unit)? = null,
         var closeAction: (() -> Unit)? = null,
+        var getTipAddressAction: ((String, String) -> Unit)? = null,
+        var tipSignAction: ((String, String, String) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1368,6 +1545,16 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun close() {
             closeAction?.invoke()
+        }
+
+        @JavascriptInterface
+        fun getTipAddress(chainId: String, callbackFunction: String) {
+            getTipAddressAction?.invoke(chainId, callbackFunction)
+        }
+
+        @JavascriptInterface
+        fun tipSign(chainId: String, message: String, callbackFunction: String) {
+            tipSignAction?.invoke(chainId, message, callbackFunction)
         }
     }
 

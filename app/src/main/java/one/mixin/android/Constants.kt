@@ -1,6 +1,9 @@
 package one.mixin.android
 
 import android.graphics.Color
+import com.checkout.base.model.CardScheme
+import com.checkout.base.model.Environment
+import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
 import one.mixin.android.net.CustomDns
 import one.mixin.android.net.SequentialDns
@@ -9,13 +12,15 @@ object Constants {
 
     object API {
         const val DOMAIN = "https://mixin.one"
-        const val URL = "https://mixin-api.zeromesh.net/"
-        const val WS_URL = "wss://mixin-blaze.zeromesh.net"
-        const val Mixin_URL = "https://api.mixin.one/"
-        const val Mixin_WS_URL = "wss://blaze.mixin.one"
+        const val URL = "https://api.mixin.one/"
+        const val WS_URL = "wss://blaze.mixin.one"
+        const val Mixin_URL = "https://mixin-api.zeromesh.net/"
+        const val Mixin_WS_URL = "wss://mixin-blaze.zeromesh.net"
 
         const val GIPHY_URL = "https://api.giphy.com/v1/"
         const val FOURSQUARE_URL = "https://api.foursquare.com/v2/"
+
+        const val DEFAULT_TIP_SIGN_ENDPOINT = "https://api.mixin.one/tip/notify"
     }
 
     object HelpLink {
@@ -60,6 +65,10 @@ object Constants {
         const val PREF_DEVICE_SDK = "pref_device_sdk"
         const val PREF_TEXT_SIZE = "pref_text_size"
         const val PREF_ATTACHMENT = "pref_attachment"
+        const val PREF_CLEANUP_THUMB = "pref_cleanup_thumb"
+        const val PREF_CLEANUP_QUOTE_CONTENT = "pref_cleanup_quote_content"
+        const val PREF_TRANSFER_SCENE = "pref_transfer_scene"
+
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
             const val PREF_MIGRATION_ATTACHMENT_OFFSET = "pref_migration_attachment_offset"
@@ -83,6 +92,9 @@ object Constants {
         const val SNAPSHOTS = "mixin://snapshots"
         const val CONVERSATIONS = "mixin://conversations"
         const val INFO = "mixin://info"
+        const val DEVICE_TRANSFER = "mixin://device-transfer"
+        const val TIP = "mixin://tip"
+        const val BUY = "mixin://buy"
 
         const val HTTPS_CODES = "https://mixin.one/codes"
         const val HTTPS_PAY = "https://mixin.one/pay"
@@ -91,12 +103,14 @@ object Constants {
         const val HTTPS_ADDRESS = "https://mixin.one/address"
         const val HTTPS_WITHDRAWAL = "https://mixin.one/withdrawal"
         const val HTTPS_APPS = "https://mixin.one/apps"
+
+        const val WALLET_CONNECT_PREFIX = "wc:"
     }
 
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 49
+        const val CURRENT_VERSION = 50
 
         const val SIGNAL_DB_NAME = "signal.db"
         const val FTS_DB_NAME = "fts.db"
@@ -157,12 +171,18 @@ object Constants {
         const val Dash = "6472e7e3-75fd-48b6-b1dc-28d294ee1476"
         const val Solana = "64692c23-8971-4cf4-84a7-4dd1271dd887"
         const val Polygon = "b7938396-3f94-4e0a-9179-d3440718156f"
+        const val BinanceSmartChain = "1949e683-6a08-49e2-b087-d6b72398588f"
+        const val Avalanche = "cbc77539-0a20-4666-8c8a-4ded62b36f0a"
+        const val Arbitrum = "d0688ff7-6656-4a79-bd5f-d764bfa9bc46"
+        const val Optimism = "62d5b01f-24ee-4c96-8214-8e04981d05f2"
     }
 
     object AssetId {
         const val MGD_ASSET_ID = "b207bce9-c248-4b8e-b6e3-e357146f3f4c"
         const val BYTOM_CLASSIC_ASSET_ID = "443e1ef5-bc9b-47d3-be77-07f328876c50"
         const val OMNI_USDT_ASSET_ID = "815b0b1a-2764-3736-8faa-42d694fa620a"
+        const val USDT_ASSET_ID = "4d8c508b-91c5-375b-92b0-ee702ed2dac5"
+        const val USDC_ASSET_ID = "9b180ab6-6abe-3dc0-a13f-04169eb34bfa"
     }
 
     object Mute {
@@ -207,6 +227,8 @@ object Constants {
         const val DB_DEBUG = "db_debug"
         const val DB_DEBUG_LOGS = "db_debug_logs"
         const val DB_DEBUG_WARNING = "db_debug_warning"
+        const val LOG_AND_DEBUG = "log_and_debug"
+        const val WALLET_CONNECT_DEBUG = "wallet_connect_debug"
     }
 
     object Colors {
@@ -267,6 +289,9 @@ object Constants {
     const val DB_DELETE_LIMIT = 500
     const val DB_EXPIRED_LIMIT = 20
 
+    const val MAX_THUMB_IMAGE_LENGTH = 5120
+    const val DEFAULT_THUMB_IMAGE = "K0OWvn_3fQ~qj[fQfQfQfQ"
+
     val DNS: Dns = SequentialDns(CustomDns("8.8.8.8"), CustomDns("1.1.1.1"), CustomDns("2001:4860:4860::8888"), Dns.SYSTEM)
 
     const val TEAM_MIXIN_USER_ID = "773e5e77-4107-45c2-b648-8fc722ed77f5"
@@ -280,4 +305,37 @@ object Constants {
     // Only for third-party messenger user
     const val TEAM_BOT_ID = ""
     const val TEAM_BOT_NAME = ""
+
+    object RouteConfig {
+        const val PAN_ONLY = "pan_only"
+        const val CRYPTOGRAM_3DS = "cryptogram_3ds"
+
+        val SUPPORTED_METHODS = listOf(
+            "PAN_ONLY",
+            "CRYPTOGRAM_3DS",
+        )
+
+        val SUPPORTED_NETWORKS = listOf(
+            "VISA",
+            "MASTERCARD",
+            "AMEX",
+            "JCB",
+        )
+
+        val SUPPORTED_CARD_SCHEME = listOf(CardScheme.VISA, CardScheme.MASTERCARD, CardScheme.AMERICAN_EXPRESS, CardScheme.JCB)
+
+        const val ROUTE_BOT_USER_ID = "61cb8dd4-16b1-4744-ba0c-7b2d2e52fc59"
+
+        const val ROUTE_BOT_URL = "https://api.route.mixin.one"
+
+        const val GOOGLE_PAY = "googlepay"
+
+        const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_PRODUCTION
+
+        const val PAYMENTS_GATEWAY = "checkoutltd"
+
+        val CHECKOUT_ENVIRONMENT: Environment = Environment.PRODUCTION
+
+        val ENVIRONMENT_3DS = com.checkout.threeds.Environment.PRODUCTION
+    }
 }

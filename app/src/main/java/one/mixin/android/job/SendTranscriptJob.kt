@@ -3,6 +3,7 @@ package one.mixin.android.job
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.MixinApplication
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.getExtensionName
@@ -11,7 +12,6 @@ import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.fts.insertFts4
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.MediaStatus
@@ -61,7 +61,7 @@ class SendTranscriptJob(
             }
             ftsDatabase.insertFts4(stringBuffer.toString(), message.conversationId, message.messageId, message.category, message.userId, message.createdAt)
             appDatabase.insertMessage(message)
-            InvalidateFlow.emit(message.conversationId)
+            MessageFlow.insert(message.conversationId, message.messageId)
             transcriptMessages.forEach { transcript ->
                 if (transcript.isAttachment()) {
                     val mediaUrl = Uri.parse(transcript.absolutePath())
@@ -103,7 +103,7 @@ class SendTranscriptJob(
         if (transcripts.any { t -> t.isAttachment() }) {
             val mediaSize = transcripts.sumOf { t -> t.mediaSize ?: 0 }
             messageDao.updateMediaSize(mediaSize, message.messageId)
-            InvalidateFlow.emit(message.conversationId)
+            MessageFlow.update(message.conversationId, message.messageId)
             transcripts.filter { t ->
                 t.isAttachment()
             }.forEach { t ->
@@ -116,7 +116,7 @@ class SendTranscriptJob(
             }
         } else {
             messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
-            InvalidateFlow.emit(message.conversationId)
+            MessageFlow.update(message.conversationId, message.messageId)
             message.mediaStatus = MediaStatus.DONE.name
             message.content = GsonHelper.customGson.toJson(transcripts)
             jobManager.addJob(SendMessageJob(message))

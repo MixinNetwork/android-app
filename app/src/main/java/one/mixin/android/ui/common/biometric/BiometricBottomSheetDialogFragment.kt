@@ -20,6 +20,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.tip.exception.TipCounterNotSyncedException
 import one.mixin.android.tip.exception.TipNetworkException
+import one.mixin.android.tip.getTipExceptionMsg
+import one.mixin.android.tip.isTipNodeException
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -71,6 +73,8 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     open suspend fun doWithMixinErrorCode(errorCode: Int, pin: String): String? {
         return null
     }
+    open fun onClickBiometricLayoutClose(): Boolean = false
+
     private val titleView by lazy {
         contentView.findViewById<RoundTitleView>(R.id.title_view)
     }
@@ -140,20 +144,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 invokeNetwork(pin)
             }
         } catch (t: Throwable) {
-            when (t) {
-                is TipNetworkException -> {
-                    handleWithErrorCodeAndDesc(pin, t.error)
-                }
-                is TipCounterNotSyncedException -> {
-                    dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                    biometricLayout.showPin(true)
-                }
-                else -> {
-                    dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                    biometricLayout.showPin(true)
-                    ErrorHandler.handleError(t)
-                }
-            }
+            handleThrowableWithPin(t, pin)
             return@launch
         }
 
@@ -175,7 +166,28 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
-    private suspend fun handleWithErrorCodeAndDesc(pin: String, error: ResponseError) {
+    protected suspend fun handleThrowableWithPin(t: Throwable, pin: String) {
+        when (t) {
+            is TipNetworkException -> {
+                handleWithErrorCodeAndDesc(pin, t.error)
+            }
+            is TipCounterNotSyncedException -> {
+                dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                biometricLayout.showPin(true)
+            }
+            else -> {
+                dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                biometricLayout.showPin(true)
+                if (t.isTipNodeException()) {
+                    showErrorInfo(t.getTipExceptionMsg(requireContext(), null), true, errorAction = BiometricLayout.ErrorAction.Close)
+                } else {
+                    ErrorHandler.handleError(t)
+                }
+            }
+        }
+    }
+
+    protected suspend fun handleWithErrorCodeAndDesc(pin: String, error: ResponseError) {
         val errorCode = error.code
         val errorDescription = error.description
         val errorString = doWithMixinErrorCode(errorCode, pin)
@@ -228,6 +240,8 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         }
 
         override fun onDismiss() {
+            if (onClickBiometricLayoutClose()) return
+
             dismiss()
         }
     }

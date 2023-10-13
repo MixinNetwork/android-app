@@ -8,7 +8,7 @@ import android.text.style.BackgroundColorSpan
 import android.view.View
 import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.exoplayer2.util.MimeTypes
+import androidx.media3.common.MimeTypes
 import one.mixin.android.Constants.Colors.HIGHLIGHTED
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
@@ -16,7 +16,7 @@ import one.mixin.android.databinding.ItemChatFileBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fileSize
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.util.MusicPlayer
@@ -35,7 +35,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         if (hasSelect && isSelect) {
@@ -231,7 +231,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         isSelect: Boolean,
         isMe: Boolean,
         messageItem: MessageItem,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         if (hasSelect) {
             onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)

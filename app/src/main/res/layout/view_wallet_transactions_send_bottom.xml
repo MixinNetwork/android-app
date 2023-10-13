@@ -29,6 +29,18 @@
         android:text="@string/Address"/>
 
     <TextView
+        android:id="@+id/tip_wallet"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:textColor="?attr/text_primary"
+        android:text="@string/TIP_Wallet"/>
+
+    <TextView
         android:id="@+id/send_cancel"
         android:layout_width="match_parent"
         android:layout_height="56dp"

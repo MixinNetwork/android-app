@@ -1,6 +1,7 @@
 package one.mixin.android.extension
 
 import android.content.res.ColorStateList
+import android.graphics.Typeface
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -10,6 +11,7 @@ import android.text.method.LinkMovementMethod
 import android.text.style.CharacterStyle
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.text.style.TextAppearanceSpan
 import android.view.View
 import android.widget.EditText
@@ -17,7 +19,7 @@ import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import one.mixin.android.R
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.util.mention.MentionRenderContext
 import one.mixin.android.util.mention.MentionTextView
 import one.mixin.android.widget.NoUnderLineSpan
@@ -28,7 +30,7 @@ fun TextView.highlightStarTag(
     source: String,
     links: Array<String>,
     @ColorInt color: Int = ContextCompat.getColor(context, R.color.colorBlue),
-    onItemListener: ConversationAdapter.OnItemListener? = null,
+    onItemListener: MessageAdapter.OnItemListener? = null,
 ) {
     val spannableStringBuilder = try {
         var start: Int
@@ -64,7 +66,7 @@ fun TextView.highlightLinkText(
     texts: Array<String>,
     links: Array<String>,
     color: Int = ContextCompat.getColor(context, R.color.colorBlue),
-    onItemListener: ConversationAdapter.OnItemListener? = null,
+    onItemListener: MessageAdapter.OnItemListener? = null,
 ) {
     require(texts.size == links.size) { "texts's length should equals with links" }
     val sp = SpannableString(source)
@@ -150,6 +152,16 @@ fun TextView.highLightClick(
         index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
     }
     setText(spannable)
+}
+
+fun TextView.bold(target: String) {
+    val text = this.text.toString()
+    val spannableString = SpannableString(text)
+    val startIndex = text.indexOf(target)
+    val endIndex = startIndex + target.length
+    val boldSpan = StyleSpan(Typeface.BOLD)
+    spannableString.setSpan(boldSpan, startIndex, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+    setText(spannableString)
 }
 
 fun TextView.timeAgo(str: String) {

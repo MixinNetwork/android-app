@@ -13,6 +13,7 @@ import one.mixin.android.crypto.Util
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStream
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
 import one.mixin.android.crypto.attachment.PushAttachmentData
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.event.ProgressEvent.Companion.loadingEvent
 import one.mixin.android.extension.base64Encode
@@ -20,7 +21,6 @@ import one.mixin.android.extension.getStackTraceString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.ExpiredMessage
@@ -48,7 +48,7 @@ class SendAttachmentMessageJob(
     override fun cancel() {
         isCancelled = true
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-        InvalidateFlow.emit(message.conversationId)
+        MessageFlow.update(message.conversationId, message.messageId)
         attachmentProcess.remove(message.messageId)
         disposable?.let {
             if (!it.isDisposed) {
@@ -64,16 +64,16 @@ class SendAttachmentMessageJob(
             val mId = messageDao.findMessageIdById(message.messageId)
             if (mId != null) {
                 messageDao.updateMediaSize(message.mediaSize ?: 0, mId)
-                InvalidateFlow.emit(message.conversationId)
+                MessageFlow.update(message.conversationId, message.messageId)
             } else {
                 mixinDatabase.insertMessage(message)
-                InvalidateFlow.emit(message.conversationId)
+                MessageFlow.insert(message.conversationId, message.messageId)
             }
         } else {
             val mId = messageDao.findMessageIdById(message.messageId)
             if (mId == null) {
                 mixinDatabase.insertMessage(message)
-                InvalidateFlow.emit(message.conversationId)
+                MessageFlow.insert(message.conversationId, message.messageId)
             }
         }
         val conversation = conversationDao.findConversationById(message.conversationId)
@@ -93,7 +93,7 @@ class SendAttachmentMessageJob(
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {
         super.onCancel(cancelReason, throwable)
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-        InvalidateFlow.emit(message.conversationId)
+        MessageFlow.update(message.conversationId, message.messageId)
         attachmentProcess.remove(message.messageId)
         removeJob()
     }
@@ -120,12 +120,12 @@ class SendAttachmentMessageJob(
             {
                 if (it) {
                     messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
-                    InvalidateFlow.emit(message.conversationId)
+                    MessageFlow.update(message.conversationId, message.messageId)
                     attachmentProcess.remove(message.messageId)
                     removeJob()
                 } else {
                     messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-                    InvalidateFlow.emit(message.conversationId)
+                    MessageFlow.update(message.conversationId, message.messageId)
                     attachmentProcess.remove(message.messageId)
                     removeJob()
                 }
@@ -134,7 +134,7 @@ class SendAttachmentMessageJob(
                 Timber.e("upload attachment error, ${it.getStackTraceString()}")
                 reportException(it)
                 messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-                InvalidateFlow.emit(message.conversationId)
+                MessageFlow.update(message.conversationId, message.messageId)
                 attachmentProcess.remove(message.messageId)
                 removeJob()
             },
@@ -142,7 +142,8 @@ class SendAttachmentMessageJob(
     }
 
     private fun processAttachment(attachResponse: AttachmentResponse): Boolean {
-        val key = if (message.isPlain()) {
+        val isPlain = message.isPlain()
+        val key = if (isPlain) {
             null
         } else {
             Util.getSecretBytes(64)
@@ -160,7 +161,7 @@ class SendAttachmentMessageJob(
                 message.mediaMimeType,
                 inputStream,
                 message.mediaSize!!,
-                if (message.isPlain()) {
+                if (isPlain) {
                     null
                 } else {
                     AttachmentCipherOutputStreamFactory(key, null)
@@ -178,7 +179,7 @@ class SendAttachmentMessageJob(
             val transmittedDigest = Util.uploadAttachment(
                 attachResponse.upload_url!!,
                 attachmentData.data,
-                if (message.isPlain()) {
+                if (isPlain) {
                     message.mediaSize
                 } else {
                     AttachmentCipherOutputStream.getCiphertextLength(attachmentData.dataSize)
@@ -196,7 +197,7 @@ class SendAttachmentMessageJob(
                 }
             }
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-            InvalidateFlow.emit(message.conversationId)
+            MessageFlow.update(message.conversationId, message.messageId)
             attachmentProcess.remove(message.messageId)
             removeJob()
             reportException(e)
@@ -205,6 +206,12 @@ class SendAttachmentMessageJob(
         if (isCancelled) {
             removeJob()
             return true
+        }
+
+        if (!isPlain && (key == null || key.isEmpty() || digest.isEmpty())) {
+            removeJob()
+            reportException(IllegalStateException("Encryption error"))
+            return false
         }
         val attachmentId = attachResponse.attachment_id
         val width = message.mediaWidth
@@ -222,7 +229,22 @@ class SendAttachmentMessageJob(
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = plainText.base64Encode()
         message.content = encoded
-        messageDao.updateMessageContent(GsonHelper.customGson.toJson(AttachmentExtra(attachmentId = attachmentId, messageId = message.messageId, createdAt = attachResponse.created_at)), message.messageId)
+        messageDao.updateAttachmentMessage(
+            messageId = message.messageId,
+            content = GsonHelper.customGson.toJson(AttachmentExtra(attachmentId = attachmentId, messageId = message.messageId, createdAt = attachResponse.created_at)),
+            mediaMimeType = mimeType,
+            mediaSize = size,
+            mediaWidth = width,
+            mediaHeight = height,
+            mediaDigest = digest,
+            mediaKey = key,
+            mediaDuration = message.mediaDuration,
+            mediaWaveform = waveform,
+            thumbImage = thumbnail,
+            name = name,
+            mediaStatus = message.mediaStatus ?: MediaStatus.PENDING.name,
+            status = message.status,
+        )
         jobManager.addJobInBackground(SendMessageJob(message, null, true))
         return true
     }

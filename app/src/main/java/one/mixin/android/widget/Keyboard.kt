@@ -10,9 +10,11 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemGridKeyboardBinding
 import one.mixin.android.databinding.ViewKeyboardBinding
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.session.Session
@@ -33,10 +35,17 @@ class Keyboard @JvmOverloads constructor(
             return if (viewType == 1) {
                 NormalKeyboardHolder(ItemGridKeyboardBinding.inflate(LayoutInflater.from(context), parent, false))
             } else {
-                KeyboardHolder(
-                    LayoutInflater.from(context)
-                        .inflate(R.layout.item_grid_keyboard_delete, parent, false),
-                )
+                if (this@Keyboard.isWhite) {
+                    KeyboardHolder(
+                        LayoutInflater.from(context)
+                            .inflate(R.layout.item_grid_keyboard_delete_white, parent, false),
+                    )
+                } else {
+                    KeyboardHolder(
+                        LayoutInflater.from(context)
+                            .inflate(R.layout.item_grid_keyboard_delete, parent, false),
+                    )
+                }
             }
         }
 
@@ -96,8 +105,12 @@ class Keyboard @JvmOverloads constructor(
         this.onClickKeyboardListener = onClickKeyboardListener
     }
 
-    fun initPinKeys(context: Context? = null, key: List<String>? = null) {
-        if (context?.defaultSharedPreferences?.getBoolean(Constants.Account.PREF_RANDOM, false) == true) {
+    fun initPinKeys(context: Context? = null, key: List<String>? = null, force: Boolean = false, white: Boolean = false) {
+        if (white) {
+            isWhite = white
+            white(context ?: MixinApplication.appContext)
+        }
+        if (!force && context?.defaultSharedPreferences?.getBoolean(Constants.Account.PREF_RANDOM, false) == true) {
             val list = mutableListOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
             list.shuffle()
             list.add(9, "")
@@ -108,5 +121,17 @@ class Keyboard @JvmOverloads constructor(
             this.key = key ?: listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "<<")
             initKeyboardView()
         }
+    }
+
+    var isWhite = false
+        private set
+
+    fun white(context: Context) {
+        binding.gvKeyboard.setBackgroundColor(context.colorFromAttribute(R.attr.bg_white))
+        binding.diver.isVisible = false
+    }
+
+    fun disableNestedScrolling() {
+        binding.gvKeyboard.isNestedScrollingEnabled = false
     }
 }

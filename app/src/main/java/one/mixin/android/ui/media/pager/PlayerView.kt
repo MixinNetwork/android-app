@@ -9,18 +9,19 @@ import android.view.TextureView
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.PlaybackException
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.source.BehindLiveWindowException
-import com.google.android.exoplayer2.video.VideoSize
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.BehindLiveWindowException
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutPlayerViewBinding
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.reportExoPlayerException
 import one.mixin.android.widget.AspectRatioFrameLayout
 
-class PlayerView(context: Context, attributeSet: AttributeSet) :
+@UnstableApi class PlayerView(context: Context, attributeSet: AttributeSet) :
     FrameLayout(context, attributeSet) {
     var player: ExoPlayer? = null
         set(value) {

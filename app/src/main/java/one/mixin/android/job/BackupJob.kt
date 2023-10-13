@@ -46,7 +46,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
 
     override fun onRun() = runBlocking {
         val context = MixinApplication.appContext
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             return@runBlocking
         }
         if (force) {

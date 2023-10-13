@@ -3,6 +3,10 @@ package one.mixin.android.di
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ContentResolver
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
+import androidx.datastore.dataStoreFile
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
@@ -16,11 +20,13 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
@@ -32,6 +38,7 @@ import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.ExpiredTokenException
@@ -51,6 +58,7 @@ import one.mixin.android.api.service.FoursquareService
 import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.ProvisioningService
+import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.TipService
@@ -65,7 +73,7 @@ import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.extension.filterNonAscii
-import one.mixin.android.extension.getDeviceId
+import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.show
@@ -83,6 +91,7 @@ import one.mixin.android.tip.Identity
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipConstants
 import one.mixin.android.tip.TipNode
+import one.mixin.android.ui.transfer.status.TransferStatusLiveData
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
 import one.mixin.android.util.GsonHelper
@@ -90,6 +99,8 @@ import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
+import one.mixin.android.vo.SafeBox
+import one.mixin.android.vo.route.serializer.SafeBoxSerializer
 import one.mixin.android.webrtc.CallDebugLiveData
 import one.mixin.android.websocket.ChatWebSocket
 import org.chromium.net.CronetEngine
@@ -110,11 +121,14 @@ object AppModule {
     private const val xRequestId = "X-Request-Id"
     private const val authorization = "Authorization"
 
+    private const val mrAccessSign = "MR-ACCESS-SIGN"
+    private const val mrAccessTimestamp = "MR-ACCESS-TIMESTAMP"
+
     @SuppressLint("ConstantLocale")
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
     private val API_UA = (
-        "Mixin/" + BuildConfig.VERSION_NAME +
-            " (Android " + android.os.Build.VERSION.RELEASE + "; " + android.os.Build.FINGERPRINT + "; " + LOCALE + ")"
+        "Mixin/" + "${BuildConfig.VERSION_NAME}" +
+            " (Android " + android.os.Build.VERSION.RELEASE + "; " + android.os.Build.FINGERPRINT + "; " + "${BuildConfig.VERSION_CODE}" + "; " + LOCALE + ")"
         ).filterNonAscii()
 
     @Singleton
@@ -138,6 +152,7 @@ object AppModule {
         if (!CronetProviderInstaller.isInstalled()) {
             return null
         }
+
         return try {
             CronetEngine.Builder(ctx)
                 .addQuicHint(URL.toUri().host, 443, 443)
@@ -173,7 +188,7 @@ object AppModule {
             val request = sourceRequest.newBuilder()
                 .addHeader("User-Agent", API_UA)
                 .addHeader("Accept-Language", Locale.getDefault().language)
-                .addHeader("Mixin-Device-Id", getDeviceId(resolver))
+                .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
                 .addHeader(xRequestId, requestId)
                 .addHeader(authorization, "Bearer ${Session.signToken(Session.getAccount(), sourceRequest, requestId)}")
                 .build()
@@ -259,13 +274,13 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideHttpService(okHttp: OkHttpClient): Retrofit {
+    fun provideHttpService(okHttp: OkHttpClient, gson: Gson): Retrofit {
         val builder = Retrofit.Builder()
             .baseUrl(URL)
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addCallAdapterFactory(LiveDataCallAdapterFactory())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .client(okHttp)
         return builder.build()
     }
@@ -422,6 +437,44 @@ object AppModule {
         return retrofit.create(FoursquareService::class.java)
     }
 
+    @Singleton
+    @Provides
+    fun provideRouteService(resolver: ContentResolver, httpLoggingInterceptor: HttpLoggingInterceptor?): RouteService {
+        val builder = OkHttpClient.Builder()
+        builder.connectTimeout(10, TimeUnit.SECONDS)
+        builder.writeTimeout(10, TimeUnit.SECONDS)
+        builder.readTimeout(10, TimeUnit.SECONDS)
+        builder.dns(DNS)
+        val client = builder.apply {
+            addInterceptor { chain ->
+                val requestId = UUID.randomUUID().toString()
+                val sourceRequest = chain.request()
+                val builder = sourceRequest.newBuilder()
+                builder.addHeader("User-Agent", API_UA)
+                    .addHeader("Accept-Language", Locale.getDefault().language)
+                    .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
+                    .addHeader(xRequestId, requestId)
+                val (ts, signature) = Session.getRouteSignature(sourceRequest)
+                if (!sourceRequest.url.toString().endsWith("checkout/ticker")) {
+                    builder.addHeader(mrAccessTimestamp, ts.toString())
+                    builder.addHeader(mrAccessSign, signature)
+                }
+                val request = builder.build()
+                return@addInterceptor chain.proceed(request)
+            }
+            httpLoggingInterceptor?.let { interceptor ->
+                addNetworkInterceptor(interceptor)
+            }
+        }.build()
+        val retrofit = Retrofit.Builder()
+            .baseUrl(ROUTE_BOT_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .client(client)
+            .build()
+        return retrofit.create(RouteService::class.java)
+    }
+
     @Provides
     @Singleton
     fun provideCallState() = CallStateLiveData()
@@ -473,6 +526,10 @@ object AppModule {
     @Singleton
     fun provideTipCounterSynced() = TipCounterSyncedLiveData()
 
+    @Provides
+    @Singleton
+    fun provideTransferStatus() = TransferStatusLiveData()
+
     @DefaultDispatcher
     @Provides
     fun providesDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
@@ -487,6 +544,16 @@ object AppModule {
     @Provides
     @Singleton
     fun provideGson() = GsonHelper.customGson
+
+    @Provides
+    @Singleton
+    fun provideJson() = Json {
+        ignoreUnknownKeys = true
+        explicitNulls = false
+        encodeDefaults = false
+        coerceInputValues = true
+        isLenient = true
+    }
 
     @Provides
     @Singleton
@@ -507,4 +574,23 @@ object AppModule {
         linkState,
         messageHistoryDao,
     )
+
+    private const val DATA_STORE_FILE_NAME = "safe_box_%s.store"
+
+    @Singleton
+    @Provides
+    fun providesDataStore(@ApplicationContext appContext: Context): DataStore<SafeBox> {
+        return DataStoreFactory.create(
+            serializer = SafeBoxSerializer,
+            produceFile = {
+                appContext.dataStoreFile(
+                    String.format(
+                        DATA_STORE_FILE_NAME,
+                        Session.getAccountId(),
+                    ),
+                )
+            },
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+        )
+    }
 }

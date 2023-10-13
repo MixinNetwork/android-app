@@ -6,15 +6,21 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.checkUserOrApp
 import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
+import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
+import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.transfer.TransferActivity
+import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.web.WebActivity
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -31,6 +37,10 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val APPS = "apps"
         private const val SNAPSHOTS = "snapshots"
         private const val CONVERSATIONS = "conversations"
+        private const val DEVICE_TRANSFER = "device-transfer"
+        private const val BUY = "buy"
+        private const val TIP = "tip"
+        const val WC = "wc"
 
         fun show(context: Context, data: Uri) {
             Intent(context, UrlInterpreterActivity::class.java).apply {
@@ -60,9 +70,26 @@ class UrlInterpreterActivity : BaseActivity() {
             finish()
             return
         }
+
         if (data.toString().startsWith("https://", true)) {
             val bottomSheet = LinkBottomSheetDialogFragment.newInstance(data.toString())
             bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+        } else if (data.scheme == WC) {
+            if (WalletConnect.isEnabled(this)) {
+                if (MixinApplication.get().topActivity is WebActivity) {
+                    val url = data.toString()
+                    WalletConnect.connect(url)
+                } else {
+                    startActivity(
+                        Intent(this, MainActivity::class.java).apply {
+                            putExtra(MainActivity.WALLET_CONNECT, data.toString())
+                        },
+                    )
+                }
+            } else {
+                toast(R.string.Not_recognized)
+            }
+            finish()
         } else {
             interpretIntent(data)
         }
@@ -76,11 +103,10 @@ class UrlInterpreterActivity : BaseActivity() {
     private fun interpretIntent(uri: Uri) {
         when (uri.host) {
             USER, APPS -> uri.checkUserOrApp(this, supportFragmentManager, lifecycleScope)
-            CODE, PAY, WITHDRAWAL, ADDRESS, SNAPSHOTS, CONVERSATIONS -> {
+            CODE, PAY, WITHDRAWAL, ADDRESS, SNAPSHOTS, CONVERSATIONS, TIP -> {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
-
             TRANSFER -> {
                 uri.lastPathSegment?.let { lastPathSegment ->
                     if (Session.getAccount()?.hasPin == true) {
@@ -92,11 +118,9 @@ class UrlInterpreterActivity : BaseActivity() {
                     }
                 }
             }
-
             DEVICE -> {
                 ConfirmBottomFragment.show(this, supportFragmentManager, uri.toString())
             }
-
             SEND -> {
                 uri.handleSchemeSend(
                     this,
@@ -106,6 +130,13 @@ class UrlInterpreterActivity : BaseActivity() {
                         Timber.e(IllegalStateException(err))
                     },
                 )
+            }
+            DEVICE_TRANSFER -> {
+                TransferActivity.parseUri(this, uri, { finish() }) { finish() }
+            }
+            BUY -> {
+                WalletActivity.show(this, buy = true)
+                finish()
             }
         }
     }

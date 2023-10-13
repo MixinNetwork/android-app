@@ -11,6 +11,7 @@ import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ConversationStorageUsage
+import one.mixin.android.vo.GroupInfo
 import one.mixin.android.vo.GroupMinimal
 import one.mixin.android.vo.ParticipantSessionMinimal
 
@@ -101,6 +102,18 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun getConversationById(conversationId: String): LiveData<Conversation>
 
+    @Query("SELECT COUNT(p.user_id) as count, c.name, c.icon_url, EXISTS(SELECT 1 FROM participants WHERE conversation_id = :conversationId AND user_id = :userId) AS is_exist FROM participants p INNER JOIN conversations c ON p.conversation_id = c.conversation_id WHERE c.conversation_id = :conversationId")
+    fun getConversationInfoById(conversationId: String, userId: String): LiveData<GroupInfo?>
+
+    @Query("SELECT c.* FROM conversations c WHERE c.rowid > :rowId AND conversation_id IN (:conversationIds) ORDER BY c.rowid ASC LIMIT :limit")
+    fun getConversationsByLimitAndRowId(limit: Int, rowId: Long, conversationIds: Collection<String>): List<Conversation>
+
+    @Query("SELECT c.* FROM conversations c WHERE c.rowid > :rowId ORDER BY c.rowid ASC LIMIT :limit")
+    fun getConversationsByLimitAndRowId(limit: Int, rowId: Long): List<Conversation>
+
+    @Query("SELECT rowid FROM conversations WHERE conversation_id = :conversationId")
+    fun getConversationRowId(conversationId: String): Long?
+
     @Query("SELECT unseen_message_count FROM conversations WHERE conversation_id = :conversationId")
     suspend fun indexUnread(conversationId: String): Int?
 
@@ -149,6 +162,9 @@ interface ConversationDao : BaseDao<Conversation> {
         """,
     )
     fun getConversationsByUserId(userId: String): List<ParticipantSessionMinimal>
+
+    @Query("SELECT conversation_id FROM conversations")
+    fun getAllConversationId(): List<String>
 
     @Query("SELECT announcement FROM conversations WHERE conversation_id = :conversationId ")
     suspend fun getAnnouncementByConversationId(conversationId: String): String?
@@ -246,4 +262,10 @@ interface ConversationDao : BaseDao<Conversation> {
         """,
     )
     suspend fun findSameConversations(selfId: String, userId: String): List<GroupMinimal>
+
+    @Query("SELECT count(1) FROM conversations")
+    fun countConversations(): Long
+
+    @Query("SELECT count(1) FROM conversations WHERE rowid > :rowId")
+    fun countConversations(rowId: Long): Long
 }

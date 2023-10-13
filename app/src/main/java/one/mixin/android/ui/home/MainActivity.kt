@@ -15,8 +15,10 @@ import android.view.KeyEvent
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.map
 import androidx.room.util.readVersion
@@ -77,12 +79,11 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.insertUpdateSuspend
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.TipEvent
-import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.areBubblesAllowedCompat
 import one.mixin.android.extension.checkStorageNotLow
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.getDeviceId
+import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.putBoolean
@@ -94,6 +95,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.CleanCacheJob
+import one.mixin.android.job.CleanupQuoteContentJob
+import one.mixin.android.job.CleanupThumbJob
 import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
@@ -108,8 +111,14 @@ import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
 import one.mixin.android.job.TranscriptAttachmentUpdateJob
+import one.mixin.android.repository.AccountRepository
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.wc.WCErrorEvent
+import one.mixin.android.tip.wc.WCEvent
+import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -138,6 +147,7 @@ import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
+import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
@@ -221,9 +231,9 @@ class MainActivity : BlazeBaseActivity() {
 
         var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
         if (deviceId == null) {
-            deviceId = this.getDeviceId()
+            deviceId = this.getStringDeviceId()
             defaultSharedPreferences.putString(DEVICE_ID, deviceId)
-        } else if (deviceId != this.getDeviceId()) {
+        } else if (deviceId != this.getStringDeviceId()) {
             defaultSharedPreferences.remove(DEVICE_ID)
             MixinApplication.get().closeAndClear(true)
             finish()
@@ -310,6 +320,18 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe { e ->
                 handleTipEvent(e, deviceId)
             }
+        RxBus.listen(WCEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                WalletConnectActivity.show(this, e)
+            }
+        RxBus.listen(WCErrorEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe {
+                if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                    WalletConnectActivity.show(this, it.error)
+                }
+            }
 
         lifecycleScope.launch(Dispatchers.IO) {
             delay(10_000)
@@ -343,7 +365,7 @@ class MainActivity : BlazeBaseActivity() {
         sendSafetyNetRequest()
         checkBatteryOptimization()
 
-        jobManager.addJobInBackground(RefreshAccountJob())
+        jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
 
         if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
             jobManager.addJobInBackground(RefreshCircleJob())
@@ -379,8 +401,8 @@ class MainActivity : BlazeBaseActivity() {
             jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
         }
 
-        PropertyHelper.checkTranscriptAttachmentUpdated {
-            jobManager.addJobInBackground(TranscriptAttachmentUpdateJob())
+        PropertyHelper.checkTranscriptAttachmentMigrated {
+            jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
         }
 
         PropertyHelper.checkBackupMigrated {
@@ -390,8 +412,18 @@ class MainActivity : BlazeBaseActivity() {
             jobManager.addJobInBackground(MigratedFts4Job())
         }
 
+        PropertyHelper.checkCleanupThumb {
+            jobManager.addJobInBackground(CleanupThumbJob())
+        }
+
+        PropertyHelper.checkCleanupQuoteContent {
+            jobManager.addJobInBackground(CleanupQuoteContentJob(-1L))
+        }
+
         jobManager.addJobInBackground(RefreshContactJob())
         jobManager.addJobInBackground(RefreshFcmJob())
+
+        initWalletConnect()
     }
 
     private fun handleTipEvent(e: TipEvent, deviceId: String) {
@@ -413,10 +445,7 @@ class MainActivity : BlazeBaseActivity() {
         } catch (e: Exception) {
             0
         }
-        if (currentVersion > MINI_VERSION && CURRENT_VERSION != currentVersion) {
-            return true
-        }
-        return false
+        return currentVersion > MINI_VERSION && CURRENT_VERSION != currentVersion
     }
 
     @SuppressLint("BatteryLife")
@@ -585,6 +614,12 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
+    private fun initWalletConnect() {
+        if (!WalletConnect.isEnabled(this)) return
+
+        WalletConnectV2
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handlerCode(intent)
@@ -633,8 +668,7 @@ class MainActivity : BlazeBaseActivity() {
             }
             clearCodeAfterConsume(intent, TRANSFER)
         } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
-            alertDialog?.dismiss()
-            alertDialog = alert(getString(R.string.Please_wait_a_bit)).show()
+            showDialog()
             val conversationId = intent.extras!!.getString("conversation_id")!!
             clearCodeAfterConsume(intent, "conversation_id")
             Maybe.just(conversationId).map {
@@ -672,7 +706,7 @@ class MainActivity : BlazeBaseActivity() {
                                     null,
                                 )
                                 conversation = c
-                                conversationDao.insert(c)
+                                conversationDao.upsert(c)
                             } else {
                                 conversationDao.updateConversation(
                                     data.conversationId,
@@ -713,23 +747,21 @@ class MainActivity : BlazeBaseActivity() {
                 if (conversation?.isGroupConversation() == true) {
                     innerIntent = ConversationActivity.putIntent(this, conversationId)
                 } else {
-                    var user = userDao.findPlainUserByConversationId(conversationId)
+                    var user = userDao.findOwnerByConversationId(conversationId)
                     if (user == null) {
                         val response =
-                            userService.getUsers(arrayListOf(conversation!!.ownerId!!)).execute()
+                            userService.getUserById(conversation!!.ownerId!!).execute()
                                 .body()
                         if (response != null && response.isSuccess) {
-                            response.data?.let { data ->
-                                for (u in data) {
-                                    runBlocking { userDao.upsert(u) }
-                                }
+                            response.data?.let { u ->
+                                runBlocking { userRepo.upsert(u) }
+                                user = u
                             }
-                            user = response.data?.get(0)
                         }
                     }
                     innerIntent = ConversationActivity.putIntent(this, conversationId, user?.userId)
                 }
-                runOnUiThread { alertDialog?.dismiss() }
+                runOnUiThread { dismissDialog() }
                 innerIntent
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(stopScope).subscribe(
@@ -739,11 +771,26 @@ class MainActivity : BlazeBaseActivity() {
                         }
                     },
                     {
-                        alertDialog?.dismiss()
+                        dismissDialog()
                         ErrorHandler.handleError(it)
                     },
                 )
+        } else if (intent.hasExtra(WALLET_CONNECT)) {
+            val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
+            WalletConnect.connect(wcUrl)
         }
+    }
+
+    private fun showDialog() {
+        alertDialog?.dismiss()
+        alertDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+            show()
+        }
+    }
+
+    private fun dismissDialog() {
+        alertDialog?.dismiss()
+        alertDialog = null
     }
 
     private fun clearCodeAfterConsume(intent: Intent, code: String) {
@@ -771,11 +818,9 @@ class MainActivity : BlazeBaseActivity() {
             circlesFragment.cancelSort()
             binding.searchBar.actionVa.showPrevious()
         }
-
         binding.searchBar.setOnBackClickListener {
             binding.searchBar.closeSearch()
         }
-
         binding.searchBar.mOnQueryTextListener = object : MaterialSearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String): Boolean {
                 (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(
@@ -965,6 +1010,7 @@ class MainActivity : BlazeBaseActivity() {
         const val SCAN = "scan"
         const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
+        const val WALLET_CONNECT = "wallet_connect"
 
         fun showWallet(context: Context) {
             Intent(context, MainActivity::class.java).apply {

@@ -11,6 +11,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ARGS_TITLE
 import one.mixin.android.databinding.FragmentUserListBottomSheetBinding
 import one.mixin.android.databinding.ItemUserListBinding
+import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.withArgs
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
@@ -32,7 +33,7 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val userList by lazy {
-        requireArguments().getParcelableArrayList<User>(ARGS_USER_LIST)
+        requireArguments().getParcelableArrayListCompat(ARGS_USER_LIST, User::class.java)
     }
     private val title: String by lazy {
         requireArguments().getString(ARGS_TITLE)!!

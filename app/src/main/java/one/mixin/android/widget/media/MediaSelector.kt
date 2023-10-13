@@ -68,13 +68,34 @@ class MediaSelector(
         menuDown.setOnClickListener {
             dismiss()
         }
-        menuCamera.setOnClickListener { listener?.onClick(TYPE_CAMERA); dismiss() }
-        menuGallery.setOnClickListener { listener?.onClick(TYPE_GALLERY); dismiss() }
-        menuVideo.setOnClickListener { listener?.onClick(TYPE_VIDEO); dismiss() }
-        menuTransfer.setOnClickListener { listener?.onClick(TYPE_TRANSFER); dismiss() }
-        menuMusic.setOnClickListener { listener?.onClick(TYPE_MUSIC); dismiss() }
-        menuLocation.setOnClickListener { listener?.onClick(TYPE_LOCATION); dismiss() }
-        menuDocument.setOnClickListener { listener?.onClick(TYPE_DOCUMENT); dismiss() }
+        menuCamera.setOnClickListener {
+            listener?.onClick(TYPE_CAMERA)
+            dismiss()
+        }
+        menuGallery.setOnClickListener {
+            listener?.onClick(TYPE_GALLERY)
+            dismiss()
+        }
+        menuVideo.setOnClickListener {
+            listener?.onClick(TYPE_VIDEO)
+            dismiss()
+        }
+        menuTransfer.setOnClickListener {
+            listener?.onClick(TYPE_TRANSFER)
+            dismiss()
+        }
+        menuMusic.setOnClickListener {
+            listener?.onClick(TYPE_MUSIC)
+            dismiss()
+        }
+        menuLocation.setOnClickListener {
+            listener?.onClick(TYPE_LOCATION)
+            dismiss()
+        }
+        menuDocument.setOnClickListener {
+            listener?.onClick(TYPE_DOCUMENT)
+            dismiss()
+        }
     }
 
     fun show(anchor: View) {

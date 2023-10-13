@@ -55,6 +55,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
@@ -163,7 +164,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        user = requireArguments().getParcelable(ARGS_USER)!!
+        user = requireArguments().getParcelableCompat(ARGS_USER, User::class.java)!!
         botConversationId = requireArguments().getString(ARGS_CONVERSATION_ID)
         binding.title.rightIv.setOnClickListener { dismiss() }
         binding.avatar.setOnClickListener {
@@ -188,7 +189,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     dismiss()
                     return@Observer
                 }
-                updateUserInfo(u)
+                // compare user info changes should refresh menu
                 if (menuListLayout == null ||
                     u.relationship != user.relationship ||
                     u.muteUntil != user.muteUntil ||
@@ -200,7 +201,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         initMenu(u, circleNames, conversation)
                     }
                 }
+
                 user = u
+                updateUserInfo(u)
 
                 contentView.doOnPreDraw {
                     if (!isAdded) return@doOnPreDraw
@@ -230,16 +233,19 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             context?.let { ctx ->
                 if (MixinApplication.conversationId == null || conversationId != MixinApplication.conversationId) {
                     RxBus.publish(BotCloseEvent())
-                    ConversationActivity.showAndClear(ctx, null, user.userId)
+                    ConversationActivity.showAndClear(ctx, conversationId = null, recipientId = user.userId)
                 }
                 dismiss()
             }
+        }
+        binding.shareFl.setOnClickListener {
+            forwardContact(user)
         }
         setDetailsTv(binding.detailTv, binding.scrollView, conversationId)
         bottomViewModel.refreshUser(user.userId, true)
         bottomViewModel.loadFavoriteApps(user.userId)
         bottomViewModel.observerFavoriteApps(user.userId).observe(this@UserBottomSheetDialogFragment) { apps ->
-            binding.avatarLl.isVisible = !apps.isNullOrEmpty()
+            binding.avatarLl.isVisible = user.isDeactivated != true && !apps.isNullOrEmpty()
             binding.avatarLl.setOnClickListener {
                 if (!apps.isNullOrEmpty()) {
                     AppListBottomSheetDialogFragment.newInstance(
@@ -368,18 +374,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 menu {
                     title = getString(R.string.Share_Contact)
                     action = {
-                        ForwardActivity.show(
-                            requireContext(),
-                            arrayListOf(
-                                ForwardMessage(
-                                    ShareCategory.Contact,
-                                    GsonHelper.customGson.toJson(ContactMessagePayload(u.userId)),
-                                ),
-                            ),
-                            ForwardAction.App.Resultless(),
-                        )
-                        RxBus.publish(BotCloseEvent())
-                        dismiss()
+                        forwardContact(u)
                     }
                 }
             }
@@ -651,6 +646,21 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         }
     }
 
+    private fun forwardContact(u: User) {
+        ForwardActivity.show(
+            requireContext(),
+            arrayListOf(
+                ForwardMessage(
+                    ShareCategory.Contact,
+                    GsonHelper.customGson.toJson(ContactMessagePayload(u.userId)),
+                ),
+            ),
+            ForwardAction.App.Resultless(),
+        )
+        RxBus.publish(BotCloseEvent())
+        dismiss()
+    }
+
     private fun openGroupsInCommon() {
         activity?.addFragment(
             this@UserBottomSheetDialogFragment,
@@ -787,6 +797,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         if (user.isBot()) {
             binding.openFl.visibility = VISIBLE
             binding.transferFl.visibility = GONE
+            binding.shareFl.isVisible = false
             bottomViewModel.findAppById(user.appId!!)?.let { app ->
                 binding.openFl.clicks()
                     .observeOn(AndroidSchedulers.mainThread())
@@ -807,9 +818,14 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         }
                     }
             }
+        } else if (user.isDeactivated == true) {
+            binding.transferFl.isVisible = false
+            binding.openFl.isVisible = false
+            binding.shareFl.isVisible = true
         } else {
             binding.openFl.visibility = GONE
             binding.transferFl.visibility = VISIBLE
+            binding.shareFl.isVisible = false
         }
     }
 
@@ -821,6 +837,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     private fun updateUserStatus(relationship: String) {
         if (!isAdded) return
+
+        if (user.isDeactivated == true) {
+            binding.addTv.isVisible = false
+            binding.detailTv.isVisible = false
+            binding.deletedTv.isVisible = true
+            return
+        }
 
         when (relationship) {
             UserRelationship.BLOCKING.name -> {
@@ -994,10 +1017,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             .listener(
                 object : RequestListener<Bitmap> {
                     override fun onResourceReady(
-                        resource: Bitmap?,
-                        model: Any?,
+                        resource: Bitmap,
+                        model: Any,
                         target: Target<Bitmap>?,
-                        dataSource: DataSource?,
+                        dataSource: DataSource,
                         isFirstResource: Boolean,
                     ): Boolean {
                         user.fullName?.let {
@@ -1006,7 +1029,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                 requireContext(),
                                 conversationId,
                                 it,
-                                resource!!,
+                                resource,
                                 ConversationActivity.getShortcutIntent(
                                     requireContext(),
                                     conversationId,
@@ -1020,7 +1043,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     override fun onLoadFailed(
                         e: GlideException?,
                         model: Any?,
-                        target: Target<Bitmap>?,
+                        target: Target<Bitmap>,
                         isFirstResource: Boolean,
                     ): Boolean {
                         return false
@@ -1046,6 +1069,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 }
 
 fun showUserBottom(fragmentManager: FragmentManager, user: User, conversationId: String? = null, sharedMediaCallback: (() -> Unit)? = null) {
+    if (fragmentManager.isStateSaved) return
+
     if (user.notMessengerUser()) {
         NonMessengerUserBottomSheetDialogFragment.newInstance(user, conversationId)
             .showNow(fragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)

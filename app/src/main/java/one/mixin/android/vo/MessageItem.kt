@@ -1,3 +1,6 @@
+@file:Suppress("DEPRECATION")
+@file:UnstableApi
+
 package one.mixin.android.vo
 
 import android.annotation.SuppressLint
@@ -11,17 +14,20 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
+import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
 import androidx.paging.PositionalDataSource
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import com.google.android.exoplayer2.util.MimeTypes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
+import one.mixin.android.Constants.DEFAULT_THUMB_IMAGE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.copyFromInputStream
@@ -145,7 +151,7 @@ data class MessageItem(
                     AttachmentExtra::class.java,
                 ).shareable
             }
-        } catch (e: Exception) {
+        } catch (ignore: Exception) {
         }
 
         return appCardShareable
@@ -192,12 +198,6 @@ fun create(type: String, createdAt: String? = null) = MessageItem(
     null, null, null, null, null, null, null, null,
     null, null, null, null, null, null, null, null, null, null,
 )
-
-fun MessageItem.canNotReply() =
-    this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
-        this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
-        (!mediaDownloaded(this.mediaStatus) && this.isMedia()) ||
-        isCallMessage() || isRecall() || isGroupCall()
 
 fun MessageItem.isCallMessage() =
     type == MessageCategory.WEBRTC_AUDIO_CANCEL.name ||
@@ -264,8 +264,6 @@ fun MessageItem.shareFile(context: Context, mediaMimeType: String) {
 }
 
 suspend fun MessageItem.saveToLocal(context: Context) {
-    if (!hasWritePermission()) return
-
     val filePath = absolutePath()
     if (filePath == null) {
         reportException(IllegalStateException("Save messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: null)}"))
@@ -280,25 +278,31 @@ suspend fun MessageItem.saveToLocal(context: Context) {
         return
     }
 
+    var str = R.string.Save_to_Gallery
     val outFile = if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {
         val dir = context.getPublicPicturePath()
         dir.mkdirs()
         File(dir, mediaName ?: file.name)
     } else {
         val dir = if (MimeTypes.isAudio(mediaMimeType)) {
+            str = R.string.Save_to_Music
             context.getPublicMusicPath()
         } else {
+            str = R.string.Save_to_Downloads
             context.getPublicDownloadPath()
         }
         dir.mkdirs()
         File(dir, mediaName ?: file.name)
     }
-    if (outFile.isDirectory) return
+    if (outFile.isDirectory) {
+        toast(R.string.Save_failure)
+        return
+    }
     withContext(Dispatchers.IO) {
         outFile.copyFromInputStream(file.inputStream())
     }
     MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
-    toast(MixinApplication.appContext.getString(R.string.Save_to_Gallery))
+    toast(str)
 }
 
 fun MessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {
@@ -346,7 +350,7 @@ private fun MessageItem.simpleChat(): String {
     }
 }
 
-class FixedMessageDataSource<T>(private val items: List<T>, private val totalCount: Int) :
+class FixedMessageDataSource<T : Any>(private val items: List<T>, private val totalCount: Int) :
     PositionalDataSource<T>() {
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<T>) {
         callback.onResult(items)
@@ -361,7 +365,9 @@ class FixedMessageDataSource<T>(private val items: List<T>, private val totalCou
 }
 
 fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
-    val thumb = if (thumbImage != null && !Base83.isValid(thumbImage)) {
+    val thumb = if ((thumbImage?.length ?: 0) > Constants.MAX_THUMB_IMAGE_LENGTH) {
+        DEFAULT_THUMB_IMAGE
+    } else if (thumbImage != null && !Base83.isValid(thumbImage)) {
         try {
             val bitmap = thumbImage.decodeBase64().encodeBitmap()
             BlurHashEncoder.encode(requireNotNull(bitmap))

@@ -116,5 +116,26 @@ interface ParticipantDao : BaseDao<Participant> {
     @Query(
         "SELECT p.conversation_id FROM participants p, conversations c WHERE p.user_id = :userId AND p.conversation_id = c.conversation_id AND c.status = 2 LIMIT 1",
     )
-    fun joinedConversationId(userId: String): String
+    fun joinedConversationId(userId: String): String?
+
+    @Query("SELECT p.* FROM participants p WHERE p.rowid > :rowId ORDER BY p.rowid ASC LIMIT :limit")
+    fun getParticipantsByLimitAndRowId(limit: Int, rowId: Long): List<Participant>
+
+    @Query("SELECT p.* FROM participants p WHERE p.rowid > :rowId AND conversation_id IN (:conversationIds) ORDER BY p.rowid ASC LIMIT :limit")
+    fun getParticipantsByLimitAndRowId(limit: Int, rowId: Long, conversationIds: Collection<String>): List<Participant>
+
+    @Query("SELECT rowid FROM participants WHERE conversation_id = :conversationId AND user_id = :userId")
+    fun getParticipantRowId(conversationId: String, userId: String): Long?
+
+    @Query("SELECT count(1) FROM participants")
+    fun countParticipants(): Long
+
+    @Query("SELECT count(1) FROM participants WHERE conversation_id IN (:conversationIds)")
+    fun countParticipants(conversationIds: Collection<String>): Long
+
+    @Query("SELECT count(1) FROM participants  WHERE rowid > :rowId")
+    fun countParticipants(rowId: Long): Long
+
+    @Query("SELECT count(1) FROM participants WHERE rowid > :rowId AND conversation_id IN (:conversationIds)")
+    fun countParticipants(rowId: Long, conversationIds: Collection<String>): Long
 }

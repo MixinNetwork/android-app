@@ -13,13 +13,16 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.crypto.CryptoPreference
+import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.databinding.FragmentVerificationEmergencyBinding
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -31,7 +34,6 @@ import one.mixin.android.ui.landing.MobileViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
-import one.mixin.eddsa.KeyPair
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -60,7 +62,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
         }
     }
 
-    private val user: User? by lazy { requireArguments().getParcelable(ARGS_USER) }
+    private val user: User? by lazy { requireArguments().getParcelableCompat(ARGS_USER, User::class.java) }
     private val pin: String? by lazy { requireArguments().getString(ARGS_PIN) }
     private val verificationId by lazy { requireArguments().getString(ARGS_VERIFICATION_ID)!! }
     private val from by lazy { requireArguments().getInt(ARGS_FROM) }
@@ -176,9 +178,9 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
         )
     }
 
-    private fun buildLoginEmergencyRequest(sessionKey: KeyPair): EmergencyRequest {
+    private fun buildLoginEmergencyRequest(sessionKey: EdKeyPair): EmergencyRequest {
         val registrationId = CryptoPreference.getLocalRegistrationId(requireContext())
-        val sessionSecret = sessionKey.publicKey.base64()
+        val sessionSecret = sessionKey.publicKey.base64Encode()
         return EmergencyRequest(
             phone = user?.phone,
             identityNumber = user?.identityNumber ?: userIdentityNumber,

@@ -1,25 +1,24 @@
 package one.mixin.android.ui.player
 
-import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.MediaSessionCompat
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ServiceLifecycleDispatcher
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.Player
+import androidx.media3.common.Player.DISCONTINUITY_REASON_INTERNAL
+import androidx.media3.common.Player.DISCONTINUITY_REASON_REMOVE
+import androidx.media3.common.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSessionService
 import androidx.paging.PagedList
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_INTERNAL
-import com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_REMOVE
-import com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT
-import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
-import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
-import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.RxBus
@@ -33,18 +32,16 @@ import one.mixin.android.ui.player.internal.downloadStatus
 import one.mixin.android.ui.player.internal.id
 import one.mixin.android.ui.player.internal.urlLoader
 import one.mixin.android.util.MusicPlayer
-import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
 
-@AndroidEntryPoint
-class MusicService : LifecycleService() {
-    private lateinit var notificationManager: MusicNotificationManager
-    private lateinit var mediaSession: MediaSessionCompat
-    private lateinit var mediaSessionConnector: MediaSessionConnector
+@UnstableApi @AndroidEntryPoint
+class MusicService : MediaSessionService(), LifecycleOwner {
+    private lateinit var mediaSession: MediaSession
 
     private val playerListener = PlayerEventListener()
+    private val mediaSessionCallback = MediaSessionCallback()
 
     private var albumId: String = ""
     private val conversationLoader = ConversationLoader()
@@ -53,7 +50,13 @@ class MusicService : LifecycleService() {
     @Inject
     lateinit var db: MixinDatabase
 
+    private val dispatcher = ServiceLifecycleDispatcher(this)
+
+    override val lifecycle: Lifecycle
+        get() = dispatcher.lifecycle
+
     override fun onCreate() {
+        dispatcher.onServicePreSuperOnCreate()
         super.onCreate()
         val sessionActivityPendingIntent = Intent(this, MusicActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -61,28 +64,18 @@ class MusicService : LifecycleService() {
             PendingIntent.getActivity(this, 0, sessionIntent, PendingIntent.FLAG_IMMUTABLE)
         }
 
-        mediaSession = MediaSessionCompat(this, "MusicService")
-            .apply {
-                setSessionActivity(sessionActivityPendingIntent)
-                isActive = true
-            }
+        mediaSession = MediaSession.Builder(this, MusicPlayer.get().exoPlayer)
+            .setSessionActivity(sessionActivityPendingIntent)
+            .setCallback(mediaSessionCallback)
+            .build()
+        // we don't use MediaController API anywhere, so we need to add session here manually.
+        addSession(mediaSession)
 
         MusicPlayer.get().exoPlayer.addListener(playerListener)
-
-        notificationManager = MusicNotificationManager(
-            this,
-            mediaSession.sessionToken,
-            MusicNotificationListener(),
-        )
-
-        mediaSessionConnector = MediaSessionConnector(mediaSession)
-        mediaSessionConnector.setQueueNavigator(MusicQueueNavigator(mediaSession))
-        mediaSessionConnector.setPlayer(MusicPlayer.get().exoPlayer)
-
-        notificationManager.showNotificationForPlayer(MusicPlayer.get().exoPlayer)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        dispatcher.onServicePreSuperOnStart()
         super.onStartCommand(intent, flags, startId)
         val action = intent?.action
         if (intent == null || action == null) {
@@ -100,6 +93,7 @@ class MusicService : LifecycleService() {
     }
 
     override fun onDestroy() {
+        dispatcher.onServicePreSuperOnDestroy()
         super.onDestroy()
 
         urlObserver?.let { urlLoader.removeObserver(it) }
@@ -110,18 +104,16 @@ class MusicService : LifecycleService() {
         conversationLiveData = null
         currentPlaylist = null
 
-        mediaSession.run {
-            isActive = false
-            release()
-        }
-
+        mediaSession.release()
         MusicPlayer.get().exoPlayer.removeListener(playerListener)
         MusicPlayer.release()
         FloatingPlayer.getInstance().hide(true)
     }
 
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession = mediaSession
+
     private fun handleStopMusic() {
-        notificationManager.hideNotification()
+        stopSelf()
     }
 
     private var conversationLiveData: LiveData<PagedList<MediaMetadataCompat>>? = null
@@ -180,11 +172,13 @@ class MusicService : LifecycleService() {
         private var currentPagedList: PagedList<MediaMetadataCompat>? = null
         private var playWhenReady = true
 
-        override fun onChanged(pagedList: PagedList<MediaMetadataCompat>) {
-            currentPagedList = pagedList
+        override fun onChanged(value: PagedList<MediaMetadataCompat>) {
+            if (value.isEmpty()) return
+
+            currentPagedList = value
             val downloadedList = mutableListOf<MediaMetadataCompat>()
-            for (i in 0 until pagedList.size) {
-                val item = pagedList[i]
+            for (i in 0 until value.size) {
+                val item = value[i]
                 if (item != null && item.downloadStatus == MediaDescriptionCompat.STATUS_DOWNLOADED) {
                     downloadedList.add(item)
                 }
@@ -204,6 +198,8 @@ class MusicService : LifecycleService() {
 
         fun loadAround(index: Int, mediaId: String, playWhenReady: Boolean = true) {
             currentPagedList?.let { list ->
+                if (list.isEmpty()) return@let
+
                 list.loadAround(max(0, min(list.size - 1, index)))
                 this.mediaId = mediaId
                 this.playWhenReady = playWhenReady
@@ -252,56 +248,9 @@ class MusicService : LifecycleService() {
         }
     }
 
-    private inner class MusicQueueNavigator(
-        mediaSession: MediaSessionCompat,
-    ) : TimelineQueueNavigator(mediaSession) {
-        override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
-            return try {
-                currentPlaylist?.get(windowIndex)?.description
-                    ?: MediaDescriptionCompat.Builder().setMediaId(MUSIC_UNKNOWN_ROOT).build()
-            } catch (e: IndexOutOfBoundsException) {
-                Timber.w(e)
-                MediaDescriptionCompat.Builder().setMediaId(MUSIC_UNKNOWN_ROOT).build()
-            }
-        }
-    }
+    private inner class MediaSessionCallback : MediaSession.Callback
 
-    private inner class MusicNotificationListener : PlayerNotificationManager.NotificationListener {
-        override fun onNotificationPosted(
-            notificationId: Int,
-            notification: Notification,
-            ongoing: Boolean,
-        ) {
-            ContextCompat.startForegroundService(
-                applicationContext,
-                Intent(applicationContext, this@MusicService.javaClass),
-            )
-
-            try {
-                startForeground(notificationId, notification)
-            } catch (e: Exception) {
-                Timber.e(e)
-            }
-        }
-
-        override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
-            stopForeground(true)
-            stopSelf()
-        }
-    }
-
-    private inner class PlayerEventListener : Player.Listener {
-        override fun onPlaybackStateChanged(playbackState: Int) {
-            when (playbackState) {
-                Player.STATE_BUFFERING,
-                Player.STATE_READY,
-                -> {
-                    val player = MusicPlayer.get().exoPlayer
-                    notificationManager.showNotificationForPlayer(player)
-                }
-            }
-        }
-
+    @UnstableApi private inner class PlayerEventListener : Player.Listener {
         override fun onPositionDiscontinuity(
             oldPosition: Player.PositionInfo,
             newPosition: Player.PositionInfo,
@@ -342,7 +291,7 @@ class MusicService : LifecycleService() {
 
         fun stopMusic(context: Context) = startService(context, ACTION_STOP_MUSIC)
 
-        fun startService(
+        private fun startService(
             ctx: Context,
             action: String? = null,
             putExtra: (Intent.() -> Unit)? = null,

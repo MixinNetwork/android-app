@@ -1,6 +1,7 @@
 package one.mixin.android.db
 
 import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import one.mixin.android.vo.Snapshot
@@ -28,6 +29,18 @@ interface SnapshotDao : BaseDao<Snapshot> {
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.type IN (:type, :otherType) ORDER BY abs(s.amount) DESC, s.snapshot_id DESC")
     fun snapshotsByTypeOrderByAmount(assetId: String, type: String, otherType: String? = null): DataSource.Factory<Int, SnapshotItem>
+
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC")
+    fun snapshotsPaging(assetId: String): PagingSource<Int, SnapshotItem>
+
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.type IN (:type, :otherType) ORDER BY s.created_at DESC, s.snapshot_id DESC")
+    fun snapshotsByTypePaging(assetId: String, type: String, otherType: String? = null): PagingSource<Int, SnapshotItem>
+
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY abs(s.amount) DESC, s.snapshot_id DESC")
+    fun snapshotsOrderByAmountPaging(assetId: String): PagingSource<Int, SnapshotItem>
+
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.type IN (:type, :otherType) ORDER BY abs(s.amount) DESC, s.snapshot_id DESC")
+    fun snapshotsByTypeOrderByAmountPaging(assetId: String, type: String, otherType: String? = null): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId and snapshot_id = :snapshotId")
     suspend fun snapshotLocal(assetId: String, snapshotId: String): SnapshotItem?
@@ -61,4 +74,16 @@ interface SnapshotDao : BaseDao<Snapshot> {
 
     @Query("SELECT transaction_hash FROM snapshots WHERE asset_id = :assetId AND type = 'deposit' AND transaction_hash IN (:hashList)")
     suspend fun findSnapshotIdsByTransactionHashList(assetId: String, hashList: List<String>): List<String>
+
+    @Query("SELECT sn.* FROM snapshots sn WHERE sn.rowid > :rowId ORDER BY sn.rowid ASC LIMIT :limit")
+    fun getSnapshotByLimitAndRowId(limit: Int, rowId: Long): List<Snapshot>
+
+    @Query("SELECT rowid FROM snapshots WHERE snapshot_id = :snapshotId")
+    fun getSnapshotRowId(snapshotId: String): Long?
+
+    @Query("SELECT count(1) FROM snapshots")
+    fun countSnapshots(): Long
+
+    @Query("SELECT count(1) FROM snapshots WHERE rowid > :rowId")
+    fun countSnapshots(rowId: Long): Long
 }

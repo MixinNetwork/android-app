@@ -262,9 +262,11 @@ class MaterialSearchView : FrameLayout {
     private var oldLeftX = 0f
     private var oldSearchWidth = 0
 
+    private val rightTranslationX = 132f
+
     fun dragSearch(progress: Float) {
-        binding.avatar.translationX = context.dpToPx(88f) * progress
-        binding.searchIb.translationX = context.dpToPx(88f) * progress
+        binding.avatar.translationX = context.dpToPx(rightTranslationX) * progress
+        binding.searchIb.translationX = context.dpToPx(rightTranslationX) * progress
         val fastFadeOut = (1 - 2 * progress).coerceAtLeast(0f)
         val fastFadeIn = (progress.coerceAtLeast(.5f) - .5f) * 2
         binding.searchEt.isVisible = true
@@ -322,8 +324,8 @@ class MaterialSearchView : FrameLayout {
         binding.searchEt.setText("")
         oldLeftX = binding.logoLayout.x
         oldSearchWidth = binding.searchEt.measuredWidth
-        binding.avatar.translationX(context.dpToPx(88f).toFloat())
-        binding.searchIb.translationX(context.dpToPx(88f).toFloat())
+        binding.avatar.translationX(context.dpToPx(rightTranslationX).toFloat())
+        binding.searchIb.translationX(context.dpToPx(rightTranslationX).toFloat())
         mSearchViewListener?.onSearchViewOpened()
         isOpen = true
     }

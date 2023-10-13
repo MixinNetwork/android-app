@@ -16,6 +16,7 @@
     <color name="colorIconGrayNight">#808691</color>
     <color name="colorIconActionNight">@color/white</color>
     <color name="colorIconBlackNight">#FFFFFF</color>
+    <color name="colorIconGoogleBlackNight">#FFFFFF</color>
 
     <color name="badgerNight">#4191FF</color>
     <color name="badgeMuteNight">#808691</color>

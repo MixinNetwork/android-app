@@ -78,4 +78,16 @@ interface AppDao : BaseDao<App> {
         """,
     )
     suspend fun findAppByAppNumber(conversationId: String, appNumber: String): App?
+
+    @Query("SELECT a.* FROM apps a WHERE a.rowid > :rowId ORDER BY a.rowid ASC LIMIT :limit")
+    fun getAppsByLimitAndRowId(limit: Int, rowId: Long): List<App>
+
+    @Query("SELECT rowid FROM apps WHERE app_id = :appId")
+    fun getAppRowId(appId: String): Long?
+
+    @Query("SELECT count(1) FROM apps")
+    fun countApps(): Long
+
+    @Query("SELECT count(1) FROM apps WHERE rowid > :rowId")
+    fun countApps(rowId: Long): Long
 }

@@ -11,7 +11,7 @@
     <string name="a_transcript">стенограмма</string>
     <string name="a_video">видео</string>
     <string name="About">Про</string>
-    <string name="about_version">Версия %1$s</string>
+    <string name="about_version">Версия %1$s (%2$d)</string>
     <string name="Accept">Принять</string>
     <string name="Access_denied">В доступе отказано</string>
     <string name="access_your_bots_list">получить доступ к списку ботов</string>
@@ -172,7 +172,6 @@
     </plurals>
     <string name="chat_delete_url">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
     <string name="chat_group_add">%1$s добавил %2$s</string>
-    <string name="chat_group_call_cancel">%1$s отменил групповой вызов</string>
     <string name="chat_group_call_decline">%1$s отклонил групповой вызов</string>
     <string name="chat_group_call_end">Групповой вызов завершен</string>
     <string name="chat_group_call_invite">%1$s пригласил вас на групповой вызов</string>
@@ -1024,14 +1023,12 @@
     <string name="When_roaming">Когда в роуминге</string>
     <string name="withdraw_Address">Адрес</string>
     <string name="Withdrawal">Вывести</string>
-    <string name="withdrawal_addr_memo">Тег назначения или идентификационный номер или примечания. Если нет, вы можете установить Нет памятки.</string>
+    <string name="withdrawal_addr_has_memo_or_tag">Тег назначения или номер ID или заметки. Если нет, вы можете установить это %1$s.</string>
     <string name="withdrawal_addr_new">Новый адрес %1$s</string>
-    <string name="withdrawal_addr_no_memo">Если вам необходимо заполнить тег назначения или идентификационный номер или примечания, вы можете добавить памятку.</string>
-    <string name="withdrawal_addr_no_tag">Если вам необходимо заполнить тег назначения, идентификационный номер или примечания, вы можете Добавить тега.</string>
+    <string name="withdrawal_addr_no_memo_or_tag">Если вам требуется заполнить тег назначения или номер ID или заметки, вы можете %1$s.</string>
     <string name="withdrawal_addr_pin_add">Введите PIN-код, чтобы сохранить адрес</string>
     <string name="withdrawal_addr_pin_delete">Введите PIN-код, чтобы удалить адрес</string>
     <string name="withdrawal_addr_pin_modify">Введите PIN-код, чтобы изменить адрес</string>
-    <string name="withdrawal_addr_tag">Тег назначения или идентификационный номер или примечания. Если нет, вы можете установить его Нет тега.</string>
     <string name="withdrawal_address_tips">Для первого вывода на новый адрес попробуйте небольшие суммы! Если вы выведете активы не на тот адрес, они не будут восстановлены!</string>
     <string name="withdrawal_label">Ярлык (например, биржи, кошельки и т.д.)</string>
     <string name="withdrawal_memo">Памятка</string>

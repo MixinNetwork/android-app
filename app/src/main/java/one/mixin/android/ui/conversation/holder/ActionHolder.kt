@@ -12,7 +12,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.leftPadding
 import one.mixin.android.extension.rightPadding
 import one.mixin.android.extension.topPadding
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
@@ -28,7 +28,7 @@ class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHol
         isFirst: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         if (hasSelect && isSelect) {

@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DB_EXPIRED_LIMIT
 import one.mixin.android.Constants.MARK_REMOTE_LIMIT
+import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -44,6 +45,8 @@ import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.deleteMessageById
+import one.mixin.android.db.flow.MessageFlow
+import one.mixin.android.db.flow.MessageFlow.ANY_ID
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.base64Encode
@@ -65,12 +68,12 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ChannelManager.Companion.createNodeChannel
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.RomUtil
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.createAckJob
+import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
@@ -225,7 +228,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         if (intent == null) return START_STICKY
 
         if (intent.action == ACTION_TO_BACKGROUND) {
-            stopForeground(true)
+            stopForeground(STOP_FOREGROUND_REMOVE)
             if (!isIgnoringBatteryOptimizations) {
                 BatteryOptimizationDialogActivity.show(this, true)
             }
@@ -399,7 +402,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 ),
             )
             val encoded = plainText.toByteArray().base64Encode()
-            val bm = createParamBlazeMessage(createPlainJsonParam(participantDao.joinedConversationId(accountId), accountId, encoded, sessionId))
+            val bm = createParamBlazeMessage(createPlainJsonParam(participantDao.joinedConversationId(accountId) ?: generateConversationId(accountId, TEAM_MIXIN_USER_ID), accountId, encoded, sessionId))
             jobManager.addJobInBackground(SendPlaintextJob(bm, PRIORITY_ACK_MESSAGE))
             jobDao.deleteList(jobs)
         }
@@ -545,11 +548,12 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 pendingDatabase.deletePendingMessageById(messageId)
                 database.deleteMessageById(messageId)
                 ftsDatabase.deleteByMessageId(messageId)
+                MessageFlow.delete(ANY_ID, messageId)
             }
+
             cIds.forEach { id ->
                 conversationDao.refreshLastMessageId(id)
                 conversationExtDao.refreshCountByConversationId(id)
-                InvalidateFlow.emit(id)
             }
             nextExpirationTime = null
             expiredJob?.ensureActive()

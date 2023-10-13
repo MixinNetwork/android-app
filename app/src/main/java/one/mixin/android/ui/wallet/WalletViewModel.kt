@@ -1,17 +1,25 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.wallet
 
 import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
+import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.RouteTickerRequest
+import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
@@ -24,10 +32,12 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.sumsub.ProfileResponse
 import javax.inject.Inject
 
 @HiltViewModel
@@ -45,6 +55,17 @@ internal constructor(
     }
 
     fun assetItemsNotHidden(): LiveData<List<AssetItem>> = assetRepository.assetItemsNotHidden()
+
+    @ExperimentalPagingApi
+    fun snapshots(
+        assetId: String,
+        type: String? = null,
+        otherType: String? = null,
+        @Suppress("UNUSED_PARAMETER") initialLoadKey: Int? = 0,
+        orderByAmount: Boolean = false,
+    ): LiveData<PagingData<SnapshotItem>> =
+        assetRepository.snapshots(assetId, type, otherType, orderByAmount)
+            .cachedIn(viewModelScope)
 
     fun snapshotsFromDb(
         id: String,
@@ -106,8 +127,7 @@ internal constructor(
 
     fun addresses(id: String) = assetRepository.addresses(id)
 
-    fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0, orderByAmount: Boolean = false):
-        LiveData<PagedList<SnapshotItem>> =
+    fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0, orderByAmount: Boolean = false): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(
             assetRepository.allSnapshots(type, otherType, orderByAmount = orderByAmount),
             PagedList.Config.Builder()
@@ -147,9 +167,19 @@ internal constructor(
         }
     }
 
+    suspend fun findAssetItemById(assetId: String) = assetRepository.findAssetItemById(assetId)
+
     suspend fun findOrSyncAsset(assetId: String): AssetItem? {
         return withContext(Dispatchers.IO) {
             assetRepository.findOrSyncAsset(assetId)
+        }
+    }
+
+    suspend fun syncNoExistAsset(assetIds: List<String>) = withContext(Dispatchers.IO) {
+        assetIds.forEach { id ->
+            if (assetRepository.findAssetItemById(id) == null) {
+                assetRepository.findOrSyncAsset(id)
+            }
         }
     }
 
@@ -186,6 +216,8 @@ internal constructor(
         )
 
     suspend fun findAssetsByIds(ids: List<String>) = assetRepository.findAssetsByIds(ids)
+
+    suspend fun assetItems() = assetRepository.assetItems()
 
     suspend fun fuzzySearchAssets(query: String?): List<AssetItem>? =
         if (query.isNullOrBlank()) {
@@ -227,6 +259,9 @@ internal constructor(
 
     suspend fun ticker(assetId: String, offset: String?) = assetRepository.ticker(assetId, offset)
 
+    suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> =
+        assetRepository.ticker(tickerRequest)
+
     suspend fun refreshSnapshot(snapshotId: String): SnapshotItem? {
         return withContext(Dispatchers.IO) {
             assetRepository.refreshAndGetSnapshot(snapshotId)
@@ -235,4 +270,19 @@ internal constructor(
 
     suspend fun findSnapshot(snapshotId: String): SnapshotItem? =
         assetRepository.findSnapshotById(snapshotId)
+
+    suspend fun getExternalAddressFee(assetId: String, destination: String, tag: String?) =
+        accountRepository.getExternalAddressFee(assetId, destination, tag)
+
+    suspend fun profile(): MixinResponse<ProfileResponse> = assetRepository.profile()
+
+    suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
+    suspend fun findBotPublicKey(conversationId: String, botId: String) = userRepository.findBotPublicKey(conversationId, botId)
+    suspend fun saveSession(participantSession: ParticipantSession) {
+        userRepository.saveSession(participantSession)
+    }
+
+    suspend fun deleteSessionByUserId(conversationId: String, userId: String) = withContext(Dispatchers.IO) {
+        userRepository.deleteSessionByUserId(conversationId, userId)
+    }
 }

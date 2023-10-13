@@ -52,3 +52,39 @@
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
+
+# Keep generic signature of RxJava2 (R8 full mode strips signatures from non-kept items).
+-keep,allowobfuscation,allowshrinking class io.reactivex.Single
+-keep,allowobfuscation,allowshrinking class io.reactivex.Flowable
+-keep,allowobfuscation,allowshrinking class io.reactivex.Observable
+-keep,allowobfuscation,allowshrinking class io.reactivex.Completable
+
+
+# https://r8.googlesource.com/r8/+/refs/heads/master/compatibility-faq.md#r8-full-mode
+
+-keepclassmembers,allowobfuscation class * {
+ @com.google.gson.annotations.SerializedName <fields>;
+}
+
+-keepattributes Signature
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
+
+-keep class kotlin.coroutines.Continuation
+
+# web3j
+-keepclassmembers class org.web3j.protocol.** { *; }
+-keepclassmembers class org.web3j.crypto.* { *; }
+
+-dontwarn com.fasterxml.jackson.databind.**
+-keep class com.fasterxml.jackson.core.** { *; }
+-keep interface com.fasterxml.jackson.core.* { *; }
+-keep class com.fasterxml.jackson.databind.** { *; }
+-keep interface com.fasterxml.jackson.databind.* { *; }
+-keep class com.fasterxml.jackson.annotation.** { *; }
+-keep interface com.fasterxml.jackson.annotation.** { *; }
+#-dontwarn java.lang.SafeVarargs
+-dontwarn org.slf4j.**
+
+-keep public class com.walletconnect.android.** { *; }
+-keep public class com.walletconnect.web3.** { *; }

@@ -43,7 +43,7 @@ import one.mixin.android.widget.PinView
 class WalletPasswordFragment :
     BaseFragment(R.layout.fragment_wallet_password),
     PinView.OnPinListener,
-    PinView.onPinFinishListener {
+    PinView.OnPinFinishListener {
 
     companion object {
         const val TAG = "WalletPasswordFragment"

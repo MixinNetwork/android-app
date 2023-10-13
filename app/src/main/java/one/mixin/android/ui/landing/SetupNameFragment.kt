@@ -22,6 +22,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.crypto.PrivacyPreference
 import one.mixin.android.databinding.FragmentSetupNameBinding
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.hideKeyboard
@@ -80,8 +81,15 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                             }
 
                             nameEt.hideKeyboard()
-                            startActivity(Intent(context, MainActivity::class.java))
                             initializeBots()
+                            val context = requireContext()
+                            if (!PrivacyPreference.getIsLoaded(requireContext(), false) ||
+                                !PrivacyPreference.getIsSyncSession(context, false)
+                            ) {
+                                InitializeActivity.showLoading(context, false)
+                            } else {
+                                startActivity(Intent(context, MainActivity::class.java))
+                            }
                             activity?.finish()
                         },
                         { t: Throwable ->

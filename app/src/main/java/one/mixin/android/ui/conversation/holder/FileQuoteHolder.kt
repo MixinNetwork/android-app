@@ -7,7 +7,7 @@ import android.text.style.BackgroundColorSpan
 import android.view.View
 import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.exoplayer2.util.MimeTypes
+import androidx.media3.common.MimeTypes
 import one.mixin.android.Constants.Colors.HIGHLIGHTED
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
@@ -16,14 +16,12 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.textResource
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.MediaHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.isSecret
 
 class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : MediaHolder(binding.root), Terminable {
@@ -71,7 +69,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         if (hasSelect && isSelect) {
@@ -244,8 +242,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 true
             }
         }
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
-        binding.chatQuote.bind(quoteMessage)
+        binding.chatQuote.bind(fromJsonQuoteMessage(messageItem.quoteContent))
         binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
@@ -261,7 +258,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
         isSelect: Boolean,
         isMe: Boolean,
         messageItem: MessageItem,
-        onItemListener: ConversationAdapter.OnItemListener,
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         if (hasSelect) {
             onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)

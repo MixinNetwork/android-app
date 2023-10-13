@@ -2,9 +2,13 @@ package one.mixin.android.extension
 
 import android.annotation.SuppressLint
 import android.content.ClipData
+import android.content.ContentResolver
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
+import android.provider.MediaStore
 import android.provider.Settings
 import android.webkit.WebView
 import androidx.fragment.app.FragmentManager
@@ -19,6 +23,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.job.RefreshExternalSchemeJob.Companion.PREF_EXTERNAL_SCHEMES
 import one.mixin.android.pay.externalTransferAssetIdMap
 import one.mixin.android.session.Session
+import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
@@ -67,7 +72,9 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.WITHDRAWAL, true) ||
         startsWith(Constants.Scheme.APPS, true) ||
         startsWith(Constants.Scheme.SNAPSHOTS, true) ||
-        startsWith(Constants.Scheme.CONVERSATIONS, true)
+        startsWith(Constants.Scheme.CONVERSATIONS, true) ||
+        startsWith(Constants.Scheme.TIP, true) ||
+        startsWith(Constants.Scheme.BUY, true)
     ) {
         true
     } else {
@@ -145,6 +152,8 @@ User-agent: ${WebView(context).settings.userAgentString}
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(context, supportFragmentManager, scope)
+    } else if (startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX) && WalletConnect.isEnabled(context)) {
+        WalletConnect.connect(this)
     } else {
         if (isMixinUrl() || isDonateUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
             LinkBottomSheetDialogFragment.newInstance(this)
@@ -289,5 +298,16 @@ fun Uri.handleSchemeSend(
         } else {
             onError?.invoke("Error data")
         }
+    }
+}
+
+fun Uri.getCapturedImage(contentResolver: ContentResolver): Bitmap = when {
+    Build.VERSION.SDK_INT < 28 -> {
+        @Suppress("DEPRECATION")
+        MediaStore.Images.Media.getBitmap(contentResolver, this)
+    }
+    else -> {
+        val source = ImageDecoder.createSource(contentResolver, this)
+        ImageDecoder.decodeBitmap(source)
     }
 }

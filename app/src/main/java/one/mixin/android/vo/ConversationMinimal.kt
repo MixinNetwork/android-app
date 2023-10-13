@@ -1,9 +1,12 @@
 package one.mixin.android.vo
 
+import android.os.Parcelable
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class ConversationMinimal(
     val conversationId: String,
     val avatarUrl: String?,
@@ -18,7 +21,7 @@ data class ConversationMinimal(
     val content: String?,
     val contentType: String?,
     val messageStatus: String?,
-) : IConversationCategory, ICategory {
+) : IConversationCategory, ICategory, Parcelable {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ConversationMinimal>() {
             override fun areItemsTheSame(oldItem: ConversationMinimal, newItem: ConversationMinimal) =

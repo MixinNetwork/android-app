@@ -80,6 +80,26 @@ fun parseMentionData(
     return Pair(mentions, mentionMe)
 }
 
+fun parseMentionData(
+    text: String,
+    userDao: UserDao,
+): String? {
+    val matcher = mentionNumberPattern.matcher(text)
+    val numbers = arraySetOf<String>()
+    while (matcher.find()) {
+        val identityNumber = matcher.group().replace("@", "").replace(" ", "")
+        numbers.add(identityNumber)
+    }
+    if (numbers.isEmpty()) {
+        return null
+    }
+    val mentions = userDao.findUserByIdentityNumbers(numbers)
+    if (mentions.isEmpty()) {
+        return null
+    }
+    return GsonHelper.customGson.toJson(mentions)
+}
+
 fun rendMentionContent(
     text: String?,
     userMap: Map<String, String>?,

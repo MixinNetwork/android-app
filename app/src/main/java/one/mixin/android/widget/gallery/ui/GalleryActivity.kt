@@ -16,6 +16,7 @@ import android.view.View
 import android.widget.AdapterView
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.media3.common.util.UnstableApi
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityGalleryBinding
 import one.mixin.android.extension.colorFromAttribute
@@ -33,6 +34,7 @@ import one.mixin.android.widget.gallery.internal.ui.adapter.AlbumsAdapter
 import one.mixin.android.widget.gallery.internal.ui.widget.AlbumsSpinner
 import one.mixin.android.widget.gallery.internal.utils.MediaStoreCompat
 
+@UnstableApi
 class GalleryActivity :
     AppCompatActivity(),
     AlbumCollection.AlbumCallbacks,
@@ -203,7 +205,7 @@ class GalleryActivity :
 
     private var previewDialogFragment: PreviewDialogFragment? = null
 
-    private fun showPreview(uri: Uri, action: (Uri) -> Unit) {
+    private fun showPreview(uri: Uri, action: (Uri, Float, Float) -> Unit) {
         if (previewDialogFragment == null) {
             previewDialogFragment = PreviewDialogFragment.newInstance()
         }
@@ -212,7 +214,7 @@ class GalleryActivity :
 
     private var previewVideoDialogFragment: PreviewDialogFragment? = null
 
-    private fun showVideoPreview(uri: Uri, action: (Uri) -> Unit) {
+    private fun showVideoPreview(uri: Uri, action: (Uri, Float, Float) -> Unit) {
         if (previewVideoDialogFragment == null) {
             previewVideoDialogFragment = PreviewDialogFragment.newInstance(true)
         }
@@ -229,17 +231,17 @@ class GalleryActivity :
             setResult(Activity.RESULT_OK, result)
             finish()
         } else if (item.isVideo) {
-            showVideoPreview(item.uri) {
+            showVideoPreview(item.uri) { uri, _, _ ->
                 val result = Intent()
-                result.data = item.uri
+                result.data = uri
                 result.putExtra(IS_VIDEO, true)
                 setResult(Activity.RESULT_OK, result)
                 finish()
             }
         } else {
-            showPreview(item.uri) {
+            showPreview(item.uri) { uri, _, _ ->
                 val result = Intent()
-                result.data = item.uri
+                result.data = uri
                 setResult(Activity.RESULT_OK, result)
                 finish()
             }

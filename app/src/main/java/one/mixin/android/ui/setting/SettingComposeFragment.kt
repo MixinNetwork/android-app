@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.CompositionLocalProvider
@@ -21,10 +21,11 @@ import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.NavDeepLinkRequest
 import androidx.navigation.NavDestination
-import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import one.mixin.android.api.response.AuthorizationResponse
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.toUri
 import one.mixin.android.ui.common.BaseFragment
@@ -59,7 +60,7 @@ enum class SettingDestination {
     Setting,
     Account,
     NotificationAndConfirm,
-    BackUp,
+    MigrateRestore,
     DataStorage,
     Appearance,
     About,
@@ -81,6 +82,7 @@ enum class SettingDestination {
     PinLogs,
     BiometricTime,
     Wallpaper,
+    LogAndDebug,
 }
 
 open class SettingNavigationController {
@@ -208,7 +210,7 @@ class SettingComposeFragment : BaseFragment() {
                 MixinAppTheme(
                     darkTheme = context.isNightMode(),
                 ) {
-                    val navController = rememberAnimatedNavController()
+                    val navController = rememberNavController()
                     val navigationController = remember {
                         SettingNavControllerImpl(navController, closeActivity = {
                             activity?.onBackPressedDispatcher?.onBackPressed()
@@ -228,30 +230,30 @@ class SettingComposeFragment : BaseFragment() {
                     CompositionLocalProvider(
                         LocalSettingNav provides navigationController,
                     ) {
-                        AnimatedNavHost(
+                        NavHost(
                             navController = navController,
                             startDestination = SettingDestination.Setting.name,
                             enterTransition = {
                                 slideIntoContainer(
-                                    AnimatedContentScope.SlideDirection.Left,
+                                    AnimatedContentTransitionScope.SlideDirection.Left,
                                     animationSpec = tween(300),
                                 )
                             },
                             popEnterTransition = {
                                 slideIntoContainer(
-                                    AnimatedContentScope.SlideDirection.Right,
+                                    AnimatedContentTransitionScope.SlideDirection.Right,
                                     animationSpec = tween(300),
                                 )
                             },
                             exitTransition = {
                                 slideOutOfContainer(
-                                    AnimatedContentScope.SlideDirection.Left,
+                                    AnimatedContentTransitionScope.SlideDirection.Left,
                                     animationSpec = tween(300),
                                 )
                             },
                             popExitTransition = {
                                 slideOutOfContainer(
-                                    AnimatedContentScope.SlideDirection.Right,
+                                    AnimatedContentTransitionScope.SlideDirection.Right,
                                     animationSpec = tween(300),
                                 )
                             },
@@ -276,9 +278,14 @@ class SettingComposeFragment : BaseFragment() {
                                     SettingDataStorageFragment.newInstance()
                                 }
                             }
-                            composable(SettingDestination.BackUp.name) {
-                                MixinSettingFragment(BackUpFragment.TAG) {
-                                    BackUpFragment.newInstance()
+                            composable(SettingDestination.MigrateRestore.name) {
+                                MixinSettingFragment(MigrateRestoreFragment.TAG) {
+                                    MigrateRestoreFragment.newInstance()
+                                }
+                            }
+                            composable(SettingDestination.LogAndDebug.name) {
+                                MixinSettingFragment(LogAndDebugFragment.TAG) {
+                                    LogAndDebugFragment.newInstance()
                                 }
                             }
                             composable(SettingDestination.AccountPrivacy.name) {
@@ -321,7 +328,7 @@ class SettingComposeFragment : BaseFragment() {
                             }
 
                             composable(SettingDestination.ViewEmergencyContact.name) {
-                                val user = it.arguments?.getParcelable<User>(USER_KEY)
+                                val user = it.arguments?.getParcelableCompat(USER_KEY, User::class.java)
                                 if (user == null) {
                                     Timber.e("viewEmergencyContact: no user")
                                     return@composable
@@ -335,8 +342,9 @@ class SettingComposeFragment : BaseFragment() {
 
                             composable(SettingDestination.AuthenticationPermissions.name) { backStackEntry ->
                                 val auth =
-                                    backStackEntry.arguments?.getParcelable<AuthorizationResponse>(
+                                    backStackEntry.arguments?.getParcelableCompat(
                                         AUTHORIZATION_KEY,
+                                        AuthorizationResponse::class.java,
                                     )
                                 if (auth == null) {
                                     Timber.e("viewEmergencyContact: no auth")
@@ -359,7 +367,7 @@ class SettingComposeFragment : BaseFragment() {
                             }
 
                             composable(SettingDestination.UserBottomSheet.name) {
-                                val user = it.arguments?.getParcelable<User>(USER_KEY)
+                                val user = it.arguments?.getParcelableCompat(USER_KEY, User::class.java)
                                 val conversationId = it.arguments?.getString(CONVERSATION_ID_KEY)
 
                                 val fragment = remember {

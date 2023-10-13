@@ -128,6 +128,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     @SuppressLint("NotifyDataSetChanged")
     fun setUrlData(url: String?) {
         data.url = url
+        data.showTip = shouldTips(query)
         notifyDataSetChanged()
     }
 

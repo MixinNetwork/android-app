@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="About">Mengenai</string>
-    <string name="about_version">Versi %1$s</string>
+    <string name="about_version">Versi %1$s (%2$d)</string>
     <string name="Accept">Terima</string>
     <string name="Access_denied">Akses dinafikan</string>
     <string name="access_your_bots_list">akses senarai aplikasi anda</string>
@@ -122,7 +122,6 @@
     </plurals>
     <string name="chat_delete_url">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
     <string name="chat_group_add">%1$s menambahkan %2$s</string>
-    <string name="chat_group_call_cancel">%1$s telah membatalkan panggilan kumpulan</string>
     <string name="chat_group_call_decline">%1$s telah menolak panggilan kumpulan</string>
     <string name="chat_group_call_invite">%1$s telah menjemput anda ke panggilan kumpulan</string>
     <string name="chat_group_call_remote_peer_closed">Sambungan rakan telah ditutup, sila cuba lagi</string>
@@ -764,14 +763,12 @@
     <string name="When_roaming">Semasa perayauan</string>
     <string name="withdraw_Address">Alamat</string>
     <string name="Withdrawal">Pengeluaran</string>
-    <string name="withdrawal_addr_memo">Destinasi Tag atau Nombor ID atau nota. Sekiranya tidak, anda boleh menetapkannya Tiada Memo.</string>
+    <string name="withdrawal_addr_has_memo_or_tag">Destinasi Tag atau Nombor ID atau nota. Sekiranya tidak, anda boleh menetapkannya %1$s.</string>
     <string name="withdrawal_addr_new">Alamat %1$s Baharu</string>
-    <string name="withdrawal_addr_no_memo">Sekiranya anda diminta untuk mengisi Tag Destinasi atau Nombor ID atau nota, anda boleh Menambah Memo.</string>
-    <string name="withdrawal_addr_no_tag">Sekiranya anda diminta untuk mengisi Tag Destinasi atau Nombor ID atau nota, anda boleh Menambah Tag.</string>
+    <string name="withdrawal_addr_no_memo_or_tag">Sekiranya anda diminta untuk mengisi Tag Destinasi atau Nombor ID atau nota, anda boleh %1$s.</string>
     <string name="withdrawal_addr_pin_add">Masukkan PIN untuk menyimpan alamat</string>
     <string name="withdrawal_addr_pin_delete">Masukkan PIN untuk menghapus alamat</string>
     <string name="withdrawal_addr_pin_modify">Masukkan PIN untuk mengubah alamat</string>
-    <string name="withdrawal_addr_tag">Destinasi Tag atau Nombor ID atau nota. Sekiranya tidak, anda boleh menetapkannya Tiada Tag.</string>
     <string name="withdrawal_address_tips">Untuk pengeluaran pertama ke alamat baharu, sila cuba jumlah kecil! Sekiranya anda mengeluarkan aset ke alamat yang salah, itu tidak akan dapat dipulihkan!</string>
     <string name="withdrawal_label">Label (contohnya pertukaran, dompet, dll.)</string>
     <string name="withdrawal_memo">Memo</string>

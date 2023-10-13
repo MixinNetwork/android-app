@@ -216,7 +216,9 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 val tipCounter = Session.getTipCounter()
                 tip.checkCounter(
                     tipCounter,
-                    onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
+                    onNodeCounterNotEqualServer = { nodeMaxCounter, nodeFailedSigners ->
+                        tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
+                    },
                     onNodeCounterInconsistency = { nodeMaxCounter, nodeFailedSigners ->
                         tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
                     },
@@ -248,9 +250,15 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 val tipCounter = Session.getTipCounter()
                 val nodeCounter = tipBundle.tipEvent?.nodeCounter ?: tipCounter
                 val failedSigners = tipBundle.tipEvent?.failedSigners
-                val nodeSuccess = nodeCounter > tipCounter && failedSigners.isNullOrEmpty()
-                if (nodeSuccess) {
+                if (nodeCounter != tipCounter && failedSigners.isNullOrEmpty()) {
                     showInputPin { pin ->
+                        tipBundle.pin = pin
+                        processTip()
+                    }
+                } else if (nodeCounter != tipCounter && failedSigners?.size == tip.tipNodeCount()) {
+                    // for fix tipCounter > nodeCounter
+                    showInputPin(getString(R.string.Enter_your_PIN)) { pin ->
+                        tipBundle.oldPin = pin
                         tipBundle.pin = pin
                         processTip()
                     }
@@ -305,10 +313,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         when {
             tipCounter < 1 ->
                 tip.createTipPriv(requireContext(), pin, deviceId, failedSigners, oldPin)
-            nodeCounter > tipCounter && failedSigners.isNullOrEmpty() ->
+            nodeCounter != tipCounter && failedSigners.isNullOrEmpty() ->
                 tip.updateTipPriv(requireContext(), deviceId, pin, null, null)
             else ->
-                tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin), failedSigners)
+                tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin) { "process tip step update oldPin can not be null" }, failedSigners)
         }.onFailure { e ->
             tip.removeObserver(tipObserver)
             onTipProcessFailure(e, pin, tipCounter, nodeCounter)
@@ -336,7 +344,9 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
         tip.checkCounter(
             tipCounter,
-            onNodeCounterGreaterThanServer = { tipBundle.updateTipEvent(null, it) },
+            onNodeCounterNotEqualServer = { nodeMaxCounter, nodeFailedSigners ->
+                tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
+            },
             onNodeCounterInconsistency = { nodeMaxCounter, nodeFailedSigners ->
                 tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
             },

@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.Bitmap
+import android.os.Build
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -18,6 +19,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositQrBottomBinding
 import one.mixin.android.extension.capture
 import one.mixin.android.extension.generateQRCode
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
@@ -33,22 +35,29 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "DepositQrBottomFragment"
         const val ARGS_TYPE = "args_type"
+        const val ARGS_SELECTED_DESTINATION = "args_selected_destination"
 
         const val TYPE_TAG = 0
         const val TYPE_ADDRESS = 1
 
-        fun newInstance(asset: AssetItem, type: Int) = DepositQrBottomFragment().apply {
+        fun newInstance(
+            asset: AssetItem,
+            type: Int,
+            selectedDestination: String?,
+        ) = DepositQrBottomFragment().apply {
             arguments = bundleOf(
                 ARGS_ASSET to asset,
                 ARGS_TYPE to type,
+                ARGS_SELECTED_DESTINATION to selectedDestination,
             )
         }
     }
 
     private val binding by viewBinding(FragmentDepositQrBottomBinding::inflate)
 
-    private val asset: AssetItem by lazy { requireArguments().getParcelable(ARGS_ASSET)!! }
+    private val asset: AssetItem by lazy { requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)!! }
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
+    private val selectedDestination: String? by lazy { requireArguments().getString(ARGS_SELECTED_DESTINATION) }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -65,7 +74,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                 }
                 else -> {
                     title.titleTv.text = getString(R.string.Address)
-                    addrTv.text = asset.getDestination()
+                    addrTv.text = selectedDestination ?: asset.getDestination()
                 }
             }
             badgeView.apply {
@@ -75,7 +84,11 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
 
             saveIv.setOnClickListener {
                 RxPermissions(requireActivity())
-                    .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .request(
+                        *mutableListOf(android.Manifest.permission.CAMERA).apply {
+                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        }.toTypedArray(),
+                    )
                     .autoDispose(stopScope)
                     .subscribe(
                         { granted ->
@@ -105,7 +118,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                 Observable.create<Pair<Bitmap, Int>?> { e ->
                     val code = when (type) {
                         TYPE_TAG -> asset.getTag()
-                        else -> asset.getDestination()
+                        else -> selectedDestination ?: asset.getDestination()
                     }
                     val r = code?.generateQRCode(qr.width)
                     r?.let { e.onNext(it) }

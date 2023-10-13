@@ -12,7 +12,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagedList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -21,7 +20,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
-import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.ConversationRequest
@@ -29,6 +27,7 @@ import one.mixin.android.api.request.DisappearRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.deserialize
@@ -58,8 +57,6 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.util.chat.FastComputableLiveData
-import one.mixin.android.util.chat.FastLivePagedListBuilder
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
@@ -96,6 +93,7 @@ import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isVideo
+import one.mixin.android.vo.toVideoClip
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.AudioMessagePayload
 import one.mixin.android.websocket.BlazeAckMessage
@@ -114,6 +112,7 @@ import javax.inject.Inject
 class ConversationViewModel
 @Inject
 internal constructor(
+    private val appDatabase: MixinDatabase,
     private val conversationRepository: ConversationRepository,
     private val userRepository: UserRepository,
     private val jobManager: MixinJobManager,
@@ -123,19 +122,6 @@ internal constructor(
     private val cleanMessageHelper: CleanMessageHelper,
 ) : ViewModel() {
 
-    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): FastComputableLiveData<PagedList<MessageItem>> {
-        val pagedListConfig = PagedList.Config.Builder()
-            .setPrefetchDistance(PAGE_SIZE * 2)
-            .setPageSize(PAGE_SIZE)
-            .setEnablePlaceholders(true)
-            .build()
-
-        return FastLivePagedListBuilder(
-            conversationRepository.getMessages(conversationId),
-            pagedListConfig,
-        ).setInitialLoadKey(firstKeyToLoad).build()
-    }
-
     suspend fun indexUnread(conversationId: String) =
         conversationRepository.indexUnread(conversationId) ?: 0
 
@@ -144,7 +130,8 @@ internal constructor(
 
     suspend fun getConversationDraftById(id: String): String? = conversationRepository.getConversationDraftById(id)
 
-    fun getConversationById(id: String) = conversationRepository.getConversationById(id)
+    fun getConversationInfoById(id: String, userId: String) =
+        conversationRepository.getConversationInfoById(id, userId)
 
     suspend fun getConversation(id: String) = withContext(Dispatchers.IO) {
         conversationRepository.getConversation(id)
@@ -239,12 +226,14 @@ internal constructor(
         conversationId: String,
         senderId: String,
         uri: Uri,
+        start: Float,
+        end: Float,
         encryptCategory: EncryptCategory,
         messageId: String? = null,
         createdAt: String? = null,
         replyMessage: MessageItem? = null,
     ) {
-        messenger.sendVideoMessage(conversationId, senderId, uri, encryptCategory, messageId, createdAt, replyMessage)
+        messenger.sendVideoMessage(conversationId, senderId, uri, start, end, encryptCategory, messageId, createdAt, replyMessage)
     }
 
     fun sendVideoMessage(
@@ -257,7 +246,7 @@ internal constructor(
         val uri = videoMessagePayload.url.toUri()
         val messageId = videoMessagePayload.messageId
         val createdAt = videoMessagePayload.createdAt
-        messenger.sendVideoMessage(conversationId, senderId, uri, encryptCategory, messageId, createdAt, replyMessage)
+        messenger.sendVideoMessage(conversationId, senderId, uri, 0f, 1f, encryptCategory, messageId, createdAt, replyMessage)
     }
 
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
@@ -373,46 +362,49 @@ internal constructor(
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun retryUpload(id: String, onError: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
-            conversationRepository.findMessageById(id)?.let {
-                if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
+            conversationRepository.findMessageById(id)?.let { message ->
+                if (message.isVideo() && message.mediaSize != null && message.mediaSize == 0L) {
                     try {
-                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.messageId, it.conversationId)
+                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, message.messageId, message.conversationId)
+                        val videoClip = toVideoClip(message.content, message.mediaUrl)
                         jobManager.addJobInBackground(
                             ConvertVideoJob(
-                                it.conversationId,
-                                it.userId,
-                                Uri.parse(it.mediaUrl),
+                                message.conversationId,
+                                message.userId,
+                                Uri.parse(videoClip.uri),
+                                videoClip.startProgress,
+                                videoClip.endProgress,
                                 when {
-                                    it.isSignal() -> EncryptCategory.SIGNAL
-                                    it.isEncrypted() -> EncryptCategory.ENCRYPTED
+                                    message.isSignal() -> EncryptCategory.SIGNAL
+                                    message.isEncrypted() -> EncryptCategory.ENCRYPTED
                                     else -> EncryptCategory.PLAIN
                                 },
-                                it.messageId,
-                                it.createdAt,
+                                message.messageId,
+                                message.createdAt,
                             ),
                         )
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
-                } else if (it.isImage() && it.mediaMimeType == MimeType.GIF.toString() && it.mediaUrl?.startsWith("http") == true) { // un-downloaded GIPHY
+                } else if (message.isImage() && message.mediaMimeType == MimeType.GIF.toString() && message.mediaUrl?.startsWith("http") == true) { // un-downloaded GIPHY
                     val category = when {
-                        it.isSignal() -> MessageCategory.SIGNAL_IMAGE
-                        it.isEncrypted() -> MessageCategory.ENCRYPTED_IMAGE
+                        message.isSignal() -> MessageCategory.SIGNAL_IMAGE
+                        message.isEncrypted() -> MessageCategory.ENCRYPTED_IMAGE
                         else -> MessageCategory.PLAIN_IMAGE
                     }.name
                     try {
                         jobManager.addJobInBackground(
                             SendGiphyJob(
-                                it.conversationId, it.userId, it.mediaUrl, it.mediaWidth!!, it.mediaHeight!!,
-                                it.mediaSize ?: 0L, category, it.messageId, it.thumbImage ?: "", it.createdAt,
+                                message.conversationId, message.userId, message.mediaUrl, message.mediaWidth!!, message.mediaHeight!!,
+                                message.mediaSize ?: 0L, category, message.messageId, message.thumbImage ?: "", message.createdAt,
                             ),
                         )
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
                 } else {
-                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.messageId, it.conversationId)
-                    jobManager.addJobInBackground(SendAttachmentMessageJob(it))
+                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, message.messageId, message.conversationId)
+                    jobManager.addJobInBackground(SendAttachmentMessageJob(message))
                 }
             }
         }
@@ -818,4 +810,8 @@ internal constructor(
 
     suspend fun updateConversationExpireIn(conversationId: String, expireIn: Long?) =
         conversationRepository.updateConversationExpireIn(conversationId, expireIn)
+
+    suspend fun refreshCountByConversationId(conversationId: String) = withContext(Dispatchers.IO) {
+        conversationRepository.refreshCountByConversationId(conversationId)
+    }
 }

@@ -4,6 +4,7 @@ import one.mixin.android.tip.TipNodeError
 
 class NotEnoughPartialsException(
     val partialSize: Int,
+    val forRecover: Boolean,
     val tipNodeError: TipNodeError?,
 ) : TipNodeException() {
     companion object {

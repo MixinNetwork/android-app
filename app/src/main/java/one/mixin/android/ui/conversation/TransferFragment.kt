@@ -53,6 +53,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.formatPublicKey
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
@@ -279,22 +280,30 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         binding.avatar.setNet(requireContext().dpToPx(16f))
         binding.expandIv.isVisible = false
         binding.assetRl.setOnClickListener(null)
-        currentAsset = requireArguments().getParcelable(ARGS_ASSET)
+        currentAsset = requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)
         currentAsset?.let { updateAssetUI(it) }
 
-        address = requireArguments().getParcelable(ARGS_ADDRESS)
+        val address = requireArguments().getParcelableCompat(ARGS_ADDRESS, Address::class.java)
+        this.address = address
         if (address == null || currentAsset == null) return
 
-        chatViewModel.observeAddress(address!!.addressId).observe(
-            this,
-        ) {
-            address = it
+        if (address.addressId.isBlank()) { // mock address
             binding.titleView.setSubTitle(
-                getString(R.string.send_to, it.label),
-                it.displayAddress().formatPublicKey(),
+                getString(R.string.send_to, address.label),
+                address.displayAddress().formatPublicKey(),
             )
-
-            updateFeeUI(it)
+            updateFeeUI(address)
+        } else {
+            chatViewModel.observeAddress(address.addressId).observe(
+                this,
+            ) {
+                this.address = it
+                binding.titleView.setSubTitle(
+                    getString(R.string.send_to, it.label),
+                    it.displayAddress().formatPublicKey(),
+                )
+                updateFeeUI(it)
+            }
         }
     }
 

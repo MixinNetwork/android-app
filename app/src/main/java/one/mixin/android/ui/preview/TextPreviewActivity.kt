@@ -22,7 +22,7 @@ import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityPreviewTextBinding
 import one.mixin.android.extension.callPhone
-import one.mixin.android.extension.getParcelableExtra
+import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.initChatMode
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openEmail
@@ -40,10 +40,6 @@ class TextPreviewActivity : BlazeBaseActivity() {
 
     private lateinit var binding: ActivityPreviewTextBinding
 
-    private val messageItem: MessageItem by lazy {
-        requireNotNull(getParcelableExtra(intent, ARGS_MESSAGE, MessageItem::class.java))
-    }
-
     private val viewModel by viewModels<TextPreviewViewModel>()
 
     private var actionMode: ActionMode? = null
@@ -58,37 +54,44 @@ class TextPreviewActivity : BlazeBaseActivity() {
         binding.text.requestFocus()
         binding.text.movementMethod = LinkMovementMethod()
         binding.text.initChatMode(LINK_COLOR)
-        binding.text.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
-            when (autoLinkMode) {
-                AutoLinkMode.MODE_URL -> {
-                    dismissWhenClickText = false
-                    matchedText.openAsUrlOrWeb(this, messageItem.conversationId, supportFragmentManager, lifecycleScope)
-                }
-                AutoLinkMode.MODE_MENTION -> {
-                    dismissWhenClickText = false
-                    lifecycleScope.launch {
-                        viewModel.findUserByIdentityNumberSuspend(matchedText.substring(1))?.let { user ->
-                            showUserBottom(supportFragmentManager, user, messageItem.conversationId)
+        if (intent.hasExtra(ARGS_MESSAGE)) {
+            val messageItem = requireNotNull(intent.getParcelableExtraCompat(ARGS_MESSAGE, MessageItem::class.java))
+            binding.text.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
+                when (autoLinkMode) {
+                    AutoLinkMode.MODE_URL -> {
+                        dismissWhenClickText = false
+                        matchedText.openAsUrlOrWeb(this, messageItem.conversationId, supportFragmentManager, lifecycleScope)
+                    }
+                    AutoLinkMode.MODE_MENTION -> {
+                        dismissWhenClickText = false
+                        lifecycleScope.launch {
+                            viewModel.findUserByIdentityNumberSuspend(matchedText.substring(1))?.let { user ->
+                                showUserBottom(supportFragmentManager, user, messageItem.conversationId)
+                            }
                         }
                     }
-                }
-                AutoLinkMode.MODE_PHONE -> {
-                    this@TextPreviewActivity.callPhone(matchedText)
-                }
-                AutoLinkMode.MODE_EMAIL -> {
-                    this@TextPreviewActivity.openEmail(matchedText)
-                }
-                else -> {
+                    AutoLinkMode.MODE_PHONE -> {
+                        this@TextPreviewActivity.callPhone(matchedText)
+                    }
+                    AutoLinkMode.MODE_EMAIL -> {
+                        this@TextPreviewActivity.openEmail(matchedText)
+                    }
+                    else -> {
+                    }
                 }
             }
-        }
-        val mention = messageItem.mentions
-        if (mention?.isNotBlank() == true) {
-            val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(mention)
-            binding.text.renderMessage(messageItem.content, null, mentionRenderContext)
+            val mention = messageItem.mentions
+            if (mention?.isNotBlank() == true) {
+                val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(mention)
+                binding.text.renderMessage(messageItem.content, null, mentionRenderContext)
+            } else {
+                binding.text.renderMessage(messageItem.content, null)
+            }
         } else {
-            binding.text.renderMessage(messageItem.content, null)
+            val content = intent.getStringExtra(ARGS_CONTENT)
+            binding.text.renderMessage(content, null)
         }
+
         binding.text.doOnPreDraw {
             val lineCount = binding.text.lineCount
             if (lineCount > 1) {
@@ -172,10 +175,18 @@ class TextPreviewActivity : BlazeBaseActivity() {
 
     companion object {
         const val ARGS_MESSAGE = "args_message"
+        const val ARGS_CONTENT = "args_content"
 
         fun show(context: Context, messageItem: MessageItem) {
             Intent(context, TextPreviewActivity::class.java).apply {
                 putExtra(ARGS_MESSAGE, messageItem)
+                context.startActivity(this)
+            }
+        }
+
+        fun show(context: Context, content: String) {
+            Intent(context, TextPreviewActivity::class.java).apply {
+                putExtra(ARGS_CONTENT, content)
                 context.startActivity(this)
             }
         }

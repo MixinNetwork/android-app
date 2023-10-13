@@ -11,7 +11,7 @@ import androidx.core.database.getShortOrNull
 import androidx.core.database.getStringOrNull
 import one.mixin.android.BuildConfig
 import one.mixin.android.extension.heavyClickVibrate
-import one.mixin.android.util.reportException
+import one.mixin.android.util.reportEvent
 import timber.log.Timber
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -50,16 +50,11 @@ inline fun <T> timeoutEarlyWarning(block: () -> T, timeout: Long = 50L): T {
     val result = block()
     val time = System.currentTimeMillis() - start
     if (time >= timeout) {
-        Timber.e("It takes $time milliseconds")
-        reportException("It takes $time milliseconds", LogExtension())
+        val msg = "It takes $time milliseconds"
+        Timber.e(msg)
+        reportEvent(msg)
     }
     return result
-}
-
-class LogExtension : Exception() {
-    companion object {
-        private const val serialVersionUID: Long = 1L
-    }
 }
 
 fun Cursor.getContent(columnIndex: Int): String {

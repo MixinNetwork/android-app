@@ -39,8 +39,10 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
+import one.mixin.android.util.isAnonymousNumber
 import one.mixin.android.util.isValidNumber
 import one.mixin.android.util.viewBinding
+import one.mixin.android.util.xinDialCode
 import one.mixin.android.widget.CaptchaView
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
@@ -75,6 +77,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     private var mCountry: Country? = null
     private val phoneUtil = PhoneNumberUtil.getInstance()
     private var phoneNumber: Phonenumber.PhoneNumber? = null
+    private var anonymousNumber: String? = null
 
     private var pin: String? = null
     private val from: Int by lazy {
@@ -83,13 +86,22 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
     private var captchaView: CaptchaView? = null
 
+    private val mixinCountry by lazy {
+        Country().apply {
+            name = getString(R.string.Mixin)
+            code = getString(R.string.Mixin)
+            flag = com.mukesh.countrypicker.R.drawable.flag_mixin
+            dialCode = xinDialCode
+        }
+    }
+
     @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             pin = requireArguments().getString(ARGS_PIN)
             if (pin != null) {
-                mobileTitleTv.setText(R.string.Enter_new_phone_number)
+                titleSwitcher.setCurrentText(getString(R.string.Enter_new_phone_number))
             }
             backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             countryIconIv.setOnClickListener { showCountry() }
@@ -118,6 +130,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
                 mobileEt.requestFocus()
                 mobileEt.setSelection(mobileEt.text?.length ?: 0)
+                updateMobileOrAnonymous(dialCode)
             }
             getUserCountryInfo()
 
@@ -144,7 +157,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         alertDialogBuilder()
             .setMessage(
                 getString(
-                    R.string.landing_invitation_dialog_content,
+                    if (anonymousNumber != null) R.string.landing_anonymous_dialog_content else R.string.landing_invitation_dialog_content,
                     mCountry?.dialCode + " " + binding.mobileEt.text.toString(),
                 ),
             )
@@ -161,16 +174,18 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
         binding.mobileFab.show()
         binding.mobileCover.visibility = VISIBLE
-        val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
+        val phoneNum = anonymousNumber ?: phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
         val verificationRequest = VerificationRequest(
             phoneNum,
             when (from) {
                 FROM_DELETE_ACCOUNT -> {
                     VerificationPurpose.DEACTIVATED.name
                 }
+
                 FROM_CHANGE_PHONE_ACCOUNT -> {
                     VerificationPurpose.PHONE.name
                 }
+
                 else -> {
                     VerificationPurpose.SESSION.name
                 }
@@ -239,6 +254,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                 requireContext(),
                 object : CaptchaView.Callback {
                     override fun onStop() {
+                        if (viewDestroyed()) return
+
                         binding.mobileFab.hide()
                         binding.mobileCover.visibility = GONE
                     }
@@ -254,12 +271,16 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     }
 
     private fun hideLoading() {
+        if (viewDestroyed()) return
+
         binding.mobileFab.hide()
         binding.mobileCover.visibility = GONE
         captchaView?.hide()
     }
 
     private fun handleEditView() {
+        if (viewDestroyed()) return
+
         binding.apply {
             val country = mCountry
             if (country == null) {
@@ -269,13 +290,25 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
             val mobileText = mobileEt.text.toString()
             mobileEt.setSelection(mobileText.length)
-            val validResult = isValidNumber(phoneUtil, country.dialCode + mobileText, country.code, country.dialCode)
-            phoneNumber = validResult.second
-            mobileFab.isVisible = (countryCodeEt.text?.length ?: 0) > 1 && mobileText.isNotEmpty() && validResult.first
+            val dialCode = country.dialCode
+            val number = country.dialCode + mobileText
+            val valid = if (dialCode == xinDialCode) {
+                val r = isAnonymousNumber(number, dialCode)
+                anonymousNumber = if (r) number else null
+                r
+            } else {
+                anonymousNumber = null
+                val validResult = isValidNumber(phoneUtil, number, country.code, country.dialCode)
+                phoneNumber = validResult.second
+                validResult.first
+            }
+            mobileFab.isVisible = (countryCodeEt.text?.length ?: 0) > 1 && mobileText.isNotEmpty() && valid
         }
     }
 
     private fun getUserCountryInfo() {
+        if (viewDestroyed()) return
+
         countryPicker.getUserCountryInfo(context).apply {
             mCountry = this
             binding.countryIconIv.setImageResource(flag)
@@ -288,6 +321,34 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         activity?.supportFragmentManager?.inTransaction {
             setCustomAnimations(R.anim.slide_in_bottom, 0, 0, R.anim.slide_out_bottom)
                 .add(R.id.container, countryPicker).addToBackStack(null)
+        }
+    }
+
+    private fun updateMobileOrAnonymous(dialCode: String) {
+        if (viewDestroyed()) return
+
+        binding.apply {
+            if (dialCode == xinDialCode) {
+                enterTip.isVisible = false
+                mobileEt.hint = getString(R.string.Anonymous_Number)
+                if (titleSwitcher.displayedChild != 1) {
+                    if (pin != null) {
+                        titleSwitcher.setText(getString(R.string.Enter_new_anonymous_number))
+                    } else {
+                        titleSwitcher.setText(getString(R.string.Enter_your_anonymous_number))
+                    }
+                }
+            } else {
+                enterTip.isVisible = true
+                mobileEt.hint = getString(R.string.Phone_Number)
+                if (titleSwitcher.displayedChild != 0) {
+                    if (pin != null) {
+                        titleSwitcher.setText(getString(R.string.Enter_new_phone_number))
+                    } else {
+                        titleSwitcher.setText(getString(R.string.Enter_your_phone_number))
+                    }
+                }
+            }
         }
     }
 
@@ -423,7 +484,12 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                 et.setText("+")
                 Selection.setSelection(et.text, et.text?.length ?: 0)
             }
-            val country = countryPicker.getCountryByDialCode(et.text.toString())
+            val dialCode = et.text.toString()
+            val country = if (dialCode == xinDialCode) {
+                mixinCountry
+            } else {
+                countryPicker.getCountryByDialCode(dialCode)
+            }
             if (mCountry?.dialCode == country?.dialCode) {
                 handleEditView()
                 return
@@ -436,6 +502,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                     countryIconIv.setImageResource(country.flag)
                 }
             }
+            updateMobileOrAnonymous(dialCode)
             handleEditView()
         }
     }

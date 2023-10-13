@@ -16,15 +16,11 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSATION_ID
-import one.mixin.android.ui.conversation.ConversationFragment.Companion.INITIAL_POSITION_MESSAGE_ID
-import one.mixin.android.ui.conversation.ConversationFragment.Companion.MESSAGE_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
-import one.mixin.android.ui.conversation.ConversationFragment.Companion.UNREAD_COUNT
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.User
-import one.mixin.android.vo.generateConversationId
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -76,15 +72,10 @@ class ConversationActivity : BlazeBaseActivity() {
                 )
             },
         ) {
-            val messageId = bundle.getString(MESSAGE_ID)
             val conversationId = bundle.getString(CONVERSATION_ID)
             val userId = bundle.getString(RECIPIENT_ID)
-            var unreadCount = bundle.getInt(UNREAD_COUNT, -1)
-            val cid: String
             if (userId != null) {
                 val user = userRepository.suspendFindUserById(userId)
-                val accountId = Session.getAccountId() ?: return@launch
-                cid = conversationId ?: generateConversationId(accountId, userId)
                 require(user != null && userId != Session.getAccountId()) {
                     "error data userId: $userId"
                 }
@@ -94,23 +85,8 @@ class ConversationActivity : BlazeBaseActivity() {
                 require(user?.userId != Session.getAccountId()) {
                     "error data conversationId: $conversationId"
                 }
-                cid = conversationId
                 bundle.putParcelable(RECIPIENT, user)
             }
-            if (unreadCount == -1) {
-                unreadCount = if (!messageId.isNullOrEmpty()) {
-                    conversationRepository.findMessageIndex(cid, messageId)
-                } else {
-                    conversationRepository.indexUnread(cid) ?: -1
-                }
-            }
-            bundle.putInt(UNREAD_COUNT, unreadCount)
-            val msgId = messageId ?: if (unreadCount <= 0) {
-                null
-            } else {
-                conversationRepository.findFirstUnreadMessageId(cid, unreadCount - 1)
-            }
-            bundle.putString(INITIAL_POSITION_MESSAGE_ID, msgId)
             replaceFragment(
                 ConversationFragment.newInstance(bundle),
                 R.id.container,
@@ -127,16 +103,12 @@ class ConversationActivity : BlazeBaseActivity() {
             context: Context,
             conversationId: String,
             recipient: User?,
-            initialPositionMessageId: String?,
-            unreadCount: Int,
         ) {
             Intent(context, ConversationActivity::class.java).apply {
                 putExtras(
                     Bundle().apply {
                         putString(CONVERSATION_ID, conversationId)
                         putParcelable(RECIPIENT, recipient)
-                        putString(INITIAL_POSITION_MESSAGE_ID, initialPositionMessageId)
-                        putInt(UNREAD_COUNT, unreadCount)
                         putBoolean(ARGS_FAST_SHOW, true)
                     },
                 )
@@ -160,7 +132,6 @@ class ConversationActivity : BlazeBaseActivity() {
             recipientId: String? = null,
             messageId: String? = null,
             keyword: String? = null,
-            unreadCount: Int? = null,
             transcriptData: TranscriptData? = null,
         ) {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
@@ -170,9 +141,8 @@ class ConversationActivity : BlazeBaseActivity() {
                     ConversationFragment.putBundle(
                         conversationId,
                         recipientId,
-                        messageId,
                         keyword,
-                        unreadCount,
+                        messageId,
                         transcriptData,
                     ),
                 )
@@ -195,8 +165,8 @@ class ConversationActivity : BlazeBaseActivity() {
                     ConversationFragment.putBundle(
                         conversationId,
                         recipientId,
-                        messageId,
                         keyword,
+                        messageId,
                     ),
                 )
             }
@@ -204,9 +174,9 @@ class ConversationActivity : BlazeBaseActivity() {
 
         fun showAndClear(
             context: Context,
-            conversationId: String? = null,
-            recipientId: String? = null,
+            conversationId: String?,
             messageId: String? = null,
+            recipientId: String? = null,
             keyword: String? = null,
         ) {
             val mainIntent = Intent(context, ConversationActivity::class.java)

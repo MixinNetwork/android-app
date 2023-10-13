@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.databinding.FragmentAssetKeyBottomBinding
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -24,7 +25,7 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentAssetKeyBottomBinding::inflate)
 
     private val asset: AssetItem by lazy {
-        requireArguments().getParcelable(ARGS_ASSET)!!
+        requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)!!
     }
 
     @SuppressLint("RestrictedApi")

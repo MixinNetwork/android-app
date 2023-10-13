@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.Executor
 
-abstract class SafePagedListAdapter<T, VH : RecyclerView.ViewHolder>(
+abstract class SafePagedListAdapter<T : Any, VH : RecyclerView.ViewHolder>(
     diffCallback: DiffUtil.ItemCallback<T>,
 ) : PagedListAdapter<T, VH>(diffCallback) {
 

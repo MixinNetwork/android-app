@@ -13,6 +13,7 @@ import one.mixin.android.db.contants.IMAGES
 import one.mixin.android.db.contants.LIVES
 import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
+import one.mixin.android.ui.transfer.vo.compatible.TransferMessage
 import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.ConversationWithStatus
 import one.mixin.android.vo.FtsSearchResult
@@ -23,6 +24,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMedia
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.QuoteMinimal
 import one.mixin.android.vo.SearchMessageDetailItem
 
 @Dao
@@ -59,15 +61,14 @@ interface MessageDao : BaseDao<Message> {
 
     // Read SQL
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId ORDER BY m.created_at DESC")
-    fun getMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
-
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND m.category IN $CHAT_CATEGORY ORDER BY m.created_at ASC LIMIT :limit OFFSET :offset")
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem>
 
-    @Query("SELECT count(1) FROM messages WHERE conversation_id = :conversationId AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)")
+    @Query("SELECT count(1) FROM messages WHERE conversation_id = :conversationId AND rowid > (SELECT rowid FROM messages WHERE id = :messageId) AND created_at >= (SELECT created_at FROM messages WHERE id = :messageId)")
     suspend fun findMessageIndex(conversationId: String, messageId: String): Int
+
+    @Query("SELECT content FROM messages WHERE conversation_id = :conversationId AND id = :messageId")
+    fun findMessageContentById(conversationId: String, messageId: String): String?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
@@ -223,10 +224,13 @@ interface MessageDao : BaseDao<Message> {
         WHERE m.conversation_id = :conversationId AND m.id = :messageId AND m.status != 'FAILED'
         """,
     )
-    fun findMessageItemById(conversationId: String, messageId: String): QuoteMessageItem?
+    fun findQuoteMessageItemById(conversationId: String, messageId: String): QuoteMessageItem?
 
-    @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId AND quote_message_id = :messageId AND quote_content IS NULL")
-    fun countMessageByQuoteId(conversationId: String, messageId: String): Int
+    @Query("SELECT rowid, conversation_id, quote_message_id FROM messages WHERE rowid > :rowId AND quote_message_id IS NOT NULL AND quote_message_id != '' AND length(quote_content) > 10240 GROUP BY quote_message_id LIMIT :limit")
+    fun findBigQuoteMessage(rowId: Long, limit: Int): List<QuoteMinimal>
+
+    @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId AND quote_message_id = :quoteMessageId AND quote_content IS NULL")
+    fun countMessageByQuoteId(conversationId: String, quoteMessageId: String): Int
 
     @RawQuery
     suspend fun fuzzySearchMessage(query: SupportSQLiteQuery): List<FtsSearchResult>
@@ -274,6 +278,50 @@ interface MessageDao : BaseDao<Message> {
     """,
     )
     fun findFtsMessages(rowId: Long, limit: Int): List<Message>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """
+        SELECT m.* FROM messages m 
+        WHERE m.rowid >= :rowId
+        ORDER BY m.rowid ASC
+        LIMIT :limit 
+    """,
+    )
+    fun getMessageByLimitAndRowId(limit: Int, rowId: Long): List<TransferMessage>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """
+        SELECT m.* FROM messages m 
+        WHERE m.rowid >= :rowId AND m.conversation_id IN (:conversationIds) 
+        ORDER BY m.rowid ASC
+        LIMIT :limit 
+    """,
+    )
+    fun getMessageByLimitAndRowId(limit: Int, rowId: Long, conversationIds: Collection<String>): List<TransferMessage>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """
+        SELECT m.* FROM messages m 
+        WHERE m.rowid >= :rowId AND m.created_at >= :createdAt 
+        ORDER BY m.rowid ASC
+        LIMIT :limit 
+    """,
+    )
+    fun getMessageByLimitAndRowId(limit: Int, rowId: Long, createdAt: String): List<TransferMessage>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """
+        SELECT m.* FROM messages m 
+        WHERE m.rowid >= :rowId AND m.conversation_id IN (:conversationIds) AND m.created_at >= :createdAt 
+        ORDER BY m.rowid ASC
+        LIMIT :limit 
+    """,
+    )
+    fun getMessageByLimitAndRowId(limit: Int, rowId: Long, conversationIds: Collection<String>, createdAt: String): List<TransferMessage>
 
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowId(): Long?
@@ -379,6 +427,9 @@ interface MessageDao : BaseDao<Message> {
     )
     fun findAttachmentMigration(rowId: Long, limit: Int, offset: Long): List<AttachmentMigration>
 
+    @Query("SELECT * FROM messages WHERE id = :messageId AND category IN ($IMAGES, $VIDEOS, $DATA, $AUDIOS) AND (media_status = 'DONE' OR media_status = 'READ')")
+    fun findAttachmentMessage(messageId: String): Message?
+
     @Query("SELECT rowid IS NOT NULL FROM messages WHERE category IN ($IMAGES, $VIDEOS, $DATA, $AUDIOS) AND media_status = 'DONE' LIMIT 1")
     fun hasDoneAttachment(): Boolean
 
@@ -387,6 +438,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT rowid FROM messages WHERE id = :messageId")
     fun getMessageRowid(messageId: String): Long?
+
+    @Query("SELECT rowid FROM messages WHERE created_at >= :createdAt ORDER BY rowid ASC LIMIT 1")
+    fun getMessageRowidByCreateAt(createdAt: String): Long?
 
     @Query("SELECT id FROM messages WHERE id = :messageId")
     suspend fun exists(messageId: String): String?
@@ -463,9 +517,15 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT * FROM messages WHERE id = :messageId")
     fun findMessageMediaById(messageId: String): MessageMedia?
 
+    @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND quote_message_id = :quoteMessageId")
+    fun findQuoteMessageIdByQuoteId(conversationId: String, quoteMessageId: String): List<String>
+
     // Update SQL
-    @Query("UPDATE messages SET quote_content = :content WHERE conversation_id = :conversationId AND quote_message_id = :messageId")
-    fun updateQuoteContentByQuoteId(conversationId: String, messageId: String, content: String)
+    @Query("UPDATE messages SET quote_content = :content WHERE conversation_id = :conversationId AND quote_message_id = :quoteMessageId")
+    fun updateQuoteContentByQuoteId(conversationId: String, quoteMessageId: String, content: String)
+
+    @Query("UPDATE messages SET quote_content = NULL WHERE conversation_id = :conversationId AND id = :quoteMessageId")
+    fun updateQuoteContentNullByQuoteMessageId(conversationId: String, quoteMessageId: String)
 
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)
@@ -497,6 +557,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("UPDATE messages SET media_url = :mediaUrl WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateMediaMessageUrl(mediaUrl: String, id: String)
+
+    @Query("UPDATE messages SET media_duration = :mediaDuration WHERE id = :id AND category != 'MESSAGE_RECALL'")
+    fun updateMediaDuration(mediaDuration: String, id: String)
 
     @Query("UPDATE messages SET media_url = :mediaUrl, media_size = :mediaSize, media_status = :mediaStatus WHERE id = :messageId AND category != 'MESSAGE_RECALL'")
     fun updateMedia(messageId: String, mediaUrl: String, mediaSize: Long, mediaStatus: String)
@@ -544,13 +607,16 @@ interface MessageDao : BaseDao<Message> {
     fun updateMessageContentAndStatus(content: String, status: String, id: String)
 
     @Query("UPDATE messages SET content = :content WHERE id = :id")
-    fun updateMessageContent(content: String, id: String)
+    fun updateMessageContent(content: String?, id: String)
 
     @Query("UPDATE messages SET media_url = :mediaUrl, media_size = :mediaSize, thumb_image = :thumbImage WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateGiphyMessage(id: String, mediaUrl: String, mediaSize: Long, thumbImage: String?)
 
     @Query("UPDATE messages SET category = :category WHERE id = :messageId")
     fun updateCategoryById(messageId: String, category: String)
+
+    @Query("UPDATE messages SET thumb_image = 'K0OWvn_3fQ~qj[fQfQfQfQ' WHERE LENGTH(thumb_image) > 5120")
+    fun cleanupBigThumb()
 
     // Delete SQL
     @Query("DELETE FROM messages WHERE id = :id")
@@ -561,16 +627,51 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        DELETE FROM messages WHERE id IN (
         SELECT id FROM messages WHERE  conversation_id = :conversationId AND (media_status = 'DONE' OR media_status ISNULL)
-        AND category IN (:signalCategory, :plainCategory, :encryptedCategory) LIMIT :limit)
+        AND category IN (:signalCategory, :plainCategory, :encryptedCategory) LIMIT :limit
         """,
     )
-    fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String, limit: Int)
+    fun findMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String, limit: Int): List<String>
 
     @Query("DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
     suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
 
     @Query("DELETE FROM messages_fts4 WHERE rowid IN (SELECT rowid FROM messages_fts4 LIMIT 1000)")
     fun deleteFts(): Int
+
+    @Query("SELECT count(1) FROM messages")
+    fun countMessages(): Long
+
+    @Query("SELECT count(1) FROM messages WHERE (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) AND media_status IN ('DONE', 'READ')")
+    fun countMediaMessages(): Long
+
+    @Query("SELECT count(1) FROM messages WHERE conversation_id IN (:conversationIds)")
+    fun countMessages(conversationIds: Collection<String>): Long
+
+    @Query("SELECT count(1) FROM messages WHERE (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) AND media_status IN ('DONE', 'READ') AND conversation_id IN (:conversationIds)")
+    fun countMediaMessages(conversationIds: Collection<String>): Long
+
+    @Query("SELECT count(1) FROM messages WHERE rowid >= :rowId")
+    fun countMessages(rowId: Long): Long
+
+    @Query("SELECT count(1) FROM messages WHERE rowid >= :rowId AND (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) AND media_status IN ('DONE', 'READ')")
+    fun countMediaMessages(rowId: Long): Long
+
+    @Query("SELECT count(1) FROM messages WHERE rowid >= :rowId AND conversation_id IN (:conversationIds)")
+    fun countMessages(rowId: Long, conversationIds: Collection<String>): Long
+
+    @Query("SELECT count(1) FROM messages WHERE rowid >= :rowId AND created_at >= :createdAt")
+    fun countMessages(rowId: Long, createdAt: String): Long
+
+    @Query("SELECT count(1) FROM messages WHERE rowid >= :rowId AND conversation_id IN (:conversationIds) AND created_at >= :createdAt")
+    fun countMessages(rowId: Long, conversationIds: Collection<String>, createdAt: String): Long
+
+    @Query("SELECT count(1) FROM messages WHERE rowid >= :rowId AND (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) AND media_status IN ('DONE', 'READ') AND conversation_id IN (:conversationIds)")
+    fun countMediaMessages(rowId: Long, conversationIds: Collection<String>): Long
+
+    @Query("SELECT count(1) FROM messages WHERE rowid >= :rowId AND (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) AND media_status IN ('DONE', 'READ') AND created_at >= :createdAt")
+    fun countMediaMessages(rowId: Long, createdAt: String): Long
+
+    @Query("SELECT count(1) FROM messages WHERE rowid >= :rowId AND (category IN ($DATA, $IMAGES, $AUDIOS, $VIDEOS)) AND media_status IN ('DONE', 'READ') AND conversation_id IN (:conversationIds) AND created_at >= :createdAt")
+    fun countMediaMessages(rowId: Long, conversationIds: Collection<String>, createdAt: String): Long
 }

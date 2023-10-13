@@ -1,11 +1,15 @@
 package one.mixin.android.widget
 
+import android.graphics.Rect
+import android.graphics.RectF
 import android.util.DisplayMetrics
 import one.mixin.android.extension.dp
 
 object AndroidUtilities {
     private var displayMetrics = DisplayMetrics()
     var screenRefreshRate = 60
+    val rectTmp = RectF()
+    val rectTmp2 = Rect()
     fun getPixelsInCM(cm: Float, isX: Boolean): Float {
         return cm / 2.54f * if (isX) displayMetrics.xdpi else displayMetrics.ydpi
     }

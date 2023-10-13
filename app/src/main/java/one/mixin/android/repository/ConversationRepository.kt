@@ -1,6 +1,5 @@
 package one.mixin.android.repository
 
-import android.annotation.SuppressLint
 import android.os.CancellationSignal
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
@@ -26,6 +25,7 @@ import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
@@ -35,6 +35,7 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.event.GroupEvent
@@ -50,7 +51,6 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation
@@ -60,6 +60,7 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ConversationStorageUsage
+import one.mixin.android.vo.GroupInfo
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
@@ -81,6 +82,7 @@ internal constructor(
     private val appDatabase: MixinDatabase,
     private val messageDao: MessageDao,
     private val conversationDao: ConversationDao,
+    private val conversationExtDao: ConversationExtDao,
     private val circleConversationDao: CircleConversationDao,
     private val participantDao: ParticipantDao,
     private val messageMentionDao: MessageMentionDao,
@@ -96,9 +98,6 @@ internal constructor(
     private val ftsDbHelper: FtsDatabase,
 ) {
 
-    @SuppressLint("RestrictedApi")
-    fun getMessages(conversationId: String) = DataProvider.getMessages(appDatabase, conversationId)
-
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
 
     fun observeConversations(circleId: String?): DataSource.Factory<Int, ConversationItem> = if (circleId == null) {
@@ -113,18 +112,20 @@ internal constructor(
     suspend fun insertConversation(conversation: Conversation, participants: List<Participant>) =
         withContext(SINGLE_DB_THREAD) {
             appDatabase.runInTransaction {
-                conversationDao.insert(conversation)
+                conversationDao.upsert(conversation)
                 participantDao.insertList(participants)
             }
         }
 
     fun syncInsertConversation(conversation: Conversation, participants: List<Participant>) {
         appDatabase.runInTransaction {
-            conversationDao.insert(conversation)
+            conversationDao.upsert(conversation)
             participantDao.insertList(participants)
         }
     }
 
+    fun getConversationInfoById(conversationId: String, userId: String): LiveData<GroupInfo?> =
+        conversationDao.getConversationInfoById(conversationId, userId)
     fun getConversationById(conversationId: String): LiveData<Conversation> =
         conversationDao.getConversationById(conversationId)
 
@@ -219,7 +220,7 @@ internal constructor(
 
     suspend fun updateMediaStatusSuspend(status: String, messageId: String, conversationId: String) {
         messageDao.updateMediaStatusSuspend(status, messageId)
-        InvalidateFlow.emit(conversationId)
+        MessageFlow.update(conversationId, messageId)
     }
 
     suspend fun updateConversationPinTimeById(conversationId: String, circleId: String?, pinTime: String?) =
@@ -246,6 +247,8 @@ internal constructor(
 
     suspend fun updateConversationExpireIn(conversationId: String, expireIn: Long?) =
         conversationDao.updateConversationExpireIn(conversationId, expireIn)
+
+    fun refreshCountByConversationId(conversationId: String) = conversationExtDao.refreshCountByConversationId(conversationId)
 
     fun getLimitParticipants(conversationId: String, limit: Int) =
         participantDao.getLimitParticipants(conversationId, limit)
@@ -311,7 +314,7 @@ internal constructor(
                 .setCodeUrl(data.codeUrl)
                 .setExpireIn(data.expireIn)
                 .build()
-            conversationDao.insert(c)
+            conversationDao.upsert(c)
             if (!c.announcement.isNullOrBlank()) {
                 RxBus.publish(GroupEvent(data.conversationId))
                 MixinApplication.appContext.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(data.conversationId, true)
@@ -395,7 +398,7 @@ internal constructor(
 
     fun updateMediaStatus(status: String, id: String, conversationId: String) {
         messageDao.updateMediaStatus(status, id)
-        InvalidateFlow.emit(conversationId)
+        MessageFlow.update(conversationId, id)
     }
 
     suspend fun getConversationNameById(cid: String) = conversationDao.getConversationNameById(cid)
@@ -404,9 +407,10 @@ internal constructor(
     fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String) {
         val count = messageDao.countDeleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory)
         repeat((count / DB_DELETE_LIMIT) + 1) {
-            messageDao.deleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory, DB_DELETE_LIMIT)
+            val ids = messageDao.findMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory, DB_DELETE_LIMIT)
+            messageDao.deleteMessageById(ids)
+            MessageFlow.delete(conversationId, ids)
         }
-        InvalidateFlow.emit(conversationId)
     }
 
     suspend fun findTranscriptIdByConversationId(conversationId: String) = messageDao.findTranscriptIdByConversationId(conversationId)
@@ -538,7 +542,7 @@ internal constructor(
 
     fun insertMessage(message: Message) {
         appDatabase.insertMessage(message)
-        InvalidateFlow.emit(message.conversationId)
+        MessageFlow.insert(message.conversationId, message.messageId)
     }
 
     suspend fun findPinMessageById(messageId: String) = pinMessageDao.findPinMessageById(messageId)
