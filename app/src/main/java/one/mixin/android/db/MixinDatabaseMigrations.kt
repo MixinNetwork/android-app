@@ -379,6 +379,7 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("CREATE TABLE IF NOT EXISTS `tokens` (`asset_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `price_btc` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `change_btc` TEXT NOT NULL, `confirmations` INTEGER NOT NULL, `asset_key` TEXT, `reserve` TEXT, `deposit_entries` TEXT, `withdrawal_memo_possibility` TEXT, PRIMARY KEY(`asset_id`))")
                 database.execSQL("ALTER TABLE `assets_extra` ADD COLUMN `balance` TEXT")
                 database.execSQL("ALTER TABLE `assets_extra` ADD COLUMN `updated_at` TEXT")
+                database.execSQL("ALTER TABLE `assets` ADD COLUMN `mixin_id` TEXT DEFAULT ''")
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_outputs_asset_id_state_created_at` ON `outputs` (`asset`, `state`, `created_at`)")
                 database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_outputs_transaction_hash_output_index` ON `outputs` (`transaction_hash`, `output_index`)")
             }
