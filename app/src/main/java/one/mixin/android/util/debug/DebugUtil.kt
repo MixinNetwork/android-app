@@ -9,12 +9,12 @@ import androidx.core.database.getIntOrNull
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getShortOrNull
 import androidx.core.database.getStringOrNull
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import one.mixin.android.BuildConfig
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.util.reportEvent
 import timber.log.Timber
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
 fun debugLongClick(view: View, debugAction: () -> Unit, releaseAction: (() -> Unit)? = null) {
     if (BuildConfig.DEBUG) {

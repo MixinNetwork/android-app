@@ -9,10 +9,10 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.ColorRes
 import androidx.core.view.isVisible
+import kotlin.math.max
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
-import kotlin.math.max
 
 class BlinkRingView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
 

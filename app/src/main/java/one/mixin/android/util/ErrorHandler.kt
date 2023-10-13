@@ -1,6 +1,9 @@
 package one.mixin.android.util
 
 import android.content.Context
+import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import one.mixin.android.MixinApplication
@@ -14,9 +17,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
 import retrofit2.HttpException
-import java.io.IOException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
 
 open class ErrorHandler {
 

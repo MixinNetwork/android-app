@@ -1,14 +1,14 @@
 package one.mixin.android.util.debug
 
 import android.util.Log
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.ZipUtil
 import timber.log.Timber
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 
 class FileLogTree : Timber.Tree() {
 

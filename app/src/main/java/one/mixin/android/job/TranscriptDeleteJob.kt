@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
+import java.io.File
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.fts.deleteByMessageId
@@ -9,7 +10,6 @@ import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isTranscript
-import java.io.File
 
 class TranscriptDeleteJob(private val messageIds: List<String>) : BaseJob(Params(PRIORITY_BACKGROUND).addTags(GROUP).groupBy("transcript_delete").persist()) {
 

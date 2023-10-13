@@ -1,5 +1,9 @@
 package one.mixin.android.net
 
+import java.lang.NullPointerException
+import java.net.InetAddress
+import java.net.UnknownHostException
+import kotlin.jvm.Throws
 import okhttp3.Dns
 import org.xbill.DNS.ARecord
 import org.xbill.DNS.Lookup
@@ -8,10 +12,6 @@ import org.xbill.DNS.Resolver
 import org.xbill.DNS.SimpleResolver
 import org.xbill.DNS.TextParseException
 import org.xbill.DNS.Type
-import java.lang.NullPointerException
-import java.net.InetAddress
-import java.net.UnknownHostException
-import kotlin.jvm.Throws
 
 class CustomDns(val dnsHostname: String) : Dns {
 

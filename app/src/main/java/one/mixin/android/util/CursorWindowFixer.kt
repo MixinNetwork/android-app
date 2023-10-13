@@ -6,10 +6,10 @@ import android.app.ActivityManager.MemoryInfo
 import android.content.Context
 import android.database.CursorWindow
 import androidx.core.content.getSystemService
-import timber.log.Timber
 import java.lang.reflect.Field
 import kotlin.math.max
 import kotlin.math.min
+import timber.log.Timber
 
 class CursorWindowFixer {
     companion object {

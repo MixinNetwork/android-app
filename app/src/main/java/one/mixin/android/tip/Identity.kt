@@ -2,6 +2,7 @@ package one.mixin.android.tip
 
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2KtResult
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.service.TipService
@@ -12,7 +13,6 @@ import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.TipNullException
-import javax.inject.Inject
 
 class Identity @Inject internal constructor(private val tipService: TipService) {
 

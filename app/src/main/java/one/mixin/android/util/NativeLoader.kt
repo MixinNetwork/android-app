@@ -3,12 +3,12 @@ package one.mixin.android.util
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
-import one.mixin.android.extension.equalsIgnoreCase
-import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
+import one.mixin.android.extension.equalsIgnoreCase
+import timber.log.Timber
 
 private val libNames = listOf("mixin", "argon2jni", "barhopper_v3")
 private val libSoNames = libNames.map { "lib$it.so" }
