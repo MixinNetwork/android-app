@@ -17,6 +17,7 @@ import one.mixin.android.Constants
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
+import one.mixin.android.api.request.DepositEntryRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RouteSessionRequest
@@ -30,6 +31,7 @@ import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.RouteService
+import one.mixin.android.api.service.UtxoService
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.AssetsExtraDao
@@ -39,8 +41,12 @@ import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.db.provider.DataProvider
+import one.mixin.android.extension.getRFC3339Nano
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.SyncOutputJob
+import one.mixin.android.session.Session
+import one.mixin.android.session.buildHashMembers
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
@@ -50,6 +56,7 @@ import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.AssetsExtra
 import one.mixin.android.vo.Card
+import one.mixin.android.vo.Deposit
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.Snapshot
@@ -70,6 +77,7 @@ class AssetRepository
 constructor(
     private val appDatabase: MixinDatabase,
     private val assetService: AssetService,
+    private val utxoService: UtxoService,
     private val routeService: RouteService,
     private val assetDao: AssetDao,
     private val assetsExtraDao: AssetsExtraDao,
@@ -112,6 +120,14 @@ constructor(
             assetItem.chainPriceUsd = chain?.chainPriceUsd
         }
         return assetItem
+    }
+
+    suspend fun createDeposit(chinaId: String, assetId: String): MixinResponse<Deposit> {
+        val userId = requireNotNull(Session.getAccountId())
+        val members = buildHashMembers(listOf(userId))
+        return utxoService.createDeposit(
+            DepositEntryRequest(members, 1, listOf(userId), chinaId, assetId)
+        )
     }
 
     suspend fun syncAsset(assetId: String): AssetItem? {

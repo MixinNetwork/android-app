@@ -32,6 +32,7 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Deposit
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
@@ -172,6 +173,12 @@ internal constructor(
     suspend fun findOrSyncAsset(assetId: String): AssetItem? {
         return withContext(Dispatchers.IO) {
             assetRepository.findOrSyncAsset(assetId)
+        }
+    }
+
+    suspend fun createDeposit(chinaId: String, assetId: String): MixinResponse<Deposit> {
+        return withContext(Dispatchers.IO) {
+            assetRepository.createDeposit(chinaId, assetId)
         }
     }
 

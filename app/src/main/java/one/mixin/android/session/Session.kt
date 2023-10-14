@@ -18,6 +18,7 @@ import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.privateKeyToCurve25519
+import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.useGoEd
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
@@ -346,4 +347,11 @@ object Session {
 fun decryptPinToken(serverPublicKey: ByteArray, privateKey: ByteArray): ByteArray {
     val private = privateKeyToCurve25519(privateKey)
     return calculateAgreement(serverPublicKey, private)
+}
+
+fun buildHashMembers(ids: List<String>): String {
+    return ids.sortedBy { it }
+        .joinToString("")
+        .sha3Sum256()
+        .joinToString("") { "%02x".format(it) }
 }

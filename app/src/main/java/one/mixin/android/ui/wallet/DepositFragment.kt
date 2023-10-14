@@ -37,6 +37,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.needShowReserve
+import timber.log.Timber
 
 @AndroidEntryPoint
 class DepositFragment : BaseFragment() {
@@ -91,6 +92,13 @@ class DepositFragment : BaseFragment() {
                     }
                 }
                 .showNow(childFragmentManager, TAG)
+        }
+        lifecycleScope.launch {
+            // todo save deposit
+            val deposit = walletViewModel.createDeposit(asset.chainId, asset.assetId)
+            if (deposit.isSuccess) {
+                Timber.e(deposit.data!!.destination)
+            }
         }
     }
 
@@ -203,7 +211,6 @@ class DepositFragment : BaseFragment() {
 
         lifecycleScope.launch {
             val assetItem = walletViewModel.findOrSyncAsset(asset.assetId)
-
             if (assetItem == null) {
                 delay(500)
                 refreshAsset(asset)

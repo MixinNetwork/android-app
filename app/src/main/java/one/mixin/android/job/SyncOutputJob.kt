@@ -8,6 +8,7 @@ import okio.internal.commonToUtf8String
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.getRFC3339Nano
 import one.mixin.android.session.Session
+import one.mixin.android.session.buildHashMembers
 import timber.log.Timber
 
 class SyncOutputJob : BaseJob(
@@ -41,10 +42,4 @@ class SyncOutputJob : BaseJob(
         }
     }
 
-    private fun buildHashMembers(ids: List<String>): String {
-        return ids.sortedBy { it }
-            .joinToString("")
-            .sha3Sum256()
-            .joinToString("") { "%02x".format(it) }
-    }
 }
