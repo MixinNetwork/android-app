@@ -5,10 +5,8 @@ import com.google.gson.annotations.SerializedName
 data class Deposit(
     @SerializedName("entry_id")
     val entryId: String,
-    @SerializedName("members_hash")
-    val membersHash: String,
     @SerializedName("threshold")
-    val threshold: String,
+    val threshold: Int,
     @SerializedName("destination")
     val destination: String,
     @SerializedName("tag")
@@ -18,7 +16,7 @@ data class Deposit(
     @SerializedName("asset_id")
     val assetId: String,
     @SerializedName("priority")
-    val priority: String,
+    val priority: Int,
     @SerializedName("members")
     val members: List<String>,
 )

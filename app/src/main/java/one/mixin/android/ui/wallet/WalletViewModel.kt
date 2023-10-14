@@ -182,6 +182,12 @@ internal constructor(
         }
     }
 
+    suspend fun getDeposit(assetId: String): MixinResponse<List<Deposit>> {
+        return withContext(Dispatchers.IO) {
+            assetRepository.getDeposit(assetId)
+        }
+    }
+
     suspend fun syncNoExistAsset(assetIds: List<String>) = withContext(Dispatchers.IO) {
         assetIds.forEach { id ->
             if (assetRepository.findAssetItemById(id) == null) {

@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -35,6 +36,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.needShowReserve
 import timber.log.Timber
@@ -93,11 +95,15 @@ class DepositFragment : BaseFragment() {
                 }
                 .showNow(childFragmentManager, TAG)
         }
-        lifecycleScope.launch {
+        lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+            Timber.e(error)
+        }){
             // todo save deposit
-            val deposit = walletViewModel.createDeposit(asset.chainId, asset.assetId)
-            if (deposit.isSuccess) {
-                Timber.e(deposit.data!!.destination)
+            walletViewModel.createDeposit(asset.chainId, asset.assetId).let {
+                Timber.e(it.data?.destination)
+            }
+            walletViewModel.getDeposit(asset.assetId).let {
+                Timber.e(it.data?.first()?.destination)
             }
         }
     }

@@ -130,6 +130,14 @@ constructor(
         )
     }
 
+    suspend fun getDeposit(assetId: String): MixinResponse<List<Deposit>> {
+        val userId = requireNotNull(Session.getAccountId())
+        val members = buildHashMembers(listOf(userId))
+        return utxoService.getDeposit(
+            assetId, members
+        )
+    }
+
     suspend fun syncAsset(assetId: String): AssetItem? {
         val asset: Asset = handleMixinResponse(
             invokeNetwork = {
