@@ -100,9 +100,6 @@ class DepositFragment : BaseFragment() {
         }){
             // todo save deposit
             walletViewModel.createDeposit(asset.chainId, asset.assetId).let {
-                Timber.e(it.data?.destination)
-            }
-            walletViewModel.getDeposit(asset.assetId).let {
                 Timber.e(it.data?.first()?.destination)
             }
         }

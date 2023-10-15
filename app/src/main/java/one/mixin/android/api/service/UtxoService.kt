@@ -25,12 +25,6 @@ interface UtxoService {
     @POST("/deposit_entries")
     suspend fun createDeposit(
         @Body depositEntryRequest: DepositEntryRequest
-    ): MixinResponse<Deposit>
-
-    @GET("/assets/{id}/deposit_entries")
-    suspend fun getDeposit(
-        @Path("id") id:String,
-        @Query("members") members: String,
-        @Query("threshold") threshold: Int = 1,
     ): MixinResponse<List<Deposit>>
+
 }

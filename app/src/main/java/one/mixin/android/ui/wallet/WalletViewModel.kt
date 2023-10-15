@@ -176,15 +176,9 @@ internal constructor(
         }
     }
 
-    suspend fun createDeposit(chinaId: String, assetId: String): MixinResponse<Deposit> {
+    suspend fun createDeposit(chinaId: String, assetId: String): MixinResponse<List<Deposit>> {
         return withContext(Dispatchers.IO) {
             assetRepository.createDeposit(chinaId, assetId)
-        }
-    }
-
-    suspend fun getDeposit(assetId: String): MixinResponse<List<Deposit>> {
-        return withContext(Dispatchers.IO) {
-            assetRepository.getDeposit(assetId)
         }
     }
 

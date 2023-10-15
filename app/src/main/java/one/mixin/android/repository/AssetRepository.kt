@@ -122,19 +122,10 @@ constructor(
         return assetItem
     }
 
-    suspend fun createDeposit(chinaId: String, assetId: String): MixinResponse<Deposit> {
+    suspend fun createDeposit(chinaId: String, assetId: String): MixinResponse<List<Deposit>> {
         val userId = requireNotNull(Session.getAccountId())
-        val members = buildHashMembers(listOf(userId))
         return utxoService.createDeposit(
-            DepositEntryRequest(members, 1, listOf(userId), chinaId, assetId)
-        )
-    }
-
-    suspend fun getDeposit(assetId: String): MixinResponse<List<Deposit>> {
-        val userId = requireNotNull(Session.getAccountId())
-        val members = buildHashMembers(listOf(userId))
-        return utxoService.getDeposit(
-            assetId, members
+            DepositEntryRequest(1, listOf(userId), chinaId)
         )
     }
 
