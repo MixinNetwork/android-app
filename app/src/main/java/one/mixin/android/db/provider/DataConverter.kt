@@ -546,23 +546,21 @@ fun callableAssetItem(
             val cursorIndexOfName = 2
             val cursorIndexOfIconUrl = 3
             val cursorIndexOfBalance = 4
-            val cursorIndexOfDestination = 5
-            val cursorIndexOfTag = 6
-            val cursorIndexOfPriceBtc = 7
-            val cursorIndexOfPriceUsd = 8
-            val cursorIndexOfChainId = 9
-            val cursorIndexOfChangeUsd = 10
-            val cursorIndexOfChangeBtc = 11
-            val cursorIndexOfHidden = 12
-            val cursorIndexOfChainPriceUsd = 13
-            val cursorIndexOfConfirmations = 14
-            val cursorIndexOfReserve = 15
-            val cursorIndexOfChainIconUrl = 16
-            val cursorIndexOfChainSymbol = 17
-            val cursorIndexOfChainName = 18
-            val cursorIndexOfAssetKey = 19
-            val cursorIndexOfDepositEntries = 20
-            val cursorIndexOfWithdrawalMemoPossibility = 21
+            val cursorIndexOfPriceBtc = 5
+            val cursorIndexOfChainId = 6
+            val cursorIndexOfPriceUsd = 7
+            val cursorIndexOfChangeUsd = 8
+            val cursorIndexOfChangeBtc = 9
+            val cursorIndexOfHidden = 10
+            val cursorIndexOfChainPriceUsd = 11
+            val cursorIndexOfConfirmations = 12
+            val cursorIndexOfChainIconUrl = 13
+            val cursorIndexOfChainSymbol = 14
+            val cursorIndexOfChainName = 15
+            val cursorIndexOfAssetKey = 16
+            val cursorIndexOfReserve = 17
+            val cursorIndexOfWithdrawalMemoPossibility = 18
+
             val result: MutableList<AssetItem> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
                 val item: AssetItem
