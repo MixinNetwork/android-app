@@ -16,6 +16,9 @@ data class AssetsExtra(
     @ColumnInfo(name = "asset_id")
     @SerializedName("asset_id")
     val assetId: String,
+    @ColumnInfo(name = "asset")
+    @SerializedName("asset")
+    val asset: String,
     @SerializedName("hidden")
     @ColumnInfo(name = "hidden")
     var hidden: Boolean?,

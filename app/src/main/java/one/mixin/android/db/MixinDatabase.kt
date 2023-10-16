@@ -68,6 +68,7 @@ import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationExt
+import one.mixin.android.vo.Deposit
 import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.FloodMessage
@@ -139,6 +140,7 @@ import kotlin.math.min
         (Chain::class),
         (Output::class),
         (Token::class),
+        (Deposit::class),
     ],
     version = CURRENT_VERSION,
 )

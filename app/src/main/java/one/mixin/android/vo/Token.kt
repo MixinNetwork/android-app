@@ -21,6 +21,11 @@ data class Token(
     @SerialName("asset_id")
     val assetId: String,
 
+    @ColumnInfo(name = "asset")
+    @SerializedName("mixin_id")
+    @SerialName("mixin_id")
+    val asset: String,
+
     @ColumnInfo(name = "symbol")
     @SerializedName("symbol")
     @SerialName("symbol")
@@ -76,11 +81,6 @@ data class Token(
     @SerialName("reserve")
     val reserve: String?,
 
-    @ColumnInfo(name = "deposit_entries")
-    @SerializedName("deposit_entries")
-    @SerialName("deposit_entries")
-    val depositEntries: List<DepositEntry>?,
-
     @ColumnInfo(name = "withdrawal_memo_possibility")
     @SerializedName("withdrawal_memo_possibility")
     @SerialName("withdrawal_memo_possibility")
@@ -101,7 +101,7 @@ data class TokenPriceAndChange(
 )
 
 fun Asset.toToken(): Token =
-    Token(assetId, symbol, name, iconUrl, priceBtc, priceUsd, chainId, changeUsd, changeBtc, confirmations, assetKey, reserve, depositEntries, withdrawalMemoPossibility)
+    Token(assetId, assetIdToAsset(assetId), symbol, name, iconUrl, priceBtc, priceUsd, chainId, changeUsd, changeBtc, confirmations, assetKey, reserve, withdrawalMemoPossibility)
 
 // fun Token.toAssetItem(chainIconUrl: String? = null): AssetItem = AssetItem(
 //    assetId, symbol, name, iconUrl, balance, destination, depositEntries, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, false,

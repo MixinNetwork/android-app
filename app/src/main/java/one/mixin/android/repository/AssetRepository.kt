@@ -62,6 +62,7 @@ import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
+import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
@@ -230,7 +231,7 @@ constructor(
             if (assetsExtra != null) {
                 assetsExtraDao.updateHiddenByAssetId(id, hidden)
             } else {
-                assetsExtraDao.insertSuspend(AssetsExtra(id, hidden, null, null))
+                assetsExtraDao.insertSuspend(AssetsExtra(id, assetIdToAsset(id), hidden, null, null))
             }
         }
     }

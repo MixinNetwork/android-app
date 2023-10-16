@@ -34,7 +34,11 @@ data class AssetItem(
     val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
 ) : Parcelable {
     fun fiat(): BigDecimal {
-        return BigDecimal(balance).multiply(priceFiat())
+        return try {
+            BigDecimal(balance).multiply(priceFiat())
+        } catch (e: NumberFormatException) {
+            BigDecimal.ZERO
+        }
     }
 
     fun priceFiat(): BigDecimal = if (priceUsd == "0") {
