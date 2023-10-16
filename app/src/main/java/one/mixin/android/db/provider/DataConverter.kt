@@ -591,16 +591,6 @@ fun callableAssetItem(
                 } else {
                     cursor.getString(cursorIndexOfBalance)
                 }
-                val tmpDestination: String? = if (cursor.isNull(cursorIndexOfDestination)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfDestination)
-                }
-                val tmpTag: String? = if (cursor.isNull(cursorIndexOfTag)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfTag)
-                }
                 val tmpPriceBtc: String? = if (cursor.isNull(cursorIndexOfPriceBtc)) {
                     null
                 } else {
@@ -664,12 +654,6 @@ fun callableAssetItem(
                 } else {
                     cursor.getString(cursorIndexOfAssetKey)
                 }
-                val tmpDepositEntries: String? = if (cursor.isNull(cursorIndexOfDepositEntries)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfDepositEntries)
-                }
-
                 val tmpDepositWithdrawalMemoPossibility: WithdrawalMemoPossibility? = if (cursor.isNull(cursorIndexOfWithdrawalMemoPossibility)) {
                     null
                 } else {
@@ -682,9 +666,6 @@ fun callableAssetItem(
                     tmpName!!,
                     tmpIconUrl!!,
                     tmpBalance!!,
-                    tmpDestination!!,
-                    depositEntryListConverter.revertDate(tmpDepositEntries),
-                    tmpTag,
                     tmpPriceBtc!!,
                     tmpPriceUsd!!,
                     tmpChainId!!,

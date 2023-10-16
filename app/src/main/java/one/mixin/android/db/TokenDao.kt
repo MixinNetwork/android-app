@@ -9,5 +9,4 @@ interface TokenDao : BaseDao<Token> {
 
     @Query("SELECT asset_id FROM tokens WHERE asset_id =:assetId")
     suspend fun checkExists(assetId: String): String?
-
 }

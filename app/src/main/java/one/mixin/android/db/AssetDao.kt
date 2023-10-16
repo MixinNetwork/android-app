@@ -13,20 +13,24 @@ import one.mixin.android.vo.PriceAndChange
 @Dao
 interface AssetDao : BaseDao<Asset> {
     companion object {
-        const val PREFIX_ASSET_ITEM = "SELECT a1.asset_id AS assetId, a1.symbol, a1.name, a1.icon_url AS iconUrl, " +
-            "a1.balance, a1.destination AS destination, a1.deposit_entries as depositEntries ,a1.tag AS tag, a1.price_btc AS priceBtc, a1.price_usd AS priceUsd, " +
-            "a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden, a2.price_usd as chainPriceUsd," +
-            "a1.confirmations, a1.reserve as reserve, c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName, " +
-            "a1.asset_key AS assetKey, a1.withdrawal_memo_possibility AS withdrawalMemoPossibility " +
-            "FROM assets a1 " +
-            "LEFT JOIN assets a2 ON a1.chain_id = a2.asset_id " +
-            "LEFT JOIN chains c ON a1.chain_id = c.chain_id " +
-            "LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id "
-        const val POSTFIX = " ORDER BY balance * price_usd DESC, cast(balance AS REAL) DESC, cast(price_usd AS REAL) DESC, name ASC, rowid DESC"
-        const val POSTFIX_ASSET_ITEM = " ORDER BY a1.balance * a1.price_usd DESC, cast(a1.balance AS REAL) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
-        const val POSTFIX_ASSET_ITEM_NOT_HIDDEN = " WHERE ae.hidden IS NULL OR NOT ae.hidden$POSTFIX_ASSET_ITEM"
+        const val PREFIX_ASSET_ITEM =
+           """
+            SELECT a1.asset_id AS assetId, a1.symbol, a1.name, a1.icon_url AS iconUrl, ae.balance, a1.price_btc AS priceBtc, 
+            a1.chain_id AS chainId , a1.price_usd AS priceUsd, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden,
+            a1.confirmations,c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName, a2.price_usd as chainPriceUsd,
+            a1.asset_key AS assetKey,a1.reserve as reserve, a1.withdrawal_memo_possibility AS withdrawalMemoPossibility 
+            FROM tokens a1 
+            LEFT JOIN assets a2 ON a1.chain_id = a2.asset_id
+            LEFT JOIN chains c ON a1.chain_id = c.chain_id
+            LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id 
+           """
+        const val POSTFIX =
+            " ORDER BY balance * price_usd DESC, cast(balance AS REAL) DESC, cast(price_usd AS REAL) DESC, name ASC, rowid DESC"
+        const val POSTFIX_ASSET_ITEM =
+            " ORDER BY ae.balance * a1.price_usd DESC, cast(ae.balance AS REAL) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
+        const val POSTFIX_ASSET_ITEM_NOT_HIDDEN =
+            " WHERE ae.hidden IS NULL OR NOT ae.hidden$POSTFIX_ASSET_ITEM"
     }
-
     @Query("SELECT * FROM assets $POSTFIX")
     fun assets(): LiveData<List<Asset>>
 
@@ -64,11 +68,11 @@ interface AssetDao : BaseDao<Asset> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """$PREFIX_ASSET_ITEM 
-        WHERE a1.balance > 0 
+        WHERE ae.balance > 0 
         AND (a1.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
         ORDER BY 
             a1.symbol = :symbol COLLATE NOCASE OR a1.name = :name COLLATE NOCASE DESC,
-            a1.price_usd*a1.balance DESC
+            a1.price_usd*ae.balance DESC
         """,
     )
     suspend fun fuzzySearchAsset(name: String, symbol: String): List<AssetItem>
@@ -79,7 +83,7 @@ interface AssetDao : BaseDao<Asset> {
         WHERE (a1.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
         ORDER BY 
             a1.symbol = :symbol COLLATE NOCASE OR a1.name = :name COLLATE NOCASE DESC,
-            a1.price_usd*a1.balance DESC
+            a1.price_usd*ae.balance DESC
         """,
     )
     suspend fun fuzzySearchAssetIgnoreAmount(name: String, symbol: String): List<AssetItem>
@@ -93,7 +97,7 @@ interface AssetDao : BaseDao<Asset> {
     suspend fun simpleAssetItem(assetId: String): AssetItem?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE a1.balance > 0 $POSTFIX_ASSET_ITEM")
+    @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 $POSTFIX_ASSET_ITEM")
     fun assetItemsWithBalance(): LiveData<List<AssetItem>>
 
     @Query("SELECT icon_url FROM assets WHERE asset_id = :id")
