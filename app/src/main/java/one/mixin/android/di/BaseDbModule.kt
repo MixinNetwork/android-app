@@ -176,4 +176,8 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun provideOutputDao(db: MixinDatabase) = db.outputDao()
+
+    @Singleton
+    @Provides
+    fun provideDepositDao(db: MixinDatabase) = db.depositDao()
 }

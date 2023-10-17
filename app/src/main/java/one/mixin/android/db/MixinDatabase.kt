@@ -181,6 +181,8 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun tokenDao(): TokenDao
     abstract fun outputDao(): OutputDao
 
+    abstract fun depositDao(): DepositDao
+
     companion object {
         private var INSTANCE: MixinDatabase? = null
 

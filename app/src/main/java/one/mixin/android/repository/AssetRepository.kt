@@ -36,6 +36,7 @@ import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.AssetsExtraDao
 import one.mixin.android.db.ChainDao
+import one.mixin.android.db.DepositDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.TopAssetDao
@@ -88,6 +89,7 @@ constructor(
     private val hotAssetDao: TopAssetDao,
     private val traceDao: TraceDao,
     private val chainDao: ChainDao,
+    private val depositDao: DepositDao,
     private val jobManager: MixinJobManager,
     private val safeBox: DataStore<SafeBox>,
 ) {
@@ -110,7 +112,23 @@ constructor(
 
     suspend fun findOrSyncAsset(assetId: String): AssetItem? {
         var assetItem = assetDao.findAssetItemById(assetId)
-        if (assetItem != null && assetItem.getDestination().isNotBlank()) return assetItem
+        if (assetItem != null && assetItem.getDestination().isNotBlank()) {
+            return assetItem
+        } else if (assetItem != null) {
+            val userId = requireNotNull(Session.getAccountId())
+            handleMixinResponse(
+                invokeNetwork = {
+                    utxoService.createDeposit(
+                        DepositEntryRequest(1, listOf(userId), assetItem!!.chainId)
+                    )
+                },
+                successBlock = { resp ->
+                    resp.data?.let { list ->
+                        depositDao.insertList(list)
+                    }
+                },
+            ) ?: return null
+        }
 
         assetItem = syncAsset(assetId)
         if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
@@ -191,7 +209,13 @@ constructor(
                     }
                 }
             },
-            remoteMediator = SnapshotsMediator(assetService, snapshotDao, assetDao, jobManager, assetId),
+            remoteMediator = SnapshotsMediator(
+                assetService,
+                snapshotDao,
+                assetDao,
+                jobManager,
+                assetId
+            ),
         ).liveData
 
     fun snapshotsFromDb(
@@ -215,7 +239,8 @@ constructor(
         }
     }
 
-    suspend fun snapshotLocal(assetId: String, snapshotId: String) = snapshotDao.snapshotLocal(assetId, snapshotId)
+    suspend fun snapshotLocal(assetId: String, snapshotId: String) =
+        snapshotDao.snapshotLocal(assetId, snapshotId)
 
     fun insertSnapshot(snapshot: Snapshot) = snapshotDao.insert(snapshot)
 
@@ -231,7 +256,15 @@ constructor(
             if (assetsExtra != null) {
                 assetsExtraDao.updateHiddenByAssetId(id, hidden)
             } else {
-                assetsExtraDao.insertSuspend(AssetsExtra(id, assetIdToAsset(id), hidden, null, null))
+                assetsExtraDao.insertSuspend(
+                    AssetsExtra(
+                        id,
+                        assetIdToAsset(id),
+                        hidden,
+                        null,
+                        null
+                    )
+                )
             }
         }
     }
@@ -242,7 +275,8 @@ constructor(
 
     fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 
-    suspend fun withdrawal(withdrawalRequest: WithdrawalRequest) = assetService.withdrawals(withdrawalRequest)
+    suspend fun withdrawal(withdrawalRequest: WithdrawalRequest) =
+        assetService.withdrawals(withdrawalRequest)
 
     fun saveAddr(addr: Address) = addressDao.insert(addr)
 
@@ -261,7 +295,8 @@ constructor(
     suspend fun fuzzySearchAsset(query: String, cancellationSignal: CancellationSignal) =
         DataProvider.fuzzySearchAsset(query, query, appDatabase, cancellationSignal)
 
-    suspend fun fuzzySearchAssetIgnoreAmount(query: String) = assetDao.fuzzySearchAssetIgnoreAmount(query, query)
+    suspend fun fuzzySearchAssetIgnoreAmount(query: String) =
+        assetDao.fuzzySearchAssetIgnoreAmount(query, query)
 
     fun assetItem(id: String) = assetDao.assetItem(id)
 
@@ -294,7 +329,8 @@ constructor(
     suspend fun pendingDeposits(asset: String, destination: String, tag: String? = null) =
         assetService.pendingDeposits(asset, destination, tag)
 
-    suspend fun clearPendingDepositsByAssetId(assetId: String) = snapshotDao.clearPendingDepositsByAssetId(assetId)
+    suspend fun clearPendingDepositsByAssetId(assetId: String) =
+        snapshotDao.clearPendingDepositsByAssetId(assetId)
 
     suspend fun queryAsset(query: String): List<AssetItem> {
         val response = try {
@@ -364,7 +400,8 @@ constructor(
 
     fun checkExists(id: String) = assetDao.checkExists(id)
 
-    suspend fun findAddressById(addressId: String, assetId: String) = addressDao.findAddressById(addressId, assetId)
+    suspend fun findAddressById(addressId: String, assetId: String) =
+        addressDao.findAddressById(addressId, assetId)
 
     suspend fun refreshAndGetAddress(addressId: String, assetId: String): Pair<Address?, Boolean> {
         var result: Address? = null
@@ -413,17 +450,35 @@ constructor(
         return result
     }
 
-    suspend fun getSnapshots(assetId: String, offset: String?, limit: Int, opponent: String?, destination: String?, tag: String?) =
+    suspend fun getSnapshots(
+        assetId: String,
+        offset: String?,
+        limit: Int,
+        opponent: String?,
+        destination: String?,
+        tag: String?
+    ) =
         assetService.getSnapshots(assetId, offset, limit, opponent, destination, tag)
 
     suspend fun insertTrace(trace: Trace) = traceDao.insertSuspend(trace)
 
-    suspend fun suspendFindTraceById(traceId: String): Trace? = traceDao.suspendFindTraceById(traceId)
+    suspend fun suspendFindTraceById(traceId: String): Trace? =
+        traceDao.suspendFindTraceById(traceId)
 
     suspend fun getTrace(traceId: String) = assetService.getTrace(traceId)
 
-    suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String): Pair<Trace?, Boolean> {
-        val trace = traceDao.suspendFindTrace(opponentId, destination, tag, amount, assetId) ?: return Pair(null, false)
+    suspend fun findLatestTrace(
+        opponentId: String?,
+        destination: String?,
+        tag: String?,
+        amount: String,
+        assetId: String
+    ): Pair<Trace?, Boolean> {
+        val trace =
+            traceDao.suspendFindTrace(opponentId, destination, tag, amount, assetId) ?: return Pair(
+                null,
+                false
+            )
 
         val with6hours = trace.createdAt.within6Hours()
         if (!with6hours) {
@@ -465,9 +520,13 @@ constructor(
 
     suspend fun ticker(assetId: String, offset: String?) = assetService.ticker(assetId, offset)
 
-    suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> = routeService.ticker(tickerRequest)
+    suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> =
+        routeService.ticker(tickerRequest)
 
-    suspend fun findSnapshotByTransactionHashList(assetId: String, hashList: List<String>): List<String> =
+    suspend fun findSnapshotByTransactionHashList(
+        assetId: String,
+        hashList: List<String>
+    ): List<String> =
         snapshotDao.findSnapshotIdsByTransactionHashList(assetId, hashList)
 
     suspend fun suspendUpdatePrices(priceAndChange: List<PriceAndChange>) =
@@ -498,20 +557,24 @@ constructor(
 
     suspend fun profile(): MixinResponse<ProfileResponse> = routeService.profile()
 
-    suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = routeService.payment(traceRequest)
+    suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> =
+        routeService.payment(traceRequest)
 
-    suspend fun payment(paymentId: String): MixinResponse<RoutePaymentResponse> = routeService.payment(paymentId)
+    suspend fun payment(paymentId: String): MixinResponse<RoutePaymentResponse> =
+        routeService.payment(paymentId)
 
     suspend fun payments(): MixinResponse<List<RoutePaymentResponse>> = routeService.payments()
 
-    suspend fun createSession(createSession: RouteSessionRequest): MixinResponse<RouteSessionResponse> = routeService.createSession(createSession)
+    suspend fun createSession(createSession: RouteSessionRequest): MixinResponse<RouteSessionResponse> =
+        routeService.createSession(createSession)
 
     suspend fun token(tokenRequest: RouteTokenRequest) = routeService.token(tokenRequest)
 
     suspend fun createInstrument(createInstrument: RouteInstrumentRequest): MixinResponse<Card> =
         routeService.createInstrument(createInstrument)
 
-    suspend fun getSession(sessionId: String): MixinResponse<RouteSessionResponse> = routeService.getSession(sessionId)
+    suspend fun getSession(sessionId: String): MixinResponse<RouteSessionResponse> =
+        routeService.getSession(sessionId)
 
     fun cards(): Flow<SafeBox?> = safeBox.data
 
@@ -539,5 +602,6 @@ constructor(
 
     suspend fun instruments(): MixinResponse<List<Card>> = routeService.instruments()
 
-    suspend fun deleteInstruments(id: String): MixinResponse<Void> = routeService.deleteInstruments(id)
+    suspend fun deleteInstruments(id: String): MixinResponse<Void> =
+        routeService.deleteInstruments(id)
 }

@@ -391,6 +391,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                     bottomRl.isVisible = show
 
                     sendReceiveView.apply {
+                        // todo sync Deposit
                         val assetEmpty = asset.getDestination().isEmpty()
                         receive.isVisible = !assetEmpty
                         receiveProgress.isVisible = assetEmpty
