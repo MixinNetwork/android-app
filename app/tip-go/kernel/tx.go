@@ -14,7 +14,7 @@ import (
 type Utxo struct {
 	Hash   string `json:"hash"`
 	Index  int    `json:"index"`
-	Amount string `json:"Amount"`
+	Amount string `json:"amount"`
 }
 
 func BuildTx(asset string, am string, threshold int, receiverKeys string, receiverMask string, inputs []byte, changeKeys string, changeMask string, extra string) string {
