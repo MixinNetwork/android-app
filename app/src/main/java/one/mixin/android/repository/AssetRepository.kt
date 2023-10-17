@@ -39,6 +39,7 @@ import one.mixin.android.db.ChainDao
 import one.mixin.android.db.DepositDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.SnapshotDao
+import one.mixin.android.db.TokenDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.db.provider.DataProvider
@@ -62,6 +63,7 @@ import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.Token
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.route.RoutePaymentRequest
@@ -82,6 +84,7 @@ constructor(
     private val utxoService: UtxoService,
     private val routeService: RouteService,
     private val assetDao: AssetDao,
+    private val tokeDao: TokenDao,
     private val assetsExtraDao: AssetsExtraDao,
     private val snapshotDao: SnapshotDao,
     private val addressDao: AddressDao,
@@ -98,12 +101,12 @@ constructor(
 
     suspend fun simpleAssetsWithBalance() = assetDao.simpleAssetsWithBalance()
 
-    fun insert(asset: Asset) {
-        assetDao.insert(asset)
+    fun insert(asset: Token) {
+        tokeDao.insert(asset)
     }
 
-    fun insertList(asset: List<Asset>) {
-        assetDao.insertList(asset)
+    fun insertList(asset: List<Token>) {
+        tokeDao.insertList(asset)
     }
 
     suspend fun asset(id: String) = assetService.getAssetByIdSuspend(id)
@@ -149,7 +152,7 @@ constructor(
     }
 
     suspend fun syncAsset(assetId: String): AssetItem? {
-        val asset: Asset = handleMixinResponse(
+        val asset: Token = handleMixinResponse(
             invokeNetwork = {
                 assetService.getAssetByIdSuspend(assetId)
             },
@@ -539,13 +542,13 @@ constructor(
     suspend fun findAssetIdByAssetKey(assetKey: String): String? =
         assetDao.findAssetIdByAssetKey(assetKey)
 
-    suspend fun refreshAsset(assetId: String): Asset? =
+    suspend fun refreshAsset(assetId: String): Token? =
         handleMixinResponse(
             invokeNetwork = { assetService.getAssetByIdSuspend(assetId) },
             switchContext = Dispatchers.IO,
             successBlock = {
                 it.data?.let { a ->
-                    assetDao.upsertSuspend(a)
+                    tokeDao.upsertSuspend(a)
                     return@handleMixinResponse a
                 }
             },

@@ -11,6 +11,7 @@ import one.mixin.android.vo.Chain
 import one.mixin.android.vo.PendingDeposit
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Ticker
+import one.mixin.android.vo.Token
 import one.mixin.android.vo.TopAsset
 import retrofit2.Call
 import retrofit2.http.Body
@@ -28,7 +29,7 @@ interface AssetService {
     suspend fun fetchAllAssetSuspend(): MixinResponse<List<Asset>>
 
     @GET("assets/{id}")
-    suspend fun getAssetByIdSuspend(@Path("id") id: String): MixinResponse<Asset>
+    suspend fun getAssetByIdSuspend(@Path("id") id: String): MixinResponse<Token>
 
     @GET("network/assets/{id}")
     suspend fun getAssetByMixinIdSuspend(@Path("id") mixinId: String): MixinResponse<Asset>

@@ -9,6 +9,7 @@ import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.PriceAndChange
+import one.mixin.android.vo.Token
 
 @Dao
 interface AssetDao : BaseDao<Asset> {
@@ -25,29 +26,29 @@ interface AssetDao : BaseDao<Asset> {
             LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id 
            """
         const val POSTFIX =
-            " ORDER BY balance * price_usd DESC, cast(balance AS REAL) DESC, cast(price_usd AS REAL) DESC, name ASC, rowid DESC"
+            " ORDER BY balance * price_usd DESC, cast(balance AS REAL) DESC, cast(price_usd AS REAL) DESC, name ASC, a1.rowid DESC"
         const val POSTFIX_ASSET_ITEM =
             " ORDER BY ae.balance * a1.price_usd DESC, cast(ae.balance AS REAL) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
         const val POSTFIX_ASSET_ITEM_NOT_HIDDEN =
             " WHERE ae.hidden IS NULL OR NOT ae.hidden$POSTFIX_ASSET_ITEM"
     }
-    @Query("SELECT * FROM assets $POSTFIX")
-    fun assets(): LiveData<List<Asset>>
+    @Query("SELECT * FROM tokens a1 LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id $POSTFIX")
+    fun assets(): LiveData<List<Token>>
 
-    @Query("SELECT * FROM assets WHERE balance > 0 $POSTFIX")
-    fun assetsWithBalance(): LiveData<List<Asset>>
+    @Query("SELECT a1.* FROM tokens a1 LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 $POSTFIX")
+    fun assetsWithBalance(): LiveData<List<Token>>
 
-    @Query("SELECT * FROM assets WHERE balance > 0 $POSTFIX")
-    suspend fun simpleAssetsWithBalance(): List<Asset>
+    @Query("SELECT a1.* FROM tokens a1 LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 $POSTFIX")
+    suspend fun simpleAssetsWithBalance(): List<Token>
 
     @Query("$PREFIX_ASSET_ITEM WHERE a1.symbol = 'XIN' $POSTFIX_ASSET_ITEM limit 1")
     fun getXIN(): AssetItem?
 
-    @Query("SELECT * FROM assets WHERE asset_id = :id")
-    fun asset(id: String): LiveData<Asset>
+    @Query("SELECT * FROM tokens WHERE asset_id = :id")
+    fun asset(id: String): LiveData<Token>
 
-    @Query("SELECT * FROM assets WHERE asset_id = :id")
-    suspend fun simpleAsset(id: String): Asset?
+    @Query("SELECT * FROM tokens WHERE asset_id = :id")
+    suspend fun simpleAsset(id: String): Token?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE ae.hidden = 1 $POSTFIX_ASSET_ITEM")
@@ -112,7 +113,7 @@ interface AssetDao : BaseDao<Asset> {
     @Query("SELECT asset_id FROM assets WHERE balance > 0")
     suspend fun findAllAssetIdSuspend(): List<String>
 
-    @Query("UPDATE assets SET balance = 0 WHERE asset_id IN (:assetIds)")
+    @Query("UPDATE assets_extra SET balance = 0 WHERE asset_id IN (:assetIds)")
     suspend fun zeroClearSuspend(assetIds: List<String>)
 
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:assetIds)")
@@ -121,12 +122,14 @@ interface AssetDao : BaseDao<Asset> {
     @Update(entity = Asset::class)
     suspend fun suspendUpdatePrices(priceAndChanges: List<PriceAndChange>)
 
-    @Query("SELECT SUM(balance * price_usd) FROM assets")
+    @Query("SELECT SUM(balance * price_usd) FROM tokens a1 LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id")
     suspend fun findTotalUSDBalance(): Int?
 
-    @Query("SELECT asset_id FROM assets WHERE asset_key = :assetKey COLLATE NOCASE")
+    @Query("SELECT asset_id FROM tokens WHERE asset_key = :assetKey COLLATE NOCASE")
     suspend fun findAssetIdByAssetKey(assetKey: String): String?
 
+
+    // Todo replace
     @Query("SELECT a.* FROM assets a WHERE a.rowid > :rowId ORDER BY a.rowid ASC LIMIT :limit")
     fun getAssetByLimitAndRowId(limit: Int, rowId: Long): List<Asset>
 
