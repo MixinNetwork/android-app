@@ -189,6 +189,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                     successBlock = { response ->
                         response.data?.let { asset ->
                             walletViewModel.upsetAsset(asset)
+                            // todo check balance
                             asset.toAssetItem().let { assetItem ->
                                 this@TransactionsFragment.asset = assetItem
                                 headerAdapter.asset = assetItem

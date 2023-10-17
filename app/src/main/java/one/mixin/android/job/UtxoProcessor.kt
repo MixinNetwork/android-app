@@ -98,7 +98,7 @@ class UtxoProcessor(
                 // TODO new asset API?
                 val r = assetService.getAssetByMixinIdSuspend(output.asset)
                 if (!r.isSuccess || r.data == null) return // TODO
-                val token = requireNotNull(r.data).toToken()
+                val token = requireNotNull(r.data)
                 exists = token.assetId
                 tokenDao.insertSuspend(token)
             }

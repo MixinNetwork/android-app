@@ -5,7 +5,6 @@ import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
-import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Chain
 import one.mixin.android.vo.PendingDeposit
@@ -23,16 +22,16 @@ import retrofit2.http.Query
 interface AssetService {
 
     @GET("assets")
-    fun assets(): Call<MixinResponse<List<Asset>>>
+    fun assets(): Call<MixinResponse<List<Token>>>
 
     @GET("assets")
-    suspend fun fetchAllAssetSuspend(): MixinResponse<List<Asset>>
+    suspend fun fetchAllAssetSuspend(): MixinResponse<List<Token>>
 
     @GET("assets/{id}")
     suspend fun getAssetByIdSuspend(@Path("id") id: String): MixinResponse<Token>
 
     @GET("network/assets/{id}")
-    suspend fun getAssetByMixinIdSuspend(@Path("id") mixinId: String): MixinResponse<Asset>
+    suspend fun getAssetByMixinIdSuspend(@Path("id") mixinId: String): MixinResponse<Token>
 
     @GET("assets/{id}")
     suspend fun getAssetPrecisionById(@Path("id") id: String): MixinResponse<AssetPrecision>
@@ -81,7 +80,7 @@ interface AssetService {
     ): MixinResponse<List<PendingDeposit>>
 
     @GET("network/assets/search/{query}")
-    suspend fun queryAssets(@Path("query") query: String): MixinResponse<List<Asset>>
+    suspend fun queryAssets(@Path("query") query: String): MixinResponse<List<Token>>
 
     @GET("network/assets/top")
     fun topAssets(@Query("kind") kind: String = "NORMAL"): Call<MixinResponse<List<TopAsset>>>

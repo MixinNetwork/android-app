@@ -124,12 +124,12 @@ data class PriceAndChange(
     val changeBtc: String,
 )
 
-fun Asset.toAssetItem(chainIconUrl: String? = null): AssetItem = AssetItem(
+fun Token.toAssetItem(chainIconUrl: String? = null): AssetItem = AssetItem(
     assetId,
     symbol,
     name,
     iconUrl,
-    balance,
+    "0",
     priceBtc,
     priceUsd,
     chainId,
@@ -158,7 +158,7 @@ fun Asset.toTopAssetItem(chainIconUrl: String?) = TopAssetItem(
     changeUsd
 )
 
-fun Asset?.priceUSD(): BigDecimal = if (this == null) {
+fun Token?.priceUSD(): BigDecimal = if (this == null) {
     BigDecimal.ZERO
 } else {
     if (priceUsd == "0") {

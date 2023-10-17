@@ -343,7 +343,7 @@ constructor(
             return emptyList()
         }
         if (response.isSuccess) {
-            val assetList = response.data as List<Asset>
+            val assetList = response.data as List<Token>
             if (assetList.isEmpty()) {
                 return emptyList()
             }
@@ -353,6 +353,7 @@ constructor(
                 if (chainIconUrl == null) {
                     chainIconUrl = fetchAsset(asset.chainId)
                 }
+                // todo check asset balance
                 asset.toAssetItem(chainIconUrl)
             }
             val localExistsIds = arrayListOf<String>()

@@ -36,6 +36,7 @@ import one.mixin.android.vo.Deposit
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.Token
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.sumsub.ProfileResponse
@@ -190,7 +191,7 @@ internal constructor(
         }
     }
 
-    fun upsetAsset(asset: Asset) = viewModelScope.launch(Dispatchers.IO) {
+    fun upsetAsset(asset: Token) = viewModelScope.launch(Dispatchers.IO) {
         assetRepository.insert(asset)
     }
 

@@ -4,6 +4,7 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.Token
 
 class RefreshAssetsJob(
     private val assetId: String? = null,
@@ -30,7 +31,7 @@ class RefreshAssetsJob(
         } else {
             val response = assetService.fetchAllAssetSuspend()
             if (response.isSuccess && response.data != null) {
-                val list = response.data as List<Asset>
+                val list = response.data as List<Token>
                 response.data?.map {
                     it.assetId
                 }?.let { ids ->

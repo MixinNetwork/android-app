@@ -65,7 +65,7 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
-import one.mixin.android.vo.Asset
+import one.mixin.android.vo.Token
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 
@@ -109,7 +109,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var chain: Chain by mutableStateOf(Chain.Ethereum)
     private var errorInfo: String? by mutableStateOf(null)
     private var tipGas: TipGas? by mutableStateOf(null)
-    private var asset: Asset? by mutableStateOf(null)
+    private var asset: Token? by mutableStateOf(null)
     private var gasPriceType: GasPriceType by mutableStateOf(GasPriceType.Propose)
     private var signData: WalletConnect.WCSignData.V2SignData<*>? by mutableStateOf(null)
     private var sessionProposal: Wallet.Model.SessionProposal? by mutableStateOf(null)
