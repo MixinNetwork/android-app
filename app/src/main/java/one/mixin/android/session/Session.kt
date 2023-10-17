@@ -2,6 +2,7 @@ package one.mixin.android.session
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import ed25519.Ed25519
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.EdDSAPrivateKey
 import io.jsonwebtoken.EdDSAPublicKey
@@ -16,10 +17,12 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
+import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.useGoEd
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.bodyToString
@@ -37,6 +40,7 @@ import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toHex
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
+import one.mixin.eddsa.Ed25519Sign
 import timber.log.Timber
 import java.security.Key
 import java.util.concurrent.ConcurrentHashMap
@@ -341,6 +345,21 @@ object Session {
             }
         }
         return Pair(ts, (requireNotNull(getAccountId()).toByteArray() + content.hmacSha256(sharedKey)).base64RawURLEncode())
+    }
+
+    fun registerPublicKey(userId:String, seed: ByteArray): String {
+        val signTarget = userId.sha3Sum256()
+        return if (useGoEd()) {
+            Ed25519.sign(signTarget, seed).base64RawURLEncode()
+        } else {
+            val keyPair =
+                one.mixin.eddsa.KeyPair.newKeyPairFromSeed(seed.toByteString(), checkOnCurve = true)
+            EdKeyPair(keyPair.publicKey.toByteArray(), keyPair.privateKey.toByteArray())
+            val signer =
+                Ed25519Sign(keyPair.privateKey.toByteArray().toByteString(), checkOnCurve = true)
+            signer.sign(signTarget.toByteString(), checkOnCurve = true).toByteArray()
+                .base64RawURLEncode()
+        }
     }
 }
 

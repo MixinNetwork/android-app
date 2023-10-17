@@ -157,6 +157,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                 walletViewModel.refreshAsset(asset.assetId)
                 handleMixinResponse(
                     invokeNetwork = {
+                        // todo replace new api
                         walletViewModel.refreshPendingDeposits(asset)
                     },
                     successBlock = { list ->

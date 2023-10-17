@@ -2,6 +2,7 @@ package one.mixin.android.api.service
 
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.DepositEntryRequest
+import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.session.Session
 import one.mixin.android.vo.Deposit
 import one.mixin.android.vo.Output
@@ -27,4 +28,8 @@ interface UtxoService {
         @Body depositEntryRequest: DepositEntryRequest
     ): MixinResponse<List<Deposit>>
 
+    @POST("/users")
+    suspend fun registerPublicKey(
+        @Body registerRequest: RegisterRequest
+    ): MixinResponse<List<Deposit>>
 }

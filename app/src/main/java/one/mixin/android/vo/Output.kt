@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.db.OutputDao
 
 @TypeConverters(ListConverter::class)
 @Entity(
