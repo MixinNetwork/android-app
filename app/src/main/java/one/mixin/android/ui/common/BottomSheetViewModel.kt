@@ -29,6 +29,7 @@ import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
+import one.mixin.android.api.request.buildGhostKeyRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.crypto.PinCipher
@@ -117,20 +118,17 @@ class BottomSheetViewModel @Inject internal constructor(
     ): MixinResponse<TransactionResponse> {
         val seed = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
         val keyPair = newKeyPairFromSeed(seed)
-        val registerRp = assetRepository.registerPublicKey(
-            registerRequest = RegisterRequest(
-                keyPair.publicKey.toHex(),
-                Session.registerPublicKey(Session.getAccountId()!!, seed)
-            )
-        )
+        // Todo check register status
+        val registerRp = assetRepository.registerPublicKey(registerRequest = RegisterRequest(keyPair.publicKey.toHex(), Session.registerPublicKey(Session.getAccountId()!!, seed)))
         val selfId = Session.getAccountId()!!
-        val ghostKeyResponse = assetRepository.ghostKey(listOf(GhostKeyRequest(listOf(userId), 0, UUID.randomUUID().toString()), GhostKeyRequest(listOf(selfId), 1, UUID.randomUUID().toString())))
+        val ghostKeyResponse = assetRepository.ghostKey(buildGhostKeyRequest(userId, selfId))
         val data = ghostKeyResponse.data!!
         val asset = assetIdToAsset(assetId)
         val threshold = 1L
 
+        val uxtos =  packUxto(asset, amount)
         val input = GsonHelper.customGson.toJson(
-            packUxto(asset, amount)
+            uxtos
         ).toByteArray()
         val receiverKeys = data.first().keys.joinToString(",")
         val receiverMask = data.first().mask
@@ -142,9 +140,10 @@ class BottomSheetViewModel @Inject internal constructor(
         val views = transactionResponse.data!!.views.joinToString(",")
         val sign = Kernel.signTx(tx, views, seed.toHex())
         return assetRepository.transactions(TransactionRequest(selfId, sign)).apply {
-            // Todo sync output
-            assetRepository.clear()
-            jobManager.addJobInBackground(SyncOutputJob())
+            if (this.isSuccess){
+                assetRepository.deleteUtxo(uxtos.map { it.hash })
+                jobManager.addJobInBackground(SyncOutputJob())
+            }
         }
     }
 

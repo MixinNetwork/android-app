@@ -627,5 +627,5 @@ constructor(
 
     suspend fun findOutputs(limit: Int, asset: String) = outputDao.findUnspentOutputsByAsset(limit, asset)
 
-    suspend fun clear() = outputDao.clear()
+    suspend fun deleteUtxo(ids: List<String>) = outputDao.deleteUtxo(ids)
 }

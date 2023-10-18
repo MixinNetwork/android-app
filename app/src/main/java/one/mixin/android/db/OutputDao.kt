@@ -29,6 +29,6 @@ interface OutputDao : BaseDao<Output> {
     @Query("SELECT DISTINCT asset FROM outputs")
     fun getMixinId(): List<String>
 
-    @Query("DELETE FROM outputs")
-    suspend fun clear()
+    @Query("DELETE FROM outputs WHERE transaction_hash IN (:ids)")
+    suspend fun deleteUtxo(ids: List<String>)
 }
