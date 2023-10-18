@@ -1,6 +1,7 @@
 package one.mixin.android.ui.conversation
 
 import android.Manifest
+import kernel.Kernel;
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
@@ -62,6 +63,7 @@ import com.twilio.audioswitch.AudioSwitch
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -72,9 +74,14 @@ import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.request.GhostKeyRequest
+import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
+import one.mixin.android.api.request.TransactionRequest
+import one.mixin.android.api.service.UtxoService
+import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.databinding.DialogDeleteBinding
 import one.mixin.android.databinding.DialogForwardBinding
 import one.mixin.android.databinding.DialogImportMessageBinding
@@ -142,6 +149,7 @@ import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.supportsNougat
+import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.FavoriteAppJob
@@ -152,11 +160,14 @@ import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
 import one.mixin.android.session.Session
+import one.mixin.android.session.Session.registerPublicKey
+import one.mixin.android.tip.Tip
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment.Companion.GROUP_VOICE_MAX_COUNT
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
+import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.message.ChatRoomHelper
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
@@ -190,8 +201,6 @@ import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.setting.WallpaperManager
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.sticker.StickerPreviewBottomSheetFragment
-import one.mixin.android.ui.tip.TipActivity
-import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.Attachment
@@ -224,6 +233,7 @@ import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
+import one.mixin.android.vo.Utxo
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
@@ -332,6 +342,12 @@ class ConversationFragment() :
 
     @Inject
     lateinit var audioSwitch: AudioSwitch
+
+    @Inject
+    lateinit var tip: Tip
+
+    @Inject
+    lateinit var utxoService: UtxoService
 
     private val chatViewModel by viewModels<ConversationViewModel>()
 
@@ -2450,14 +2466,29 @@ class ConversationFragment() :
                     }
                     MenuType.Transfer -> {
                         binding.chatControl.reset()
-                        if (Session.getAccount()?.hasPin == true) {
-                            recipient?.let {
-                                TransferFragment.newInstance(it.userId, supportSwitchAsset = true)
-                                    .showNow(parentFragmentManager, TransferFragment.TAG)
+                        // if (Session.getAccount()?.hasPin == true) {
+                        //     recipient?.let {
+                        //         TransferFragment.newInstance(it.userId, supportSwitchAsset = true)
+                        //             .showNow(parentFragmentManager, TransferFragment.TAG)
+                        //     }
+                        // } else {
+                        //     TipActivity.show(requireActivity(), TipType.Create, true)
+                        // }
+                        PinInputBottomSheetDialogFragment.newInstance("New Transfer").setOnComplete { pin, dialog ->
+                            lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+                                Timber.e(error)
+                            }) {
+                                tip.getOrRecoverTipPriv(requireContext(), pin)
+                                    .onSuccess { seed ->
+                                        chatViewModel.newTransfer(recipient!!.userId, seed)
+                                        delay(2000)
+                                        dialog.dismiss()
+                                    }.onFailure {
+                                        Timber.e("Failure")
+                                        dialog.dismiss()
+                                    }
                             }
-                        } else {
-                            TipActivity.show(requireActivity(), TipType.Create, true)
-                        }
+                        }.show(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
                     }
                     MenuType.Contact -> {
                         parentFragmentManager.inTransaction {

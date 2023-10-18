@@ -18,13 +18,18 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.DepositEntryRequest
+import one.mixin.android.api.request.GhostKeyRequest
 import one.mixin.android.api.request.Pin
+import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RouteSessionRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
+import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
+import one.mixin.android.api.response.GhostKey
+import one.mixin.android.api.response.RegisterResponse
 import one.mixin.android.api.response.RoutePaymentResponse
 import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteTickerResponse
@@ -38,6 +43,7 @@ import one.mixin.android.db.AssetsExtraDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.DepositDao
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.OutputDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.TokenDao
 import one.mixin.android.db.TopAssetDao
@@ -72,6 +78,8 @@ import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
 import retrofit2.Call
+import retrofit2.http.Body
+import retrofit2.http.POST
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -93,6 +101,7 @@ constructor(
     private val traceDao: TraceDao,
     private val chainDao: ChainDao,
     private val depositDao: DepositDao,
+    private val outputDao: OutputDao,
     private val jobManager: MixinJobManager,
     private val safeBox: DataStore<SafeBox>,
 ) {
@@ -606,6 +615,15 @@ constructor(
 
     suspend fun instruments(): MixinResponse<List<Card>> = routeService.instruments()
 
-    suspend fun deleteInstruments(id: String): MixinResponse<Void> =
-        routeService.deleteInstruments(id)
+    suspend fun deleteInstruments(id: String): MixinResponse<Void> = routeService.deleteInstruments(id)
+
+    suspend fun transactionRequest(transactionRequest: TransactionRequest) = utxoService.transactionRequest(transactionRequest)
+
+    suspend fun transactions(transactionRequest: TransactionRequest) = utxoService.transactions(transactionRequest)
+
+    suspend fun registerPublicKey(registerRequest: RegisterRequest) = utxoService.registerPublicKey(registerRequest)
+
+    suspend fun ghostKey(ghostKeyRequest: List<GhostKeyRequest>) = utxoService.ghostKey(ghostKeyRequest)
+
+    suspend fun findOutputs(limit: Int, asset: String) = outputDao.findUnspentOutputsByAsset(limit, asset)
 }

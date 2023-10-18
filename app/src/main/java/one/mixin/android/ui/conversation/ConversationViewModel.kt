@@ -12,10 +12,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kernel.Kernel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -24,9 +26,13 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.DisappearRequest
+import one.mixin.android.api.request.GhostKeyRequest
 import one.mixin.android.api.request.ParticipantRequest
+import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
+import one.mixin.android.api.request.TransactionRequest
+import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createAudioTemp
@@ -35,6 +41,7 @@ import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.toHex
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.ConvertVideoJob
 import one.mixin.android.job.MixinJobManager
@@ -45,6 +52,7 @@ import one.mixin.android.job.RemoveStickersJob
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.job.SendMessageJob
+import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
@@ -81,6 +89,7 @@ import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.vo.StickerAlbumOrder
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import one.mixin.android.vo.Utxo
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.encryptedCategory
@@ -103,11 +112,12 @@ import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.PinAction
 import one.mixin.android.websocket.VideoMessagePayload
 import one.mixin.android.widget.gallery.MimeType
+import timber.log.Timber
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
 
-@Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+@UnstableApi @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 @HiltViewModel
 class ConversationViewModel
 @Inject
@@ -813,5 +823,72 @@ internal constructor(
 
     suspend fun refreshCountByConversationId(conversationId: String) = withContext(Dispatchers.IO) {
         conversationRepository.refreshCountByConversationId(conversationId)
+    }
+
+    suspend fun newTransfer(recipientId:String, seed:ByteArray){
+        val keyPair = newKeyPairFromSeed(seed)
+        val registerRp = assetRepository.registerPublicKey(
+            registerRequest = RegisterRequest(
+                keyPair.publicKey.toHex(),
+                Session.registerPublicKey(Session.getAccountId()!!, seed)
+            )
+        )
+        val selfId = Session.getAccountId()!!
+        val ghostKeyResponse = assetRepository.ghostKey(
+            listOf(
+                GhostKeyRequest(
+                    listOf(
+                        recipientId
+                    ), 0, UUID.randomUUID().toString()
+                ),
+                GhostKeyRequest(
+                    listOf(
+                        selfId
+                    ), 1, UUID.randomUUID().toString()
+                )
+            )
+        )
+        if (ghostKeyResponse.isSuccess){
+            val data = ghostKeyResponse.data!!
+            // Todo replace user input
+            val asset = "a99c2e0e2b1da4d648755ef19bd95139acbbe6564cfb06dec7cd34931ca72cdc"
+            val amount ="0.1"
+
+            val threshold = 1L
+
+            val input = GsonHelper.customGson.toJson(
+                packUxto(asset, amount)
+            ).toByteArray()
+            val receiverKeys = data.first().keys.joinToString(",")
+            val receiverMask = data.first().mask
+
+            val changeKeys = data.last().keys.joinToString(",")
+            val changeMask = data.last().mask
+            val tx = Kernel.buildTx(asset, amount, threshold, receiverKeys, receiverMask, input, changeKeys, changeMask, "")
+            val transactionResponse = assetRepository.transactionRequest(TransactionRequest(selfId, tx))
+            val views = transactionResponse.data!!.views.joinToString(",")
+            val sign = Kernel.signTx(tx, views, seed.toHex())
+            val re = assetRepository.transactions(TransactionRequest(selfId, sign))
+            Timber.e("Done ${re.data!!.transactionHash}")
+
+        } else {
+            Timber.e(ghostKeyResponse.errorDescription)
+        }
+    }
+
+    private suspend fun packUxto(asset:String, amount:String):List<Utxo> {
+        var amountValue = amount.toDouble()
+        val list = assetRepository.findOutputs(256, "a99c2e0e2b1da4d648755ef19bd95139acbbe6564cfb06dec7cd34931ca72cdc")
+        val result = mutableListOf<Utxo>()
+        list.forEach {output ->
+            val outputAmount = output.amount.toDouble()
+            result.add(Utxo(output.transactionHash, output.amount, output.outputIndex))
+            if (amountValue - outputAmount <= 0){
+                return@forEach
+            }else{
+                amountValue -= outputAmount
+            }
+        }
+        return result
     }
 }

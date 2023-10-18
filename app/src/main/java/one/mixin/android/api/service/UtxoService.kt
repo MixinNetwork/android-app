@@ -1,15 +1,19 @@
 package one.mixin.android.api.service
 
+import TransactionResponse
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.DepositEntryRequest
+import one.mixin.android.api.request.GhostKeyRequest
 import one.mixin.android.api.request.RegisterRequest
+import one.mixin.android.api.request.TransactionRequest
+import one.mixin.android.api.response.GhostKey
+import one.mixin.android.api.response.RegisterResponse
 import one.mixin.android.session.Session
 import one.mixin.android.vo.Deposit
 import one.mixin.android.vo.Output
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
-import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface UtxoService {
@@ -31,5 +35,15 @@ interface UtxoService {
     @POST("/users")
     suspend fun registerPublicKey(
         @Body registerRequest: RegisterRequest
-    ): MixinResponse<List<Deposit>>
+    ): MixinResponse<RegisterResponse>
+
+    @POST("/keys")
+    suspend fun ghostKey(@Body ghostKeyRequest: List<GhostKeyRequest>): MixinResponse<List<GhostKey>>
+
+    @POST("/transaction/requests")
+    suspend fun transactionRequest(@Body transactionRequest: TransactionRequest): MixinResponse<TransactionResponse>
+
+    @POST("/transactions")
+    suspend fun transactions(@Body transactionRequest: TransactionRequest): MixinResponse<TransactionResponse>
 }
+

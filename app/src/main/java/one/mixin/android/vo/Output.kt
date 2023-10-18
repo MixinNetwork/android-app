@@ -70,3 +70,4 @@ class Output(
     @ColumnInfo(name = "spent_at")
     val spentAt: String,
 )
+

@@ -104,6 +104,7 @@ import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
@@ -250,7 +251,7 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         MixinApplication.get().isOnline.set(true)
-
+        jobManager.addJobInBackground(SyncOutputJob())
         if (checkNeedGo2MigrationPage()) {
             InitializeActivity.showDBUpgrade(this)
             finish()
@@ -314,6 +315,8 @@ class MainActivity : BlazeBaseActivity() {
             }
             checkUpdate()
         }
+
+        jobManager.addJobInBackground(SyncOutputJob())
     }
 
     override fun onStart() {
