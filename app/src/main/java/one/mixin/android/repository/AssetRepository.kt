@@ -626,4 +626,6 @@ constructor(
     suspend fun ghostKey(ghostKeyRequest: List<GhostKeyRequest>) = utxoService.ghostKey(ghostKeyRequest)
 
     suspend fun findOutputs(limit: Int, asset: String) = outputDao.findUnspentOutputsByAsset(limit, asset)
+
+    suspend fun clear() = outputDao.clear()
 }

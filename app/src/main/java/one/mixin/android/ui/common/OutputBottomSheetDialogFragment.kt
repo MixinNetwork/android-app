@@ -138,7 +138,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
         val response = when (val t = this.t) {
             is TransferBiometricItem -> {
                 trace = Trace(t.traceId!!, t.asset.assetId, t.amount, t.user.userId, null, null, null, nowInUtc())
-                bottomViewModel.transfer(t.asset.assetId, t.user.userId, t.amount, pin, t.traceId, t.memo)
+                bottomViewModel.newTransfer(t.asset.assetId, t.user.userId, t.amount, pin, t.traceId, t.memo)
             }
             else -> {
                 t as WithdrawBiometricItem

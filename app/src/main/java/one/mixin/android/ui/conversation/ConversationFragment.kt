@@ -201,6 +201,8 @@ import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.setting.WallpaperManager
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.sticker.StickerPreviewBottomSheetFragment
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.Attachment
@@ -2466,29 +2468,14 @@ class ConversationFragment() :
                     }
                     MenuType.Transfer -> {
                         binding.chatControl.reset()
-                        // if (Session.getAccount()?.hasPin == true) {
-                        //     recipient?.let {
-                        //         TransferFragment.newInstance(it.userId, supportSwitchAsset = true)
-                        //             .showNow(parentFragmentManager, TransferFragment.TAG)
-                        //     }
-                        // } else {
-                        //     TipActivity.show(requireActivity(), TipType.Create, true)
-                        // }
-                        PinInputBottomSheetDialogFragment.newInstance("New Transfer").setOnComplete { pin, dialog ->
-                            lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
-                                Timber.e(error)
-                            }) {
-                                tip.getOrRecoverTipPriv(requireContext(), pin)
-                                    .onSuccess { seed ->
-                                        chatViewModel.newTransfer(recipient!!.userId, seed)
-                                        delay(2000)
-                                        dialog.dismiss()
-                                    }.onFailure {
-                                        Timber.e("Failure")
-                                        dialog.dismiss()
-                                    }
+                        if (Session.getAccount()?.hasPin == true) {
+                            recipient?.let {
+                                TransferFragment.newInstance(it.userId, supportSwitchAsset = true)
+                                    .showNow(parentFragmentManager, TransferFragment.TAG)
                             }
-                        }.show(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
+                        } else {
+                            TipActivity.show(requireActivity(), TipType.Create, true)
+                        }
                     }
                     MenuType.Contact -> {
                         parentFragmentManager.inTransaction {

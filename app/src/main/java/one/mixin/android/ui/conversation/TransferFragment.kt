@@ -20,6 +20,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
+import androidx.annotation.OptIn
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.text.bold
@@ -29,6 +30,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -366,7 +368,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun handleInnerTransfer() {
+    @OptIn(UnstableApi::class) private fun handleInnerTransfer() {
         if (supportSwitchAsset) {
             binding.assetRl.setOnClickListener {
                 operateKeyboard(false)
@@ -572,6 +574,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         }
     }
 
+    @OptIn(UnstableApi::class)
     private fun prepareTransferBottom() = lifecycleScope.launch {
         if (currentAsset == null || (user == null && address == null)) {
             return@launch

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.common
 
+import TransactionResponse
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,9 +8,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kernel.Kernel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -17,22 +20,28 @@ import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.CollectibleRequest
 import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.ConversationRequest
+import one.mixin.android.api.request.GhostKeyRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.RawTransactionsRequest
+import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.RelationshipRequest
+import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.crypto.PinCipher
+import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.extension.escapeSql
+import one.mixin.android.extension.toHex
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.pay.generateAddressId
 import one.mixin.android.repository.AccountRepository
@@ -40,8 +49,10 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
+import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.common.message.CleanMessageHelper
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
@@ -55,10 +66,13 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
+import one.mixin.android.vo.Utxo
+import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.toSimpleChat
 import java.io.File
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -70,6 +84,7 @@ class BottomSheetViewModel @Inject internal constructor(
     private val conversationRepo: ConversationRepository,
     private val cleanMessageHelper: CleanMessageHelper,
     private val pinCipher: PinCipher,
+    private val tip:Tip,
 ) : ViewModel() {
     suspend fun searchCode(code: String) = withContext(Dispatchers.IO) {
         accountRepository.searchCode(code)
@@ -92,23 +107,62 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
 
-    suspend fun transfer(
+    suspend fun newTransfer(
         assetId: String,
         userId: String,
         amount: String,
-        code: String,
+        pin: String,
         trace: String?,
         memo: String?,
-    ) = assetRepository.transfer(
-        TransferRequest(
-            assetId,
-            userId,
-            amount,
-            pinCipher.encryptPin(code, TipBody.forTransfer(assetId, userId, amount, trace, memo)),
-            trace,
-            memo,
-        ),
-    )
+    ): MixinResponse<TransactionResponse> {
+        val seed = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
+        val keyPair = newKeyPairFromSeed(seed)
+        val registerRp = assetRepository.registerPublicKey(
+            registerRequest = RegisterRequest(
+                keyPair.publicKey.toHex(),
+                Session.registerPublicKey(Session.getAccountId()!!, seed)
+            )
+        )
+        val selfId = Session.getAccountId()!!
+        val ghostKeyResponse = assetRepository.ghostKey(listOf(GhostKeyRequest(listOf(userId), 0, UUID.randomUUID().toString()), GhostKeyRequest(listOf(selfId), 1, UUID.randomUUID().toString())))
+        val data = ghostKeyResponse.data!!
+        val asset = assetIdToAsset(assetId)
+        val threshold = 1L
+
+        val input = GsonHelper.customGson.toJson(
+            packUxto(asset, amount)
+        ).toByteArray()
+        val receiverKeys = data.first().keys.joinToString(",")
+        val receiverMask = data.first().mask
+
+        val changeKeys = data.last().keys.joinToString(",")
+        val changeMask = data.last().mask
+        val tx = Kernel.buildTx(asset, amount, threshold, receiverKeys, receiverMask, input, changeKeys, changeMask, memo)
+        val transactionResponse = assetRepository.transactionRequest(TransactionRequest(selfId, tx))
+        val views = transactionResponse.data!!.views.joinToString(",")
+        val sign = Kernel.signTx(tx, views, seed.toHex())
+        return assetRepository.transactions(TransactionRequest(selfId, sign)).apply {
+            // Todo sync output
+            assetRepository.clear()
+            jobManager.addJobInBackground(SyncOutputJob())
+        }
+    }
+
+    private suspend fun packUxto(asset:String, amount:String):List<Utxo> {
+        var amountValue = amount.toDouble()
+        val list = assetRepository.findOutputs(256, asset)
+        val result = mutableListOf<Utxo>()
+        list.forEach {output ->
+            val outputAmount = output.amount.toDouble()
+            result.add(Utxo(output.transactionHash, output.amount, output.outputIndex))
+            if (amountValue - outputAmount <= 0){
+                return@forEach
+            }else{
+                amountValue -= outputAmount
+            }
+        }
+        return result
+    }
 
     suspend fun authorize(authorizationId: String, scopes: List<String>, pin: String?): MixinResponse<AuthorizationResponse> =
         accountRepository.authorize(authorizationId, scopes, pin)
