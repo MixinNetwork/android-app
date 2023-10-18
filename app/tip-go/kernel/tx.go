@@ -17,7 +17,7 @@ type Utxo struct {
 	Amount string `json:"amount"`
 }
 
-func BuildTx(asset string, am string, threshold int, receiverKeys string, receiverMask string, inputs []byte, changeKeys string, changeMask string, extra string) string {
+func BuildTx(asset string, amount string, threshold int, receiverKeys string, receiverMask string, inputs []byte, changeKeys string, changeMask string, extra string) string {
 	keys := strings.Split(receiverKeys, ",")
 	rks := []*crypto.Key{}
 	for _, k := range keys {
@@ -62,7 +62,7 @@ func BuildTx(asset string, am string, threshold int, receiverKeys string, receiv
 		}
 		ins = append(ins, &u)
 	}
-	return buildTransaction(asset, am, threshold, rks, receiverMask, ins, cks, changeMask, extra)
+	return buildTransaction(asset, amount, threshold, rks, receiverMask, ins, cks, changeMask, extra)
 }
 
 func buildTransaction(asset string, am string, threshold int, receiverKeys []*crypto.Key, receiverMask string, inputs []*common.UTXO, changeKeys []*crypto.Key, changeMask string, extra string) string {
