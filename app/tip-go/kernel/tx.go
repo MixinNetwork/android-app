@@ -31,12 +31,12 @@ func BuildTx(asset string, am string, threshold int, receiverKeys string, receiv
 	ckeys := strings.Split(changeKeys, ",")
 	cks := []*crypto.Key{}
 	for _, k := range ckeys {
-		key := k
-		rk, err := crypto.KeyFromString(key)
+		ke := k
+		rk, err := crypto.KeyFromString(ke)
 		if err != nil {
 			panic(err)
 		}
-		cks = append(rks, &rk)
+		cks = append(cks, &rk)
 	}
 	var utxo []Utxo
 	err := json.Unmarshal(inputs, &utxo)
