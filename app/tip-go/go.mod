@@ -6,7 +6,7 @@ toolchain go1.21.3
 
 require (
 	filippo.io/edwards25519 v1.0.0
-	github.com/MixinNetwork/mixin v0.16.8-0.20231014140124-f5522f9a93a0
+	github.com/MixinNetwork/mixin v0.17.0
 	github.com/btcsuite/btcd/btcutil v1.1.3
 	github.com/drand/kyber v1.1.18
 	github.com/golang-jwt/jwt/v5 v5.0.0
