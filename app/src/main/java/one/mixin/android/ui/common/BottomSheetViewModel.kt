@@ -10,6 +10,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kernel.Kernel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
@@ -119,7 +120,7 @@ class BottomSheetViewModel @Inject internal constructor(
         memo: String?,
     ): MixinResponse<TransactionResponse> {
         val seed = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
-        
+
         val selfId = Session.getAccountId()!!
         val ghostKeyResponse = assetRepository.ghostKey(buildGhostKeyRequest(userId, selfId))
         val data = ghostKeyResponse.data!!
@@ -139,14 +140,15 @@ class BottomSheetViewModel @Inject internal constructor(
         val transactionResponse = assetRepository.transactionRequest(TransactionRequest(selfId, tx))
         val views = transactionResponse.data!!.views.joinToString(",")
         val sign = Kernel.signTx(tx, views, seed.toHex())
-        return assetRepository.transactions(TransactionRequest(selfId, sign)).apply {
-            if (this.isSuccess) {
-                val hash = arrayListOf<String>()
-                hash.addAll(uxtos.map { it.hash })
-                jobManager.addJobInBackground(RefreshOutputJob(hash))
-                jobManager.addJobInBackground(SyncOutputJob())
-            }
+        val transactionRsp =  assetRepository.transactions(TransactionRequest(selfId, sign))
+        if (transactionRsp.isSuccess) {
+            val hash = arrayListOf<String>()
+            hash.addAll(uxtos.map { it.hash })
+            delay(2000) // Todo remove
+            jobManager.addJobInBackground(RefreshOutputJob(hash))
+            jobManager.addJobInBackground(SyncOutputJob())
         }
+        return transactionResponse
     }
 
     private suspend fun packUxto(asset:String, amount:String):List<Utxo> {

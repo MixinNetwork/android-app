@@ -15,14 +15,15 @@ class RefreshOutputJob(val hash:ArrayList<String>) : BaseJob(
 
     override fun onRun() = runBlocking {
         outputDao.updateUtxo(hash)
-        val ids = outputDao.findUtxoIds(hash)
-        if (ids.isNotEmpty()){
-            val response = utxoService.fetch(OutputFetchRequest(Session.getAccountId()!!, ids))
-            if (response.isSuccess && !response.data.isNullOrEmpty()){
-                val outputs = (requireNotNull(response.data) { "outputs can not be null or empty at this step" })
-                outputDao.insertListSuspend(outputs)
-            }
-        }
+        // todo sync utxo state
+        // val ids = outputDao.findUtxoIds(hash)
+        // if (ids.isNotEmpty()){
+            // val response = utxoService.fetch(OutputFetchRequest(Session.getAccountId()!!, ids))
+            // if (response.isSuccess && !response.data.isNullOrEmpty()){
+            //     val outputs = (requireNotNull(response.data) { "outputs can not be null or empty at this step" })
+            //     outputDao.insertListSuspend(outputs)
+            // }
+        // }
     }
 
 }

@@ -31,7 +31,7 @@ class CheckBalanceJob(
                     assetsExtraDao.insertSuspend(AssetsExtra(token.assetId, token.asset,false, BigDecimal(value).toPlainString(), nowInUtc()))
                 } else {
                     val value = outputDao.calcBalanceByAssetId(asset)
-                    assetsExtraDao.updateBalanceByAssetId(token.assetId, BigDecimal(value).toPlainString(), nowInUtc())
+                    assetsExtraDao.updateBalanceByAssetId(token.assetId, value.toString(), nowInUtc())
                 }
             }
         }
