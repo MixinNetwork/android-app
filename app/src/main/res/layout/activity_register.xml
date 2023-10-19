@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:id="@+id/top_ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/bg_round_white_10dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_round_top_blue_10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingBottom="16dp"
+                android:paddingEnd="24dp"
+                android:paddingStart="24dp"
+                android:paddingTop="16dp"
+                android:text="Register"
+                android:textColor="@color/white"
+                android:textSize="18sp"/>
+        </FrameLayout>
+
+        <ViewAnimator
+            android:id="@+id/pin_va"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="24dp">
+
+            <one.mixin.android.widget.PinView
+                android:id="@+id/pin"
+                android:layout_width="200dp"
+                android:layout_marginTop="12dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"/>
+
+            <ProgressBar
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:theme="@style/AppTheme.BlueProgress"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingEnd="24dp"
+                android:paddingStart="24dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:textColor="@color/colorRed"
+                android:text="@string/error_pin_check_too_many_request"/>
+        </ViewAnimator>
+
+        <ViewAnimator
+            android:id="@+id/tip_va"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginStart="32dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Register"
+                android:gravity="center"
+                android:textColor="?attr/text_primary"/>
+
+            <TextView
+                android:id="@+id/got_it_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/Got_it"
+                android:textSize="14sp"
+                android:textColor="@color/colorBlue"/>
+        </ViewAnimator>
+    </LinearLayout>
+
+    <one.mixin.android.widget.Keyboard
+        android:id="@+id/keyboard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" />
+</RelativeLayout>

@@ -119,9 +119,7 @@ class BottomSheetViewModel @Inject internal constructor(
         memo: String?,
     ): MixinResponse<TransactionResponse> {
         val seed = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
-        val keyPair = newKeyPairFromSeed(seed)
-        // Todo check register status
-        val registerRp = assetRepository.registerPublicKey(registerRequest = RegisterRequest(keyPair.publicKey.toHex(), Session.registerPublicKey(Session.getAccountId()!!, seed)))
+        
         val selfId = Session.getAccountId()!!
         val ghostKeyResponse = assetRepository.ghostKey(buildGhostKeyRequest(userId, selfId))
         val data = ghostKeyResponse.data!!

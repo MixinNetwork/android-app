@@ -114,6 +114,7 @@ import one.mixin.android.tip.wc.WCErrorEvent
 import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.ui.RegisterActivity
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -283,6 +284,12 @@ class MainActivity : BlazeBaseActivity() {
         account?.let {
             FirebaseCrashlytics.getInstance().setUserId(it.userId)
             AppCenter.setUserId(it.userId)
+        }
+
+        if (!defaultSharedPreferences.getBoolean("RegisterActivity", false)) {
+            RegisterActivity.show(this)
+            finish()
+            return
         }
 
         initView()
