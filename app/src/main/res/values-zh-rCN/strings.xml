@@ -406,6 +406,7 @@
     <string name="error_permission">请开启相关权限</string>
     <string name="error_phone_invalid_format">错误 20110：手机号码不合法</string>
     <string name="error_phone_sms_delivery">错误 10003：发送短信失败</string>
+    <string name="error_user_not_found">对方没有更新到新版本，请通知对方更新</string>
     <string name="error_expired_card">错误 10601: 卡片已过期</string>
     <string name="error_expired_price">错误 10602: 价格已过期</string>
     <string name="error_payment_capture">错误 10603: 支付确认失败</string>

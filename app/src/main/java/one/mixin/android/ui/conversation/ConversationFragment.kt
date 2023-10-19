@@ -155,6 +155,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
+import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.media.AudioEndStatus
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
@@ -2472,6 +2473,7 @@ class ConversationFragment() :
                             recipient?.let {
                                 TransferFragment.newInstance(it.userId, supportSwitchAsset = true)
                                     .showNow(parentFragmentManager, TransferFragment.TAG)
+                                jobManager.addJobInBackground(SyncOutputJob())
                             }
                         } else {
                             TipActivity.show(requireActivity(), TipType.Create, true)

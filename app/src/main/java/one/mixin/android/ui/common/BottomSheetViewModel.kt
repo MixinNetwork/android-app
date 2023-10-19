@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.MixinApp
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
@@ -37,6 +38,7 @@ import one.mixin.android.crypto.PinCipher
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.toHex
+import one.mixin.android.extension.toast
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
@@ -76,6 +78,7 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.toSimpleChat
 import java.io.File
+import java.lang.IllegalArgumentException
 import java.util.UUID
 import javax.inject.Inject
 
@@ -118,11 +121,14 @@ class BottomSheetViewModel @Inject internal constructor(
         pin: String,
         trace: String?,
         memo: String?,
-    ): MixinResponse<TransactionResponse> {
+    ): MixinResponse<*> {
         val seed = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
 
         val selfId = Session.getAccountId()!!
         val ghostKeyResponse = assetRepository.ghostKey(buildGhostKeyRequest(userId, selfId))
+        if (ghostKeyResponse.error != null) {
+            return ghostKeyResponse
+        }
         val data = ghostKeyResponse.data!!
         val asset = assetIdToAsset(assetId)
         val threshold = 1L
@@ -138,16 +144,18 @@ class BottomSheetViewModel @Inject internal constructor(
         val changeMask = data.last().mask
         val tx = Kernel.buildTx(asset, amount, threshold, receiverKeys, receiverMask, input, changeKeys, changeMask, memo)
         val transactionResponse = assetRepository.transactionRequest(TransactionRequest(selfId, tx))
+        if (transactionResponse.error != null) {
+            return transactionResponse
+        }
         val views = transactionResponse.data!!.views.joinToString(",")
         val sign = Kernel.signTx(tx, views, seed.toHex())
         val transactionRsp =  assetRepository.transactions(TransactionRequest(selfId, sign))
-        if (transactionRsp.isSuccess) {
-            val hash = arrayListOf<String>()
-            hash.addAll(uxtos.map { it.hash })
-            delay(2000) // Todo remove
-            jobManager.addJobInBackground(RefreshOutputJob(hash))
-            jobManager.addJobInBackground(SyncOutputJob())
+        if (transactionRsp.error != null) {
+            return transactionRsp
         }
+        val hash = arrayListOf<String>()
+        hash.addAll(uxtos.map { it.hash })
+        jobManager.addJobInBackground(SyncOutputJob())
         return transactionResponse
     }
 
@@ -158,9 +166,9 @@ class BottomSheetViewModel @Inject internal constructor(
         list.forEach {output ->
             val outputAmount = output.amount.toDouble()
             result.add(Utxo(output.transactionHash, output.amount, output.outputIndex))
-            if (amountValue - outputAmount <= 0){
+            if (amountValue - outputAmount <= 0) {
                 return@forEach
-            }else{
+            } else {
                 amountValue -= outputAmount
             }
         }
