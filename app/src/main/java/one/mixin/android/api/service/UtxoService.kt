@@ -4,6 +4,7 @@ import TransactionResponse
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.DepositEntryRequest
 import one.mixin.android.api.request.GhostKeyRequest
+import one.mixin.android.api.request.OutputFetchRequest
 import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.response.GhostKey
@@ -14,6 +15,7 @@ import one.mixin.android.vo.Output
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface UtxoService {
@@ -45,5 +47,10 @@ interface UtxoService {
 
     @POST("/transactions")
     suspend fun transactions(@Body transactionRequest: TransactionRequest): MixinResponse<TransactionResponse>
+
+    @POST("/outputs/fetch")
+    suspend fun fetch(
+        @Body request: OutputFetchRequest
+    ): MixinResponse<List<Output>>
 }
 

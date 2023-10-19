@@ -99,17 +99,7 @@ class UtxoProcessor(
                 exists = token.assetId
                 tokenDao.insertSuspend(token)
             }
-            val assetsExtra = assetsExtraDao.findByAssetId(output.asset)
-            mixinDatabase.withTransaction {
-                if (assetsExtra == null) {
-                    assetsExtraDao.insertSuspend(AssetsExtra(exists, output.asset,false, output.amount, output.createdAt))
-                } else {
-                    val old = BigDecimal(assetsExtra.balance ?: "0")
-                    val new = BigDecimal(output.amount).plus(old)
-                    assetsExtraDao.updateBalanceByAssetId(exists, new.toPlainString(), output.createdAt)
-                }
-                propertyDao.updateValueByKey(keyProcessUtxoId, output.outputId)
-            }
+            propertyDao.updateValueByKey(keyProcessUtxoId, output.outputId)
         }
 
         changedAssetIds.addAll(outputs.groupBy { it.asset }.keys.toSet())

@@ -42,6 +42,7 @@ import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshConversationJob
+import one.mixin.android.job.RefreshOutputJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.UpdateRelationshipJob
@@ -141,8 +142,10 @@ class BottomSheetViewModel @Inject internal constructor(
         val views = transactionResponse.data!!.views.joinToString(",")
         val sign = Kernel.signTx(tx, views, seed.toHex())
         return assetRepository.transactions(TransactionRequest(selfId, sign)).apply {
-            if (this.isSuccess){
-                assetRepository.deleteUtxo(uxtos.map { it.hash })
+            if (this.isSuccess) {
+                val hash = arrayListOf<String>()
+                hash.addAll(uxtos.map { it.hash })
+                jobManager.addJobInBackground(RefreshOutputJob(hash))
                 jobManager.addJobInBackground(SyncOutputJob())
             }
         }
