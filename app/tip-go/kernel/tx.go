@@ -144,7 +144,12 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	inputs := strings.Split(inputKeys, ",")
+
+	var inputs [][]string
+	if err := json.Unmarshal([]byte(inputKeys), &inputs); err != nil {
+		return "", err
+	}
+
 	ver, err := common.UnmarshalVersionedTransaction(rawBytes)
 	if err != nil {
 		return "", err
@@ -164,12 +169,8 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	keysFilter := make(map[string]uint16)
-	for i, k := range inputs {
-		keysFilter[k] = uint16(i)
-	}
 
-	for _, view := range views {
+	for i, view := range views {
 		viewBytes, err := hex.DecodeString(view)
 		if err != nil {
 			return "", err
@@ -182,6 +183,12 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string) (string, error) {
 		t := edwards25519.NewScalar().Add(x, y)
 		var key crypto.Key
 		copy(key[:], t.Bytes())
+
+		input := inputs[i]
+		keysFilter := make(map[string]uint16)
+		for i, k := range input {
+			keysFilter[k] = uint16(i)
+		}
 
 		i, found := keysFilter[key.Public().String()]
 		if !found {
