@@ -36,6 +36,7 @@ import one.mixin.android.crypto.PinCipher
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.toHex
+import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager

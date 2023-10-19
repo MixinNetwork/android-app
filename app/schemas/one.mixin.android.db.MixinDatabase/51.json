@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "7b27e22c36b1fcd4c10847fff1bbd996",
+    "identityHash": "1c8d556101ffa9bec2c5b6c634d73b4d",
     "entities": [
       {
         "tableName": "users",
@@ -2332,7 +2332,7 @@
       },
       {
         "tableName": "outputs",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`output_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `asset` TEXT NOT NULL, `amount` TEXT NOT NULL, `mask` TEXT NOT NULL, `keys` TEXT NOT NULL, `members_hash` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `members` TEXT NOT NULL, `extra` TEXT NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `signed_by` TEXT NOT NULL, `signed_at` TEXT NOT NULL, `spent_by` TEXT NOT NULL, `spent_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`output_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `asset` TEXT NOT NULL, `amount` TEXT NOT NULL, `mask` TEXT NOT NULL, `keys` TEXT NOT NULL, `members_hash` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `members` TEXT NOT NULL, `extra` TEXT NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `signed_by` TEXT NOT NULL, `signed_at` TEXT NOT NULL, `spent_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))",
         "fields": [
           {
             "fieldPath": "outputId",
@@ -2427,12 +2427,6 @@
           {
             "fieldPath": "signedAt",
             "columnName": "signed_at",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "spentBy",
-            "columnName": "spent_by",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -2638,7 +2632,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7b27e22c36b1fcd4c10847fff1bbd996')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1c8d556101ffa9bec2c5b6c634d73b4d')"
     ]
   }
 }

@@ -63,9 +63,6 @@ class Output(
     @SerializedName("signed_at")
     @ColumnInfo(name = "signed_at")
     val signedAt: String,
-    @SerializedName("spent_by")
-    @ColumnInfo(name = "spent_by")
-    val spentBy: String,
     @SerializedName("spent_at")
     @ColumnInfo(name = "spent_at")
     val spentAt: String,

@@ -1,7 +1,5 @@
 package one.mixin.android.job
 
-import androidx.collection.ArraySet
-import androidx.collection.arraySetOf
 import androidx.room.InvalidationTracker
 import androidx.room.withTransaction
 import kotlinx.coroutines.CoroutineScope
@@ -12,7 +10,6 @@ import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.AssetsExtra
-import one.mixin.android.vo.toToken
 import timber.log.Timber
 import java.math.BigDecimal
 
@@ -73,10 +70,10 @@ class UtxoProcessor(
     }
 
     private suspend fun run() {
-        val changedAssetIds = ArrayList<String>()
-        processUtxo(changedAssetIds)
-        if (changedAssetIds.isNotEmpty()) {
-            jobManager.addJobInBackground(CheckBalanceJob(changedAssetIds))
+        val changedAssets = ArrayList<String>()
+        processUtxo(changedAssets)
+        if (changedAssets.isNotEmpty()) {
+            jobManager.addJobInBackground(CheckBalanceJob(changedAssets))
         }
     }
 
