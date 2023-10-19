@@ -4,6 +4,7 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -18,14 +19,14 @@ type Utxo struct {
 	Amount string `json:"amount"`
 }
 
-func BuildTx(asset string, amount string, threshold int, receiverKeys string, receiverMask string, inputs []byte, changeKeys string, changeMask string, extra string) string {
+func BuildTx(asset string, amount string, threshold int, receiverKeys string, receiverMask string, inputs []byte, changeKeys string, changeMask string, extra string) (string, error) {
 	keys := strings.Split(receiverKeys, ",")
 	rks := []*crypto.Key{}
 	for _, k := range keys {
 		key := k
 		rk, err := crypto.KeyFromString(key)
 		if err != nil {
-			panic(err)
+			return "", err
 		}
 		rks = append(rks, &rk)
 	}
@@ -35,7 +36,7 @@ func BuildTx(asset string, amount string, threshold int, receiverKeys string, re
 		ke := k
 		rk, err := crypto.KeyFromString(ke)
 		if err != nil {
-			panic(err)
+			return "", err
 		}
 		cks = append(cks, &rk)
 	}
@@ -49,7 +50,7 @@ func BuildTx(asset string, amount string, threshold int, receiverKeys string, re
 		ut := u
 		h, err := crypto.HashFromString(ut.Hash)
 		if err != nil {
-			panic(err)
+			return "", err
 		}
 		amount := common.NewIntegerFromString(ut.Amount)
 		u := common.UTXO{
@@ -65,63 +66,71 @@ func BuildTx(asset string, amount string, threshold int, receiverKeys string, re
 	}
 	return buildTransaction(asset, amount, threshold, rks, receiverMask, ins, cks, changeMask, extra)
 }
-
-func buildTransaction(asset string, am string, threshold int, receiverKeys []*crypto.Key, receiverMask string, inputs []*common.UTXO, changeKeys []*crypto.Key, changeMask string, extra string) string {
+func buildTransaction(asset string, amount string, threshold int, receiverKeys []*crypto.Key, receiverMask string, inputs []*common.UTXO, changeKeys []*crypto.Key, changeMask string, extra string) (string, error) {
 	assetHash, err := crypto.HashFromString(asset)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-	amount := common.NewIntegerFromString(am)
-	var total common.Integer
+
+	amountValue := common.NewIntegerFromString(amount)
+	total := common.NewInteger(0)
+
 	tx := common.NewTransactionV5(assetHash)
 	for _, in := range inputs {
 		tx.AddInput(in.Hash, in.Index)
 		total = total.Add(in.Amount)
 	}
-	if total.Cmp(amount) < 0 {
-		panic("total")
+
+	if total.Cmp(amountValue) < 0 {
+		return "", errors.New("insufficient funds")
 	}
+
 	mask, err := crypto.KeyFromString(receiverMask)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	if !mask.CheckKey() {
-		panic("invalid mask")
+		return "", errors.New("invalid mask")
 	}
+
 	output := &common.Output{
 		Type:   common.OutputTypeScript,
-		Amount: amount,
+		Amount: amountValue,
 		Keys:   receiverKeys,
 		Mask:   mask,
 		Script: common.NewThresholdScript(uint8(threshold)),
 	}
 	tx.Outputs = append(tx.Outputs, output)
 
-	if total.Cmp(amount) > 0 {
-		change := total.Sub(amount)
+	if total.Cmp(amountValue) > 0 {
+		change := total.Sub(amountValue)
 		script := common.NewThresholdScript(1)
-		cm, err := crypto.KeyFromString(changeMask)
+
+		changeMaskKey, err := crypto.KeyFromString(changeMask)
 		if err != nil {
-			panic(err)
+			return "", err
 		}
+
 		out := &common.Output{
 			Type:   common.OutputTypeScript,
 			Amount: change,
 			Script: script,
-			Mask:   cm,
+			Mask:   changeMaskKey,
 			Keys:   changeKeys,
 		}
 		tx.Outputs = append(tx.Outputs, out)
 	}
+
 	if extra != "" {
-		ext := []byte(extra)
-		if len(ext) > 512 {
-			panic("extra length")
+		extraBytes := []byte(extra)
+		if len(extraBytes) > 512 {
+			return "", errors.New("extra data is too long")
 		}
-		tx.Extra = ext
+		tx.Extra = extraBytes
 	}
+
 	ver := tx.AsVersioned()
-	return hex.EncodeToString(ver.Marshal())
+	return hex.EncodeToString(ver.Marshal()), nil
 }
 
 func SignTx(raw, inputKeys, viewKeys string, spendKey string) (string, string, error) {
