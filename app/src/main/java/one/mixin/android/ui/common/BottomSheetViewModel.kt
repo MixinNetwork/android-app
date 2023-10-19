@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okio.ByteString.Companion.decodeHex
 import one.mixin.android.MixinApp
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
@@ -35,11 +36,8 @@ import one.mixin.android.api.request.buildGhostKeyRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.crypto.PinCipher
-import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.toHex
-import one.mixin.android.extension.toast
-import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
@@ -68,6 +66,7 @@ import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationCircleManagerItem
+import one.mixin.android.vo.Output
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
@@ -77,9 +76,10 @@ import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.toSimpleChat
+import one.mixin.android.vo.utxo.SignResult
+import one.mixin.android.vo.utxo.changeToOutput
+import timber.log.Timber
 import java.io.File
-import java.lang.IllegalArgumentException
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -135,39 +135,47 @@ class BottomSheetViewModel @Inject internal constructor(
 
         val uxtos =  packUxto(asset, amount)
         val input = GsonHelper.customGson.toJson(
-            uxtos
+            uxtos.map {output->
+                Utxo(output.transactionHash, output.amount, output.outputIndex)
+            }
         ).toByteArray()
         val receiverKeys = data.first().keys.joinToString(",")
         val receiverMask = data.first().mask
 
         val changeKeys = data.last().keys.joinToString(",")
         val changeMask = data.last().mask
+
         val tx = Kernel.buildTx(asset, amount, threshold, receiverKeys, receiverMask, input, changeKeys, changeMask, memo)
         val transactionResponse = assetRepository.transactionRequest(TransactionRequest(selfId, tx))
         if (transactionResponse.error != null) {
             return transactionResponse
         }
         val views = transactionResponse.data!!.views.joinToString(",")
-        val sign = Kernel.signTx(tx, views, seed.toHex())
-        val transactionRsp =  assetRepository.transactions(TransactionRequest(selfId, sign))
+        val inputKeys = GsonHelper.customGson.toJson(uxtos.map { it.keys })
+        val sign = Kernel.signTx(tx, inputKeys, views, seed.toHex())
+        val signResult = GsonHelper.customGson.fromJson(sign, SignResult::class.java)
+        val transactionRsp = assetRepository.transactions(TransactionRequest(selfId, signResult.raw))
         if (transactionRsp.error != null) {
             return transactionRsp
         }
+        val changeOutput = changeToOutput(signResult.change, asset, uxtos.last().createdAt)
+        assetRepository.insertOutput(changeOutput)
         val hash = arrayListOf<String>()
-        hash.addAll(uxtos.map { it.hash })
+        hash.addAll(uxtos.map { it.transactionHash })
+        jobManager.addJobInBackground(RefreshOutputJob(hash))
         jobManager.addJobInBackground(SyncOutputJob())
         return transactionResponse
     }
 
-    private suspend fun packUxto(asset:String, amount:String):List<Utxo> {
+    private suspend fun packUxto(asset:String, amount:String):List<Output> {
         var amountValue = amount.toDouble()
         val list = assetRepository.findOutputs(256, asset)
-        val result = mutableListOf<Utxo>()
-        list.forEach {output ->
+        val result = mutableListOf<Output>()
+        for (output in list) {
             val outputAmount = output.amount.toDouble()
-            result.add(Utxo(output.transactionHash, output.amount, output.outputIndex))
+            result.add(output)
             if (amountValue - outputAmount <= 0) {
-                return@forEach
+                break
             } else {
                 amountValue -= outputAmount
             }

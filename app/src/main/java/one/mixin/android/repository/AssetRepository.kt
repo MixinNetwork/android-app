@@ -65,6 +65,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.AssetsExtra
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.Deposit
+import one.mixin.android.vo.Output
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.Snapshot
@@ -626,5 +627,7 @@ constructor(
     suspend fun ghostKey(ghostKeyRequest: List<GhostKeyRequest>) = utxoService.ghostKey(ghostKeyRequest)
 
     suspend fun findOutputs(limit: Int, asset: String) = outputDao.findUnspentOutputsByAsset(limit, asset)
+
+    suspend fun insertOutput(output:Output) = outputDao.insertSuspend(output)
 
 }
