@@ -4,6 +4,7 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"filippo.io/edwards25519"
@@ -123,49 +124,72 @@ func buildTransaction(asset string, am string, threshold int, receiverKeys []*cr
 	return hex.EncodeToString(ver.Marshal())
 }
 
-func SignTx(raw string, viewKeys string, spendKey string) string {
+func SignTx(raw, inputKeys, viewKeys string, spendKey string) (string, string, error) {
 	views := strings.Split(viewKeys, ",")
 	rawBytes, err := hex.DecodeString(raw)
 	if err != nil {
-		panic(err)
+		return "", "", err
 	}
+	inputs := strings.Split(inputKeys, ",")
 	ver, err := common.UnmarshalVersionedTransaction(rawBytes)
 	if err != nil {
-		panic(err)
+		return "", "", err
 	}
 	msg := ver.PayloadHash()
 
-	spendSeed, _ := hex.DecodeString(spendKey)
+	spendSeed, err := hex.DecodeString(spendKey)
 	if err != nil {
-		panic("spend key seed")
+		return "", "", err
 	}
 	h := sha512.Sum512(spendSeed)
 	s, err := edwards25519.NewScalar().SetBytesWithClamping(h[:32])
 	if err != nil {
-		panic("ed25519: internal error: setting scalar failed")
+		return "", "", err
 	}
 	y, err := edwards25519.NewScalar().SetCanonicalBytes(s.Bytes())
 	if err != nil {
-		panic(y)
+		return "", "", err
+	}
+	keysFilter := make(map[string]uint16)
+	for i, k := range inputs {
+		keysFilter[k] = uint16(i)
 	}
 
 	for _, view := range views {
-		sigs := make(map[uint16]*crypto.Signature)
-		view, err := hex.DecodeString(view)
+		viewBytes, err := hex.DecodeString(view)
 		if err != nil {
-			panic(view)
+			return "", "", err
 		}
-		x, err := edwards25519.NewScalar().SetCanonicalBytes(view)
+		x, err := edwards25519.NewScalar().SetCanonicalBytes(viewBytes)
 		if err != nil {
-			panic(x)
+			return "", "", err
 		}
+
 		t := edwards25519.NewScalar().Add(x, y)
 		var key crypto.Key
 		copy(key[:], t.Bytes())
+
+		i, found := keysFilter[key.Public().String()]
+		if !found {
+			return "", "", fmt.Errorf("invalid key for the input %s", key.Public().String())
+		}
 		sig := key.Sign(msg)
-		// TODO valid keys index?
-		sigs[uint16(0)] = &sig
+		sigs := make(map[uint16]*crypto.Signature)
+		sigs[i] = &sig
 		ver.SignaturesMap = append(ver.SignaturesMap, sigs)
 	}
-	return hex.EncodeToString(ver.Marshal())
+	changeOutput := ""
+	if len(ver.Outputs) == 2 {
+		changeUtxo := &Utxo{
+			Hash:   ver.PayloadHash().String(),
+			Amount: ver.Outputs[1].Amount.String(),
+			Index:  1,
+		}
+		cu, err := json.Marshal(changeUtxo)
+		if err != nil {
+			return "", "", err
+		}
+		changeOutput = string(cu)
+	}
+	return hex.EncodeToString(ver.Marshal()), changeOutput, nil
 }
