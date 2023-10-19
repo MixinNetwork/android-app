@@ -19,6 +19,11 @@ type Utxo struct {
 	Amount string `json:"amount"`
 }
 
+type Tx struct {
+	Raw    string `json:"raw"`
+	Change string `json:"change,omitempty"`
+}
+
 func BuildTx(asset string, amount string, threshold int, receiverKeys string, receiverMask string, inputs []byte, changeKeys string, changeMask string, extra string) (string, error) {
 	keys := strings.Split(receiverKeys, ",")
 	rks := []*crypto.Key{}
@@ -133,31 +138,31 @@ func buildTransaction(asset string, amount string, threshold int, receiverKeys [
 	return hex.EncodeToString(ver.Marshal()), nil
 }
 
-func SignTx(raw, inputKeys, viewKeys string, spendKey string) (string, string, error) {
+func SignTx(raw, inputKeys, viewKeys string, spendKey string) (string, error) {
 	views := strings.Split(viewKeys, ",")
 	rawBytes, err := hex.DecodeString(raw)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 	inputs := strings.Split(inputKeys, ",")
 	ver, err := common.UnmarshalVersionedTransaction(rawBytes)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 	msg := ver.PayloadHash()
 
 	spendSeed, err := hex.DecodeString(spendKey)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 	h := sha512.Sum512(spendSeed)
 	s, err := edwards25519.NewScalar().SetBytesWithClamping(h[:32])
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 	y, err := edwards25519.NewScalar().SetCanonicalBytes(s.Bytes())
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 	keysFilter := make(map[string]uint16)
 	for i, k := range inputs {
@@ -167,11 +172,11 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string) (string, string, e
 	for _, view := range views {
 		viewBytes, err := hex.DecodeString(view)
 		if err != nil {
-			return "", "", err
+			return "", err
 		}
 		x, err := edwards25519.NewScalar().SetCanonicalBytes(viewBytes)
 		if err != nil {
-			return "", "", err
+			return "", err
 		}
 
 		t := edwards25519.NewScalar().Add(x, y)
@@ -180,7 +185,7 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string) (string, string, e
 
 		i, found := keysFilter[key.Public().String()]
 		if !found {
-			return "", "", fmt.Errorf("invalid key for the input %s", key.Public().String())
+			return "", fmt.Errorf("invalid key for the input %s", key.Public().String())
 		}
 		sig := key.Sign(msg)
 		sigs := make(map[uint16]*crypto.Signature)
@@ -196,9 +201,18 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string) (string, string, e
 		}
 		cu, err := json.Marshal(changeUtxo)
 		if err != nil {
-			return "", "", err
+			return "", err
 		}
-		changeOutput = string(cu)
+		changeOutput = hex.EncodeToString(cu)
 	}
-	return hex.EncodeToString(ver.Marshal()), changeOutput, nil
+
+	transaction := &Tx{
+		Raw:    hex.EncodeToString(ver.Marshal()),
+		Change: changeOutput,
+	}
+	t, err := json.Marshal(transaction)
+	if err != nil {
+		return "", err
+	}
+	return string(t), nil
 }
