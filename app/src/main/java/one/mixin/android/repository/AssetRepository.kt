@@ -621,6 +621,6 @@ constructor(
 
     suspend fun findOutputs(limit: Int, asset: String) = outputDao.findUnspentOutputsByAsset(limit, asset)
 
-    suspend fun insertOutput(output:Output) = outputDao.insertSuspend(output)
+    fun insertOutput(output:Output) = outputDao.insert(output)
 
 }

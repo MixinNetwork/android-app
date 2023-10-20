@@ -1,6 +1,5 @@
 package one.mixin.android.ui.common
 
-import TransactionResponse
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,11 +9,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kernel.Kernel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okio.ByteString.Companion.decodeHex
-import one.mixin.android.MixinApp
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
@@ -23,11 +19,9 @@ import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.CollectibleRequest
 import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.ConversationRequest
-import one.mixin.android.api.request.GhostKeyRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.RawTransactionsRequest
-import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
@@ -36,6 +30,7 @@ import one.mixin.android.api.request.buildGhostKeyRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.crypto.PinCipher
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.toHex
 import one.mixin.android.job.ConversationJob
@@ -78,7 +73,6 @@ import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.toSimpleChat
 import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
-import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 
@@ -116,7 +110,7 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun newTransfer(
         assetId: String,
-        userId: String,
+        receiverId: String,
         amount: String,
         pin: String,
         trace: String?,
@@ -124,8 +118,8 @@ class BottomSheetViewModel @Inject internal constructor(
     ): MixinResponse<*> {
         val seed = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
 
-        val selfId = Session.getAccountId()!!
-        val ghostKeyResponse = assetRepository.ghostKey(buildGhostKeyRequest(userId, selfId))
+        val senderId = Session.getAccountId()!!
+        val ghostKeyResponse = assetRepository.ghostKey(buildGhostKeyRequest(receiverId, senderId))
         if (ghostKeyResponse.error != null) {
             return ghostKeyResponse
         }
@@ -154,12 +148,19 @@ class BottomSheetViewModel @Inject internal constructor(
         val inputKeys = GsonHelper.customGson.toJson(uxtos.map { it.keys })
         val sign = Kernel.signTx(tx, inputKeys, views, seed.toHex())
         val signResult = GsonHelper.customGson.fromJson(sign, SignResult::class.java)
+        runInTransaction {
+            if (signResult.change != null) {
+                val changeOutput = changeToOutput(signResult.change, asset, uxtos.last().createdAt)
+                assetRepository.insertOutput(changeOutput)
+            }
+            // Todo insert raw tx
+        }
         val transactionRsp = assetRepository.transactions(TransactionRequest(signResult.raw))
         if (transactionRsp.error != null) {
             return transactionRsp
+        } else {
+            // Todo update utxo, delete raw tx
         }
-        val changeOutput = changeToOutput(signResult.change, asset, uxtos.last().createdAt)
-        assetRepository.insertOutput(changeOutput)
         val hash = arrayListOf<String>()
         hash.addAll(uxtos.map { it.transactionHash })
         jobManager.addJobInBackground(RefreshOutputJob(hash))

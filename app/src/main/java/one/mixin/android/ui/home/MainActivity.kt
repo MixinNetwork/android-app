@@ -287,9 +287,7 @@ class MainActivity : BlazeBaseActivity() {
             AppCenter.setUserId(it.userId)
         }
 
-        if (account?.hasPin != true || !Session.isTipFeatureEnabled()) {
-            TipActivity.show(this, TipType.Create)
-        } else if (!defaultSharedPreferences.getBoolean("RegisterActivity", false)) {
+        if (!defaultSharedPreferences.getBoolean("RegisterActivity", false)) {
             RegisterActivity.show(this)
             finish()
             return

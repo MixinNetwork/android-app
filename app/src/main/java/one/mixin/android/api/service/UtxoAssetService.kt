@@ -8,5 +8,4 @@ import retrofit2.http.Path
 interface UtxoAssetService {
     @GET("network/assets/{id}")
     suspend fun getAssetByMixinIdSuspend(@Path("id") mixinId: String): MixinResponse<Token>
-
 }
