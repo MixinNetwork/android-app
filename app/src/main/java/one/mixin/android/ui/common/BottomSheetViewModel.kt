@@ -148,7 +148,7 @@ class BottomSheetViewModel @Inject internal constructor(
         val views = transactionResponse.data!!.views.joinToString(",")
         val inputKeys = GsonHelper.customGson.toJson(uxtos.map { it.keys })
         val sign = Kernel.signTx(tx, inputKeys, views, seed.toHex())
-        val signResult = GsonHelper.customGson.fromJson(sign, SignResult::class.java)
+        val signResult = SignResult(sign.raw, sign.change)
         runInTransaction {
             if (signResult.change != null) {
                 val changeOutput = changeToOutput(signResult.change, asset, uxtos.last().createdAt)
