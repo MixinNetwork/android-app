@@ -20,6 +20,7 @@ type Utxo struct {
 }
 
 type Tx struct {
+	Hash   string `json:"hash"`
 	Raw    string `json:"raw"`
 	Change string `json:"change,omitempty"`
 }
@@ -214,6 +215,7 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string) (string, error) {
 	}
 
 	transaction := &Tx{
+		Hash:   ver.PayloadHash().String(),
 		Raw:    hex.EncodeToString(ver.Marshal()),
 		Change: changeOutput,
 	}
