@@ -26,7 +26,7 @@ import one.mixin.android.ui.wallet.PaymentFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.Card
 
 @AndroidEntryPoint
@@ -37,7 +37,7 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
 
     private val binding by viewBinding(FragmentSelectPaymentBinding::bind)
 
-    private lateinit var asset: AssetItem
+    private lateinit var asset: TokenItem
     private lateinit var currency: Currency
 
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
@@ -66,7 +66,7 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
         asset = requireNotNull(
             requireArguments().getParcelableCompat(
                 TransactionsFragment.ARGS_ASSET,
-                AssetItem::class.java,
+                TokenItem::class.java,
             ),
         )
         currency = requireNotNull(

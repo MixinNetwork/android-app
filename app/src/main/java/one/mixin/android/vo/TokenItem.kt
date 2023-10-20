@@ -4,12 +4,11 @@ import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import java.math.BigDecimal
 
 @SuppressLint("ParcelCreator")
 @Parcelize
-data class AssetItem(
+data class TokenItem(
     val assetId: String,
     val symbol: String,
     val name: String,
@@ -93,21 +92,21 @@ data class AssetItem(
     }
 
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<AssetItem>() {
-            override fun areItemsTheSame(oldItem: AssetItem, newItem: AssetItem) =
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<TokenItem>() {
+            override fun areItemsTheSame(oldItem: TokenItem, newItem: TokenItem) =
                 oldItem.assetId == newItem.assetId
 
-            override fun areContentsTheSame(oldItem: AssetItem, newItem: AssetItem) =
+            override fun areContentsTheSame(oldItem: TokenItem, newItem: TokenItem) =
                 oldItem == newItem
         }
     }
 }
 
-fun AssetItem.toPriceAndChange(): PriceAndChange {
+fun TokenItem.toPriceAndChange(): PriceAndChange {
     return PriceAndChange(assetId, priceBtc, priceUsd, changeUsd, changeBtc)
 }
 
-fun AssetItem.differentProcess(
+fun TokenItem.differentProcess(
     keyAction: () -> Unit,
     memoAction: () -> Unit,
     errorAction: () -> Unit,
@@ -119,7 +118,7 @@ fun AssetItem.differentProcess(
     }
 }
 
-fun AssetItem.needShowReserve(): Boolean {
+fun TokenItem.needShowReserve(): Boolean {
     if (reserve.isNullOrBlank()) return false
 
     val reserveVal = reserve.toIntOrNull() ?: return false

@@ -16,7 +16,7 @@ import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.RatchetSenderKeyDao
 import one.mixin.android.db.AppDao
-import one.mixin.android.db.AssetDao
+import one.mixin.android.db.TokenDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
@@ -98,7 +98,7 @@ open class Injector {
     lateinit var snapshotDao: SnapshotDao
 
     @Inject
-    lateinit var assetDao: AssetDao
+    lateinit var tokenDao: TokenDao
 
     @Inject
     lateinit var circleDao: CircleDao

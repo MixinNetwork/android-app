@@ -37,7 +37,7 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.PaymentsUtil
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SafeBox
@@ -93,7 +93,7 @@ internal constructor(
 
     var calculateState: CalculateState? = null
 
-    var asset: AssetItem? = null
+    var asset: TokenItem? = null
     var currency: Currency? = null
 
     @Parcelize

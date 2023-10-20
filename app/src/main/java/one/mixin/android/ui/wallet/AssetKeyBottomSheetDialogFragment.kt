@@ -9,7 +9,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
@@ -17,15 +17,15 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "AssetKeyBottomSheetDialogFragment"
 
-        fun newInstance(asset: AssetItem) = AssetKeyBottomSheetDialogFragment().withArgs {
+        fun newInstance(asset: TokenItem) = AssetKeyBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_ASSET, asset)
         }
     }
 
     private val binding by viewBinding(FragmentAssetKeyBottomBinding::inflate)
 
-    private val asset: AssetItem by lazy {
-        requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)!!
+    private val asset: TokenItem by lazy {
+        requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)!!
     }
 
     @SuppressLint("RestrictedApi")

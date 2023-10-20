@@ -27,7 +27,7 @@ class RefreshSnapshotsJob(
             val list = response.data as List<Snapshot>
             snapshotDao.insertListSuspend(list)
             list.forEach { item ->
-                if (assetDao.simpleAsset(item.assetId) == null) {
+                if (tokenDao.simpleAsset(item.assetId) == null) {
                     jobManager.addJobInBackground(RefreshAssetsJob(item.assetId))
                 }
             }

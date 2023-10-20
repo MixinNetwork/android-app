@@ -46,7 +46,7 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotAdapter
 import one.mixin.android.vo.Address
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
@@ -81,7 +81,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
 
     private val adapter = SnapshotAdapter()
     private val headerAdapter = HeaderAdapter()
-    lateinit var asset: AssetItem
+    lateinit var asset: TokenItem
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentTransactionsBinding.inflate(layoutInflater, container, false)
@@ -90,7 +90,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        asset = requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)!!
+        asset = requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)!!
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -149,7 +149,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         super.onDestroyView()
     }
 
-    private fun refreshPendingDeposits(asset: AssetItem) {
+    private fun refreshPendingDeposits(asset: TokenItem) {
         if (viewDestroyed()) return
 
         lifecycleScope.launch {
@@ -339,7 +339,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
     }
 
     inner class HeaderAdapter : RecyclerView.Adapter<HeaderAdapter.ViewHolder>() {
-        var asset: AssetItem? = null
+        var asset: TokenItem? = null
             set(value) {
                 if (value == field) return
 
@@ -366,7 +366,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             private val headerBinding = ViewTransactionsFragmentHeaderBinding.bind(itemView)
 
-            fun bind(asset: AssetItem, show: Boolean, currentType: Int) {
+            fun bind(asset: TokenItem, show: Boolean, currentType: Int) {
                 headerBinding.apply {
                     groupInfoMemberTitleSort.setOnClickListener {
                         showFiltersSheet()
@@ -433,7 +433,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
             }
 
             @SuppressLint("SetTextI18n")
-            fun updateHeader(asset: AssetItem) {
+            fun updateHeader(asset: TokenItem) {
                 headerBinding.apply {
                     val amountText = try {
                         if (asset.balance.toFloat() == 0f) {

@@ -33,7 +33,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.SearchAdapter
 import one.mixin.android.ui.wallet.adapter.SearchDefaultAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -160,7 +160,7 @@ class WalletSearchFragment : BaseFragment() {
         searchDefaultAdapter.recentAssets = loadRecentSearchAssets()
     }
 
-    private suspend fun loadRecentSearchAssets(): List<AssetItem>? {
+    private suspend fun loadRecentSearchAssets(): List<TokenItem>? {
         return withContext(Dispatchers.IO) {
             val assetList = defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)?.split("=")
                 ?: return@withContext null
@@ -219,12 +219,12 @@ class WalletSearchFragment : BaseFragment() {
     }
 
     private val callback = object : WalletSearchCallback {
-        override fun onAssetClick(assetId: String, assetItem: AssetItem?) {
+        override fun onAssetClick(assetId: String, tokenItem: TokenItem?) {
             binding.searchEt.hideKeyboard()
-            if (assetItem != null && assetItem.getDestination().isNotBlank()) {
+            if (tokenItem != null && tokenItem.getDestination().isNotBlank()) {
                 view?.navigate(
                     R.id.action_wallet_search_to_transactions,
-                    Bundle().apply { putParcelable(ARGS_ASSET, assetItem) },
+                    Bundle().apply { putParcelable(ARGS_ASSET, tokenItem) },
                 )
                 viewModel.updateRecentSearchAssets(defaultSharedPreferences, assetId)
             } else {

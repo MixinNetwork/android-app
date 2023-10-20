@@ -29,7 +29,7 @@ import one.mixin.android.extension.priceFormat2
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
@@ -45,11 +45,11 @@ interface TransactionInterface {
         walletViewModel: WalletViewModel,
         assetId: String?,
         snapshotId: String?,
-        assetItem: AssetItem?,
+        tokenItem: TokenItem?,
         snapshotItem: SnapshotItem?,
     ) {
         contentBinding.titleView.rightAnimator.visibility = View.GONE
-        if (snapshotItem == null || assetItem == null) {
+        if (snapshotItem == null || tokenItem == null) {
             if (snapshotId != null && assetId != null) {
                 lifecycleScope.launch {
                     val asset = walletViewModel.simpleAssetItem(assetId)
@@ -84,7 +84,7 @@ interface TransactionInterface {
             }
         } else {
             contentBinding.avatar.setOnClickListener {
-                clickAvatar(fragment, assetItem)
+                clickAvatar(fragment, tokenItem)
             }
             contentBinding.transactionIdTitleTv.setOnClickListener(object : DebugClickListener() {
                 override fun onDebugClick() {
@@ -94,13 +94,13 @@ interface TransactionInterface {
                 override fun onSingleClick() {
                 }
             })
-            updateUI(fragment, contentBinding, assetItem, snapshotItem)
+            updateUI(fragment, contentBinding, tokenItem, snapshotItem)
             fetchThatTimePrice(
                 fragment,
                 lifecycleScope,
                 walletViewModel,
                 contentBinding,
-                assetItem.assetId,
+                tokenItem.assetId,
                 snapshotItem,
             )
             refreshNoTransactionHashWithdrawal(
@@ -109,12 +109,12 @@ interface TransactionInterface {
                 lifecycleScope,
                 walletViewModel,
                 snapshotItem,
-                assetItem,
+                tokenItem,
             )
         }
     }
 
-    private fun clickAvatar(fragment: Fragment, asset: AssetItem) {
+    private fun clickAvatar(fragment: Fragment, asset: TokenItem) {
         val curActivity = fragment.requireActivity()
         if (curActivity is WalletActivity) {
             if ((fragment.findNavController().previousBackStackEntry?.destination as FragmentNavigator.Destination?)?.label == AllTransactionsFragment.TAG) {
@@ -270,7 +270,7 @@ interface TransactionInterface {
     private fun updateUI(
         fragment: Fragment,
         contentBinding: FragmentTransactionBinding,
-        asset: AssetItem,
+        asset: TokenItem,
         snapshot: SnapshotItem,
     ) {
         if (checkDestroyed(fragment)) return
@@ -373,7 +373,7 @@ interface TransactionInterface {
         lifecycleScope: CoroutineScope,
         walletViewModel: WalletViewModel,
         snapshot: SnapshotItem,
-        asset: AssetItem,
+        asset: TokenItem,
     ) {
         if (snapshot.type == SnapshotType.pending.name) return
 

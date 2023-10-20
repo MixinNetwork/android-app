@@ -32,7 +32,7 @@ class RefreshTopAssetsJob : BaseJob(
             val recentArray = MixinApplication.appContext.defaultSharedPreferences
                 .getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)?.split("=")
             if (recentArray.isNullOrEmpty()) return@runBlocking
-            val recentList = assetDao.suspendFindAssetsByIds(recentArray.take(2))
+            val recentList = tokenDao.suspendFindAssetsByIds(recentArray.take(2))
             if (recentList.isNullOrEmpty()) return@runBlocking
             val needUpdatePrice = arrayListOf<PriceAndChange>()
             assetList.forEach { t ->
@@ -44,7 +44,7 @@ class RefreshTopAssetsJob : BaseJob(
                 }
             }
             if (needUpdatePrice.isNotEmpty()) {
-                assetDao.suspendUpdatePrices(needUpdatePrice)
+                tokenDao.suspendUpdatePrices(needUpdatePrice)
             }
         }
     }

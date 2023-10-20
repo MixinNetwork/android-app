@@ -26,7 +26,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
@@ -41,7 +41,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         const val TYPE_ADDRESS = 1
 
         fun newInstance(
-            asset: AssetItem,
+            asset: TokenItem,
             type: Int,
             selectedDestination: String?,
         ) = DepositQrBottomFragment().apply {
@@ -55,7 +55,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
 
     private val binding by viewBinding(FragmentDepositQrBottomBinding::inflate)
 
-    private val asset: AssetItem by lazy { requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)!! }
+    private val asset: TokenItem by lazy { requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)!! }
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
     private val selectedDestination: String? by lazy { requireArguments().getString(ARGS_SELECTED_DESTINATION) }
 

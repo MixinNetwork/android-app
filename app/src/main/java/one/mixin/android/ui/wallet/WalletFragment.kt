@@ -62,7 +62,7 @@ import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
 import one.mixin.android.ui.wallet.fiatmoney.getDefaultCurrency
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
@@ -96,7 +96,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     private val binding by viewBinding(FragmentWalletBinding::bind, destroyTask = { b ->
         b.coinsRv.adapter = null
     })
-    private var assets: List<AssetItem> = listOf()
+    private var assets: List<TokenItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
 
     private var distance = 0
@@ -349,7 +349,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         super.onDestroyView()
     }
 
-    private fun renderPie(assets: List<AssetItem>, bitcoin: AssetItem?) {
+    private fun renderPie(assets: List<TokenItem>, bitcoin: TokenItem?) {
         var totalBTC = BigDecimal.ZERO
         var totalFiat = BigDecimal.ZERO
         assets.map {
@@ -412,7 +412,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         }
     }
 
-    private fun setPieView(r: List<AssetItem>, totalUSD: BigDecimal) {
+    private fun setPieView(r: List<TokenItem>, totalUSD: BigDecimal) {
         val list = r.asSequence().filter {
             BigDecimal(it.balance).compareTo(BigDecimal.ZERO) != 0
         }.map {
@@ -535,7 +535,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        item as AssetItem
+        item as TokenItem
         view?.navigate(
             R.id.action_wallet_fragment_to_transactions_fragment,
             Bundle().apply { putParcelable(ARGS_ASSET, item) },

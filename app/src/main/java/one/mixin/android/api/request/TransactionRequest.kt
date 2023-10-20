@@ -7,4 +7,3 @@ class TransactionRequest(
     @SerializedName("request_id")
     val requestId: String
 )
-

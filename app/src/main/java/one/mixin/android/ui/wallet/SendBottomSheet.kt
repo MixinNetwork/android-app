@@ -13,7 +13,7 @@ import one.mixin.android.extension.navigate
 import one.mixin.android.extension.putString
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.conversation.TransferFragment
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.widget.BottomSheet
 
 class SendBottomSheet(
@@ -25,7 +25,7 @@ class SendBottomSheet(
     private var _bottomSendBinding: ViewWalletTransactionsSendBottomBinding? = null
     private val bottomSendBinding get() = requireNotNull(_bottomSendBinding)
 
-    fun show(asset: AssetItem) {
+    fun show(asset: TokenItem) {
         val builder = BottomSheet.Builder(fragment.requireActivity())
         _bottomSendBinding = ViewWalletTransactionsSendBottomBinding.bind(
             View.inflate(

@@ -30,7 +30,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.mlkit.firstUrl
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
@@ -76,7 +76,7 @@ internal constructor(
         } else {
             val escapedQuery = query.trim().escapeSql()
             when (T::class) {
-                AssetItem::class -> assetRepository.fuzzySearchAsset(
+                TokenItem::class -> assetRepository.fuzzySearchAsset(
                     escapedQuery,
                     cancellationSignal,
                 )
@@ -184,7 +184,7 @@ internal constructor(
         }
     }
 
-    suspend fun queryAssets(assetIds: List<String>): List<AssetItem> = assetIds.pmap {
+    suspend fun queryAssets(assetIds: List<String>): List<TokenItem> = assetIds.pmap {
         assetRepository.syncAsset(it)
     }.filterNotNull()
 }

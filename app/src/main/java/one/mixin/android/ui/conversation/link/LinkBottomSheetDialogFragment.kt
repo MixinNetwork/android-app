@@ -86,7 +86,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import timber.log.Timber
@@ -915,7 +915,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         }
 
-        val asset: AssetItem = checkAsset(assetId) ?: return false
+        val asset: TokenItem = checkAsset(assetId) ?: return false
 
         val user = linkViewModel.refreshUser(userId) ?: return false
 
@@ -933,7 +933,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         ) ?: false
     }
 
-    private suspend fun showTransferBottom(user: User, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?, returnTo: String?) {
+    private suspend fun showTransferBottom(user: User, amount: String, asset: TokenItem, traceId: String, status: String, memo: String?, returnTo: String?) {
         val pair = linkViewModel.findLatestTrace(user.userId, null, null, amount, asset.assetId)
         if (pair.second) {
             showError(getString(R.string.check_trace_failed))
@@ -943,7 +943,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         showPreconditionBottom(biometricItem)
     }
 
-    private suspend fun showWithdrawalBottom(addressId: String?, destination: String, tag: String?, label: String?, fee: String, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
+    private suspend fun showWithdrawalBottom(addressId: String?, destination: String, tag: String?, label: String?, fee: String, amount: String, asset: TokenItem, traceId: String, status: String, memo: String?) {
         val pair = linkViewModel.findLatestTrace(null, destination, tag, amount, asset.assetId)
         if (pair.second) {
             showError(getString(R.string.check_trace_failed))
@@ -972,7 +972,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         preconditionBottom.showNow(parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
     }
 
-    private suspend fun checkAsset(assetId: String): AssetItem? {
+    private suspend fun checkAsset(assetId: String): TokenItem? {
         var asset = linkViewModel.findAssetItemById(assetId)
         if (asset == null) {
             asset = linkViewModel.refreshAsset(assetId)

@@ -12,7 +12,6 @@ import kotlinx.serialization.Serializable
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.isUUID
 import java.math.BigDecimal
-import java.util.UUID
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -124,7 +123,7 @@ data class PriceAndChange(
     val changeBtc: String,
 )
 
-fun Token.toAssetItem(chainIconUrl: String? = null): AssetItem = AssetItem(
+fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem = TokenItem(
     assetId,
     symbol,
     name,

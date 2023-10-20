@@ -55,7 +55,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
@@ -103,11 +103,11 @@ class BottomSheetViewModel @Inject internal constructor(
         assetRepository.simpleAssetsWithBalance()
     }
 
-    fun assetItems(): LiveData<List<AssetItem>> = assetRepository.assetItems()
+    fun assetItems(): LiveData<List<TokenItem>> = assetRepository.assetItems()
 
-    fun assetItems(assetIds: List<String>): LiveData<List<AssetItem>> = assetRepository.assetItems(assetIds)
+    fun assetItems(assetIds: List<String>): LiveData<List<TokenItem>> = assetRepository.assetItems(assetIds)
 
-    fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
+    fun assetItemsWithBalance(): LiveData<List<TokenItem>> = assetRepository.assetItemsWithBalance()
 
     suspend fun newTransfer(
         assetId: String,
@@ -397,10 +397,10 @@ class BottomSheetViewModel @Inject internal constructor(
         return@withContext assetRepository.refreshAndGetAddress(addressId, assetId)
     }
 
-    suspend fun findAssetItemById(assetId: String): AssetItem? =
+    suspend fun findAssetItemById(assetId: String): TokenItem? =
         assetRepository.findAssetItemById(assetId)
 
-    suspend fun refreshAsset(assetId: String): AssetItem? {
+    suspend fun refreshAsset(assetId: String): TokenItem? {
         return withContext(Dispatchers.IO) {
             assetRepository.findOrSyncAsset(assetId)
         }
@@ -412,7 +412,7 @@ class BottomSheetViewModel @Inject internal constructor(
         }
     }
 
-    suspend fun getSnapshotByTraceId(traceId: String): Pair<SnapshotItem, AssetItem>? {
+    suspend fun getSnapshotByTraceId(traceId: String): Pair<SnapshotItem, TokenItem>? {
         return withContext(Dispatchers.IO) {
             val localItem = assetRepository.findSnapshotByTraceId(traceId)
             if (localItem != null) {
@@ -447,7 +447,7 @@ class BottomSheetViewModel @Inject internal constructor(
         }
     }
 
-    suspend fun getSnapshotAndAsset(snapshotId: String): Pair<SnapshotItem, AssetItem>? {
+    suspend fun getSnapshotAndAsset(snapshotId: String): Pair<SnapshotItem, TokenItem>? {
         return withContext(Dispatchers.IO) {
             var snapshotItem = findSnapshotById(snapshotId)
             if (snapshotItem != null) {
@@ -674,7 +674,7 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun findSameConversations(selfId: String, userId: String) = conversationRepo.findSameConversations(selfId, userId)
 
-    suspend fun fuzzySearchAssets(query: String?): List<AssetItem>? =
+    suspend fun fuzzySearchAssets(query: String?): List<TokenItem>? =
         if (query.isNullOrBlank()) {
             null
         } else {
@@ -682,9 +682,9 @@ class BottomSheetViewModel @Inject internal constructor(
             assetRepository.fuzzySearchAssetIgnoreAmount(escapedQuery)
         }
 
-    suspend fun queryAsset(query: String): List<AssetItem> = assetRepository.queryAsset(query)
+    suspend fun queryAsset(query: String): List<TokenItem> = assetRepository.queryAsset(query)
 
-    suspend fun findOrSyncAsset(assetId: String): AssetItem? {
+    suspend fun findOrSyncAsset(assetId: String): TokenItem? {
         return withContext(Dispatchers.IO) {
             assetRepository.findOrSyncAsset(assetId)
         }

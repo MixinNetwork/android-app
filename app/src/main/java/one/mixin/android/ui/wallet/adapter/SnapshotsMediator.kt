@@ -5,7 +5,7 @@ import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import one.mixin.android.api.service.AssetService
-import one.mixin.android.db.AssetDao
+import one.mixin.android.db.TokenDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
@@ -16,7 +16,7 @@ import one.mixin.android.vo.SnapshotItem
 class SnapshotsMediator(
     private val assetService: AssetService,
     private val snapshotDao: SnapshotDao,
-    private val assetDao: AssetDao,
+    private val tokenDao: TokenDao,
     private val jobManager: MixinJobManager,
     private val assetId: String,
 ) : RemoteMediator<Int, SnapshotItem>() {
@@ -40,7 +40,7 @@ class SnapshotsMediator(
             } else {
                 snapshotDao.insertListSuspend(list)
                 list.forEach { item ->
-                    if (assetDao.simpleAsset(item.assetId) == null) {
+                    if (tokenDao.simpleAsset(item.assetId) == null) {
                         jobManager.addJobInBackground(RefreshAssetsJob(item.assetId))
                     }
                 }

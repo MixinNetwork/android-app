@@ -20,7 +20,7 @@ import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
@@ -59,7 +59,7 @@ class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment
         }
         chatViewModel.assetItemsWithBalance().observe(
             this,
-        ) { r: List<AssetItem>? ->
+        ) { r: List<TokenItem>? ->
             if (r != null && r.isNotEmpty()) {
                 assets = r
                 adapter.submitList(r)
@@ -67,7 +67,7 @@ class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment
         }
     }
 
-    private var assets = listOf<AssetItem>()
+    private var assets = listOf<TokenItem>()
 
     fun setContinueCallback(callback: (DialogFragment) -> Unit): DeleteAccountTipBottomSheetDialogFragment {
         continueCallback = callback
@@ -76,7 +76,7 @@ class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment
 
     private var continueCallback: ((DialogFragment) -> Unit)? = null
 
-    class TypeAdapter : ListAdapter<AssetItem, ItemHolder>(AssetItem.DIFF_CALLBACK) {
+    class TypeAdapter : ListAdapter<TokenItem, ItemHolder>(TokenItem.DIFF_CALLBACK) {
         private var typeListener: TransferFragment.OnTypeClickListener? = null
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =

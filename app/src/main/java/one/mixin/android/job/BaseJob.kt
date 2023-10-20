@@ -32,7 +32,6 @@ import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AppDao
-import one.mixin.android.db.AssetDao
 import one.mixin.android.db.AssetsExtraDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.CircleConversationDao
@@ -171,7 +170,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
-    lateinit var assetDao: AssetDao
+    lateinit var tokenDao: TokenDao
 
     @Inject
     @Transient
@@ -268,10 +267,6 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var expiredMessageDao: ExpiredMessageDao
-
-    @Inject
-    @Transient
-    lateinit var tokenDao: TokenDao
 
     @Inject
     @Transient

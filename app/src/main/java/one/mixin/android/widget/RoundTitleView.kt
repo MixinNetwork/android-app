@@ -12,7 +12,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewRoundTitleBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadImage
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.User
 
 class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
@@ -63,7 +63,7 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
         }
     }
 
-    fun showBadgeCircleView(asset: AssetItem) {
+    fun showBadgeCircleView(asset: TokenItem) {
         binding.badgeCircleIv.isVisible = true
         binding.badgeCircleIv.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         binding.badgeCircleIv.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)

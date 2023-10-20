@@ -13,7 +13,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.sumsub.KycState
 import javax.inject.Inject
 
@@ -49,8 +49,8 @@ class WalletActivity : BlazeBaseActivity() {
         }
     }
 
-    private val asset: AssetItem? by lazy {
-        intent.extras?.getParcelableCompat(ASSET, AssetItem::class.java)
+    private val asset: TokenItem? by lazy {
+        intent.extras?.getParcelableCompat(ASSET, TokenItem::class.java)
     }
 
     private val bottomAnim: Boolean by lazy {
@@ -80,14 +80,14 @@ class WalletActivity : BlazeBaseActivity() {
 
         fun show(
             activity: Activity,
-            assetItem: AssetItem? = null,
+            tokenItem: TokenItem? = null,
             bottomAnim: Boolean = true,
             buy: Boolean = false,
         ) {
             val myIntent = Intent(activity, WalletActivity::class.java)
             val bundle = Bundle()
-            assetItem?.let {
-                bundle.putParcelable(ASSET, assetItem)
+            tokenItem?.let {
+                bundle.putParcelable(ASSET, tokenItem)
             }
             bundle.putBoolean(BOTTOM_ANIM, bottomAnim)
             bundle.putBoolean(BUY, buy)

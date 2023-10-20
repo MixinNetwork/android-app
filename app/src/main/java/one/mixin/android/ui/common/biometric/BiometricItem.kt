@@ -2,7 +2,7 @@ package one.mixin.android.ui.common.biometric
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 
@@ -16,7 +16,7 @@ open class BiometricItem(
 
 @Parcelize
 open class AssetBiometricItem(
-    open val asset: AssetItem,
+    open val asset: TokenItem,
     open val traceId: String?,
     override val amount: String,
     override var pin: String?,
@@ -27,7 +27,7 @@ open class AssetBiometricItem(
 @Parcelize
 class TransferBiometricItem(
     val user: User,
-    override val asset: AssetItem,
+    override val asset: TokenItem,
     override val amount: String,
     override var pin: String?,
     override val traceId: String?,
@@ -44,7 +44,7 @@ class WithdrawBiometricItem(
     val addressId: String?,
     val label: String?,
     var fee: String,
-    override val asset: AssetItem,
+    override val asset: TokenItem,
     override val amount: String,
     override var pin: String?,
     override val traceId: String?,
@@ -68,7 +68,7 @@ open class MultisigsBiometricItem(
     open val senders: Array<String>,
     open val receivers: Array<String>,
     open val threshold: Int,
-    override val asset: AssetItem,
+    override val asset: TokenItem,
     override val amount: String,
     override var pin: String?,
     override val traceId: String?,
@@ -83,7 +83,7 @@ class Multi2MultiBiometricItem(
     override val senders: Array<String>,
     override val receivers: Array<String>,
     override val threshold: Int,
-    override val asset: AssetItem,
+    override val asset: TokenItem,
     override val amount: String,
     override var pin: String?,
     override val traceId: String?,
@@ -96,7 +96,7 @@ class One2MultiBiometricItem(
     override val senders: Array<String>,
     override val receivers: Array<String>,
     override val threshold: Int,
-    override val asset: AssetItem,
+    override val asset: TokenItem,
     override val amount: String,
     override var pin: String?,
     override val traceId: String?,

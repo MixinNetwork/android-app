@@ -36,8 +36,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.util.ErrorHandler
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.needShowReserve
 import timber.log.Timber
 
@@ -112,7 +111,7 @@ class DepositFragment : BaseFragment() {
         _binding = null
     }
 
-    private fun initView(asset: AssetItem) {
+    private fun initView(asset: TokenItem) {
         val notSupport = notSupportDepositAssets.any { it == asset.assetId }
         binding.apply {
             title.apply {
@@ -166,7 +165,7 @@ class DepositFragment : BaseFragment() {
         }
     }
 
-    private fun initUsdtChips(asset: AssetItem) {
+    private fun initUsdtChips(asset: TokenItem) {
         binding.apply {
             networkChipGroup.isSingleSelection = true
             networkChipGroup.removeAllViews()
@@ -209,7 +208,7 @@ class DepositFragment : BaseFragment() {
         }
     }
 
-    private fun refreshAsset(asset: AssetItem) {
+    private fun refreshAsset(asset: TokenItem) {
         if (asset.getDestination().isNotBlank()) return
 
         lifecycleScope.launch {
@@ -223,16 +222,16 @@ class DepositFragment : BaseFragment() {
         }
     }
 
-    private fun Bundle.getAsset(): AssetItem = requireNotNull(
+    private fun Bundle.getAsset(): TokenItem = requireNotNull(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            getParcelable(TransactionsFragment.ARGS_ASSET, AssetItem::class.java)
+            getParcelable(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)
         } else {
             @Suppress("DEPRECATION")
             getParcelable(TransactionsFragment.ARGS_ASSET)
         },
     ) { "required AssetItem can not be null" }
 
-    private fun updateUI(asset: AssetItem) {
+    private fun updateUI(asset: TokenItem) {
         if (viewDestroyed()) return
 
         val noTag = asset.getTag().isNullOrBlank()

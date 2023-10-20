@@ -1,12 +1,12 @@
 package one.mixin.android.ui.wallet
 
 import one.mixin.android.extension.equalsIgnoreCase
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import java.math.BigDecimal
 
 private const val defaultIconUrl = "https://images.mixin.one/yH_I5b0GiV2zDmvrXRyr3bK5xusjfy5q7FX3lw3mM2Ryx4Dfuj6Xcw8SHNRnDKm7ZVE3_LvpKlLdcLrlFQUBhds=s128"
 
-fun sortQueryAsset(query: String, localAssets: List<AssetItem>?, remoteAssets: List<AssetItem>): List<AssetItem> {
+fun sortQueryAsset(query: String, localAssets: List<TokenItem>?, remoteAssets: List<TokenItem>): List<TokenItem> {
     return remoteAssets.plus(
         localAssets?.filterNot { r ->
             remoteAssets.any { l ->

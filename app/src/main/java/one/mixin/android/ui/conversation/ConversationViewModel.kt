@@ -60,7 +60,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ConversationStatus
@@ -512,7 +512,7 @@ internal constructor(
 
     suspend fun findAppById(id: String) = userRepository.findAppById(id)
 
-    fun assetItemsWithBalance(): LiveData<List<AssetItem>> =
+    fun assetItemsWithBalance(): LiveData<List<TokenItem>> =
         assetRepository.assetItemsWithBalance()
 
     fun addStickerAsync(stickerAddRequest: StickerAddRequest) =
@@ -558,7 +558,7 @@ internal constructor(
 
     fun observeAddress(addressId: String) = assetRepository.observeAddress(addressId)
 
-    suspend fun refreshAsset(assetId: String): AssetItem? {
+    suspend fun refreshAsset(assetId: String): TokenItem? {
         return withContext(Dispatchers.IO) {
             assetRepository.findOrSyncAsset(assetId)
         }

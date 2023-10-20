@@ -30,8 +30,7 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
-import one.mixin.android.vo.Asset
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.Deposit
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.Snapshot
@@ -56,7 +55,7 @@ internal constructor(
         userRepository.upsert(user)
     }
 
-    fun assetItemsNotHidden(): LiveData<List<AssetItem>> = assetRepository.assetItemsNotHidden()
+    fun assetItemsNotHidden(): LiveData<List<TokenItem>> = assetRepository.assetItemsNotHidden()
 
     @ExperimentalPagingApi
     fun snapshots(
@@ -104,7 +103,7 @@ internal constructor(
 
     suspend fun snapshotLocal(assetId: String, snapshotId: String) = assetRepository.snapshotLocal(assetId, snapshotId)
 
-    fun assetItem(id: String): LiveData<AssetItem> = assetRepository.assetItem(id)
+    fun assetItem(id: String): LiveData<TokenItem> = assetRepository.assetItem(id)
 
     suspend fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
 
@@ -125,7 +124,7 @@ internal constructor(
 
     suspend fun updateAssetHidden(id: String, hidden: Boolean) = assetRepository.updateHidden(id, hidden)
 
-    fun hiddenAssets(): LiveData<List<AssetItem>> = assetRepository.hiddenAssetItems()
+    fun hiddenAssets(): LiveData<List<TokenItem>> = assetRepository.hiddenAssetItems()
 
     fun addresses(id: String) = assetRepository.addresses(id)
 
@@ -141,7 +140,7 @@ internal constructor(
             .setInitialLoadKey(initialLoadKey)
             .build()
 
-    suspend fun refreshPendingDeposits(asset: AssetItem) = assetRepository.pendingDeposits(asset.assetId, asset.getDestination(), asset.getTag())
+    suspend fun refreshPendingDeposits(asset: TokenItem) = assetRepository.pendingDeposits(asset.assetId, asset.getDestination(), asset.getTag())
 
     suspend fun clearPendingDepositsByAssetId(assetId: String) = assetRepository.clearPendingDepositsByAssetId(assetId)
 
@@ -161,7 +160,7 @@ internal constructor(
         jobManager.addJobInBackground(RefreshAssetsJob(assetId))
     }
 
-    suspend fun queryAsset(query: String): List<AssetItem> = assetRepository.queryAsset(query)
+    suspend fun queryAsset(query: String): List<TokenItem> = assetRepository.queryAsset(query)
 
     fun saveAssets(hotAssetList: List<TopAssetItem>) {
         hotAssetList.forEach {
@@ -171,7 +170,7 @@ internal constructor(
 
     suspend fun findAssetItemById(assetId: String) = assetRepository.findAssetItemById(assetId)
 
-    suspend fun findOrSyncAsset(assetId: String): AssetItem? {
+    suspend fun findOrSyncAsset(assetId: String): TokenItem? {
         return withContext(Dispatchers.IO) {
             assetRepository.findOrSyncAsset(assetId)
         }
@@ -227,7 +226,7 @@ internal constructor(
 
     suspend fun assetItems() = assetRepository.assetItems()
 
-    suspend fun fuzzySearchAssets(query: String?): List<AssetItem>? =
+    suspend fun fuzzySearchAssets(query: String?): List<TokenItem>? =
         if (query.isNullOrBlank()) {
             null
         } else {

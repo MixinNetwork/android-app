@@ -35,8 +35,8 @@ class RefreshAssetsJob(
                 response.data?.map {
                     it.assetId
                 }?.let { ids ->
-                    assetDao.findAllAssetIdSuspend().subtract(ids.toSet()).chunked(100).forEach {
-                        assetDao.zeroClearSuspend(it)
+                    tokenDao.findAllAssetIdSuspend().subtract(ids.toSet()).chunked(100).forEach {
+                        tokenDao.zeroClearSuspend(it)
                     }
                 }
                 assetRepo.insertList(list)

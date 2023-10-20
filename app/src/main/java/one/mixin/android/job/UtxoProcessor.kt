@@ -1,7 +1,6 @@
 package one.mixin.android.job
 
 import androidx.room.InvalidationTracker
-import androidx.room.withTransaction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -10,9 +9,7 @@ import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.UtxoAssetService
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.util.reportException
-import one.mixin.android.vo.AssetsExtra
 import timber.log.Timber
-import java.math.BigDecimal
 
 class UtxoProcessor(
     private val mixinDatabase: MixinDatabase,
@@ -92,7 +89,7 @@ class UtxoProcessor(
             return
         }
         outputs.forEach { output ->
-            var exists = tokenDao.checkExists(output.asset)
+            var exists = tokenDao.checkAssetExists(output.asset)
             if (exists == null) {
                 // TODO new asset API?
                 val r = utxoAssetService.getAssetByMixinIdSuspend(output.asset)

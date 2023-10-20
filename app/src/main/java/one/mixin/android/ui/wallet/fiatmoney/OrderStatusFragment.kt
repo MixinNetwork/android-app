@@ -57,7 +57,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.cardIcon
 import one.mixin.android.vo.route.RoutePaymentRequest
 import timber.log.Timber
@@ -77,16 +77,16 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
 
         private const val REFRESH_INTERVAL = 2000L
 
-        fun newInstance(assetItem: AssetItem, currency: Currency) =
+        fun newInstance(tokenItem: TokenItem, currency: Currency) =
             OrderStatusFragment().withArgs {
-                putParcelable(TransactionsFragment.ARGS_ASSET, assetItem)
+                putParcelable(TransactionsFragment.ARGS_ASSET, tokenItem)
                 putParcelable(ARGS_CURRENCY, currency)
             }
     }
 
     private val binding by viewBinding(FragmentOrderStatusBinding::bind)
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
-    private lateinit var asset: AssetItem
+    private lateinit var asset: TokenItem
     private lateinit var currency: Currency
     private lateinit var info: OrderInfo
     private var isGooglePay: Boolean = false
@@ -161,7 +161,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         asset = requireNotNull(
             requireArguments().getParcelableCompat(
                 TransactionsFragment.ARGS_ASSET,
-                AssetItem::class.java,
+                TokenItem::class.java,
             ),
         )
         currency = requireNotNull(

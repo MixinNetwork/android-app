@@ -71,7 +71,7 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideAssetDao(db: MixinDatabase) = db.assetDao()
+    fun provideAssetDao(db: MixinDatabase) = db.tokenDao()
 
     @Singleton
     @Provides
@@ -168,10 +168,6 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun providesChainDao(db: MixinDatabase) = db.chainDao()
-
-    @Singleton
-    @Provides
-    fun provideTokenDao(db: MixinDatabase) = db.tokenDao()
 
     @Singleton
     @Provides

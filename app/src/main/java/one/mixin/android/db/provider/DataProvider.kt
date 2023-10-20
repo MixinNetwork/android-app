@@ -14,7 +14,7 @@ import one.mixin.android.db.datasource.NoCountLimitOffsetDataSource
 import one.mixin.android.fts.FtsDataSource
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.rawSearch
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
@@ -143,7 +143,7 @@ class DataProvider {
             symbol: String?,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
-        ): List<AssetItem> {
+        ): List<TokenItem> {
             val _sql =
                 """SELECT a1.asset_id AS assetId, a1.symbol, a1.name, a1.icon_url AS iconUrl, a1.balance, a1.destination AS destination, a1.tag AS tag, a1.price_btc AS priceBtc, a1.price_usd AS priceUsd, a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden, a2.price_usd as chainPriceUsd,a1.confirmations, a1.reserve as reserve, a2.icon_url AS chainIconUrl, a2.symbol as chainSymbol, a2.name as chainName, a1.asset_key AS assetKey, a1.deposit_entries AS depositEntries, a1.withdrawal_memo_possibility AS withdrawalMemoPossibility    
         FROM assets a1 

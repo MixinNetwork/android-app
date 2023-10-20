@@ -30,7 +30,7 @@ import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.DE
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.widget.SearchView
 
 @AndroidEntryPoint
@@ -38,8 +38,8 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
 
     private val addressViewModel by viewModels<AddressViewModel>()
 
-    private val asset: AssetItem by lazy {
-        requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)!!
+    private val asset: TokenItem by lazy {
+        requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)!!
     }
     private var addresses: List<Address>? = null
 
@@ -147,7 +147,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
         addressViewModel.refreshAddressesByAssetId(asset.assetId)
     }
 
-    private fun showBottomSheet(address: Address, asset: AssetItem): BiometricBottomSheetDialogFragment {
+    private fun showBottomSheet(address: Address, asset: TokenItem): BiometricBottomSheetDialogFragment {
         val bottomSheet = PinAddrBottomSheetDialogFragment.newInstance(
             addressId = address.addressId,
             assetUrl = asset.iconUrl,

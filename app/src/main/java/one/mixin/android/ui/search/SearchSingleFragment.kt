@@ -30,7 +30,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
@@ -64,7 +64,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
 
     private val type by lazy {
         when (data!![0]) {
-            is AssetItem -> TypeAsset
+            is TokenItem -> TypeAsset
             is ChatMinimal -> TypeChat
             is User -> TypeUser
             else -> TypeMessage
@@ -110,8 +110,8 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
             override fun onUrlClick(url: String) {
             }
 
-            override fun onAsset(assetItem: AssetItem) {
-                activity?.let { WalletActivity.show(it, assetItem) }
+            override fun onAsset(tokenItem: TokenItem) {
+                activity?.let { WalletActivity.show(it, tokenItem) }
             }
 
             override fun onMessageClick(message: SearchMessageItem) {
@@ -173,7 +173,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
         val cancellationSignal = CancellationSignal()
         this@SearchSingleFragment.cancellationSignal = cancellationSignal
         val list: List<Parcelable>? = when (type) {
-            TypeAsset -> searchViewModel.fuzzySearch<AssetItem>(cancellationSignal, s)
+            TypeAsset -> searchViewModel.fuzzySearch<TokenItem>(cancellationSignal, s)
             TypeUser -> searchViewModel.fuzzySearch<User>(cancellationSignal, s)
             TypeChat -> searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, s)
             TypeMessage -> searchViewModel.fuzzySearch<SearchMessageItem>(cancellationSignal, s, -1)

@@ -9,7 +9,7 @@ import androidx.room.util.query
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
@@ -537,8 +537,8 @@ fun callableAssetItem(
     db: MixinDatabase,
     statement: RoomSQLiteQuery,
     cancellationSignal: CancellationSignal,
-): Callable<List<AssetItem>> {
-    return Callable<List<AssetItem>> {
+): Callable<List<TokenItem>> {
+    return Callable<List<TokenItem>> {
         val cursor = query(db, statement, false, cancellationSignal)
         try {
             val cursorIndexOfAssetId = 0
@@ -561,9 +561,9 @@ fun callableAssetItem(
             val cursorIndexOfReserve = 17
             val cursorIndexOfWithdrawalMemoPossibility = 18
 
-            val result: MutableList<AssetItem> = java.util.ArrayList(cursor.count)
+            val result: MutableList<TokenItem> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
-                val item: AssetItem
+                val item: TokenItem
                 val tmpAssetId: String? = if (cursor.isNull(cursorIndexOfAssetId)) {
                     null
                 } else {
@@ -658,7 +658,7 @@ fun callableAssetItem(
                     WithdrawalMemoPossibilityConverter().revertDate(cursor.getString(cursorIndexOfWithdrawalMemoPossibility))
                 }
 
-                item = AssetItem(
+                item = TokenItem(
                     tmpAssetId!!,
                     tmpSymbol!!,
                     tmpName!!,

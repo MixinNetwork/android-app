@@ -20,7 +20,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 @AndroidEntryPoint
@@ -35,7 +35,7 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val ARGS_ASSET_AMOUNT = "args_asset_amount"
         private const val ARGS_ASSET_PRICE = "args_asset_price"
 
-        fun newInstance(amount: Long, currencyName: String, asset: AssetItem, total: String, assetAmount: String, assetPrice: String) = PriceExpiredBottomSheetDialogFragment().withArgs {
+        fun newInstance(amount: Long, currencyName: String, asset: TokenItem, total: String, assetAmount: String, assetPrice: String) = PriceExpiredBottomSheetDialogFragment().withArgs {
             putLong(ARGS_AMOUNT, amount)
             putString(ARGS_CURRENCY_NAME, currencyName)
             putParcelable(ARGS_ASSET, asset)
@@ -47,7 +47,7 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private var amount: Long = 0L
     private lateinit var currencyName: String
-    private lateinit var asset: AssetItem
+    private lateinit var asset: TokenItem
     private lateinit var total: String
     private lateinit var assetAmount: String
     private lateinit var assetPrice: String
@@ -78,7 +78,7 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         asset = requireNotNull(
             requireArguments().getParcelableCompat(
                 ARGS_ASSET,
-                AssetItem::class.java,
+                TokenItem::class.java,
             ),
         )
         total = requireNotNull(requireArguments().getString(ARGS_TOTAL))

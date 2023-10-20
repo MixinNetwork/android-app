@@ -28,8 +28,6 @@ import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
-import one.mixin.android.api.response.GhostKey
-import one.mixin.android.api.response.RegisterResponse
 import one.mixin.android.api.response.RoutePaymentResponse
 import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteTickerResponse
@@ -38,31 +36,26 @@ import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.db.AddressDao
-import one.mixin.android.db.AssetDao
+import one.mixin.android.db.TokenDao
 import one.mixin.android.db.AssetsExtraDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.DepositDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.SnapshotDao
-import one.mixin.android.db.TokenDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.db.provider.DataProvider
-import one.mixin.android.extension.getRFC3339Nano
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
-import one.mixin.android.session.buildHashMembers
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
-import one.mixin.android.vo.Asset
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.AssetsExtra
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.Deposit
@@ -80,8 +73,6 @@ import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
 import retrofit2.Call
-import retrofit2.http.Body
-import retrofit2.http.POST
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -93,8 +84,7 @@ constructor(
     private val assetService: AssetService,
     private val utxoService: UtxoService,
     private val routeService: RouteService,
-    private val assetDao: AssetDao,
-    private val tokeDao: TokenDao,
+    private val tokenDao: TokenDao,
     private val assetsExtraDao: AssetsExtraDao,
     private val snapshotDao: SnapshotDao,
     private val addressDao: AddressDao,
@@ -110,22 +100,22 @@ constructor(
 
     fun assets() = assetService.assets()
 
-    suspend fun simpleAssetsWithBalance() = assetDao.simpleAssetsWithBalance()
+    suspend fun simpleAssetsWithBalance() = tokenDao.simpleAssetsWithBalance()
 
     fun insert(asset: Token) {
-        tokeDao.insert(asset)
+        tokenDao.insert(asset)
     }
 
     fun insertList(asset: List<Token>) {
-        tokeDao.insertList(asset)
+        tokenDao.insertList(asset)
     }
 
     suspend fun asset(id: String) = assetService.getAssetByIdSuspend(id)
 
     suspend fun getAssetPrecisionById(id: String) = assetService.getAssetPrecisionById(id)
 
-    suspend fun findOrSyncAsset(assetId: String): AssetItem? {
-        var assetItem = assetDao.findAssetItemById(assetId)
+    suspend fun findOrSyncAsset(assetId: String): TokenItem? {
+        var assetItem = tokenDao.findAssetItemById(assetId)
         if (assetItem != null && assetItem.getDestination().isNotBlank()) {
             return assetItem
         } else if (assetItem != null) {
@@ -162,7 +152,7 @@ constructor(
         )
     }
 
-    suspend fun syncAsset(assetId: String): AssetItem? {
+    suspend fun syncAsset(assetId: String): TokenItem? {
         val asset: Token = handleMixinResponse(
             invokeNetwork = {
                 assetService.getAssetByIdSuspend(assetId)
@@ -189,10 +179,10 @@ constructor(
             )
         }
 
-        return assetDao.findAssetItemById(assetId)
+        return tokenDao.findAssetItemById(assetId)
     }
 
-    private suspend fun simpleAsset(id: String) = assetDao.simpleAsset(id)
+    private suspend fun simpleAsset(id: String) = tokenDao.simpleAsset(id)
 
     suspend fun insertPendingDeposit(snapshot: List<Snapshot>) = snapshotDao.insertListSuspend(snapshot)
 
@@ -226,7 +216,7 @@ constructor(
             remoteMediator = SnapshotsMediator(
                 assetService,
                 snapshotDao,
-                assetDao,
+                tokenDao,
                 jobManager,
                 assetId
             ),
@@ -258,7 +248,7 @@ constructor(
 
     fun insertSnapshot(snapshot: Snapshot) = snapshotDao.insert(snapshot)
 
-    fun getXIN() = assetDao.getXIN()
+    fun getXIN() = tokenDao.getXIN()
 
     suspend fun transfer(transferRequest: TransferRequest) = assetService.transfer(transferRequest)
 
@@ -275,7 +265,7 @@ constructor(
         }
     }
 
-    fun hiddenAssetItems() = assetDao.hiddenAssetItems()
+    fun hiddenAssetItems() = tokenDao.hiddenAssetItems()
 
     fun addresses(id: String) = addressDao.addresses(id)
 
@@ -292,23 +282,23 @@ constructor(
 
     suspend fun deleteLocalAddr(id: String) = addressDao.deleteById(id)
 
-    fun assetItemsNotHidden() = assetDao.assetItemsNotHidden()
+    fun assetItemsNotHidden() = tokenDao.assetItemsNotHidden()
 
-    fun assetItems() = assetDao.assetItems()
+    fun assetItems() = tokenDao.assetItems()
 
-    fun assetItems(assetIds: List<String>) = assetDao.assetItems(assetIds)
+    fun assetItems(assetIds: List<String>) = tokenDao.assetItems(assetIds)
 
     suspend fun fuzzySearchAsset(query: String, cancellationSignal: CancellationSignal) =
         DataProvider.fuzzySearchAsset(query, query, appDatabase, cancellationSignal)
 
     suspend fun fuzzySearchAssetIgnoreAmount(query: String) =
-        assetDao.fuzzySearchAssetIgnoreAmount(query, query)
+        tokenDao.fuzzySearchAssetIgnoreAmount(query, query)
 
-    fun assetItem(id: String) = assetDao.assetItem(id)
+    fun assetItem(id: String) = tokenDao.assetItem(id)
 
-    suspend fun simpleAssetItem(id: String) = assetDao.simpleAssetItem(id)
+    suspend fun simpleAssetItem(id: String) = tokenDao.simpleAssetItem(id)
 
-    fun assetItemsWithBalance() = assetDao.assetItemsWithBalance()
+    fun assetItemsWithBalance() = tokenDao.assetItemsWithBalance()
 
     fun allSnapshots(
         type: String? = null,
@@ -338,7 +328,7 @@ constructor(
     suspend fun clearPendingDepositsByAssetId(assetId: String) =
         snapshotDao.clearPendingDepositsByAssetId(assetId)
 
-    suspend fun queryAsset(query: String): List<AssetItem> {
+    suspend fun queryAsset(query: String): List<TokenItem> {
         val response = try {
             queryAssets(query)
         } catch (t: Throwable) {
@@ -350,8 +340,8 @@ constructor(
             if (assetList.isEmpty()) {
                 return emptyList()
             }
-            val assetItemList = arrayListOf<AssetItem>()
-            assetList.mapTo(assetItemList) { asset ->
+            val tokenItemList = arrayListOf<TokenItem>()
+            assetList.mapTo(tokenItemList) { asset ->
                 var chainIconUrl = getIconUrl(asset.chainId)
                 if (chainIconUrl == null) {
                     chainIconUrl = fetchAsset(asset.chainId)
@@ -360,9 +350,9 @@ constructor(
                 asset.toAssetItem(chainIconUrl)
             }
             val localExistsIds = arrayListOf<String>()
-            val onlyRemoteItems = arrayListOf<AssetItem>()
+            val onlyRemoteItems = arrayListOf<TokenItem>()
             val needUpdatePrice = arrayListOf<PriceAndChange>()
-            assetItemList.forEach {
+            tokenItemList.forEach {
                 val exists = findAssetItemById(it.assetId)
                 if (exists != null) {
                     needUpdatePrice.add(it.toPriceAndChange())
@@ -375,7 +365,7 @@ constructor(
                 suspendUpdatePrices(needUpdatePrice)
                 onlyRemoteItems + findAssetsByIds(localExistsIds)
             } else {
-                assetItemList
+                tokenItemList
             }
         }
         return emptyList()
@@ -401,11 +391,11 @@ constructor(
 
     private suspend fun queryAssets(query: String) = assetService.queryAssets(query)
 
-    private suspend fun getIconUrl(id: String) = assetDao.getIconUrl(id)
+    private suspend fun getIconUrl(id: String) = tokenDao.getIconUrl(id)
 
     fun observeTopAssets() = hotAssetDao.topAssets()
 
-    fun checkExists(id: String) = assetDao.checkExists(id)
+    fun checkExists(id: String) = tokenDao.checkExists(id)
 
     suspend fun findAddressById(addressId: String, assetId: String) =
         addressDao.findAddressById(addressId, assetId)
@@ -433,9 +423,9 @@ constructor(
         return Pair(result, notExists)
     }
 
-    suspend fun findAssetItemById(assetId: String) = assetDao.findAssetItemById(assetId)
+    suspend fun findAssetItemById(assetId: String) = tokenDao.findAssetItemById(assetId)
 
-    suspend fun findAssetsByIds(assetIds: List<String>) = assetDao.suspendFindAssetsByIds(assetIds)
+    suspend fun findAssetsByIds(assetIds: List<String>) = tokenDao.suspendFindAssetsByIds(assetIds)
 
     suspend fun findSnapshotById(snapshotId: String) = snapshotDao.findSnapshotById(snapshotId)
 
@@ -537,14 +527,14 @@ constructor(
         snapshotDao.findSnapshotIdsByTransactionHashList(assetId, hashList)
 
     suspend fun suspendUpdatePrices(priceAndChange: List<PriceAndChange>) =
-        assetDao.suspendUpdatePrices(priceAndChange)
+        tokenDao.suspendUpdatePrices(priceAndChange)
 
-    suspend fun findTotalUSDBalance(): Int = assetDao.findTotalUSDBalance() ?: 0
+    suspend fun findTotalUSDBalance(): Int = tokenDao.findTotalUSDBalance() ?: 0
 
-    suspend fun findAllAssetIdSuspend() = assetDao.findAllAssetIdSuspend()
+    suspend fun findAllAssetIdSuspend() = tokenDao.findAllAssetIdSuspend()
 
     suspend fun findAssetIdByAssetKey(assetKey: String): String? =
-        assetDao.findAssetIdByAssetKey(assetKey)
+        tokenDao.findAssetIdByAssetKey(assetKey)
 
     suspend fun refreshAsset(assetId: String): Token? =
         handleMixinResponse(
@@ -552,7 +542,7 @@ constructor(
             switchContext = Dispatchers.IO,
             successBlock = {
                 it.data?.let { a ->
-                    tokeDao.upsertSuspend(a)
+                    tokenDao.upsertSuspend(a)
                     return@handleMixinResponse a
                 }
             },
