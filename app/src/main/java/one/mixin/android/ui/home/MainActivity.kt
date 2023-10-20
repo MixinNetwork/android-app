@@ -110,6 +110,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.wc.WCErrorEvent
 import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
@@ -286,7 +287,9 @@ class MainActivity : BlazeBaseActivity() {
             AppCenter.setUserId(it.userId)
         }
 
-        if (!defaultSharedPreferences.getBoolean("RegisterActivity", false)) {
+        if (account?.hasPin != true || !Session.isTipFeatureEnabled()) {
+            TipActivity.show(this, TipType.Create)
+        } else if (!defaultSharedPreferences.getBoolean("RegisterActivity", false)) {
             RegisterActivity.show(this)
             finish()
             return
