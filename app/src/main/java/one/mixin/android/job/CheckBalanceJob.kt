@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.AssetsExtra
+import one.mixin.android.vo.Offset
 import one.mixin.android.vo.assetIdToAsset
 import timber.log.Timber
 import java.math.BigDecimal
@@ -17,6 +18,7 @@ class CheckBalanceJob(
 ) {
     companion object {
         private const val serialVersionUID = 1L
+        private const val BALANCE_LIMIT = 100
         const val TAG = "CheckBalanceJob"
     }
 
@@ -26,14 +28,29 @@ class CheckBalanceJob(
             val assetsExtra = assetsExtraDao.findByAsset(asset)
             val token = tokenDao.findTokenByAsset(asset)?:return@forEach
             mixinDatabase.withTransaction {
+                val value = calcBalanceByAssetId(asset)
                 if (assetsExtra == null) {
-                    val value = outputDao.calcBalanceByAssetId(asset)
-                    assetsExtraDao.insertSuspend(AssetsExtra(token.assetId, token.asset,false, BigDecimal(value).toPlainString(), nowInUtc()))
+                    assetsExtraDao.insertSuspend(AssetsExtra(token.assetId, token.asset, false, value.toPlainString(), nowInUtc()))
                 } else {
-                    val value = outputDao.calcBalanceByAssetId(asset)
-                    assetsExtraDao.updateBalanceByAssetId(token.assetId, value.toString(), nowInUtc())
+                    assetsExtraDao.updateBalanceByAssetId(token.assetId, value.toPlainString(), nowInUtc())
                 }
             }
+        }
+    }
+
+    private tailrec suspend fun calcBalanceByAssetId(asset: String, offset: Int = 0,amount: BigDecimal = BigDecimal.ZERO): BigDecimal {
+        var result = amount
+        val outputs = if (offset == 0) {
+            outputDao.findUnspentOutputsByAsset(BALANCE_LIMIT, asset)
+        } else {
+            outputDao.findUnspentOutputsByAssetOffset(BALANCE_LIMIT, asset, offset)
+        }
+        if (outputs.isEmpty()) return amount
+        result +=  outputs.map{BigDecimal(it.amount)}.sumOf { it }
+        return if (outputs.size >= BALANCE_LIMIT){
+            calcBalanceByAssetId(asset, offset+ BALANCE_LIMIT, result)
+        }else{
+            result
         }
     }
 }

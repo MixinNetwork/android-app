@@ -50,6 +50,7 @@ import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.extension.getRFC3339Nano
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
@@ -269,15 +270,7 @@ constructor(
             if (assetsExtra != null) {
                 assetsExtraDao.updateHiddenByAssetId(id, hidden)
             } else {
-                assetsExtraDao.insertSuspend(
-                    AssetsExtra(
-                        id,
-                        assetIdToAsset(id),
-                        hidden,
-                        null,
-                        null
-                    )
-                )
+                assetsExtraDao.insertSuspend(AssetsExtra(id, assetIdToAsset(id), hidden, "0", nowInUtc()))
             }
         }
     }
