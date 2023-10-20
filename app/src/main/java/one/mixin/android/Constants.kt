@@ -22,8 +22,6 @@ object Constants {
 
         const val DEFAULT_TIP_SIGN_ENDPOINT = "https://api.mixin.one/tip/notify"
 
-        // Todo replace URL
-        const val OUTPUT_URL  = ""
     }
 
     object HelpLink {

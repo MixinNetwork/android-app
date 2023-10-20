@@ -146,7 +146,7 @@ class BottomSheetViewModel @Inject internal constructor(
         val changeMask = data.last().mask
 
         val tx = Kernel.buildTx(asset, amount, threshold, receiverKeys, receiverMask, input, changeKeys, changeMask, memo)
-        val transactionResponse = assetRepository.transactionRequest(TransactionRequest(selfId, tx))
+        val transactionResponse = assetRepository.transactionRequest(TransactionRequest(tx))
         if (transactionResponse.error != null) {
             return transactionResponse
         }
@@ -154,7 +154,7 @@ class BottomSheetViewModel @Inject internal constructor(
         val inputKeys = GsonHelper.customGson.toJson(uxtos.map { it.keys })
         val sign = Kernel.signTx(tx, inputKeys, views, seed.toHex())
         val signResult = GsonHelper.customGson.fromJson(sign, SignResult::class.java)
-        val transactionRsp = assetRepository.transactions(TransactionRequest(selfId, signResult.raw))
+        val transactionRsp = assetRepository.transactions(TransactionRequest(signResult.raw))
         if (transactionRsp.error != null) {
             return transactionRsp
         }

@@ -8,6 +8,4 @@ data class RegisterRequest(
     val publicKey: String,
     @SerializedName("signature")
     val signature: String,
-    @SerializedName("user_id")
-    val user: String = Session.getAccountId()!!
 )
