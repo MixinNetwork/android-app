@@ -5,7 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import one.mixin.android.api.service.AssetService
+import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.UtxoAssetService
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.util.reportException
@@ -14,7 +14,7 @@ import timber.log.Timber
 class UtxoProcessor(
     private val mixinDatabase: MixinDatabase,
     private val jobManager: MixinJobManager,
-    private val assetService: AssetService,
+    private val assetService: TokenService,
     private val utxoAssetService: UtxoAssetService,
     private val lifecycleScope: CoroutineScope,
 ) {

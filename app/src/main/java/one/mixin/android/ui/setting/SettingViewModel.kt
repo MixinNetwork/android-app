@@ -15,7 +15,7 @@ import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.repository.AccountRepository
-import one.mixin.android.repository.AssetRepository
+import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.LogResponse
 import one.mixin.android.vo.UserRelationship

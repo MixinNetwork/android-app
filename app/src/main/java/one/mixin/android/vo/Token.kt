@@ -100,6 +100,28 @@ data class TokenPriceAndChange(
     val changeBtc: String,
 )
 
+fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem = TokenItem(
+    assetId,
+    symbol,
+    name,
+    iconUrl,
+    "0",
+    priceBtc,
+    priceUsd,
+    chainId,
+    changeUsd,
+    changeBtc,
+    false,
+    confirmations,
+    chainIconUrl,
+    null,
+    null,
+    null,
+    assetKey,
+    reserve,
+    withdrawalMemoPossibility,
+)
+
 fun Asset.toToken(): Token =
     Token(assetId, assetIdToAsset(assetId), symbol, name, iconUrl, priceBtc, priceUsd, chainId, changeUsd, changeBtc, confirmations, assetKey, reserve, withdrawalMemoPossibility)
 

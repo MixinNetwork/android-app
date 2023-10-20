@@ -57,36 +57,36 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipSignAction
 import one.mixin.android.tip.matchTipSignAction
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
-import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.common.NftBottomSheetDialogFragment
-import one.mixin.android.ui.common.OutputBottomSheetDialogFragment
+import one.mixin.android.ui.oldwallet.OutputBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.AssetBiometricItem
-import one.mixin.android.ui.common.biometric.Multi2MultiBiometricItem
-import one.mixin.android.ui.common.biometric.NftBiometricItem
-import one.mixin.android.ui.common.biometric.One2MultiBiometricItem
-import one.mixin.android.ui.common.biometric.TransferBiometricItem
-import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
+import one.mixin.android.ui.oldwallet.biometric.Multi2MultiBiometricItem
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_LINK
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.oldwallet.BottomSheetViewModel
+import one.mixin.android.ui.oldwallet.PinAddrBottomSheetDialogFragment
+import one.mixin.android.ui.oldwallet.PreconditionBottomSheetDialogFragment
+import one.mixin.android.ui.oldwallet.PreconditionBottomSheetDialogFragment.Companion.FROM_LINK
+import one.mixin.android.ui.oldwallet.TransactionBottomSheetDialogFragment
+import one.mixin.android.ui.oldwallet.biometric.AssetBiometricItem
+import one.mixin.android.ui.oldwallet.biometric.NftBiometricItem
+import one.mixin.android.ui.oldwallet.biometric.One2MultiBiometricItem
+import one.mixin.android.ui.oldwallet.biometric.TransferBiometricItem
+import one.mixin.android.ui.oldwallet.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.TokenItem
+import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import timber.log.Timber
@@ -915,7 +915,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         }
 
-        val asset: TokenItem = checkAsset(assetId) ?: return false
+        val asset: AssetItem = checkAsset(assetId) ?: return false
 
         val user = linkViewModel.refreshUser(userId) ?: return false
 
@@ -933,7 +933,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         ) ?: false
     }
 
-    private suspend fun showTransferBottom(user: User, amount: String, asset: TokenItem, traceId: String, status: String, memo: String?, returnTo: String?) {
+    private suspend fun showTransferBottom(user: User, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?, returnTo: String?) {
         val pair = linkViewModel.findLatestTrace(user.userId, null, null, amount, asset.assetId)
         if (pair.second) {
             showError(getString(R.string.check_trace_failed))
@@ -943,7 +943,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         showPreconditionBottom(biometricItem)
     }
 
-    private suspend fun showWithdrawalBottom(addressId: String?, destination: String, tag: String?, label: String?, fee: String, amount: String, asset: TokenItem, traceId: String, status: String, memo: String?) {
+    private suspend fun showWithdrawalBottom(addressId: String?, destination: String, tag: String?, label: String?, fee: String, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
         val pair = linkViewModel.findLatestTrace(null, destination, tag, amount, asset.assetId)
         if (pair.second) {
             showError(getString(R.string.check_trace_failed))
@@ -972,7 +972,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         preconditionBottom.showNow(parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
     }
 
-    private suspend fun checkAsset(assetId: String): TokenItem? {
+    private suspend fun checkAsset(assetId: String): AssetItem? {
         var asset = linkViewModel.findAssetItemById(assetId)
         if (asset == null) {
             asset = linkViewModel.refreshAsset(assetId)

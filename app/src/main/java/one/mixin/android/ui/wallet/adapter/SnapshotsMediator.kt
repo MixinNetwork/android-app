@@ -4,7 +4,7 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
-import one.mixin.android.api.service.AssetService
+import one.mixin.android.api.service.TokenService
 import one.mixin.android.db.TokenDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.job.MixinJobManager
@@ -14,7 +14,7 @@ import one.mixin.android.vo.SnapshotItem
 
 @OptIn(ExperimentalPagingApi::class)
 class SnapshotsMediator(
-    private val assetService: AssetService,
+    private val assetService: TokenService,
     private val snapshotDao: SnapshotDao,
     private val tokenDao: TokenDao,
     private val jobManager: MixinJobManager,

@@ -19,9 +19,9 @@ class RefreshSnapshotsJob(
 
     override fun onRun() = runBlocking {
         val response = if (assetId == null) {
-            assetService.getAllSnapshots(offset, opponent = opponent)
+            tokenService.getAllSnapshots(offset, opponent = opponent)
         } else {
-            assetService.getSnapshotsByAssetId(assetId, offset)
+            tokenService.getSnapshotsByAssetId(assetId, offset)
         }
         if (response.isSuccess && response.data != null) {
             val list = response.data as List<Snapshot>

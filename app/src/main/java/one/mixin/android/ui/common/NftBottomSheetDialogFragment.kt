@@ -22,11 +22,11 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.TipBody
-import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.BiometricInfo
-import one.mixin.android.ui.common.biometric.BiometricItem
-import one.mixin.android.ui.common.biometric.NftBiometricItem
-import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment.Companion.ARGS_BIOMETRIC_ITEM
+import one.mixin.android.ui.oldwallet.biometric.BiometricBottomSheetDialogFragment
+import one.mixin.android.ui.oldwallet.biometric.BiometricInfo
+import one.mixin.android.ui.oldwallet.biometric.BiometricItem
+import one.mixin.android.ui.oldwallet.biometric.NftBiometricItem
+import one.mixin.android.ui.oldwallet.biometric.ValuableBiometricBottomSheetDialogFragment.Companion.ARGS_BIOMETRIC_ITEM
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet

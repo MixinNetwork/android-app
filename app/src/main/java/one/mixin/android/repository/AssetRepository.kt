@@ -32,7 +32,7 @@ import one.mixin.android.api.response.RoutePaymentResponse
 import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.service.AddressService
-import one.mixin.android.api.service.AssetService
+import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.db.AddressDao
@@ -81,7 +81,7 @@ class AssetRepository
 @Inject
 constructor(
     private val appDatabase: MixinDatabase,
-    private val assetService: AssetService,
+    private val assetService: TokenService,
     private val utxoService: UtxoService,
     private val routeService: RouteService,
     private val tokenDao: TokenDao,

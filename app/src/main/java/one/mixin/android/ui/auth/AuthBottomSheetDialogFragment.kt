@@ -49,8 +49,8 @@ import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.auth.compose.AuthBottomSheetDialogCompose
 import one.mixin.android.ui.auth.compose.AuthStep
 import one.mixin.android.ui.common.BottomSheetViewModel
-import one.mixin.android.ui.common.biometric.BiometricDialog
-import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.oldwallet.biometric.BiometricDialog
+import one.mixin.android.ui.oldwallet.biometric.BiometricInfo
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.url.UrlInterpreterActivity

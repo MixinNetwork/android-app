@@ -21,7 +21,7 @@ class RefreshTopAssetsJob : BaseJob(
     }
 
     override fun onRun() = runBlocking {
-        val response = assetService.topAssets().execute().body()
+        val response = tokenService.topAssets().execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             val assetList = response.data as List<TopAsset>
             assetList.map { it.assetId }.chunked(200) {

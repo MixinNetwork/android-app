@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAddressJob
-import one.mixin.android.repository.AssetRepository
+import one.mixin.android.ui.oldwallet.AssetRepository
 import javax.inject.Inject
 
 @HiltViewModel

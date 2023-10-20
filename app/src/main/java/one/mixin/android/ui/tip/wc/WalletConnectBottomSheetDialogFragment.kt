@@ -54,8 +54,8 @@ import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.tip.wc.internal.getChain
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
-import one.mixin.android.ui.common.biometric.BiometricDialog
-import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.oldwallet.biometric.BiometricDialog
+import one.mixin.android.ui.oldwallet.biometric.BiometricInfo
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.connections.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage

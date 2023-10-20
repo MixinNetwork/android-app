@@ -49,6 +49,7 @@ import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
+import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ContactService
@@ -315,6 +316,10 @@ object AppModule {
     @Singleton
     @Provides
     fun provideAssetService(retrofit: Retrofit) = retrofit.create(AssetService::class.java) as AssetService
+
+    @Singleton
+    @Provides
+    fun provideTokenService(retrofit: Retrofit) = retrofit.create(TokenService::class.java) as TokenService
 
     @Singleton
     @Provides

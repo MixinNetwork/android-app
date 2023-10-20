@@ -40,7 +40,7 @@
                 android:textColor="?attr/text_minor"
                 android:textSize="12sp" />
 
-            <one.mixin.android.ui.common.biometric.AssetBalanceLayout
+            <one.mixin.android.ui.oldwallet.biometric.AssetBalanceLayout
                 android:id="@+id/asset_balance"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
@@ -60,7 +60,7 @@
                 android:textSize="@dimen/wallet_balance_as_text"
                 android:visibility="gone" />
 
-            <one.mixin.android.ui.common.biometric.BiometricLayout
+            <one.mixin.android.ui.oldwallet.biometric.BiometricLayout
                 android:id="@+id/biometric_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />

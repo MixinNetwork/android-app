@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Token
 
@@ -21,7 +20,7 @@ class RefreshAssetsJob(
 
     override fun onRun() = runBlocking {
         if (assetId != null) {
-            val response = assetService.getAssetByIdSuspend(assetId)
+            val response = tokenService.getAssetByIdSuspend(assetId)
             if (response.isSuccess && response.data != null) {
                 response.data?.let {
                     assetRepo.insert(it)
@@ -29,7 +28,7 @@ class RefreshAssetsJob(
                 }
             }
         } else {
-            val response = assetService.fetchAllAssetSuspend()
+            val response = tokenService.fetchAllAssetSuspend()
             if (response.isSuccess && response.data != null) {
                 val list = response.data as List<Token>
                 response.data?.map {
@@ -56,7 +55,7 @@ class RefreshAssetsJob(
     }
 
     private suspend fun refreshChains() {
-        val resp = assetService.getChains()
+        val resp = tokenService.getChains()
         if (resp.isSuccess) {
             resp.data?.let { chains ->
                 chains.subtract(chainDao.getChains().toSet()).let {
@@ -67,7 +66,7 @@ class RefreshAssetsJob(
     }
 
     private suspend fun refreshChainById(chainId: String) {
-        val resp = assetService.getChainById(chainId)
+        val resp = tokenService.getChainById(chainId)
         if (resp.isSuccess) {
             resp.data?.let { chain ->
                 val isExits = chainDao.isExits(chain.chainId, chain.name, chain.symbol, chain.iconUrl, chain.threshold) != null

@@ -31,9 +31,9 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.AvatarActivity
-import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.BiometricInfo
-import one.mixin.android.ui.common.biometric.BiometricLayout
+import one.mixin.android.ui.oldwallet.biometric.BiometricBottomSheetDialogFragment
+import one.mixin.android.ui.oldwallet.biometric.BiometricInfo
+import one.mixin.android.ui.oldwallet.biometric.BiometricLayout
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.UnescapeIgnorePlusUrlQuerySanitizer
 import one.mixin.android.util.getMixinErrorStringByCode

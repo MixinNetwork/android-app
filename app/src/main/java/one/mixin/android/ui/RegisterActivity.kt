@@ -8,7 +8,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.ResponseError
 import one.mixin.android.api.request.RegisterRequest

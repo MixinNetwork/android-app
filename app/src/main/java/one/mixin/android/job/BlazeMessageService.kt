@@ -34,7 +34,7 @@ import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.service.AssetService
+import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
@@ -165,7 +165,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     lateinit var circleService: CircleService
 
     @Inject
-    lateinit var assetService: AssetService
+    lateinit var assetService: TokenService
 
     @Inject
     lateinit var utxoAssetService: UtxoAssetService

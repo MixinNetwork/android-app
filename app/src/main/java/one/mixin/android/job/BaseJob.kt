@@ -19,7 +19,7 @@ import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.WebSocketException
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AddressService
-import one.mixin.android.api.service.AssetService
+import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.api.service.ConversationService
@@ -118,7 +118,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
-    lateinit var assetService: AssetService
+    lateinit var tokenService: TokenService
 
     @Inject
     @Transient
