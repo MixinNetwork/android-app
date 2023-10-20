@@ -63,6 +63,7 @@ import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.api.service.UtxoAssetService
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.JobSenderKey
@@ -560,6 +561,29 @@ object AppModule {
         coerceInputValues = true
         isLenient = true
     }
+
+    @Provides
+    @Singleton
+    fun provideUtxoAssetService(httpLoggingInterceptor: HttpLoggingInterceptor?): UtxoAssetService {
+        val builder = OkHttpClient.Builder()
+        builder.connectTimeout(10, TimeUnit.SECONDS)
+        builder.writeTimeout(10, TimeUnit.SECONDS)
+        builder.readTimeout(10, TimeUnit.SECONDS)
+        builder.dns(DNS)
+        val client = builder.apply {
+            httpLoggingInterceptor?.let { interceptor ->
+                addNetworkInterceptor(interceptor)
+            }
+        }.build()
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://api.mixin.one/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .client(client)
+            .build()
+        return retrofit.create(UtxoAssetService::class.java)
+    }
+
 
     @Provides
     @Singleton
