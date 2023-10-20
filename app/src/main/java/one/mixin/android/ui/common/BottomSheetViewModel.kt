@@ -74,6 +74,7 @@ import one.mixin.android.vo.toSimpleChat
 import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
 import java.io.File
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -117,9 +118,9 @@ class BottomSheetViewModel @Inject internal constructor(
         memo: String?,
     ): MixinResponse<*> {
         val seed = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
-
+        val traceId = trace ?: UUID.randomUUID().toString()
         val senderId = Session.getAccountId()!!
-        val ghostKeyResponse = assetRepository.ghostKey(buildGhostKeyRequest(receiverId, senderId))
+        val ghostKeyResponse = assetRepository.ghostKey(buildGhostKeyRequest(receiverId, senderId, traceId))
         if (ghostKeyResponse.error != null) {
             return ghostKeyResponse
         }
@@ -140,7 +141,7 @@ class BottomSheetViewModel @Inject internal constructor(
         val changeMask = data.last().mask
 
         val tx = Kernel.buildTx(asset, amount, threshold, receiverKeys, receiverMask, input, changeKeys, changeMask, memo)
-        val transactionResponse = assetRepository.transactionRequest(TransactionRequest(tx))
+        val transactionResponse = assetRepository.transactionRequest(TransactionRequest(tx, traceId))
         if (transactionResponse.error != null) {
             return transactionResponse
         }
@@ -155,7 +156,7 @@ class BottomSheetViewModel @Inject internal constructor(
             }
             // Todo insert raw tx
         }
-        val transactionRsp = assetRepository.transactions(TransactionRequest(signResult.raw))
+        val transactionRsp = assetRepository.transactions(TransactionRequest(signResult.raw, traceId))
         if (transactionRsp.error != null) {
             return transactionRsp
         } else {

@@ -12,6 +12,6 @@ class GhostKeyRequest(
     val hint: String,
 )
 
-fun buildGhostKeyRequest(receiverId: String, senderId: String): List<GhostKeyRequest> {
-    return listOf(GhostKeyRequest(listOf(receiverId), 0, UUID.randomUUID().toString()), GhostKeyRequest(listOf(senderId), 1, UUID.randomUUID().toString()))
+fun buildGhostKeyRequest(receiverId: String, senderId: String, traceId:String): List<GhostKeyRequest> {
+    return listOf(GhostKeyRequest(listOf(receiverId), 0, traceId), GhostKeyRequest(listOf(senderId), 1, UUID.randomUUID().toString()))
 }
