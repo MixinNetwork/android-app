@@ -71,8 +71,10 @@ import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.toSimpleChat
+import one.mixin.android.vo.utxo.RawTransaction
 import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
+import timber.log.Timber
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
@@ -154,17 +156,20 @@ class BottomSheetViewModel @Inject internal constructor(
                 val changeOutput = changeToOutput(signResult.change, asset, uxtos.last().createdAt)
                 assetRepository.insertOutput(changeOutput)
             }
-            // Todo insert raw tx
+            assetRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.transactionHash, signResult.raw, System.currentTimeMillis()))
         }
         val transactionRsp = assetRepository.transactions(TransactionRequest(signResult.raw, traceId))
         if (transactionRsp.error != null) {
+            // assetRepository.deleteRawTransaction(transactionRsp.data!!.transactionHash)
             return transactionRsp
         } else {
-            // Todo update utxo, delete raw tx
+            // Todo Restore transaction
+            // Timber.e(Kernel.decodeRawTx(signResult.raw, 0))
+            // assetRepository.deleteRawTransaction(transactionRsp.data!!.transactionHash)
         }
         val hash = arrayListOf<String>()
         hash.addAll(uxtos.map { it.transactionHash })
-        jobManager.addJobInBackground(RefreshOutputJob(hash))
+        assetRepository.signed(hash)
         jobManager.addJobInBackground(SyncOutputJob())
         return transactionResponse
     }

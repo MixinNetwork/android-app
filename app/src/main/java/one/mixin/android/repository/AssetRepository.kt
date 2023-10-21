@@ -42,6 +42,7 @@ import one.mixin.android.db.ChainDao
 import one.mixin.android.db.DepositDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
+import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
@@ -72,6 +73,7 @@ import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
+import one.mixin.android.vo.utxo.RawTransaction
 import retrofit2.Call
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -93,6 +95,7 @@ constructor(
     private val traceDao: TraceDao,
     private val chainDao: ChainDao,
     private val depositDao: DepositDao,
+    private val rawTransactionDao: RawTransactionDao,
     private val outputDao: OutputDao,
     private val jobManager: MixinJobManager,
     private val safeBox: DataStore<SafeBox>,
@@ -614,5 +617,17 @@ constructor(
 
     fun insertDeposit(data: List<Deposit>) {
         depositDao.insertList(data)
+    }
+
+    fun insetRawTransaction(rawTransaction: RawTransaction) {
+        rawTransactionDao.insert(rawTransaction)
+    }
+
+    fun deleteRawTransaction(transactionHash: String) {
+        rawTransactionDao.deleteByHash(transactionHash)
+    }
+
+    suspend fun signed(hash: List<String>) {
+        outputDao.signedUtxo(hash)
     }
 }

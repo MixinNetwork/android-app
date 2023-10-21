@@ -19,12 +19,12 @@ import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.WebSocketException
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AddressService
-import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.SignalKeyService
+import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.EncryptedProtocol

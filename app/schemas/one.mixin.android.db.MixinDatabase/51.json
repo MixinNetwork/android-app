@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "811927eb976554314c96b11006d5cee1",
+    "identityHash": "dae48998bae4bad58d7656e58405ef4e",
     "entities": [
       {
         "tableName": "users",
@@ -2617,7 +2617,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "transaction_requests",
+        "tableName": "raw_transaction",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_hash` TEXT NOT NULL, `raw_transaction` TEXT NOT NULL, `created_at` INTEGER NOT NULL, PRIMARY KEY(`transaction_hash`))",
         "fields": [
           {
@@ -2652,7 +2652,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '811927eb976554314c96b11006d5cee1')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dae48998bae4bad58d7656e58405ef4e')"
     ]
   }
 }

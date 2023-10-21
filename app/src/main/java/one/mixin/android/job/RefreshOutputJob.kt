@@ -2,8 +2,6 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.api.request.OutputFetchRequest
-import one.mixin.android.session.Session
 
 class RefreshOutputJob(val hash:ArrayList<String>) : BaseJob(
     Params(PRIORITY_UI_HIGH).addTags(TAG).requireNetwork(),
@@ -14,7 +12,7 @@ class RefreshOutputJob(val hash:ArrayList<String>) : BaseJob(
     }
 
     override fun onRun() = runBlocking {
-        outputDao.updateUtxo(hash)
+        outputDao.signedUtxo(hash)
         // todo sync utxo state
         // val ids = outputDao.findUtxoIds(hash)
         // if (ids.isNotEmpty()){

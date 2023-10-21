@@ -180,4 +180,8 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun provideDepositDao(db: MixinDatabase) = db.depositDao()
+
+    @Singleton
+    @Provides
+    fun provideRawTransactionDao(db: MixinDatabase) = db.rawTransactionDao()
 }
