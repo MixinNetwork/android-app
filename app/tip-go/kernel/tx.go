@@ -72,6 +72,7 @@ func BuildTx(asset string, amount string, threshold int, receiverKeys string, re
 	}
 	return buildTransaction(asset, amount, threshold, rks, receiverMask, ins, cks, changeMask, extra)
 }
+
 func buildTransaction(asset string, amount string, threshold int, receiverKeys []*crypto.Key, receiverMask string, inputs []*common.UTXO, changeKeys []*crypto.Key, changeMask string, extra string) (string, error) {
 	assetHash, err := crypto.HashFromString(asset)
 	if err != nil {
@@ -145,17 +146,16 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string) (*Tx, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	var inputs [][]string
-	if err := json.Unmarshal([]byte(inputKeys), &inputs); err != nil {
-		return nil, err
-	}
-
 	ver, err := common.UnmarshalVersionedTransaction(rawBytes)
 	if err != nil {
 		return nil, err
 	}
 	msg := ver.PayloadHash()
+
+	var inputs [][]string
+	if err := json.Unmarshal([]byte(inputKeys), &inputs); err != nil {
+		return nil, err
+	}
 
 	spendSeed, err := hex.DecodeString(spendKey)
 	if err != nil {
@@ -215,4 +215,20 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string) (*Tx, error) {
 		Change: changeUtxo,
 	}
 	return transaction, nil
+}
+
+func DecodeRawTx(raw string) (string, error) {
+	rawBytes, err := hex.DecodeString(raw)
+	if err != nil {
+		return "", err
+	}
+	ver, err := common.UnmarshalVersionedTransaction(rawBytes)
+	if err != nil {
+		return "", err
+	}
+	tx, err := json.Marshal(ver)
+	if err != nil {
+		return "", err
+	}
+	return string(tx), nil
 }
