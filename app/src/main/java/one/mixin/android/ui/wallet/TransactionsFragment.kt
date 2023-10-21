@@ -153,7 +153,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         if (viewDestroyed()) return
 
         lifecycleScope.launch {
-            if (asset.getDestination().isNotEmpty()) {
+            if (asset.getDestination().isBlank()) {
                 walletViewModel.refreshAsset(asset.assetId)
                 handleMixinResponse(
                     invokeNetwork = {
@@ -162,23 +162,24 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                     },
                     successBlock = { list ->
                         withContext(Dispatchers.IO) {
-                            walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
-                            val pendingDeposits = list.data ?: return@withContext
-
-                            pendingDeposits.chunked(100) { trunk ->
-                                lifecycleScope.launch(Dispatchers.IO) {
-                                    val hashList = trunk.map { it.transactionHash }
-                                    val existHashList =
-                                        walletViewModel.findSnapshotByTransactionHashList(asset.assetId, hashList)
-                                    trunk.filter {
-                                        it.transactionHash !in existHashList
-                                    }.map {
-                                        it.toSnapshot(asset.assetId)
-                                    }.let {
-                                        walletViewModel.insertPendingDeposit(it)
-                                    }
-                                }
-                            }
+                            // Todo
+                            // walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
+                            // val pendingDeposits = list.data ?: return@withContext
+                            //
+                            // pendingDeposits.chunked(100) { trunk ->
+                            //     lifecycleScope.launch(Dispatchers.IO) {
+                            //         val hashList = trunk.map { it.transactionHash }
+                            //         val existHashList =
+                            //             walletViewModel.findSnapshotByTransactionHashList(asset.assetId, hashList)
+                            //         trunk.filter {
+                            //             it.transactionHash !in existHashList
+                            //         }.map {
+                            //             it.toSnapshot(asset.assetId)
+                            //         }.let {
+                            //             walletViewModel.insertPendingDeposit(it)
+                            //         }
+                            //     }
+                            // }
                         }
                     },
                 )

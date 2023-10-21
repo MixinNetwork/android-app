@@ -21,16 +21,16 @@ import retrofit2.http.Query
 
 interface TokenService {
 
-    @GET("assets")
+    @GET("safe/assets")
     fun assets(): Call<MixinResponse<List<Token>>>
 
-    @GET("assets")
+    @GET("safe/assets")
     suspend fun fetchAllAssetSuspend(): MixinResponse<List<Token>>
 
-    @GET("assets/{id}")
+    @GET("safe/assets/{id}")
     suspend fun getAssetByIdSuspend(@Path("id") id: String): MixinResponse<Token>
 
-    @GET("assets/{id}")
+    @GET("safe/assets/{id}")
     suspend fun getAssetPrecisionById(@Path("id") id: String): MixinResponse<AssetPrecision>
 
     @GET("assets/{id}/snapshots")

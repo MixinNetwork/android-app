@@ -140,7 +140,7 @@ internal constructor(
             .setInitialLoadKey(initialLoadKey)
             .build()
 
-    suspend fun refreshPendingDeposits(asset: TokenItem) = assetRepository.pendingDeposits(asset.assetId, asset.getDestination(), asset.getTag())
+    suspend fun refreshPendingDeposits(asset: TokenItem) = assetRepository.createDeposit(asset.chainId)
 
     suspend fun clearPendingDepositsByAssetId(assetId: String) = assetRepository.clearPendingDepositsByAssetId(assetId)
 
@@ -178,7 +178,7 @@ internal constructor(
 
     suspend fun createDeposit(chinaId: String, assetId: String): MixinResponse<List<Deposit>> {
         return withContext(Dispatchers.IO) {
-            assetRepository.createDeposit(chinaId, assetId)
+            assetRepository.createDeposit(chinaId)
         }
     }
 

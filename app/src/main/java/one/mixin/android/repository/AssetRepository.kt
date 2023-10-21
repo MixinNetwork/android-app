@@ -123,7 +123,7 @@ constructor(
             handleMixinResponse(
                 invokeNetwork = {
                     utxoService.createDeposit(
-                        DepositEntryRequest(1, listOf(userId), assetItem!!.chainId)
+                        DepositEntryRequest(assetItem!!.chainId)
                     )
                 },
                 successBlock = { resp ->
@@ -145,10 +145,9 @@ constructor(
         return assetItem
     }
 
-    suspend fun createDeposit(chinaId: String, assetId: String): MixinResponse<List<Deposit>> {
-        val userId = requireNotNull(Session.getAccountId())
+    suspend fun createDeposit(chinaId: String): MixinResponse<List<Deposit>> {
         return utxoService.createDeposit(
-            DepositEntryRequest(1, listOf(userId), chinaId)
+            DepositEntryRequest(chinaId)
         )
     }
 

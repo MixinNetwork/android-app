@@ -89,13 +89,13 @@ class UtxoProcessor(
             return
         }
         outputs.forEach { output ->
-            var exists = tokenDao.checkAssetExists(output.asset)
-            if (exists == null) {
+            var assetId = tokenDao.checkAssetExists(output.asset)
+            if (assetId == null) {
                 // TODO new asset API?
                 val r = utxoAssetService.getAssetByMixinIdSuspend(output.asset)
                 if (!r.isSuccess || r.data == null) return // TODO
                 val token = requireNotNull(r.data)
-                exists = token.assetId
+                assetId = token.assetId
                 tokenDao.insertSuspend(token)
             }
             propertyDao.updateValueByKey(keyProcessUtxoId, output.outputId)
