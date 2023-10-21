@@ -42,8 +42,10 @@ open class Account(
     val acceptConversationSource: String,
     @SerializedName("accept_search_source")
     val acceptSearchSource: String,
-    @SerializedName("has_emergency_contact")
+    @SerializedName("has_safe")
     var hasEmergencyContact: Boolean,
+    @SerializedName("has_emergency_contact")
+    var hasSafe: Boolean,
     @SerializedName("fiat_currency")
     var fiatCurrency: String,
     @SerializedName("transfer_notification_threshold")

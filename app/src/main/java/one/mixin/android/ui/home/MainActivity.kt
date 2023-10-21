@@ -287,8 +287,7 @@ class MainActivity : BlazeBaseActivity() {
             AppCenter.setUserId(it.userId)
         }
 
-        defaultSharedPreferences.putBoolean("RegisterActivity", true)
-        if (!defaultSharedPreferences.getBoolean("RegisterActivity", false)) {
+        if (Session.hasSafe()) { // Todo check has pin or tip pin
             RegisterActivity.show(this)
             finish()
             return
