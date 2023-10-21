@@ -217,7 +217,7 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string) (*Tx, error) {
 	return transaction, nil
 }
 
-func DecodeRawTx(raw string) (string, error) {
+func DecodeRawTx(raw string, _ int) (string, error) {
 	rawBytes, err := hex.DecodeString(raw)
 	if err != nil {
 		return "", err
