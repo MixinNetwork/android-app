@@ -97,6 +97,7 @@ import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import one.mixin.android.vo.utxo.TransactionRequest
 import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
@@ -141,6 +142,7 @@ import kotlin.math.min
         (Output::class),
         (Token::class),
         (Deposit::class),
+        (TransactionRequest::class),
     ],
     version = CURRENT_VERSION,
 )

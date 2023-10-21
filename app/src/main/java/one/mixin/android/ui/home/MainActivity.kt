@@ -287,6 +287,7 @@ class MainActivity : BlazeBaseActivity() {
             AppCenter.setUserId(it.userId)
         }
 
+        defaultSharedPreferences.putBoolean("RegisterActivity", true)
         if (!defaultSharedPreferences.getBoolean("RegisterActivity", false)) {
             RegisterActivity.show(this)
             finish()

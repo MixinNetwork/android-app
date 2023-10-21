@@ -153,7 +153,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         if (viewDestroyed()) return
 
         lifecycleScope.launch {
-            if (asset.getDestination().isBlank()) {
+            if (asset.getDestination().isNullOrBlank()) {
                 walletViewModel.refreshAsset(asset.assetId)
                 handleMixinResponse(
                     invokeNetwork = {
@@ -162,6 +162,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                     },
                     successBlock = { list ->
                         withContext(Dispatchers.IO) {
+                            walletViewModel.insertDeposit(list.data!!)
                             // Todo
                             // walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
                             // val pendingDeposits = list.data ?: return@withContext
@@ -395,7 +396,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
 
                     sendReceiveView.apply {
                         // todo sync Deposit
-                        val assetEmpty = asset.getDestination().isEmpty()
+                        val assetEmpty = asset.getDestination().isNullOrBlank()
                         receive.isVisible = !assetEmpty
                         receiveProgress.isVisible = assetEmpty
                     }

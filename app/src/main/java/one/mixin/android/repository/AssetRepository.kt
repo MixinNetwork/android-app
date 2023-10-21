@@ -116,7 +116,7 @@ constructor(
 
     suspend fun findOrSyncAsset(assetId: String): TokenItem? {
         var assetItem = tokenDao.findAssetItemById(assetId)
-        if (assetItem != null && assetItem.getDestination().isNotBlank()) {
+        if (assetItem != null && assetItem.getDestination().isNullOrBlank()) {
             return assetItem
         } else if (assetItem != null) {
             val userId = requireNotNull(Session.getAccountId())
@@ -612,4 +612,7 @@ constructor(
 
     fun insertOutput(output:Output) = outputDao.insert(output)
 
+    fun insertDeposit(data: List<Deposit>) {
+        depositDao.insertList(data)
+    }
 }

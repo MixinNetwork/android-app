@@ -14,6 +14,8 @@ data class TokenItem(
     val name: String,
     val iconUrl: String,
     val balance: String,
+    private val destination: String?,
+    private val tag: String?,
     val priceBtc: String,
     val priceUsd: String,
     val chainId: String,
@@ -55,40 +57,12 @@ data class TokenItem(
         BigDecimal(balance).multiply(BigDecimal(priceBtc))
     }
 
-    fun getDestination(): String {
-        return ""
-        // return if (assetId == BITCOIN_CHAIN_ID) {
-        //     depositEntries?.firstOrNull { depositEntry ->
-        //         depositEntry.properties != null && depositEntry.destination.isNotBlank() && depositEntry.properties.any { property ->
-        //             property.equals(
-        //                 "SegWit",
-        //                 false,
-        //             )
-        //         }
-        //     }?.destination ?: destination
-        // } else if (!depositEntries.isNullOrEmpty()) {
-        //     depositEntries.first().destination
-        // } else {
-        //     destination
-        // }
+    fun getDestination(): String? {
+        return destination
     }
 
     fun getTag(): String? {
-        // return if (assetId == BITCOIN_CHAIN_ID) {
-        //     depositEntries?.firstOrNull { depositEntry ->
-        //         depositEntry.properties != null && depositEntry.destination.isNotBlank() && depositEntry.properties.any { property ->
-        //             property.equals(
-        //                 "SegWit",
-        //                 false,
-        //             )
-        //         }
-        //     }?.tag
-        // } else if (!depositEntries.isNullOrEmpty()) {
-        //     depositEntries.first().tag
-        // } else {
-        //     tag
-        // }
-        return ""
+        return tag
     }
 
     companion object {
@@ -112,8 +86,8 @@ fun TokenItem.differentProcess(
     errorAction: () -> Unit,
 ) {
     when {
-        getDestination().isNotEmpty() && !getTag().isNullOrEmpty() -> memoAction()
-        getDestination().isNotEmpty() -> keyAction()
+        getDestination().isNullOrEmpty() && !getTag().isNullOrEmpty() -> memoAction()
+        getDestination().isNullOrEmpty() -> keyAction()
         else -> errorAction()
     }
 }

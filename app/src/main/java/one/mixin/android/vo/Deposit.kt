@@ -13,25 +13,19 @@ data class Deposit(
     @ColumnInfo(name = "entry_id")
     @SerializedName("entry_id")
     val entryId: String,
-    @ColumnInfo(name = "threshold")
-    @SerializedName("threshold")
-    val threshold: Int,
+    @ColumnInfo(name = "chain_id")
+    @SerializedName("chain_id")
+    val chainId: String,
     @ColumnInfo(name = "destination")
     @SerializedName("destination")
     val destination: String,
-    @ColumnInfo(name = "tag")
-    @SerializedName("tag")
-    val tag: String,
-    @ColumnInfo(name = "chainId")
-    @SerializedName("chain_id")
-    val chainId: String,
-    @ColumnInfo(name = "assetId")
-    @SerializedName("asset_id")
-    val assetId: String,
-    @ColumnInfo(name = "priority")
-    @SerializedName("priority")
-    val priority: Int,
     @ColumnInfo(name = "members")
     @SerializedName("members")
     val members: List<String>,
+    @ColumnInfo(name = "tag")
+    @SerializedName("tag")
+    val tag: String,
+    @ColumnInfo(name = "threshold")
+    @SerializedName("threshold")
+    val threshold: Int,
 )

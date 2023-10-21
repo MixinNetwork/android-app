@@ -43,7 +43,7 @@ class ContentQRView : ViewAnimator {
             val showPb = if (isTag) {
                 asset.getTag().isNullOrBlank()
             } else {
-                asset.getDestination().isBlank()
+                asset.getDestination().isNullOrBlank()
             }
 
             (binding.root as ViewAnimator).displayedChild = if (showPb) 1 else 0
@@ -78,7 +78,8 @@ class ContentQRView : ViewAnimator {
                     val r = if (isTag) {
                         requireNotNull(asset.getTag())
                     } else {
-                        destination
+                        // Todo check
+                        destination!!
                     }.generateQRCode(qr.width)
                     e.onNext(r)
                 }.subscribeOn(Schedulers.io())

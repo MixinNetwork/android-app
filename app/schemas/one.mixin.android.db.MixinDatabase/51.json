@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "1c8d556101ffa9bec2c5b6c634d73b4d",
+    "identityHash": "811927eb976554314c96b11006d5cee1",
     "entities": [
       {
         "tableName": "users",
@@ -2568,7 +2568,7 @@
       },
       {
         "tableName": "deposits",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`entry_id` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `destination` TEXT NOT NULL, `tag` TEXT NOT NULL, `chainId` TEXT NOT NULL, `assetId` TEXT NOT NULL, `priority` INTEGER NOT NULL, `members` TEXT NOT NULL, PRIMARY KEY(`entry_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`entry_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `members` TEXT NOT NULL, `tag` TEXT NOT NULL, `threshold` INTEGER NOT NULL, PRIMARY KEY(`entry_id`))",
         "fields": [
           {
             "fieldPath": "entryId",
@@ -2577,14 +2577,20 @@
             "notNull": true
           },
           {
-            "fieldPath": "threshold",
-            "columnName": "threshold",
-            "affinity": "INTEGER",
+            "fieldPath": "chainId",
+            "columnName": "chain_id",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
             "fieldPath": "destination",
             "columnName": "destination",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "members",
+            "columnName": "members",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -2595,27 +2601,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "chainId",
-            "columnName": "chainId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "assetId",
-            "columnName": "assetId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "priority",
-            "columnName": "priority",
+            "fieldPath": "threshold",
+            "columnName": "threshold",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "members",
-            "columnName": "members",
-            "affinity": "TEXT",
             "notNull": true
           }
         ],
@@ -2627,12 +2615,44 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "transaction_requests",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_hash` TEXT NOT NULL, `raw_transaction` TEXT NOT NULL, `created_at` INTEGER NOT NULL, PRIMARY KEY(`transaction_hash`))",
+        "fields": [
+          {
+            "fieldPath": "transactionHash",
+            "columnName": "transaction_hash",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rawTransaction",
+            "columnName": "raw_transaction",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "transaction_hash"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1c8d556101ffa9bec2c5b6c634d73b4d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '811927eb976554314c96b11006d5cee1')"
     ]
   }
 }

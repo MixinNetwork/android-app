@@ -292,4 +292,8 @@ internal constructor(
     suspend fun deleteSessionByUserId(conversationId: String, userId: String) = withContext(Dispatchers.IO) {
         userRepository.deleteSessionByUserId(conversationId, userId)
     }
+
+    fun insertDeposit(data: List<Deposit>) {
+        assetRepository.insertDeposit(data)
+    }
 }

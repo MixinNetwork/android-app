@@ -106,6 +106,8 @@ fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem = TokenItem(
     name,
     iconUrl,
     "0",
+    "",
+    "",
     priceBtc,
     priceUsd,
     chainId,
