@@ -16,7 +16,7 @@ import one.mixin.android.db.OutputDao
         Index(value = arrayOf("transaction_hash", "output_index"), unique = true),
     ],
 )
-class Output(
+data class Output(
     @PrimaryKey
     @SerializedName("output_id")
     @ColumnInfo(name = "output_id")
@@ -33,20 +33,14 @@ class Output(
     @SerializedName("amount")
     @ColumnInfo(name = "amount")
     val amount: String,
-    @ColumnInfo(name= "mask")
     @SerializedName("mask")
+    @ColumnInfo(name = "mask")
     val mask: String,
     @SerializedName("keys")
     @ColumnInfo(name = "keys")
     val keys: List<String>,
-    @SerializedName("members_hash")
-    @ColumnInfo(name = "members_hash")
-    val membersHash: String,
     @ColumnInfo(name = "threshold")
     val threshold: Int,
-    @SerializedName("members")
-    @ColumnInfo(name = "members")
-    val members: List<String>,
     @ColumnInfo(name = "extra")
     val extra: String,
     @ColumnInfo(name = "state")
@@ -67,4 +61,3 @@ class Output(
     @ColumnInfo(name = "spent_at")
     val spentAt: String,
 )
-

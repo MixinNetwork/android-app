@@ -170,7 +170,7 @@ object Session {
 
     fun hasEmergencyContact() = getAccount()?.hasEmergencyContact ?: false
 
-    fun hasSafe() = getAccount()?.hasSafe ?: false
+    fun hasSafe() = self?.hasSafe ?: false
 
     fun setHasEmergencyContact(enabled: Boolean) {
         getAccount()?.hasEmergencyContact = enabled

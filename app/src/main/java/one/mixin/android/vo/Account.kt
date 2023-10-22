@@ -42,9 +42,9 @@ open class Account(
     val acceptConversationSource: String,
     @SerializedName("accept_search_source")
     val acceptSearchSource: String,
-    @SerializedName("has_safe")
-    var hasEmergencyContact: Boolean,
     @SerializedName("has_emergency_contact")
+    var hasEmergencyContact: Boolean,
+    @SerializedName("has_safe")
     var hasSafe: Boolean,
     @SerializedName("fiat_currency")
     var fiatCurrency: String,

@@ -33,21 +33,21 @@ interface TokenService {
     @GET("safe/assets/{id}")
     suspend fun getAssetPrecisionById(@Path("id") id: String): MixinResponse<AssetPrecision>
 
-    @GET("assets/{id}/snapshots")
+    @GET("safe/snapshots")
     suspend fun getSnapshotsByAssetId(
-        @Path("id") id: String,
+        @Query("asset") id: String,
         @Query("offset") offset: String? = null,
         @Query("limit") limit: Int = LIMIT,
     ): MixinResponse<List<Snapshot>>
 
-    @GET("snapshots")
+    @GET("safe/snapshots")
     suspend fun getAllSnapshots(
         @Query("offset") offset: String? = null,
         @Query("limit") limit: Int = LIMIT,
         @Query("opponent") opponent: String? = null,
     ): MixinResponse<List<Snapshot>>
 
-    @GET("snapshots")
+    @GET("safe/snapshots")
     suspend fun getSnapshots(
         @Query("asset") assetId: String,
         @Query("offset") offset: String? = null,

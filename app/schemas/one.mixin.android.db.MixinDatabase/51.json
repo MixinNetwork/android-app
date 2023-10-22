@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "dae48998bae4bad58d7656e58405ef4e",
+    "identityHash": "455cef9d724fced432ae397f06664902",
     "entities": [
       {
         "tableName": "users",
@@ -2332,7 +2332,7 @@
       },
       {
         "tableName": "outputs",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`output_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `asset` TEXT NOT NULL, `amount` TEXT NOT NULL, `mask` TEXT NOT NULL, `keys` TEXT NOT NULL, `members_hash` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `members` TEXT NOT NULL, `extra` TEXT NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `signed_by` TEXT NOT NULL, `signed_at` TEXT NOT NULL, `spent_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`output_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `asset` TEXT NOT NULL, `amount` TEXT NOT NULL, `mask` TEXT NOT NULL, `keys` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `extra` TEXT NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `signed_by` TEXT NOT NULL, `signed_at` TEXT NOT NULL, `spent_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))",
         "fields": [
           {
             "fieldPath": "outputId",
@@ -2377,21 +2377,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "membersHash",
-            "columnName": "members_hash",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
             "fieldPath": "threshold",
             "columnName": "threshold",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "members",
-            "columnName": "members",
-            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -2652,7 +2640,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dae48998bae4bad58d7656e58405ef4e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '455cef9d724fced432ae397f06664902')"
     ]
   }
 }

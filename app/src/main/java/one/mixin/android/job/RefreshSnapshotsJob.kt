@@ -21,7 +21,8 @@ class RefreshSnapshotsJob(
         val response = if (assetId == null) {
             tokenService.getAllSnapshots(offset, opponent = opponent)
         } else {
-            tokenService.getSnapshotsByAssetId(assetId, offset)
+            // Todo replace
+            tokenService.getSnapshotsByAssetId("43d61dcd-e413-450d-80b8-101d5e903357", offset)
         }
         if (response.isSuccess && response.data != null) {
             val list = response.data as List<Snapshot>

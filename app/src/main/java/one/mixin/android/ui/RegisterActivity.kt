@@ -104,8 +104,12 @@ class RegisterActivity : BaseActivity() {
                 )
                 if (registerRp.isSuccess) {
                     with(Dispatchers.Main) {
+                        val account = Session.getAccount()
+                        account?.let{
+                            it.hasSafe = true
+                            Session.storeAccount(it)
+                        }
                         MainActivity.show(this@RegisterActivity)
-                        defaultSharedPreferences.putBoolean("RegisterActivity", true)
                         finish()
                     }
                 } else {
