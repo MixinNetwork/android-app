@@ -287,7 +287,12 @@ class MainActivity : BlazeBaseActivity() {
             AppCenter.setUserId(it.userId)
         }
 
-        if (Session.hasSafe()) { // Todo check has pin or tip pin
+        if (Session.getAccount()?.hasPin != true) {
+            TipActivity.show(this, TipType.Create)
+            finish()
+            return
+        } else if (!Session.hasSafe()) {
+            // Todo check has tip pin
             RegisterActivity.show(this)
             finish()
             return
