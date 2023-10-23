@@ -8,6 +8,7 @@ import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Chain
 import one.mixin.android.vo.PendingDeposit
+import one.mixin.android.vo.SafeSnapshot
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Ticker
 import one.mixin.android.vo.Token
@@ -38,14 +39,14 @@ interface TokenService {
         @Query("asset") id: String,
         @Query("offset") offset: String? = null,
         @Query("limit") limit: Int = LIMIT,
-    ): MixinResponse<List<Snapshot>>
+    ): MixinResponse<List<SafeSnapshot>>
 
     @GET("safe/snapshots")
     suspend fun getAllSnapshots(
         @Query("offset") offset: String? = null,
         @Query("limit") limit: Int = LIMIT,
         @Query("opponent") opponent: String? = null,
-    ): MixinResponse<List<Snapshot>>
+    ): MixinResponse<List<SafeSnapshot>>
 
     @GET("safe/snapshots")
     suspend fun getSnapshots(
@@ -55,19 +56,19 @@ interface TokenService {
         @Query("opponent") opponent: String? = null,
         @Query("destination") destination: String? = null,
         @Query("tag") tag: String? = null,
-    ): MixinResponse<List<Snapshot>>
+    ): MixinResponse<List<SafeSnapshot>>
 
     @POST("transfers")
-    suspend fun transfer(@Body request: TransferRequest): MixinResponse<Snapshot>
+    suspend fun transfer(@Body request: TransferRequest): MixinResponse<SafeSnapshot>
 
     @POST("payments")
     suspend fun paySuspend(@Body request: TransferRequest): MixinResponse<PaymentResponse>
 
     @POST("withdrawals")
-    suspend fun withdrawals(@Body request: WithdrawalRequest): MixinResponse<Snapshot>
+    suspend fun withdrawals(@Body request: WithdrawalRequest): MixinResponse<SafeSnapshot>
 
     @GET("snapshots/{id}")
-    suspend fun getSnapshotById(@Path("id") id: String): MixinResponse<Snapshot>
+    suspend fun getSnapshotById(@Path("id") id: String): MixinResponse<SafeSnapshot>
 
     @GET("external/transactions")
     suspend fun pendingDeposits(
@@ -83,7 +84,7 @@ interface TokenService {
     fun topAssets(@Query("kind") kind: String = "NORMAL"): Call<MixinResponse<List<TopAsset>>>
 
     @GET("/snapshots/trace/{id}")
-    suspend fun getTrace(@Path("id") traceId: String): MixinResponse<Snapshot>
+    suspend fun getTrace(@Path("id") traceId: String): MixinResponse<SafeSnapshot>
 
     @GET("network/ticker")
     suspend fun ticker(

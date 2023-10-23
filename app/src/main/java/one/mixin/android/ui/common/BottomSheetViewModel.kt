@@ -62,6 +62,7 @@ import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.Output
+import one.mixin.android.vo.SafeSnapshot
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
@@ -571,7 +572,7 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun findSnapshotById(snapshotId: String) = assetRepository.findSnapshotById(snapshotId)
 
-    fun insertSnapshot(snapshot: Snapshot) = viewModelScope.launch(Dispatchers.IO) {
+    fun insertSnapshot(snapshot: SafeSnapshot) = viewModelScope.launch(Dispatchers.IO) {
         assetRepository.insertSnapshot(snapshot)
     }
 

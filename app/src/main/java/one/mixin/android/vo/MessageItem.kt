@@ -169,6 +169,7 @@ data class MessageItem(
 
     fun canNotForward() = this.type == MessageCategory.APP_BUTTON_GROUP.name ||
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
+        this.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name ||
         this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
         this.type == MessageCategory.MESSAGE_PIN.name ||
         isCallMessage() || isRecall() || isGroupCall() || unfinishedAttachment() ||
@@ -177,6 +178,7 @@ data class MessageItem(
 
     fun canNotReply() =
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
+            this.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name ||
             this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
             this.type == MessageCategory.MESSAGE_PIN.name ||
             unfinishedAttachment() ||
@@ -332,7 +334,7 @@ private fun MessageItem.simpleChat(): String {
         isAudio() -> mediaUrl.notNullWithElse({ "[AUDIO - ${File(it).name}]" }, "[AUDIO]")
         type == MessageCategory.APP_BUTTON_GROUP.name -> "[Mixin APP]"
         type == MessageCategory.APP_CARD.name -> "[Mixin APP]"
-        type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ->
+        type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name || type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name->
             "[TRANSFER ${
                 if (snapshotAmount?.toFloat()!! > 0) {
                     "+"

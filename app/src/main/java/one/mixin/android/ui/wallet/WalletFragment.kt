@@ -500,7 +500,12 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
 
     private fun checkOldAsset() {
         lifecycleScope.launch {
-            binding.migrationLayout.isVisible = walletViewModel.checkHasOldAsset()
+            if (isAdded) {
+                binding.migrationLayout.isVisible = walletViewModel.checkHasOldAsset()
+                binding.start.setOnClickListener {
+                    // Todo migration
+                }
+            }
         }
     }
 

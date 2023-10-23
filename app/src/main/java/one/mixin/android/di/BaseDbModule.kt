@@ -83,6 +83,10 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
+    fun provideSafeSnapshotDao(db: MixinDatabase) = db.safeSnapshotDao()
+
+    @Singleton
+    @Provides
     fun provideMessageHistoryDao(db: MixinDatabase) = db.messageHistoryDao()
 
     @Singleton

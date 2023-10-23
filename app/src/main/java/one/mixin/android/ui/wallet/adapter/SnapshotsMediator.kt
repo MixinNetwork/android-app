@@ -5,8 +5,8 @@ import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import one.mixin.android.api.service.TokenService
+import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.TokenDao
-import one.mixin.android.db.SnapshotDao
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
@@ -15,7 +15,7 @@ import one.mixin.android.vo.SnapshotItem
 @OptIn(ExperimentalPagingApi::class)
 class SnapshotsMediator(
     private val assetService: TokenService,
-    private val snapshotDao: SnapshotDao,
+    private val safeSnapshotDao: SafeSnapshotDao,
     private val tokenDao: TokenDao,
     private val jobManager: MixinJobManager,
     private val assetId: String,
@@ -39,7 +39,7 @@ class SnapshotsMediator(
             val nextKey = if (list.isNullOrEmpty()) {
                 null
             } else {
-                snapshotDao.insertListSuspend(list)
+                safeSnapshotDao.insertListSuspend(list)
                 list.forEach { item ->
                     if (tokenDao.simpleAsset(item.assetId) == null) {
                         jobManager.addJobInBackground(RefreshAssetsJob(item.assetId))

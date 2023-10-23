@@ -81,7 +81,7 @@ data class SnapshotItem(
                 oldItem == newItem
         }
 
-        fun fromSnapshot(snapshot: Snapshot, avatarUrl: String? = null, symbol: String? = null) = SnapshotItem(
+        fun fromSnapshot(snapshot: SafeSnapshot, avatarUrl: String? = null, symbol: String? = null) = SnapshotItem(
             snapshotId = snapshot.snapshotId,
             type = snapshot.type,
             assetId = snapshot.assetId,

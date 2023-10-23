@@ -33,6 +33,7 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.ResendSessionMessageDao
+import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TraceDao
@@ -96,6 +97,9 @@ open class Injector {
 
     @Inject
     lateinit var snapshotDao: SnapshotDao
+
+    @Inject
+    lateinit var safeSnapshotDao: SafeSnapshotDao
 
     @Inject
     lateinit var tokenDao: TokenDao

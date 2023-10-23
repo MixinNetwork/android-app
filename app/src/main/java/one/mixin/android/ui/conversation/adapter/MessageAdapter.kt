@@ -551,6 +551,7 @@ class MessageAdapter(
                     }
                     item.type == MessageCategory.SYSTEM_CONVERSATION.name -> MessageAdapter.SYSTEM_TYPE
                     item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> MessageAdapter.SNAPSHOT_TYPE
+                    item.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name -> MessageAdapter.SNAPSHOT_TYPE // Todo
                     item.type == MessageCategory.APP_BUTTON_GROUP.name -> MessageAdapter.ACTION_TYPE
                     item.type == MessageCategory.APP_CARD.name -> MessageAdapter.ACTION_CARD_TYPE
                     item.isContact() -> {

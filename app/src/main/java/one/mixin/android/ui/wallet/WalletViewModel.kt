@@ -34,6 +34,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.Deposit
 import one.mixin.android.vo.ParticipantSession
+import one.mixin.android.vo.SafeSnapshot
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Token
@@ -149,7 +150,7 @@ internal constructor(
 
     suspend fun findSnapshotByTransactionHashList(assetId: String, hashList: List<String>) = assetRepository.findSnapshotByTransactionHashList(assetId, hashList)
 
-    suspend fun insertPendingDeposit(snapshot: List<Snapshot>) = assetRepository.insertPendingDeposit(snapshot)
+    suspend fun insertPendingDeposit(snapshot: List<SafeSnapshot>) = assetRepository.insertPendingDeposit(snapshot)
 
     suspend fun getAsset(assetId: String) = withContext(Dispatchers.IO) {
         assetRepository.asset(assetId)

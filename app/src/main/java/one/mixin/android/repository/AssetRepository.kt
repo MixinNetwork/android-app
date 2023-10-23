@@ -44,7 +44,7 @@ import one.mixin.android.db.DepositDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.RawTransactionDao
-import one.mixin.android.db.SnapshotDao
+import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.db.provider.DataProvider
@@ -64,6 +64,7 @@ import one.mixin.android.vo.Deposit
 import one.mixin.android.vo.Output
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SafeBox
+import one.mixin.android.vo.SafeSnapshot
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Token
@@ -90,7 +91,7 @@ constructor(
     private val routeService: RouteService,
     private val tokenDao: TokenDao,
     private val assetsExtraDao: AssetsExtraDao,
-    private val snapshotDao: SnapshotDao,
+    private val safeSnapshotDao: SafeSnapshotDao,
     private val addressDao: AddressDao,
     private val addressService: AddressService,
     private val hotAssetDao: TopAssetDao,
@@ -188,7 +189,7 @@ constructor(
 
     private suspend fun simpleAsset(id: String) = tokenDao.simpleAsset(id)
 
-    suspend fun insertPendingDeposit(snapshot: List<Snapshot>) = snapshotDao.insertListSuspend(snapshot)
+    suspend fun insertPendingDeposit(snapshot: List<SafeSnapshot>) = safeSnapshotDao.insertListSuspend(snapshot)
 
     @ExperimentalPagingApi
     fun snapshots(
@@ -205,21 +206,21 @@ constructor(
             pagingSourceFactory = {
                 if (type == null) {
                     if (orderByAmount) {
-                        snapshotDao.snapshotsOrderByAmountPaging(assetId)
+                        safeSnapshotDao.snapshotsOrderByAmountPaging(assetId)
                     } else {
-                        snapshotDao.snapshotsPaging(assetId)
+                        safeSnapshotDao.snapshotsPaging(assetId)
                     }
                 } else {
                     if (orderByAmount) {
-                        snapshotDao.snapshotsByTypeOrderByAmountPaging(assetId, type, otherType)
+                        safeSnapshotDao.snapshotsByTypeOrderByAmountPaging(assetId, type, otherType)
                     } else {
-                        snapshotDao.snapshotsByTypePaging(assetId, type, otherType)
+                        safeSnapshotDao.snapshotsByTypePaging(assetId, type, otherType)
                     }
                 }
             },
             remoteMediator = SnapshotsMediator(
                 tokenService,
-                snapshotDao,
+                safeSnapshotDao,
                 tokenDao,
                 jobManager,
                 assetId
@@ -234,23 +235,23 @@ constructor(
     ): DataSource.Factory<Int, SnapshotItem> {
         return if (type == null) {
             if (orderByAmount) {
-                snapshotDao.snapshotsOrderByAmount(id)
+                safeSnapshotDao.snapshotsOrderByAmount(id)
             } else {
-                snapshotDao.snapshots(id)
+                safeSnapshotDao.snapshots(id)
             }
         } else {
             if (orderByAmount) {
-                snapshotDao.snapshotsByTypeOrderByAmount(id, type, otherType)
+                safeSnapshotDao.snapshotsByTypeOrderByAmount(id, type, otherType)
             } else {
-                snapshotDao.snapshotsByType(id, type, otherType)
+                safeSnapshotDao.snapshotsByType(id, type, otherType)
             }
         }
     }
 
     suspend fun snapshotLocal(assetId: String, snapshotId: String) =
-        snapshotDao.snapshotLocal(assetId, snapshotId)
+        safeSnapshotDao.snapshotLocal(assetId, snapshotId)
 
-    fun insertSnapshot(snapshot: Snapshot) = snapshotDao.insert(snapshot)
+    fun insertSnapshot(snapshot: SafeSnapshot) = safeSnapshotDao.insert(snapshot)
 
     fun getXIN() = tokenDao.getXIN()
 
@@ -311,26 +312,26 @@ constructor(
     ): DataSource.Factory<Int, SnapshotItem> {
         return if (type == null) {
             if (orderByAmount) {
-                snapshotDao.allSnapshotsOrderByAmount()
+                safeSnapshotDao.allSnapshotsOrderByAmount()
             } else {
-                snapshotDao.allSnapshots()
+                safeSnapshotDao.allSnapshots()
             }
         } else {
             if (orderByAmount) {
-                snapshotDao.allSnapshotsByTypeOrderByAmount(type, otherType)
+                safeSnapshotDao.allSnapshotsByTypeOrderByAmount(type, otherType)
             } else {
-                snapshotDao.allSnapshotsByType(type, otherType)
+                safeSnapshotDao.allSnapshotsByType(type, otherType)
             }
         }
     }
 
-    fun snapshotsByUserId(opponentId: String) = snapshotDao.snapshotsByUserId(opponentId)
+    fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
 
     suspend fun pendingDeposits(asset: String, destination: String, tag: String? = null) =
         tokenService.pendingDeposits(asset, destination, tag)
 
     suspend fun clearPendingDepositsByAssetId(assetId: String) =
-        snapshotDao.clearPendingDepositsByAssetId(assetId)
+        safeSnapshotDao.clearPendingDepositsByAssetId(assetId)
 
     suspend fun queryAsset(query: String): List<TokenItem> {
         val response = try {
@@ -431,9 +432,9 @@ constructor(
 
     suspend fun findAssetsByIds(assetIds: List<String>) = tokenDao.suspendFindAssetsByIds(assetIds)
 
-    suspend fun findSnapshotById(snapshotId: String) = snapshotDao.findSnapshotById(snapshotId)
+    suspend fun findSnapshotById(snapshotId: String) = safeSnapshotDao.findSnapshotById(snapshotId)
 
-    suspend fun findSnapshotByTraceId(traceId: String) = snapshotDao.findSnapshotByTraceId(traceId)
+    suspend fun findSnapshotByTraceId(traceId: String) = safeSnapshotDao.findSnapshotByTraceId(traceId)
 
     suspend fun refreshAndGetSnapshot(snapshotId: String): SnapshotItem? {
         var result: SnapshotItem? = null
@@ -443,8 +444,8 @@ constructor(
             },
             successBlock = { response ->
                 response.data?.let {
-                    snapshotDao.insert(it)
-                    result = snapshotDao.findSnapshotById(snapshotId)
+                    safeSnapshotDao.insert(it)
+                    result = safeSnapshotDao.findSnapshotById(snapshotId)
                 }
             },
         )
@@ -528,7 +529,7 @@ constructor(
         assetId: String,
         hashList: List<String>
     ): List<String> =
-        snapshotDao.findSnapshotIdsByTransactionHashList(assetId, hashList)
+        safeSnapshotDao.findSnapshotIdsByTransactionHashList(assetId, hashList)
 
     suspend fun suspendUpdatePrices(priceAndChange: List<PriceAndChange>) =
         tokenDao.suspendUpdatePrices(priceAndChange)

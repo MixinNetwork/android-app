@@ -87,6 +87,7 @@ import one.mixin.android.vo.Property
 import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.ResendMessage
 import one.mixin.android.vo.ResendSessionMessage
+import one.mixin.android.vo.SafeSnapshot
 import one.mixin.android.vo.SentSenderKey
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
@@ -142,6 +143,7 @@ import kotlin.math.min
         (Output::class),
         (Token::class),
         (Deposit::class),
+        (SafeSnapshot::class),
         (RawTransaction::class),
     ],
     version = CURRENT_VERSION,
@@ -159,6 +161,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun tokenDao(): TokenDao
     abstract fun assetsExtraDao(): AssetsExtraDao
     abstract fun snapshotDao(): SnapshotDao
+    abstract fun safeSnapshotDao(): SafeSnapshotDao
     abstract fun messageHistoryDao(): MessageHistoryDao
     abstract fun stickerDao(): StickerDao
     abstract fun stickerAlbumDao(): StickerAlbumDao
@@ -182,9 +185,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun expiredMessageDao(): ExpiredMessageDao
     abstract fun chainDao(): ChainDao
     abstract fun outputDao(): OutputDao
-
     abstract fun depositDao(): DepositDao
-
     abstract fun rawTransactionDao(): RawTransactionDao
 
     companion object {
