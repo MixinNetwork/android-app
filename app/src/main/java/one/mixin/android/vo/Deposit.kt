@@ -25,6 +25,9 @@ data class Deposit(
     @ColumnInfo(name = "tag")
     @SerializedName("tag")
     val tag: String,
+    @ColumnInfo(name="signature")
+    @SerializedName("signature")
+    val signature: String,
     @ColumnInfo(name = "threshold")
     @SerializedName("threshold")
     val threshold: Int,

@@ -18,6 +18,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.extension.escapeSql
@@ -39,6 +40,8 @@ import one.mixin.android.vo.Token
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.sumsub.ProfileResponse
+import timber.log.Timber
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
@@ -295,5 +298,18 @@ internal constructor(
 
     fun insertDeposit(data: List<Deposit>) {
         assetRepository.insertDeposit(data)
+    }
+
+    suspend fun checkHasOldAsset(): Boolean {
+       return handleMixinResponse(
+            invokeNetwork = {
+                assetRepository.findOldAssets()
+            },
+            successBlock = {
+                return@handleMixinResponse it.data?.any { asset ->
+                    BigDecimal(asset.balance) != BigDecimal.ZERO
+                } ?: false
+            },
+        ) ?: false
     }
 }

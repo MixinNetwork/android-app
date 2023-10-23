@@ -1313,4 +1313,5 @@
     <string name="chat_with_us">Chat with us</string>
     <string name="Asset_Migration">Asset Migration</string>
     <string name="Asset_Migration_Content">Mixin has upgraded the new wallet system, you have not yet migrated to assets, please move your assets from the old wallet to the new wallet immediately!</string>
+    <string name="Start_Migration">Start the migration</string>
 </resources>

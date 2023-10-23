@@ -32,6 +32,7 @@ import one.mixin.android.api.response.RoutePaymentResponse
 import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.service.AddressService
+import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.UtxoService
@@ -83,7 +84,8 @@ class AssetRepository
 @Inject
 constructor(
     private val appDatabase: MixinDatabase,
-    private val assetService: TokenService,
+    private val tokenService: TokenService,
+    private val assetService: AssetService,
     private val utxoService: UtxoService,
     private val routeService: RouteService,
     private val tokenDao: TokenDao,
@@ -101,7 +103,7 @@ constructor(
     private val safeBox: DataStore<SafeBox>,
 ) {
 
-    fun assets() = assetService.assets()
+    fun assets() = tokenService.assets()
 
     suspend fun simpleAssetsWithBalance() = tokenDao.simpleAssetsWithBalance()
 
@@ -113,9 +115,9 @@ constructor(
         tokenDao.insertList(asset)
     }
 
-    suspend fun asset(id: String) = assetService.getAssetByIdSuspend(id)
+    suspend fun asset(id: String) = tokenService.getAssetByIdSuspend(id)
 
-    suspend fun getAssetPrecisionById(id: String) = assetService.getAssetPrecisionById(id)
+    suspend fun getAssetPrecisionById(id: String) = tokenService.getAssetPrecisionById(id)
 
     suspend fun findOrSyncAsset(assetId: String): TokenItem? {
         var assetItem = tokenDao.findAssetItemById(assetId)
@@ -157,7 +159,7 @@ constructor(
     suspend fun syncAsset(assetId: String): TokenItem? {
         val asset: Token = handleMixinResponse(
             invokeNetwork = {
-                assetService.getAssetByIdSuspend(assetId)
+                tokenService.getAssetByIdSuspend(assetId)
             },
             successBlock = { resp ->
                 resp.data?.let { a ->
@@ -171,7 +173,7 @@ constructor(
         if (exists == null) {
             handleMixinResponse(
                 invokeNetwork = {
-                    assetService.getChainById(asset.chainId)
+                    tokenService.getChainById(asset.chainId)
                 },
                 successBlock = { resp ->
                     resp.data?.let { c ->
@@ -216,7 +218,7 @@ constructor(
                 }
             },
             remoteMediator = SnapshotsMediator(
-                assetService,
+                tokenService,
                 snapshotDao,
                 tokenDao,
                 jobManager,
@@ -252,9 +254,9 @@ constructor(
 
     fun getXIN() = tokenDao.getXIN()
 
-    suspend fun transfer(transferRequest: TransferRequest) = assetService.transfer(transferRequest)
+    suspend fun transfer(transferRequest: TransferRequest) = tokenService.transfer(transferRequest)
 
-    suspend fun paySuspend(request: TransferRequest) = assetService.paySuspend(request)
+    suspend fun paySuspend(request: TransferRequest) = tokenService.paySuspend(request)
 
     suspend fun updateHidden(id: String, hidden: Boolean) {
         appDatabase.withTransaction {
@@ -274,7 +276,7 @@ constructor(
     fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 
     suspend fun withdrawal(withdrawalRequest: WithdrawalRequest) =
-        assetService.withdrawals(withdrawalRequest)
+        tokenService.withdrawals(withdrawalRequest)
 
     fun saveAddr(addr: Address) = addressDao.insert(addr)
 
@@ -325,7 +327,7 @@ constructor(
     fun snapshotsByUserId(opponentId: String) = snapshotDao.snapshotsByUserId(opponentId)
 
     suspend fun pendingDeposits(asset: String, destination: String, tag: String? = null) =
-        assetService.pendingDeposits(asset, destination, tag)
+        tokenService.pendingDeposits(asset, destination, tag)
 
     suspend fun clearPendingDepositsByAssetId(assetId: String) =
         snapshotDao.clearPendingDepositsByAssetId(assetId)
@@ -391,7 +393,7 @@ constructor(
         return@withContext null
     }
 
-    private suspend fun queryAssets(query: String) = assetService.queryAssets(query)
+    private suspend fun queryAssets(query: String) = tokenService.queryAssets(query)
 
     private suspend fun getIconUrl(id: String) = tokenDao.getIconUrl(id)
 
@@ -437,7 +439,7 @@ constructor(
         var result: SnapshotItem? = null
         handleMixinResponse(
             invokeNetwork = {
-                assetService.getSnapshotById(snapshotId)
+                tokenService.getSnapshotById(snapshotId)
             },
             successBlock = { response ->
                 response.data?.let {
@@ -457,14 +459,14 @@ constructor(
         destination: String?,
         tag: String?
     ) =
-        assetService.getSnapshots(assetId, offset, limit, opponent, destination, tag)
+        tokenService.getSnapshots(assetId, offset, limit, opponent, destination, tag)
 
     suspend fun insertTrace(trace: Trace) = traceDao.insertSuspend(trace)
 
     suspend fun suspendFindTraceById(traceId: String): Trace? =
         traceDao.suspendFindTraceById(traceId)
 
-    suspend fun getTrace(traceId: String) = assetService.getTrace(traceId)
+    suspend fun getTrace(traceId: String) = tokenService.getTrace(traceId)
 
     suspend fun findLatestTrace(
         opponentId: String?,
@@ -487,7 +489,7 @@ constructor(
         if (trace.snapshotId.isNullOrBlank()) {
             val response = try {
                 withContext(Dispatchers.IO) {
-                    assetService.getTrace(trace.traceId)
+                    tokenService.getTrace(trace.traceId)
                 }
             } catch (t: Throwable) {
                 ErrorHandler.handleError(t)
@@ -517,7 +519,7 @@ constructor(
 
     suspend fun suspendDeleteTraceById(traceId: String) = traceDao.suspendDeleteById(traceId)
 
-    suspend fun ticker(assetId: String, offset: String?) = assetService.ticker(assetId, offset)
+    suspend fun ticker(assetId: String, offset: String?) = tokenService.ticker(assetId, offset)
 
     suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> =
         routeService.ticker(tickerRequest)
@@ -540,7 +542,7 @@ constructor(
 
     suspend fun refreshAsset(assetId: String): Token? =
         handleMixinResponse(
-            invokeNetwork = { assetService.getAssetByIdSuspend(assetId) },
+            invokeNetwork = { tokenService.getAssetByIdSuspend(assetId) },
             switchContext = Dispatchers.IO,
             successBlock = {
                 it.data?.let { a ->
@@ -630,4 +632,7 @@ constructor(
     suspend fun signed(hash: List<String>) {
         outputDao.signedUtxo(hash)
     }
+
+    suspend fun findOldAssets() = assetService.fetchAllAssetSuspend()
+
 }
