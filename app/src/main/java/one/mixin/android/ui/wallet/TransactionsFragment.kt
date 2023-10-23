@@ -137,8 +137,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                 headerAdapter.asset = it
             }
         }
-
-        refreshPendingDeposits(asset)
     }
 
     override fun onDestroyView() {
@@ -147,62 +145,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         _bottomBinding = null
         sendBottomSheet.release()
         super.onDestroyView()
-    }
-
-    private fun refreshPendingDeposits(asset: TokenItem) {
-        if (viewDestroyed()) return
-
-        lifecycleScope.launch {
-            if (asset.getDestination().isNullOrBlank()) {
-                walletViewModel.refreshAsset(asset.assetId)
-                handleMixinResponse(
-                    invokeNetwork = {
-                        // todo replace new api
-                        walletViewModel.refreshPendingDeposits(asset)
-                    },
-                    successBlock = { list ->
-                        withContext(Dispatchers.IO) {
-                            walletViewModel.insertDeposit(list.data!!)
-                            // Todo
-                            // walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
-                            // val pendingDeposits = list.data ?: return@withContext
-                            //
-                            // pendingDeposits.chunked(100) { trunk ->
-                            //     lifecycleScope.launch(Dispatchers.IO) {
-                            //         val hashList = trunk.map { it.transactionHash }
-                            //         val existHashList =
-                            //             walletViewModel.findSnapshotByTransactionHashList(asset.assetId, hashList)
-                            //         trunk.filter {
-                            //             it.transactionHash !in existHashList
-                            //         }.map {
-                            //             it.toSnapshot(asset.assetId)
-                            //         }.let {
-                            //             walletViewModel.insertPendingDeposit(it)
-                            //         }
-                            //     }
-                            // }
-                        }
-                    },
-                )
-            } else {
-                handleMixinResponse(
-                    invokeNetwork = {
-                        walletViewModel.getAsset(asset.assetId)
-                    },
-                    successBlock = { response ->
-                        response.data?.let { asset ->
-                            walletViewModel.upsetAsset(asset)
-                            // todo check balance
-                            asset.toAssetItem().let { assetItem ->
-                                this@TransactionsFragment.asset = assetItem
-                                headerAdapter.asset = assetItem
-                                refreshPendingDeposits(assetItem)
-                            }
-                        }
-                    },
-                )
-            }
-        }
     }
 
     @SuppressLint("InflateParams")
@@ -393,13 +335,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                         }
                     }
                     bottomRl.isVisible = show
-
-                    sendReceiveView.apply {
-                        // todo sync Deposit
-                        val assetEmpty = asset.getDestination().isNullOrBlank()
-                        receive.isVisible = !assetEmpty
-                        receiveProgress.isVisible = assetEmpty
-                    }
 
                     when (currentType) {
                         R.id.filters_radio_all -> {

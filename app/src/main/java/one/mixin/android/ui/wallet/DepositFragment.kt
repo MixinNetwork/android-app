@@ -94,14 +94,6 @@ class DepositFragment : BaseFragment() {
                 }
                 .showNow(childFragmentManager, TAG)
         }
-        lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
-            Timber.e(error)
-        }){
-            // todo save deposit
-            walletViewModel.createDeposit(asset.chainId, asset.assetId).let {
-                Timber.e(it.data?.first()?.destination)
-            }
-        }
     }
 
     override fun onDestroyView() {

@@ -134,6 +134,7 @@ constructor(
                 },
                 successBlock = { resp ->
                     resp.data?.let { list ->
+                        // Todo check verify
                         depositDao.insertList(list)
                     }
                 },

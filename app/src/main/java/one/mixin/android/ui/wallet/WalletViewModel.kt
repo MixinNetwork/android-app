@@ -144,14 +144,6 @@ internal constructor(
             .setInitialLoadKey(initialLoadKey)
             .build()
 
-    suspend fun refreshPendingDeposits(asset: TokenItem) = assetRepository.createDeposit(asset.chainId)
-
-    suspend fun clearPendingDepositsByAssetId(assetId: String) = assetRepository.clearPendingDepositsByAssetId(assetId)
-
-    suspend fun findSnapshotByTransactionHashList(assetId: String, hashList: List<String>) = assetRepository.findSnapshotByTransactionHashList(assetId, hashList)
-
-    suspend fun insertPendingDeposit(snapshot: List<SafeSnapshot>) = assetRepository.insertPendingDeposit(snapshot)
-
     suspend fun getAsset(assetId: String) = withContext(Dispatchers.IO) {
         assetRepository.asset(assetId)
     }
