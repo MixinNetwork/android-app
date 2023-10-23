@@ -104,6 +104,7 @@ import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.job.RestoreTransactionJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
 import one.mixin.android.repository.AccountRepository
@@ -333,6 +334,7 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         jobManager.addJobInBackground(SyncOutputJob())
+        jobManager.addJobInBackground(RestoreTransactionJob())
     }
 
     override fun onStart() {

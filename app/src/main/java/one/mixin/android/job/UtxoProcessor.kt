@@ -14,7 +14,7 @@ import timber.log.Timber
 class UtxoProcessor(
     private val mixinDatabase: MixinDatabase,
     private val jobManager: MixinJobManager,
-    private val assetService: TokenService,
+    private val tokenService: TokenService,
     private val utxoAssetService: UtxoAssetService,
     private val lifecycleScope: CoroutineScope,
 ) {

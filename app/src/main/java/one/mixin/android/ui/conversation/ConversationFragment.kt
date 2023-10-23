@@ -2473,7 +2473,7 @@ class ConversationFragment() :
                         binding.chatControl.reset()
                         if (Session.getAccount()?.hasPin == true) {
                             if (!Session.hasSafe()) {
-                                RegisterActivity.show(context)
+                                RegisterActivity.show(requireContext())
                             } else {
                                 recipient?.let {
                                     TransferFragment.newInstance(it.userId, supportSwitchAsset = true).showNow(parentFragmentManager, TransferFragment.TAG)

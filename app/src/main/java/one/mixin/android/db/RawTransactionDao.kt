@@ -8,4 +8,7 @@ import one.mixin.android.vo.utxo.RawTransaction
 interface RawTransactionDao : BaseDao<RawTransaction> {
     @Query("DELETE FROM raw_transaction WHERE transaction_hash = :hash")
     fun deleteByHash(hash: String)
+
+    @Query("SELECT * FROM raw_transaction")
+    fun findTransactions(): List<RawTransaction>
 }

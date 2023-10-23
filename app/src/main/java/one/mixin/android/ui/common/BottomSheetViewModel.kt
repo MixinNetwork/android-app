@@ -76,6 +76,7 @@ import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
 import timber.log.Timber
 import java.io.File
+import java.lang.IllegalArgumentException
 import java.util.UUID
 import javax.inject.Inject
 
@@ -160,12 +161,10 @@ class BottomSheetViewModel @Inject internal constructor(
         }
         val transactionRsp = assetRepository.transactions(TransactionRequest(signResult.raw, traceId))
         if (transactionRsp.error != null) {
-            // assetRepository.deleteRawTransaction(transactionRsp.data!!.transactionHash)
+            assetRepository.deleteRawTransaction(transactionRsp.data!!.transactionHash)
             return transactionRsp
         } else {
-            // Todo Restore transaction
-            // Timber.e(Kernel.decodeRawTx(signResult.raw, 0))
-            // assetRepository.deleteRawTransaction(transactionRsp.data!!.transactionHash)
+            assetRepository.deleteRawTransaction(transactionRsp.data!!.transactionHash)
         }
         val hash = arrayListOf<String>()
         hash.addAll(uxtos.map { it.transactionHash })

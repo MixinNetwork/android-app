@@ -52,6 +52,7 @@ import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.PropertyDao
+import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerAlbumDao
@@ -271,6 +272,10 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var outputDao: OutputDao
+
+    @Inject
+    @Transient
+    lateinit var rawTransactionDao: RawTransactionDao
 
     @Inject
     @Transient
