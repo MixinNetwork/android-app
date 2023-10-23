@@ -163,6 +163,7 @@ import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
 import one.mixin.android.session.Session
 import one.mixin.android.session.Session.registerPublicKey
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.RegisterActivity
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment.Companion.GROUP_VOICE_MAX_COUNT
@@ -205,6 +206,7 @@ import one.mixin.android.ui.sticker.StickerPreviewBottomSheetFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.wallet.TransactionFragment
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
@@ -2470,10 +2472,13 @@ class ConversationFragment() :
                     MenuType.Transfer -> {
                         binding.chatControl.reset()
                         if (Session.getAccount()?.hasPin == true) {
-                            recipient?.let {
-                                TransferFragment.newInstance(it.userId, supportSwitchAsset = true)
-                                    .showNow(parentFragmentManager, TransferFragment.TAG)
-                                jobManager.addJobInBackground(SyncOutputJob())
+                            if (!Session.hasSafe()) {
+                                RegisterActivity.show(context)
+                            } else {
+                                recipient?.let {
+                                    TransferFragment.newInstance(it.userId, supportSwitchAsset = true).showNow(parentFragmentManager, TransferFragment.TAG)
+                                    jobManager.addJobInBackground(SyncOutputJob())
+                                }
                             }
                         } else {
                             TipActivity.show(requireActivity(), TipType.Create, true)

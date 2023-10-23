@@ -22,6 +22,7 @@ import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
+import one.mixin.android.ui.RegisterActivity
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
@@ -79,7 +80,11 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
         } else {
             if (Session.getAccount()?.hasPin == true) {
-                WalletActivity.show(requireActivity())
+                if (!Session.hasSafe()) {
+                    RegisterActivity.show(requireActivity())
+                } else {
+                    WalletActivity.show(requireActivity())
+                }
             } else {
                 TipActivity.show(requireActivity(), TipType.Create, false)
             }

@@ -291,8 +291,11 @@ class MainActivity : BlazeBaseActivity() {
             TipActivity.show(this, TipType.Create)
             finish()
             return
+        } else if (Session.getTipPub() == null) {
+            TipActivity.show(this, TipType.Create)
+            finish()
+            return
         } else if (!Session.hasSafe()) {
-            // Todo check has tip pin
             RegisterActivity.show(this)
             finish()
             return
