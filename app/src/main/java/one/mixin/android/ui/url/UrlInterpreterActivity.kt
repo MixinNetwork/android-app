@@ -13,12 +13,13 @@ import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.WalletConnect
-import one.mixin.android.ui.RegisterActivity
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
@@ -112,7 +113,7 @@ class UrlInterpreterActivity : BaseActivity() {
                 uri.lastPathSegment?.let { lastPathSegment ->
                     if (Session.getAccount()?.hasPin == true) {
                         if (!Session.hasSafe()) {
-                            RegisterActivity.show(this)
+                            TipActivity.show(this, TipType.Register)
                         } else {
                             // Todo old Transfer
                             TransferFragment.newInstance(lastPathSegment, supportSwitchAsset = true)

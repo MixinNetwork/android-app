@@ -35,7 +35,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
-import one.mixin.android.ui.RegisterActivity
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.tip.TipActivity
@@ -217,7 +216,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
                 INTERNAL_WALLET_ID -> {
                     if (Session.getAccount()?.hasPin == true) {
                         if (!Session.hasSafe()) {
-                            RegisterActivity.show(requireActivity())
+                            TipActivity.show(requireActivity(), TipType.Register)
                         } else {
                             WalletActivity.show(requireActivity())
                         }

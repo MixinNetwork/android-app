@@ -163,7 +163,6 @@ import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
 import one.mixin.android.session.Session
 import one.mixin.android.session.Session.registerPublicKey
 import one.mixin.android.tip.Tip
-import one.mixin.android.ui.RegisterActivity
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment.Companion.GROUP_VOICE_MAX_COUNT
@@ -2473,7 +2472,7 @@ class ConversationFragment() :
                         binding.chatControl.reset()
                         if (Session.getAccount()?.hasPin == true) {
                             if (!Session.hasSafe()) {
-                                RegisterActivity.show(requireContext())
+                                TipActivity.show(requireActivity(), TipType.Register)
                             } else {
                                 recipient?.let {
                                     TransferFragment.newInstance(it.userId, supportSwitchAsset = true).showNow(parentFragmentManager, TransferFragment.TAG)

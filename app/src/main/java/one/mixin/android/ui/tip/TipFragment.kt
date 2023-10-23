@@ -15,8 +15,10 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
+import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.databinding.FragmentTipBinding
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
@@ -24,6 +26,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
@@ -38,6 +41,7 @@ import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 import javax.inject.Inject
@@ -88,6 +92,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 TipType.Create -> titleTv.setText(R.string.Create_PIN)
                 TipType.Change -> titleTv.setText(R.string.Change_PIN)
                 TipType.Upgrade -> titleTv.setText(R.string.Upgrade_TIP)
+                TipType.Register -> titleTv.setText(R.string.Get_a_new_wallet)
             }
         }
 
@@ -151,6 +156,15 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                                     }
                                 }
                             }
+                            TipType.Register -> {
+                                innerTv.text = getString(R.string.Continue)
+                                innerTv.setOnClickListener {
+                                    showVerifyPin(getString(R.string.Enter_your_PIN)) { pin ->
+                                        tipBundle.pin = pin
+                                        onTipProcessSuccess(pin, null)
+                                    }
+                                }
+                            }
                             else -> {
                                 innerTv.text = getString(R.string.Start)
                                 innerTv.setOnClickListener { start() }
@@ -201,7 +215,34 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                             bottomVa.displayedChild = 2
                             bottomHintTv.text = getString(R.string.Generating_keys)
                         }
+                        is Processing.Registering -> {
+                            bottomVa.displayedChild = 2
+                            bottomHintTv.text = getString(R.string.Registering)
+                        }
                     }
+                }
+                is RetryRegister -> {
+                    closeIv.isVisible = false
+                    setTitle(forRecover)
+                    tipsTv.isVisible = true
+                    bottomVa.displayedChild = 0
+                    innerVa.displayedChild = 0
+                    innerTv.text = getString(R.string.Retry)
+                    innerTv.setOnClickListener {
+                        val pin = tipBundle.pin
+                        if (pin.isNullOrBlank()) {
+                            showInputPin { p ->
+                                tipBundle.pin = p
+                                onTipProcessSuccess(p, tipStep.tipPriv)
+                            }
+                        } else {
+                            lifecycleScope.launch {
+                                onTipProcessSuccess(pin, tipStep.tipPriv)
+                            }
+                        }
+                    }
+                    bottomHintTv.text = tipStep.reason
+                    bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
                 }
             }
         }
@@ -285,6 +326,12 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     processTip()
                 }
             }
+            TipType.Register -> {
+                showVerifyPin(getString(R.string.Enter_your_PIN)) { pin ->
+                    tipBundle.pin = pin
+                    onTipProcessSuccess(pin, null)
+                }
+            }
         }
     }
 
@@ -322,7 +369,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             onTipProcessFailure(e, pin, tipCounter, nodeCounter)
         }.onSuccess {
             tip.removeObserver(tipObserver)
-            onTipProcessSuccess(pin)
+            onTipProcessSuccess(pin, it)
         }
     }
 
@@ -375,7 +422,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             // If new session counter equals new node counter,
             // we consider this case as PIN update success.
             if (newNodeCounter == newSessionCounter) {
-                onTipProcessSuccess(pin)
+                onTipProcessSuccess(pin, null)
                 return
             }
         }
@@ -383,34 +430,84 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         updateTipStep(RetryProcess(errMsg))
     }
 
-    private fun onTipProcessSuccess(pin: String) {
-        val cur = System.currentTimeMillis()
-        defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
-        putPrefPinInterval(requireContext(), INTERVAL_10_MINS)
+    private suspend fun onTipProcessSuccess(pin: String, tipPriv: ByteArray?) {
+        if (!Session.hasSafe()) {
+            if (!registerPublicKey(pin, tipPriv)) {
+                // register public key failed, already go to RetryRegister
+                return
+            }
+        }
 
-        val openBiometrics = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-        if (openBiometrics) {
-            BiometricUtil.savePin(requireContext(), pin, this)
+        if (tipBundle.tipType != TipType.Register) {
+            val cur = System.currentTimeMillis()
+            defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
+            putPrefPinInterval(requireContext(), INTERVAL_10_MINS)
+
+            val openBiometrics = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
+            if (openBiometrics) {
+                BiometricUtil.savePin(requireContext(), pin, this)
+            }
         }
 
         when (tipBundle.tipType) {
             TipType.Change -> toast(R.string.Change_PIN_successfully)
             TipType.Create -> toast(R.string.Set_PIN_successfully)
             TipType.Upgrade -> toast(R.string.Upgrade_TIP_successfully)
+            TipType.Register -> toast(R.string.Get_a_new_wallet_successfully)
         }
 
         activity?.finish()
     }
 
-    private fun showVerifyPin(title: String? = null, onVerifySuccess: (String) -> Unit) {
+    private suspend fun registerPublicKey(pin: String, tipPriv: ByteArray?): Boolean {
+        Timber.d("start registerPublicKey")
+        updateTipStep(Processing.Registering)
+        nodeFailedInfo = ""
+        val seed = try {
+            tipPriv ?: tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
+        } catch (e: Exception) {
+            tipBundle.oldPin = null
+            val errorInfo = e.getTipExceptionMsg(requireContext())
+            updateTipStep(RetryRegister(null, errorInfo))
+            return false
+        }
+        val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
+        val keyPair = newKeyPairFromSeed(seed)
+        val registerResp = viewModel.registerPublicKey(
+            registerRequest = RegisterRequest(
+                keyPair.publicKey.toHex(),
+                Session.registerPublicKey(selfId, seed)
+            )
+        )
+        return if (registerResp.isSuccess) {
+            val account = Session.getAccount()
+            account?.let{
+                it.hasSafe = true
+                Session.storeAccount(it)
+            }
+            true
+        } else {
+            tipBundle.oldPin = null
+            val error = requireNotNull(registerResp.error) { "error can not be null" }
+            val errorInfo = requireContext().getMixinErrorStringByCode(error.code, error.description)
+            updateTipStep(RetryRegister(tipPriv, errorInfo))
+            false
+        }
+    }
+
+    private fun showVerifyPin(title: String? = null, onVerifySuccess: suspend (String) -> Unit) {
         VerifyBottomSheetDialogFragment.newInstance(title ?: getString(R.string.Enter_your_old_PIN), true).setOnPinSuccess { pin ->
-            onVerifySuccess(pin)
+            lifecycleScope.launch {
+                onVerifySuccess(pin)
+            }
         }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
     }
 
-    private fun showInputPin(title: String? = null, onInputComplete: (String) -> Unit) {
+    private fun showInputPin(title: String? = null, onInputComplete: suspend (String) -> Unit) {
         PinInputBottomSheetDialogFragment.newInstance(title ?: getString(R.string.Enter_your_new_PIN)).setOnPinComplete { pin ->
-            onInputComplete(pin)
+            lifecycleScope.launch {
+                onInputComplete(pin)
+            }
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
     }
 
@@ -420,7 +517,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 descTv.text = getString(
                     when (tipBundle.tipType) {
                         TipType.Create -> R.string.Creating_wallet_terminated_unexpectedly
-                        TipType.Upgrade -> R.string.Upgrading_TIP_terminated_unexpectedly
+                        TipType.Upgrade, TipType.Register -> R.string.Upgrading_TIP_terminated_unexpectedly
                         TipType.Change -> R.string.Changing_PIN_terminated_unexpectedly
                     },
                 )

@@ -8,7 +8,6 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.session.Session
-import one.mixin.android.ui.RegisterActivity
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.MainActivity
@@ -32,7 +31,7 @@ constructor(mainActivity: MainActivity) {
     fun pushWallet(deviceId: String? = null) {
         if (Session.getAccount()?.hasPin == true) {
             if (!Session.hasSafe()) {
-                RegisterActivity.show(context)
+                TipActivity.show(context, TipType.Register)
             } else {
                 WalletActivity.show(context)
             }

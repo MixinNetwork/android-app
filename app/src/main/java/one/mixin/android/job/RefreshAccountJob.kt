@@ -94,6 +94,13 @@ class RefreshAccountJob(
                     },
                 ).onSuccess {
                     tipCounterSynced.synced = true
+
+                    if (Session.getAccount()?.hasPin != true || Session.getTipPub() == null) {
+                        RxBus.publish(TipEvent(0, null))
+                    } else if (!Session.hasSafe()) {
+                        // TipEvent nodeCounter -1 means counter balanced and need register
+                        RxBus.publish(TipEvent(-1, null))
+                    }
                 }
             }
         }

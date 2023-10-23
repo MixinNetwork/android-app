@@ -111,12 +111,10 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.wc.WCErrorEvent
 import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
-import one.mixin.android.ui.RegisterActivity
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -288,20 +286,6 @@ class MainActivity : BlazeBaseActivity() {
             AppCenter.setUserId(it.userId)
         }
 
-        if (Session.getAccount()?.hasPin != true) {
-            TipActivity.show(this, TipType.Create)
-            finish()
-            return
-        } else if (Session.getTipPub() == null) {
-            TipActivity.show(this, TipType.Create)
-            finish()
-            return
-        } else if (!Session.hasSafe()) {
-            RegisterActivity.show(this)
-            finish()
-            return
-        }
-
         initView()
         handlerCode(intent)
 
@@ -423,7 +407,11 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun handleTipEvent(e: TipEvent, deviceId: String) {
         val nodeCounter = e.nodeCounter
-        if (nodeCounter == 1) {
+        if (nodeCounter == -1) {
+            TipActivity.show(this, TipType.Register)
+        } else if (nodeCounter == 0) {
+            TipActivity.show(this, TipType.Create)
+        } else if (nodeCounter == 1) {
             val tipType = if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
             TipActivity.show(this, TipBundle(tipType, deviceId, TryConnecting, tipEvent = e))
         } else if (nodeCounter > 1) {

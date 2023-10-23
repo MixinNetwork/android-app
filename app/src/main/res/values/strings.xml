@@ -485,6 +485,7 @@
     <string name="From">From</string>
     <string name="Generating_keys">Generating keys…</string>
     <string name="Get_a_new_wallet">Get a new wallet</string>
+    <string name="Get_a_new_wallet_successfully">Get a new wallet successfully</string>
     <string name="GIF">GIF</string>
     <string name="Go">Go</string>
     <string name="Go_settings">Go settings</string>
@@ -787,6 +788,7 @@
     <string name="Recent_searches">Recent searches</string>
     <string name="Refresh">Refresh</string>
     <string name="Refuse">Refuse</string>
+    <string name="Registering">Registering…</string>
     <string name="Reload">Reload</string>
     <string name="Remove_all">Remove All</string>
     <string name="Remove_all_floats">Remove all floats?</string>

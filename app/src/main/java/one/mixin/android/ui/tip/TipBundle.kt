@@ -11,12 +11,12 @@ import one.mixin.android.extension.getParcelableExtraCompat
 
 @Parcelize
 enum class TipType : Parcelable {
-    Create, Change, Upgrade
+    Create, Change, Upgrade, Register
 }
 
 sealed class TipStep : Parcelable
 
-@Parcelize internal object TryConnecting : TipStep()
+@Parcelize internal data object TryConnecting : TipStep()
 
 @Parcelize internal data class RetryConnect(val shouldWatch: Boolean, val reason: String) : TipStep()
 
@@ -25,12 +25,16 @@ sealed class TipStep : Parcelable
 @Parcelize internal data class RetryProcess(val reason: String) : TipStep()
 
 @Parcelize internal sealed class Processing : TipStep() {
-    @Parcelize internal object Creating : Processing()
+    @Parcelize internal data object Creating : Processing()
 
     @Parcelize internal data class SyncingNode(val step: Int, val total: Int) : Processing()
 
-    @Parcelize internal object Updating : Processing()
+    @Parcelize internal data object Updating : Processing()
+
+    @Parcelize internal data object Registering: Processing()
 }
+
+@Parcelize internal data class RetryRegister(val tipPriv: ByteArray?, val reason: String) : TipStep()
 
 @Parcelize
 data class TipBundle(
@@ -44,6 +48,8 @@ data class TipBundle(
     fun forChange() = tipType == TipType.Change
 
     fun forCreate() = tipType == TipType.Create
+
+    fun forRegister() = tipType == TipType.Register
 
     fun forRecover() = tipEvent != null
 

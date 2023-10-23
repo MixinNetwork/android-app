@@ -610,8 +610,6 @@ constructor(
 
     suspend fun transactions(transactionRequest: TransactionRequest) = utxoService.transactions(transactionRequest)
 
-    suspend fun registerPublicKey(registerRequest: RegisterRequest) = utxoService.registerPublicKey(registerRequest)
-
     suspend fun ghostKey(ghostKeyRequest: List<GhostKeyRequest>) = utxoService.ghostKey(ghostKeyRequest)
 
     suspend fun findOutputs(limit: Int, asset: String) = outputDao.findUnspentOutputsByAsset(limit, asset)
