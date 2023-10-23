@@ -6,12 +6,14 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import one.mixin.android.Constants.DataBase.SIGNAL_DB_NAME
 import one.mixin.android.crypto.vo.Identity
 import one.mixin.android.crypto.vo.PreKey
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.SenderKey
 import one.mixin.android.crypto.vo.Session
 import one.mixin.android.crypto.vo.SignedPreKey
+import one.mixin.android.util.database.getDbPath
 
 @Database(
     entities = [
@@ -54,12 +56,16 @@ abstract class SignalDatabase : RoomDatabase() {
 
         fun getDatabase(context: Context): SignalDatabase {
             if (INSTANCE == null) {
-                INSTANCE = Room.databaseBuilder(context, SignalDatabase::class.java, "signal.db")
+                INSTANCE = Room.databaseBuilder(context, SignalDatabase::class.java, getDbPath(context, SIGNAL_DB_NAME, true))
                     .addMigrations(MIGRATION_2_3)
                     .addCallback(CALLBACK)
                     .build()
             }
             return INSTANCE as SignalDatabase
+        }
+
+        fun release() {
+            INSTANCE = null
         }
 
         private val CALLBACK = object : RoomDatabase.Callback() {

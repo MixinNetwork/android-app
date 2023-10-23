@@ -13,6 +13,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.DeactivateVerificationRequest
+import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
@@ -43,6 +44,18 @@ class MobileViewModel @Inject internal constructor(
         accountRepository.create(id, request)
     }
 
+    suspend fun createEmergency(request: EmergencyRequest): MixinResponse<VerificationResponse> = withContext(Dispatchers.IO) {
+        accountRepository.createEmergency(request)
+    }
+
+    suspend fun createVerifyEmergency(id: String, request: EmergencyRequest): MixinResponse<Account> = withContext(Dispatchers.IO) {
+        accountRepository.createVerifyEmergency(id, request)
+    }
+
+    suspend fun loginVerifyEmergency(id: String, request: EmergencyRequest): MixinResponse<Account> = withContext(Dispatchers.IO) {
+        accountRepository.loginVerifyEmergency(id, request)
+    }
+
     suspend fun changePhone(id: String, verificationCode: String, pin: String): MixinResponse<Account> =
         accountRepository.changePhone(
             id,
@@ -61,10 +74,4 @@ class MobileViewModel @Inject internal constructor(
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
         accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-
-    fun insertUser(user: User) = viewModelScope.launch(Dispatchers.IO) {
-        userRepository.upsert(user)
-    }
-
-    fun updatePhone(id: String, phone: String) = userRepository.updatePhone(id, phone)
 }

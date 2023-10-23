@@ -56,6 +56,7 @@ import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
+import one.mixin.android.util.database.getDbPath
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Address
@@ -178,12 +179,16 @@ abstract class MixinDatabase : RoomDatabase() {
         private val lock = Any()
         private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
 
+        fun release() {
+            INSTANCE = null
+        }
+
         @Suppress("UNUSED_ANONYMOUS_PARAMETER")
         @SuppressLint("RestrictedApi")
         fun getDatabase(context: Context): MixinDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
-                    val builder = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
+                    val builder = Room.databaseBuilder(context, MixinDatabase::class.java, getDbPath(context, DB_NAME))
                         .openHelperFactory(
                             MixinOpenHelperFactory(
                                 FrameworkSQLiteOpenHelperFactory(),

@@ -4,35 +4,41 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.LayoutRes
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DEVICE_ID
+import one.mixin.android.Constants.DataBase.SIGNAL_DB_NAME
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
+import one.mixin.android.crypto.db.SignalDatabase
+import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.pending.PendingDatabaseImp
 import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.moveTo
 import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.tickVibrate
+import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.database.clearDatabase
-import one.mixin.android.util.database.clearJobs
-import one.mixin.android.util.database.getLastUserId
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.VerificationCodeView
+import java.io.File
 
 abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFragment(contentLayoutId) {
     companion object {
@@ -89,21 +95,19 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
 
         val account = response.data as Account
 
-        val lastUserId = getLastUserId(requireContext())
-        val sameUser = lastUserId != null && lastUserId == account.userId
-        if (sameUser) {
-            showLoading()
-            clearJobs(requireContext())
-        } else {
-            showLoading()
-            clearDatabase(requireContext())
-            defaultSharedPreferences.clear()
-        }
+        showLoading()
+        // Release the singleton and re-inject
+        MixinDatabase.release()
+        PendingDatabaseImp.release()
+        FtsDatabase.release()
+        SignalDatabase.release()
+        defaultSharedPreferences.clear()
+
         val privateKey = sessionKey.privateKey
         val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
         Session.storeEd25519Seed(privateKey.base64Encode())
         Session.storePinToken(pinToken.base64Encode())
-        Session.storeAccount(account)
+        Session.storeAccount(account) // After that, you can use the database.
         defaultSharedPreferences.putString(DEVICE_ID, requireContext().getStringDeviceId())
 
         verificationKeyboard.animate().translationY(300f).start()
@@ -111,17 +115,35 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
 
         hideLoading()
         action.invoke()
+        lifecycleScope.launch {
+            // Move the initialization created Signal database to the account path
+            withContext(Dispatchers.IO) {
+                val context = requireContext()
+                val identityNumber = Session.getAccount()?.identityNumber ?: return@withContext
+                val dbDir = context.getDatabasePath(SIGNAL_DB_NAME).parentFile
+                val toDir = File(dbDir, identityNumber)
+                if (!toDir.exists()) {
+                    toDir.mkdirs()
+                }
+                dbDir.listFiles().forEach { file ->
+                    if (file.name.startsWith(SIGNAL_DB_NAME)) {
+                        file.moveTo(File(toDir, file.name))
+                    }
+                }
+                SignalDatabase.release()
 
-        when {
-            account.fullName.isNullOrBlank() -> {
-                insertUser(account.toUser())
-                InitializeActivity.showSetupName(requireContext())
             }
-            else -> {
-                RestoreActivity.show(requireContext())
+            when {
+                account.fullName.isNullOrBlank() -> {
+                    insertUser(account.toUser())
+                    InitializeActivity.showSetupName(requireContext())
+                }
+                else -> {
+                    RestoreActivity.show(requireContext())
+                }
             }
+            activity?.finish()
         }
-        activity?.finish()
     }
 
     abstract fun clickNextFab()

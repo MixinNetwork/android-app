@@ -15,6 +15,7 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.database.getDbPath
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
@@ -38,6 +39,9 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
         private var INSTANCE: PendingDatabaseImp? = null
 
         private val lock = Any()
+        fun release() {
+            INSTANCE = null
+        }
 
         fun getDatabase(context: Context, floodMessageDao: FloodMessageDao, jobDao: JobDao): PendingDatabaseImp {
             synchronized(lock) {
@@ -45,7 +49,7 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                     val builder = Room.databaseBuilder(
                         context,
                         PendingDatabaseImp::class.java,
-                        PENDING_DB_NAME,
+                        getDbPath(context, PENDING_DB_NAME),
                     ).enableMultiInstanceInvalidation().addCallback(
                         object : Callback() {
                             override fun onOpen(db: SupportSQLiteDatabase) {
