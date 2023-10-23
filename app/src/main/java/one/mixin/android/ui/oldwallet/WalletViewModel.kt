@@ -16,6 +16,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.User
@@ -52,6 +53,8 @@ internal constructor(
         jobManager.addJobInBackground(RefreshAssetsJob(assetId))
     }
 
+    suspend fun refreshAsset(assetId: String): Asset? = assetRepository.refreshAsset(assetId)
+
     suspend fun errorCount() = accountRepository.errorCount()
 
     suspend fun ticker(assetId: String, offset: String?) = assetRepository.ticker(assetId, offset)
@@ -68,4 +71,13 @@ internal constructor(
     suspend fun profile(): MixinResponse<ProfileResponse> = assetRepository.profile()
 
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
+
+    fun observeAddress(addressId: String) = assetRepository.observeAddress(addressId)
+
+    fun findUserById(conversationId: String): LiveData<User> = userRepository.findUserById(conversationId)
+
+    fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
+
+    suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
+        assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
 }

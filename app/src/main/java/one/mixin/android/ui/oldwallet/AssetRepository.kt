@@ -43,7 +43,6 @@ import javax.inject.Singleton
 class AssetRepository
 @Inject
 constructor(
-    private val appDatabase: MixinDatabase,
     private val assetService: AssetService,
     private val routeService: RouteService,
     private val assetDao: AssetDao,
@@ -340,4 +339,6 @@ constructor(
     suspend fun payment(paymentId: String): MixinResponse<RoutePaymentResponse> = routeService.payment(paymentId)
 
     suspend fun token(tokenRequest: RouteTokenRequest) = routeService.token(tokenRequest)
+
+    fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 }
