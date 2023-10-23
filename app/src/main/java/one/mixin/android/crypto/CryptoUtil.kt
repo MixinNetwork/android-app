@@ -11,6 +11,7 @@ import okhttp3.tls.HeldCertificate
 import okio.ByteString.Companion.toByteString
 import one.mixin.android.extension.base64Encode
 import one.mixin.eddsa.Ed25519Sign
+import one.mixin.eddsa.Ed25519Verify
 import one.mixin.eddsa.Field25519
 import org.komputing.khash.keccak.KeccakParameter
 import org.komputing.khash.keccak.extensions.digestKeccak
@@ -95,6 +96,14 @@ fun publicKeyToCurve25519(publicKey: ByteArray): ByteArray {
         val p = publicKey.map { it.toInt().toByte() }.toByteArray()
         val x = edwardsToMontgomeryX(Field25519.expand(p))
         Field25519.contract(x)
+    }
+}
+
+fun verifyCurve25519Signature(message:ByteArray, sig:ByteArray, pub:ByteArray): Boolean {
+    return if (useGoEd()) {
+        Ed25519.verify(message, sig, pub)
+    } else {
+        Ed25519Verify(pub.toByteString()).verify(sig.toByteString(), message.toByteString())
     }
 }
 private fun edwardsToMontgomeryX(y: LongArray): LongArray {

@@ -302,6 +302,8 @@ object Constants {
     const val MIXIN_BOTS_USER_NAME = "Mixin Bots"
     const val MIXIN_DATA_USER_NAME = "Mixin Data"
 
+    const val SAFE_PUBLIC_KEY = "8f94e89d03fa128a7081c5fe73c6814010c5ca74438411a42df87c6023dfa94d"
+
     // Only for third-party messenger user
     const val TEAM_BOT_ID = ""
     const val TEAM_BOT_NAME = ""

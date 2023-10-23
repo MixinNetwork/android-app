@@ -24,7 +24,7 @@ data class Deposit(
     val members: List<String>,
     @ColumnInfo(name = "tag")
     @SerializedName("tag")
-    val tag: String,
+    val tag: String?,
     @ColumnInfo(name="signature")
     @SerializedName("signature")
     val signature: String,

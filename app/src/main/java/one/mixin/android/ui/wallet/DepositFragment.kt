@@ -201,8 +201,7 @@ class DepositFragment : BaseFragment() {
     }
 
     private fun refreshAsset(asset: TokenItem) {
-        if (asset.getDestination().isNullOrBlank()) return
-
+        if (!asset.getDestination().isNullOrBlank()) return
         lifecycleScope.launch {
             val assetItem = walletViewModel.findOrSyncAsset(asset.assetId)
             if (assetItem == null) {

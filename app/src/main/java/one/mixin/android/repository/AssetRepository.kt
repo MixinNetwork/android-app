@@ -10,10 +10,12 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.liveData
 import androidx.room.withTransaction
+import ed25519.Ed25519
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.SAFE_PUBLIC_KEY
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
@@ -36,6 +38,8 @@ import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.UtxoService
+import one.mixin.android.crypto.sha3Sum256
+import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.TokenDao
 import one.mixin.android.db.AssetsExtraDao
@@ -48,6 +52,9 @@ import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.db.provider.DataProvider
+import one.mixin.android.extension.base64RawURLDecode
+import one.mixin.android.extension.decodeHex
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
@@ -76,7 +83,9 @@ import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
 import one.mixin.android.vo.utxo.RawTransaction
+import one.mixin.eddsa.Ed25519Verify
 import retrofit2.Call
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -122,7 +131,7 @@ constructor(
 
     suspend fun findOrSyncAsset(assetId: String): TokenItem? {
         var assetItem = tokenDao.findAssetItemById(assetId)
-        if (assetItem != null && assetItem.getDestination().isNullOrBlank()) {
+        if (assetItem != null && !assetItem.getDestination().isNullOrBlank()) {
             return assetItem
         } else if (assetItem != null) {
             val userId = requireNotNull(Session.getAccountId())
@@ -133,8 +142,12 @@ constructor(
                     )
                 },
                 successBlock = { resp ->
-                    resp.data?.let { list ->
-                        // Todo check verify
+                    val pub = SAFE_PUBLIC_KEY.hexStringToByteArray()
+                    resp.data?.filter {
+                        val message = it.destination.toByteArray().sha3Sum256()
+                        val signature = it.signature.hexStringToByteArray()
+                        verifyCurve25519Signature(message, signature, pub)
+                    }?.let { list ->
                         depositDao.insertList(list)
                     }
                 },

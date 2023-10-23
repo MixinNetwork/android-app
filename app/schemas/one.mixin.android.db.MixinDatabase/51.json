@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "828b01143dba22ab2209c0bf4a9f319a",
+    "identityHash": "2cb879b5f114bbee94625dc28c574b28",
     "entities": [
       {
         "tableName": "users",
@@ -2556,7 +2556,7 @@
       },
       {
         "tableName": "deposits",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`entry_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `members` TEXT NOT NULL, `tag` TEXT NOT NULL, `signature` TEXT NOT NULL, `threshold` INTEGER NOT NULL, PRIMARY KEY(`entry_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`entry_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `members` TEXT NOT NULL, `tag` TEXT, `signature` TEXT NOT NULL, `threshold` INTEGER NOT NULL, PRIMARY KEY(`entry_id`))",
         "fields": [
           {
             "fieldPath": "entryId",
@@ -2586,7 +2586,7 @@
             "fieldPath": "tag",
             "columnName": "tag",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "signature",
@@ -2750,7 +2750,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '828b01143dba22ab2209c0bf4a9f319a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2cb879b5f114bbee94625dc28c574b28')"
     ]
   }
 }
