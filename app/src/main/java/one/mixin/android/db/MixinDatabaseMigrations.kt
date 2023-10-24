@@ -380,6 +380,7 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("CREATE TABLE IF NOT EXISTS `deposits` (`entry_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `priority` INTEGER NOT NULL, `members` TEXT NOT NULL, `tag` TEXT, `signature` TEXT NOT NULL, `threshold` INTEGER NOT NULL, PRIMARY KEY(`entry_id`))")
                 database.execSQL("CREATE TABLE IF NOT EXISTS `transaction_requests` (`transaction_hash` TEXT NOT NULL, `raw_transaction` TEXT NOT NULL, `created_at` INTEGER NOT NULL, PRIMARY KEY(`transaction_hash`))")
                 database.execSQL("CREATE TABLE IF NOT EXISTS `safe_snapshots` (`snapshot_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `created_at` TEXT NOT NULL, `opponent_id` TEXT, `trace_id` TEXT, `transaction_hash` TEXT, `sender` TEXT, `receiver` TEXT, `memo` TEXT, `confirmations` INTEGER, `snapshot_hash` TEXT, `opening_balance` TEXT, `closing_balance` TEXT, PRIMARY KEY(`snapshot_id`))")
+                database.execSQL("ALTER TABLE `chains` ADD COLUMN `withdrawal_memo_possibility` TEXT ``")
                 database.execSQL("ALTER TABLE `assets_extra` ADD COLUMN `asset` TEXT ''")
                 database.execSQL("ALTER TABLE `assets_extra` ADD COLUMN `balance` TEXT")
                 database.execSQL("ALTER TABLE `assets_extra` ADD COLUMN `updated_at` TEXT")
