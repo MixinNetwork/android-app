@@ -137,7 +137,11 @@ constructor(
                 successBlock = { resp ->
                     val pub = SAFE_PUBLIC_KEY.hexStringToByteArray()
                     resp.data?.filter {
-                        val message = it.destination.toByteArray().sha3Sum256()
+                        val message = if (it.tag.isNullOrBlank()) {
+                            it.destination
+                        } else {
+                            "${it.destination}:${it.tag}"
+                        }.toByteArray().sha3Sum256()
                         val signature = it.signature.hexStringToByteArray()
                         verifyCurve25519Signature(message, signature, pub)
                     }?.let { list ->
