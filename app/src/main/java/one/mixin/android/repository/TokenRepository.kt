@@ -262,8 +262,6 @@ constructor(
 
     fun getXIN() = tokenDao.getXIN()
 
-    suspend fun transfer(transferRequest: TransferRequest) = tokenService.transfer(transferRequest)
-
     suspend fun paySuspend(request: TransferRequest) = tokenService.paySuspend(request)
 
     suspend fun updateHidden(id: String, hidden: Boolean) {

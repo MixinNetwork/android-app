@@ -312,6 +312,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
 
             fun bind(asset: TokenItem, show: Boolean, currentType: Int) {
                 headerBinding.apply {
+                    groupInfoMemberTitleSort.visibility = View.GONE
                     groupInfoMemberTitleSort.setOnClickListener {
                         showFiltersSheet()
                     }
@@ -335,7 +336,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                         }
                     }
                     bottomRl.isVisible = show
-
                     when (currentType) {
                         R.id.filters_radio_all -> {
                             groupInfoMemberTitle.setText(R.string.Transactions)

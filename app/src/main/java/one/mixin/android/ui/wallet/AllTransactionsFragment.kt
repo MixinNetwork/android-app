@@ -53,6 +53,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         binding.apply {
             titleView.apply {
                 leftIb.setOnClickListener { view.findNavController().navigateUp() }
+                rightAnimator.visibility = GONE
                 rightAnimator.setOnClickListener { showFiltersSheet() }
             }
             transactionsRv.itemAnimator = null

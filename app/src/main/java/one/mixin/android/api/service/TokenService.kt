@@ -58,8 +58,6 @@ interface TokenService {
         @Query("tag") tag: String? = null,
     ): MixinResponse<List<SafeSnapshot>>
 
-    @POST("transfers")
-    suspend fun transfer(@Body request: TransferRequest): MixinResponse<SafeSnapshot>
 
     @POST("payments")
     suspend fun paySuspend(@Body request: TransferRequest): MixinResponse<PaymentResponse>
@@ -83,7 +81,7 @@ interface TokenService {
     @GET("network/assets/top")
     fun topAssets(@Query("kind") kind: String = "NORMAL"): Call<MixinResponse<List<TopAsset>>>
 
-    @GET("/snapshots/trace/{id}")
+    @GET("safe/snapshots/trace/{id}")
     suspend fun getTrace(@Path("id") traceId: String): MixinResponse<SafeSnapshot>
 
     @GET("network/ticker")
