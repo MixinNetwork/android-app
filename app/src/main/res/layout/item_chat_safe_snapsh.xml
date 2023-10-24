@@ -26,8 +26,8 @@
 
         <one.mixin.android.widget.CircleImageView
             android:id="@+id/bill_iv"
-            android:layout_width="14dp"
-            android:layout_height="14dp"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
             android:layout_marginBottom="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
@@ -42,10 +42,13 @@
             android:layout_marginStart="4dp"
             android:ellipsize="end"
             android:singleLine="true"
-            android:textColor="?attr/text_primary"
+            android:textColor="?attr/text_minor"
             android:layout_alignTop="@+id/bill_iv"
+            android:layout_alignBottom="@id/bill_iv"
             android:layout_toEndOf="@+id/bill_iv"
-            android:textSize="14sp" />
+            android:gravity="center_vertical"
+            android:textSize="14sp"
+            tools:text="Eth"/>
 
         <TextView
             android:id="@+id/bill_tv"
@@ -55,7 +58,7 @@
             android:singleLine="true"
             android:textColor="?attr/text_primary"
             android:layout_alignStart="@id/bill_iv"
-            android:textSize="18sp"
+            android:textSize="22sp"
             android:textStyle="bold"
             android:layout_marginTop="12dp"
             android:layout_below="@id/bill_iv"

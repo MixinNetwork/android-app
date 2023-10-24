@@ -1039,7 +1039,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
         safeSnapshotDao.insert(snapshot)
         insertMessage(message, data)
-        // Todo
         jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
 
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
