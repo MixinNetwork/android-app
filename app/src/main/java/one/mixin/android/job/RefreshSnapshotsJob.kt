@@ -29,7 +29,7 @@ class RefreshSnapshotsJob(
             snapshotDao.insertListSuspend(list)
             list.forEach { item ->
                 if (tokenDao.simpleAsset(item.assetId) == null) {
-                    jobManager.addJobInBackground(RefreshAssetsJob(item.assetId))
+                    jobManager.addJobInBackground(RefreshTokensJob(item.assetId))
                 }
             }
             list.lastOrNull()?.let {

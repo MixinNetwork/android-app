@@ -19,6 +19,7 @@ import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.WebSocketException
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AddressService
+import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.api.service.ConversationService
@@ -32,6 +33,7 @@ import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AppDao
+import one.mixin.android.db.AssetDao
 import one.mixin.android.db.AssetsExtraDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.CircleConversationDao
@@ -123,6 +125,10 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
+    lateinit var assetService: AssetService
+
+    @Inject
+    @Transient
     lateinit var accountService: AccountService
 
     @Inject
@@ -168,6 +174,10 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var offsetDao: OffsetDao
+
+    @Inject
+    @Transient
+    lateinit var assetDao: AssetDao
 
     @Inject
     @Transient

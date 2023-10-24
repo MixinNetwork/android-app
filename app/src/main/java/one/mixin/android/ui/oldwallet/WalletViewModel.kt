@@ -14,6 +14,7 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
+import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.Asset

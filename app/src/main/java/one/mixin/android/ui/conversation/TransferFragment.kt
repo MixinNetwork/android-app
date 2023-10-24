@@ -71,7 +71,7 @@ import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAssetsJob
+import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -220,7 +220,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             setCustomView(contentView)
         }
 
-        jobManager.addJobInBackground(RefreshAssetsJob())
+        jobManager.addJobInBackground(RefreshTokensJob())
         binding.titleView.leftIb.setOnClickListener {
             contentView.hideKeyboard()
             dismiss()
@@ -319,7 +319,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             binding.continueVa.displayedChild = POST_TEXT
             val feeAsset = chatViewModel.refreshAsset(address.feeAssetId)
             if (feeAsset == null) {
-                jobManager.addJobInBackground(RefreshAssetsJob(address.feeAssetId))
+                jobManager.addJobInBackground(RefreshTokensJob(address.feeAssetId))
                 return@launch
             }
             binding.memoRl.isVisible = isInnerTransfer()

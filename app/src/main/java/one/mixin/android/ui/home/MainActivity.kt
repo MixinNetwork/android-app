@@ -96,6 +96,7 @@ import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshAssetsJob
+import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshCircleJob
 import one.mixin.android.job.RefreshContactJob
 import one.mixin.android.job.RefreshExternalSchemeJob
@@ -340,6 +341,7 @@ class MainActivity : BlazeBaseActivity() {
         refreshStickerAlbum()
         refreshExternalSchemes()
         cleanCache()
+        jobManager.addJobInBackground(RefreshTokensJob())
         jobManager.addJobInBackground(RefreshAssetsJob())
         sendSafetyNetRequest()
         checkBatteryOptimization()

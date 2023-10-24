@@ -24,7 +24,7 @@ import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAssetsJob
+import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshTopAssetsJob
 import one.mixin.android.job.RefreshUserJob
@@ -160,14 +160,14 @@ internal constructor(
     }
 
     fun refreshAsset(assetId: String? = null) {
-        jobManager.addJobInBackground(RefreshAssetsJob(assetId))
+        jobManager.addJobInBackground(RefreshTokensJob(assetId))
     }
 
     suspend fun queryAsset(query: String): List<TokenItem> = tokenRepository.queryAsset(query)
 
     fun saveAssets(hotAssetList: List<TopAssetItem>) {
         hotAssetList.forEach {
-            jobManager.addJobInBackground(RefreshAssetsJob(it.assetId))
+            jobManager.addJobInBackground(RefreshTokensJob(it.assetId))
         }
     }
 

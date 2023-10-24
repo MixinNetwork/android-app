@@ -8,7 +8,7 @@ import one.mixin.android.api.service.TokenService
 import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.TokenDao
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAssetsJob
+import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.vo.SnapshotItem
 
@@ -42,7 +42,7 @@ class SnapshotsMediator(
                 safeSnapshotDao.insertListSuspend(list)
                 list.forEach { item ->
                     if (tokenDao.simpleAsset(item.assetId) == null) {
-                        jobManager.addJobInBackground(RefreshAssetsJob(item.assetId))
+                        jobManager.addJobInBackground(RefreshTokensJob(item.assetId))
                     }
                 }
                 if (list.size < LIMIT) {
