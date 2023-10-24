@@ -12,7 +12,7 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     companion object {
         const val SNAPSHOT_ITEM_PREFIX =
             """
-                SELECT s.*, u.avatar_url, u.full_name AS opponent_ful_name, a.symbol AS asset_symbol, a.confirmations AS asset_confirmations FROM snapshots s 
+                SELECT s.*, u.avatar_url, u.full_name AS opponent_ful_name, a.symbol AS asset_symbol, a.confirmations AS asset_confirmations FROM safe_snapshots s 
                 LEFT JOIN users u ON u.user_id = s.opponent_id 
                 LEFT JOIN assets a ON a.asset_id = s.asset_id 
             """
@@ -66,24 +66,24 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.opponent_id = :opponentId AND s.type != 'pending' ORDER BY s.created_at DESC, s.snapshot_id DESC")
     fun snapshotsByUserId(opponentId: String): DataSource.Factory<Int, SnapshotItem>
 
-    @Query("DELETE FROM snapshots WHERE asset_id = :assetId AND type = 'pending'")
+    @Query("DELETE FROM safe_snapshots WHERE asset_id = :assetId AND type = 'pending'")
     suspend fun clearPendingDepositsByAssetId(assetId: String)
 
-    @Query("DELETE FROM snapshots WHERE type = 'pending' AND transaction_hash = :transactionHash")
+    @Query("DELETE FROM safe_snapshots WHERE type = 'pending' AND transaction_hash = :transactionHash")
     fun deletePendingSnapshotByHash(transactionHash: String)
 
-    @Query("SELECT transaction_hash FROM snapshots WHERE asset_id = :assetId AND type = 'deposit' AND transaction_hash IN (:hashList)")
+    @Query("SELECT transaction_hash FROM safe_snapshots WHERE asset_id = :assetId AND type = 'deposit' AND transaction_hash IN (:hashList)")
     suspend fun findSnapshotIdsByTransactionHashList(assetId: String, hashList: List<String>): List<String>
 
-    @Query("SELECT sn.* FROM snapshots sn WHERE sn.rowid > :rowId ORDER BY sn.rowid ASC LIMIT :limit")
+    @Query("SELECT sn.* FROM safe_snapshots sn WHERE sn.rowid > :rowId ORDER BY sn.rowid ASC LIMIT :limit")
     fun getSnapshotByLimitAndRowId(limit: Int, rowId: Long): List<SafeSnapshot>
 
-    @Query("SELECT rowid FROM snapshots WHERE snapshot_id = :snapshotId")
+    @Query("SELECT rowid FROM safe_snapshots WHERE snapshot_id = :snapshotId")
     fun getSnapshotRowId(snapshotId: String): Long?
 
-    @Query("SELECT count(1) FROM snapshots")
+    @Query("SELECT count(1) FROM safe_snapshots")
     fun countSnapshots(): Long
 
-    @Query("SELECT count(1) FROM snapshots WHERE rowid > :rowId")
+    @Query("SELECT count(1) FROM safe_snapshots WHERE rowid > :rowId")
     fun countSnapshots(rowId: Long): Long
 }

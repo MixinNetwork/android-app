@@ -6,60 +6,79 @@
 
     <RelativeLayout
         android:id="@+id/chat_layout"
-        android:layout_width="200dp"
-        android:layout_height="68dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="end"
         android:layout_marginEnd="4dp"
         android:layout_marginStart="4dp"
         android:layout_marginTop="1.5dp"
+        android:minWidth="200dp"
         android:background="@drawable/chat_bubble_other"
         tools:ignore="UselessParent">
 
-        <Space
-            android:id="@+id/center"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:layout_centerVertical="true"/>
+        <ImageView
+            android:id="@+id/chat_snapshot_bg"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:src="@drawable/bg_snapshot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
         <one.mixin.android.widget.CircleImageView
             android:id="@+id/bill_iv"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
             android:layout_marginBottom="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
             android:src="@drawable/ic_avatar_place_holder" />
-
-        <TextView
-            android:id="@+id/bill_tv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:ellipsize="end"
-            android:singleLine="true"
-            android:textColor="?attr/text_primary"
-            android:textSize="16sp"
-            android:layout_toEndOf="@id/bill_iv"
-            android:layout_above="@id/center" />
 
         <TextView
             android:id="@+id/bill_symbol_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginStart="12dp"
-            android:layout_toEndOf="@id/bill_iv"
-            android:layout_below="@id/center"
+            android:layout_marginStart="4dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="?attr/text_primary"
+            android:layout_alignTop="@+id/bill_iv"
+            android:layout_toEndOf="@+id/bill_iv"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/bill_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="?attr/text_primary"
+            android:layout_alignStart="@id/bill_iv"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp"
+            android:layout_below="@id/bill_iv"
+            tools:text="12345678.987534" />
+
+        <TextView
+            android:id="@+id/bill_memo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:ellipsize="end"
             android:singleLine="true"
             android:textColor="@color/gray_50"
-            android:textSize="12sp" />
+            android:textSize="13sp"
+            android:layout_marginTop="12dp"
+            android:layout_below="@id/bill_tv"
+            android:layout_alignStart="@id/bill_iv"
+            tools:text="Thanks" />
 
         <one.mixin.android.widget.bubble.TimeBubble
             android:id="@+id/chat_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
+            android:layout_alignBottom="@id/bill_memo"
             android:layout_alignParentEnd="true" />
 
     </RelativeLayout>

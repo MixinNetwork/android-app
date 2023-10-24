@@ -50,6 +50,8 @@ class SafeSnapshotHolder constructor(val binding: ItemChatSafeSnapshBinding) : B
                 true
             }
         }
+        // Todo display memo
+        // binding.billMemo.text
 
         binding.chatTime.load(messageItem.createdAt)
 
