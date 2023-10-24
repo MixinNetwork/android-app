@@ -6,6 +6,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.MIXIN_BOND_USER_ID
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CircleConversationRequest
@@ -255,5 +256,10 @@ constructor(
 
     fun deleteSessionByUserId(conversationId: String, userId: String) {
         participantSessionDao.deleteByUserId(conversationId, userId)
+    }
+
+    suspend fun findBondBotUrl(): App? {
+        // Todo sync user
+        return appDao.findAppById(MIXIN_BOND_USER_ID)
     }
 }

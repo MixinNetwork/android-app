@@ -54,13 +54,13 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     @Query("$SNAPSHOT_ITEM_PREFIX ORDER BY s.created_at DESC")
     fun allSnapshots(): DataSource.Factory<Int, SnapshotItem>
 
-    @Query("$SNAPSHOT_ITEM_PREFIX ORDER BY abs(s.amount * a.price_usd) DESC")
+    @Query("$SNAPSHOT_ITEM_PREFIX ORDER BY abs(s.amount * t.price_usd) DESC")
     fun allSnapshotsOrderByAmount(): DataSource.Factory<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.type IN (:type, :otherType) ORDER BY s.created_at DESC")
     fun allSnapshotsByType(type: String, otherType: String? = null): DataSource.Factory<Int, SnapshotItem>
 
-    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.type IN (:type, :otherType) ORDER BY abs(s.amount * a.price_usd) DESC")
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.type IN (:type, :otherType) ORDER BY abs(s.amount * t.price_usd) DESC")
     fun allSnapshotsByTypeOrderByAmount(type: String, otherType: String? = null): DataSource.Factory<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.opponent_id = :opponentId AND s.type != 'pending' ORDER BY s.created_at DESC, s.snapshot_id DESC")

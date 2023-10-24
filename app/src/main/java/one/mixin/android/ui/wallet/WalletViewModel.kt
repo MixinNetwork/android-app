@@ -3,6 +3,8 @@
 package one.mixin.android.ui.wallet
 
 import android.content.SharedPreferences
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.MIXIN_BOND_USER_ID
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
@@ -31,6 +34,8 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.ui.home.bot.getCategoryIcon
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.Deposit
 import one.mixin.android.vo.ParticipantSession
@@ -306,4 +311,6 @@ internal constructor(
             },
         ) ?: false
     }
+
+    suspend fun findBondBotUrl() = userRepository.findBondBotUrl()
 }

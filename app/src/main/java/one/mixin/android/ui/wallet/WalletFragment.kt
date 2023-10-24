@@ -61,6 +61,7 @@ import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment.Companion.CALCULATE_STATE
 import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
 import one.mixin.android.ui.wallet.fiatmoney.getDefaultCurrency
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.TokenItem
@@ -502,7 +503,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             if (isAdded) {
                 binding.migrationLayout.isVisible = walletViewModel.checkHasOldAsset()
                 binding.start.setOnClickListener {
-                    // Todo migration
+                    lifecycleScope.launch {
+                        val bot = walletViewModel.findBondBotUrl() ?: return@launch
+                        WebActivity.show(requireContext(), url = bot.homeUri, null)
+                    }
                 }
             }
         }
