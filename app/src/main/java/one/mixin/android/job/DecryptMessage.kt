@@ -319,6 +319,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         }  else if (data.category == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name) {
             val json = Base64.decode(data.data)
             val systemSnapshot = gson.fromJson(String(json), SafeSnapshot::class.java)
+            Timber.e("Decrypt SYSTEM_SAFE_SNAPSHOT $json")
             processSystemSafeSnapshotMessage(data, systemSnapshot)
         } else if (data.category == MessageCategory.SYSTEM_SESSION.name) {
             val json = Base64.decode(data.data)
