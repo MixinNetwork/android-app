@@ -476,7 +476,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         val registerResp = viewModel.registerPublicKey(
             registerRequest = RegisterRequest(
                 keyPair.publicKey.toHex(),
-                Session.registerPublicKey(selfId, seed)
+                Session.registerPublicKey(selfId, seed),
+                ""// TODO
             )
         )
         return if (registerResp.isSuccess) {

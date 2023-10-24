@@ -7,4 +7,6 @@ data class RegisterRequest(
     val publicKey: String,
     @SerializedName("signature")
     val signature: String,
+    @SerializedName("pin_base64")
+    val pin: String,
 )
