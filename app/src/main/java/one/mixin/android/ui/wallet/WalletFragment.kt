@@ -500,13 +500,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
 
     private fun checkOldAsset() {
         lifecycleScope.launch {
-            if (isAdded) {
-                binding.migrationLayout.isVisible = walletViewModel.checkHasOldAsset()
-                binding.start.setOnClickListener {
-                    lifecycleScope.launch {
-                        val bot = walletViewModel.findBondBotUrl() ?: return@launch
-                        WebActivity.show(requireContext(), url = bot.homeUri, null)
-                    }
+            if (viewDestroyed()) return@launch
+            binding.migrationLayout.isVisible = walletViewModel.checkHasOldAsset()
+            if (viewDestroyed()) return@launch
+            binding.start.setOnClickListener {
+                lifecycleScope.launch {
+                    val bot = walletViewModel.findBondBotUrl() ?: return@launch
+                    WebActivity.show(requireContext(), url = bot.homeUri, null)
                 }
             }
         }
