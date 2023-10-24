@@ -137,7 +137,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                 headerAdapter.asset = it
             }
         }
-        
+
+        walletViewModel.refreshAsset(asset.assetId)
         if (!asset.getDestination().isNullOrBlank()){
             refreshPendingDeposits(asset)
         }
@@ -155,7 +156,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         if (viewDestroyed()) return
 
         lifecycleScope.launch {
-            walletViewModel.refreshAsset(asset.assetId)
             handleMixinResponse(
                 invokeNetwork = {
                     walletViewModel.refreshPendingDeposits(asset)

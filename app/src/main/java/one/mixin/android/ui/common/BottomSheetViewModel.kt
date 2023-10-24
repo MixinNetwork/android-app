@@ -128,9 +128,9 @@ class BottomSheetViewModel @Inject internal constructor(
         val asset = assetIdToAsset(assetId)
         val threshold = 1L
 
-        val uxtos =  packUxto(asset, amount)
+        val utxos =  packUtxo(asset, amount)
         val input = GsonHelper.customGson.toJson(
-            uxtos.map {output->
+            utxos.map { output->
                 Utxo(output.transactionHash, output.amount, output.outputIndex)
             }
         ).toByteArray()
@@ -146,12 +146,12 @@ class BottomSheetViewModel @Inject internal constructor(
             return transactionResponse
         }
         val views = transactionResponse.data!!.views.joinToString(",")
-        val inputKeys = GsonHelper.customGson.toJson(uxtos.map { it.keys })
+        val inputKeys = GsonHelper.customGson.toJson(utxos.map { it.keys })
         val sign = Kernel.signTx(tx, inputKeys, views, seed.toHex())
         val signResult = SignResult(sign.raw, sign.change)
         runInTransaction {
             if (signResult.change != null) {
-                val changeOutput = changeToOutput(signResult.change, asset, uxtos.last().createdAt)
+                val changeOutput = changeToOutput(signResult.change, asset, utxos.last().createdAt)
                 tokenRepository.insertOutput(changeOutput)
             }
             tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.transactionHash, signResult.raw, System.currentTimeMillis()))
@@ -164,13 +164,13 @@ class BottomSheetViewModel @Inject internal constructor(
             tokenRepository.deleteRawTransaction(transactionRsp.data!!.transactionHash)
         }
         val hash = arrayListOf<String>()
-        hash.addAll(uxtos.map { it.transactionHash })
+        hash.addAll(utxos.map { it.transactionHash })
         tokenRepository.signed(hash)
         jobManager.addJobInBackground(SyncOutputJob())
         return transactionResponse
     }
 
-    private suspend fun packUxto(asset:String, amount:String):List<Output> {
+    private suspend fun packUtxo(asset:String, amount:String):List<Output> {
         var amountValue = amount.toDouble()
         val list = tokenRepository.findOutputs(256, asset)
         val result = mutableListOf<Output>()
