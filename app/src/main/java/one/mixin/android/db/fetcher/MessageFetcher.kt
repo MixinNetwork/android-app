@@ -30,7 +30,7 @@ class MessageFetcher @Inject constructor(
                LEFT JOIN users u1 ON m.participant_id = u1.user_id
                LEFT JOIN snapshots s ON m.snapshot_id = s.snapshot_id
                LEFT JOIN safe_snapshots ss ON m.snapshot_id = ss.snapshot_id
-               LEFT JOIN assets a ON a.asset_id = a.asset_id
+               LEFT JOIN assets a ON s.asset_id = a.asset_id
                LEFT JOIN tokens t ON ss.asset_id = t.asset_id
                LEFT JOIN stickers st ON st.sticker_id = m.sticker_id
                LEFT JOIN hyperlinks h ON m.hyperlink = h.hyperlink
