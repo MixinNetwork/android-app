@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransactionHeaderBinding
 import one.mixin.android.databinding.ItemWalletTransactionsBinding
+import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.timeAgoDay
@@ -18,42 +19,18 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
 
     open fun bind(snapshot: SnapshotItem, listener: OnSnapshotListener?) {
         val isPositive = snapshot.amount.toFloat() > 0
-        when (snapshot.type) {
-            SnapshotType.pending.name -> {
-                binding.name.text = itemView.context.resources.getQuantityString(R.plurals.pending_confirmation, snapshot.confirmations ?: 0, snapshot.confirmations ?: 0, snapshot.assetConfirmations)
+        if (snapshot.opponentId != null) {
+            binding.name.text = snapshot.opponentFullName
+            binding.avatar.setInfo(snapshot.opponentFullName, snapshot.avatarUrl, snapshot.opponentId)
+            binding.avatar.setOnClickListener {
+                listener?.onUserClick(snapshot.opponentId)
+            }
+        } else {
+            if (isPositive) {
+                binding.name.text = snapshot.sender?.formatPublicKey()
                 binding.avatar.setNet()
-                binding.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
-            }
-            SnapshotType.deposit.name -> {
-                binding.name.setText(R.string.Deposit)
-                binding.avatar.setNet()
-            }
-            SnapshotType.transfer.name -> {
-                binding.name.setText(R.string.Transfer)
-                binding.avatar.setInfo(snapshot.opponentFullName, snapshot.avatarUrl, snapshot.opponentId ?: "")
-                binding.avatar.setOnClickListener {
-                    listener?.onUserClick(snapshot.opponentId!!)
-                }
-                binding.avatar.setTextSize(12f)
-            }
-            SnapshotType.withdrawal.name -> {
-                binding.name.setText(R.string.Withdrawal)
-                binding.avatar.setNet()
-            }
-            SnapshotType.fee.name -> {
-                binding.name.setText(R.string.Fee)
-                binding.avatar.setNet()
-            }
-            SnapshotType.rebate.name -> {
-                binding.name.setText(R.string.Rebate)
-                binding.avatar.setNet()
-            }
-            SnapshotType.raw.name -> {
-                binding.name.setText(R.string.Raw)
-                binding.avatar.setNet()
-            }
-            else -> {
-                binding.name.text = snapshot.type
+            } else {
+                binding.name.text = snapshot.receiver?.formatPublicKey()
                 binding.avatar.setNet()
             }
         }

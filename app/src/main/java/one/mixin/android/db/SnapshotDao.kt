@@ -9,7 +9,7 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 
 @Dao
-interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
+interface SnapshotDao : BaseDao<Snapshot> {
     companion object {
         const val SNAPSHOT_ITEM_PREFIX =
             """

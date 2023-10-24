@@ -4,11 +4,11 @@ import androidx.paging.DataSource
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
-import one.mixin.android.vo.Snapshot
+import one.mixin.android.vo.SafeSnapshot
 import one.mixin.android.vo.SnapshotItem
 
 @Dao
-interface SnapshotDao : BaseDao<Snapshot> {
+interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     companion object {
         const val SNAPSHOT_ITEM_PREFIX =
             """
@@ -76,7 +76,7 @@ interface SnapshotDao : BaseDao<Snapshot> {
     suspend fun findSnapshotIdsByTransactionHashList(assetId: String, hashList: List<String>): List<String>
 
     @Query("SELECT sn.* FROM snapshots sn WHERE sn.rowid > :rowId ORDER BY sn.rowid ASC LIMIT :limit")
-    fun getSnapshotByLimitAndRowId(limit: Int, rowId: Long): List<Snapshot>
+    fun getSnapshotByLimitAndRowId(limit: Int, rowId: Long): List<SafeSnapshot>
 
     @Query("SELECT rowid FROM snapshots WHERE snapshot_id = :snapshotId")
     fun getSnapshotRowId(snapshotId: String): Long?
