@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "2cb879b5f114bbee94625dc28c574b28",
+    "identityHash": "b931d4428d637837f1e07998910a8508",
     "entities": [
       {
         "tableName": "users",
@@ -2556,7 +2556,7 @@
       },
       {
         "tableName": "deposits",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`entry_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `members` TEXT NOT NULL, `tag` TEXT, `signature` TEXT NOT NULL, `threshold` INTEGER NOT NULL, PRIMARY KEY(`entry_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`entry_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `priority` INTEGER NOT NULL, `members` TEXT NOT NULL, `tag` TEXT, `signature` TEXT NOT NULL, `threshold` INTEGER NOT NULL, PRIMARY KEY(`entry_id`))",
         "fields": [
           {
             "fieldPath": "entryId",
@@ -2574,6 +2574,12 @@
             "fieldPath": "destination",
             "columnName": "destination",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "priority",
+            "columnName": "priority",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -2750,7 +2756,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2cb879b5f114bbee94625dc28c574b28')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b931d4428d637837f1e07998910a8508')"
     ]
   }
 }

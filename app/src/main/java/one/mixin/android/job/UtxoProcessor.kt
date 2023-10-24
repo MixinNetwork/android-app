@@ -25,7 +25,6 @@ class UtxoProcessor(
     }
 
     private val propertyDao = mixinDatabase.propertyDao()
-    private val assetsExtraDao = mixinDatabase.assetsExtraDao()
     private val outputDao = mixinDatabase.outputDao()
     private val tokenDao = mixinDatabase.tokenDao()
 

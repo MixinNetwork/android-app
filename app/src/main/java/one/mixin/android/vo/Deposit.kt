@@ -19,6 +19,9 @@ data class Deposit(
     @ColumnInfo(name = "destination")
     @SerializedName("destination")
     val destination: String,
+    @ColumnInfo(name = "priority")
+    @SerializedName("priority")
+    val priority: Int,
     @ColumnInfo(name = "members")
     @SerializedName("members")
     val members: List<String>,
