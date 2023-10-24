@@ -68,7 +68,7 @@ interface TokenService {
     @GET("snapshots/{id}")
     suspend fun getSnapshotById(@Path("id") id: String): MixinResponse<SafeSnapshot>
 
-    @GET("external/transactions")
+    @GET("safe/external/transactions")
     suspend fun pendingDeposits(
         @Query("asset") asset: String,
         @Query("destination") key: String? = null,

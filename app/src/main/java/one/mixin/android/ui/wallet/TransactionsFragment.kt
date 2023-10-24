@@ -137,6 +137,10 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                 headerAdapter.asset = it
             }
         }
+        
+        if (!asset.getDestination().isNullOrBlank()){
+            refreshPendingDeposits(asset)
+        }
     }
 
     override fun onDestroyView() {
@@ -145,6 +149,43 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         _bottomBinding = null
         sendBottomSheet.release()
         super.onDestroyView()
+    }
+
+    private fun refreshPendingDeposits(asset: TokenItem) {
+        if (viewDestroyed()) return
+
+        lifecycleScope.launch {
+            walletViewModel.refreshAsset(asset.assetId)
+            handleMixinResponse(
+                invokeNetwork = {
+                    walletViewModel.refreshPendingDeposits(asset)
+                },
+                successBlock = { list ->
+                    withContext(Dispatchers.IO) {
+                        walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
+                        val pendingDeposits = list.data ?: return@withContext
+
+                        pendingDeposits.chunked(100) { trunk ->
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                val hashList = trunk.map { it.transactionHash }
+                                val existHashList =
+                                    walletViewModel.findSnapshotByTransactionHashList(
+                                        asset.assetId,
+                                        hashList
+                                    )
+                                trunk.filter {
+                                    it.transactionHash !in existHashList
+                                }.map {
+                                    it.toSnapshot(asset.assetId)
+                                }.let {
+                                    walletViewModel.insertPendingDeposit(it)
+                                }
+                            }
+                        }
+                    }
+                },
+            )
+        }
     }
 
     @SuppressLint("InflateParams")

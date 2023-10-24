@@ -34,6 +34,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.Deposit
 import one.mixin.android.vo.ParticipantSession
+import one.mixin.android.vo.SafeSnapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Token
 import one.mixin.android.vo.TopAssetItem
@@ -141,6 +142,15 @@ internal constructor(
             .setInitialLoadKey(initialLoadKey)
             .build()
 
+
+    suspend fun refreshPendingDeposits(asset: TokenItem) = tokenRepository.pendingDeposits(asset.assetId, asset.getDestination()!!, asset.getTag())
+
+    suspend fun clearPendingDepositsByAssetId(assetId: String) = tokenRepository.clearPendingDepositsByAssetId(assetId)
+
+    suspend fun findSnapshotByTransactionHashList(assetId: String, hashList: List<String>) = tokenRepository.findSnapshotByTransactionHashList(assetId, hashList)
+
+    suspend fun insertPendingDeposit(snapshot: List<SafeSnapshot>) = tokenRepository.insertPendingDeposit(snapshot)
+
     suspend fun getAsset(assetId: String) = withContext(Dispatchers.IO) {
         tokenRepository.asset(assetId)
     }
@@ -166,12 +176,6 @@ internal constructor(
     suspend fun findOrSyncAsset(assetId: String): TokenItem? {
         return withContext(Dispatchers.IO) {
             tokenRepository.findOrSyncAsset(assetId)
-        }
-    }
-
-    suspend fun createDeposit(chinaId: String, assetId: String): MixinResponse<List<Deposit>> {
-        return withContext(Dispatchers.IO) {
-            tokenRepository.createDeposit(chinaId)
         }
     }
 

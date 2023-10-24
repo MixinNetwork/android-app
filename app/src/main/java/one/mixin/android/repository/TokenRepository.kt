@@ -158,12 +158,6 @@ constructor(
         return assetItem
     }
 
-    suspend fun createDeposit(chinaId: String): MixinResponse<List<Deposit>> {
-        return utxoService.createDeposit(
-            DepositEntryRequest(chinaId)
-        )
-    }
-
     suspend fun syncAsset(assetId: String): TokenItem? {
         val asset: Token = handleMixinResponse(
             invokeNetwork = {

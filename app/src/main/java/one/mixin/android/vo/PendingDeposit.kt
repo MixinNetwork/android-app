@@ -16,8 +16,8 @@ data class PendingDeposit(
     val createdAt: String,
 )
 
-fun PendingDeposit.toSnapshot(assetId: String): Snapshot =
-    Snapshot(
+fun PendingDeposit.toSnapshot(assetId: String): SafeSnapshot =
+    SafeSnapshot(
         this.transactionId, SnapshotType.pending.name, assetId, this.amount, this.createdAt,
         null, null, this.transactionHash, this.sender, null, null, this.confirmations, null, "", "",
     )
