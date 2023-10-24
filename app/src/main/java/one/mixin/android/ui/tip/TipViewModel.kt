@@ -10,13 +10,7 @@ import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.UtxoService
-import one.mixin.android.crypto.newKeyPairFromSeed
-import one.mixin.android.extension.toHex
-import one.mixin.android.repository.AssetRepository
-import one.mixin.android.session.Session
 import one.mixin.android.tip.TipConstants.tipNodeApi2Path
-import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.wallet.PinCheckDialogFragment
 import retrofit2.HttpException
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject

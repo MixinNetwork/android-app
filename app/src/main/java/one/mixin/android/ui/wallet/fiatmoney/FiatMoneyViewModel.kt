@@ -33,7 +33,7 @@ import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RoutePaymentResponse
 import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteTickerResponse
-import one.mixin.android.repository.AssetRepository
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.PaymentsUtil
@@ -53,43 +53,43 @@ class FiatMoneyViewModel
 @Inject
 internal constructor(
     private val userRepository: UserRepository,
-    private val assetRepository: AssetRepository,
+    private val tokenRepository: TokenRepository,
 ) : ViewModel() {
-    suspend fun findAssetsByIds(ids: List<String>) = assetRepository.findAssetsByIds(ids)
+    suspend fun findAssetsByIds(ids: List<String>) = tokenRepository.findAssetsByIds(ids)
 
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 
     suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> =
-        assetRepository.ticker(tickerRequest)
+        tokenRepository.ticker(tickerRequest)
 
-    suspend fun token(): MixinResponse<RouteTokenResponse> = assetRepository.token()
+    suspend fun token(): MixinResponse<RouteTokenResponse> = tokenRepository.token()
 
-    fun callSumsubToken(): Call<MixinResponse<RouteTokenResponse>> = assetRepository.callSumsubToken()
+    fun callSumsubToken(): Call<MixinResponse<RouteTokenResponse>> = tokenRepository.callSumsubToken()
 
-    suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = assetRepository.payment(traceRequest)
+    suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = tokenRepository.payment(traceRequest)
 
-    suspend fun payment(paymentId: String): MixinResponse<RoutePaymentResponse> = assetRepository.payment(paymentId)
+    suspend fun payment(paymentId: String): MixinResponse<RoutePaymentResponse> = tokenRepository.payment(paymentId)
 
-    suspend fun payments(): MixinResponse<List<RoutePaymentResponse>> = assetRepository.payments()
+    suspend fun payments(): MixinResponse<List<RoutePaymentResponse>> = tokenRepository.payments()
 
-    suspend fun createSession(createSession: RouteSessionRequest): MixinResponse<RouteSessionResponse> = assetRepository.createSession(createSession)
+    suspend fun createSession(createSession: RouteSessionRequest): MixinResponse<RouteSessionResponse> = tokenRepository.createSession(createSession)
 
-    suspend fun token(createSession: RouteTokenRequest): MixinResponse<RouteCreateTokenResponse> = assetRepository.token(createSession)
+    suspend fun token(createSession: RouteTokenRequest): MixinResponse<RouteCreateTokenResponse> = tokenRepository.token(createSession)
 
-    suspend fun createInstrument(createInstrument: RouteInstrumentRequest): MixinResponse<Card> = assetRepository.createInstrument(createInstrument)
+    suspend fun createInstrument(createInstrument: RouteInstrumentRequest): MixinResponse<Card> = tokenRepository.createInstrument(createInstrument)
 
-    suspend fun getSession(sessionId: String) = assetRepository.getSession(sessionId)
+    suspend fun getSession(sessionId: String) = tokenRepository.getSession(sessionId)
 
-    fun cards(): Flow<SafeBox?> = assetRepository.cards()
-    suspend fun initSafeBox(cards: List<Card>) = assetRepository.initSafeBox(cards)
+    fun cards(): Flow<SafeBox?> = tokenRepository.cards()
+    suspend fun initSafeBox(cards: List<Card>) = tokenRepository.initSafeBox(cards)
 
-    suspend fun instruments() = assetRepository.instruments()
+    suspend fun instruments() = tokenRepository.instruments()
 
-    suspend fun addCard(card: Card) = assetRepository.addCard(card)
+    suspend fun addCard(card: Card) = tokenRepository.addCard(card)
 
-    suspend fun removeCard(index: Int) = assetRepository.removeCard(index)
+    suspend fun removeCard(index: Int) = tokenRepository.removeCard(index)
 
-    suspend fun deleteInstruments(id: String) = assetRepository.deleteInstruments(id)
+    suspend fun deleteInstruments(id: String) = tokenRepository.deleteInstruments(id)
 
     var calculateState: CalculateState? = null
 
@@ -175,7 +175,7 @@ internal constructor(
 
     suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
 
-    suspend fun profile(): MixinResponse<ProfileResponse> = assetRepository.profile()
+    suspend fun profile(): MixinResponse<ProfileResponse> = tokenRepository.profile()
 
     suspend fun saveSession(participantSession: ParticipantSession) {
         userRepository.saveSession(participantSession)
@@ -185,8 +185,8 @@ internal constructor(
 
     suspend fun syncNoExistAsset(assetIds: List<String>) = withContext(Dispatchers.IO) {
         assetIds.forEach { id ->
-            if (assetRepository.findAssetItemById(id) == null) {
-                assetRepository.findOrSyncAsset(id)
+            if (tokenRepository.findAssetItemById(id) == null) {
+                tokenRepository.findOrSyncAsset(id)
             }
         }
     }

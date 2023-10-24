@@ -17,7 +17,6 @@ import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ChainDao
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.extension.within6Hours

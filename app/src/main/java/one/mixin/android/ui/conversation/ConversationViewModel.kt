@@ -48,7 +48,7 @@ import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
-import one.mixin.android.repository.AssetRepository
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
@@ -118,7 +118,7 @@ internal constructor(
     private val conversationRepository: ConversationRepository,
     private val userRepository: UserRepository,
     private val jobManager: MixinJobManager,
-    private val assetRepository: AssetRepository,
+    private val tokenRepository: TokenRepository,
     private val accountRepository: AccountRepository,
     private val messenger: SendMessageHelper,
     private val cleanMessageHelper: CleanMessageHelper,
@@ -513,7 +513,7 @@ internal constructor(
     suspend fun findAppById(id: String) = userRepository.findAppById(id)
 
     fun assetItemsWithBalance(): LiveData<List<TokenItem>> =
-        assetRepository.assetItemsWithBalance()
+        tokenRepository.assetItemsWithBalance()
 
     fun addStickerAsync(stickerAddRequest: StickerAddRequest) =
         accountRepository.addStickerAsync(stickerAddRequest)
@@ -556,11 +556,11 @@ internal constructor(
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
 
-    fun observeAddress(addressId: String) = assetRepository.observeAddress(addressId)
+    fun observeAddress(addressId: String) = tokenRepository.observeAddress(addressId)
 
     suspend fun refreshAsset(assetId: String): TokenItem? {
         return withContext(Dispatchers.IO) {
-            assetRepository.findOrSyncAsset(assetId)
+            tokenRepository.findOrSyncAsset(assetId)
         }
     }
 
@@ -695,7 +695,7 @@ internal constructor(
     fun getUnreadMentionMessageByConversationId(conversationId: String) = conversationRepository.getUnreadMentionMessageByConversationId(conversationId)
 
     suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
-        assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
+        tokenRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
 
     suspend fun checkData(selectItem: SelectItem, callback: suspend (String, EncryptCategory) -> Unit) {
         withContext(Dispatchers.IO) {

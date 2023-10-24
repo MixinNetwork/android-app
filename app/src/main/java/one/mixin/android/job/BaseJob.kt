@@ -65,7 +65,7 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
-import one.mixin.android.repository.AssetRepository
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.Tip
@@ -199,7 +199,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
-    lateinit var assetRepo: AssetRepository
+    lateinit var assetRepo: TokenRepository
 
     @Inject
     @Transient

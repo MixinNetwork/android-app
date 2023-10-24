@@ -38,13 +38,12 @@ import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshConversationJob
-import one.mixin.android.job.RefreshOutputJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.pay.generateAddressId
 import one.mixin.android.repository.AccountRepository
-import one.mixin.android.repository.AssetRepository
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
@@ -63,7 +62,6 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.Output
 import one.mixin.android.vo.SafeSnapshot
-import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
@@ -75,9 +73,7 @@ import one.mixin.android.vo.toSimpleChat
 import one.mixin.android.vo.utxo.RawTransaction
 import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
-import timber.log.Timber
 import java.io.File
-import java.lang.IllegalArgumentException
 import java.util.UUID
 import javax.inject.Inject
 
@@ -86,7 +82,7 @@ class BottomSheetViewModel @Inject internal constructor(
     private val accountRepository: AccountRepository,
     private val jobManager: MixinJobManager,
     private val userRepository: UserRepository,
-    private val assetRepository: AssetRepository,
+    private val tokenRepository: TokenRepository,
     private val conversationRepo: ConversationRepository,
     private val cleanMessageHelper: CleanMessageHelper,
     private val pinCipher: PinCipher,
@@ -104,14 +100,14 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     suspend fun simpleAssetsWithBalance() = withContext(Dispatchers.IO) {
-        assetRepository.simpleAssetsWithBalance()
+        tokenRepository.simpleAssetsWithBalance()
     }
 
-    fun assetItems(): LiveData<List<TokenItem>> = assetRepository.assetItems()
+    fun assetItems(): LiveData<List<TokenItem>> = tokenRepository.assetItems()
 
-    fun assetItems(assetIds: List<String>): LiveData<List<TokenItem>> = assetRepository.assetItems(assetIds)
+    fun assetItems(assetIds: List<String>): LiveData<List<TokenItem>> = tokenRepository.assetItems(assetIds)
 
-    fun assetItemsWithBalance(): LiveData<List<TokenItem>> = assetRepository.assetItemsWithBalance()
+    fun assetItemsWithBalance(): LiveData<List<TokenItem>> = tokenRepository.assetItemsWithBalance()
 
     suspend fun newTransfer(
         assetId: String,
@@ -124,7 +120,7 @@ class BottomSheetViewModel @Inject internal constructor(
         val seed = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
         val traceId = trace ?: UUID.randomUUID().toString()
         val senderId = Session.getAccountId()!!
-        val ghostKeyResponse = assetRepository.ghostKey(buildGhostKeyRequest(receiverId, senderId, traceId))
+        val ghostKeyResponse = tokenRepository.ghostKey(buildGhostKeyRequest(receiverId, senderId, traceId))
         if (ghostKeyResponse.error != null) {
             return ghostKeyResponse
         }
@@ -145,7 +141,7 @@ class BottomSheetViewModel @Inject internal constructor(
         val changeMask = data.last().mask
 
         val tx = Kernel.buildTx(asset, amount, threshold, receiverKeys, receiverMask, input, changeKeys, changeMask, memo)
-        val transactionResponse = assetRepository.transactionRequest(TransactionRequest(tx, traceId))
+        val transactionResponse = tokenRepository.transactionRequest(TransactionRequest(tx, traceId))
         if (transactionResponse.error != null) {
             return transactionResponse
         }
@@ -156,27 +152,27 @@ class BottomSheetViewModel @Inject internal constructor(
         runInTransaction {
             if (signResult.change != null) {
                 val changeOutput = changeToOutput(signResult.change, asset, uxtos.last().createdAt)
-                assetRepository.insertOutput(changeOutput)
+                tokenRepository.insertOutput(changeOutput)
             }
-            assetRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.transactionHash, signResult.raw, System.currentTimeMillis()))
+            tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.transactionHash, signResult.raw, System.currentTimeMillis()))
         }
-        val transactionRsp = assetRepository.transactions(TransactionRequest(signResult.raw, traceId))
+        val transactionRsp = tokenRepository.transactions(TransactionRequest(signResult.raw, traceId))
         if (transactionRsp.error != null) {
-            assetRepository.deleteRawTransaction(transactionRsp.data!!.transactionHash)
+            tokenRepository.deleteRawTransaction(transactionRsp.data!!.transactionHash)
             return transactionRsp
         } else {
-            assetRepository.deleteRawTransaction(transactionRsp.data!!.transactionHash)
+            tokenRepository.deleteRawTransaction(transactionRsp.data!!.transactionHash)
         }
         val hash = arrayListOf<String>()
         hash.addAll(uxtos.map { it.transactionHash })
-        assetRepository.signed(hash)
+        tokenRepository.signed(hash)
         jobManager.addJobInBackground(SyncOutputJob())
         return transactionResponse
     }
 
     private suspend fun packUxto(asset:String, amount:String):List<Output> {
         var amountValue = amount.toDouble()
-        val list = assetRepository.findOutputs(256, asset)
+        val list = tokenRepository.findOutputs(256, asset)
         val result = mutableListOf<Output>()
         for (output in list) {
             val outputAmount = output.amount.toDouble()
@@ -194,7 +190,7 @@ class BottomSheetViewModel @Inject internal constructor(
         accountRepository.authorize(authorizationId, scopes, pin)
 
     suspend fun paySuspend(request: TransferRequest) = withContext(Dispatchers.IO) {
-        assetRepository.paySuspend(request)
+        tokenRepository.paySuspend(request)
     }
 
     suspend fun withdrawal(
@@ -207,7 +203,7 @@ class BottomSheetViewModel @Inject internal constructor(
         assetId: String?,
         destination: String?,
         tag: String?,
-    ) = assetRepository.withdrawal(
+    ) = tokenRepository.withdrawal(
         WithdrawalRequest(
             addressId,
             amount,
@@ -231,7 +227,7 @@ class BottomSheetViewModel @Inject internal constructor(
         tag: String?,
         code: String,
     ): MixinResponse<Address> =
-        assetRepository.syncAddr(
+        tokenRepository.syncAddr(
             AddressRequest(
                 assetId,
                 destination,
@@ -242,14 +238,14 @@ class BottomSheetViewModel @Inject internal constructor(
         )
 
     suspend fun saveAddr(addr: Address) = withContext(Dispatchers.IO) {
-        assetRepository.saveAddr(addr)
+        tokenRepository.saveAddr(addr)
     }
 
-    suspend fun deleteAddr(id: String, code: String): MixinResponse<Unit> = assetRepository.deleteAddr(id, pinCipher.encryptPin(code, TipBody.forAddressRemove(id)))
+    suspend fun deleteAddr(id: String, code: String): MixinResponse<Unit> = tokenRepository.deleteAddr(id, pinCipher.encryptPin(code, TipBody.forAddressRemove(id)))
 
-    suspend fun deleteLocalAddr(id: String) = assetRepository.deleteLocalAddr(id)
+    suspend fun deleteLocalAddr(id: String) = tokenRepository.deleteLocalAddr(id)
 
-    suspend fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
+    suspend fun simpleAssetItem(id: String) = tokenRepository.simpleAssetItem(id)
 
     fun findUserById(id: String): LiveData<User> = userRepository.findUserById(id)
 
@@ -393,33 +389,33 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     suspend fun findAddressById(addressId: String, assetId: String): Pair<Address?, Boolean> = withContext(Dispatchers.IO) {
-        val address = assetRepository.findAddressById(addressId, assetId)
-            ?: return@withContext assetRepository.refreshAndGetAddress(addressId, assetId)
+        val address = tokenRepository.findAddressById(addressId, assetId)
+            ?: return@withContext tokenRepository.refreshAndGetAddress(addressId, assetId)
         return@withContext Pair(address, false)
     }
 
     suspend fun refreshAndGetAddress(addressId: String, assetId: String): Pair<Address?, Boolean> = withContext(Dispatchers.IO) {
-        return@withContext assetRepository.refreshAndGetAddress(addressId, assetId)
+        return@withContext tokenRepository.refreshAndGetAddress(addressId, assetId)
     }
 
     suspend fun findAssetItemById(assetId: String): TokenItem? =
-        assetRepository.findAssetItemById(assetId)
+        tokenRepository.findAssetItemById(assetId)
 
     suspend fun refreshAsset(assetId: String): TokenItem? {
         return withContext(Dispatchers.IO) {
-            assetRepository.findOrSyncAsset(assetId)
+            tokenRepository.findOrSyncAsset(assetId)
         }
     }
 
     private suspend fun refreshSnapshot(snapshotId: String): SnapshotItem? {
         return withContext(Dispatchers.IO) {
-            assetRepository.refreshAndGetSnapshot(snapshotId)
+            tokenRepository.refreshAndGetSnapshot(snapshotId)
         }
     }
 
     suspend fun getSnapshotByTraceId(traceId: String): Pair<SnapshotItem, TokenItem>? {
         return withContext(Dispatchers.IO) {
-            val localItem = assetRepository.findSnapshotByTraceId(traceId)
+            val localItem = tokenRepository.findSnapshotByTraceId(traceId)
             if (localItem != null) {
                 var assetItem = findAssetItemById(localItem.assetId)
                 if (assetItem != null) {
@@ -435,14 +431,14 @@ class BottomSheetViewModel @Inject internal constructor(
             } else {
                 handleMixinResponse(
                     invokeNetwork = {
-                        assetRepository.getTrace(traceId)
+                        tokenRepository.getTrace(traceId)
                     },
                     successBlock = { response ->
                         response.data?.let { snapshot ->
-                            assetRepository.insertSnapshot(snapshot)
+                            tokenRepository.insertSnapshot(snapshot)
                             val assetItem =
                                 refreshAsset(snapshot.assetId) ?: return@handleMixinResponse null
-                            val snapshotItem = assetRepository.findSnapshotById(snapshot.snapshotId)
+                            val snapshotItem = tokenRepository.findSnapshotById(snapshot.snapshotId)
                                 ?: return@handleMixinResponse null
                             return@handleMixinResponse Pair(snapshotItem, assetItem)
                         }
@@ -570,10 +566,10 @@ class BottomSheetViewModel @Inject internal constructor(
         return accountRepository.transactions(rawTransactionsRequest)
     }
 
-    suspend fun findSnapshotById(snapshotId: String) = assetRepository.findSnapshotById(snapshotId)
+    suspend fun findSnapshotById(snapshotId: String) = tokenRepository.findSnapshotById(snapshotId)
 
     fun insertSnapshot(snapshot: SafeSnapshot) = viewModelScope.launch(Dispatchers.IO) {
-        assetRepository.insertSnapshot(snapshot)
+        tokenRepository.insertSnapshot(snapshot)
     }
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
@@ -639,16 +635,16 @@ class BottomSheetViewModel @Inject internal constructor(
     suspend fun getParticipantsWithoutBot(conversationId: String) =
         conversationRepo.getParticipantsWithoutBot(conversationId)
 
-    suspend fun insertTrace(trace: Trace) = assetRepository.insertTrace(trace)
+    suspend fun insertTrace(trace: Trace) = tokenRepository.insertTrace(trace)
 
-    suspend fun suspendFindTraceById(traceId: String) = assetRepository.suspendFindTraceById(traceId)
+    suspend fun suspendFindTraceById(traceId: String) = tokenRepository.suspendFindTraceById(traceId)
 
     suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
-        assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
+        tokenRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
 
-    suspend fun deletePreviousTraces() = assetRepository.deletePreviousTraces()
+    suspend fun deletePreviousTraces() = tokenRepository.deletePreviousTraces()
 
-    suspend fun suspendDeleteTraceById(traceId: String) = assetRepository.suspendDeleteTraceById(traceId)
+    suspend fun suspendDeleteTraceById(traceId: String) = tokenRepository.suspendDeleteTraceById(traceId)
 
     suspend fun exportChat(conversationId: String, file: File) {
         var offset = 0
@@ -684,14 +680,14 @@ class BottomSheetViewModel @Inject internal constructor(
             null
         } else {
             val escapedQuery = query.trim().escapeSql()
-            assetRepository.fuzzySearchAssetIgnoreAmount(escapedQuery)
+            tokenRepository.fuzzySearchAssetIgnoreAmount(escapedQuery)
         }
 
-    suspend fun queryAsset(query: String): List<TokenItem> = assetRepository.queryAsset(query)
+    suspend fun queryAsset(query: String): List<TokenItem> = tokenRepository.queryAsset(query)
 
     suspend fun findOrSyncAsset(assetId: String): TokenItem? {
         return withContext(Dispatchers.IO) {
-            assetRepository.findOrSyncAsset(assetId)
+            tokenRepository.findOrSyncAsset(assetId)
         }
     }
 
@@ -699,8 +695,8 @@ class BottomSheetViewModel @Inject internal constructor(
         accountRepository.getExternalAddressFee(assetId, destination, tag)
 
     suspend fun findAssetIdByAssetKey(assetKey: String): String? =
-        assetRepository.findAssetIdByAssetKey(assetKey)
+        tokenRepository.findAssetIdByAssetKey(assetKey)
 
     suspend fun getAssetPrecisionById(assetId: String): MixinResponse<AssetPrecision> =
-        assetRepository.getAssetPrecisionById(assetId)
+        tokenRepository.getAssetPrecisionById(assetId)
 }

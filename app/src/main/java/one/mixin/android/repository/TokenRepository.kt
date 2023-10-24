@@ -10,7 +10,6 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.liveData
 import androidx.room.withTransaction
-import ed25519.Ed25519
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -22,7 +21,6 @@ import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.DepositEntryRequest
 import one.mixin.android.api.request.GhostKeyRequest
 import one.mixin.android.api.request.Pin
-import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RouteSessionRequest
 import one.mixin.android.api.request.RouteTickerRequest
@@ -52,8 +50,6 @@ import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.db.provider.DataProvider
-import one.mixin.android.extension.base64RawURLDecode
-import one.mixin.android.extension.decodeHex
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.within6Hours
@@ -72,7 +68,6 @@ import one.mixin.android.vo.Output
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.SafeSnapshot
-import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Token
 import one.mixin.android.vo.Trace
@@ -83,14 +78,12 @@ import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
 import one.mixin.android.vo.utxo.RawTransaction
-import one.mixin.eddsa.Ed25519Verify
 import retrofit2.Call
-import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AssetRepository
+class TokenRepository
 @Inject
 constructor(
     private val appDatabase: MixinDatabase,
