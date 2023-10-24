@@ -194,6 +194,7 @@ import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.imageeditor.ImageEditorActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
+import one.mixin.android.ui.oldwallet.OldTransactionFragment
 import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
@@ -228,6 +229,7 @@ import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
+import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.ParticipantRole
@@ -779,14 +781,25 @@ class ConversationFragment() :
             }
 
             override fun onBillClick(messageItem: MessageItem) {
-                activity?.addFragment(
-                    this@ConversationFragment,
-                    TransactionFragment.newInstance(
-                        assetId = messageItem.assetId,
-                        snapshotId = messageItem.snapshotId,
-                    ),
-                    TransactionFragment.TAG,
-                )
+                if (messageItem.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name) {
+                    activity?.addFragment(
+                        this@ConversationFragment,
+                        TransactionFragment.newInstance(
+                            assetId = messageItem.assetId,
+                            snapshotId = messageItem.snapshotId,
+                        ),
+                        TransactionFragment.TAG,
+                    )
+                } else {
+                    activity?.addFragment(
+                        this@ConversationFragment,
+                        OldTransactionFragment.newInstance(
+                            assetId = messageItem.assetId,
+                            snapshotId = messageItem.snapshotId,
+                        ),
+                        OldTransactionFragment.TAG,
+                    )
+                }
             }
 
             override fun onContactCardClick(userId: String) {
