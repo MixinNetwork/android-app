@@ -139,7 +139,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         }
 
         walletViewModel.refreshAsset(asset.assetId)
-        if (!asset.getDestination().isNullOrBlank()){
+        if (!asset.getDestination().isNullOrBlank()) {
             refreshPendingDeposits(asset)
         }
     }
@@ -258,6 +258,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
             R.id.filters_radio_all -> {
                 bindLiveData(walletViewModel.snapshots(asset.assetId, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
             }
+
             R.id.filters_radio_transfer -> {
                 bindLiveData(
                     walletViewModel.snapshots(
@@ -269,6 +270,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                     ),
                 )
             }
+
             R.id.filters_radio_deposit -> {
                 bindLiveData(
                     walletViewModel.snapshots(
@@ -279,6 +281,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                     ),
                 )
             }
+
             R.id.filters_radio_withdrawal -> {
                 bindLiveData(
                     walletViewModel.snapshots(
@@ -289,12 +292,15 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                     ),
                 )
             }
+
             R.id.filters_radio_fee -> {
                 bindLiveData(walletViewModel.snapshots(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
             }
+
             R.id.filters_radio_rebate -> {
                 bindLiveData(walletViewModel.snapshots(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
             }
+
             R.id.filters_radio_raw -> {
                 bindLiveData(walletViewModel.snapshots(asset.assetId, SnapshotType.raw.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
             }
@@ -381,26 +387,32 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                             groupInfoMemberTitle.setText(R.string.Transactions)
                             walletTransactionsEmpty.setText(R.string.No_transactions)
                         }
+
                         R.id.filters_radio_transfer -> {
                             groupInfoMemberTitle.setText(R.string.Transfer)
                             walletTransactionsEmpty.setText(R.string.No_transactions)
                         }
+
                         R.id.filters_radio_deposit -> {
                             groupInfoMemberTitle.setText(R.string.Deposit)
                             walletTransactionsEmpty.setText(R.string.No_deposits)
                         }
+
                         R.id.filters_radio_withdrawal -> {
                             groupInfoMemberTitle.setText(R.string.Withdrawal)
                             walletTransactionsEmpty.setText(R.string.No_withdrawals)
                         }
+
                         R.id.filters_radio_fee -> {
                             groupInfoMemberTitle.setText(R.string.Fee)
                             walletTransactionsEmpty.setText(R.string.No_fees)
                         }
+
                         R.id.filters_radio_rebate -> {
                             groupInfoMemberTitle.setText(R.string.Rebate)
                             walletTransactionsEmpty.setText(R.string.No_rebates)
                         }
+
                         R.id.filters_radio_raw -> {
                             groupInfoMemberTitle.setText(R.string.Raw)
                             walletTransactionsEmpty.setText(R.string.No_raws)
@@ -443,9 +455,11 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             return ViewHolder(parent.inflate(R.layout.view_transactions_fragment_header))
         }
+
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             asset?.let { holder.bind(it, show, currentType) }
         }
+
         override fun getItemCount(): Int {
             return 1
         }

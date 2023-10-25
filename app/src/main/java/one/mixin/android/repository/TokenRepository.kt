@@ -625,7 +625,7 @@ constructor(
 
     suspend fun findOutputs(limit: Int, asset: String) = outputDao.findUnspentOutputsByAsset(limit, asset)
 
-    fun insertOutput(output:Output) = outputDao.insert(output)
+    fun insertOutput(output: Output) = outputDao.insert(output)
 
     fun insertDeposit(data: List<Deposit>) {
         depositDao.insertList(data)
@@ -644,10 +644,10 @@ constructor(
     }
 
     suspend fun findOldAssets() = assetService.fetchAllAssetSuspend()
-    fun insertSnapshotMessage(data: TransactionResponse, opponentId: String,memo:String?) {
-        val snapshotId = generateConversationId(data.userId, data.transactionHash)
+    fun insertSnapshotMessage(data: TransactionResponse, assetId: String, amount: String, opponentId: String, memo: String?) {
+        val snapshotId =  UUID.nameUUIDFromBytes("${data.userId}:${data.transactionHash}".toByteArray()).toString()
         val conversationId = generateConversationId(data.userId, opponentId)
-        val snapshot = SafeSnapshot(snapshotId,"transaction", data.amount,data.snapshotAt, opponentId, null,null,null,null,null,memo,null,null, null,null)
+        val snapshot = SafeSnapshot(snapshotId, "transaction", assetId, amount, data.snapshotAt, opponentId, null, null, null, null, memo, null, null, null, null)
         val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, snapshot.type, null, snapshot.snapshotId)
         safeSnapshotDao.insert(snapshot)
         appDatabase.insertMessage(message)

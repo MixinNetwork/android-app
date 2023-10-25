@@ -163,7 +163,7 @@ class BottomSheetViewModel @Inject internal constructor(
         } else {
             tokenRepository.deleteRawTransaction(transactionRsp.data!!.transactionHash)
         }
-        tokenRepository.insertSnapshotMessage(transactionResponse.data!!, receiverId, memo)
+        tokenRepository.insertSnapshotMessage(transactionResponse.data!!, assetId, amount, receiverId, memo)
         val hash = arrayListOf<String>()
         hash.addAll(utxos.map { it.transactionHash })
         tokenRepository.signed(hash)
