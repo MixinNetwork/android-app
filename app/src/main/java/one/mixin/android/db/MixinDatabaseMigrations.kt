@@ -380,10 +380,8 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("CREATE TABLE IF NOT EXISTS `deposits` (`entry_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `priority` INTEGER NOT NULL, `members` TEXT NOT NULL, `tag` TEXT, `signature` TEXT NOT NULL, `threshold` INTEGER NOT NULL, PRIMARY KEY(`entry_id`))")
                 database.execSQL("CREATE TABLE IF NOT EXISTS `raw_transactions` (`transaction_hash` TEXT NOT NULL, `raw_transaction` TEXT NOT NULL, `created_at` INTEGER NOT NULL, PRIMARY KEY(`transaction_hash`))")
                 database.execSQL("CREATE TABLE IF NOT EXISTS `safe_snapshots` (`snapshot_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `created_at` TEXT NOT NULL, `opponent_id` TEXT, `trace_id` TEXT, `transaction_hash` TEXT, `sender` TEXT, `receiver` TEXT, `memo` TEXT, `confirmations` INTEGER, `snapshot_hash` TEXT, `opening_balance` TEXT, `closing_balance` TEXT, PRIMARY KEY(`snapshot_id`))")
+                database.execSQL("CREATE TABLE IF NOT EXISTS `tokens_extra` (`asset_id` TEXT NOT NULL, `asset` TEXT NOT NULL, `hidden` INTEGER, `balance` TEXT, `updated_at` TEXT, PRIMARY KEY(`asset_id`))")
                 database.execSQL("ALTER TABLE `chains` ADD COLUMN `withdrawal_memo_possibility` TEXT DEFAULT ''")
-                database.execSQL("ALTER TABLE `assets_extra` ADD COLUMN `asset` TEXT ''")
-                database.execSQL("ALTER TABLE `assets_extra` ADD COLUMN `balance` TEXT")
-                database.execSQL("ALTER TABLE `assets_extra` ADD COLUMN `updated_at` TEXT")
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_outputs_asset_id_state_created_at` ON `outputs` (`asset`, `state`, `created_at`)")
                 database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_outputs_transaction_hash_output_index` ON `outputs` (`transaction_hash`, `output_index`)")
             }

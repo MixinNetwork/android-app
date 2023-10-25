@@ -25,7 +25,7 @@ interface TokenDao : BaseDao<Token> {
             LEFT JOIN assets a2 ON a1.chain_id = a2.asset_id
             LEFT JOIN deposits d ON a1.chain_id = d.chain_id 
             LEFT JOIN chains c ON a1.chain_id = c.chain_id
-            LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id 
+            LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id 
            """
         const val POSTFIX =
             " ORDER BY balance * price_usd DESC, cast(balance AS REAL) DESC, cast(price_usd AS REAL) DESC, name ASC, a1.rowid DESC"
@@ -34,13 +34,13 @@ interface TokenDao : BaseDao<Token> {
         const val POSTFIX_ASSET_ITEM_NOT_HIDDEN =
             " WHERE ae.hidden IS NULL OR NOT ae.hidden$POSTFIX_ASSET_ITEM"
     }
-    @Query("SELECT * FROM tokens a1 LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id $POSTFIX")
+    @Query("SELECT * FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id $POSTFIX")
     fun assets(): LiveData<List<Token>>
 
-    @Query("SELECT a1.* FROM tokens a1 LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 $POSTFIX")
+    @Query("SELECT a1.* FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 $POSTFIX")
     fun assetsWithBalance(): LiveData<List<Token>>
 
-    @Query("SELECT a1.* FROM tokens a1 LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 $POSTFIX")
+    @Query("SELECT a1.* FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 $POSTFIX")
     suspend fun simpleAssetsWithBalance(): List<Token>
 
     @Query("SELECT asset_id FROM tokens WHERE asset = :asset")
@@ -121,7 +121,7 @@ interface TokenDao : BaseDao<Token> {
     @Query("SELECT asset_id FROM assets WHERE balance > 0")
     suspend fun findAllAssetIdSuspend(): List<String>
 
-    @Query("UPDATE assets_extra SET balance = 0 WHERE asset_id IN (:assetIds)")
+    @Query("UPDATE tokens_extra SET balance = 0 WHERE asset_id IN (:assetIds)")
     suspend fun zeroClearSuspend(assetIds: List<String>)
 
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:assetIds)")
@@ -130,7 +130,7 @@ interface TokenDao : BaseDao<Token> {
     @Update(entity = Asset::class)
     suspend fun suspendUpdatePrices(priceAndChanges: List<PriceAndChange>)
 
-    @Query("SELECT SUM(balance * price_usd) FROM tokens a1 LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id")
+    @Query("SELECT SUM(balance * price_usd) FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id")
     suspend fun findTotalUSDBalance(): Int?
 
     @Query("SELECT asset_id FROM tokens WHERE asset_key = :assetKey COLLATE NOCASE")

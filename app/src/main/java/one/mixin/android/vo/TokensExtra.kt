@@ -10,15 +10,21 @@ import kotlinx.parcelize.Parcelize
 
 @SuppressLint("ParcelCreator")
 @Parcelize
-@Entity(tableName = "assets_extra")
-data class AssetsExtra(
+@Entity(tableName = "tokens_extra")
+data class TokensExtra(
     @PrimaryKey
     @ColumnInfo(name = "asset_id")
     @SerializedName("asset_id")
     val assetId: String,
+    @ColumnInfo(name = "asset")
+    @SerializedName("asset")
+    val asset: String,
     @SerializedName("hidden")
     @ColumnInfo(name = "hidden")
     var hidden: Boolean?,
+    @SerializedName("balance")
+    @ColumnInfo(name = "balance")
+    val balance: String?,
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
     val updatedAt: String?,

@@ -34,7 +34,6 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
-import one.mixin.android.db.AssetsExtraDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
@@ -61,6 +60,7 @@ import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.TokenDao
+import one.mixin.android.db.TokensExtraDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
@@ -185,7 +185,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
-    lateinit var assetsExtraDao: AssetsExtraDao
+    lateinit var assetsExtraDao: TokensExtraDao
 
     @Inject
     @Transient

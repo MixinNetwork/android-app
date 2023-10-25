@@ -4,10 +4,7 @@ import androidx.room.withTransaction
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.util.reportException
-import one.mixin.android.vo.AssetsExtra
-import one.mixin.android.vo.Offset
-import one.mixin.android.vo.assetIdToAsset
+import one.mixin.android.vo.TokensExtra
 import timber.log.Timber
 import java.math.BigDecimal
 
@@ -30,7 +27,7 @@ class CheckBalanceJob(
             mixinDatabase.withTransaction {
                 val value = calcBalanceByAssetId(asset)
                 if (assetsExtra == null) {
-                    assetsExtraDao.insertSuspend(AssetsExtra(token.assetId, token.asset, false, value.toPlainString(), nowInUtc()))
+                    assetsExtraDao.insertSuspend(TokensExtra(token.assetId, token.asset, false, value.toPlainString(), nowInUtc()))
                 } else {
                     assetsExtraDao.updateBalanceByAssetId(token.assetId, value.toPlainString(), nowInUtc())
                 }

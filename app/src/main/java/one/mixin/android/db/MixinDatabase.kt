@@ -94,6 +94,7 @@ import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.Token
+import one.mixin.android.vo.TokensExtra
 import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
@@ -113,6 +114,7 @@ import kotlin.math.min
         (Offset::class),
         (Asset::class),
         (AssetsExtra::class),
+        (TokensExtra::class),
         (Snapshot::class),
         (MessageHistory::class),
         (SentSenderKey::class),
@@ -159,7 +161,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun offsetDao(): OffsetDao
     abstract fun assetDao(): AssetDao
     abstract fun tokenDao(): TokenDao
-    abstract fun assetsExtraDao(): AssetsExtraDao
+    abstract fun assetsExtraDao(): TokensExtraDao
     abstract fun snapshotDao(): SnapshotDao
     abstract fun safeSnapshotDao(): SafeSnapshotDao
     abstract fun messageHistoryDao(): MessageHistoryDao

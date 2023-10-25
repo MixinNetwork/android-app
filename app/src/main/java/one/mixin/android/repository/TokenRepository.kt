@@ -41,7 +41,7 @@ import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.TokenDao
-import one.mixin.android.db.AssetsExtraDao
+import one.mixin.android.db.TokensExtraDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.DepositDao
 import one.mixin.android.db.MixinDatabase
@@ -56,7 +56,6 @@ import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.within6Hours
-import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
@@ -65,7 +64,6 @@ import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.TokenItem
-import one.mixin.android.vo.AssetsExtra
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.Deposit
 import one.mixin.android.vo.MessageCategory
@@ -74,9 +72,9 @@ import one.mixin.android.vo.Output
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.SafeSnapshot
-import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Token
+import one.mixin.android.vo.TokensExtra
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createMessage
@@ -102,7 +100,7 @@ constructor(
     private val utxoService: UtxoService,
     private val routeService: RouteService,
     private val tokenDao: TokenDao,
-    private val assetsExtraDao: AssetsExtraDao,
+    private val assetsExtraDao: TokensExtraDao,
     private val safeSnapshotDao: SafeSnapshotDao,
     private val addressDao: AddressDao,
     private val addressService: AddressService,
@@ -278,7 +276,7 @@ constructor(
             if (assetsExtra != null) {
                 assetsExtraDao.updateHiddenByAssetId(id, hidden)
             } else {
-                assetsExtraDao.insertSuspend(AssetsExtra(id, assetIdToAsset(id), hidden, "0", nowInUtc()))
+                assetsExtraDao.insertSuspend(TokensExtra(id, assetIdToAsset(id), hidden, "0", nowInUtc()))
             }
         }
     }
