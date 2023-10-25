@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "e3e8f2fdf43b50247514c13a4a08c71d",
+    "identityHash": "2be918d8f01552eb03ae133c940e929f",
     "entities": [
       {
         "tableName": "users",
@@ -2364,7 +2364,7 @@
       },
       {
         "tableName": "outputs",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`output_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `asset` TEXT NOT NULL, `amount` TEXT NOT NULL, `mask` TEXT NOT NULL, `keys` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `extra` TEXT NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `signed_by` TEXT NOT NULL, `signed_at` TEXT NOT NULL, `spent_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`output_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `kernel_asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `mask` TEXT NOT NULL, `keys` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `extra` TEXT NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `signed_by` TEXT NOT NULL, `signed_at` TEXT NOT NULL, `spent_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))",
         "fields": [
           {
             "fieldPath": "outputId",
@@ -2386,7 +2386,7 @@
           },
           {
             "fieldPath": "asset",
-            "columnName": "asset",
+            "columnName": "kernel_asset_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -2465,15 +2465,15 @@
         },
         "indices": [
           {
-            "name": "index_outputs_asset_state_created_at",
+            "name": "index_outputs_kernel_asset_id_state_created_at",
             "unique": false,
             "columnNames": [
-              "asset",
+              "kernel_asset_id",
               "state",
               "created_at"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_outputs_asset_state_created_at` ON `${TABLE_NAME}` (`asset`, `state`, `created_at`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_outputs_kernel_asset_id_state_created_at` ON `${TABLE_NAME}` (`kernel_asset_id`, `state`, `created_at`)"
           },
           {
             "name": "index_outputs_transaction_hash_output_index",
@@ -2490,7 +2490,7 @@
       },
       {
         "tableName": "tokens",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `asset` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `price_btc` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `change_btc` TEXT NOT NULL, `confirmations` INTEGER NOT NULL, `asset_key` TEXT, `reserve` TEXT, `withdrawal_memo_possibility` TEXT, PRIMARY KEY(`asset_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `kernel_asset_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `price_btc` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `change_btc` TEXT NOT NULL, `confirmations` INTEGER NOT NULL, `asset_key` TEXT, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
             "fieldPath": "assetId",
@@ -2500,7 +2500,7 @@
           },
           {
             "fieldPath": "asset",
-            "columnName": "asset",
+            "columnName": "kernel_asset_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -2561,18 +2561,6 @@
           {
             "fieldPath": "assetKey",
             "columnName": "asset_key",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "reserve",
-            "columnName": "reserve",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "withdrawalMemoPossibility",
-            "columnName": "withdrawal_memo_possibility",
             "affinity": "TEXT",
             "notNull": false
           }
@@ -2754,7 +2742,7 @@
       },
       {
         "tableName": "raw_transactions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`request_id` TEXT NOT NULL, `raw_transaction` TEXT NOT NULL, `created_at` INTEGER NOT NULL, PRIMARY KEY(`request_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`request_id` TEXT NOT NULL, `raw_transaction` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`request_id`))",
         "fields": [
           {
             "fieldPath": "requestId",
@@ -2771,7 +2759,7 @@
           {
             "fieldPath": "createdAt",
             "columnName": "created_at",
-            "affinity": "INTEGER",
+            "affinity": "TEXT",
             "notNull": true
           }
         ],
@@ -2788,7 +2776,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e3e8f2fdf43b50247514c13a4a08c71d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2be918d8f01552eb03ae133c940e929f')"
     ]
   }
 }

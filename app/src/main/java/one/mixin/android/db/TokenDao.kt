@@ -20,7 +20,7 @@ interface TokenDao : BaseDao<Token> {
             d.destination as destination, d.tag as tag, a1.price_btc AS priceBtc, 
             a1.chain_id AS chainId , a1.price_usd AS priceUsd, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden,
             a1.confirmations,c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName, a2.price_usd as chainPriceUsd,
-            a1.asset_key AS assetKey,a1.reserve as reserve, a1.withdrawal_memo_possibility AS withdrawalMemoPossibility 
+            a1.asset_key AS assetKey, c.withdrawal_memo_possibility AS withdrawalMemoPossibility 
             FROM tokens a1 
             LEFT JOIN tokens a2 ON a1.chain_id = a2.asset_id
             LEFT JOIN deposit_entries d ON a1.chain_id = d.chain_id 
@@ -43,10 +43,10 @@ interface TokenDao : BaseDao<Token> {
     @Query("SELECT a1.* FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 $POSTFIX")
     suspend fun simpleAssetsWithBalance(): List<Token>
 
-    @Query("SELECT asset_id FROM tokens WHERE asset = :asset")
+    @Query("SELECT asset_id FROM tokens WHERE kernel_asset_id = :asset")
     suspend fun checkAssetExists(asset: String): String?
 
-    @Query("SELECT * FROM tokens WHERE asset = :asset")
+    @Query("SELECT * FROM tokens WHERE kernel_asset_id = :asset")
     suspend fun findTokenByAsset(asset: String): Token?
 
     @Query("$PREFIX_ASSET_ITEM WHERE a1.symbol = 'XIN' $POSTFIX_ASSET_ITEM limit 1")

@@ -37,9 +37,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.vo.needShowReserve
-import one.mixin.android.vo.safe.needShowReserve
-import timber.log.Timber
 
 @AndroidEntryPoint
 class DepositFragment : BaseFragment() {
@@ -131,12 +128,7 @@ class DepositFragment : BaseFragment() {
 
                 notSupportLl.isVisible = false
                 sv.isVisible = true
-                val reserveTip = if (asset.needShowReserve()) {
-                    getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}")
-                        .highLight(requireContext(), "${asset.reserve} ${asset.symbol}")
-                } else {
-                    SpannableStringBuilder()
-                }
+                val reserveTip = SpannableStringBuilder()
                 val confirmation = requireContext().resources.getQuantityString(
                     R.plurals.deposit_confirmation,
                     asset.confirmations,

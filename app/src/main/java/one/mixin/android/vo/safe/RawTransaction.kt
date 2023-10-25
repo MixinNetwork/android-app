@@ -12,5 +12,5 @@ data class RawTransaction(
     @ColumnInfo(name = "raw_transaction")
     val rawTransaction: String,
     @ColumnInfo(name = "created_at")
-    val createdAt: Long,
+    val createdAt: String,
 )

@@ -24,9 +24,9 @@ data class Token(
     @SerialName("asset_id")
     val assetId: String,
 
-    @ColumnInfo(name = "asset")
-    @SerializedName("mixin_id")
-    @SerialName("mixin_id")
+    @ColumnInfo(name = "kernel_asset_id")
+    @SerializedName("kernel_asset_id")
+    @SerialName("kernel_asset_id")
     val asset: String,
 
     @ColumnInfo(name = "symbol")
@@ -78,16 +78,6 @@ data class Token(
     @SerializedName("asset_key")
     @SerialName("asset_key")
     val assetKey: String?,
-
-    @ColumnInfo(name = "reserve")
-    @SerializedName("reserve")
-    @SerialName("reserve")
-    val reserve: String?,
-
-    @ColumnInfo(name = "withdrawal_memo_possibility")
-    @SerializedName("withdrawal_memo_possibility")
-    @SerialName("withdrawal_memo_possibility")
-    val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
 ) : Parcelable
 
 data class TokenPriceAndChange(
@@ -123,12 +113,11 @@ fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem = TokenItem(
     null,
     null,
     assetKey,
-    reserve,
-    withdrawalMemoPossibility,
+    null
 )
 
 fun Asset.toToken(): Token =
-    Token(assetId, assetIdToAsset(assetId), symbol, name, iconUrl, priceBtc, priceUsd, chainId, changeUsd, changeBtc, confirmations, assetKey, reserve, withdrawalMemoPossibility)
+    Token(assetId, assetIdToAsset(assetId), symbol, name, iconUrl, priceBtc, priceUsd, chainId, changeUsd, changeBtc, confirmations, assetKey)
 
 // fun Token.toAssetItem(chainIconUrl: String? = null): AssetItem = AssetItem(
 //    assetId, symbol, name, iconUrl, balance, destination, depositEntries, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, false,

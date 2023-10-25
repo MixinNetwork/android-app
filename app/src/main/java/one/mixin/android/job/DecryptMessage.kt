@@ -1040,6 +1040,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         safeSnapshotDao.insert(snapshot)
         insertMessage(message, data)
         jobManager.addJobInBackground(RefreshTokensJob(snapshot.assetId))
+        jobManager.addJobInBackground(SyncOutputJob())
 
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
             generateNotification(message, data)

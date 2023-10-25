@@ -31,7 +31,6 @@ data class TokenItem(
     var chainName: String?,
     var chainPriceUsd: String?,
     val assetKey: String?,
-    val reserve: String?,
     val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
 ) : Parcelable {
     fun fiat(): BigDecimal {
@@ -95,9 +94,3 @@ fun TokenItem.differentProcess(
     }
 }
 
-fun TokenItem.needShowReserve(): Boolean {
-    if (reserve.isNullOrBlank()) return false
-
-    val reserveVal = reserve.toIntOrNull() ?: return false
-    return reserveVal > 0
-}

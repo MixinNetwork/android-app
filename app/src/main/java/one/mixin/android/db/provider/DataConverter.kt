@@ -560,8 +560,7 @@ fun callableAssetItem(
             val cursorIndexOfChainSymbol = 16
             val cursorIndexOfChainName = 17
             val cursorIndexOfAssetKey = 18
-            val cursorIndexOfReserve = 19
-            val cursorIndexOfWithdrawalMemoPossibility = 20
+            val cursorIndexOfWithdrawalMemoPossibility = 19
 
             val result: MutableList<TokenItem> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
@@ -639,11 +638,6 @@ fun callableAssetItem(
                     cursor.getString(cursorIndexOfChainPriceUsd)
                 }
                 val tmpConfirmations: Int = cursor.getInt(cursorIndexOfConfirmations)
-                val tmpReserve: String? = if (cursor.isNull(cursorIndexOfReserve)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfReserve)
-                }
                 val tmpChainIconUrl: String? = if (cursor.isNull(cursorIndexOfChainIconUrl)) {
                     null
                 } else {
@@ -690,7 +684,6 @@ fun callableAssetItem(
                     tmpChainName,
                     tmpChainPriceUsd,
                     tmpAssetKey,
-                    tmpReserve,
                     tmpDepositWithdrawalMemoPossibility,
                 )
                 result.add(item)

@@ -32,6 +32,7 @@ import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.escapeSql
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
@@ -158,7 +159,7 @@ class BottomSheetViewModel @Inject internal constructor(
                 val changeOutput = changeToOutput(signResult.change, asset, utxos.last().createdAt)
                 tokenRepository.insertOutput(changeOutput)
             }
-            tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.requestId, signResult.raw, System.currentTimeMillis()))
+            tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.requestId, signResult.raw, nowInUtc()))
         }
         val transactionRsp = tokenRepository.transactions(TransactionRequest(signResult.raw, traceId))
         if (transactionRsp.error != null) {
