@@ -1,5 +1,6 @@
 package one.mixin.android.repository
 
+import TransactionResponse
 import android.os.CancellationSignal
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
@@ -49,10 +50,13 @@ import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
+import one.mixin.android.db.flow.MessageFlow
+import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.within6Hours
+import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
@@ -64,14 +68,19 @@ import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.AssetsExtra
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.Deposit
+import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Output
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.SafeSnapshot
+import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Token
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.assetIdToAsset
+import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
@@ -79,6 +88,7 @@ import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
 import one.mixin.android.vo.utxo.RawTransaction
 import retrofit2.Call
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -636,5 +646,13 @@ constructor(
     }
 
     suspend fun findOldAssets() = assetService.fetchAllAssetSuspend()
-
+    fun insertSnapshotMessage(data: TransactionResponse, opponentId: String,memo:String?) {
+        val snapshotId = generateConversationId(data.userId, data.transactionHash)
+        val conversationId = generateConversationId(data.userId, opponentId)
+        val snapshot = SafeSnapshot(snapshotId,"transaction", data.amount,data.snapshotAt, opponentId, null,null,null,null,null,memo,null,null, null,null)
+        val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, snapshot.type, null, snapshot.snapshotId)
+        safeSnapshotDao.insert(snapshot)
+        appDatabase.insertMessage(message)
+        MessageFlow.insert(message.conversationId, message.messageId)
+    }
 }

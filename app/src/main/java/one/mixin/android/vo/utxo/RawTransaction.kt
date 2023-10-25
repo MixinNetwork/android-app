@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "raw_transaction")
+@Entity(tableName = "raw_transactions")
 data class RawTransaction(
     @PrimaryKey
     @ColumnInfo(name = "transaction_hash")

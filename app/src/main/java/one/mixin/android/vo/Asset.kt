@@ -103,11 +103,6 @@ data class Asset(
     @SerializedName("withdrawal_memo_possibility")
     @SerialName("withdrawal_memo_possibility")
     val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
-
-    @ColumnInfo(name = "mixin_id")
-    @SerializedName("mixin_id")
-    @SerialName("mixin_id")
-    val mixinId: String,
 ) : Parcelable
 
 data class PriceAndChange(

@@ -6,6 +6,8 @@ data class TransactionResponse(
     val requestId: String,
     @SerializedName("user_id")
     val userId: String,
+    @SerializedName("amount")
+    val amount: String,
     @SerializedName("transaction_hash")
     val transactionHash: String,
     val asset: String,

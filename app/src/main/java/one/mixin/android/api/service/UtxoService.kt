@@ -26,7 +26,6 @@ interface UtxoService {
         @Query("offset") offset: String? = null,
         @Query("limit") limit: Int = 500,
         @Query("state") state: String? = null,
-        @Query("user") user: String? = Session.getAccountId(),
     ): MixinResponse<List<Output>>
 
     @POST("/safe/deposit_entries")
