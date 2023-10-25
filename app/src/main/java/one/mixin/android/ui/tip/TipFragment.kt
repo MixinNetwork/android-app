@@ -32,7 +32,6 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
@@ -478,7 +477,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         val registerResp = viewModel.registerPublicKey(
             registerRequest = RegisterRequest(
                 pkHex,
-                Session.registerPublicKey(selfId, seed),
+                Session.getRegisterSignature(selfId, seed),
                 viewModel.getEncryptedTipBody(selfId, pkHex, pin),
             )
         )

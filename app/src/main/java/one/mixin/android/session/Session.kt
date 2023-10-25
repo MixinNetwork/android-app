@@ -349,8 +349,8 @@ object Session {
         return Pair(ts, (requireNotNull(getAccountId()).toByteArray() + content.hmacSha256(sharedKey)).base64RawURLEncode())
     }
 
-    fun registerPublicKey(userId:String, seed: ByteArray): String {
-        val signTarget = userId.sha3Sum256()
+    fun getRegisterSignature(message: String, seed: ByteArray): String {
+        val signTarget = message.sha3Sum256()
         return if (useGoEd()) {
             Ed25519.sign(signTarget, seed).base64RawURLEncode()
         } else {
