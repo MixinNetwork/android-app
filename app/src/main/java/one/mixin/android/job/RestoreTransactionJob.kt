@@ -5,11 +5,7 @@ import com.google.gson.annotations.SerializedName
 import kernel.Kernel
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.request.TransactionRequest
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.utxo.RawTransaction
-import one.mixin.android.vo.utxo.changeToOutput
-import timber.log.Timber
 
 class RestoreTransactionJob() : BaseJob(
     Params(PRIORITY_UI_HIGH).addTags(TAG).requireNetwork(),

@@ -98,7 +98,7 @@ data class Asset(
     @ColumnInfo(name = "deposit_entries")
     @SerializedName("deposit_entries")
     @SerialName("deposit_entries")
-    val depositEntries: List<DepositEntry>?,
+    val depositEntries: List<OldDepositEntry>?,
 
     @ColumnInfo(name = "withdrawal_memo_possibility")
     @SerializedName("withdrawal_memo_possibility")

@@ -1,7 +1,7 @@
 package one.mixin.android.db
 
 import androidx.room.Dao
-import one.mixin.android.vo.safe.Deposit
+import one.mixin.android.vo.safe.DepositEntry
 
 @Dao
-interface DepositDao : BaseDao<Deposit>
+interface DepositDao : BaseDao<DepositEntry>

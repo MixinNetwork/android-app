@@ -33,7 +33,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.vo.safe.Deposit
+import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.SnapshotItem
@@ -291,7 +291,7 @@ internal constructor(
         userRepository.deleteSessionByUserId(conversationId, userId)
     }
 
-    fun insertDeposit(data: List<Deposit>) {
+    fun insertDeposit(data: List<DepositEntry>) {
         tokenRepository.insertDeposit(data)
     }
 

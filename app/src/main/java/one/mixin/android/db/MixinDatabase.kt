@@ -68,7 +68,7 @@ import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationExt
-import one.mixin.android.vo.safe.Deposit
+import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.FloodMessage
@@ -99,7 +99,7 @@ import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
-import one.mixin.android.vo.utxo.RawTransaction
+import one.mixin.android.vo.safe.RawTransaction
 import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
@@ -144,7 +144,7 @@ import kotlin.math.min
         (Chain::class),
         (Output::class),
         (Token::class),
-        (Deposit::class),
+        (DepositEntry::class),
         (SafeSnapshot::class),
         (RawTransaction::class),
     ],

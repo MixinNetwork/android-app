@@ -23,7 +23,7 @@ interface TokenDao : BaseDao<Token> {
             a1.asset_key AS assetKey,a1.reserve as reserve, a1.withdrawal_memo_possibility AS withdrawalMemoPossibility 
             FROM tokens a1 
             LEFT JOIN tokens a2 ON a1.chain_id = a2.asset_id
-            LEFT JOIN deposits d ON a1.chain_id = d.chain_id 
+            LEFT JOIN deposit_entries d ON a1.chain_id = d.chain_id 
             LEFT JOIN chains c ON a1.chain_id = c.chain_id
             LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id 
            """

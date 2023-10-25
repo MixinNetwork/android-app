@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "1ef5c6f7048155913a61d7ee4bd5c182",
+    "identityHash": "e3e8f2fdf43b50247514c13a4a08c71d",
     "entities": [
       {
         "tableName": "users",
@@ -2587,7 +2587,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "deposits",
+        "tableName": "deposit_entries",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`entry_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `priority` INTEGER NOT NULL, `members` TEXT NOT NULL, `tag` TEXT, `signature` TEXT NOT NULL, `threshold` INTEGER NOT NULL, PRIMARY KEY(`entry_id`))",
         "fields": [
           {
@@ -2788,7 +2788,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1ef5c6f7048155913a61d7ee4bd5c182')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e3e8f2fdf43b50247514c13a4a08c71d')"
     ]
   }
 }

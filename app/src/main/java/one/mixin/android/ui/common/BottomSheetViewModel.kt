@@ -52,7 +52,6 @@ import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.common.biometric.MaxCountNotEnoughUtxoException
 import one.mixin.android.ui.common.biometric.NotEnoughUtxoException
-import one.mixin.android.ui.common.biometric.UtxoException
 import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.util.GsonHelper
@@ -75,7 +74,7 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.safe.Utxo
 import one.mixin.android.vo.toSimpleChat
-import one.mixin.android.vo.utxo.RawTransaction
+import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
 import java.io.File

@@ -65,7 +65,7 @@ import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Card
-import one.mixin.android.vo.safe.Deposit
+import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.safe.Output
@@ -84,9 +84,7 @@ import one.mixin.android.vo.safe.toAssetItem
 import one.mixin.android.vo.safe.toPriceAndChange
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
-import one.mixin.android.vo.toAssetItem
-import one.mixin.android.vo.toPriceAndChange
-import one.mixin.android.vo.utxo.RawTransaction
+import one.mixin.android.vo.safe.RawTransaction
 import retrofit2.Call
 import java.util.UUID
 import javax.inject.Inject
@@ -629,7 +627,7 @@ constructor(
 
     fun insertOutput(output: Output) = outputDao.insert(output)
 
-    fun insertDeposit(data: List<Deposit>) {
+    fun insertDeposit(data: List<DepositEntry>) {
         depositDao.insertList(data)
     }
 

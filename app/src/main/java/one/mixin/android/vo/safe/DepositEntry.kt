@@ -7,9 +7,9 @@ import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.vo.ListConverter
 
-@Entity(tableName = "deposits")
+@Entity(tableName = "deposit_entries")
 @TypeConverters(ListConverter::class)
-data class Deposit(
+data class DepositEntry(
     @PrimaryKey
     @ColumnInfo(name = "entry_id")
     @SerializedName("entry_id")

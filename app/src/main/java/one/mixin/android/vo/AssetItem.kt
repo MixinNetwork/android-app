@@ -16,7 +16,7 @@ data class AssetItem(
     val iconUrl: String,
     val balance: String,
     private val destination: String,
-    val depositEntries: List<DepositEntry>?,
+    val depositEntries: List<OldDepositEntry>?,
     private val tag: String?,
     val priceBtc: String,
     val priceUsd: String,

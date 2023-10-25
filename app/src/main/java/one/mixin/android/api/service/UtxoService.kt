@@ -9,8 +9,7 @@ import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.response.GhostKey
 import one.mixin.android.api.response.RegisterResponse
-import one.mixin.android.session.Session
-import one.mixin.android.vo.safe.Deposit
+import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -31,7 +30,7 @@ interface UtxoService {
     @POST("/safe/deposit_entries")
     suspend fun createDeposit(
         @Body depositEntryRequest: DepositEntryRequest
-    ): MixinResponse<List<Deposit>>
+    ): MixinResponse<List<DepositEntry>>
 
     @POST("/safe/users")
     suspend fun registerPublicKey(
