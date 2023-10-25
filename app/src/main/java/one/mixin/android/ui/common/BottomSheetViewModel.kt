@@ -49,6 +49,11 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
+import one.mixin.android.ui.common.biometric.EmptyUtxoException
+import one.mixin.android.ui.common.biometric.MaxCountNotEnoughUtxoException
+import one.mixin.android.ui.common.biometric.NotEnoughUtxoException
+import one.mixin.android.ui.common.biometric.UtxoException
+import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.Account
@@ -173,15 +178,24 @@ class BottomSheetViewModel @Inject internal constructor(
 
     private suspend fun packUtxo(asset: String, amount: String): List<Output> {
         var amountValue = amount.toDouble()
-        val list = tokenRepository.findOutputs(256, asset)
+        val list = tokenRepository.findOutputs(maxUtxoCount, asset)
+        if (list.isEmpty()) {
+            throw EmptyUtxoException
+        }
         val result = mutableListOf<Output>()
         for (output in list) {
             val outputAmount = output.amount.toDouble()
             result.add(output)
-            if (amountValue - outputAmount <= 0) {
+            amountValue -= outputAmount
+            if (amountValue <= 0) {
                 break
+            }
+        }
+        if (amountValue > 0) {
+            if (result.size >= maxUtxoCount) {
+                throw MaxCountNotEnoughUtxoException
             } else {
-                amountValue -= outputAmount
+                throw NotEnoughUtxoException
             }
         }
         return result
