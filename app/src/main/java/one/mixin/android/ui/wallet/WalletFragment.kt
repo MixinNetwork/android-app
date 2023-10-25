@@ -504,8 +504,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             binding.migrationLayout.isVisible = walletViewModel.checkHasOldAsset()
             if (viewDestroyed()) return@launch
             binding.start.setOnClickListener {
-                lifecycleScope.launch {
-                    val bot = walletViewModel.findBondBotUrl() ?: return@launch
+                lifecycleScope.launch click@{
+                    val bot = walletViewModel.findBondBotUrl() ?: return@click
                     WebActivity.show(requireContext(), url = bot.homeUri, null)
                 }
             }

@@ -312,5 +312,5 @@ internal constructor(
         ) ?: false
     }
 
-    suspend fun findBondBotUrl() = userRepository.findBondBotUrl()
+    suspend fun findBondBotUrl() = userRepository.findOrSyncApp(MIXIN_BOND_USER_ID)
 }

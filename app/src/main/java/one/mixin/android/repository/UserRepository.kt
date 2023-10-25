@@ -258,8 +258,21 @@ constructor(
         participantSessionDao.deleteByUserId(conversationId, userId)
     }
 
-    suspend fun findBondBotUrl(): App? {
-        // Todo sync user
-        return appDao.findAppById(MIXIN_BOND_USER_ID)
+    suspend fun findOrSyncApp(id: String): App? {
+        val app = appDao.findAppById(id)
+        if (app != null) {
+            return app
+        }
+        return handleMixinResponse(
+            invokeNetwork = {
+                userService.getUserByIdSuspend(id)
+            },
+            successBlock = {
+                it.data?.let { u ->
+                    upsert(u)
+                    return@handleMixinResponse u.app
+                }
+            },
+        )
     }
 }
