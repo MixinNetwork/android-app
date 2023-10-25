@@ -14,10 +14,10 @@ interface OutputDao : BaseDao<Output> {
     @Query("SELECT * FROM outputs WHERE state = 'unspent' ORDER BY amount ASC LIMIT :limit")
     suspend fun findUnspentOutputsSortedByAmount(limit: Int): List<Output>
 
-    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND kernel_asset_id = :asset ORDER BY amount ASC LIMIT :limit")
+    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset ORDER BY amount ASC LIMIT :limit")
     suspend fun findUnspentOutputsByAsset(limit: Int, asset: String): List<Output>
 
-    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND kernel_asset_id = :asset ORDER BY amount ASC LIMIT :limit OFFSET :offset")
+    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset ORDER BY amount ASC LIMIT :limit OFFSET :offset")
     suspend fun findUnspentOutputsByAssetOffset(limit: Int, asset: String, offset: Int): List<Output>
 
     @Query("SELECT output_id FROM outputs WHERE transaction_hash IN (:hash)")
@@ -29,10 +29,10 @@ interface OutputDao : BaseDao<Output> {
     @Query("SELECT created_at FROM outputs ORDER BY created_at DESC LIMIT 1")
     suspend fun findLatestOutputCreatedAt(): String?
 
-    @Query("SELECT CAST(amount AS REAL) FROM outputs WHERE kernel_asset_id =:mixinId AND state = 'unspent'")
+    @Query("SELECT CAST(amount AS REAL) FROM outputs WHERE asset =:mixinId AND state = 'unspent'")
     suspend fun calcBalanceByAssetId(mixinId: String): Double
 
-    @Query("SELECT DISTINCT kernel_asset_id FROM outputs")
+    @Query("SELECT DISTINCT asset FROM outputs")
     fun getMixinId(): List<String>
 
     @Query("UPDATE outputs SET state = 'signed' WHERE state = 'unspent' AND transaction_hash IN (:hash)")

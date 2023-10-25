@@ -13,7 +13,7 @@ import one.mixin.android.vo.ListConverter
 @Entity(
     tableName = "outputs",
     indices = [
-        Index(value = arrayOf("kernel_asset_id", "state", "created_at")),
+        Index(value = arrayOf("asset", "state", "created_at")),
         Index(value = arrayOf("transaction_hash", "output_index"), unique = true),
     ],
 )
@@ -28,8 +28,8 @@ data class Output(
     @SerializedName("output_index")
     @ColumnInfo(name = "output_index")
     val outputIndex: Int,
-    @SerializedName("kernel_asset_id")
-    @ColumnInfo(name = "kernel_asset_id")
+    @SerializedName("asset")
+    @ColumnInfo(name = "asset")
     val asset: String,
     @SerializedName("amount")
     @ColumnInfo(name = "amount")

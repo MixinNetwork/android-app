@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "9baf668c3c8bcd81f101c84b0f573c0d",
+    "identityHash": "ce2fa59c49bbaa0c6c48fc810e98c489",
     "entities": [
       {
         "tableName": "users",
@@ -2364,7 +2364,7 @@
       },
       {
         "tableName": "outputs",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`output_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `kernel_asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `mask` TEXT NOT NULL, `keys` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `extra` TEXT NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `signed_by` TEXT NOT NULL, `signed_at` TEXT NOT NULL, `spent_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`output_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `asset` TEXT NOT NULL, `amount` TEXT NOT NULL, `mask` TEXT NOT NULL, `keys` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `extra` TEXT NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `signed_by` TEXT NOT NULL, `signed_at` TEXT NOT NULL, `spent_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))",
         "fields": [
           {
             "fieldPath": "outputId",
@@ -2386,7 +2386,7 @@
           },
           {
             "fieldPath": "asset",
-            "columnName": "kernel_asset_id",
+            "columnName": "asset",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -2465,15 +2465,15 @@
         },
         "indices": [
           {
-            "name": "index_outputs_kernel_asset_id_state_created_at",
+            "name": "index_outputs_asset_state_created_at",
             "unique": false,
             "columnNames": [
-              "kernel_asset_id",
+              "asset",
               "state",
               "created_at"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_outputs_kernel_asset_id_state_created_at` ON `${TABLE_NAME}` (`kernel_asset_id`, `state`, `created_at`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_outputs_asset_state_created_at` ON `${TABLE_NAME}` (`asset`, `state`, `created_at`)"
           },
           {
             "name": "index_outputs_transaction_hash_output_index",
@@ -2776,7 +2776,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9baf668c3c8bcd81f101c84b0f573c0d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ce2fa59c49bbaa0c6c48fc810e98c489')"
     ]
   }
 }

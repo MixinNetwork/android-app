@@ -23,7 +23,7 @@ class CheckBalanceJob(
         Timber.d("$TAG start checkBalance assetId size: ${assets.size}")
         assets.forEach { asset ->
             val assetsExtra = assetsExtraDao.findByAsset(asset)
-            val token = tokenDao.findTokenByAsset(asset)?:return@forEach
+            val token = tokenDao.findTokenByAsset(asset) ?: return@forEach
             mixinDatabase.withTransaction {
                 val value = calcBalanceByAssetId(asset)
                 if (assetsExtra == null) {
@@ -35,7 +35,7 @@ class CheckBalanceJob(
         }
     }
 
-    private tailrec suspend fun calcBalanceByAssetId(asset: String, offset: Int = 0,amount: BigDecimal = BigDecimal.ZERO): BigDecimal {
+    private tailrec suspend fun calcBalanceByAssetId(asset: String, offset: Int = 0, amount: BigDecimal = BigDecimal.ZERO): BigDecimal {
         var result = amount
         val outputs = if (offset == 0) {
             outputDao.findUnspentOutputsByAsset(BALANCE_LIMIT, asset)
@@ -43,10 +43,10 @@ class CheckBalanceJob(
             outputDao.findUnspentOutputsByAssetOffset(BALANCE_LIMIT, asset, offset)
         }
         if (outputs.isEmpty()) return amount
-        result +=  outputs.map{BigDecimal(it.amount)}.sumOf { it }
-        return if (outputs.size >= BALANCE_LIMIT){
-            calcBalanceByAssetId(asset, offset+ BALANCE_LIMIT, result)
-        }else{
+        result += outputs.map { BigDecimal(it.amount) }.sumOf { it }
+        return if (outputs.size >= BALANCE_LIMIT) {
+            calcBalanceByAssetId(asset, offset + BALANCE_LIMIT, result)
+        } else {
             result
         }
     }
