@@ -55,6 +55,7 @@ import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.PropertyDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.RemoteMessageStatusDao
+import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
@@ -286,6 +287,10 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var rawTransactionDao: RawTransactionDao
+
+    @Inject
+    @Transient
+    lateinit var safeSnapshotDao: SafeSnapshotDao
 
     @Inject
     @Transient
