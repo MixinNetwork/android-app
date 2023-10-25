@@ -1316,4 +1316,5 @@
     <string name="Asset_Migration">Asset Migration</string>
     <string name="Asset_Migration_Content">Mixin has upgraded the new wallet system, you have not yet migrated to assets, please move your assets from the old wallet to the new wallet immediately!</string>
     <string name="Start_Migration">Start the migration</string>
+    <string name="wait_node_sync_complete">Please wait for node synchronization to complete.</string>
 </resources>

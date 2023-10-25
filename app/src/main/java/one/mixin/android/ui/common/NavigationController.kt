@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentManager
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.home.ConversationListFragment
@@ -31,7 +32,11 @@ constructor(mainActivity: MainActivity) {
     fun pushWallet(deviceId: String? = null) {
         if (Session.getAccount()?.hasPin == true) {
             if (!Session.hasSafe()) {
-                TipActivity.show(context, TipType.Register)
+                if (context.tipCounterSynced.synced) {
+                    TipActivity.show(context, TipType.Register)
+                } else {
+                    toast(R.string.wait_node_sync_complete)
+                }
             } else {
                 WalletActivity.show(context)
             }

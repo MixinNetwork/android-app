@@ -1285,4 +1285,5 @@
     <string name="Asset_Migration">资产迁移</string>
     <string name="Asset_Migration_Content">Mixin 已升级新的钱包系统，您还有未迁移到资产，请立刻将您的资产从旧的钱包迁移到新的钱包！</string>
     <string name="Start_Migration">开始迁移 >></string>
+    <string name="wait_node_sync_complete">请等待节点信息同步完成。</string>
 </resources>

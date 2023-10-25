@@ -107,6 +107,7 @@ import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RestoreTransactionJob
 import one.mixin.android.job.SyncOutputJob
+import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
@@ -192,6 +193,9 @@ class MainActivity : BlazeBaseActivity() {
 
     @Inject
     lateinit var tip: Tip
+
+    @Inject
+    lateinit var tipCounterSynced: TipCounterSyncedLiveData
 
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private val updatedListener = InstallStateUpdatedListener { state ->
