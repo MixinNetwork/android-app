@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "2be918d8f01552eb03ae133c940e929f",
+    "identityHash": "9baf668c3c8bcd81f101c84b0f573c0d",
     "entities": [
       {
         "tableName": "users",
@@ -786,7 +786,7 @@
       },
       {
         "tableName": "tokens_extra",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `asset` TEXT NOT NULL, `hidden` INTEGER, `balance` TEXT, `updated_at` TEXT, PRIMARY KEY(`asset_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `kernel_asset_id` TEXT NOT NULL, `hidden` INTEGER, `balance` TEXT, `updated_at` TEXT, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
             "fieldPath": "assetId",
@@ -796,7 +796,7 @@
           },
           {
             "fieldPath": "asset",
-            "columnName": "asset",
+            "columnName": "kernel_asset_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -2776,7 +2776,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2be918d8f01552eb03ae133c940e929f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9baf668c3c8bcd81f101c84b0f573c0d')"
     ]
   }
 }

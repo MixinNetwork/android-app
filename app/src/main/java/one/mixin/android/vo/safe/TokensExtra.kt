@@ -16,8 +16,8 @@ data class TokensExtra(
     @ColumnInfo(name = "asset_id")
     @SerializedName("asset_id")
     val assetId: String,
-    @ColumnInfo(name = "asset")
-    @SerializedName("asset")
+    @ColumnInfo(name = "kernel_asset_id")
+    @SerializedName("kernel_asset_id")
     val asset: String,
     @SerializedName("hidden")
     @ColumnInfo(name = "hidden")
