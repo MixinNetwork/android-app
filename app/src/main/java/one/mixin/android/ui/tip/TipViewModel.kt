@@ -10,6 +10,8 @@ import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.UtxoService
+import one.mixin.android.crypto.PinCipher
+import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.TipConstants.tipNodeApi2Path
 import retrofit2.HttpException
 import java.util.concurrent.atomic.AtomicInteger
@@ -22,6 +24,7 @@ internal constructor(
     private val tipNodeService: TipNodeService,
     private val tipConfig: TipConfig,
     private val utxoService: UtxoService,
+    private val pinCipher: PinCipher,
 ) : ViewModel() {
 
     suspend fun checkTipNodeConnect(): Pair<Boolean, String> {
@@ -46,4 +49,7 @@ internal constructor(
     }
 
     suspend fun registerPublicKey(registerRequest: RegisterRequest) = utxoService.registerPublicKey(registerRequest)
+
+    suspend fun getEncryptedTipBody(userId: String, pkHex: String, pin: String): String =
+        pinCipher.encryptPin(pin, TipBody.forSequencerRegister(userId, pkHex))
 }

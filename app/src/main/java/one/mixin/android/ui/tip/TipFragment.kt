@@ -32,6 +32,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
@@ -473,11 +474,12 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         }
         val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
         val keyPair = newKeyPairFromSeed(seed)
+        val pkHex = keyPair.publicKey.toHex()
         val registerResp = viewModel.registerPublicKey(
             registerRequest = RegisterRequest(
-                keyPair.publicKey.toHex(),
+                pkHex,
                 Session.registerPublicKey(selfId, seed),
-                ""// TODO
+                viewModel.getEncryptedTipBody(selfId, pkHex, pin),
             )
         )
         return if (registerResp.isSuccess) {
