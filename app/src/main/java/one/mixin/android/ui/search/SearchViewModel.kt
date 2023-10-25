@@ -76,7 +76,7 @@ internal constructor(
         } else {
             val escapedQuery = query.trim().escapeSql()
             when (T::class) {
-                TokenItem::class -> tokenRepository.fuzzySearchAsset(
+                TokenItem::class -> tokenRepository.fuzzySearchToken(
                     escapedQuery,
                     cancellationSignal,
                 )

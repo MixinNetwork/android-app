@@ -28,7 +28,7 @@ interface TokenDao : BaseDao<Token> {
             LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id 
            """
         const val POSTFIX =
-            " ORDER BY balance * price_usd DESC, cast(balance AS REAL) DESC, cast(price_usd AS REAL) DESC, name ASC, a1.rowid DESC"
+            " ORDER BY ae.balance * a1.price_usd DESC, cast(ae.balance AS REAL) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC, a1.rowid DESC"
         const val POSTFIX_ASSET_ITEM =
             " ORDER BY ae.balance * a1.price_usd DESC, cast(ae.balance AS REAL) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
         const val POSTFIX_ASSET_ITEM_NOT_HIDDEN =

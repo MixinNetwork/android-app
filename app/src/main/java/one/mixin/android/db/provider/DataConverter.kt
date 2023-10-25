@@ -533,7 +533,7 @@ private val depositEntryListConverter by lazy {
 }
 
 @SuppressLint("RestrictedApi")
-fun callableAssetItem(
+fun callableTokenItem(
     db: MixinDatabase,
     statement: RoomSQLiteQuery,
     cancellationSignal: CancellationSignal,
