@@ -353,7 +353,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
 
             fun bind(asset: TokenItem, show: Boolean, currentType: Int) {
                 headerBinding.apply {
-                    groupInfoMemberTitleSort.visibility = View.GONE
                     groupInfoMemberTitleSort.setOnClickListener {
                         showFiltersSheet()
                     }
