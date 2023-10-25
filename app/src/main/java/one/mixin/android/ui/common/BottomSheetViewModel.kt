@@ -86,7 +86,7 @@ class BottomSheetViewModel @Inject internal constructor(
     private val conversationRepo: ConversationRepository,
     private val cleanMessageHelper: CleanMessageHelper,
     private val pinCipher: PinCipher,
-    private val tip:Tip,
+    private val tip: Tip,
 ) : ViewModel() {
     suspend fun searchCode(code: String) = withContext(Dispatchers.IO) {
         accountRepository.searchCode(code)
@@ -128,9 +128,9 @@ class BottomSheetViewModel @Inject internal constructor(
         val asset = assetIdToAsset(assetId)
         val threshold = 1L
 
-        val utxos =  packUtxo(asset, amount)
+        val utxos = packUtxo(asset, amount)
         val input = GsonHelper.customGson.toJson(
-            utxos.map { output->
+            utxos.map { output ->
                 Utxo(output.transactionHash, output.amount, output.outputIndex)
             }
         ).toByteArray()
@@ -171,7 +171,7 @@ class BottomSheetViewModel @Inject internal constructor(
         return transactionResponse
     }
 
-    private suspend fun packUtxo(asset:String, amount:String):List<Output> {
+    private suspend fun packUtxo(asset: String, amount: String): List<Output> {
         var amountValue = amount.toDouble()
         val list = tokenRepository.findOutputs(256, asset)
         val result = mutableListOf<Output>()
@@ -563,7 +563,10 @@ class BottomSheetViewModel @Inject internal constructor(
         rawTransactionsRequest: RawTransactionsRequest,
         pin: String,
     ): MixinResponse<Void> {
-        rawTransactionsRequest.pin = pinCipher.encryptPin(pin, TipBody.forRawTransactionCreate(rawTransactionsRequest.assetId, "", rawTransactionsRequest.opponentMultisig.receivers.toList(), rawTransactionsRequest.opponentMultisig.threshold, rawTransactionsRequest.amount, rawTransactionsRequest.traceId, rawTransactionsRequest.memo))
+        rawTransactionsRequest.pin = pinCipher.encryptPin(
+            pin,
+            TipBody.forRawTransactionCreate(rawTransactionsRequest.assetId, "", rawTransactionsRequest.opponentMultisig.receivers.toList(), rawTransactionsRequest.opponentMultisig.threshold, rawTransactionsRequest.amount, rawTransactionsRequest.traceId, rawTransactionsRequest.memo)
+        )
         return accountRepository.transactions(rawTransactionsRequest)
     }
 
