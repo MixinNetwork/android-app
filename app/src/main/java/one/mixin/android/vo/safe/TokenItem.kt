@@ -1,9 +1,12 @@
-package one.mixin.android.vo
+package one.mixin.android.vo.safe
 
 import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.PriceAndChange
+import one.mixin.android.vo.WithdrawalMemoPossibility
 import java.math.BigDecimal
 
 @SuppressLint("ParcelCreator")

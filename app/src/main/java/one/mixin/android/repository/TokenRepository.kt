@@ -63,23 +63,25 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
-import one.mixin.android.vo.TokenItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Card
-import one.mixin.android.vo.Deposit
+import one.mixin.android.vo.safe.Deposit
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.Output
+import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SafeBox
-import one.mixin.android.vo.SafeSnapshot
+import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.Token
-import one.mixin.android.vo.TokensExtra
+import one.mixin.android.vo.safe.Token
+import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.route.RoutePaymentRequest
+import one.mixin.android.vo.safe.toAssetItem
+import one.mixin.android.vo.safe.toPriceAndChange
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.toAssetItem
@@ -635,8 +637,8 @@ constructor(
         rawTransactionDao.insert(rawTransaction)
     }
 
-    fun deleteRawTransaction(transactionHash: String) {
-        rawTransactionDao.deleteByHash(transactionHash)
+    fun deleteRawTransaction(requestId: String) {
+        rawTransactionDao.deleteById(requestId)
     }
 
     suspend fun signed(hash: List<String>) {

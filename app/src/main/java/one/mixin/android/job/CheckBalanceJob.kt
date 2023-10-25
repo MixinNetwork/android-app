@@ -4,7 +4,7 @@ import androidx.room.withTransaction
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.vo.TokensExtra
+import one.mixin.android.vo.safe.TokensExtra
 import timber.log.Timber
 import java.math.BigDecimal
 

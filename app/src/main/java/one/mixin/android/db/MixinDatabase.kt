@@ -68,7 +68,7 @@ import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationExt
-import one.mixin.android.vo.Deposit
+import one.mixin.android.vo.safe.Deposit
 import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.FloodMessage
@@ -79,7 +79,7 @@ import one.mixin.android.vo.MessageFts4
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.Offset
-import one.mixin.android.vo.Output
+import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.PinMessage
@@ -87,14 +87,14 @@ import one.mixin.android.vo.Property
 import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.ResendMessage
 import one.mixin.android.vo.ResendSessionMessage
-import one.mixin.android.vo.SafeSnapshot
+import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.SentSenderKey
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
-import one.mixin.android.vo.Token
-import one.mixin.android.vo.TokensExtra
+import one.mixin.android.vo.safe.Token
+import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage

@@ -37,7 +37,7 @@ import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.PaymentsUtil
-import one.mixin.android.vo.TokenItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SafeBox

@@ -12,9 +12,9 @@ sealed class UtxoException : Exception() {
     }
 }
 
-data object EmptyUtxoException: UtxoException()
-data object NotEnoughUtxoException: UtxoException()
-data object MaxCountNotEnoughUtxoException: UtxoException()
+data object EmptyUtxoException : UtxoException()
+data object NotEnoughUtxoException : UtxoException()
+data object MaxCountNotEnoughUtxoException : UtxoException()
 
 fun Throwable.isUtxoException(): Boolean = this is EmptyUtxoException || this is NotEnoughUtxoException || this is MaxCountNotEnoughUtxoException
 

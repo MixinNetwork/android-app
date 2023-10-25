@@ -7,12 +7,11 @@ import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Chain
-import one.mixin.android.vo.PendingDeposit
-import one.mixin.android.vo.SafeSnapshot
-import one.mixin.android.vo.Snapshot
+import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.Ticker
-import one.mixin.android.vo.Token
+import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.TopAsset
+import one.mixin.android.vo.safe.PendingDeposit
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET

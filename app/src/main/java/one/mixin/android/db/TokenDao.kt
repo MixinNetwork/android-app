@@ -7,9 +7,9 @@ import androidx.room.RoomWarnings
 import androidx.room.Update
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.Asset
-import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.PriceAndChange
-import one.mixin.android.vo.Token
+import one.mixin.android.vo.safe.Token
+import one.mixin.android.vo.safe.TokenItem
 
 @Dao
 interface TokenDao : BaseDao<Token> {
@@ -22,7 +22,7 @@ interface TokenDao : BaseDao<Token> {
             a1.confirmations,c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName, a2.price_usd as chainPriceUsd,
             a1.asset_key AS assetKey,a1.reserve as reserve, a1.withdrawal_memo_possibility AS withdrawalMemoPossibility 
             FROM tokens a1 
-            LEFT JOIN assets a2 ON a1.chain_id = a2.asset_id
+            LEFT JOIN tokens a2 ON a1.chain_id = a2.asset_id
             LEFT JOIN deposits d ON a1.chain_id = d.chain_id 
             LEFT JOIN chains c ON a1.chain_id = c.chain_id
             LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id 
@@ -109,16 +109,16 @@ interface TokenDao : BaseDao<Token> {
     @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 $POSTFIX_ASSET_ITEM")
     fun assetItemsWithBalance(): LiveData<List<TokenItem>>
 
-    @Query("SELECT icon_url FROM assets WHERE asset_id = :id")
+    @Query("SELECT icon_url FROM tokens WHERE asset_id = :id")
     suspend fun getIconUrl(id: String): String?
 
-    @Query("SELECT asset_id FROM assets WHERE asset_id = :id")
+    @Query("SELECT asset_id FROM tokens WHERE asset_id = :id")
     fun checkExists(id: String): String?
 
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :assetId")
     suspend fun findAssetItemById(assetId: String): TokenItem?
 
-    @Query("SELECT asset_id FROM assets WHERE balance > 0")
+    @Query("SELECT t.asset_id FROM tokens t LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE te.balance > 0")
     suspend fun findAllAssetIdSuspend(): List<String>
 
     @Query("UPDATE tokens_extra SET balance = 0 WHERE asset_id IN (:assetIds)")
@@ -143,7 +143,7 @@ interface TokenDao : BaseDao<Token> {
     @Query("SELECT rowid FROM assets WHERE asset_id = :assetId")
     fun getAssetRowId(assetId: String): Long?
 
-    @Query("SELECT count(1) FROM assets")
+    @Query("SELECT count(1) FROM tokens")
     fun countAssets(): Long
 
     @Query("SELECT count(1) FROM assets WHERE rowid > :rowId")

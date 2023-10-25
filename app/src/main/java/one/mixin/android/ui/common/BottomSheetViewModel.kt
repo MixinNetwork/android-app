@@ -59,21 +59,21 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
-import one.mixin.android.vo.TokenItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationCircleManagerItem
-import one.mixin.android.vo.Output
-import one.mixin.android.vo.SafeSnapshot
+import one.mixin.android.vo.safe.Output
+import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
-import one.mixin.android.vo.Utxo
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
+import one.mixin.android.vo.safe.Utxo
 import one.mixin.android.vo.toSimpleChat
 import one.mixin.android.vo.utxo.RawTransaction
 import one.mixin.android.vo.utxo.SignResult
@@ -159,14 +159,14 @@ class BottomSheetViewModel @Inject internal constructor(
                 val changeOutput = changeToOutput(signResult.change, asset, utxos.last().createdAt)
                 tokenRepository.insertOutput(changeOutput)
             }
-            tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.transactionHash, signResult.raw, System.currentTimeMillis()))
+            tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.requestId, signResult.raw, System.currentTimeMillis()))
         }
         val transactionRsp = tokenRepository.transactions(TransactionRequest(signResult.raw, traceId))
         if (transactionRsp.error != null) {
-            tokenRepository.deleteRawTransaction(transactionRsp.data!!.transactionHash)
+            tokenRepository.deleteRawTransaction(transactionRsp.data!!.requestId)
             return transactionRsp
         } else {
-            tokenRepository.deleteRawTransaction(transactionRsp.data!!.transactionHash)
+            tokenRepository.deleteRawTransaction(transactionRsp.data!!.requestId)
         }
         tokenRepository.insertSnapshotMessage(transactionResponse.data!!, assetId, amount, receiverId, memo)
         val hash = arrayListOf<String>()

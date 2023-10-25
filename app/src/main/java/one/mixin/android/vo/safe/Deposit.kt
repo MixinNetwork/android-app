@@ -1,10 +1,11 @@
-package one.mixin.android.vo
+package one.mixin.android.vo.safe
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.vo.ListConverter
 
 @Entity(tableName = "deposits")
 @TypeConverters(ListConverter::class)

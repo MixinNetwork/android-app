@@ -52,7 +52,7 @@ import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.connections.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.DAppInfo
 import one.mixin.android.ui.tip.wc.sessionproposal.WCPinBoard
-import one.mixin.android.vo.Token
+import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.priceUSD
 import org.web3j.utils.Convert

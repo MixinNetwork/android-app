@@ -13,7 +13,7 @@ import one.mixin.android.extension.navigate
 import one.mixin.android.extension.putString
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.conversation.TransferFragment
-import one.mixin.android.vo.TokenItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 
 class SendBottomSheet(

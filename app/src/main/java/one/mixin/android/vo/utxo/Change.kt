@@ -1,6 +1,6 @@
 package one.mixin.android.vo.utxo
 
-import one.mixin.android.vo.Output
+import one.mixin.android.vo.safe.Output
 import kernel.Utxo
 import java.util.UUID
 

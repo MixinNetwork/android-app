@@ -3,7 +3,7 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.Token
+import one.mixin.android.vo.safe.Token
 
 class RefreshTokensJob(
     private val assetId: String? = null,

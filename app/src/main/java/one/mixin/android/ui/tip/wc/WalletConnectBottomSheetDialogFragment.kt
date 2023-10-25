@@ -65,7 +65,7 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
-import one.mixin.android.vo.Token
+import one.mixin.android.vo.safe.Token
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 

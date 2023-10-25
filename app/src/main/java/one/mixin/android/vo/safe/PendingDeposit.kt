@@ -1,6 +1,7 @@
-package one.mixin.android.vo
+package one.mixin.android.vo.safe
 
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.vo.SnapshotType
 
 data class PendingDeposit(
     @SerializedName("deposit_id")

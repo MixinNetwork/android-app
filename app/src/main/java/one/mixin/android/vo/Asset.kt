@@ -11,6 +11,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.isUUID
+import one.mixin.android.vo.safe.Token
 import java.math.BigDecimal
 
 @SuppressLint("ParcelCreator")

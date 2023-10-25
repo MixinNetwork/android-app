@@ -17,8 +17,8 @@ import one.mixin.android.ui.search.holder.ContactHolder
 import one.mixin.android.ui.search.holder.MessageHolder
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
-import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
 
 class SearchSingleAdapter(private val type: SearchType) : HeaderAdapter<Parcelable>() {
     var onItemClickListener: SearchFragment.OnSearchClickListener? = null

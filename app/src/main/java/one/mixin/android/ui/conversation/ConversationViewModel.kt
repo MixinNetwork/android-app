@@ -60,7 +60,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
-import one.mixin.android.vo.TokenItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ConversationStatus

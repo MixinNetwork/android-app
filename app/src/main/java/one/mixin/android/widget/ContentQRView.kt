@@ -21,7 +21,7 @@ import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment
-import one.mixin.android.vo.TokenItem
+import one.mixin.android.vo.safe.TokenItem
 
 class ContentQRView : ViewAnimator {
     constructor(context: Context) : this(context, null)

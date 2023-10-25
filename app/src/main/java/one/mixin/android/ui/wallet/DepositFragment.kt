@@ -36,8 +36,9 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.vo.TokenItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.needShowReserve
+import one.mixin.android.vo.safe.needShowReserve
 import timber.log.Timber
 
 @AndroidEntryPoint

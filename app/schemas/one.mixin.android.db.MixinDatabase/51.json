@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "3f7c4663febf0a6d8923b8593acfe6c8",
+    "identityHash": "1ef5c6f7048155913a61d7ee4bd5c182",
     "entities": [
       {
         "tableName": "users",
@@ -2754,11 +2754,11 @@
       },
       {
         "tableName": "raw_transactions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_hash` TEXT NOT NULL, `raw_transaction` TEXT NOT NULL, `created_at` INTEGER NOT NULL, PRIMARY KEY(`transaction_hash`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`request_id` TEXT NOT NULL, `raw_transaction` TEXT NOT NULL, `created_at` INTEGER NOT NULL, PRIMARY KEY(`request_id`))",
         "fields": [
           {
-            "fieldPath": "transactionHash",
-            "columnName": "transaction_hash",
+            "fieldPath": "requestId",
+            "columnName": "request_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -2778,7 +2778,7 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "transaction_hash"
+            "request_id"
           ]
         },
         "indices": [],
@@ -2788,7 +2788,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3f7c4663febf0a6d8923b8593acfe6c8')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1ef5c6f7048155913a61d7ee4bd5c182')"
     ]
   }
 }

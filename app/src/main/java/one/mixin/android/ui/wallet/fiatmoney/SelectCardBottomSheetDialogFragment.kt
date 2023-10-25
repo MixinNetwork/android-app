@@ -30,7 +30,7 @@ import one.mixin.android.extension.round
 import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
-import one.mixin.android.vo.TokenItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.cardIcon
 import one.mixin.android.widget.MixinBottomSheetDialog

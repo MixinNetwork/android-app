@@ -10,8 +10,8 @@ import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.response.GhostKey
 import one.mixin.android.api.response.RegisterResponse
 import one.mixin.android.session.Session
-import one.mixin.android.vo.Deposit
-import one.mixin.android.vo.Output
+import one.mixin.android.vo.safe.Deposit
+import one.mixin.android.vo.safe.Output
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -51,5 +51,8 @@ interface UtxoService {
     suspend fun fetch(
         @Body request: OutputFetchRequest
     ): MixinResponse<List<Output>>
+
+    @GET("/safe/transactions/{id}")
+    suspend fun getTransactionsById(@Path("id") id: String): MixinResponse<TransactionResponse>
 }
 

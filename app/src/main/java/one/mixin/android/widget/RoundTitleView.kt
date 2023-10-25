@@ -12,8 +12,8 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewRoundTitleBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadImage
-import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
 
 class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
     private val binding = ViewRoundTitleBinding.inflate(LayoutInflater.from(context), this, true)

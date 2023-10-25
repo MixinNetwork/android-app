@@ -7,8 +7,8 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "raw_transactions")
 data class RawTransaction(
     @PrimaryKey
-    @ColumnInfo(name = "transaction_hash")
-    val transactionHash: String,
+    @ColumnInfo(name = "request_id")
+    val requestId: String,
     @ColumnInfo(name = "raw_transaction")
     val rawTransaction: String,
     @ColumnInfo(name = "created_at")

@@ -1,4 +1,4 @@
-package one.mixin.android.vo
+package one.mixin.android.vo.safe
 
 import android.annotation.SuppressLint
 import android.os.Parcelable

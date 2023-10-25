@@ -16,7 +16,7 @@ import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.TokenItem
+import one.mixin.android.vo.safe.TokenItem
 
 class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolder(binding.root) {
     @SuppressLint("SetTextI18n")

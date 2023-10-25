@@ -33,7 +33,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.SearchAdapter
 import one.mixin.android.ui.wallet.adapter.SearchDefaultAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
-import one.mixin.android.vo.TokenItem
+import one.mixin.android.vo.safe.TokenItem
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint

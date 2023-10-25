@@ -1,6 +1,4 @@
-package one.mixin.android.vo
-
-import android.icu.util.CurrencyAmount
+package one.mixin.android.vo.safe
 
 class Utxo(
     val hash: String,

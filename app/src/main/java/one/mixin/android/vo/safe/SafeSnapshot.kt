@@ -1,4 +1,4 @@
-package one.mixin.android.vo
+package one.mixin.android.vo.safe
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

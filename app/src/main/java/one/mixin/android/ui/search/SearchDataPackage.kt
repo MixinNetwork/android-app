@@ -1,7 +1,7 @@
 package one.mixin.android.ui.search
 
 import one.mixin.android.ui.search.holder.TipItem
-import one.mixin.android.vo.TokenItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User

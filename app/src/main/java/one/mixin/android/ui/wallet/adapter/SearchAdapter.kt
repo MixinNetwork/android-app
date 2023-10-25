@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import one.mixin.android.databinding.ItemWalletSearchBinding
-import one.mixin.android.vo.TokenItem
+import one.mixin.android.vo.safe.TokenItem
 
 class SearchAdapter : ListAdapter<TokenItem, AssetHolder>(TokenItem.DIFF_CALLBACK) {
     var callback: WalletSearchCallback? = null

@@ -4,8 +4,8 @@ import androidx.paging.DataSource
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
-import one.mixin.android.vo.SafeSnapshot
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.safe.SafeSnapshot
 
 @Dao
 interface SafeSnapshotDao : BaseDao<SafeSnapshot> {

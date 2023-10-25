@@ -3,8 +3,6 @@
 package one.mixin.android.ui.wallet
 
 import android.content.SharedPreferences
-import androidx.core.view.isInvisible
-import androidx.core.view.isVisible
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -34,14 +32,12 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
-import one.mixin.android.ui.home.bot.getCategoryIcon
-import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.vo.TokenItem
-import one.mixin.android.vo.Deposit
+import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.Deposit
 import one.mixin.android.vo.ParticipantSession
-import one.mixin.android.vo.SafeSnapshot
+import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.Token
+import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.sumsub.ProfileResponse

@@ -79,7 +79,7 @@ import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
-import one.mixin.android.vo.TokenItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath

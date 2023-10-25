@@ -1,4 +1,4 @@
-package one.mixin.android.vo
+package one.mixin.android.vo.safe
 
 import android.annotation.SuppressLint
 import android.os.Parcelable
@@ -9,6 +9,9 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import one.mixin.android.vo.Asset
+import one.mixin.android.vo.WithdrawalMemoPossibility
+import one.mixin.android.vo.assetIdToAsset
 
 @SuppressLint("ParcelCreator")
 @Parcelize

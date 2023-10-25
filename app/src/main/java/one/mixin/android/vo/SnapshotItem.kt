@@ -8,6 +8,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.vo.safe.SafeSnapshot
 
 @SuppressLint("ParcelCreator")
 @Parcelize

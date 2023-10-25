@@ -1,7 +1,7 @@
 package one.mixin.android.api.service
 
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.vo.Token
+import one.mixin.android.vo.safe.Token
 import retrofit2.http.GET
 import retrofit2.http.Path
 

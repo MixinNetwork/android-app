@@ -2,7 +2,7 @@ package one.mixin.android.ui.common.biometric
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.vo.TokenItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 

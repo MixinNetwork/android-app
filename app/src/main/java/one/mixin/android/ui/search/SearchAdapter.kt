@@ -23,8 +23,8 @@ import one.mixin.android.ui.search.holder.TipHolder
 import one.mixin.android.ui.search.holder.TipItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
-import one.mixin.android.vo.TokenItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
 
 class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRecyclerHeadersAdapter<HeaderHolder> {
 

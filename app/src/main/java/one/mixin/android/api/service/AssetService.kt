@@ -8,7 +8,7 @@ import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Chain
-import one.mixin.android.vo.PendingDeposit
+import one.mixin.android.vo.safe.PendingDeposit
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Ticker
 import one.mixin.android.vo.TopAsset
