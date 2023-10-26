@@ -18,8 +18,11 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
+import one.mixin.android.crypto.aesEncrypt
+import one.mixin.android.crypto.generateRandomBytes
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.databinding.FragmentTipBinding
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
@@ -291,12 +294,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 val tipCounter = Session.getTipCounter()
                 val nodeCounter = tipBundle.tipEvent?.nodeCounter ?: tipCounter
                 val failedSigners = tipBundle.tipEvent?.failedSigners
-                if (nodeCounter != tipCounter && failedSigners.isNullOrEmpty()) {
-                    showInputPin { pin ->
-                        tipBundle.pin = pin
-                        processTip()
-                    }
-                } else if (nodeCounter != tipCounter && failedSigners?.size == tip.tipNodeCount()) {
+                if (nodeCounter != tipCounter && failedSigners?.size == tip.tipNodeCount()) {
                     // for fix tipCounter > nodeCounter
                     showInputPin(getString(R.string.Enter_your_PIN)) { pin ->
                         tipBundle.oldPin = pin
@@ -304,6 +302,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                         processTip()
                     }
                 } else {
+                    // We should always input old PIN to decrypt encryptedSalt
+                    // even if there are no failed signers.
                     showInputPin(getString(R.string.Enter_your_old_PIN)) { oldPin ->
                         tipBundle.oldPin = oldPin
                         showInputPin { pin ->
@@ -361,7 +361,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             tipCounter < 1 ->
                 tip.createTipPriv(requireContext(), pin, deviceId, failedSigners, oldPin)
             nodeCounter != tipCounter && failedSigners.isNullOrEmpty() ->
-                tip.updateTipPriv(requireContext(), deviceId, pin, null, null)
+                // TODO can merge this case with else?
+                tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin) { "process tip step update oldPin can not be null, failed signer is empty" }, null)
             else ->
                 tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin) { "process tip step update oldPin can not be null" }, failedSigners)
         }.onFailure { e ->
@@ -471,14 +472,19 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             updateTipStep(RetryRegister(null, errorInfo))
             return false
         }
-        val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
-        val keyPair = newKeyPairFromSeed(seed)
+        val salt = generateRandomBytes(32)
+        val saltAESKey = tip.generateSaltAESKey(pin, seed)
+        val encryptedSalt =  aesEncrypt(saltAESKey, salt)
+        val spendSeed = tip.getSpendPriv(salt, seed)
+        val keyPair = newKeyPairFromSeed(spendSeed)
         val pkHex = keyPair.publicKey.toHex()
+        val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
         val registerResp = viewModel.registerPublicKey(
             registerRequest = RegisterRequest(
-                pkHex,
-                Session.getRegisterSignature(selfId, seed),
-                viewModel.getEncryptedTipBody(selfId, pkHex, pin),
+                publicKey = pkHex,
+                signature = Session.getRegisterSignature(selfId, spendSeed),
+                pin = viewModel.getEncryptedTipBody(selfId, pkHex, pin),
+                salt = encryptedSalt.base64RawURLEncode(),
             )
         )
         return if (registerResp.isSuccess) {

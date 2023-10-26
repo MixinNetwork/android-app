@@ -172,6 +172,8 @@ object Session {
 
     fun hasSafe() = self?.hasSafe ?: false
 
+    fun getSalt(): String? = self?.salt
+
     fun setHasEmergencyContact(enabled: Boolean) {
         getAccount()?.hasEmergencyContact = enabled
     }

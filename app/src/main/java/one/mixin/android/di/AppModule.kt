@@ -14,6 +14,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.net.cronet.okhttptransport.MixinCronetInterceptor
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
+import com.lambdapioneer.argon2kt.Argon2Kt
 import com.twilio.audioswitch.AudioDevice
 import com.twilio.audioswitch.AudioSwitch
 import dagger.Module
@@ -511,11 +512,15 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideIdentity(tipService: TipService) = Identity(tipService)
+    fun provideIdentity(tipService: TipService, argon2Kt: Argon2Kt) = Identity(tipService, argon2Kt)
 
     @Provides
     @Singleton
     fun provideEphemeral(tipService: TipService) = Ephemeral(tipService)
+
+    @Provides
+    @Singleton
+    fun provideArgon2(): Argon2Kt = Argon2Kt()
 
     @Provides
     @Singleton
@@ -527,8 +532,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTip(ephemeral: Ephemeral, identity: Identity, tipNode: TipNode, tipService: TipService, accountService: AccountService, tipCounterSyncedLiveData: TipCounterSyncedLiveData) =
-        Tip(ephemeral, identity, tipService, accountService, tipNode, tipCounterSyncedLiveData)
+    fun provideTip(ephemeral: Ephemeral, identity: Identity, argon2Kt: Argon2Kt, tipNode: TipNode, tipService: TipService, accountService: AccountService, tipCounterSyncedLiveData: TipCounterSyncedLiveData) =
+        Tip(ephemeral, identity, argon2Kt, tipService, accountService, tipNode, tipCounterSyncedLiveData)
 
     @Provides
     @Singleton

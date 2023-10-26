@@ -46,6 +46,8 @@ open class Account(
     var hasEmergencyContact: Boolean,
     @SerializedName("has_safe")
     var hasSafe: Boolean,
+    @SerializedName("salt")
+    val salt: String?,
     @SerializedName("fiat_currency")
     var fiatCurrency: String,
     @SerializedName("transfer_notification_threshold")

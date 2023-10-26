@@ -3,8 +3,6 @@ package one.mixin.android.tip
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2KtResult
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import one.mixin.android.api.service.TipService
 import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.argon2IdHash
@@ -14,14 +12,14 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.TipNullException
 
-class Identity @Inject internal constructor(private val tipService: TipService) {
+class Identity @Inject internal constructor(
+    private val tipService: TipService,
+    private val argon2Kt: Argon2Kt,
+) {
 
     // The two returns are private key and watcher
     suspend fun getIdentityPrivAndWatcher(pin: String): Pair<ByteArray, ByteArray> {
         val plain = getIdentitySeed()
-        val argon2Kt = withContext(Dispatchers.Main) {
-            Argon2Kt()
-        }
         val hashResult: Argon2KtResult = argon2Kt.argon2IdHash(pin, plain)
         return Pair(hashResult.rawHashAsByteArray(), plain.sha3Sum256())
     }

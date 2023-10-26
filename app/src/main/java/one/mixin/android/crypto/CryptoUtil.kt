@@ -131,10 +131,13 @@ fun ByteArray.sha3Sum256(): ByteArray {
 fun Argon2Kt.argon2IdHash(pin: String, seed: String): Argon2KtResult =
     argon2IdHash(pin, seed.toByteArray())
 
-fun Argon2Kt.argon2IdHash(pin: String, seed: ByteArray): Argon2KtResult {
+fun Argon2Kt.argon2IdHash(pin: String, seed: ByteArray): Argon2KtResult =
+    argon2IdHash(pin.toByteArray(), seed)
+
+fun Argon2Kt.argon2IdHash(pin: ByteArray, seed: ByteArray): Argon2KtResult {
     return hash(
         mode = Argon2Mode.ARGON2_I,
-        password = pin.toByteArray(),
+        password = pin,
         salt = seed,
         tCostInIterations = 4,
         mCostInKibibyte = 1024,
@@ -142,13 +145,9 @@ fun Argon2Kt.argon2IdHash(pin: String, seed: ByteArray): Argon2KtResult {
     )
 }
 
-fun generateEphemeralSeed(): ByteArray {
-    val key = ByteArray(32)
-    secureRandom.nextBytes(key)
-    return key
-}
+fun generateEphemeralSeed(): ByteArray = generateRandomBytes(32)
 
-fun generateAesKey(len: Int = 16): ByteArray {
+fun generateRandomBytes(len: Int = 16): ByteArray {
     val key = ByteArray(len)
     secureRandom.nextBytes(key)
     return key
