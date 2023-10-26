@@ -322,14 +322,26 @@ interface TransactionInterface {
             snapshotHashLayout.isVisible = !snapshot.snapshotHash.isNullOrBlank()
             snapshotHashTv.text = snapshot.snapshotHash
             dateTv.text = snapshot.createdAt.fullDate()
-            when (snapshot.type) {
-                SnapshotType.deposit.name -> {
-                    senderTitle.text = fragment.getString(R.string.From)
-                    senderTv.text = snapshot.sender
-                    receiverTitle.text = fragment.getString(R.string.transaction_Hash)
-                    receiverTv.text = snapshot.transactionHash
+            // simulate type
+            val type = if (snapshot.opponentId != null) {
+                SnapshotType.transfer
+            } else if (snapshot.type == SnapshotType.pending.name) {
+                SnapshotType.pending
+            } else {
+                if (isPositive) SnapshotType.deposit else SnapshotType.withdrawal
+            }
+            when (type) {
+                SnapshotType.transfer -> {
+                    traceTv.text = snapshot.traceId
+                    if (isPositive) {
+                        senderTv.text = snapshot.opponentFullName
+                        receiverTv.text = Session.getAccount()!!.fullName
+                    } else {
+                        senderTv.text = Session.getAccount()!!.fullName
+                        receiverTv.text = snapshot.opponentFullName
+                    }
                 }
-                SnapshotType.pending.name -> {
+                SnapshotType.pending -> {
                     senderTitle.text = fragment.getString(R.string.From)
                     senderTv.text = snapshot.sender
                     receiverTitle.text = fragment.getString(R.string.transaction_Hash)
@@ -343,17 +355,13 @@ interface TransactionInterface {
                             snapshot.assetConfirmations,
                         )
                 }
-                SnapshotType.transfer.name -> {
-                    traceTv.text = snapshot.traceId
-                    if (isPositive) {
-                        senderTv.text = snapshot.opponentFullName
-                        receiverTv.text = Session.getAccount()!!.fullName
-                    } else {
-                        senderTv.text = Session.getAccount()!!.fullName
-                        receiverTv.text = snapshot.opponentFullName
-                    }
+                SnapshotType.deposit -> {
+                    senderTitle.text = fragment.getString(R.string.From)
+                    senderTv.text = snapshot.sender
+                    receiverTitle.text = fragment.getString(R.string.transaction_Hash)
+                    receiverTv.text = snapshot.transactionHash
                 }
-                else -> { // withdrawal, fee, rebate, raw
+                else -> { // withdrawal
                     if (!asset.getTag().isNullOrEmpty()) {
                         receiverTitle.text = fragment.getString(R.string.Address)
                     } else {

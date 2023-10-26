@@ -19,17 +19,33 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
 
     open fun bind(snapshot: SnapshotItem, listener: OnSnapshotListener?) {
         val isPositive = snapshot.amount.toFloat() > 0
-        if (snapshot.opponentId != null) {
-            binding.name.text = snapshot.opponentFullName
-            binding.avatar.setInfo(snapshot.opponentFullName, snapshot.avatarUrl, snapshot.opponentId)
-            binding.avatar.setOnClickListener {
-                listener?.onUserClick(snapshot.opponentId)
-            }
+        // simulate type
+        val type = if (snapshot.opponentId != null) {
+            SnapshotType.transfer
+        } else if (snapshot.type == SnapshotType.pending.name) {
+            SnapshotType.pending
         } else {
-            if (isPositive) {
+            if (isPositive) SnapshotType.deposit else SnapshotType.withdrawal
+        }
+        when (type) {
+            SnapshotType.transfer -> {
+                binding.name.text = snapshot.opponentFullName
+                val opponentId = requireNotNull(snapshot.opponentId) { "required opponentId can not be null" }
+                binding.avatar.setInfo(snapshot.opponentFullName, snapshot.avatarUrl, opponentId)
+                binding.avatar.setOnClickListener {
+                    listener?.onUserClick(opponentId)
+                }
+            }
+            SnapshotType.pending -> {
+                binding.name.text = itemView.context.resources.getQuantityString(R.plurals.pending_confirmation, snapshot.confirmations ?: 0, snapshot.confirmations ?: 0, snapshot.assetConfirmations)
+                binding.avatar.setNet()
+                binding.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
+            }
+            SnapshotType.deposit -> {
                 binding.name.text = snapshot.sender?.formatPublicKey()
                 binding.avatar.setNet()
-            } else {
+            }
+            else -> { // withdrawal
                 binding.name.text = snapshot.receiver?.formatPublicKey()
                 binding.avatar.setNet()
             }
