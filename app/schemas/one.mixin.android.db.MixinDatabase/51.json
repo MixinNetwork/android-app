@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "f85c2eb60ab34c32c31340fdd605a606",
+    "identityHash": "7b25f67f9e9a36c8cb613f2f3eac9318",
     "entities": [
       {
         "tableName": "users",
@@ -2588,7 +2588,7 @@
       },
       {
         "tableName": "deposit_entries",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`entry_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `priority` INTEGER NOT NULL, `members` TEXT NOT NULL, `tag` TEXT, `signature` TEXT NOT NULL, `threshold` INTEGER NOT NULL, PRIMARY KEY(`entry_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`entry_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `members` TEXT NOT NULL, `tag` TEXT, `signature` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `is_primary` INTEGER NOT NULL, PRIMARY KEY(`entry_id`))",
         "fields": [
           {
             "fieldPath": "entryId",
@@ -2606,12 +2606,6 @@
             "fieldPath": "destination",
             "columnName": "destination",
             "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "priority",
-            "columnName": "priority",
-            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -2635,6 +2629,12 @@
           {
             "fieldPath": "threshold",
             "columnName": "threshold",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isPrimary",
+            "columnName": "is_primary",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -2794,7 +2794,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f85c2eb60ab34c32c31340fdd605a606')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7b25f67f9e9a36c8cb613f2f3eac9318')"
     ]
   }
 }

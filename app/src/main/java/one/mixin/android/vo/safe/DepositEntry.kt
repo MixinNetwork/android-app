@@ -20,19 +20,19 @@ data class DepositEntry(
     @ColumnInfo(name = "destination")
     @SerializedName("destination")
     val destination: String,
-    @ColumnInfo(name = "priority")
-    @SerializedName("priority")
-    val priority: Int,
     @ColumnInfo(name = "members")
     @SerializedName("members")
     val members: List<String>,
     @ColumnInfo(name = "tag")
     @SerializedName("tag")
     val tag: String?,
-    @ColumnInfo(name="signature")
+    @ColumnInfo(name = "signature")
     @SerializedName("signature")
     val signature: String,
     @ColumnInfo(name = "threshold")
     @SerializedName("threshold")
     val threshold: Int,
+    @ColumnInfo(name = "is_primary")
+    @SerializedName("is_primary")
+    val isPrimary: Boolean
 )
