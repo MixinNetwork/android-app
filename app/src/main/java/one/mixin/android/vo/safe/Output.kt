@@ -42,8 +42,15 @@ data class Output(
     val keys: List<String>,
     @ColumnInfo(name = "threshold")
     val threshold: Int,
-    @ColumnInfo(name = "extra")
-    val extra: String,
+    @ColumnInfo(name = "receivers")
+    @SerializedName("receivers")
+    val receivers: List<String>,
+    @ColumnInfo(name = "receivers_hash")
+    @SerializedName("receivers_hash")
+    val receiversHash: String,
+    @ColumnInfo(name = "receivers_threshold")
+    @SerializedName("receivers_threshold")
+    val receiversThreshold: Int,
     @ColumnInfo(name = "state")
     val state: String,
     @SerializedName("created_at")

@@ -27,5 +27,5 @@ data class TokensExtra(
     val balance: String?,
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
-    val updatedAt: String?,
+    val updatedAt: String,
 ) : Parcelable
