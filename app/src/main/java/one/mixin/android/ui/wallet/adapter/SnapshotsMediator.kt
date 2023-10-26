@@ -11,6 +11,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.assetIdToAsset
 
 @OptIn(ExperimentalPagingApi::class)
 class SnapshotsMediator(
@@ -30,8 +31,7 @@ class SnapshotsMediator(
                 LoadType.APPEND -> getRemoteKeyForLastItem(state)
                 LoadType.PREPEND -> getRemoteKeyForFirstItem(state)
             }
-            // Todo replace
-            val resp = assetService.getSnapshotsByAssetId("43d61dcd-e413-450d-80b8-101d5e903357", offset = offset)
+            val resp = assetService.getSnapshotsByAssetId(assetId, offset = offset)
             if (!resp.isSuccess) {
                 return MediatorResult.Error(IllegalStateException(resp.error?.toString()))
             }
