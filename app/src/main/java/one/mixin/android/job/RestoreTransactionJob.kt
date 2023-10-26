@@ -9,13 +9,22 @@ import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.extension.decodeBase64
+import one.mixin.android.extension.nowInUtc
+import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.ConversationCategory
+import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.Participant
+import one.mixin.android.vo.SYSTEM_USER
 import one.mixin.android.vo.SnapshotType
+import one.mixin.android.vo.User
+import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.SafeSnapshot
+import one.mixin.android.websocket.BlazeMessageData
 import timber.log.Timber
 import java.util.UUID
 
@@ -65,11 +74,29 @@ class RestoreTransactionJob() : BaseJob(
     private fun insertSnapshotMessage(data: TransactionResponse, assetId: String, amount: String, opponentId: String, memo: String?) {
         val snapshotId =  UUID.nameUUIDFromBytes("${data.userId}:${data.transactionHash}".toByteArray()).toString()
         val conversationId = generateConversationId(data.userId, opponentId)
+        initConversation(conversationId, data.userId, opponentId)
         val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-${amount}", data.snapshotAt, data.userId, null, null, null, null, memo, null, null, null, null)
         val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, snapshot.type, null, snapshot.snapshotId)
         safeSnapshotDao.insert(snapshot)
         appDatabase.insertMessage(message)
         MessageFlow.insert(message.conversationId, message.messageId)
+    }
+
+    private fun initConversation(conversationId: String, senderId: String, recipientId: String) {
+        val c = conversationDao.findConversationById(conversationId)
+        if (c != null) return
+        val createdAt = nowInUtc()
+        val conversation = createConversation(
+            conversationId,
+            ConversationCategory.CONTACT.name,
+            recipientId,
+            ConversationStatus.START.ordinal,
+        )
+        val participants = arrayListOf(
+            Participant(conversationId, senderId, "", createdAt),
+            Participant(conversationId, recipientId, "", createdAt),
+        )
+        jobManager.addJobInBackground(RefreshConversationJob(conversationId))
     }
 }
 

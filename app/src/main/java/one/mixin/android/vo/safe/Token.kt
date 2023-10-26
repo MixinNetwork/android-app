@@ -119,19 +119,3 @@ fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem = TokenItem(
 fun Asset.toToken(): Token =
     Token(assetId, assetIdToAsset(assetId), symbol, name, iconUrl, priceBtc, priceUsd, chainId, changeUsd, changeBtc, confirmations, assetKey ?: "")
 
-// fun Token.toAssetItem(chainIconUrl: String? = null): AssetItem = AssetItem(
-//    assetId, symbol, name, iconUrl, balance, destination, depositEntries, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, false,
-//    confirmations, chainIconUrl, null, null, null, assetKey, reserve, withdrawalMemoPossibility,
-// )
-//
-// fun Token.toTopAssetItem(chainIconUrl: String?) = TopAssetItem(assetId, symbol, name, iconUrl, chainId, chainIconUrl, assetKey, priceUsd, changeUsd)
-//
-// fun Token?.priceUSD(): BigDecimal = if (this == null) {
-//    BigDecimal.ZERO
-// } else {
-//    if (priceUsd == "0") {
-//        BigDecimal.ZERO
-//    } else {
-//        BigDecimal(priceUsd)
-//    }
-// }

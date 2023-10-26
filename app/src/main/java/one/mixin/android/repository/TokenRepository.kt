@@ -645,9 +645,8 @@ constructor(
     }
 
     suspend fun findOldAssets() = assetService.fetchAllAssetSuspend()
-    fun insertSnapshotMessage(data: TransactionResponse, assetId: String, amount: String, opponentId: String, memo: String?) {
+    fun insertSnapshotMessage(data: TransactionResponse, conversationId:String ,assetId: String, amount: String, opponentId: String, memo: String?) {
         val snapshotId =  UUID.nameUUIDFromBytes("${data.userId}:${data.transactionHash}".toByteArray()).toString()
-        val conversationId = generateConversationId(data.userId, opponentId)
         val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-${amount}", data.snapshotAt, opponentId, null, null, null, null, memo, null, null, null, null)
         val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, snapshot.type, null, snapshot.snapshotId)
         safeSnapshotDao.insert(snapshot)

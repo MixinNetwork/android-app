@@ -65,12 +65,15 @@ import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationCircleManagerItem
+import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.Participant
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 import one.mixin.android.vo.assetIdToAsset
+import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.safe.Utxo
@@ -168,12 +171,31 @@ class BottomSheetViewModel @Inject internal constructor(
         } else {
             tokenRepository.deleteRawTransaction(transactionRsp.data!!.requestId)
         }
-        tokenRepository.insertSnapshotMessage(transactionResponse.data!!, assetId, amount, receiverId, memo)
+        val conversationId = generateConversationId(transactionResponse.data!!.userId, receiverId)
+        initConversation(conversationId, transactionResponse.data!!.userId, receiverId)
+        tokenRepository.insertSnapshotMessage(transactionResponse.data!!, conversationId,assetId, amount, receiverId, memo)
         val hash = arrayListOf<String>()
         hash.addAll(utxos.map { it.transactionHash })
         tokenRepository.signed(hash)
         jobManager.addJobInBackground(SyncOutputJob())
         return transactionResponse
+    }
+
+    private fun initConversation(conversationId: String, senderId: String, recipientId: String) {
+        val c = conversationRepo.getConversation(conversationId)
+        if (c != null) return
+        val createdAt = nowInUtc()
+        val conversation = createConversation(
+            conversationId,
+            ConversationCategory.CONTACT.name,
+            recipientId,
+            ConversationStatus.START.ordinal,
+        )
+        val participants = arrayListOf(
+            Participant(conversationId, senderId, "", createdAt),
+            Participant(conversationId, recipientId, "", createdAt),
+        )
+        conversationRepo.syncInsertConversation(conversation, participants)
     }
 
     private suspend fun packUtxo(asset: String, amount: String): List<Output> {
