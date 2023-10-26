@@ -176,6 +176,7 @@ fun ChatHistoryMessageItem.toMessageItem(conversationId: String? = null): Messag
         assetType,
         null,
         null,
+        null,
         assetUrl,
         assetHeight,
         assetWidth,

@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
@@ -15,6 +16,7 @@ import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.SafeSnapshot
+import timber.log.Timber
 import java.util.UUID
 
 class RestoreTransactionJob() : BaseJob(
@@ -27,6 +29,10 @@ class RestoreTransactionJob() : BaseJob(
 
     override fun onRun() = runBlocking {
         rawTransactionDao.findTransactions().forEach { transition ->
+            Timber.e(GsonHelper.customGson.toJson(transition))
+            Kernel.decodeRawTx(transition.rawTransaction, 0)?.let {
+                Timber.e(it)
+            }
             val response = utxoService.getTransactionsById(transition.requestId)
             if (response.isSuccess) {
                 rawTransactionDao.deleteById(transition.requestId)
@@ -43,7 +49,7 @@ class RestoreTransactionJob() : BaseJob(
                 val transactionRsp = utxoService.transactions(TransactionRequest(transition.rawTransaction, transition.requestId))
                 if (transactionRsp.error != null) {
                     // Todo receiverId, memo
-                    insertSnapshotMessage(transactionRsp.data!!, token!!.assetId, transactionRsp.data!!.amount, "", null)
+                    insertSnapshotMessage(transactionRsp.data!!, token!!.assetId, transactionRsp.data!!.amount, "", transactionsData.extra?.decodeBase64()?.decodeToString())
                     outputDao.signedUtxo(hash)
                     rawTransactionDao.deleteById(transactionRsp.data!!.requestId)
                 } else {
@@ -70,6 +76,8 @@ class RestoreTransactionJob() : BaseJob(
 class TransactionsData(
     @SerializedName("Asset")
     val asset:String,
+    @SerializedName("Extra")
+    val extra:String?,
     @SerializedName("Inputs")
     val inputs:List<Input>
 )

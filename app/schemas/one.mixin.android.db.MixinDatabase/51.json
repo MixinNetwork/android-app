@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "cee7bb706c8bfac71d4420df9fde6a43",
+    "identityHash": "f85c2eb60ab34c32c31340fdd605a606",
     "entities": [
       {
         "tableName": "users",
@@ -2754,7 +2754,7 @@
       },
       {
         "tableName": "raw_transactions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`request_id` TEXT NOT NULL, `raw_transaction` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`request_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`request_id` TEXT NOT NULL, `raw_transaction` TEXT NOT NULL, `receiver_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`request_id`))",
         "fields": [
           {
             "fieldPath": "requestId",
@@ -2765,6 +2765,12 @@
           {
             "fieldPath": "rawTransaction",
             "columnName": "raw_transaction",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "receiverId",
+            "columnName": "receiver_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -2788,7 +2794,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cee7bb706c8bfac71d4420df9fde6a43')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f85c2eb60ab34c32c31340fdd605a606')"
     ]
   }
 }
