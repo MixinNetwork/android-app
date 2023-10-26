@@ -4,27 +4,24 @@ import TransactionResponse
 import com.birbit.android.jobqueue.Params
 import com.google.gson.annotations.SerializedName
 import kernel.Kernel
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
-import one.mixin.android.vo.SYSTEM_USER
 import one.mixin.android.vo.SnapshotType
-import one.mixin.android.vo.User
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.SafeSnapshot
-import one.mixin.android.websocket.BlazeMessageData
 import timber.log.Timber
 import java.util.UUID
 
@@ -36,36 +33,37 @@ class RestoreTransactionJob() : BaseJob(
         const val TAG = "SyncOutputJob"
     }
 
-    override fun onRun() = runBlocking {
+    override fun onRun() = runBlocking(CoroutineExceptionHandler { _, error ->
+        Timber.e(error)
+    }) {
         rawTransactionDao.findTransactions().forEach { transition ->
-            Timber.e(GsonHelper.customGson.toJson(transition))
-            Kernel.decodeRawTx(transition.rawTransaction, 0)?.let {
-                Timber.e(it)
-            }
-            val response = utxoService.getTransactionsById(transition.requestId)
-            if (response.isSuccess) {
-                rawTransactionDao.deleteById(transition.requestId)
-            } else if (response.errorCode == 404) {
-                val rawTx = Kernel.decodeRawTx(transition.rawTransaction, 0)
-                val transactionsData = GsonHelper.customGson.fromJson(rawTx, TransactionsData::class.java)
-                val token = tokenDao.findTokenByAsset(transactionsData.asset)
-                if (token?.assetId == null) {
+            try {
+                val response = utxoService.getTransactionsById(transition.requestId)
+                if (response.isSuccess) {
+                    rawTransactionDao.deleteById(transition.requestId)
+                } else if (response.errorCode == 404) {
+                    val rawTx = Kernel.decodeRawTx(transition.rawTransaction, 0)
+                    val transactionsData = GsonHelper.customGson.fromJson(rawTx, TransactionsData::class.java)
+                    val token = tokenDao.findTokenByAsset(transactionsData.asset)
+                    if (token?.assetId == null) {
+                        rawTransactionDao.deleteById(transition.requestId)
+                    }
+                    val hash = transactionsData.inputs.map {
+                        it.hash
+                    }
+                    val transactionRsp = utxoService.transactions(TransactionRequest(transition.rawTransaction, transition.requestId))
+                    if (transactionRsp.error == null) {
+                        outputDao.signedUtxo(hash)
+                        rawTransactionDao.deleteById(transactionRsp.data!!.requestId)
+                        insertSnapshotMessage(transactionRsp.data!!, token!!.assetId, transactionRsp.data!!.amount, transition.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
+                    } else {
+                        rawTransactionDao.deleteById(transactionRsp.data!!.requestId)
+                    }
+                    jobManager.addJobInBackground(SyncOutputJob())
+                } else {
                     rawTransactionDao.deleteById(transition.requestId)
                 }
-                val hash = transactionsData.inputs.map {
-                    it.hash
-                }
-                val transactionRsp = utxoService.transactions(TransactionRequest(transition.rawTransaction, transition.requestId))
-                if (transactionRsp.error != null) {
-                    // Todo receiverId, memo
-                    insertSnapshotMessage(transactionRsp.data!!, token!!.assetId, transactionRsp.data!!.amount, "", transactionsData.extra?.decodeBase64()?.decodeToString())
-                    outputDao.signedUtxo(hash)
-                    rawTransactionDao.deleteById(transactionRsp.data!!.requestId)
-                } else {
-                    rawTransactionDao.deleteById(transactionRsp.data!!.requestId)
-                }
-                jobManager.addJobInBackground(SyncOutputJob())
-            } else{
+            } catch (e: Exception) {
                 rawTransactionDao.deleteById(transition.requestId)
             }
         }
@@ -96,6 +94,10 @@ class RestoreTransactionJob() : BaseJob(
             Participant(conversationId, senderId, "", createdAt),
             Participant(conversationId, recipientId, "", createdAt),
         )
+        appDatabase.runInTransaction {
+            conversationDao.upsert(conversation)
+            participantDao.insertList(participants)
+        }
         jobManager.addJobInBackground(RefreshConversationJob(conversationId))
     }
 }
