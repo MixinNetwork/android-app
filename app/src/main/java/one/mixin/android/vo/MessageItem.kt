@@ -82,10 +82,10 @@ data class MessageItem(
     val actionName: String?,
     val snapshotId: String?,
     val snapshotType: String?,
+    val snapshotMemo: String?,
     val snapshotAmount: String?,
     val assetId: String?,
     val assetType: String?,
-    val snapshotMemo: String?,
     val assetSymbol: String?,
     val assetIcon: String?,
     val assetUrl: String?,
@@ -198,8 +198,8 @@ fun create(type: String, createdAt: String? = null) = MessageItem(
         ?: nowInUtc(),
     MessageStatus.READ.name, null, null,
     null, null, null, null, null, null, null, null,
-    null, null, null, null, null, null, null, null,
-    null, null, null, null, null, null, null, null, null, null, null,
+    null, null, null, null, null, null, null, null, null,
+    null, null, null, null, null, null, null, null, null, null,
 )
 
 fun MessageItem.isCallMessage() =

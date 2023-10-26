@@ -158,9 +158,9 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
     val cursorIndexOfActionName = cursor.getColumnIndexOrThrow("actionName")
     val cursorIndexOfParticipantUserId = cursor.getColumnIndexOrThrow("participantUserId")
     val cursorIndexOfSnapshotId = cursor.getColumnIndexOrThrow("snapshotId")
+    val cursorIndexOfSnapshotMemo = cursor.getColumnIndexOrThrow("snapshotMemo")
     val cursorIndexOfSnapshotType = cursor.getColumnIndexOrThrow("snapshotType")
     val cursorIndexOfSnapshotAmount = cursor.getColumnIndexOrThrow("snapshotAmount")
-    val cursorIndexOfSnapshotMemo = cursor.getColumnIndexOrThrow("snapshotMemo")
     val cursorIndexOfAssetSymbol = cursor.getColumnIndexOrThrow("assetSymbol")
     val cursorIndexOfAssetId = cursor.getColumnIndexOrThrow("assetId")
     val cursorIndexOfAssetIcon = cursor.getColumnIndexOrThrow("assetIcon")
@@ -237,9 +237,9 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
         val tmpActionName: String? = cursor.getString(cursorIndexOfActionName)
         val tmpParticipantUserId: String? = cursor.getString(cursorIndexOfParticipantUserId)
         val tmpSnapshotId: String? = cursor.getString(cursorIndexOfSnapshotId)
+        val tmpSnapshotMemo: String? = cursor.getString(cursorIndexOfSnapshotMemo)
         val tmpSnapshotType: String? = cursor.getString(cursorIndexOfSnapshotType)
         val tmpSnapshotAmount: String? = cursor.getString(cursorIndexOfSnapshotAmount)
-        val tmpSnapshotMemo: String? = cursor.getString(cursorIndexOfSnapshotMemo)
         val tmpAssetSymbol: String? = cursor.getString(cursorIndexOfAssetSymbol)
         val tmpAssetId: String? = cursor.getString(cursorIndexOfAssetId)
         val tmpAssetIcon: String? = cursor.getString(cursorIndexOfAssetIcon)
@@ -324,8 +324,8 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
             tmpActionName,
             tmpSnapshotId,
             tmpSnapshotType,
-            tmpSnapshotAmount,
             tmpSnapshotMemo,
+            tmpSnapshotAmount,
             tmpAssetId,
             tmpAssetType,
             tmpAssetSymbol,
