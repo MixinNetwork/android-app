@@ -40,6 +40,13 @@ class RestoreTransactionJob() : BaseJob(
             try {
                 val response = utxoService.getTransactionsById(transition.requestId)
                 if (response.isSuccess) {
+                    val rawTx = Kernel.decodeRawTx(transition.rawTransaction, 0)
+                    val transactionsData = GsonHelper.customGson.fromJson(rawTx, TransactionsData::class.java)
+                    val token = tokenDao.findTokenByAsset(transactionsData.asset)
+                    val hash = transactionsData.inputs.map {
+                        it.hash
+                    }
+                    outputDao.signedUtxo(hash)
                     rawTransactionDao.deleteById(transition.requestId)
                 } else if (response.errorCode == 404) {
                     val rawTx = Kernel.decodeRawTx(transition.rawTransaction, 0)

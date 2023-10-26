@@ -47,6 +47,13 @@ interface TokenService {
         @Query("opponent") opponent: String? = null,
     ): MixinResponse<List<SafeSnapshot>>
 
+    @GET("safe/mutual_snapshots")
+    suspend fun getMutualSnapshots(
+        @Query("offset") offset: String? = null,
+        @Query("limit") limit: Int = LIMIT,
+        @Query("opponent") opponent: String,
+    ): MixinResponse<List<SafeSnapshot>>
+
     @GET("safe/snapshots")
     suspend fun getSnapshots(
         @Query("asset") assetId: String,
