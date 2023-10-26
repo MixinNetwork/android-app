@@ -640,7 +640,7 @@ constructor(
         rawTransactionDao.deleteById(requestId)
     }
 
-    suspend fun signed(hash: List<String>) {
+    fun signed(hash: List<String>) {
         outputDao.signedUtxo(hash)
     }
 

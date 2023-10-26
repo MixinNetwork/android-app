@@ -36,5 +36,5 @@ interface OutputDao : BaseDao<Output> {
     fun getMixinId(): List<String>
 
     @Query("UPDATE outputs SET state = 'signed' WHERE state = 'unspent' AND transaction_hash IN (:hash)")
-    suspend fun signedUtxo(hash: List<String>)
+    fun signedUtxo(hash: List<String>)
 }

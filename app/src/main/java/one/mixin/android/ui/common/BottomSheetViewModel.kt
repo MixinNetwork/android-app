@@ -163,6 +163,9 @@ class BottomSheetViewModel @Inject internal constructor(
                 tokenRepository.insertOutput(changeOutput)
             }
             tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.requestId, signResult.raw, receiverId, nowInUtc()))
+            val hash = arrayListOf<String>()
+            hash.addAll(utxos.map { it.transactionHash })
+            tokenRepository.signed(hash)
         }
         val transactionRsp = tokenRepository.transactions(TransactionRequest(signResult.raw, traceId))
         if (transactionRsp.error != null) {
@@ -174,9 +177,6 @@ class BottomSheetViewModel @Inject internal constructor(
         val conversationId = generateConversationId(transactionResponse.data!!.userId, receiverId)
         initConversation(conversationId, transactionResponse.data!!.userId, receiverId)
         tokenRepository.insertSnapshotMessage(transactionResponse.data!!, conversationId,assetId, amount, receiverId, memo)
-        val hash = arrayListOf<String>()
-        hash.addAll(utxos.map { it.transactionHash })
-        tokenRepository.signed(hash)
         jobManager.addJobInBackground(SyncOutputJob())
         return transactionResponse
     }
