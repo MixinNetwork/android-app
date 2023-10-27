@@ -32,6 +32,7 @@ data class TokenItem(
     var chainPriceUsd: String?,
     val assetKey: String?,
     val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
+    val signature: String?
 ) : Parcelable {
     fun fiat(): BigDecimal {
         return try {

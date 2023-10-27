@@ -20,7 +20,7 @@ interface TokenDao : BaseDao<Token> {
             d.destination as destination, d.tag as tag, a1.price_btc AS priceBtc, 
             a1.chain_id AS chainId , a1.price_usd AS priceUsd, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden,
             a1.confirmations,c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName, a2.price_usd as chainPriceUsd,
-            a1.asset_key AS assetKey, c.withdrawal_memo_possibility AS withdrawalMemoPossibility 
+            a1.asset_key AS assetKey, c.withdrawal_memo_possibility AS withdrawalMemoPossibility, d.signature AS signature
             FROM tokens a1 
             LEFT JOIN tokens a2 ON a1.chain_id = a2.asset_id
             LEFT JOIN deposit_entries d ON (a1.chain_id = d.chain_id AND d.is_primary = true) 

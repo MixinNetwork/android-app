@@ -564,6 +564,7 @@ fun callableTokenItem(
             val cursorIndexOfChainName = 17
             val cursorIndexOfAssetKey = 18
             val cursorIndexOfWithdrawalMemoPossibility = 19
+            val cursorIndexOfSignature = 20
 
             val result: MutableList<TokenItem> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
@@ -666,6 +667,11 @@ fun callableTokenItem(
                 } else {
                     WithdrawalMemoPossibilityConverter().revertDate(cursor.getString(cursorIndexOfWithdrawalMemoPossibility))
                 }
+                val tmpSignature: String? = if (cursor.isNull(cursorIndexOfSignature)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfSignature)
+                }
 
                 item = TokenItem(
                     tmpAssetId!!,
@@ -688,6 +694,7 @@ fun callableTokenItem(
                     tmpChainPriceUsd,
                     tmpAssetKey,
                     tmpDepositWithdrawalMemoPossibility,
+                    tmpSignature
                 )
                 result.add(item)
             }

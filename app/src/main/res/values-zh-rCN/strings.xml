@@ -1290,4 +1290,5 @@
     <string name="not_enough_utxo">没有足够的 UTXO</string>
     <string name="max_count_not_enough_utxo">归集了 %d UTXOs，但还是不够</string>
     <string name="gather_utxo">归集 UTXO</string>
+    <string name="Verification_failed">验证失败</string>
 </resources>

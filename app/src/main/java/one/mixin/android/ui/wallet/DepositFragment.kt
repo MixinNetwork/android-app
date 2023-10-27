@@ -24,14 +24,18 @@ import one.mixin.android.Constants.AssetId.BYTOM_CLASSIC_ASSET_ID
 import one.mixin.android.Constants.AssetId.MGD_ASSET_ID
 import one.mixin.android.Constants.AssetId.OMNI_USDT_ASSET_ID
 import one.mixin.android.R
+import one.mixin.android.crypto.sha3Sum256
+import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.databinding.FragmentDepositBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.getTipsByAsset
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -218,31 +222,51 @@ class DepositFragment : BaseFragment() {
     private fun updateUI(asset: TokenItem) {
         if (viewDestroyed()) return
 
-        val noTag = asset.getTag().isNullOrBlank()
-        binding.apply {
-            if (noTag) {
-                memoView.isVisible = false
-                memoTitle.isVisible = false
-            } else {
-                memoView.isVisible = true
-                memoTitle.isVisible = true
-                memoView.setAsset(
+        val destination = asset.getDestination()
+        val tag = asset.getTag()
+        val signature = asset.signature?.hexStringToByteArray()
+
+        if (destination.isNullOrBlank() || signature.isNullOrEmpty()) return
+        val pub = Constants.SAFE_PUBLIC_KEY.hexStringToByteArray()
+        val message = if (tag.isNullOrBlank()) {
+            destination
+        } else {
+            "${destination}:${tag}"
+        }.toByteArray().sha3Sum256()
+        val verify = verifyCurve25519Signature(message, signature!!, pub)
+        if (verify) {
+            val noTag = asset.getTag().isNullOrBlank()
+            binding.apply {
+                if (noTag) {
+                    memoView.isVisible = false
+                    memoTitle.isVisible = false
+                } else {
+                    memoView.isVisible = true
+                    memoTitle.isVisible = true
+                    memoView.setAsset(
+                        parentFragmentManager,
+                        scopeProvider,
+                        asset,
+                        null,
+                        true,
+                        getString(R.string.deposit_memo_notice),
+                    )
+                }
+                addressView.setAsset(
                     parentFragmentManager,
                     scopeProvider,
                     asset,
                     null,
-                    true,
-                    getString(R.string.deposit_memo_notice),
+                    false,
+                    if (noTag) null else getString(R.string.deposit_notice, asset.symbol),
                 )
             }
-            addressView.setAsset(
-                parentFragmentManager,
-                scopeProvider,
-                asset,
-                null,
-                false,
-                if (noTag) null else getString(R.string.deposit_notice, asset.symbol),
-            )
+        } else {
+            binding.apply {
+                notSupportLl.isVisible = true
+                sv.isVisible = false
+                notSupportTv.setText(R.string.Verification_failed)
+            }
         }
     }
 }
