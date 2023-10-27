@@ -42,20 +42,6 @@ class SendBottomSheet(
                 fragment.defaultSharedPreferences.putString(TransferFragment.ASSET_PREFERENCE, asset.assetId)
                 this@SendBottomSheet.fragment.view?.navigate(navContactAction)
             }
-            address.setOnClickListener {
-                bottomSheet.dismiss()
-                this@SendBottomSheet.fragment.view?.navigate(
-                    navAddressAction,
-                    Bundle().apply {
-                        putParcelable(TransactionsFragment.ARGS_ASSET, asset)
-                    },
-                )
-            }
-            tipWallet.isVisible = navTipAction != null && WalletConnect.isEnabled(fragment.requireContext())
-            tipWallet.setOnClickListener {
-                bottomSheet.dismiss()
-                navTipAction?.invoke()
-            }
             sendCancel.setOnClickListener { bottomSheet.dismiss() }
         }
 

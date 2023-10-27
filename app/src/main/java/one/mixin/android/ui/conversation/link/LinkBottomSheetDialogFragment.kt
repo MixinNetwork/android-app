@@ -554,68 +554,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 }
             }
-        } else if (url.startsWith(Scheme.HTTPS_WITHDRAWAL, true) || url.startsWith(Scheme.WITHDRAWAL, true)) {
-            if (checkHasPin()) return
-
-            val uri = Uri.parse(url)
-            val assetId = uri.getQueryParameter("asset")
-            val amount = uri.getQueryParameter("amount")?.stripAmountZero()
-            val memo = uri.getQueryParameter("memo")?.run {
-                Uri.decode(this)
-            }
-            val traceId = uri.getQueryParameter("trace")
-            val addressId = uri.getQueryParameter("address")
-            if (assetId.isNullOrEmpty() || addressId.isNullOrEmpty() ||
-                amount.isNullOrEmpty() || traceId.isNullOrEmpty() || !assetId.isUUID() ||
-                !traceId.isUUID()
-            ) {
-                showError()
-            } else {
-                lifecycleScope.launch(errorHandler) {
-                    val pair = linkViewModel.refreshAndGetAddress(addressId, assetId)
-                    val address = pair.first
-                    val asset = checkAsset(assetId)
-                    if (asset != null) {
-                        when {
-                            pair.second -> {
-                                showError(R.string.error_address_exists)
-                            }
-                            address == null -> {
-                                showError(R.string.error_address_not_sync)
-                            }
-                            else -> {
-                                val dust = address.dust?.toBigDecimal()
-                                if (dust != null && amount.toBigDecimal().compareTo(dust) == -1) {
-                                    val errorString = getString(R.string.withdrawal_minimum_amount, address.dust, asset.symbol)
-                                    showError(errorString)
-                                    toast(errorString)
-                                    return@launch
-                                }
-                                val transferRequest = TransferRequest(assetId, null, amount, null, traceId, memo, addressId)
-                                handleMixinResponse(
-                                    invokeNetwork = {
-                                        linkViewModel.paySuspend(transferRequest)
-                                    },
-                                    successBlock = { r ->
-                                        val response = r.data ?: return@handleMixinResponse false
-                                        showWithdrawalBottom(address.addressId, address.destination, address.tag, address.label, address.fee, amount, asset, traceId, response.status, memo)
-                                    },
-                                    failureBlock = {
-                                        showError(R.string.Invalid_payment_link)
-                                        return@handleMixinResponse false
-                                    },
-                                    exceptionBlock = {
-                                        showError(R.string.Checking_payment_info)
-                                        return@handleMixinResponse false
-                                    },
-                                )
-                            }
-                        }
-                    } else {
-                        showError(R.string.Asset_not_found)
-                    }
-                }
-            }
         } else if (url.startsWith(Scheme.CONVERSATIONS, true)) {
             val uri = Uri.parse(url)
             val segments = uri.pathSegments
@@ -685,8 +623,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val newUrl = url.addSlashesIfNeeded()
                     if (isDonateUrl && showTransfer(newUrl)) {
                         dismiss()
-                    } else if (isExternalTransferUrl) {
-                        parseExternalTransferUrl(url)
                     } else {
                         showError()
                     }

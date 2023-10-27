@@ -129,15 +129,17 @@ class BottomSheetViewModel @Inject internal constructor(
         val spendKey = tip.getSpendPriv(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
         val traceId = trace ?: UUID.randomUUID().toString()
         val senderId = Session.getAccountId()!!
+
+        val asset = assetIdToAsset(assetId)
+        val threshold = 1L
+        val utxos = packUtxo(asset, amount)
+
         val ghostKeyResponse = tokenRepository.ghostKey(buildGhostKeyRequest(receiverId, senderId, traceId))
         if (ghostKeyResponse.error != null) {
             return ghostKeyResponse
         }
         val data = ghostKeyResponse.data!!
-        val asset = assetIdToAsset(assetId)
-        val threshold = 1L
 
-        val utxos = packUtxo(asset, amount)
         val input = GsonHelper.customGson.toJson(
             utxos.map { output ->
                 Utxo(output.transactionHash, output.amount, output.outputIndex)

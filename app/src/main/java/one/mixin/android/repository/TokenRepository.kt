@@ -136,7 +136,6 @@ constructor(
         if (assetItem != null && !assetItem.getDestination().isNullOrBlank()) {
             return assetItem
         } else if (assetItem != null) {
-            val userId = requireNotNull(Session.getAccountId())
             handleMixinResponse(
                 invokeNetwork = {
                     utxoService.createDeposit(
