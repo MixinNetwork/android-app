@@ -560,7 +560,7 @@ private fun GasItemPreview() {
         asset = Token(
             "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "BTC", "Bitcoin",
             "https://mixin-images.zeromesh.net/HvYGJsV5TGeZ-X9Ek3FEQohQZ3fE9LBEBGcOcn4c4BNHovP4fW4YB97Dg5LcXoQ1hUjMEgjbl1DPlKg1TW7kK6XP=s128",
-            "", "", "1", "30000", "30000", 3, "",
+            "", "", "1", "30000", "30000", 3, "", ""
         ),
     ) {}
 }

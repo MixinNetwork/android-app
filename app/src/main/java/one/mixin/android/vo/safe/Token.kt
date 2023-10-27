@@ -78,6 +78,11 @@ data class Token(
     @SerializedName("asset_key")
     @SerialName("asset_key")
     val assetKey: String,
+
+    @ColumnInfo(name = "dust")
+    @SerializedName("dust")
+    @SerialName("dust")
+    val dust: String,
 ) : Parcelable
 
 data class TokenPriceAndChange(
@@ -117,5 +122,5 @@ fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem = TokenItem(
 )
 
 fun Asset.toToken(): Token =
-    Token(assetId, assetIdToAsset(assetId), symbol, name, iconUrl, priceBtc, priceUsd, chainId, changeUsd, changeBtc, confirmations, assetKey ?: "")
+    Token(assetId, assetIdToAsset(assetId), symbol, name, iconUrl, priceBtc, priceUsd, chainId, changeUsd, changeBtc, confirmations, assetKey ?: "", "")
 
