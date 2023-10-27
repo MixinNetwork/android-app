@@ -242,6 +242,11 @@ class DepositFragment : BaseFragment() {
                 } else {
                     memoView.isVisible = true
                     memoTitle.isVisible = true
+                    if (asset.assetId == Constants.ChainId.RIPPLE_CHAIN_ID) {
+                        memoTitle.setText(R.string.Tag)
+                    } else {
+                        memoTitle.setText(R.string.transfer_memo)
+                    }
                     memoView.setAsset(
                         parentFragmentManager,
                         scopeProvider,
