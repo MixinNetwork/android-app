@@ -1,6 +1,6 @@
 package one.mixin.android.session
 
-import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import ed25519.Ed25519
 import io.jsonwebtoken.Claims
@@ -17,12 +17,10 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
-import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.useGoEd
-import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.bodyToString
@@ -38,7 +36,6 @@ import one.mixin.android.extension.remove
 import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toHex
-import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.storeEncryptedSalt
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
@@ -65,10 +62,14 @@ object Session {
     private const val PREF_NAME_TOKEN = "pref_name_token"
     private const val PREF_ED25519_PRIVATE_KEY = "pref_ed25519_private_key"
 
+    private val gson = GsonBuilder()
+        .excludeFieldsWithoutExposeAnnotation()
+        .create()
+
     fun storeAccount(account: Account) {
         self = account
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
-        preference.putString(PREF_NAME_ACCOUNT, Gson().toJson(account))
+        preference.putString(PREF_NAME_ACCOUNT, gson.toJson(account))
 
         val salt = account.salt?.base64RawURLDecode() ?: return
         if (!storeEncryptedSalt(MixinApplication.appContext, salt)) {
@@ -82,7 +83,7 @@ object Session {
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         val json = preference.getString(PREF_NAME_ACCOUNT, "")
         if (!json.isNullOrBlank()) {
-            Gson().fromJson<Account>(json, object : TypeToken<Account>() {}.type).also {
+            gson.fromJson<Account>(json, object : TypeToken<Account>() {}.type).also {
                 self = it
             }
         } else {
