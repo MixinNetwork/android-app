@@ -1,17 +1,14 @@
 package one.mixin.android.ui.wallet
 
-import android.os.Bundle
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.appcompat.view.ContextThemeWrapper
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewWalletTransactionsSendBottomBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.putString
-import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
