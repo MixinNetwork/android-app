@@ -55,10 +55,11 @@ open class Account(
     @SerializedName("features")
     val features: ArrayList<String>? = null,
 
-    @Transient
     @SerializedName("salt")
     var salt: String?,
 )
+
+fun Account.toAccountWithoutSalt() = Account(userId, sessionId, type, identityNumber, relationship, fullName, biography, avatarUrl, phone, avatarBase64, pinToken, codeId, codeUrl, createdAt, receiveMessageSource, hasPin, tipKeyBase64, tipCounter, acceptConversationSource, acceptSearchSource, hasEmergencyContact, hasSafe, fiatCurrency, transferNotificationThreshold, transferConfirmationThreshold, features, null)
 
 fun Account.toUser(): User {
     return User(userId, identityNumber, relationship, biography ?: "", fullName, avatarUrl, phone, null, createdAt, null, hasPin)
