@@ -360,11 +360,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         when {
             tipCounter < 1 ->
                 tip.createTipPriv(requireContext(), pin, deviceId, failedSigners, oldPin)
-            nodeCounter != tipCounter && failedSigners.isNullOrEmpty() ->
-                // TODO can merge this case with else?
-                tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin) { "process tip step update oldPin can not be null, failed signer is empty" }, null)
             else ->
-                tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin) { "process tip step update oldPin can not be null" }, failedSigners)
+                tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin) { "process tip step update oldPin can not be null" }, nodeCounter == tipCounter, failedSigners)
         }.onFailure { e ->
             tip.removeObserver(tipObserver)
             onTipProcessFailure(e, pin, tipCounter, nodeCounter)

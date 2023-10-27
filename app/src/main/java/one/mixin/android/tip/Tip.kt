@@ -66,12 +66,12 @@ class Tip @Inject internal constructor(
             createPriv(context, priKey, ephemeralSeed, watcher, pin, failedSigners, legacyPin, forRecover)
         }
 
-    suspend fun updateTipPriv(context: Context, deviceId: String, newPin: String, oldPin: String, failedSigners: List<TipSigner>? = null): Result<ByteArray> =
+    suspend fun updateTipPriv(context: Context, deviceId: String, newPin: String, oldPin: String, counterBalance: Boolean, failedSigners: List<TipSigner>? = null): Result<ByteArray> =
         kotlin.runCatching {
             val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
             Timber.e("updateTipPriv after getEphemeralSeed")
 
-            if (failedSigners.isNullOrEmpty()) { // node success
+            if (!counterBalance) { // node success
                 Timber.e("updateTipPriv oldPin isNullOrBlank")
                 val (priKey, watcher) = identity.getIdentityPrivAndWatcher(newPin)
                 Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
