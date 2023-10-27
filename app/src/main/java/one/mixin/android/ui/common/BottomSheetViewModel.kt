@@ -34,6 +34,7 @@ import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
+import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
@@ -180,6 +181,7 @@ class BottomSheetViewModel @Inject internal constructor(
         val conversationId = generateConversationId(transactionResponse.data!!.userId, receiverId)
         initConversation(conversationId, transactionResponse.data!!.userId, receiverId)
         tokenRepository.insertSnapshotMessage(transactionResponse.data!!, conversationId,assetId, amount, receiverId, memo)
+        jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
         jobManager.addJobInBackground(SyncOutputJob())
         return transactionResponse
     }

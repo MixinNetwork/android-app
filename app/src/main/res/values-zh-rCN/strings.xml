@@ -1287,7 +1287,7 @@
     <string name="Start_Migration">开始迁移 >></string>
     <string name="wait_node_sync_complete">请等待节点信息同步完成。</string>
     <string name="empty_utxo">没有可用的 UTXO</string>
-    <string name="not_enough_utxo">没有足够的 UTXO</string>
+    <string name="not_enough_utxo">余额不足</string>
     <string name="max_count_not_enough_utxo">归集了 %d UTXOs，但还是不够</string>
     <string name="gather_utxo">归集 UTXO</string>
     <string name="Verification_failed">验证失败</string>
