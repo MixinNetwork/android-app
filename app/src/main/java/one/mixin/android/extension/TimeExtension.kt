@@ -244,11 +244,6 @@ fun String.getRFC3339Nano(): String {
     return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'").withZone(localeZone()))
 }
 
-fun String.getRFC3339Mill(): String {
-    val date = ZonedDateTime.parse(this).toOffsetDateTime()
-    return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").withZone(localeZone()))
-}
-
 fun Long.getRelativeTimeSpan(): String {
     val now = Date().time
     val time = DateUtils.getRelativeTimeSpanString(

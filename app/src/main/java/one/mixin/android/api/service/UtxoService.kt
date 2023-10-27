@@ -4,7 +4,6 @@ import TransactionResponse
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.DepositEntryRequest
 import one.mixin.android.api.request.GhostKeyRequest
-import one.mixin.android.api.request.OutputFetchRequest
 import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.response.GhostKey
@@ -45,11 +44,6 @@ interface UtxoService {
 
     @POST("/safe/transactions")
     suspend fun transactions(@Body transactionRequest: TransactionRequest): MixinResponse<TransactionResponse>
-
-    @POST("/safe/outputs/fetch")
-    suspend fun fetch(
-        @Body request: OutputFetchRequest
-    ): MixinResponse<List<Output>>
 
     @GET("/safe/transactions/{id}")
     suspend fun getTransactionsById(@Path("id") id: String): MixinResponse<TransactionResponse>

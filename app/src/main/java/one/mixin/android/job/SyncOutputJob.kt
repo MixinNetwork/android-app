@@ -1,13 +1,7 @@
 package one.mixin.android.job
 
-import androidx.collection.ArraySet
-import androidx.collection.arraySetOf
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
-import okio.internal.commonToUtf8String
-import one.mixin.android.crypto.sha3Sum256
-import one.mixin.android.extension.getRFC3339Mill
-import one.mixin.android.extension.getRFC3339Nano
 import one.mixin.android.session.Session
 import one.mixin.android.session.buildHashMembers
 import timber.log.Timber

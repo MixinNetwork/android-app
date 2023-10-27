@@ -11,7 +11,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.assetIdToAsset
 
 @OptIn(ExperimentalPagingApi::class)
 class SnapshotsMediator(

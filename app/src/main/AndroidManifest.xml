@@ -209,12 +209,6 @@
             android:theme="@style/AppTheme.NoAnim"
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
-            android:name=".ui.RegisterActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:launchMode="singleTask"
-            android:theme="@style/AppTheme.NoAnim"
-            android:windowSoftInputMode="stateAlwaysHidden" />
-        <activity
             android:name=".ui.landing.InitializeActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.NoActionBar"

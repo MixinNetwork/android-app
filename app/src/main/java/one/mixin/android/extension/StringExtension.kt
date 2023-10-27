@@ -258,14 +258,6 @@ fun ByteArray.toHex(): String {
     return result.toString()
 }
 
-fun String.decodeHex(): String {
-    require(length % 2 == 0) {"Must have an even length"}
-    return chunked(2)
-        .map { it.toInt(16).toByte() }
-        .toByteArray()
-        .toString(Charsets.UTF_8)
-}
-
 fun String.hexStringToByteArray(): ByteArray {
     val result = ByteArray(length / 2)
     for (i in 0 until length step 2) {

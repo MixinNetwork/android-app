@@ -552,8 +552,8 @@ fun callableTokenItem(
             val cursorIndexOfDestination = 5
             val cursorIndexOfTag = 6
             val cursorIndexOfPriceBtc = 7
-            val cursorIndexOfChainId = 8
-            val cursorIndexOfPriceUsd = 9
+            val cursorIndexOfPriceUsd = 8
+            val cursorIndexOfChainId = 9
             val cursorIndexOfChangeUsd = 10
             val cursorIndexOfChangeBtc = 11
             val cursorIndexOfHidden = 12
