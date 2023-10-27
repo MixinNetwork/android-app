@@ -9,7 +9,7 @@ import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
 import java.util.UUID
 
-var pendingMessageStatusLruCache = LruCache<String, String>(2000)
+var pendingMessageStatusLruCache = LruCache<String, String>(800)
 
 class RefreshOffsetJob : MixinJob(
     Params(PRIORITY_UI_HIGH)
