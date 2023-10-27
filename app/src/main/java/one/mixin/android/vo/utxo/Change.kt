@@ -13,6 +13,6 @@ class Change(
 fun changeToOutput(change: Utxo, asset: String, mask: String, keys: List<String>, createdAt: String): Output {
     val outputId = UUID.nameUUIDFromBytes("${change.hash}:${change.index}".toByteArray()).toString()
     return Output(
-        outputId, change.hash, change.index.toInt(), asset, change.amount, mask, keys, 1, emptyList(), "", 1, "unspent", createdAt, "", "", "", ""
+        outputId, change.hash, change.index.toInt(), asset, change.amount, mask, keys,  emptyList(), "", 1, "","unspent", createdAt, "", "", "", ""
     )
 }

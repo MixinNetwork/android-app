@@ -40,8 +40,6 @@ data class Output(
     @SerializedName("keys")
     @ColumnInfo(name = "keys")
     val keys: List<String>,
-    @ColumnInfo(name = "threshold")
-    val threshold: Int,
     @ColumnInfo(name = "receivers")
     @SerializedName("receivers")
     val receivers: List<String>,
@@ -51,6 +49,8 @@ data class Output(
     @ColumnInfo(name = "receivers_threshold")
     @SerializedName("receivers_threshold")
     val receiversThreshold: Int,
+    @ColumnInfo(name = "extra")
+    val extra: String,
     @ColumnInfo(name = "state")
     val state: String,
     @SerializedName("created_at")
