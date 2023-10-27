@@ -31,7 +31,6 @@ import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.runInTransaction
-import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
@@ -127,7 +126,7 @@ class BottomSheetViewModel @Inject internal constructor(
         memo: String?,
     ): MixinResponse<*> {
         val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
-        val spendKey = tip.getSpendPriv(requireNotNull(Session.getSalt()?.base64RawURLDecode()) { "required salt can not be null" }, pin, tipPriv)
+        val spendKey = tip.getSpendPriv(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
         val traceId = trace ?: UUID.randomUUID().toString()
         val senderId = Session.getAccountId()!!
         val ghostKeyResponse = tokenRepository.ghostKey(buildGhostKeyRequest(receiverId, senderId, traceId))

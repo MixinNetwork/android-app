@@ -38,6 +38,8 @@ import one.mixin.android.extension.remove
 import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toHex
+import one.mixin.android.tip.exception.TipException
+import one.mixin.android.tip.storeEncryptedSalt
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import one.mixin.eddsa.Ed25519Sign
@@ -67,6 +69,11 @@ object Session {
         self = account
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.putString(PREF_NAME_ACCOUNT, Gson().toJson(account))
+
+        val salt = account.salt?.base64RawURLDecode() ?: return
+        if (!storeEncryptedSalt(MixinApplication.appContext, salt)) {
+            Timber.e("storeAccount store encrypted salt failed")
+        }
     }
 
     fun getAccount(): Account? = if (self != null) {

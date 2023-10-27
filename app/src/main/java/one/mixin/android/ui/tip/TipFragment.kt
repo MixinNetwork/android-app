@@ -479,18 +479,20 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         val keyPair = newKeyPairFromSeed(spendSeed)
         val pkHex = keyPair.publicKey.toHex()
         val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
+        val saltBase64 = encryptedSalt.base64RawURLEncode()
         val registerResp = viewModel.registerPublicKey(
             registerRequest = RegisterRequest(
                 publicKey = pkHex,
                 signature = Session.getRegisterSignature(selfId, spendSeed),
                 pin = viewModel.getEncryptedTipBody(selfId, pkHex, pin),
-                salt = encryptedSalt.base64RawURLEncode(),
+                salt = saltBase64,
             )
         )
         return if (registerResp.isSuccess) {
             val account = Session.getAccount()
             account?.let{
                 it.hasSafe = true
+                it.salt = saltBase64
                 Session.storeAccount(it)
             }
             true

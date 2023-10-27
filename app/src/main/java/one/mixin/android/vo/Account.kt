@@ -1,5 +1,6 @@
 package one.mixin.android.vo
 
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
 open class Account(
@@ -46,8 +47,6 @@ open class Account(
     var hasEmergencyContact: Boolean,
     @SerializedName("has_safe")
     var hasSafe: Boolean,
-    @SerializedName("salt")
-    val salt: String?,
     @SerializedName("fiat_currency")
     var fiatCurrency: String,
     @SerializedName("transfer_notification_threshold")
@@ -56,6 +55,10 @@ open class Account(
     val transferConfirmationThreshold: Double = 100.0,
     @SerializedName("features")
     val features: ArrayList<String>? = null,
+
+    @Expose(serialize = false, deserialize = false)
+    @SerializedName("salt")
+    var salt: String?,
 )
 
 fun Account.toUser(): User {

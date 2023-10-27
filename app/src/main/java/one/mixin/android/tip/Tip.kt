@@ -139,6 +139,23 @@ class Tip @Inject internal constructor(
             }
         }
 
+    suspend fun getEncryptedSalt(context: Context): ByteArray {
+        val saltStr = Session.getSalt()
+        if (saltStr != null) {
+            return saltStr.base64RawURLDecode()
+        }
+        var salt = readEncryptedSalt(context)
+        if (salt != null) {
+            return salt
+        }
+        val account = tipNetwork { accountService.getMeSuspend() }.getOrThrow()
+        salt = account.salt?.base64RawURLDecode()
+        if (salt == null) {
+            throw TipNullException("account has no salt")
+        }
+        Session.storeAccount(account)
+        return salt
+    }
 
     fun getSpendPriv(encryptedSalt: ByteArray, pin: String, tipPriv: ByteArray): ByteArray {
         val saltAESKey = generateSaltAESKey(pin, tipPriv)
@@ -290,7 +307,7 @@ class Tip @Inject internal constructor(
         clearTipPriv(context)
         Timber.e("updatePriv after clear tip priv")
 
-        replaceEncryptedPin(aggSig, counter, newPin, oldPin)
+        replaceEncryptedPin(context, aggSig, counter, newPin, oldPin)
         Timber.e("updatePriv replaceEncryptedPin")
         encryptAndSaveTipPriv(context, newPin, aggSig, aesKey)
         Timber.e("updatePriv encryptAndSaveTipPriv")
@@ -312,7 +329,7 @@ class Tip @Inject internal constructor(
     }
 
     @Throws(IOException::class, TipNetworkException::class)
-    private suspend fun replaceEncryptedPin(aggSig: ByteArray, nodeCounter: Long, pin: String, oldPin: String?) {
+    private suspend fun replaceEncryptedPin(context: Context, aggSig: ByteArray, nodeCounter: Long, pin: String, oldPin: String?) {
         val tipCounter = requireNotNull(Session.getTipCounter()).toLong()
         if (tipCounter == nodeCounter) {
             Timber.e("replaceEncryptedPin tipCounter $tipCounter == nodeCounter $nodeCounter")
@@ -330,13 +347,13 @@ class Tip @Inject internal constructor(
 
         val encryptedSalt = if (oldPin != null && Session.hasSafe()) {
             val oldSaltAESKey = generateSaltAESKey(oldPin, aggSig)
-            val oldEncryptedSalt = Session.getSalt()?.base64RawURLDecode() ?: throw TipNullException("No encrypted salt")
+            val oldEncryptedSalt = getEncryptedSalt(context)
             val salt = aesDecrypt(oldSaltAESKey, oldEncryptedSalt)
             val saltAESKey = generateSaltAESKey(pin, aggSig)
             aesEncrypt(saltAESKey, salt).base64RawURLEncode()
         } else null
 
-        val pinRequest = PinRequest(encryptedNewPin, encryptedOldPin, encryptedSalt, if (encryptedSalt != null) Session.getSalt() else null)
+        val pinRequest = PinRequest(encryptedNewPin, encryptedOldPin, encryptedSalt, if (encryptedSalt != null) getEncryptedSalt(context).base64RawURLEncode() else null)
         val account = tipNetwork { accountService.updatePinSuspend(pinRequest) }.getOrThrow()
         Session.storeAccount(account)
     }
