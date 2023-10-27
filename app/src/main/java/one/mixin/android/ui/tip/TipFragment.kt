@@ -37,6 +37,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
+import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BaseFragment
@@ -45,6 +46,7 @@ import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 import javax.inject.Inject
@@ -495,6 +497,13 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 )
             )
             return@runCatching if (registerResp.isSuccess) {
+                if (registerResp.data?.publicKey != pkHex) {
+                    // generally this would not happen, if it did happen, just report and finish.
+                    val exception = TipException("$TAG register public key, response pkHex not equal request pkHex")
+                    reportException(exception)
+                    activity?.finish()
+                }
+
                 val account = Session.getAccount()
                 account?.let {
                     it.hasSafe = true
