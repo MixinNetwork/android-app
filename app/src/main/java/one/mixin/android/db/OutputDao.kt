@@ -11,6 +11,9 @@ interface OutputDao : BaseDao<Output> {
     @Query("SELECT * FROM outputs WHERE state = 'unspent' ORDER BY created_at ASC LIMIT :limit")
     suspend fun findOutputs(limit: Int = processUtxoLimit): List<Output>
 
+    @Query("SELECT * FROM outputs WHERE output_id IN (:ids)")
+    suspend fun findOutputs(ids: List<String>): List<Output>
+
     @Query("SELECT * FROM outputs WHERE state = 'unspent' ORDER BY amount ASC LIMIT :limit")
     suspend fun findUnspentOutputsSortedByAmount(limit: Int): List<Output>
 

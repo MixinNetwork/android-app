@@ -31,8 +31,14 @@ class SyncOutputJob() : BaseJob(
             return
         }
         val outputs = (requireNotNull(resp.data) { "outputs can not be null or empty at this step" })
-        outputDao.insertListSuspend(outputs)
-        Timber.d("$TAG insertOutputs ${outputs.size}")
+        val local = outputDao.findOutputs(outputs.map { it.outputId })
+        val result = outputs.filter { online ->
+            local.none { localData -> localData == online }
+        }
+        if (result.isNotEmpty()) {
+            outputDao.insertListSuspend(result)
+        }
+        Timber.d("$TAG insertOutputs ${result.size}")
         if (outputs.size >= syncOutputLimit) {
             syncOutputs()
         }
