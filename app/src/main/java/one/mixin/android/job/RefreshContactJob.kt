@@ -11,10 +11,10 @@ class RefreshContactJob : BaseJob(Params(PRIORITY_BACKGROUND).addTags(GROUP).req
     }
 
     override fun onRun() {
-        // val response = contactService.friends().execute().body()
-        // if (response != null && response.isSuccess && response.data != null) {
-        //     val users = response.data as List<User>
-        //     userDao.insertUpdateList(users, appDao)
-        // }
+        val response = contactService.friends().execute().body()
+        if (response != null && response.isSuccess && response.data != null) {
+            val users = response.data as List<User>
+            userDao.insertUpdateList(users, appDao)
+        }
     }
 }
