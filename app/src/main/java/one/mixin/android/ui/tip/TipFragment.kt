@@ -433,7 +433,14 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
     private suspend fun onTipProcessSuccess(pin: String, tipPriv: ByteArray?) {
         if (!Session.hasSafe()) {
-            if (!registerPublicKey(pin, tipPriv)) {
+            val registerResult: Boolean = try {
+                registerPublicKey(pin, tipPriv).getOrThrow()
+            } catch (e: Exception) {
+                val errorInfo = e.getTipExceptionMsg(requireContext())
+                updateTipStep(RetryRegister(null, errorInfo))
+                false
+            }
+            if (!registerResult) {
                 // register public key failed, already go to RetryRegister
                 return
             }
@@ -460,50 +467,53 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         activity?.finish()
     }
 
-    private suspend fun registerPublicKey(pin: String, tipPriv: ByteArray?): Boolean {
-        Timber.d("start registerPublicKey")
-        updateTipStep(Processing.Registering)
-        nodeFailedInfo = ""
-        val seed = try {
-            tipPriv ?: tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
-        } catch (e: Exception) {
-            tipBundle.oldPin = null
-            val errorInfo = e.getTipExceptionMsg(requireContext())
-            updateTipStep(RetryRegister(null, errorInfo))
-            return false
-        }
-        val salt = generateRandomBytes(32)
-        val saltAESKey = tip.generateSaltAESKey(pin, seed)
-        val encryptedSalt =  aesEncrypt(saltAESKey, salt)
-        val spendSeed = tip.getSpendPriv(salt, seed)
-        val keyPair = newKeyPairFromSeed(spendSeed)
-        val pkHex = keyPair.publicKey.toHex()
-        val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
-        val saltBase64 = encryptedSalt.base64RawURLEncode()
-        val registerResp = viewModel.registerPublicKey(
-            registerRequest = RegisterRequest(
-                publicKey = pkHex,
-                signature = Session.getRegisterSignature(selfId, spendSeed),
-                pin = viewModel.getEncryptedTipBody(selfId, pkHex, pin),
-                salt = saltBase64,
-            )
-        )
-        return if (registerResp.isSuccess) {
-            val account = Session.getAccount()
-            account?.let{
-                it.hasSafe = true
-                it.salt = saltBase64
-                Session.storeAccount(it)
+    private suspend fun registerPublicKey(pin: String, tipPriv: ByteArray?): Result<Boolean> =
+        kotlin.runCatching {
+            Timber.d("start registerPublicKey")
+            updateTipStep(Processing.Registering)
+            nodeFailedInfo = ""
+            val seed = try {
+                tipPriv ?: tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
+            } catch (e: Exception) {
+                tipBundle.oldPin = null
+                val errorInfo = e.getTipExceptionMsg(requireContext())
+                updateTipStep(RetryRegister(null, errorInfo))
+                return@runCatching false
             }
-            true
-        } else {
-            tipBundle.oldPin = null
-            val error = requireNotNull(registerResp.error) { "error can not be null" }
-            val errorInfo = requireContext().getMixinErrorStringByCode(error.code, error.description)
-            updateTipStep(RetryRegister(tipPriv, errorInfo))
-            false
+            val salt = generateRandomBytes(32)
+            val saltAESKey = tip.generateSaltAESKey(pin, seed)
+            val encryptedSalt = aesEncrypt(saltAESKey, salt)
+            val spendSeed = tip.getSpendPriv(salt, seed)
+            val keyPair = newKeyPairFromSeed(spendSeed)
+            val pkHex = keyPair.publicKey.toHex()
+            val selfId =
+                requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
+            val saltBase64 = encryptedSalt.base64RawURLEncode()
+            val registerResp = viewModel.registerPublicKey(
+                registerRequest = RegisterRequest(
+                    publicKey = pkHex,
+                    signature = Session.getRegisterSignature(selfId, spendSeed),
+                    pin = viewModel.getEncryptedTipBody(selfId, pkHex, pin),
+                    salt = saltBase64,
+                )
+            )
+            return@runCatching if (registerResp.isSuccess) {
+                val account = Session.getAccount()
+                account?.let {
+                    it.hasSafe = true
+                    it.salt = saltBase64
+                    Session.storeAccount(it)
+                }
+                true
+            } else {
+                tipBundle.oldPin = null
+                val error = requireNotNull(registerResp.error) { "error can not be null" }
+                val errorInfo =
+                    requireContext().getMixinErrorStringByCode(error.code, error.description)
+                updateTipStep(RetryRegister(tipPriv, errorInfo))
+                false
+            }
         }
-    }
 
     private fun showVerifyPin(title: String? = null, onVerifySuccess: suspend (String) -> Unit) {
         VerifyBottomSheetDialogFragment.newInstance(title ?: getString(R.string.Enter_your_old_PIN), true).setOnPinSuccess { pin ->
