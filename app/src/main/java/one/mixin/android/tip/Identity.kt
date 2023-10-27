@@ -5,7 +5,7 @@ import com.lambdapioneer.argon2kt.Argon2KtResult
 import javax.inject.Inject
 import one.mixin.android.api.service.TipService
 import one.mixin.android.crypto.aesDecrypt
-import one.mixin.android.crypto.argon2IdHash
+import one.mixin.android.crypto.argon2IHash
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.decodeBase64
@@ -20,7 +20,7 @@ class Identity @Inject internal constructor(
     // The two returns are private key and watcher
     suspend fun getIdentityPrivAndWatcher(pin: String): Pair<ByteArray, ByteArray> {
         val plain = getIdentitySeed()
-        val hashResult: Argon2KtResult = argon2Kt.argon2IdHash(pin, plain)
+        val hashResult: Argon2KtResult = argon2Kt.argon2IHash(pin, plain)
         return Pair(hashResult.rawHashAsByteArray(), plain.sha3Sum256())
     }
 

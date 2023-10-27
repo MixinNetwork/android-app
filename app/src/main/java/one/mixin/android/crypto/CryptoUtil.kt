@@ -128,13 +128,13 @@ fun ByteArray.sha3Sum256(): ByteArray {
     return digestKeccak(KeccakParameter.SHA3_256)
 }
 
-fun Argon2Kt.argon2IdHash(pin: String, seed: String): Argon2KtResult =
-    argon2IdHash(pin, seed.toByteArray())
+fun Argon2Kt.argon2IHash(pin: String, seed: String): Argon2KtResult =
+    argon2IHash(pin, seed.toByteArray())
 
-fun Argon2Kt.argon2IdHash(pin: String, seed: ByteArray): Argon2KtResult =
-    argon2IdHash(pin.toByteArray(), seed)
+fun Argon2Kt.argon2IHash(pin: String, seed: ByteArray): Argon2KtResult =
+    argon2IHash(pin.toByteArray(), seed)
 
-fun Argon2Kt.argon2IdHash(pin: ByteArray, seed: ByteArray): Argon2KtResult {
+fun Argon2Kt.argon2IHash(pin: ByteArray, seed: ByteArray): Argon2KtResult {
     return hash(
         mode = Argon2Mode.ARGON2_I,
         password = pin,

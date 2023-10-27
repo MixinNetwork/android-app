@@ -15,7 +15,7 @@ import one.mixin.android.api.service.TipService
 import one.mixin.android.crypto.BasePinCipher
 import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
-import one.mixin.android.crypto.argon2IdHash
+import one.mixin.android.crypto.argon2IHash
 import one.mixin.android.crypto.generateRandomBytes
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.sha3Sum256
@@ -66,12 +66,12 @@ class Tip @Inject internal constructor(
             createPriv(context, priKey, ephemeralSeed, watcher, pin, failedSigners, legacyPin, forRecover)
         }
 
-    suspend fun updateTipPriv(context: Context, deviceId: String, newPin: String, oldPin: String, counterBalance: Boolean, failedSigners: List<TipSigner>? = null): Result<ByteArray> =
+    suspend fun updateTipPriv(context: Context, deviceId: String, newPin: String, oldPin: String, counterEqual: Boolean, failedSigners: List<TipSigner>? = null): Result<ByteArray> =
         kotlin.runCatching {
             val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
             Timber.e("updateTipPriv after getEphemeralSeed")
 
-            if (!counterBalance) { // node success
+            if (!counterEqual) { // node success
                 Timber.e("updateTipPriv oldPin isNullOrBlank")
                 val (priKey, watcher) = identity.getIdentityPrivAndWatcher(newPin)
                 Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
@@ -160,14 +160,14 @@ class Tip @Inject internal constructor(
     fun getSpendPriv(encryptedSalt: ByteArray, pin: String, tipPriv: ByteArray): ByteArray {
         val saltAESKey = generateSaltAESKey(pin, tipPriv)
         val salt = aesDecrypt(saltAESKey, encryptedSalt)
-        return argon2Kt.argon2IdHash(tipPriv, salt).rawHashAsByteArray()
+        return argon2Kt.argon2IHash(tipPriv, salt).rawHashAsByteArray()
     }
 
     fun getSpendPriv(salt: ByteArray, tipPriv: ByteArray): ByteArray =
-        argon2Kt.argon2IdHash(tipPriv, salt).rawHashAsByteArray()
+        argon2Kt.argon2IHash(tipPriv, salt).rawHashAsByteArray()
 
     fun generateSaltAESKey(pin: String, tipPriv: ByteArray): ByteArray =
-        argon2Kt.argon2IdHash(pin, tipPriv).rawHashAsByteArray()
+        argon2Kt.argon2IHash(pin, tipPriv).rawHashAsByteArray()
 
     suspend fun checkCounter(
         tipCounter: Int,
