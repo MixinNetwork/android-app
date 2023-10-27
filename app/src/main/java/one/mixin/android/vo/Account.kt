@@ -1,6 +1,5 @@
 package one.mixin.android.vo
 
-import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
 open class Account(
@@ -56,7 +55,7 @@ open class Account(
     @SerializedName("features")
     val features: ArrayList<String>? = null,
 
-    @Expose(serialize = false, deserialize = false)
+    @Transient
     @SerializedName("salt")
     var salt: String?,
 )
