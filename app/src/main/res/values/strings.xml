@@ -1318,7 +1318,7 @@
     <string name="Start_Migration">Start the migration</string>
     <string name="wait_node_sync_complete">Please wait for node synchronization to complete.</string>
     <string name="empty_utxo">Empty UTXO</string>
-    <string name="not_enough_utxo">Not enough UTXO</string>
+    <string name="not_enough_utxo">Insufficient balance</string>
     <string name="max_count_not_enough_utxo">Gathering %d UTXOs, but still not enough</string>
     <string name="gather_utxo">Gather UTXO</string>
     <string name="Verification_failed">Verification failed</string>
