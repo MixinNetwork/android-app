@@ -207,28 +207,34 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     private suspend fun packUtxo(asset: String, amount: String): List<Output> {
-        var amountValue = BigDecimal(amount)
-        val list = tokenRepository.findOutputs(maxUtxoCount, asset)
-        if (list.isEmpty()) {
+        val desiredAmount = BigDecimal(amount)
+        val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, asset)
+
+        if (candidateOutputs.isEmpty()) {
             throw EmptyUtxoException
         }
-        val result = mutableListOf<Output>()
-        var utxoAmount = BigDecimal.ZERO
-        for (output in list) {
+
+        val selectedOutputs = mutableListOf<Output>()
+        var totalSelectedAmount = BigDecimal.ZERO
+
+        candidateOutputs.forEach { output ->
             val outputAmount = BigDecimal(output.amount)
-            result.add(output)
-            utxoAmount = utxoAmount.add(outputAmount)
-            if (utxoAmount >= amountValue) {
-                break
+            selectedOutputs.add(output)
+            totalSelectedAmount += outputAmount
+            if (totalSelectedAmount >= desiredAmount) {
+                return selectedOutputs
             }
         }
-        if (result.size > maxUtxoCount) {
+
+        if (selectedOutputs.size >= maxUtxoCount) {
             throw MaxCountNotEnoughUtxoException
         }
-        if (utxoAmount < amountValue) {
+
+        if (totalSelectedAmount < desiredAmount) {
             throw NotEnoughUtxoException
         }
-        return result
+
+        throw Exception("Impossible")
     }
 
     suspend fun authorize(authorizationId: String, scopes: List<String>, pin: String?): MixinResponse<AuthorizationResponse> =
