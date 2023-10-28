@@ -21,7 +21,7 @@ interface UtxoService {
     suspend fun getOutputs(
         @Query("members") members: String,
         @Query("threshold") threshold: Int,
-        @Query("offset") offset: String? = null,
+        @Query("offset") offset: Long? = null,
         @Query("limit") limit: Int = 500,
         @Query("state") state: String? = null,
     ): MixinResponse<List<Output>>

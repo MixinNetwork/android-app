@@ -29,8 +29,8 @@ interface OutputDao : BaseDao<Output> {
     @Query("SELECT * FROM outputs WHERE state = 'unspent' AND created_at > (SELECT created_at FROM outputs WHERE output_id =:utxoId) ORDER BY created_at ASC LIMIT :limit")
     suspend fun findOutputsByUtxoId(utxoId: String, limit: Int = processUtxoLimit): List<Output>
 
-    @Query("SELECT created_at FROM outputs ORDER BY created_at DESC LIMIT 1")
-    suspend fun findLatestOutputCreatedAt(): String?
+    @Query("SELECT sequence FROM outputs ORDER BY created_at DESC LIMIT 1")
+    suspend fun findLatestOutputSequence (): Long?
 
     @Query("SELECT CAST(amount AS REAL) FROM outputs WHERE asset =:mixinId AND state = 'unspent'")
     suspend fun calcBalanceByAssetId(mixinId: String): Double

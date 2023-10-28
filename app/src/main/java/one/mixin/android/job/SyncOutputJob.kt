@@ -21,11 +21,11 @@ class SyncOutputJob() : BaseJob(
     }
 
     private tailrec suspend fun syncOutputs() {
-        val latestOutputCreatedAt = outputDao.findLatestOutputCreatedAt()
-        Timber.d("$TAG sync outputs latestOutputCreatedAt: $latestOutputCreatedAt")
+        val latestOutputSequence = outputDao.findLatestOutputSequence()
+        Timber.d("$TAG sync outputs latestOutputCreatedAt: $latestOutputSequence")
         val userId = requireNotNull(Session.getAccountId())
         val members = buildHashMembers(listOf(userId))
-        val resp = utxoService.getOutputs(members, 1, latestOutputCreatedAt, syncOutputLimit, state = "unspent")
+        val resp = utxoService.getOutputs(members, 1, latestOutputSequence, syncOutputLimit, state = "unspent")
         if (!resp.isSuccess || resp.data.isNullOrEmpty()) {
             Timber.d("$TAG getOutputs ${resp.isSuccess}, ${resp.data.isNullOrEmpty()}")
             return
