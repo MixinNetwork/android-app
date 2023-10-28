@@ -33,7 +33,7 @@ class SyncOutputJob() : BaseJob(
         val outputs = (requireNotNull(resp.data) { "outputs can not be null or empty at this step" })
         val local = outputDao.findOutputs(outputs.map { it.outputId })
         val result = outputs.filter { online ->
-            local.none { localData -> localData == online || (localData.outputId == online.outputId && localData.state != "signed") }
+            local.none { localData -> localData == online || (localData.outputId == online.outputId && localData.state == "signed") }
         }
         if (result.isNotEmpty()) {
             outputDao.insertListSuspend(result)
