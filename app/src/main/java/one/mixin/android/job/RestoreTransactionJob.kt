@@ -42,10 +42,10 @@ class RestoreTransactionJob() : BaseJob(
                 if (response.isSuccess) {
                     val rawTx = Kernel.decodeRawTx(transition.rawTransaction, 0)
                     val transactionsData = GsonHelper.customGson.fromJson(rawTx, TransactionsData::class.java)
-                    val hash = transactionsData.inputs.map {
-                        it.hash
+                    val outputIds = transactionsData.inputs.map {
+                        UUID.nameUUIDFromBytes("${it.hash}:${it.index}".toByteArray()).toString()
                     }
-                    outputDao.signedUtxo(hash)
+                    outputDao.updateUtxoToSigned(outputIds)
                     rawTransactionDao.deleteById(transition.requestId)
                 } else if (response.errorCode == 404) {
                     val rawTx = Kernel.decodeRawTx(transition.rawTransaction, 0)
@@ -54,12 +54,12 @@ class RestoreTransactionJob() : BaseJob(
                     if (token?.assetId == null) {
                         rawTransactionDao.deleteById(transition.requestId)
                     }
-                    val hash = transactionsData.inputs.map {
-                        it.hash
+                    val outputIds = transactionsData.inputs.map {
+                        UUID.nameUUIDFromBytes("${it.hash}:${it.index}".toByteArray()).toString()
                     }
                     val transactionRsp = utxoService.transactions(TransactionRequest(transition.rawTransaction, transition.requestId))
                     if (transactionRsp.error == null) {
-                        outputDao.signedUtxo(hash)
+                        outputDao.updateUtxoToSigned(outputIds)
                         rawTransactionDao.deleteById(transactionRsp.data!!.requestId)
                         insertSnapshotMessage(transactionRsp.data!!, token!!.assetId, transactionRsp.data!!.amount, transition.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
                     } else {

@@ -637,8 +637,8 @@ constructor(
         rawTransactionDao.deleteById(requestId)
     }
 
-    fun signed(hash: List<String>) {
-        outputDao.signedUtxo(hash)
+    fun updateUtxoToSigned(ids: List<String>) {
+        outputDao.updateUtxoToSigned(ids)
     }
 
     suspend fun findOldAssets() = assetService.fetchAllAssetSuspend()

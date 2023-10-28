@@ -141,11 +141,10 @@ class BottomSheetViewModel @Inject internal constructor(
         }
         val data = ghostKeyResponse.data!!
 
-        val input = GsonHelper.customGson.toJson(
-            utxos.map { output ->
-                Utxo(output.transactionHash, output.amount, output.outputIndex)
-            }
-        ).toByteArray()
+        val inputs = utxos.map { output ->
+            Utxo(output.transactionHash, output.amount, output.outputIndex)
+        }
+        val input = GsonHelper.customGson.toJson(inputs).toByteArray()
         val receiverKeys = data.first().keys.joinToString(",")
         val receiverMask = data.first().mask
 
@@ -167,9 +166,12 @@ class BottomSheetViewModel @Inject internal constructor(
                 tokenRepository.insertOutput(changeOutput)
             }
             tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.requestId, signResult.raw, receiverId, nowInUtc()))
-            val hash = arrayListOf<String>()
-            hash.addAll(utxos.map { it.transactionHash })
-            tokenRepository.signed(hash)
+
+            val outputIds = arrayListOf<String>()
+            outputIds.addAll(inputs.map {
+                UUID.nameUUIDFromBytes("${it.hash}:${it.index}".toByteArray()).toString()
+            })
+            tokenRepository.updateUtxoToSigned(outputIds)
         }
         val transactionRsp = tokenRepository.transactions(TransactionRequest(signResult.raw, traceId))
         if (transactionRsp.error != null) {
