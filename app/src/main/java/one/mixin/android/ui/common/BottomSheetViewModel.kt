@@ -212,20 +212,20 @@ class BottomSheetViewModel @Inject internal constructor(
             throw EmptyUtxoException
         }
         val result = mutableListOf<Output>()
+        var utxoAmount = 0.0
         for (output in list) {
             val outputAmount = output.amount.toDouble()
             result.add(output)
-            amountValue -= outputAmount
-            if (amountValue <= 0) {
+            utxoAmount += outputAmount
+            if (utxoAmount >= amountValue) {
                 break
             }
         }
-        if (amountValue > 0) {
-            if (result.size >= maxUtxoCount) {
-                throw MaxCountNotEnoughUtxoException
-            } else {
-                throw NotEnoughUtxoException
-            }
+        if (result.size >= maxUtxoCount) {
+            throw MaxCountNotEnoughUtxoException
+        }
+        if (utxoAmount < amountValue) {
+            throw NotEnoughUtxoException
         }
         return result
     }
