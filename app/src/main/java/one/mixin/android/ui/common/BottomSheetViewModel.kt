@@ -83,6 +83,7 @@ import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
 import java.io.File
+import java.math.BigDecimal
 import java.util.UUID
 import javax.inject.Inject
 
@@ -206,22 +207,22 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     private suspend fun packUtxo(asset: String, amount: String): List<Output> {
-        var amountValue = amount.toDouble()
+        var amountValue = BigDecimal(amount)
         val list = tokenRepository.findOutputs(maxUtxoCount, asset)
         if (list.isEmpty()) {
             throw EmptyUtxoException
         }
         val result = mutableListOf<Output>()
-        var utxoAmount = 0.0
+        var utxoAmount = BigDecimal.ZERO
         for (output in list) {
-            val outputAmount = output.amount.toDouble()
+            val outputAmount = BigDecimal(output.amount)
             result.add(output)
-            utxoAmount += outputAmount
+            utxoAmount = utxoAmount.add(outputAmount)
             if (utxoAmount >= amountValue) {
                 break
             }
         }
-        if (result.size >= maxUtxoCount) {
+        if (result.size > maxUtxoCount) {
             throw MaxCountNotEnoughUtxoException
         }
         if (utxoAmount < amountValue) {
