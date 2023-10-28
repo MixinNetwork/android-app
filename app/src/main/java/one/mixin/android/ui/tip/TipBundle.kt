@@ -20,7 +20,7 @@ sealed class TipStep : Parcelable
 
 @Parcelize internal data class RetryConnect(val shouldWatch: Boolean, val reason: String) : TipStep()
 
-@Parcelize internal object ReadyStart : TipStep()
+@Parcelize internal data object ReadyStart : TipStep()
 
 @Parcelize internal data class RetryProcess(val reason: String) : TipStep()
 

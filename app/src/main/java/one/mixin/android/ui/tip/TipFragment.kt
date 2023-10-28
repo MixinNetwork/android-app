@@ -76,6 +76,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
     private var nodeFailedInfo = ""
 
+    private var disallowClose = true
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
@@ -107,6 +109,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         }
     }
 
+    override fun onBackPressed(): Boolean {
+        return disallowClose
+    }
+
     private fun updateTipStep(newVal: TipStep) {
         tipBundle.tipStep = newVal
         updateUI(newVal)
@@ -118,9 +124,9 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
         binding.apply {
             val forRecover = tipBundle.forRecover()
+            updateAllowClose(tipStep, forRecover)
             when (tipStep) {
                 is TryConnecting -> {
-                    closeIv.isVisible = true
                     setTitle(forRecover)
                     tipsTv.isVisible = true
                     bottomVa.displayedChild = 0
@@ -129,7 +135,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     bottomHintTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
                 }
                 is RetryConnect -> {
-                    closeIv.isVisible = true
                     setTitle(forRecover)
                     tipsTv.isVisible = true
                     bottomVa.displayedChild = 0
@@ -141,7 +146,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
                 }
                 is ReadyStart -> {
-                    closeIv.isVisible = true
                     setTitle(forRecover)
                     tipsTv.isVisible = true
                     bottomVa.displayedChild = 0
@@ -179,7 +183,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     bottomHintTv.text = ""
                 }
                 is RetryProcess -> {
-                    closeIv.isVisible = false
                     setTitle(forRecover)
                     tipsTv.isVisible = true
                     bottomVa.displayedChild = 0
@@ -199,7 +202,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
                 }
                 is Processing -> {
-                    closeIv.isVisible = false
                     descTv.setText(R.string.Syncing_and_verifying_TIP)
                     tipsTv.isVisible = false
                     bottomHintTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
@@ -227,7 +229,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     }
                 }
                 is RetryRegister -> {
-                    closeIv.isVisible = false
                     setTitle(forRecover)
                     tipsTv.isVisible = true
                     bottomVa.displayedChild = 0
@@ -251,6 +252,18 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 }
             }
         }
+    }
+
+    private fun updateAllowClose(tipStep: TipStep, forRecover: Boolean) {
+        disallowClose = when (tipStep) {
+            is TryConnecting, is RetryConnect, is ReadyStart -> {
+                forRecover || !tipBundle.forChange()
+            }
+            is RetryProcess, is Processing, is RetryRegister -> {
+                true
+            }
+        }
+        binding.closeIv.isVisible = !disallowClose
     }
 
     private fun tryConnect(shouldWatch: Boolean) {

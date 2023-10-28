@@ -329,7 +329,7 @@ class Tip @Inject internal constructor(
     }
 
     @Throws(IOException::class, TipNetworkException::class)
-    private suspend fun replaceEncryptedPin(context: Context, aggSig: ByteArray, nodeCounter: Long, pin: String, oldPin: String?) {
+    private suspend fun replaceEncryptedPin(context: Context, aggSig: ByteArray, nodeCounter: Long, pin: String, oldPin: String) {
         val tipCounter = requireNotNull(Session.getTipCounter()).toLong()
         if (tipCounter == nodeCounter) {
             Timber.e("replaceEncryptedPin tipCounter $tipCounter == nodeCounter $nodeCounter")
@@ -345,7 +345,7 @@ class Tip @Inject internal constructor(
             pub + (nodeCounter).toBeByteArray(),
         )
 
-        val encryptedSalt = if (oldPin != null && Session.hasSafe()) {
+        val encryptedSalt = if (Session.hasSafe()) {
             val oldSaltAESKey = generateSaltAESKey(oldPin, aggSig)
             val oldEncryptedSalt = getEncryptedSalt(context)
             val salt = aesDecrypt(oldSaltAESKey, oldEncryptedSalt)
