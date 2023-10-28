@@ -38,7 +38,6 @@ import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
-import one.mixin.android.api.service.UtxoAssetService
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
@@ -165,10 +164,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     lateinit var circleService: CircleService
 
     @Inject
-    lateinit var assetService: TokenService
-
-    @Inject
-    lateinit var utxoAssetService: UtxoAssetService
+    lateinit var tokenService: TokenService
 
     private val accountId = Session.getAccountId()
     private val gson = GsonHelper.customGson
@@ -184,7 +180,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     private val utxoProcessor by lazy {
-        UtxoProcessor(database, jobManager, assetService, utxoAssetService, lifecycleScope)
+        UtxoProcessor(database, jobManager, tokenService, lifecycleScope)
     }
 
     override fun onBind(intent: Intent): IBinder? {

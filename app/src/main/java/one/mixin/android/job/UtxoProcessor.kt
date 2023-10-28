@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.api.service.TokenService
-import one.mixin.android.api.service.UtxoAssetService
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.util.reportException
 import timber.log.Timber
@@ -15,7 +14,6 @@ class UtxoProcessor(
     private val mixinDatabase: MixinDatabase,
     private val jobManager: MixinJobManager,
     private val tokenService: TokenService,
-    private val utxoAssetService: UtxoAssetService,
     private val lifecycleScope: CoroutineScope,
 ) {
     companion object {
@@ -88,13 +86,11 @@ class UtxoProcessor(
             return
         }
         outputs.forEach { output ->
-            var assetId = tokenDao.checkAssetExists(output.asset)
+            val assetId = tokenDao.checkAssetExists(output.asset)
             if (assetId == null) {
-                // TODO new asset API?
-                val r = utxoAssetService.getAssetByMixinIdSuspend(output.asset)
-                if (!r.isSuccess || r.data == null) return // TODO
+                val r = tokenService.getAssetByMixinIdSuspend(output.asset)
+                if (!r.isSuccess || r.data == null) return
                 val token = requireNotNull(r.data)
-                assetId = token.assetId
                 tokenDao.insertSuspend(token)
             }
             propertyDao.updateValueByKey(keyProcessUtxoId, output.outputId)

@@ -30,7 +30,7 @@ interface OutputDao : BaseDao<Output> {
     suspend fun findOutputsByUtxoId(utxoId: String, limit: Int = processUtxoLimit): List<Output>
 
     @Query("SELECT sequence FROM outputs ORDER BY sequence DESC LIMIT 1")
-    suspend fun findLatestOutputSequence (): Long?
+    suspend fun findLatestOutputSequence(): Long?
 
     @Query("SELECT CAST(amount AS REAL) FROM outputs WHERE asset =:mixinId AND state = 'unspent'")
     suspend fun calcBalanceByAssetId(mixinId: String): Double
