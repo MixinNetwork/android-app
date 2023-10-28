@@ -128,7 +128,7 @@ class BottomSheetViewModel @Inject internal constructor(
         memo: String?,
     ): MixinResponse<*> {
         val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
-        val spendKey = tip.getSpendPriv(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
+        val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
         val traceId = trace ?: UUID.randomUUID().toString()
         val senderId = Session.getAccountId()!!
 

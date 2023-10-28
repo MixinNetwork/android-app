@@ -55,7 +55,7 @@ open class Account(
     @SerializedName("features")
     val features: ArrayList<String>? = null,
 
-    @SerializedName("salt")
+    @SerializedName("salt_base64")
     var salt: String?,
 )
 

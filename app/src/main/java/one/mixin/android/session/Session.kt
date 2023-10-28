@@ -15,13 +15,13 @@ import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.EdKeyPair
+import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.useGoEd
-import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.bodyToString
@@ -31,13 +31,13 @@ import one.mixin.android.extension.cutOut
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hmacSha256
+import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toHex
-import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.storeEncryptedSalt
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
@@ -70,8 +70,17 @@ object Session {
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.putString(PREF_NAME_ACCOUNT, Gson().toJson(account.toAccountWithoutSalt()))
 
-        val salt = account.salt?.base64RawURLDecode() ?: return
-        if (!storeEncryptedSalt(MixinApplication.appContext, salt)) {
+        val salt = account.salt
+        if (salt.isNullOrEmpty()) {
+            return
+        }
+        val pinToken = getPinToken()?.decodeBase64()
+        if (pinToken == null) {
+            Timber.e("storeAccount store encrypted salt pin token null")
+            return
+        }
+        val encryptedSalt = aesDecrypt(pinToken, salt.base64RawURLDecode())
+        if (!storeEncryptedSalt(MixinApplication.appContext, encryptedSalt)) {
             Timber.e("storeAccount store encrypted salt failed")
         }
     }
@@ -178,8 +187,6 @@ object Session {
     fun hasEmergencyContact() = getAccount()?.hasEmergencyContact ?: false
 
     fun hasSafe() = self?.hasSafe ?: false
-
-    fun getSalt(): String? = self?.salt
 
     fun setHasEmergencyContact(enabled: Boolean) {
         getAccount()?.hasEmergencyContact = enabled

@@ -7,9 +7,9 @@ data class PinRequest(
     val pin: String,
     @SerializedName("old_pin")
     val oldPin: String? = null,
-    @SerializedName("salt")
+    @SerializedName("salt_base64")
     var salt: String? = null,
-    @SerializedName("old_salt")
+    @SerializedName("old_salt_base64")
     var oldSalt: String? = null,
     @SerializedName("timestamp")
     val timestamp: Long? = null,

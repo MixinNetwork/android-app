@@ -25,6 +25,7 @@ import one.mixin.android.databinding.FragmentTipBinding
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navTo
@@ -39,6 +40,7 @@ import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
+import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
@@ -498,9 +500,9 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             val spendSeed = tip.getSpendPriv(salt, seed)
             val keyPair = newKeyPairFromSeed(spendSeed)
             val pkHex = keyPair.publicKey.toHex()
-            val selfId =
-                requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
-            val saltBase64 = encryptedSalt.base64RawURLEncode()
+            val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
+            val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
+            val saltBase64 = aesEncrypt(pinToken, encryptedSalt).base64RawURLEncode()
             val registerResp = viewModel.registerPublicKey(
                 registerRequest = RegisterRequest(
                     publicKey = pkHex,
