@@ -384,6 +384,7 @@ class MixinDatabaseMigrations private constructor() {
                 db.execSQL("ALTER TABLE `chains` ADD COLUMN `withdrawal_memo_possibility` TEXT DEFAULT 'possible'")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_outputs_asset_state_created_at` ON `outputs` (`asset`, `state`, `created_at`)")
                 db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_outputs_transaction_hash_output_index` ON `outputs` (`transaction_hash`, `output_index`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_tokens_extra_kernel_asset_id` ON `tokens_extra` (`kernel_asset_id`)")
             }
         }
 

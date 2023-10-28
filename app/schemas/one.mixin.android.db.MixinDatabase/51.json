@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "d092882ca1dcf45178d623b15b3c20a2",
+    "identityHash": "e351379a8611ede3627a92287ff0dd3b",
     "entities": [
       {
         "tableName": "users",
@@ -825,7 +825,17 @@
             "asset_id"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_tokens_extra_kernel_asset_id",
+            "unique": false,
+            "columnNames": [
+              "kernel_asset_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_tokens_extra_kernel_asset_id` ON `${TABLE_NAME}` (`kernel_asset_id`)"
+          }
+        ],
         "foreignKeys": []
       },
       {
@@ -2800,7 +2810,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd092882ca1dcf45178d623b15b3c20a2')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e351379a8611ede3627a92287ff0dd3b')"
     ]
   }
 }
