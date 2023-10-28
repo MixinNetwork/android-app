@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
@@ -15,7 +16,7 @@ import one.mixin.android.vo.assetIdToAsset
 
 @SuppressLint("ParcelCreator")
 @Parcelize
-@Entity(tableName = "tokens")
+@Entity(tableName = "tokens", indices = [Index(value = arrayOf("kernel_asset_id"))])
 @Serializable
 data class Token(
     @PrimaryKey

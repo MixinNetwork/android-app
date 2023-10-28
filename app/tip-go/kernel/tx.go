@@ -193,7 +193,7 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string) (*Tx, error) {
 
 		i, found := keysFilter[key.Public().String()]
 		if !found {
-			return nil, fmt.Errorf("invalid key for the input %s", key.Public().String())
+			return nil, fmt.Errorf("invalid public key for the input %s", key.Public().String())
 		}
 		sig := key.Sign(msg)
 		sigs := make(map[uint16]*crypto.Signature)

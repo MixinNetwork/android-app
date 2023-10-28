@@ -17,7 +17,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
-import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.sha3Sum256
@@ -106,7 +105,7 @@ object Session {
     }
 
     fun getEd25519Seed(): String? {
-        if (seed != null) {
+        if (this.seed != null) {
             return seed
         } else {
             val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)

@@ -31,6 +31,9 @@ data class Output(
     @SerializedName("asset")
     @ColumnInfo(name = "asset")
     val asset: String,
+    @SerializedName("sequence")
+    @ColumnInfo(name = "sequence")
+    val sequence: Long,
     @SerializedName("amount")
     @ColumnInfo(name = "amount")
     val amount: String,

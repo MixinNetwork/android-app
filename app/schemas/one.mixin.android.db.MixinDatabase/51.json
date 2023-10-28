@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "e351379a8611ede3627a92287ff0dd3b",
+    "identityHash": "5021abe7ca7c6f912fe762aa6783da67",
     "entities": [
       {
         "tableName": "users",
@@ -2374,7 +2374,7 @@
       },
       {
         "tableName": "outputs",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`output_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `asset` TEXT NOT NULL, `amount` TEXT NOT NULL, `mask` TEXT NOT NULL, `keys` TEXT NOT NULL, `receivers` TEXT NOT NULL, `receivers_hash` TEXT NOT NULL, `receivers_threshold` INTEGER NOT NULL, `extra` TEXT NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `signed_by` TEXT NOT NULL, `signed_at` TEXT NOT NULL, `spent_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`output_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `asset` TEXT NOT NULL, `sequence` INTEGER NOT NULL, `amount` TEXT NOT NULL, `mask` TEXT NOT NULL, `keys` TEXT NOT NULL, `receivers` TEXT NOT NULL, `receivers_hash` TEXT NOT NULL, `receivers_threshold` INTEGER NOT NULL, `extra` TEXT NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `signed_by` TEXT NOT NULL, `signed_at` TEXT NOT NULL, `spent_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))",
         "fields": [
           {
             "fieldPath": "outputId",
@@ -2398,6 +2398,12 @@
             "fieldPath": "asset",
             "columnName": "asset",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sequence",
+            "columnName": "sequence",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -2599,7 +2605,17 @@
             "asset_id"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_tokens_kernel_asset_id",
+            "unique": false,
+            "columnNames": [
+              "kernel_asset_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_tokens_kernel_asset_id` ON `${TABLE_NAME}` (`kernel_asset_id`)"
+          }
+        ],
         "foreignKeys": []
       },
       {
@@ -2810,7 +2826,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e351379a8611ede3627a92287ff0dd3b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5021abe7ca7c6f912fe762aa6783da67')"
     ]
   }
 }
