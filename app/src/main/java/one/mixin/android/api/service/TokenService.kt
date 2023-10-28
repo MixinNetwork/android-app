@@ -33,9 +33,6 @@ interface TokenService {
     @GET("safe/assets/{id}")
     suspend fun getAssetPrecisionById(@Path("id") id: String): MixinResponse<AssetPrecision>
 
-    @GET("safe/assets/{id}")
-    suspend fun getAssetByMixinIdSuspend(@Path("id") mixinId: String): MixinResponse<Token>
-
     @GET("safe/snapshots")
     suspend fun getSnapshotsByAssetId(
         @Query("asset") id: String,

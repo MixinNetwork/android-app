@@ -88,7 +88,7 @@ class UtxoProcessor(
         outputs.forEach { output ->
             val assetId = tokenDao.checkAssetExists(output.asset)
             if (assetId == null) {
-                val r = tokenService.getAssetByMixinIdSuspend(output.asset)
+                val r = tokenService.getAssetByIdSuspend(output.asset)
                 if (!r.isSuccess || r.data == null) return
                 val token = requireNotNull(r.data)
                 tokenDao.insertSuspend(token)
