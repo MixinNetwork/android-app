@@ -161,7 +161,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun offsetDao(): OffsetDao
     abstract fun assetDao(): AssetDao
     abstract fun tokenDao(): TokenDao
-    abstract fun assetsExtraDao(): TokensExtraDao
+    abstract fun tokensExtraDao(): TokensExtraDao
     abstract fun snapshotDao(): SnapshotDao
     abstract fun safeSnapshotDao(): SafeSnapshotDao
     abstract fun messageHistoryDao(): MessageHistoryDao

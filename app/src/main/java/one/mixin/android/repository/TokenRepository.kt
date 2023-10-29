@@ -99,7 +99,7 @@ constructor(
     private val utxoService: UtxoService,
     private val routeService: RouteService,
     private val tokenDao: TokenDao,
-    private val assetsExtraDao: TokensExtraDao,
+    private val tokensExtraDao: TokensExtraDao,
     private val safeSnapshotDao: SafeSnapshotDao,
     private val addressDao: AddressDao,
     private val addressService: AddressService,
@@ -270,11 +270,11 @@ constructor(
 
     suspend fun updateHidden(id: String, hidden: Boolean) {
         appDatabase.withTransaction {
-            val assetsExtra = assetsExtraDao.findByAssetId(id)
-            if (assetsExtra != null) {
-                assetsExtraDao.updateHiddenByAssetId(id, hidden)
+            val tokensExtra = tokensExtraDao.findByAssetId(id)
+            if (tokensExtra != null) {
+                tokensExtraDao.updateHiddenByAssetId(id, hidden)
             } else {
-                assetsExtraDao.insertSuspend(TokensExtra(id, assetIdToAsset(id), hidden, "0", nowInUtc()))
+                tokensExtraDao.insertSuspend(TokensExtra(id, assetIdToAsset(id), hidden, "0", nowInUtc()))
             }
         }
     }

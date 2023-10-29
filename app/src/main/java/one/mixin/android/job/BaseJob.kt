@@ -186,7 +186,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
-    lateinit var assetsExtraDao: TokensExtraDao
+    lateinit var tokensExtraDao: TokensExtraDao
 
     @Inject
     @Transient

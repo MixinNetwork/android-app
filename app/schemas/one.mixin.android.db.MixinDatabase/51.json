@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "5021abe7ca7c6f912fe762aa6783da67",
+    "identityHash": "352fcc5a66a35008fac0c2b52dbc9cb2",
     "entities": [
       {
         "tableName": "users",
@@ -754,7 +754,7 @@
       },
       {
         "tableName": "assets_extra",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `hidden` INTEGER, `updated_at` TEXT, PRIMARY KEY(`asset_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `hidden` INTEGER, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
             "fieldPath": "assetId",
@@ -766,12 +766,6 @@
             "fieldPath": "hidden",
             "columnName": "hidden",
             "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "updatedAt",
-            "columnName": "updated_at",
-            "affinity": "TEXT",
             "notNull": false
           }
         ],
@@ -2826,7 +2820,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5021abe7ca7c6f912fe762aa6783da67')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '352fcc5a66a35008fac0c2b52dbc9cb2')"
     ]
   }
 }

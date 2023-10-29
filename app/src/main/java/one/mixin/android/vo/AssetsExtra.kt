@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
+@Deprecated("Deprecated")
 @SuppressLint("ParcelCreator")
 @Parcelize
 @Entity(tableName = "assets_extra")
@@ -19,7 +20,4 @@ data class AssetsExtra(
     @SerializedName("hidden")
     @ColumnInfo(name = "hidden")
     var hidden: Boolean?,
-    @SerializedName("updated_at")
-    @ColumnInfo(name = "updated_at")
-    val updatedAt: String?,
 ) : Parcelable

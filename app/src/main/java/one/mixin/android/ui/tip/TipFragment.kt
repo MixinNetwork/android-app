@@ -558,7 +558,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 descTv.text = getString(
                     when (tipBundle.tipType) {
                         TipType.Create -> R.string.Creating_wallet_terminated_unexpectedly
-                        TipType.Upgrade, TipType.Register -> R.string.Upgrading_TIP_terminated_unexpectedly
+                        TipType.Upgrade -> R.string.Upgrading_TIP_terminated_unexpectedly
+                        TipType.Register -> R.string.Asset_Migration_Content
                         TipType.Change -> R.string.Changing_PIN_terminated_unexpectedly
                     },
                 )

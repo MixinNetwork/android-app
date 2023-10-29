@@ -22,14 +22,14 @@ class CheckBalanceJob(
     override fun onRun() = runBlocking {
         Timber.d("$TAG start checkBalance assetId size: ${assets.size}")
         assets.forEach { asset ->
-            val assetsExtra = assetsExtraDao.findByAsset(asset)
+            val tokensExtra = tokensExtraDao.findByAsset(asset)
             val token = tokenDao.findTokenByAsset(asset) ?: return@forEach
             mixinDatabase.withTransaction {
                 val value = calcBalanceByAssetId(asset)
-                if (assetsExtra == null) {
-                    assetsExtraDao.insertSuspend(TokensExtra(token.assetId, token.asset, false, value.toPlainString(), nowInUtc()))
+                if (tokensExtra == null) {
+                    tokensExtraDao.insertSuspend(TokensExtra(token.assetId, token.asset, false, value.toPlainString(), nowInUtc()))
                 } else {
-                    assetsExtraDao.updateBalanceByAssetId(token.assetId, value.toPlainString(), nowInUtc())
+                    tokensExtraDao.updateBalanceByAssetId(token.assetId, value.toPlainString(), nowInUtc())
                 }
             }
         }

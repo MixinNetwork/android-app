@@ -22,5 +22,5 @@ data class Chain(
     val threshold: Int,
     @ColumnInfo(name = "withdrawal_memo_possibility")
     @SerializedName("withdrawal_memo_possibility")
-    val withdrawalMemoPossibility: String,
+    val withdrawalMemoPossibility: String = WithdrawalMemoPossibility.POSSIBLE.name,
 )
