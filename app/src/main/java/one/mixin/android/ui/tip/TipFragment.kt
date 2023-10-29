@@ -168,7 +168,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                                 }
                             }
                             TipType.Register -> {
-                                innerTv.text = getString(R.string.Continue)
+                                innerTv.text = getString(R.string.Start)
                                 innerTv.setOnClickListener {
                                     showVerifyPin(getString(R.string.Enter_your_PIN)) { pin ->
                                         tipBundle.pin = pin
@@ -559,8 +559,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     when (tipBundle.tipType) {
                         TipType.Create -> R.string.Creating_wallet_terminated_unexpectedly
                         TipType.Upgrade -> R.string.Upgrading_TIP_terminated_unexpectedly
-                        TipType.Register -> R.string.Asset_Migration_Content
                         TipType.Change -> R.string.Changing_PIN_terminated_unexpectedly
+                        TipType.Register -> R.string.TIP_introduction  // actually register step has no recover state, so keep string
                     },
                 )
             } else {

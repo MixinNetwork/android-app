@@ -473,7 +473,8 @@
     <string name="Friday">星期五</string>
     <string name="From">来自</string>
     <string name="Generating_keys">正在创建密钥…</string>
-    <string name="Get_a_new_wallet">创建钱包</string>
+    <string name="Get_a_new_wallet">创建新钱包</string>
+    <string name="Get_a_new_wallet_successfully">创建新钱包成功</string>
     <string name="Go">导航</string>
     <string name="Go_settings">去设置</string>
     <string name="Got_it">知道了</string>
