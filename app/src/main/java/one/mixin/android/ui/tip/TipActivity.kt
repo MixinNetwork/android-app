@@ -23,6 +23,7 @@ class TipActivity : BlazeBaseActivity() {
             context.startActivity(
                 Intent(context, TipActivity::class.java).apply {
                     putExtra(ARGS_TIP_BUNDLE, tipBundle)
+                    setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 },
             )
         }
