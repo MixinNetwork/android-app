@@ -163,7 +163,7 @@ class BottomSheetViewModel @Inject internal constructor(
         val signResult = SignResult(sign.raw, sign.change)
         runInTransaction {
             if (signResult.change != null) {
-                val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxos.last().createdAt)
+                val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxos.last())
                 tokenRepository.insertOutput(changeOutput)
             }
             tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.requestId, signResult.raw, receiverId, nowInUtc()))
