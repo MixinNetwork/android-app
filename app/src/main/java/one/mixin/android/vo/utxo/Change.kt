@@ -18,6 +18,6 @@ fun changeToOutput(change: Utxo, asset: String, mask: String, keys: List<String>
     }
     val outputId = UUID.nameUUIDFromBytes("${change.hash}:${change.index}".toByteArray()).toString()
     return Output(
-        outputId, change.hash, change.index.toInt(), asset, lastOutput.sequence, change.amount, mask, keys,  lastOutput.receivers, lastOutput.receiversHash, 1, "","unspent", nowInUtc(), "", "", "", ""
+        outputId, change.hash, change.index.toInt(), asset, 0, change.amount, mask, keys,  lastOutput.receivers, lastOutput.receiversHash, 1, "","unspent", nowInUtc(), "", "", "", ""
     )
 }
