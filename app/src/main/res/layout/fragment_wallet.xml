@@ -52,6 +52,7 @@
             android:layout_margin="@dimen/padding8"
             android:background="@drawable/bg_round_migration_asset"
             android:visibility="gone"
+            tools:visibility="visible"
             android:padding="@dimen/margin16">
 
             <ImageView
@@ -74,7 +75,7 @@
                 android:textColor="@color/text_white"
                 android:layout_alignParentTop="true"
                 android:layout_toEndOf="@id/icon"
-                tools:text="@string/Asset_Migration_Content" />
+                android:text="@string/Asset_Migration_Content" />
 
             <TextView
                 android:id="@+id/start"
@@ -86,7 +87,7 @@
                 android:foreground="?android:attr/selectableItemBackground"
                 android:layout_below="@id/content"
                 android:layout_toEndOf="@id/icon"
-                tools:text="@string/Start_Migration" />
+                android:text="@string/Start_Migration" />
         </RelativeLayout>
     </FrameLayout>
 </LinearLayout>
