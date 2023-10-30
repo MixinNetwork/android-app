@@ -88,7 +88,7 @@ suspend fun clearFts(context: Context) = withContext(Dispatchers.IO) {
 }
 
 @SuppressLint("ObsoleteSdkInt")
-suspend fun clearJobs(context: Context) = withContext(Dispatchers.IO) {
+suspend fun clearJobsAndRawTransaction(context: Context) = withContext(Dispatchers.IO) {
     val supportsDeferForeignKeys = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
     val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
     if (!dbFile.exists()) {
@@ -109,6 +109,8 @@ suspend fun clearJobs(context: Context) = withContext(Dispatchers.IO) {
         }
         db.beginTransaction()
         db.execSQL("DELETE FROM `jobs`")
+        db.execSQL("DELETE FROM `raw_transactions`")
+        db.execSQL("DELETE FROM `outputs`")
         db.setTransactionSuccessful()
     } catch (e: Exception) {
         reportException(e)
