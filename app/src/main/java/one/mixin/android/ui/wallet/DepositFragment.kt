@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.view.LayoutInflater
@@ -29,6 +28,7 @@ import one.mixin.android.databinding.FragmentDepositBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getTipsByAsset
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.highLight
@@ -75,7 +75,7 @@ class DepositFragment : BaseFragment() {
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val asset = requireArguments().getAsset()
+        val asset = requireNotNull(requireArguments().getParcelableCompat(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)) { "required TokenItem can not be null" }
         initView(asset)
         if (!notSupportDepositAssets.any { it == asset.assetId }) {
             DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset)
@@ -209,15 +209,6 @@ class DepositFragment : BaseFragment() {
         }
     }
 
-    private fun Bundle.getAsset(): TokenItem = requireNotNull(
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            getParcelable(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            getParcelable(TransactionsFragment.ARGS_ASSET)
-        },
-    ) { "required AssetItem can not be null" }
-
     private fun updateUI(asset: TokenItem) {
         if (viewDestroyed()) return
 
@@ -234,7 +225,7 @@ class DepositFragment : BaseFragment() {
         }.toByteArray().sha3Sum256()
         val verify = verifyCurve25519Signature(message, signature!!, pub)
         if (verify) {
-            val noTag = asset.getTag().isNullOrBlank()
+            val noTag = tag.isNullOrBlank()
             binding.apply {
                 if (noTag) {
                     memoView.isVisible = false
