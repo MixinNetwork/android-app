@@ -63,7 +63,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             if (pagedList.isNotEmpty()) {
                 showEmpty(false)
                 val opponentIds = pagedList.filter {
-                    it?.opponentId != null
+                    !it?.opponentId.isNullOrBlank()
                 }.map {
                     it.opponentId!!
                 }

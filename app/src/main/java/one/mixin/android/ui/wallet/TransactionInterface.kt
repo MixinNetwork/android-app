@@ -316,7 +316,7 @@ interface TransactionInterface {
             snapshotHashTv.text = snapshot.transactionHash
             dateTv.text = snapshot.createdAt.fullDate()
             // simulate type
-            val type = if (snapshot.opponentId != null) {
+            val type = if (!snapshot.opponentId.isNullOrBlank()) {
                 SnapshotType.transfer
             } else if (snapshot.type == SnapshotType.pending.name) {
                 SnapshotType.pending

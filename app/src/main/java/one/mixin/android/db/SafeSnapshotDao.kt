@@ -12,7 +12,10 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     companion object {
         const val SNAPSHOT_ITEM_PREFIX =
             """
-                SELECT s.*, u.avatar_url, u.full_name AS opponent_ful_name, t.symbol AS asset_symbol, t.confirmations AS asset_confirmations FROM safe_snapshots s 
+                SELECT s.snapshot_id, s.type, s.asset_id, s.amount, s.created_at, s.opponent_id, s.trace_id, s.memo,
+                s.confirmations, s.transaction_hash, s.opening_balance, s.closing_balance,
+                u.avatar_url, u.full_name AS opponent_ful_name, t.symbol AS asset_symbol, t.confirmations AS asset_confirmations 
+                FROM safe_snapshots s 
                 LEFT JOIN users u ON u.user_id = s.opponent_id 
                 LEFT JOIN tokens t ON t.asset_id = s.asset_id 
             """

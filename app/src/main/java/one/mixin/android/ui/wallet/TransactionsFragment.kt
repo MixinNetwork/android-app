@@ -107,7 +107,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
             if (list.isNotEmpty()) {
                 headerAdapter.show = false
                 list.filter {
-                    it.opponentId != null
+                    !it.opponentId.isNullOrBlank()
                 }.mapNotNull {
                     it.opponentId
                 }.let { ids ->
