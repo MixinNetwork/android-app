@@ -31,7 +31,7 @@ data class SafeSnapshot(
     @ColumnInfo(name = "amount")
     val amount: String,
 
-    @SerializedName("userid")
+    @SerializedName("user_id")
     @SerialName("user_id")
     @ColumnInfo(name = "user_id")
     val userId: String,
