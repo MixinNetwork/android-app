@@ -14,6 +14,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.service.AccountService
+import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.databinding.FragmentCheckRegisterBottomSheetBinding
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.toHex
@@ -136,13 +137,15 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
     private suspend fun registerPublicKey(pin: String) {
         try {
             val seed = tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
-            val (saltBase64, keyPair) = tip.generateSaltAndKeyPair(pin, seed)
+            val (salt, saltBase64) = tip.generateSaltAndEncryptedSaltBase64(pin, seed)
+            val spendSeed = tip.getSpendPriv(salt, seed)
+            val keyPair = newKeyPairFromSeed(spendSeed)
             val pkHex = keyPair.publicKey.toHex()
             val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
             val resp = bottomViewModel.registerPublicKey(
                 registerRequest = RegisterRequest(
                     publicKey = pkHex,
-                    signature = Session.getRegisterSignature(selfId, keyPair.privateKey),
+                    signature = Session.getRegisterSignature(selfId, spendSeed),
                     pin = bottomViewModel.getEncryptedTipBody(selfId, pkHex, pin),
                     salt = saltBase64,
                 )

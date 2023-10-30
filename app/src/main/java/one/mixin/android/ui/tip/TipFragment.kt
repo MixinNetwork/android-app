@@ -18,6 +18,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
+import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.databinding.FragmentTipBinding
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
@@ -469,13 +470,15 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 updateTipStep(RetryRegister(null, errorInfo))
                 return@runCatching false
             }
-            val (saltBase64, keyPair) = tip.generateSaltAndKeyPair(pin, seed)
+            val (salt, saltBase64) = tip.generateSaltAndEncryptedSaltBase64(pin, seed)
+            val spendSeed = tip.getSpendPriv(salt, seed)
+            val keyPair = newKeyPairFromSeed(spendSeed)
             val pkHex = keyPair.publicKey.toHex()
             val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
             val registerResp = viewModel.registerPublicKey(
                 registerRequest = RegisterRequest(
                     publicKey = pkHex,
-                    signature = Session.getRegisterSignature(selfId, keyPair.privateKey),
+                    signature = Session.getRegisterSignature(selfId, spendSeed),
                     pin = viewModel.getEncryptedTipBody(selfId, pkHex, pin),
                     salt = saltBase64,
                 )

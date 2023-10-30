@@ -140,15 +140,12 @@ class Tip @Inject internal constructor(
             }
         }
 
-    fun generateSaltAndKeyPair(pin: String, tipPriv: ByteArray): Pair<String, EdKeyPair> {
+    fun generateSaltAndEncryptedSaltBase64(pin: String, tipPriv: ByteArray): Pair<ByteArray, String> {
         val salt = generateRandomBytes(32)
         val saltAESKey = generateSaltAESKey(pin, tipPriv)
         val encryptedSalt = aesEncrypt(saltAESKey, salt)
-        val spendSeed = getSpendPriv(salt, tipPriv)
         val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
-        val saltBase64 = aesEncrypt(pinToken, encryptedSalt).base64RawURLEncode()
-        val keyPair = newKeyPairFromSeed(spendSeed)
-        return Pair(saltBase64, keyPair)
+        return Pair(salt, aesEncrypt(pinToken, encryptedSalt).base64RawURLEncode())
     }
 
     suspend fun getEncryptedSalt(context: Context): ByteArray {
