@@ -9,6 +9,9 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import one.mixin.android.crypto.sha3Sum256
+import one.mixin.android.extension.isUUID
+import one.mixin.android.vo.safe.Token
 import java.math.BigDecimal
 
 @SuppressLint("ParcelCreator")
@@ -95,7 +98,7 @@ data class Asset(
     @ColumnInfo(name = "deposit_entries")
     @SerializedName("deposit_entries")
     @SerialName("deposit_entries")
-    val depositEntries: List<DepositEntry>?,
+    val depositEntries: List<OldDepositEntry>?,
 
     @ColumnInfo(name = "withdrawal_memo_possibility")
     @SerializedName("withdrawal_memo_possibility")
@@ -121,9 +124,19 @@ fun Asset.toAssetItem(chainIconUrl: String? = null): AssetItem = AssetItem(
     confirmations, chainIconUrl, null, null, null, assetKey, reserve, withdrawalMemoPossibility,
 )
 
-fun Asset.toTopAssetItem(chainIconUrl: String?) = TopAssetItem(assetId, symbol, name, iconUrl, chainId, chainIconUrl, assetKey, priceUsd, changeUsd)
+fun Asset.toTopAssetItem(chainIconUrl: String?) = TopAssetItem(
+    assetId,
+    symbol,
+    name,
+    iconUrl,
+    chainId,
+    chainIconUrl,
+    assetKey,
+    priceUsd,
+    changeUsd
+)
 
-fun Asset?.priceUSD(): BigDecimal = if (this == null) {
+fun Token?.priceUSD(): BigDecimal = if (this == null) {
     BigDecimal.ZERO
 } else {
     if (priceUsd == "0") {
@@ -131,4 +144,10 @@ fun Asset?.priceUSD(): BigDecimal = if (this == null) {
     } else {
         BigDecimal(priceUsd)
     }
+}
+
+fun assetIdToAsset(assetId: String): String {
+    assert(assetId.isUUID())
+    return assetId.sha3Sum256()
+        .joinToString("") { "%02x".format(it) }
 }

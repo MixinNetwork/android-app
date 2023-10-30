@@ -16,21 +16,25 @@ enum class TipType : Parcelable {
 
 sealed class TipStep : Parcelable
 
-@Parcelize internal object TryConnecting : TipStep()
+@Parcelize internal data object TryConnecting : TipStep()
 
 @Parcelize internal data class RetryConnect(val shouldWatch: Boolean, val reason: String) : TipStep()
 
-@Parcelize internal object ReadyStart : TipStep()
+@Parcelize internal data object ReadyStart : TipStep()
 
 @Parcelize internal data class RetryProcess(val reason: String) : TipStep()
 
 @Parcelize internal sealed class Processing : TipStep() {
-    @Parcelize internal object Creating : Processing()
+    @Parcelize internal data object Creating : Processing()
 
     @Parcelize internal data class SyncingNode(val step: Int, val total: Int) : Processing()
 
-    @Parcelize internal object Updating : Processing()
+    @Parcelize internal data object Updating : Processing()
+
+    @Parcelize internal data object Registering: Processing()
 }
+
+@Parcelize internal data class RetryRegister(val tipPriv: ByteArray?, val reason: String) : TipStep()
 
 @Parcelize
 data class TipBundle(

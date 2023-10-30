@@ -10,8 +10,8 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.databinding.FragmentVerifyBottomSheetBinding
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.oldwallet.biometric.BiometricBottomSheetDialogFragment
+import one.mixin.android.ui.oldwallet.biometric.BiometricInfo
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 

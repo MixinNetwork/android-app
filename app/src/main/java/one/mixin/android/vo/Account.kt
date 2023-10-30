@@ -44,6 +44,8 @@ open class Account(
     val acceptSearchSource: String,
     @SerializedName("has_emergency_contact")
     var hasEmergencyContact: Boolean,
+    @SerializedName("has_safe")
+    var hasSafe: Boolean,
     @SerializedName("fiat_currency")
     var fiatCurrency: String,
     @SerializedName("transfer_notification_threshold")
@@ -52,7 +54,12 @@ open class Account(
     val transferConfirmationThreshold: Double = 100.0,
     @SerializedName("features")
     val features: ArrayList<String>? = null,
+
+    @SerializedName("salt_base64")
+    var salt: String?,
 )
+
+fun Account.toAccountWithoutSalt() = Account(userId, sessionId, type, identityNumber, relationship, fullName, biography, avatarUrl, phone, avatarBase64, pinToken, codeId, codeUrl, createdAt, receiveMessageSource, hasPin, tipKeyBase64, tipCounter, acceptConversationSource, acceptSearchSource, hasEmergencyContact, hasSafe, fiatCurrency, transferNotificationThreshold, transferConfirmationThreshold, features, null)
 
 fun Account.toUser(): User {
     return User(userId, identityNumber, relationship, biography ?: "", fullName, avatarUrl, phone, null, createdAt, null, hasPin)

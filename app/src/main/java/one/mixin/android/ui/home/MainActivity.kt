@@ -96,6 +96,7 @@ import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshAssetsJob
+import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshCircleJob
 import one.mixin.android.job.RefreshContactJob
 import one.mixin.android.job.RefreshExternalSchemeJob
@@ -104,6 +105,9 @@ import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.job.RestoreTransactionJob
+import one.mixin.android.job.SyncOutputJob
+import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
@@ -116,6 +120,7 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.ui.tip.CheckRegisterBottomSheetDialogFragment
 import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
@@ -190,6 +195,9 @@ class MainActivity : BlazeBaseActivity() {
     @Inject
     lateinit var tip: Tip
 
+    @Inject
+    lateinit var tipCounterSynced: TipCounterSyncedLiveData
+
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private val updatedListener = InstallStateUpdatedListener { state ->
         if (isFinishing) return@InstallStateUpdatedListener
@@ -250,7 +258,7 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         MixinApplication.get().isOnline.set(true)
-
+        jobManager.addJobInBackground(SyncOutputJob())
         if (checkNeedGo2MigrationPage()) {
             InitializeActivity.showDBUpgrade(this)
             finish()
@@ -307,6 +315,17 @@ class MainActivity : BlazeBaseActivity() {
                 }
             }
 
+        if (Session.getAccount()?.hasPin != true || Session.getTipPub() == null) {
+            TipActivity.show(this, TipType.Create, shouldWatch = true)
+        } else {
+            if (Session.hasSafe()) {
+                jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
+            } else {
+                CheckRegisterBottomSheetDialogFragment.newInstance()
+                    .showNow(supportFragmentManager, CheckRegisterBottomSheetDialogFragment.TAG)
+            }
+        }
+
         lifecycleScope.launch(Dispatchers.IO) {
             delay(10_000)
             if (MixinApplication.get().isAppAuthShown()) {
@@ -314,6 +333,9 @@ class MainActivity : BlazeBaseActivity() {
             }
             checkUpdate()
         }
+
+        jobManager.addJobInBackground(SyncOutputJob())
+        jobManager.addJobInBackground(RestoreTransactionJob())
     }
 
     override fun onStart() {
@@ -335,11 +357,10 @@ class MainActivity : BlazeBaseActivity() {
         refreshStickerAlbum()
         refreshExternalSchemes()
         cleanCache()
+        jobManager.addJobInBackground(RefreshTokensJob())
         jobManager.addJobInBackground(RefreshAssetsJob())
         sendSafetyNetRequest()
         checkBatteryOptimization()
-
-        jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
 
         if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
             jobManager.addJobInBackground(RefreshCircleJob())

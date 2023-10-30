@@ -8,6 +8,7 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.TokensExtraDao
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
 import one.mixin.android.fts.FtsDatabase
@@ -67,15 +68,23 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideAssetExtraDao(db: MixinDatabase) = db.assetsExtraDao()
-
-    @Singleton
-    @Provides
     fun provideAssetDao(db: MixinDatabase) = db.assetDao()
 
     @Singleton
     @Provides
+    fun provideTokenDao(db: MixinDatabase) = db.tokenDao()
+
+    @Singleton
+    @Provides
+    fun provideTokensExtraDao(db: MixinDatabase) = db.tokensExtraDao()
+
+    @Singleton
+    @Provides
     fun provideSnapshotDao(db: MixinDatabase) = db.snapshotDao()
+
+    @Singleton
+    @Provides
+    fun provideSafeSnapshotDao(db: MixinDatabase) = db.safeSnapshotDao()
 
     @Singleton
     @Provides
@@ -168,4 +177,16 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun providesChainDao(db: MixinDatabase) = db.chainDao()
+
+    @Singleton
+    @Provides
+    fun provideOutputDao(db: MixinDatabase) = db.outputDao()
+
+    @Singleton
+    @Provides
+    fun provideDepositDao(db: MixinDatabase) = db.depositDao()
+
+    @Singleton
+    @Provides
+    fun provideRawTransactionDao(db: MixinDatabase) = db.rawTransactionDao()
 }

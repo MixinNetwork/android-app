@@ -21,10 +21,10 @@ import one.mixin.android.ui.search.holder.HeaderHolder
 import one.mixin.android.ui.search.holder.MessageHolder
 import one.mixin.android.ui.search.holder.TipHolder
 import one.mixin.android.ui.search.holder.TipItem
-import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
 
 class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRecyclerHeadersAdapter<HeaderHolder> {
 
@@ -84,8 +84,8 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setData(assetItems: List<AssetItem>?, users: List<User>?, chatMinimals: List<ChatMinimal>?) {
-        data.assetList = assetItems
+    fun setData(tokenItems: List<TokenItem>?, users: List<User>?, chatMinimals: List<ChatMinimal>?) {
+        data.assetList = tokenItems
         data.userList = users
         data.showTip = shouldTips(query)
         data.chatList = chatMinimals
@@ -93,9 +93,9 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setAssetData(assetItems: List<AssetItem>?) {
-        data.assetList = assetItems
-        val end = assetItems?.size ?: 0
+    fun setAssetData(tokenItems: List<TokenItem>?) {
+        data.assetList = tokenItems
+        val end = tokenItems?.size ?: 0
         if (end > 0) {
             notifyItemRangeChanged(0, end)
         } else {
@@ -155,7 +155,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             }
             TypeAsset.index -> {
                 data.getItem(position).let {
-                    (holder as AssetHolder).bind(it as AssetItem, query, onItemClickListener)
+                    (holder as AssetHolder).bind(it as TokenItem, query, onItemClickListener)
                 }
             }
             TypeUser.index -> {
@@ -203,7 +203,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     override fun getItemViewType(position: Int) =
         when (data.getItem(position)) {
             is TipItem -> 0
-            is AssetItem -> TypeAsset.index
+            is TokenItem -> TypeAsset.index
             is User -> TypeUser.index
             is ChatMinimal -> TypeChat.index
             else -> TypeMessage.index

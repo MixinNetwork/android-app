@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.view.LayoutInflater
@@ -23,20 +22,24 @@ import one.mixin.android.Constants.AssetId.BYTOM_CLASSIC_ASSET_ID
 import one.mixin.android.Constants.AssetId.MGD_ASSET_ID
 import one.mixin.android.Constants.AssetId.OMNI_USDT_ASSET_ID
 import one.mixin.android.R
+import one.mixin.android.crypto.sha3Sum256
+import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.databinding.FragmentDepositBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getTipsByAsset
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.needShowReserve
+import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
 class DepositFragment : BaseFragment() {
@@ -72,7 +75,7 @@ class DepositFragment : BaseFragment() {
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val asset = requireArguments().getAsset()
+        val asset = requireNotNull(requireArguments().getParcelableCompat(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)) { "required TokenItem can not be null" }
         initView(asset)
         if (!notSupportDepositAssets.any { it == asset.assetId }) {
             DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset)
@@ -101,7 +104,7 @@ class DepositFragment : BaseFragment() {
         _binding = null
     }
 
-    private fun initView(asset: AssetItem) {
+    private fun initView(asset: TokenItem) {
         val notSupport = notSupportDepositAssets.any { it == asset.assetId }
         binding.apply {
             title.apply {
@@ -128,12 +131,7 @@ class DepositFragment : BaseFragment() {
 
                 notSupportLl.isVisible = false
                 sv.isVisible = true
-                val reserveTip = if (asset.needShowReserve()) {
-                    getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}")
-                        .highLight(requireContext(), "${asset.reserve} ${asset.symbol}")
-                } else {
-                    SpannableStringBuilder()
-                }
+                val reserveTip = SpannableStringBuilder()
                 val confirmation = requireContext().resources.getQuantityString(
                     R.plurals.deposit_confirmation,
                     asset.confirmations,
@@ -155,7 +153,7 @@ class DepositFragment : BaseFragment() {
         }
     }
 
-    private fun initUsdtChips(asset: AssetItem) {
+    private fun initUsdtChips(asset: TokenItem) {
         binding.apply {
             networkChipGroup.isSingleSelection = true
             networkChipGroup.removeAllViews()
@@ -198,12 +196,10 @@ class DepositFragment : BaseFragment() {
         }
     }
 
-    private fun refreshAsset(asset: AssetItem) {
-        if (asset.getDestination().isNotBlank()) return
-
+    private fun refreshAsset(asset: TokenItem) {
+        if (!asset.getDestination().isNullOrBlank()) return
         lifecycleScope.launch {
             val assetItem = walletViewModel.findOrSyncAsset(asset.assetId)
-
             if (assetItem == null) {
                 delay(500)
                 refreshAsset(asset)
@@ -213,43 +209,59 @@ class DepositFragment : BaseFragment() {
         }
     }
 
-    private fun Bundle.getAsset(): AssetItem = requireNotNull(
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            getParcelable(TransactionsFragment.ARGS_ASSET, AssetItem::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            getParcelable(TransactionsFragment.ARGS_ASSET)
-        },
-    ) { "required AssetItem can not be null" }
-
-    private fun updateUI(asset: AssetItem) {
+    private fun updateUI(asset: TokenItem) {
         if (viewDestroyed()) return
 
-        val noTag = asset.getTag().isNullOrBlank()
-        binding.apply {
-            if (noTag) {
-                memoView.isVisible = false
-                memoTitle.isVisible = false
-            } else {
-                memoView.isVisible = true
-                memoTitle.isVisible = true
-                memoView.setAsset(
+        val destination = asset.getDestination()
+        val tag = asset.getTag()
+        val signature = asset.signature?.hexStringToByteArray()
+
+        if (destination.isNullOrBlank() || signature.isNullOrEmpty()) return
+        val pub = Constants.SAFE_PUBLIC_KEY.hexStringToByteArray()
+        val message = if (tag.isNullOrBlank()) {
+            destination
+        } else {
+            "${destination}:${tag}"
+        }.toByteArray().sha3Sum256()
+        val verify = verifyCurve25519Signature(message, signature!!, pub)
+        if (verify) {
+            val noTag = tag.isNullOrBlank()
+            binding.apply {
+                if (noTag) {
+                    memoView.isVisible = false
+                    memoTitle.isVisible = false
+                } else {
+                    memoView.isVisible = true
+                    memoTitle.isVisible = true
+                    if (asset.assetId == Constants.ChainId.RIPPLE_CHAIN_ID) {
+                        memoTitle.setText(R.string.Tag)
+                    } else {
+                        memoTitle.setText(R.string.transfer_memo)
+                    }
+                    memoView.setAsset(
+                        parentFragmentManager,
+                        scopeProvider,
+                        asset,
+                        null,
+                        true,
+                        getString(R.string.deposit_memo_notice),
+                    )
+                }
+                addressView.setAsset(
                     parentFragmentManager,
                     scopeProvider,
                     asset,
                     null,
-                    true,
-                    getString(R.string.deposit_memo_notice),
+                    false,
+                    if (noTag) null else getString(R.string.deposit_notice, asset.symbol),
                 )
             }
-            addressView.setAsset(
-                parentFragmentManager,
-                scopeProvider,
-                asset,
-                null,
-                false,
-                if (noTag) null else getString(R.string.deposit_notice, asset.symbol),
-            )
+        } else {
+            binding.apply {
+                notSupportLl.isVisible = true
+                sv.isVisible = false
+                notSupportTv.setText(R.string.Verification_failed)
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 package one.mixin.android.tip
 
 import android.content.Context
+import com.lambdapioneer.argon2kt.Argon2Kt
 import ed25519.Ed25519
 import one.mixin.android.Constants
 import one.mixin.android.RxBus
@@ -12,9 +13,11 @@ import one.mixin.android.api.response.TipSigner
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.TipService
 import one.mixin.android.crypto.BasePinCipher
+import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
-import one.mixin.android.crypto.generateAesKey
+import one.mixin.android.crypto.argon2IHash
+import one.mixin.android.crypto.generateRandomBytes
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.event.TipEvent
@@ -47,6 +50,7 @@ import javax.inject.Inject
 class Tip @Inject internal constructor(
     private val ephemeral: Ephemeral,
     private val identity: Identity,
+    private val argon2Kt: Argon2Kt,
     private val tipService: TipService,
     private val accountService: AccountService,
     private val tipNode: TipNode,
@@ -63,22 +67,22 @@ class Tip @Inject internal constructor(
             createPriv(context, priKey, ephemeralSeed, watcher, pin, failedSigners, legacyPin, forRecover)
         }
 
-    suspend fun updateTipPriv(context: Context, deviceId: String, newPin: String, oldPin: String?, failedSigners: List<TipSigner>? = null): Result<ByteArray> =
+    suspend fun updateTipPriv(context: Context, deviceId: String, newPin: String, oldPin: String, counterEqual: Boolean, failedSigners: List<TipSigner>? = null): Result<ByteArray> =
         kotlin.runCatching {
             val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
             Timber.e("updateTipPriv after getEphemeralSeed")
 
-            if (oldPin.isNullOrBlank()) { // node success
+            if (!counterEqual) { // node success
                 Timber.e("updateTipPriv oldPin isNullOrBlank")
                 val (priKey, watcher) = identity.getIdentityPrivAndWatcher(newPin)
                 Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
-                updatePriv(context, priKey, ephemeralSeed, watcher, newPin, null)
+                updatePriv(context, priKey, ephemeralSeed, watcher, newPin, oldPin, null)
             } else {
                 val (priKey, watcher) = identity.getIdentityPrivAndWatcher(oldPin)
                 Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
                 val (assigneePriv, _) = identity.getIdentityPrivAndWatcher(newPin)
                 Timber.e("updateTipPriv after get assignee priv")
-                updatePriv(context, priKey, ephemeralSeed, watcher, newPin, assigneePriv, failedSigners)
+                updatePriv(context, priKey, ephemeralSeed, watcher, newPin, oldPin, assigneePriv, failedSigners)
             }
         }
 
@@ -135,6 +139,39 @@ class Tip @Inject internal constructor(
                 }
             }
         }
+
+    fun generateSaltAndEncryptedSaltBase64(pin: String, tipPriv: ByteArray): Pair<ByteArray, String> {
+        val salt = generateRandomBytes(32)
+        val saltAESKey = generateSaltAESKey(pin, tipPriv)
+        val encryptedSalt = aesEncrypt(saltAESKey, salt)
+        val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
+        return Pair(salt, aesEncrypt(pinToken, encryptedSalt).base64RawURLEncode())
+    }
+
+    suspend fun getEncryptedSalt(context: Context): ByteArray {
+        var salt = readEncryptedSalt(context)
+        if (salt != null) {
+            return salt
+        }
+        val account = tipNetwork { accountService.getMeSuspend() }.getOrThrow()
+        val pinTokenEncryptedSalt = account.salt?.base64RawURLDecode() ?: throw TipNullException("account has no salt")
+        Session.storeAccount(account)
+        val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("no pin token")
+        salt = aesDecrypt(pinToken, pinTokenEncryptedSalt)
+        return salt
+    }
+
+    fun getSpendPrivFromEncryptedSalt(encryptedSalt: ByteArray, pin: String, tipPriv: ByteArray): ByteArray {
+        val saltAESKey = generateSaltAESKey(pin, tipPriv)
+        val salt = aesDecrypt(saltAESKey, encryptedSalt)
+        return argon2Kt.argon2IHash(tipPriv, salt).rawHashAsByteArray()
+    }
+
+    fun getSpendPriv(salt: ByteArray, tipPriv: ByteArray): ByteArray =
+        argon2Kt.argon2IHash(tipPriv, salt).rawHashAsByteArray()
+
+    fun generateSaltAESKey(pin: String, tipPriv: ByteArray): ByteArray =
+        argon2Kt.argon2IHash(pin, tipPriv).rawHashAsByteArray()
 
     suspend fun checkCounter(
         tipCounter: Int,
@@ -200,7 +237,7 @@ class Tip @Inject internal constructor(
 
     @Throws(TipException::class, TipNodeException::class)
     private suspend fun createPriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, pin: String, failedSigners: List<TipSigner>? = null, legacyPin: String? = null, forRecover: Boolean = false): ByteArray {
-        val aggSig = tipNode.sign(
+        val tipPriv = tipNode.sign(
             identityPriv,
             ephemeral,
             watcher,
@@ -219,7 +256,7 @@ class Tip @Inject internal constructor(
 
         observers.forEach { it.onSyncingComplete() }
 
-        val keyPair = newKeyPairFromSeed(aggSig.copyOf())
+        val keyPair = newKeyPairFromSeed(tipPriv.copyOf())
         val pub = keyPair.publicKey
 
         val localPub = Session.getTipPub()
@@ -232,8 +269,8 @@ class Tip @Inject internal constructor(
         val aesKey = generateAesKeyByPin(pin)
         Timber.e("createPriv after generateAesKey, forRecover: $forRecover")
         if (forRecover) {
-            encryptAndSaveTipPriv(context, pin, aggSig, aesKey)
-            return aggSig
+            encryptAndSaveTipPriv(context, pin, tipPriv, aesKey)
+            return tipPriv
         }
 
         // Clearing local priv before update remote PIN.
@@ -242,14 +279,14 @@ class Tip @Inject internal constructor(
         clearTipPriv(context)
         replaceOldEncryptedPin(pub, legacyPin)
         Timber.e("createPriv after replaceOldEncryptedPin")
-        encryptAndSaveTipPriv(context, pin, aggSig, aesKey)
+        encryptAndSaveTipPriv(context, pin, tipPriv, aesKey)
         Timber.e("createPriv after encryptAndSaveTipPriv")
 
-        return aggSig
+        return tipPriv
     }
 
     @Throws(TipException::class, TipNodeException::class)
-    private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, newPin: String, assigneePriv: ByteArray?, failedSigners: List<TipSigner>? = null): ByteArray {
+    private suspend fun updatePriv(context: Context, identityPriv: ByteArray, ephemeral: ByteArray, watcher: ByteArray, newPin: String, oldPin: String, assigneePriv: ByteArray?, failedSigners: List<TipSigner>? = null): ByteArray {
         val callback = object : TipNode.Callback {
             override fun onNodeComplete(step: Int, total: Int) {
                 observers.forEach { it.onSyncing(step, total) }
@@ -260,7 +297,7 @@ class Tip @Inject internal constructor(
             }
         }
         val pair = tipNode.sign(identityPriv, ephemeral, watcher, assigneePriv, failedSigners, callback = callback)
-        val aggSig = pair.first.sha3Sum256() // use sha3-256(recover-signature) as priv
+        val tipPriv = pair.first.sha3Sum256() // use sha3-256(recover-signature) as priv
         val counter = pair.second
 
         observers.forEach { it.onSyncingComplete() }
@@ -274,12 +311,12 @@ class Tip @Inject internal constructor(
         clearTipPriv(context)
         Timber.e("updatePriv after clear tip priv")
 
-        replaceEncryptedPin(aggSig, counter)
+        replaceEncryptedPin(context, tipPriv, counter, newPin, oldPin)
         Timber.e("updatePriv replaceEncryptedPin")
-        encryptAndSaveTipPriv(context, newPin, aggSig, aesKey)
+        encryptAndSaveTipPriv(context, newPin, tipPriv, aesKey)
         Timber.e("updatePriv encryptAndSaveTipPriv")
 
-        return aggSig
+        return tipPriv
     }
 
     @Throws(IOException::class, TipNetworkException::class)
@@ -296,37 +333,48 @@ class Tip @Inject internal constructor(
     }
 
     @Throws(IOException::class, TipNetworkException::class)
-    private suspend fun replaceEncryptedPin(aggSig: ByteArray, nodeCounter: Long) {
+    private suspend fun replaceEncryptedPin(context: Context, tipPriv: ByteArray, nodeCounter: Long, pin: String, oldPin: String) {
         val tipCounter = requireNotNull(Session.getTipCounter()).toLong()
         if (tipCounter == nodeCounter) {
             Timber.e("replaceEncryptedPin tipCounter $tipCounter == nodeCounter $nodeCounter")
             return
         }
-        val keyPair = newKeyPairFromSeed(aggSig.copyOf())
+        val keyPair = newKeyPairFromSeed(tipPriv.copyOf())
         val pub = keyPair.publicKey
         val pinToken = requireNotNull(Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token"))
         val timestamp = TipBody.forVerify(tipCounter)
-        val oldPin = encryptTipPinInternal(pinToken, aggSig, timestamp)
-        val newEncryptPin = encryptPinInternal(
+        val encryptedOldPin = encryptTipPinInternal(pinToken, tipPriv, timestamp)
+        val encryptedNewPin = encryptPinInternal(
             pinToken,
             pub + (nodeCounter).toBeByteArray(),
         )
-        val pinRequest = PinRequest(newEncryptPin, oldPin)
+
+        var oldPinTokenEncryptedSalt: ByteArray? = null
+        val pinTokenEncryptedSalt = if (Session.hasSafe()) {
+            val oldSaltAESKey = generateSaltAESKey(oldPin, tipPriv)
+            val oldEncryptedSalt = getEncryptedSalt(context)
+            val salt = aesDecrypt(oldSaltAESKey, oldEncryptedSalt)
+            oldPinTokenEncryptedSalt = aesEncrypt(pinToken, oldEncryptedSalt)
+            val saltAESKey = generateSaltAESKey(pin, tipPriv)
+            aesEncrypt(pinToken, aesEncrypt(saltAESKey, salt)).base64RawURLEncode()
+        } else null
+
+        val pinRequest = PinRequest(encryptedNewPin, encryptedOldPin, pinTokenEncryptedSalt, oldPinTokenEncryptedSalt?.base64RawURLEncode())
         val account = tipNetwork { accountService.updatePinSuspend(pinRequest) }.getOrThrow()
         Session.storeAccount(account)
     }
 
     @Throws(TipException::class)
-    private fun encryptAndSaveTipPriv(context: Context, pin: String, aggSig: ByteArray, aesKey: ByteArray) {
+    private fun encryptAndSaveTipPriv(context: Context, pin: String, tipPriv: ByteArray, aesKey: ByteArray) {
         val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
-        val privTip = aesEncrypt(privTipKey, aggSig)
+        val privTip = aesEncrypt(privTipKey, tipPriv)
         if (!storeTipPriv(context, privTip)) {
             throw TipException("Store tip error")
         }
     }
 
     @Throws(TipException::class)
-    private suspend fun generateAesKeyByPin(pin: String): ByteArray {
+    private suspend fun generateAesKeyByPin(pin: String, ): ByteArray {
         val sessionPriv =
             Session.getEd25519Seed()?.decodeBase64() ?: throw TipNullException("No ed25519 key")
         val pinToken =
@@ -336,7 +384,7 @@ class Tip @Inject internal constructor(
         val keyPair = newKeyPairFromSeed(stSeed)
         val stPriv = keyPair.privateKey
         val stPub = keyPair.publicKey
-        val aesKey = generateAesKey(32)
+        val aesKey = generateRandomBytes(32)
 
         val seedBase64 = aesEncrypt(pinToken, aesKey).base64RawURLEncode()
         val secretBase64 = aesEncrypt(pinToken, stPub).base64RawURLEncode()
@@ -351,6 +399,7 @@ class Tip @Inject internal constructor(
             signatureBase64 = sigBase64,
             timestamp = timestamp,
         )
+
         Timber.e("generateAesKeyByPin before updateTipSecret")
         val result = tipNetworkNullable {
             tipService.updateTipSecret(tipSecretRequest)

@@ -52,8 +52,7 @@ import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.connections.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.DAppInfo
 import one.mixin.android.ui.tip.wc.sessionproposal.WCPinBoard
-import one.mixin.android.vo.Asset
-import one.mixin.android.vo.WithdrawalMemoPossibility
+import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.priceUSD
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
@@ -68,7 +67,7 @@ fun SessionRequestPage(
     topic: String,
     sessionRequest: Wallet.Model.SessionRequest?,
     signData: WalletConnect.WCSignData.V2SignData<*>?,
-    asset: Asset?,
+    asset: Token?,
     tipGas: TipGas?,
     gasPriceType: GasPriceType,
     errorInfo: String?,
@@ -197,7 +196,7 @@ fun SessionRequestPage(
 private fun Transaction(
     balance: BigDecimal,
     chain: Chain,
-    asset: Asset?,
+    asset: Token?,
 ) {
     Column(
         modifier = Modifier
@@ -443,7 +442,7 @@ private fun Warning(isEthSign: Boolean) {
 @Composable
 private fun ChooseGasBottomSheet(
     tipGas: TipGas,
-    asset: Asset,
+    asset: Token,
     onDismissRequest: () -> Unit,
     onItemClick: (GasPriceType) -> Unit,
 ) {
@@ -490,7 +489,7 @@ private fun ChooseGasBottomSheet(
 private fun GasItem(
     gasPriceType: GasPriceType,
     tipGas: TipGas,
-    asset: Asset,
+    asset: Token,
     onItemClick: (GasPriceType) -> Unit,
 ) {
     Column(
@@ -558,11 +557,10 @@ private fun GasItemPreview() {
     GasItem(
         gasPriceType = GasPriceType.Propose,
         tipGas = TipGas("43d61dcd-e413-450d-80b8-101d5e903357", "0.00000002", "0.0000003", "0.000005", "250000"),
-        asset = Asset(
-            "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "BTC", "Bitcoin",
+        asset = Token(
+            "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "BTC", "Bitcoin",
             "https://mixin-images.zeromesh.net/HvYGJsV5TGeZ-X9Ek3FEQohQZ3fE9LBEBGcOcn4c4BNHovP4fW4YB97Dg5LcXoQ1hUjMEgjbl1DPlKg1TW7kK6XP=s128",
-            "1", "", "", "1", "30000", "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "0",
-            "0", 3, "", "0", null, WithdrawalMemoPossibility.POSITIVE,
+            "", "", "1", "30000", "30000", 3, "", ""
         ),
     ) {}
 }

@@ -24,6 +24,7 @@ import one.mixin.android.databinding.ItemChatImageQuoteBinding
 import one.mixin.android.databinding.ItemChatLocationBinding
 import one.mixin.android.databinding.ItemChatPostBinding
 import one.mixin.android.databinding.ItemChatRecallBinding
+import one.mixin.android.databinding.ItemChatSafeSnapshBinding
 import one.mixin.android.databinding.ItemChatSecretBinding
 import one.mixin.android.databinding.ItemChatSnapshotBinding
 import one.mixin.android.databinding.ItemChatStickerBinding
@@ -63,6 +64,7 @@ import one.mixin.android.ui.conversation.holder.LocationHolder
 import one.mixin.android.ui.conversation.holder.PinMessageHolder
 import one.mixin.android.ui.conversation.holder.PostHolder
 import one.mixin.android.ui.conversation.holder.RecallHolder
+import one.mixin.android.ui.conversation.holder.SafeSnapshotHolder
 import one.mixin.android.ui.conversation.holder.SecretHolder
 import one.mixin.android.ui.conversation.holder.SnapshotHolder
 import one.mixin.android.ui.conversation.holder.StickerHolder
@@ -145,6 +147,9 @@ class MessageAdapter(
             }
             MessageAdapter.SNAPSHOT_TYPE -> {
                 SnapshotHolder(ItemChatSnapshotBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            }
+            MessageAdapter.SAFE_SNAPSHOT_TYPE -> {
+                SafeSnapshotHolder(ItemChatSafeSnapshBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             MessageAdapter.WAITING_TYPE -> {
                 WaitingHolder(ItemChatWaitingBinding.inflate(LayoutInflater.from(parent.context), parent, false), onItemListener)
@@ -335,6 +340,15 @@ class MessageAdapter(
                 }
                 MessageAdapter.SNAPSHOT_TYPE -> {
                     (holder as SnapshotHolder).bind(
+                        it,
+                        isLast(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener,
+                    )
+                }
+                MessageAdapter.SAFE_SNAPSHOT_TYPE -> {
+                    (holder as SafeSnapshotHolder).bind(
                         it,
                         isLast(position),
                         selectSet.size > 0,
@@ -551,6 +565,7 @@ class MessageAdapter(
                     }
                     item.type == MessageCategory.SYSTEM_CONVERSATION.name -> MessageAdapter.SYSTEM_TYPE
                     item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> MessageAdapter.SNAPSHOT_TYPE
+                    item.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name -> MessageAdapter.SAFE_SNAPSHOT_TYPE
                     item.type == MessageCategory.APP_BUTTON_GROUP.name -> MessageAdapter.ACTION_TYPE
                     item.type == MessageCategory.APP_CARD.name -> MessageAdapter.ACTION_CARD_TYPE
                     item.isContact() -> {
@@ -953,18 +968,19 @@ class MessageAdapter(
         const val CONTACT_CARD_QUOTE_TYPE = -8
         const val CARD_TYPE = 9
         const val SNAPSHOT_TYPE = 10
-        const val POST_TYPE = 11
-        const val ACTION_TYPE = 12
-        const val ACTION_CARD_TYPE = 13
-        const val SYSTEM_TYPE = 14
-        const val WAITING_TYPE = 15
-        const val STRANGER_TYPE = 16
-        const val SECRET_TYPE = 17
-        const val CALL_TYPE = 18
-        const val RECALL_TYPE = 19
-        const val LOCATION_TYPE = 20
-        const val GROUP_CALL_TYPE = 21
-        const val TRANSCRIPT_TYPE = 22
-        const val PIN_TYPE = 23
+        const val SAFE_SNAPSHOT_TYPE = 11
+        const val POST_TYPE = 12
+        const val ACTION_TYPE = 13
+        const val ACTION_CARD_TYPE = 14
+        const val SYSTEM_TYPE = 15
+        const val WAITING_TYPE = 16
+        const val STRANGER_TYPE = 17
+        const val SECRET_TYPE = 18
+        const val CALL_TYPE = 19
+        const val RECALL_TYPE = 20
+        const val LOCATION_TYPE = 21
+        const val GROUP_CALL_TYPE = 22
+        const val TRANSCRIPT_TYPE = 23
+        const val PIN_TYPE = 24
     }
 }

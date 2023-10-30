@@ -21,7 +21,7 @@ import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 
 class ContentQRView : ViewAnimator {
     constructor(context: Context) : this(context, null)
@@ -34,7 +34,7 @@ class ContentQRView : ViewAnimator {
     fun setAsset(
         parentFragmentManager: FragmentManager,
         scopeProvider: ScopeProvider,
-        asset: AssetItem,
+        asset: TokenItem,
         selectedDestination: String?,
         isTag: Boolean,
         warning: String? = null,
@@ -43,7 +43,7 @@ class ContentQRView : ViewAnimator {
             val showPb = if (isTag) {
                 asset.getTag().isNullOrBlank()
             } else {
-                asset.getDestination().isBlank()
+                asset.getDestination().isNullOrBlank()
             }
 
             (binding.root as ViewAnimator).displayedChild = if (showPb) 1 else 0
@@ -78,7 +78,8 @@ class ContentQRView : ViewAnimator {
                     val r = if (isTag) {
                         requireNotNull(asset.getTag())
                     } else {
-                        destination
+                        // Todo check
+                        destination!!
                     }.generateQRCode(qr.width)
                     e.onNext(r)
                 }.subscribeOn(Schedulers.io())

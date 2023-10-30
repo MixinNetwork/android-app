@@ -12,7 +12,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.SnapshotItem
 
 @AndroidEntryPoint
@@ -25,7 +25,7 @@ class TransactionFragment : BaseFragment(R.layout.fragment_transaction), Transac
 
         fun newInstance(
             snapshotItem: SnapshotItem? = null,
-            asset: AssetItem? = null,
+            asset: TokenItem? = null,
             assetId: String? = null,
             snapshotId: String? = null,
         ) = TransactionFragment().withArgs {
@@ -40,7 +40,7 @@ class TransactionFragment : BaseFragment(R.layout.fragment_transaction), Transac
     private val binding by viewBinding(FragmentTransactionBinding::bind)
 
     private val snapshot: SnapshotItem? by lazy { requireArguments().getParcelableCompat(ARGS_SNAPSHOT, SnapshotItem::class.java) }
-    private val asset: AssetItem? by lazy { requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java) }
+    private val asset: TokenItem? by lazy { requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java) }
     private val assetId: String? by lazy { requireArguments().getString(ARGS_ASSET_ID) }
     private val snapshotId: String? by lazy { requireArguments().getString(ARGS_SNAPSHOT_ID) }
 

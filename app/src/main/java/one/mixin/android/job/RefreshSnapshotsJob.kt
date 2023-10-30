@@ -4,7 +4,7 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.RxBus
 import one.mixin.android.event.RefreshSnapshotEvent
-import one.mixin.android.vo.Snapshot
+import one.mixin.android.vo.safe.SafeSnapshot
 
 class RefreshSnapshotsJob(
     private val assetId: String? = null,
@@ -19,16 +19,16 @@ class RefreshSnapshotsJob(
 
     override fun onRun() = runBlocking {
         val response = if (assetId == null) {
-            assetService.getAllSnapshots(offset, opponent = opponent)
+            tokenService.getAllSnapshots(offset, opponent = opponent)
         } else {
-            assetService.getSnapshotsByAssetId(assetId, offset)
+            tokenService.getSnapshotsByAssetId(assetId, offset)
         }
         if (response.isSuccess && response.data != null) {
-            val list = response.data as List<Snapshot>
-            snapshotDao.insertListSuspend(list)
+            val list = response.data as List<SafeSnapshot>
+            safeSnapshotDao.insertListSuspend(list)
             list.forEach { item ->
-                if (assetDao.simpleAsset(item.assetId) == null) {
-                    jobManager.addJobInBackground(RefreshAssetsJob(item.assetId))
+                if (tokenDao.simpleAsset(item.assetId) == null) {
+                    jobManager.addJobInBackground(RefreshTokensJob(item.assetId))
                 }
             }
             list.lastOrNull()?.let {

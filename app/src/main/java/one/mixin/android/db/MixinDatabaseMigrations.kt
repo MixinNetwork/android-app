@@ -10,15 +10,15 @@ class MixinDatabaseMigrations private constructor() {
 
     companion object {
         val MIGRATION_15_16: Migration = object : Migration(MINI_VERSION, 16) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("DROP TABLE IF EXISTS assets")
-                database.execSQL(
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS assets")
+                db.execSQL(
                     "CREATE TABLE IF NOT EXISTS assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
                         "icon_url TEXT NOT NULL, balance TEXT NOT NULL, public_key TEXT, price_btc TEXT NOT NULL, price_usd TEXT NOT NULL, chain_id TEXT NOT NULL, " +
                         "change_usd TEXT NOT NULL, change_btc TEXT NOT NULL, hidden INTEGER, confirmations INTEGER NOT NULL, account_name TEXT, account_tag TEXT) ",
                 )
-                database.execSQL("DROP TABLE IF EXISTS addresses")
-                database.execSQL(
+                db.execSQL("DROP TABLE IF EXISTS addresses")
+                db.execSQL(
                     "CREATE TABLE IF NOT EXISTS addresses(address_id TEXT PRIMARY KEY NOT NULL, type TEXT NOT NULL, asset_id TEXT NOT NULL, " +
                         "public_key TEXT, label TEXT, updated_at TEXT NOT NULL, reserve TEXT NOT NULL, fee TEXT NOT NULL, account_name TEXT, account_tag TEXT)",
                 )
@@ -26,13 +26,13 @@ class MixinDatabaseMigrations private constructor() {
         }
 
         val MIGRATION_16_17: Migration = object : Migration(16, 17) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
                     "CREATE TABLE IF NOT EXISTS jobs (job_id TEXT NOT NULL, action TEXT NOT NULL, created_at TEXT NOT NULL, order_id INTEGER, priority " +
                         "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resend_message_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
                         "(job_id))",
                 )
-                database.execSQL(
+                db.execSQL(
                     "CREATE INDEX IF NOT EXISTS index_messages_conversation_id_user_id_status_created_at ON messages (conversation_id, user_id, " +
                         "status, created_at)",
                 )
@@ -40,22 +40,22 @@ class MixinDatabaseMigrations private constructor() {
         }
 
         val MIGRATION_17_18: Migration = object : Migration(17, 18) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE addresses ADD COLUMN dust TEXT")
-                database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_update")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE addresses ADD COLUMN dust TEXT")
+                db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_update")
             }
         }
 
         val MIGRATION_18_19: Migration = object : Migration(18, 19) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE snapshots ADD COLUMN confirmations INTEGER")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE snapshots ADD COLUMN confirmations INTEGER")
             }
         }
 
         val MIGRATION_19_20: Migration = object : Migration(19, 20) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("DROP TABLE IF EXISTS top_assets")
-                database.execSQL(
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS top_assets")
+                db.execSQL(
                     "CREATE TABLE IF NOT EXISTS top_assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
                         "icon_url TEXT NOT NULL, balance TEXT NOT NULL, public_key TEXT, price_btc TEXT NOT NULL, price_usd TEXT NOT NULL, chain_id TEXT NOT NULL, " +
                         "change_usd TEXT NOT NULL, change_btc TEXT NOT NULL, confirmations INTEGER NOT NULL, account_name TEXT, account_tag TEXT, capitalization REAL) ",
@@ -64,38 +64,38 @@ class MixinDatabaseMigrations private constructor() {
         }
 
         val MIGRATION_20_21: Migration = object : Migration(20, 21) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE assets ADD COLUMN asset_key TEXT")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE assets ADD COLUMN asset_key TEXT")
             }
         }
 
         val MIGRATION_21_22: Migration = object : Migration(21, 22) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE messages ADD COLUMN thumb_url TEXT")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE messages ADD COLUMN thumb_url TEXT")
             }
         }
 
         val MIGRATION_22_23: Migration = object : Migration(22, 23) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE users ADD COLUMN biography TEXT NOT NULL DEFAULT ''")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE users ADD COLUMN biography TEXT NOT NULL DEFAULT ''")
             }
         }
 
         val MIGRATION_23_24: Migration = object : Migration(23, 24) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("DROP TABLE IF EXISTS addresses")
-                database.execSQL(
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS addresses")
+                db.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS addresses (address_id TEXT NOT NULL, type TEXT NOT NULL, 
                     asset_id TEXT NOT NULL, destination TEXT NOT NULL, label TEXT NOT NULL, updated_at TEXT NOT NULL, 
                     reserve TEXT NOT NULL, fee TEXT NOT NULL, tag TEXT, dust TEXT, PRIMARY KEY(address_id))
                     """,
                 )
-                database.execSQL("CREATE TABLE IF NOT EXISTS assets_extra (asset_id TEXT NOT NULL, hidden INTEGER, PRIMARY KEY(asset_id))")
-                database.execSQL("INSERT OR REPLACE INTO assets_extra (asset_id, hidden) SELECT asset_id, hidden FROM assets WHERE hidden = 1")
+                db.execSQL("CREATE TABLE IF NOT EXISTS assets_extra (asset_id TEXT NOT NULL, hidden INTEGER, PRIMARY KEY(asset_id))")
+                db.execSQL("INSERT OR REPLACE INTO assets_extra (asset_id, hidden) SELECT asset_id, hidden FROM assets WHERE hidden = 1")
 
-                database.execSQL("DROP TABLE IF EXISTS assets")
-                database.execSQL(
+                db.execSQL("DROP TABLE IF EXISTS assets")
+                db.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS assets (asset_id TEXT NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, 
                     icon_url TEXT NOT NULL, balance TEXT NOT NULL, destination TEXT NOT NULL, tag TEXT, price_btc TEXT NOT NULL, 
@@ -103,8 +103,8 @@ class MixinDatabaseMigrations private constructor() {
                     confirmations INTEGER NOT NULL, asset_key TEXT, PRIMARY KEY(asset_id))
                     """,
                 )
-                database.execSQL("DROP TABLE IF EXISTS top_assets")
-                database.execSQL(
+                db.execSQL("DROP TABLE IF EXISTS top_assets")
+                db.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS top_assets (asset_id TEXT NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, 
                     icon_url TEXT NOT NULL, balance TEXT NOT NULL, destination TEXT NOT NULL, tag TEXT, price_btc TEXT NOT NULL, 
@@ -116,54 +116,54 @@ class MixinDatabaseMigrations private constructor() {
         }
 
         val MIGRATION_24_25: Migration = object : Migration(24, 25) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
                     "CREATE TABLE IF NOT EXISTS participant_session (`conversation_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `session_id` TEXT NOT NULL, `sent_to_server` INTEGER, `created_at` TEXT, PRIMARY KEY(`conversation_id`, `user_id`, `session_id`))",
                 )
-                database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_insert")
+                db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_insert")
             }
         }
 
         val MIGRATION_25_26: Migration = object : Migration(25, 26) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
                     "CREATE TABLE IF NOT EXISTS favorite_apps (`app_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`app_id`, `user_id`))",
                 )
-                database.execSQL(
+                db.execSQL(
                     "CREATE TABLE IF NOT EXISTS resend_session_messages (`message_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `session_id` TEXT NOT NULL, `status` INTEGER NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`message_id`, `user_id`, `session_id`))",
                 )
             }
         }
 
         val MIGRATION_26_27: Migration = object : Migration(26, 27) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS `new_snapshots` (`snapshot_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `created_at` TEXT NOT NULL, `opponent_id` TEXT, `trace_id` TEXT, `transaction_hash` TEXT, `sender` TEXT, `receiver` TEXT, `memo` TEXT, `confirmations` INTEGER, PRIMARY KEY(`snapshot_id`))
                     """,
                 )
-                database.execSQL(
+                db.execSQL(
                     """
                     INSERT INTO new_snapshots (`snapshot_id`, `type`, `asset_id`, `amount`, `created_at`, `opponent_id`  , `transaction_hash`, `sender`, `receiver`, `memo`, `confirmations`) 
                     SELECT `snapshot_id`, `type`, `asset_id`, `amount`, `created_at`, `opponent_id`  , `transaction_hash`, `sender`, `receiver`, `memo`, `confirmations` FROM snapshots 
                     """,
                 )
-                database.execSQL(" DROP TABLE IF EXISTS snapshots")
-                database.execSQL("ALTER TABLE new_snapshots RENAME TO snapshots")
-                database.execSQL(
+                db.execSQL(" DROP TABLE IF EXISTS snapshots")
+                db.execSQL("ALTER TABLE new_snapshots RENAME TO snapshots")
+                db.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS `new_apps` (`app_id` TEXT NOT NULL, `app_number` TEXT NOT NULL, `home_uri` TEXT NOT NULL, `redirect_uri` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `description` TEXT NOT NULL, `app_secret` TEXT NOT NULL, `capabilities` TEXT, `creator_id` TEXT NOT NULL, PRIMARY KEY(`app_id`))
                     """,
                 )
-                database.execSQL(
+                db.execSQL(
                     """
                     INSERT INTO new_apps (`app_id`, `app_number`, `home_uri`, `redirect_uri`, `name`, `icon_url`, `description`, `app_secret`, `capabilities`, `creator_id`) 
                     SELECT `app_id`, `app_number`, `home_uri`, `redirect_uri`, `name`, `icon_url`, `description`, `app_secret`, `capabilites`, `creator_id` FROM apps 
                     """,
                 )
-                database.execSQL("DROP TABLE IF EXISTS apps")
-                database.execSQL("ALTER TABLE new_apps RENAME TO apps")
-                database.execSQL(
+                db.execSQL("DROP TABLE IF EXISTS apps")
+                db.execSQL("ALTER TABLE new_apps RENAME TO apps")
+                db.execSQL(
                     """
                     CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, tokenize=unicode61, content=`messages`)
                     """,
@@ -172,58 +172,58 @@ class MixinDatabaseMigrations private constructor() {
         }
 
         val MIGRATION_27_28: Migration = object : Migration(27, 28) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
                     "CREATE TABLE IF NOT EXISTS `message_mentions` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `mentions` TEXT NOT NULL, `has_read` INTEGER NOT NULL, PRIMARY KEY(`message_id`))",
                 )
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_message_mentions_conversation_id` ON `message_mentions` (`conversation_id`)")
-                database.execSQL("ALTER TABLE apps ADD COLUMN resource_patterns TEXT")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_message_mentions_conversation_id` ON `message_mentions` (`conversation_id`)")
+                db.execSQL("ALTER TABLE apps ADD COLUMN resource_patterns TEXT")
             }
         }
 
         val MIGRATION_28_29: Migration = object : Migration(28, 29) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("DROP INDEX IF EXISTS index_conversations_created_at")
-                database.execSQL("DROP INDEX IF EXISTS index_conversations_conversation_id")
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_snapshots_asset_id` ON `snapshots` (`asset_id`)")
-                database.execSQL("ALTER TABLE apps ADD COLUMN updated_at TEXT")
-                database.execSQL("DROP TABLE IF EXISTS messages_fts")
-                database.execSQL(
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP INDEX IF EXISTS index_conversations_created_at")
+                db.execSQL("DROP INDEX IF EXISTS index_conversations_conversation_id")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_snapshots_asset_id` ON `snapshots` (`asset_id`)")
+                db.execSQL("ALTER TABLE apps ADD COLUMN updated_at TEXT")
+                db.execSQL("DROP TABLE IF EXISTS messages_fts")
+                db.execSQL(
                     """
                     CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts4` USING FTS4(`message_id` TEXT NOT NULL, `content` TEXT, tokenize=unicode61, notindexed=`message_id`)
                     """,
                 )
-                database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_count_insert")
+                db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_count_insert")
             }
         }
 
         val MIGRATION_29_30: Migration = object : Migration(29, 30) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
                     "CREATE TABLE IF NOT EXISTS `circles` (`circle_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `ordered_at` TEXT, PRIMARY KEY(`circle_id`))",
                 )
-                database.execSQL(
+                db.execSQL(
                     "CREATE TABLE IF NOT EXISTS `circle_conversations` (`conversation_id` TEXT NOT NULL, `circle_id` TEXT NOT NULL, `user_id` TEXT, `created_at` TEXT NOT NULL, `pin_time` TEXT, PRIMARY KEY(`conversation_id`, `circle_id`))",
                 )
             }
         }
 
         val MIGRATION_30_31: Migration = object : Migration(30, 31) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE assets ADD COLUMN reserve TEXT")
-                database.execSQL("ALTER TABLE apps ADD COLUMN category TEXT")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE assets ADD COLUMN reserve TEXT")
+                db.execSQL("ALTER TABLE apps ADD COLUMN category TEXT")
             }
         }
 
         val MIGRATION_31_32: Migration = object : Migration(31, 32) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE users ADD COLUMN is_scam INTEGER")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE users ADD COLUMN is_scam INTEGER")
             }
         }
 
         val MIGRATION_32_33: Migration = object : Migration(32, 33) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
                     """
                         CREATE TABLE IF NOT EXISTS `traces` (`trace_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, 
                         `opponent_id` TEXT, `destination` TEXT, `tag` TEXT, `snapshot_id` TEXT, `created_at` TEXT NOT NULL, 
@@ -234,92 +234,92 @@ class MixinDatabaseMigrations private constructor() {
         }
 
         val MIGRATION_33_34: Migration = object : Migration(33, 34) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE participant_session ADD COLUMN public_key TEXT")
-                database.execSQL("ALTER TABLE messages ADD COLUMN caption TEXT")
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_status_user_id` ON `messages` (`conversation_id`, `status`, `user_id`)")
-                database.execSQL("DROP INDEX IF EXISTS `index_messages_user_id`")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE participant_session ADD COLUMN public_key TEXT")
+                db.execSQL("ALTER TABLE messages ADD COLUMN caption TEXT")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_status_user_id` ON `messages` (`conversation_id`, `status`, `user_id`)")
+                db.execSQL("DROP INDEX IF EXISTS `index_messages_user_id`")
             }
         }
 
         val MIGRATION_34_35: Migration = object : Migration(34, 35) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_jobs_action` ON `jobs` (`action`)")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_jobs_action` ON `jobs` (`action`)")
             }
         }
 
         val MIGRATION_35_36: Migration = object : Migration(35, 36) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE conversations ADD COLUMN last_message_created_at TEXT")
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_conversations_pin_time_last_message_created_at` ON `conversations` (`pin_time`, `last_message_created_at`)")
-                database.execSQL("UPDATE conversations SET last_message_created_at = (SELECT created_at FROM messages WHERE id = conversations.last_message_id)")
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_users_relationship_full_name` ON `users` (`relationship`, `full_name`)")
-                database.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_update")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE conversations ADD COLUMN last_message_created_at TEXT")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_conversations_pin_time_last_message_created_at` ON `conversations` (`pin_time`, `last_message_created_at`)")
+                db.execSQL("UPDATE conversations SET last_message_created_at = (SELECT created_at FROM messages WHERE id = conversations.last_message_id)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_users_relationship_full_name` ON `users` (`relationship`, `full_name`)")
+                db.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_update")
             }
         }
 
         val MIGRATION_36_37: Migration = object : Migration(36, 37) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("DROP INDEX IF EXISTS `index_participants_conversation_id`")
-                database.execSQL("DROP INDEX IF EXISTS `index_participants_created_at`")
-                database.execSQL("DROP INDEX IF EXISTS `index_users_full_name`")
-                database.execSQL("DROP INDEX IF EXISTS `index_snapshots_asset_id`")
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_category` ON messages(`conversation_id`, `category`);")
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_quote_message_id` ON `messages` (`conversation_id`, `quote_message_id`)")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP INDEX IF EXISTS `index_participants_conversation_id`")
+                db.execSQL("DROP INDEX IF EXISTS `index_participants_created_at`")
+                db.execSQL("DROP INDEX IF EXISTS `index_users_full_name`")
+                db.execSQL("DROP INDEX IF EXISTS `index_snapshots_asset_id`")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_category` ON messages(`conversation_id`, `category`);")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_quote_message_id` ON `messages` (`conversation_id`, `quote_message_id`)")
             }
         }
 
         val MIGRATION_37_38: Migration = object : Migration(37, 38) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS `transcript_messages` (`transcript_id` TEXT NOT NULL, `message_id` TEXT NOT NULL, `user_id` TEXT, `user_full_name` TEXT, `category` TEXT NOT NULL, `created_at` TEXT NOT NULL, `content` TEXT, `media_url` TEXT, `media_name` TEXT, `media_size` INTEGER, `media_width` INTEGER, `media_height` INTEGER, `media_mime_type` TEXT, `media_duration` INTEGER, `media_status` TEXT, `media_waveform` BLOB, `thumb_image` TEXT, `thumb_url` TEXT, `media_key` BLOB, `media_digest` BLOB, `media_created_at` TEXT, `sticker_id` TEXT, `shared_user_id` TEXT, `mentions` TEXT, `quote_id` TEXT, `quote_content` TEXT, `caption` TEXT, PRIMARY KEY(`transcript_id`, `message_id`))")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `transcript_messages` (`transcript_id` TEXT NOT NULL, `message_id` TEXT NOT NULL, `user_id` TEXT, `user_full_name` TEXT, `category` TEXT NOT NULL, `created_at` TEXT NOT NULL, `content` TEXT, `media_url` TEXT, `media_name` TEXT, `media_size` INTEGER, `media_width` INTEGER, `media_height` INTEGER, `media_mime_type` TEXT, `media_duration` INTEGER, `media_status` TEXT, `media_waveform` BLOB, `thumb_image` TEXT, `thumb_url` TEXT, `media_key` BLOB, `media_digest` BLOB, `media_created_at` TEXT, `sticker_id` TEXT, `shared_user_id` TEXT, `mentions` TEXT, `quote_id` TEXT, `quote_content` TEXT, `caption` TEXT, PRIMARY KEY(`transcript_id`, `message_id`))")
             }
         }
 
         val MIGRATION_38_39: Migration = object : Migration(38, 39) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS `pin_messages` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`message_id`))")
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_pin_messages_conversation_id` ON `pin_messages` (`conversation_id`)")
-                database.execSQL("DROP INDEX IF EXISTS `index_messages_conversation_id_user_id_status_created_at`")
-                database.execSQL("DROP INDEX IF EXISTS `index_messages_conversation_id_status_user_id`")
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_status_user_id_created_at` ON `messages` (`conversation_id`, `status`,`user_id`, `created_at`)")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `pin_messages` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`message_id`))")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_pin_messages_conversation_id` ON `pin_messages` (`conversation_id`)")
+                db.execSQL("DROP INDEX IF EXISTS `index_messages_conversation_id_user_id_status_created_at`")
+                db.execSQL("DROP INDEX IF EXISTS `index_messages_conversation_id_status_user_id`")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_status_user_id_created_at` ON `messages` (`conversation_id`, `status`,`user_id`, `created_at`)")
             }
         }
 
         val MIGRATION_39_40: Migration = object : Migration(39, 40) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS `properties` (`key` TEXT NOT NULL, `value` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`key`))")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `properties` (`key` TEXT NOT NULL, `value` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`key`))")
             }
         }
 
         val MIGRATION_40_41: Migration = object : Migration(40, 41) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN banner TEXT")
-                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN ordered_at INTEGER NOT NULL DEFAULT 0")
-                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN added INTEGER NOT NULL DEFAULT 0")
-                database.execSQL("UPDATE sticker_albums SET added = 1")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE sticker_albums ADD COLUMN banner TEXT")
+                db.execSQL("ALTER TABLE sticker_albums ADD COLUMN ordered_at INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE sticker_albums ADD COLUMN added INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("UPDATE sticker_albums SET added = 1")
             }
         }
 
         val MIGRATION_41_42: Migration = object : Migration(41, 42) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN is_verified INTEGER NOT NULL DEFAULT 0")
-                database.execSQL("UPDATE sticker_albums SET is_verified = 1 WHERE category = 'SYSTEM'")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE sticker_albums ADD COLUMN is_verified INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("UPDATE sticker_albums SET is_verified = 1 WHERE category = 'SYSTEM'")
             }
         }
 
         val MIGRATION_42_43: Migration = object : Migration(42, 43) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS `remote_messages_status` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`message_id`))")
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_remote_messages_status_conversation_id_status` ON `remote_messages_status` (`conversation_id`, `status`)")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `remote_messages_status` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`message_id`))")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_remote_messages_status_conversation_id_status` ON `remote_messages_status` (`conversation_id`, `status`)")
                 Session.getAccountId()?.let { selfId ->
-                    database.query("SELECT conversation_id FROM conversations").use { c ->
+                    db.query("SELECT conversation_id FROM conversations").use { c ->
                         val conversationIds = mutableListOf<String>()
                         while (c.moveToNext()) {
                             val cid = c.getString(0)
                             conversationIds.add("'$cid'")
                         }
                         conversationIds.chunked(99).forEach { ids ->
-                            database.execSQL("INSERT OR REPLACE INTO remote_messages_status(message_id, conversation_id, status) SELECT id, conversation_id, 'DELIVERED' FROM messages WHERE conversation_id IN (${ids.joinToString()}) AND status IN ('DELIVERED','SENT') AND user_id != '$selfId'")
+                            db.execSQL("INSERT OR REPLACE INTO remote_messages_status(message_id, conversation_id, status) SELECT id, conversation_id, 'DELIVERED' FROM messages WHERE conversation_id IN (${ids.joinToString()}) AND status IN ('DELIVERED','SENT') AND user_id != '$selfId'")
                         }
                     }
                 }
@@ -327,49 +327,65 @@ class MixinDatabaseMigrations private constructor() {
         }
 
         val MIGRATION_43_44: Migration = object : Migration(43, 44) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE `conversations` ADD COLUMN `expire_in` INTEGER")
-                database.execSQL("CREATE TABLE IF NOT EXISTS `expired_messages` (`message_id` TEXT NOT NULL, `expire_in` INTEGER NOT NULL, `expire_at` INTEGER, PRIMARY KEY(`message_id`))")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `conversations` ADD COLUMN `expire_in` INTEGER")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `expired_messages` (`message_id` TEXT NOT NULL, `expire_in` INTEGER NOT NULL, `expire_at` INTEGER, PRIMARY KEY(`message_id`))")
             }
         }
 
         val MIGRATION_44_45: Migration = object : Migration(44, 45) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE `assets` ADD COLUMN `deposit_entries` TEXT")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `assets` ADD COLUMN `deposit_entries` TEXT")
             }
         }
 
         val MIGRATION_45_46: Migration = object : Migration(45, 46) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE `addresses` ADD COLUMN fee_asset_id TEXT NOT NULL DEFAULT ''")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `addresses` ADD COLUMN fee_asset_id TEXT NOT NULL DEFAULT ''")
             }
         }
 
         val MIGRATION_46_47: Migration = object : Migration(46, 47) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS `conversation_ext` (`conversation_id` TEXT NOT NULL, `count` INTEGER NOT NULL DEFAULT 0, `created_at` TEXT NOT NULL, PRIMARY KEY(`conversation_id`))")
-                database.execSQL("INSERT OR REPLACE INTO `conversation_ext` (`conversation_id`, `count`, `created_at`) SELECT conversation_id, count(1), '${nowInUtc()}' FROM messages m INNER JOIN users u ON m.user_id = u.user_id GROUP BY conversation_id LIMIT 100")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `conversation_ext` (`conversation_id` TEXT NOT NULL, `count` INTEGER NOT NULL DEFAULT 0, `created_at` TEXT NOT NULL, PRIMARY KEY(`conversation_id`))")
+                db.execSQL("INSERT OR REPLACE INTO `conversation_ext` (`conversation_id`, `count`, `created_at`) SELECT conversation_id, count(1), '${nowInUtc()}' FROM messages m INNER JOIN users u ON m.user_id = u.user_id GROUP BY conversation_id LIMIT 100")
             }
         }
 
         val MIGRATION_47_48: Migration = object : Migration(47, 48) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS `chains` (`chain_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `threshold` INTEGER NOT NULL, PRIMARY KEY(`chain_id`))")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `chains` (`chain_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `threshold` INTEGER NOT NULL, PRIMARY KEY(`chain_id`))")
             }
         }
 
         val MIGRATION_48_49: Migration = object : Migration(48, 49) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE `snapshots` ADD COLUMN `snapshot_hash` TEXT")
-                database.execSQL("ALTER TABLE `snapshots` ADD COLUMN `opening_balance` TEXT")
-                database.execSQL("ALTER TABLE `snapshots` ADD COLUMN `closing_balance` TEXT")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `snapshots` ADD COLUMN `snapshot_hash` TEXT")
+                db.execSQL("ALTER TABLE `snapshots` ADD COLUMN `opening_balance` TEXT")
+                db.execSQL("ALTER TABLE `snapshots` ADD COLUMN `closing_balance` TEXT")
             }
         }
 
         val MIGRATION_49_50: Migration = object : Migration(49, 50) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE `users` ADD COLUMN `is_deactivated` INTEGER")
-                database.execSQL("ALTER TABLE `assets` ADD COLUMN `withdrawal_memo_possibility` text")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `users` ADD COLUMN `is_deactivated` INTEGER")
+                db.execSQL("ALTER TABLE `assets` ADD COLUMN `withdrawal_memo_possibility` text")
+            }
+        }
+
+        val MIGRATION_50_51: Migration = object : Migration(50, 51) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `outputs` (`output_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `asset` TEXT NOT NULL, `sequence` INTEGER NOT NULL, `amount` TEXT NOT NULL, `mask` TEXT NOT NULL, `keys` TEXT NOT NULL, `receivers` TEXT NOT NULL, `receivers_hash` TEXT NOT NULL, `receivers_threshold` INTEGER NOT NULL, `extra` TEXT NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `signed_by` TEXT NOT NULL, `signed_at` TEXT NOT NULL, `spent_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `tokens` (`asset_id` TEXT NOT NULL, `kernel_asset_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `price_btc` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `change_btc` TEXT NOT NULL, `confirmations` INTEGER NOT NULL, `asset_key` TEXT NOT NULL, `dust` TEXT NOT NULL, PRIMARY KEY(`asset_id`))")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `tokens_extra` (`asset_id` TEXT NOT NULL, `kernel_asset_id` TEXT NOT NULL, `hidden` INTEGER, `balance` TEXT, `updated_at` TEXT NOT NULL, PRIMARY KEY(`asset_id`))")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `safe_snapshots` (`snapshot_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `user_id` TEXT NOT NULL, `opponent_id` TEXT NOT NULL, `memo` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `created_at` TEXT NOT NULL, `trace_id` TEXT, `confirmations` INTEGER, `opening_balance` TEXT, `closing_balance` TEXT, PRIMARY KEY(`snapshot_id`))")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `deposit_entries` (`entry_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `members` TEXT NOT NULL, `tag` TEXT, `signature` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `is_primary` INTEGER NOT NULL, PRIMARY KEY(`entry_id`))")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `raw_transactions` (`request_id` TEXT NOT NULL, `raw_transaction` TEXT NOT NULL, `receiver_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`request_id`))")
+                db.execSQL("ALTER TABLE `chains` ADD COLUMN `withdrawal_memo_possibility` TEXT NOT NULL DEFAULT 'possible'")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_outputs_asset_state_created_at` ON `outputs` (`asset`, `state`, `created_at`)")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_outputs_transaction_hash_output_index` ON `outputs` (`transaction_hash`, `output_index`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_tokens_kernel_asset_id` ON `tokens` (`kernel_asset_id`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_tokens_extra_kernel_asset_id` ON `tokens_extra` (`kernel_asset_id`)")
             }
         }
 

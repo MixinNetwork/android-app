@@ -391,6 +391,7 @@
     <string name="Enter_your_old_PIN">Enter your old PIN</string>
     <string name="Enter_your_PIN">Enter your PIN</string>
     <string name="Enter_your_PIN_to_continue">Enter your PIN to continue</string>
+    <string name="Enter_your_PIN_to_verify">Enter your PIN to verify</string>
     <string name="EOS_contract_address">EOS contract address</string>
     <string name="error_address_exists">The address does not exist, please make sure that the address is added successfully</string>
     <string name="error_address_not_sync">Address refresh failed, please try again</string>
@@ -416,6 +417,7 @@
     <string name="error_permission">Please open the necessary permissions</string>
     <string name="error_phone_invalid_format">ERROR 20110: Invalid phone number</string>
     <string name="error_phone_sms_delivery">ERROR 10003: Failed to deliver SMS</string>
+    <string name="error_user_not_found">The other party has not updated to the new version, please inform the other party to update</string>
     <string name="error_expired_card">ERROR 10601: Card expired</string>
     <string name="error_expired_price">ERROR 10602: Price expired</string>
     <string name="error_payment_capture">ERROR 10603: Payment capture failed</string>
@@ -786,6 +788,7 @@
     <string name="Recent_searches">Recent searches</string>
     <string name="Refresh">Refresh</string>
     <string name="Refuse">Refuse</string>
+    <string name="Registering">Registering…</string>
     <string name="Reload">Reload</string>
     <string name="Remove_all">Remove All</string>
     <string name="Remove_all_floats">Remove all floats?</string>
@@ -1310,4 +1313,12 @@
     <string name="Fees_by_Mixin">Fees by Mixin</string>
     <string name="Purchase_Total_Amount">Purchase Total Amount</string>
     <string name="chat_with_us">Chat with us</string>
+    <string name="Asset_Migration">Asset Migration</string>
+    <string name="Asset_Migration_Content">Mixin has upgraded the new wallet system, you have not yet migrated to assets, please move your assets from the old wallet to the new wallet immediately!</string>
+    <string name="Start_Migration">Start the migration</string>
+    <string name="empty_utxo">Empty UTXO</string>
+    <string name="not_enough_utxo">Insufficient balance</string>
+    <string name="max_count_not_enough_utxo">Gathering %d UTXOs, but still not enough</string>
+    <string name="gather_utxo">Gather UTXO</string>
+    <string name="Verification_failed">Verification failed</string>
 </resources>

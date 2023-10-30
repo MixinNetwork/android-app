@@ -9,7 +9,6 @@ import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.PriceAndChange
-
 @Dao
 interface AssetDao : BaseDao<Asset> {
     companion object {

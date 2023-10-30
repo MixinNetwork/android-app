@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<one.mixin.android.ui.common.biometric.ScrollableBottomSheetLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<one.mixin.android.ui.oldwallet.biometric.ScrollableBottomSheetLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -107,7 +107,7 @@
                 android:textColor="?attr/text_minor"
                 android:textSize="12sp"/>
 
-            <one.mixin.android.ui.common.biometric.BiometricLayout
+            <one.mixin.android.ui.oldwallet.biometric.BiometricLayout
                 android:id="@+id/biometric_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
@@ -118,4 +118,4 @@
         android:id="@+id/keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
-</one.mixin.android.ui.common.biometric.ScrollableBottomSheetLayout>
+</one.mixin.android.ui.oldwallet.biometric.ScrollableBottomSheetLayout>

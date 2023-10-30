@@ -25,7 +25,9 @@ import one.mixin.android.api.service.ContactService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.SignalKeyService
+import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.SignalProtocol
@@ -46,23 +48,28 @@ import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
+import one.mixin.android.db.OutputDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.PropertyDao
+import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.RemoteMessageStatusDao
+import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
+import one.mixin.android.db.TokenDao
+import one.mixin.android.db.TokensExtraDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
-import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.Tip
 import one.mixin.android.util.reportException
@@ -115,6 +122,10 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
+    lateinit var tokenService: TokenService
+
+    @Inject
+    @Transient
     lateinit var assetService: AssetService
 
     @Inject
@@ -128,6 +139,10 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var circleService: CircleService
+
+    @Inject
+    @Transient
+    lateinit var utxoService: UtxoService
 
     @Inject
     @Transient
@@ -167,6 +182,14 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
+    lateinit var tokenDao: TokenDao
+
+    @Inject
+    @Transient
+    lateinit var tokensExtraDao: TokensExtraDao
+
+    @Inject
+    @Transient
     lateinit var snapshotDao: SnapshotDao
 
     @Inject
@@ -187,7 +210,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
-    lateinit var assetRepo: AssetRepository
+    lateinit var assetRepo: TokenRepository
 
     @Inject
     @Transient
@@ -256,6 +279,18 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var expiredMessageDao: ExpiredMessageDao
+
+    @Inject
+    @Transient
+    lateinit var outputDao: OutputDao
+
+    @Inject
+    @Transient
+    lateinit var rawTransactionDao: RawTransactionDao
+
+    @Inject
+    @Transient
+    lateinit var safeSnapshotDao: SafeSnapshotDao
 
     @Inject
     @Transient

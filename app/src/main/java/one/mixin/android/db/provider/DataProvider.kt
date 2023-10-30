@@ -14,7 +14,7 @@ import one.mixin.android.db.datasource.NoCountLimitOffsetDataSource
 import one.mixin.android.fts.FtsDataSource
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.rawSearch
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
@@ -138,22 +138,29 @@ class DataProvider {
             }
 
         @Suppress("LocalVariableName", "JoinDeclarationAndAssignment")
-        suspend fun fuzzySearchAsset(
+        suspend fun fuzzySearchToken(
             name: String?,
             symbol: String?,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
-        ): List<AssetItem> {
+        ): List<TokenItem> {
             val _sql =
-                """SELECT a1.asset_id AS assetId, a1.symbol, a1.name, a1.icon_url AS iconUrl, a1.balance, a1.destination AS destination, a1.tag AS tag, a1.price_btc AS priceBtc, a1.price_usd AS priceUsd, a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden, a2.price_usd as chainPriceUsd,a1.confirmations, a1.reserve as reserve, a2.icon_url AS chainIconUrl, a2.symbol as chainSymbol, a2.name as chainName, a1.asset_key AS assetKey, a1.deposit_entries AS depositEntries, a1.withdrawal_memo_possibility AS withdrawalMemoPossibility    
-        FROM assets a1 
-        LEFT JOIN assets a2 ON a1.chain_id = a2.asset_id 
-        LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id  
-        WHERE a1.balance > 0 
+                """
+            SELECT a1.asset_id AS assetId, a1.symbol, a1.name, a1.icon_url AS iconUrl, COALESCE(ae.balance,'0') as balance,
+            d.destination as destination, d.tag as tag, a1.price_btc AS priceBtc, 
+            a1.chain_id AS chainId , a1.price_usd AS priceUsd, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden,
+            a1.confirmations,c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName, a2.price_usd as chainPriceUsd,
+            a1.asset_key AS assetKey, c.withdrawal_memo_possibility AS withdrawalMemoPossibility 
+            FROM tokens a1 
+            LEFT JOIN tokens a2 ON a1.chain_id = a2.asset_id
+            LEFT JOIN deposit_entries d ON a1.chain_id = d.chain_id 
+            LEFT JOIN chains c ON a1.chain_id = c.chain_id
+            LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id 
+        WHERE ae.balance > 0 
         AND (a1.symbol LIKE '%' || ? || '%'  ESCAPE '\' OR a1.name LIKE '%' || ? || '%'  ESCAPE '\')
         ORDER BY 
             a1.symbol = ? COLLATE NOCASE OR a1.name = ? COLLATE NOCASE DESC,
-            a1.price_usd*a1.balance DESC
+            a1.price_usd*ae.balance DESC
                 """
             val _statement = RoomSQLiteQuery.acquire(_sql, 4)
             var _argIndex = 1
@@ -184,7 +191,7 @@ class DataProvider {
                 db,
                 false,
                 cancellationSignal,
-                callableAssetItem(db, _statement, cancellationSignal),
+                callableTokenItem(db, _statement, cancellationSignal),
             )
         }
 

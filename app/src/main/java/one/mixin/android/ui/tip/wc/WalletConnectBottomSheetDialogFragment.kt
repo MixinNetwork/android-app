@@ -54,8 +54,8 @@ import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.tip.wc.internal.getChain
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
-import one.mixin.android.ui.common.biometric.BiometricDialog
-import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.oldwallet.biometric.BiometricDialog
+import one.mixin.android.ui.oldwallet.biometric.BiometricInfo
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.connections.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
@@ -65,7 +65,7 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
-import one.mixin.android.vo.Asset
+import one.mixin.android.vo.safe.Token
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 
@@ -109,7 +109,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var chain: Chain by mutableStateOf(Chain.Ethereum)
     private var errorInfo: String? by mutableStateOf(null)
     private var tipGas: TipGas? by mutableStateOf(null)
-    private var asset: Asset? by mutableStateOf(null)
+    private var asset: Token? by mutableStateOf(null)
     private var gasPriceType: GasPriceType by mutableStateOf(GasPriceType.Propose)
     private var signData: WalletConnect.WCSignData.V2SignData<*>? by mutableStateOf(null)
     private var sessionProposal: Wallet.Model.SessionProposal? by mutableStateOf(null)

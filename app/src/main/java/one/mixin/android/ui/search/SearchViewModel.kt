@@ -24,13 +24,13 @@ import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.pmap
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.AccountRepository
-import one.mixin.android.repository.AssetRepository
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.mlkit.firstUrl
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
@@ -46,7 +46,7 @@ class SearchViewModel
 internal constructor(
     val userRepository: UserRepository,
     val conversationRepository: ConversationRepository,
-    val assetRepository: AssetRepository,
+    val tokenRepository: TokenRepository,
     val accountRepository: AccountRepository,
     val jobManager: MixinJobManager,
     val cleanMessageHelper: CleanMessageHelper,
@@ -76,7 +76,7 @@ internal constructor(
         } else {
             val escapedQuery = query.trim().escapeSql()
             when (T::class) {
-                AssetItem::class -> assetRepository.fuzzySearchAsset(
+                TokenItem::class -> tokenRepository.fuzzySearchToken(
                     escapedQuery,
                     cancellationSignal,
                 )
@@ -184,7 +184,7 @@ internal constructor(
         }
     }
 
-    suspend fun queryAssets(assetIds: List<String>): List<AssetItem> = assetIds.pmap {
-        assetRepository.syncAsset(it)
+    suspend fun queryAssets(assetIds: List<String>): List<TokenItem> = assetIds.pmap {
+        tokenRepository.syncAsset(it)
     }.filterNotNull()
 }

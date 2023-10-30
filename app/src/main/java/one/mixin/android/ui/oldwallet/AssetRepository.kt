@@ -1,65 +1,39 @@
-package one.mixin.android.repository
+package one.mixin.android.ui.oldwallet
 
-import android.os.CancellationSignal
-import androidx.datastore.core.DataStore
-import androidx.lifecycle.LiveData
-import androidx.paging.DataSource
-import androidx.paging.ExperimentalPagingApi
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.liveData
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
-import one.mixin.android.api.request.Pin
-import one.mixin.android.api.request.RouteInstrumentRequest
-import one.mixin.android.api.request.RouteSessionRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.RoutePaymentResponse
-import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
-import one.mixin.android.db.AssetsExtraDao
 import one.mixin.android.db.ChainDao
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.SnapshotDao
-import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
-import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.extension.within6Hours
-import one.mixin.android.job.MixinJobManager
-import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.AssetsExtra
-import one.mixin.android.vo.Card
 import one.mixin.android.vo.PriceAndChange
-import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.Snapshot
-import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
-import retrofit2.Call
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -67,19 +41,14 @@ import javax.inject.Singleton
 class AssetRepository
 @Inject
 constructor(
-    private val appDatabase: MixinDatabase,
     private val assetService: AssetService,
     private val routeService: RouteService,
     private val assetDao: AssetDao,
-    private val assetsExtraDao: AssetsExtraDao,
     private val snapshotDao: SnapshotDao,
     private val addressDao: AddressDao,
     private val addressService: AddressService,
-    private val hotAssetDao: TopAssetDao,
     private val traceDao: TraceDao,
     private val chainDao: ChainDao,
-    private val jobManager: MixinJobManager,
-    private val safeBox: DataStore<SafeBox>,
 ) {
 
     fun assets() = assetService.assets()
@@ -93,6 +62,8 @@ constructor(
     fun insertList(asset: List<Asset>) {
         assetDao.insertList(asset)
     }
+
+    suspend fun snapshotLocal(assetId: String, snapshotId: String) = snapshotDao.snapshotLocal(assetId, snapshotId)
 
     suspend fun asset(id: String) = assetService.getAssetByIdSuspend(id)
 
@@ -145,76 +116,13 @@ constructor(
 
     private suspend fun simpleAsset(id: String) = assetDao.simpleAsset(id)
 
-    suspend fun insertPendingDeposit(snapshot: List<Snapshot>) = snapshotDao.insertListSuspend(snapshot)
-
-    @ExperimentalPagingApi
-    fun snapshots(
-        assetId: String,
-        type: String? = null,
-        otherType: String? = null,
-        orderByAmount: Boolean = false,
-    ): LiveData<PagingData<SnapshotItem>> =
-        Pager(
-            config = PagingConfig(
-                pageSize = Constants.PAGE_SIZE,
-                enablePlaceholders = true,
-            ),
-            pagingSourceFactory = {
-                if (type == null) {
-                    if (orderByAmount) {
-                        snapshotDao.snapshotsOrderByAmountPaging(assetId)
-                    } else {
-                        snapshotDao.snapshotsPaging(assetId)
-                    }
-                } else {
-                    if (orderByAmount) {
-                        snapshotDao.snapshotsByTypeOrderByAmountPaging(assetId, type, otherType)
-                    } else {
-                        snapshotDao.snapshotsByTypePaging(assetId, type, otherType)
-                    }
-                }
-            },
-            remoteMediator = SnapshotsMediator(assetService, snapshotDao, assetDao, jobManager, assetId),
-        ).liveData
-
-    fun snapshotsFromDb(
-        id: String,
-        type: String? = null,
-        otherType: String? = null,
-        orderByAmount: Boolean = false,
-    ): DataSource.Factory<Int, SnapshotItem> {
-        return if (type == null) {
-            if (orderByAmount) {
-                snapshotDao.snapshotsOrderByAmount(id)
-            } else {
-                snapshotDao.snapshots(id)
-            }
-        } else {
-            if (orderByAmount) {
-                snapshotDao.snapshotsByTypeOrderByAmount(id, type, otherType)
-            } else {
-                snapshotDao.snapshotsByType(id, type, otherType)
-            }
-        }
-    }
-
-    suspend fun snapshotLocal(assetId: String, snapshotId: String) = snapshotDao.snapshotLocal(assetId, snapshotId)
-
     fun insertSnapshot(snapshot: Snapshot) = snapshotDao.insert(snapshot)
-
-    fun getXIN() = assetDao.getXIN()
 
     suspend fun transfer(transferRequest: TransferRequest) = assetService.transfer(transferRequest)
 
     suspend fun paySuspend(request: TransferRequest) = assetService.paySuspend(request)
 
-    suspend fun updateHidden(id: String, hidden: Boolean) = assetsExtraDao.insertSuspend(AssetsExtra(id, hidden))
-
-    fun hiddenAssetItems() = assetDao.hiddenAssetItems()
-
     fun addresses(id: String) = addressDao.addresses(id)
-
-    fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 
     suspend fun withdrawal(withdrawalRequest: WithdrawalRequest) = assetService.withdrawals(withdrawalRequest)
 
@@ -222,18 +130,9 @@ constructor(
 
     suspend fun syncAddr(addressRequest: AddressRequest) = addressService.addresses(addressRequest)
 
-    suspend fun deleteAddr(id: String, pin: String) = addressService.delete(id, Pin(pin))
-
-    suspend fun deleteLocalAddr(id: String) = addressDao.deleteById(id)
-
-    fun assetItemsNotHidden() = assetDao.assetItemsNotHidden()
-
     fun assetItems() = assetDao.assetItems()
 
     fun assetItems(assetIds: List<String>) = assetDao.assetItems(assetIds)
-
-    suspend fun fuzzySearchAsset(query: String, cancellationSignal: CancellationSignal) =
-        DataProvider.fuzzySearchAsset(query, query, appDatabase, cancellationSignal)
 
     suspend fun fuzzySearchAssetIgnoreAmount(query: String) = assetDao.fuzzySearchAssetIgnoreAmount(query, query)
 
@@ -242,33 +141,6 @@ constructor(
     suspend fun simpleAssetItem(id: String) = assetDao.simpleAssetItem(id)
 
     fun assetItemsWithBalance() = assetDao.assetItemsWithBalance()
-
-    fun allSnapshots(
-        type: String? = null,
-        otherType: String? = null,
-        orderByAmount: Boolean = false,
-    ): DataSource.Factory<Int, SnapshotItem> {
-        return if (type == null) {
-            if (orderByAmount) {
-                snapshotDao.allSnapshotsOrderByAmount()
-            } else {
-                snapshotDao.allSnapshots()
-            }
-        } else {
-            if (orderByAmount) {
-                snapshotDao.allSnapshotsByTypeOrderByAmount(type, otherType)
-            } else {
-                snapshotDao.allSnapshotsByType(type, otherType)
-            }
-        }
-    }
-
-    fun snapshotsByUserId(opponentId: String) = snapshotDao.snapshotsByUserId(opponentId)
-
-    suspend fun pendingDeposits(asset: String, destination: String, tag: String? = null) =
-        assetService.pendingDeposits(asset, destination, tag)
-
-    suspend fun clearPendingDepositsByAssetId(assetId: String) = snapshotDao.clearPendingDepositsByAssetId(assetId)
 
     suspend fun queryAsset(query: String): List<AssetItem> {
         val response = try {
@@ -334,10 +206,6 @@ constructor(
 
     private suspend fun getIconUrl(id: String) = assetDao.getIconUrl(id)
 
-    fun observeTopAssets() = hotAssetDao.topAssets()
-
-    fun checkExists(id: String) = assetDao.checkExists(id)
-
     suspend fun findAddressById(addressId: String, assetId: String) = addressDao.findAddressById(addressId, assetId)
 
     suspend fun refreshAndGetAddress(addressId: String, assetId: String): Pair<Address?, Boolean> {
@@ -386,9 +254,6 @@ constructor(
         )
         return result
     }
-
-    suspend fun getSnapshots(assetId: String, offset: String?, limit: Int, opponent: String?, destination: String?, tag: String?) =
-        assetService.getSnapshots(assetId, offset, limit, opponent, destination, tag)
 
     suspend fun insertTrace(trace: Trace) = traceDao.insertSuspend(trace)
 
@@ -441,9 +306,6 @@ constructor(
 
     suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> = routeService.ticker(tickerRequest)
 
-    suspend fun findSnapshotByTransactionHashList(assetId: String, hashList: List<String>): List<String> =
-        snapshotDao.findSnapshotIdsByTransactionHashList(assetId, hashList)
-
     suspend fun suspendUpdatePrices(priceAndChange: List<PriceAndChange>) =
         assetDao.suspendUpdatePrices(priceAndChange)
 
@@ -468,50 +330,13 @@ constructor(
 
     suspend fun token(): MixinResponse<RouteTokenResponse> = routeService.sumsubToken()
 
-    fun callSumsubToken(): Call<MixinResponse<RouteTokenResponse>> = routeService.callSumsubToken()
-
     suspend fun profile(): MixinResponse<ProfileResponse> = routeService.profile()
 
     suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = routeService.payment(traceRequest)
 
     suspend fun payment(paymentId: String): MixinResponse<RoutePaymentResponse> = routeService.payment(paymentId)
 
-    suspend fun payments(): MixinResponse<List<RoutePaymentResponse>> = routeService.payments()
-
-    suspend fun createSession(createSession: RouteSessionRequest): MixinResponse<RouteSessionResponse> = routeService.createSession(createSession)
-
     suspend fun token(tokenRequest: RouteTokenRequest) = routeService.token(tokenRequest)
 
-    suspend fun createInstrument(createInstrument: RouteInstrumentRequest): MixinResponse<Card> =
-        routeService.createInstrument(createInstrument)
-
-    suspend fun getSession(sessionId: String): MixinResponse<RouteSessionResponse> = routeService.getSession(sessionId)
-
-    fun cards(): Flow<SafeBox?> = safeBox.data
-
-    suspend fun addCard(card: Card) {
-        safeBox.updateData { box ->
-            val list = box.cards.toMutableList()
-            list.add(card)
-            SafeBox(list)
-        }
-    }
-
-    suspend fun removeCard(index: Int) {
-        safeBox.updateData { box ->
-            val list = box.cards.toMutableList()
-            list.removeAt(index)
-            SafeBox(list)
-        }
-    }
-
-    suspend fun initSafeBox(cards: List<Card>) {
-        safeBox.updateData { _ ->
-            SafeBox(cards)
-        }
-    }
-
-    suspend fun instruments(): MixinResponse<List<Card>> = routeService.instruments()
-
-    suspend fun deleteInstruments(id: String): MixinResponse<Void> = routeService.deleteInstruments(id)
+    fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 }

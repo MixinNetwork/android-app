@@ -29,7 +29,7 @@ import one.mixin.android.extension.priceFormat2
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
@@ -45,11 +45,11 @@ interface TransactionInterface {
         walletViewModel: WalletViewModel,
         assetId: String?,
         snapshotId: String?,
-        assetItem: AssetItem?,
+        tokenItem: TokenItem?,
         snapshotItem: SnapshotItem?,
     ) {
         contentBinding.titleView.rightAnimator.visibility = View.GONE
-        if (snapshotItem == null || assetItem == null) {
+        if (snapshotItem == null || tokenItem == null) {
             if (snapshotId != null && assetId != null) {
                 lifecycleScope.launch {
                     val asset = walletViewModel.simpleAssetItem(assetId)
@@ -84,7 +84,7 @@ interface TransactionInterface {
             }
         } else {
             contentBinding.avatar.setOnClickListener {
-                clickAvatar(fragment, assetItem)
+                clickAvatar(fragment, tokenItem)
             }
             contentBinding.transactionIdTitleTv.setOnClickListener(object : DebugClickListener() {
                 override fun onDebugClick() {
@@ -94,27 +94,19 @@ interface TransactionInterface {
                 override fun onSingleClick() {
                 }
             })
-            updateUI(fragment, contentBinding, assetItem, snapshotItem)
+            updateUI(fragment, contentBinding, tokenItem, snapshotItem)
             fetchThatTimePrice(
                 fragment,
                 lifecycleScope,
                 walletViewModel,
                 contentBinding,
-                assetItem.assetId,
+                tokenItem.assetId,
                 snapshotItem,
-            )
-            refreshNoTransactionHashWithdrawal(
-                fragment,
-                contentBinding,
-                lifecycleScope,
-                walletViewModel,
-                snapshotItem,
-                assetItem,
             )
         }
     }
 
-    private fun clickAvatar(fragment: Fragment, asset: AssetItem) {
+    private fun clickAvatar(fragment: Fragment, asset: TokenItem) {
         val curActivity = fragment.requireActivity()
         if (curActivity is WalletActivity) {
             if ((fragment.findNavController().previousBackStackEntry?.destination as FragmentNavigator.Destination?)?.label == AllTransactionsFragment.TAG) {
@@ -270,7 +262,7 @@ interface TransactionInterface {
     private fun updateUI(
         fragment: Fragment,
         contentBinding: FragmentTransactionBinding,
-        asset: AssetItem,
+        asset: TokenItem,
         snapshot: SnapshotItem,
     ) {
         if (checkDestroyed(fragment)) return
@@ -314,24 +306,37 @@ interface TransactionInterface {
             )
             transactionIdTv.text = snapshot.snapshotId
             transactionTypeTv.text = getSnapshotType(fragment, snapshot.type)
+            transactionTypeLl.isVisible = false
             memoTv.text = snapshot.memo
             openingBalanceLayout.isVisible = !snapshot.openingBalance.isNullOrBlank()
             openingBalanceTv.text = "${snapshot.openingBalance} ${asset.symbol}"
             closingBalanceLayout.isVisible = !snapshot.closingBalance.isNullOrBlank()
             closingBalanceTv.text = "${snapshot.closingBalance} ${asset.symbol}"
-            snapshotHashLayout.isVisible = !snapshot.snapshotHash.isNullOrBlank()
-            snapshotHashTv.text = snapshot.snapshotHash
+            snapshotHashLayout.isVisible = !snapshot.transactionHash.isNullOrBlank()
+            snapshotHashTv.text = snapshot.transactionHash
             dateTv.text = snapshot.createdAt.fullDate()
-            when (snapshot.type) {
-                SnapshotType.deposit.name -> {
-                    senderTitle.text = fragment.getString(R.string.From)
-                    senderTv.text = snapshot.sender
-                    receiverTitle.text = fragment.getString(R.string.transaction_Hash)
-                    receiverTv.text = snapshot.transactionHash
+            // simulate type
+            val type = if (!snapshot.opponentId.isNullOrBlank()) {
+                SnapshotType.transfer
+            } else if (snapshot.type == SnapshotType.pending.name) {
+                SnapshotType.pending
+            } else {
+                if (isPositive) SnapshotType.deposit else SnapshotType.withdrawal
+            }
+            when (type) {
+                SnapshotType.transfer -> {
+                    traceTv.text = snapshot.traceId
+                    if (isPositive) {
+                        senderTv.text = snapshot.opponentFullName
+                        receiverTv.text = Session.getAccount()!!.fullName
+                    } else {
+                        senderTv.text = Session.getAccount()!!.fullName
+                        receiverTv.text = snapshot.opponentFullName
+                    }
                 }
-                SnapshotType.pending.name -> {
+                SnapshotType.pending -> {
                     senderTitle.text = fragment.getString(R.string.From)
-                    senderTv.text = snapshot.sender
+                    // senderTv.text = snapshot.sender
                     receiverTitle.text = fragment.getString(R.string.transaction_Hash)
                     receiverTv.text = snapshot.transactionHash
                     transactionStatus.isVisible = true
@@ -343,17 +348,13 @@ interface TransactionInterface {
                             snapshot.assetConfirmations,
                         )
                 }
-                SnapshotType.transfer.name -> {
-                    traceTv.text = snapshot.traceId
-                    if (isPositive) {
-                        senderTv.text = snapshot.opponentFullName
-                        receiverTv.text = Session.getAccount()!!.fullName
-                    } else {
-                        senderTv.text = Session.getAccount()!!.fullName
-                        receiverTv.text = snapshot.opponentFullName
-                    }
+                SnapshotType.deposit -> {
+                    senderTitle.text = fragment.getString(R.string.From)
+                    // senderTv.text = snapshot.sender
+                    receiverTitle.text = fragment.getString(R.string.transaction_Hash)
+                    receiverTv.text = snapshot.transactionHash
                 }
-                else -> { // withdrawal, fee, rebate, raw
+                else -> { // withdrawal
                     if (!asset.getTag().isNullOrEmpty()) {
                         receiverTitle.text = fragment.getString(R.string.Address)
                     } else {
@@ -361,7 +362,7 @@ interface TransactionInterface {
                     }
                     senderTitle.text = fragment.getString(R.string.transaction_Hash)
                     senderTv.text = snapshot.transactionHash
-                    receiverTv.text = snapshot.receiver
+                    // receiverTv.text = snapshot.receiver
                 }
             }
         }
@@ -373,11 +374,11 @@ interface TransactionInterface {
         lifecycleScope: CoroutineScope,
         walletViewModel: WalletViewModel,
         snapshot: SnapshotItem,
-        asset: AssetItem,
+        asset: TokenItem,
     ) {
         if (snapshot.type == SnapshotType.pending.name) return
 
-        if (snapshot.snapshotHash.isNullOrBlank() || (snapshot.type == SnapshotType.withdrawal.name && snapshot.transactionHash.isNullOrBlank())) {
+        if (snapshot.transactionHash.isNullOrBlank() || (snapshot.type == SnapshotType.withdrawal.name && snapshot.transactionHash.isNullOrBlank())) {
             lifecycleScope.launch {
                 walletViewModel.refreshSnapshot(snapshot.snapshotId)?.let {
                     updateUI(fragment, contentBinding, asset, snapshot)

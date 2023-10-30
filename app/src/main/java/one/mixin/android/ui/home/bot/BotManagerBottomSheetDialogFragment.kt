@@ -34,6 +34,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
+import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.home.MainActivity
@@ -48,6 +49,7 @@ import one.mixin.android.vo.BotInterface
 import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.bot.BotDock
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock.OnDockListener {
@@ -61,6 +63,9 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
     private val stopScope = scope(Lifecycle.Event.ON_STOP)
 
     private val botManagerViewModel by viewModels<BotManagerViewModel>()
+
+    @Inject
+    lateinit var tipCounterSynced: TipCounterSyncedLiveData
 
     override fun getTheme() = R.style.MixinBottomSheet
 

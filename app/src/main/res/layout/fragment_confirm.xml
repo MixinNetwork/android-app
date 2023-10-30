@@ -29,7 +29,7 @@
         android:src="@drawable/ic_desktop"
         android:contentDescription="@null" />
 
-    <one.mixin.android.ui.common.biometric.BiometricLayout
+    <one.mixin.android.ui.oldwallet.biometric.BiometricLayout
         android:id="@+id/biometric_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

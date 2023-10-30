@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:id="@+id/chat_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginEnd="4dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="1.5dp"
+        android:minWidth="160dp"
+        android:background="@drawable/chat_bubble_other"
+        tools:ignore="UselessParent">
+
+        <ImageView
+            android:id="@+id/chat_snapshot_bg"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:src="@drawable/bg_snapshot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <one.mixin.android.widget.CircleImageView
+            android:id="@+id/bill_iv"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:src="@drawable/ic_avatar_place_holder" />
+
+        <TextView
+            android:id="@+id/bill_symbol_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="?attr/text_minor"
+            android:layout_alignTop="@+id/bill_iv"
+            android:layout_alignBottom="@id/bill_iv"
+            android:layout_toEndOf="@+id/bill_iv"
+            android:gravity="center_vertical"
+            android:textSize="14sp"
+            android:layout_marginTop="-3dp"
+            tools:text="Eth"/>
+
+        <TextView
+            android:id="@+id/bill_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="?attr/text_primary"
+            android:layout_alignStart="@id/bill_iv"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp"
+            android:layout_below="@id/bill_iv"
+            tools:text="12345678.987534" />
+
+        <TextView
+            android:id="@+id/bill_memo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="@color/gray_50"
+            android:textSize="13sp"
+            android:layout_marginTop="12dp"
+            android:layout_below="@id/bill_tv"
+            android:layout_alignStart="@id/bill_iv"
+            tools:text="Thanks" />
+
+        <one.mixin.android.widget.bubble.TimeBubble
+            android:id="@+id/chat_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/bill_memo"
+            android:layout_alignParentEnd="true" />
+
+    </RelativeLayout>
+</FrameLayout>
+
+

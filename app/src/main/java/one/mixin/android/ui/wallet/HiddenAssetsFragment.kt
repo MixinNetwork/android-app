@@ -22,7 +22,7 @@ import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import kotlin.math.abs
 
 @AndroidEntryPoint
@@ -39,7 +39,7 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
     private val walletViewModel by viewModels<WalletViewModel>()
     private val binding by viewBinding(FragmentHiddenAssetsBinding::bind)
 
-    private var assets: List<AssetItem> = listOf()
+    private var assets: List<TokenItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(true) }
 
     private var distance = 0
@@ -112,7 +112,7 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        item as AssetItem
+        item as TokenItem
         view?.navigate(
             R.id.action_hidden_assets_to_transactions,
             Bundle().apply { putParcelable(TransactionsFragment.ARGS_ASSET, item) },

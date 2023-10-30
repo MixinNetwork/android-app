@@ -51,6 +51,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_46_47
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_47_48
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_48_49
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_49_50
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_50_51
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
@@ -67,6 +68,7 @@ import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationExt
+import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.FloodMessage
@@ -77,6 +79,7 @@ import one.mixin.android.vo.MessageFts4
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.Offset
+import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.PinMessage
@@ -84,15 +87,19 @@ import one.mixin.android.vo.Property
 import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.ResendMessage
 import one.mixin.android.vo.ResendSessionMessage
+import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.SentSenderKey
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
+import one.mixin.android.vo.safe.Token
+import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.RawTransaction
 import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
@@ -107,6 +114,7 @@ import kotlin.math.min
         (Offset::class),
         (Asset::class),
         (AssetsExtra::class),
+        (TokensExtra::class),
         (Snapshot::class),
         (MessageHistory::class),
         (SentSenderKey::class),
@@ -134,6 +142,11 @@ import kotlin.math.min
         (ExpiredMessage::class),
         (ConversationExt::class),
         (Chain::class),
+        (Output::class),
+        (Token::class),
+        (DepositEntry::class),
+        (SafeSnapshot::class),
+        (RawTransaction::class),
     ],
     version = CURRENT_VERSION,
 )
@@ -147,8 +160,10 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun participantDao(): ParticipantDao
     abstract fun offsetDao(): OffsetDao
     abstract fun assetDao(): AssetDao
-    abstract fun assetsExtraDao(): AssetsExtraDao
+    abstract fun tokenDao(): TokenDao
+    abstract fun tokensExtraDao(): TokensExtraDao
     abstract fun snapshotDao(): SnapshotDao
+    abstract fun safeSnapshotDao(): SafeSnapshotDao
     abstract fun messageHistoryDao(): MessageHistoryDao
     abstract fun stickerDao(): StickerDao
     abstract fun stickerAlbumDao(): StickerAlbumDao
@@ -171,6 +186,9 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun propertyDao(): PropertyDao
     abstract fun expiredMessageDao(): ExpiredMessageDao
     abstract fun chainDao(): ChainDao
+    abstract fun outputDao(): OutputDao
+    abstract fun depositDao(): DepositDao
+    abstract fun rawTransactionDao(): RawTransactionDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null
@@ -201,6 +219,7 @@ abstract class MixinDatabase : RoomDatabase() {
                             MIGRATION_29_30, MIGRATION_30_31, MIGRATION_31_32, MIGRATION_32_33, MIGRATION_33_34, MIGRATION_34_35, MIGRATION_35_36,
                             MIGRATION_36_37, MIGRATION_37_38, MIGRATION_38_39, MIGRATION_39_40, MIGRATION_40_41, MIGRATION_41_42, MIGRATION_42_43,
                             MIGRATION_43_44, MIGRATION_44_45, MIGRATION_45_46, MIGRATION_46_47, MIGRATION_47_48, MIGRATION_48_49, MIGRATION_49_50,
+                            MIGRATION_50_51,
                         )
                         .enableMultiInstanceInvalidation()
                         .setQueryExecutor(

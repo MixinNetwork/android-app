@@ -18,7 +18,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
@@ -26,13 +26,13 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
     companion object {
         const val TAG = "DepositChooseNetworkBottomSheetDialogFragment"
         private const val ASSET = "asset"
-        fun newInstance(asset: AssetItem) = DepositChooseNetworkBottomSheetDialogFragment().withArgs {
+        fun newInstance(asset: TokenItem) = DepositChooseNetworkBottomSheetDialogFragment().withArgs {
             putParcelable(ASSET, asset)
         }
     }
 
     private val asset by lazy {
-        requireArguments().getParcelableCompat(ASSET, AssetItem::class.java)
+        requireArguments().getParcelableCompat(ASSET, TokenItem::class.java)
     }
 
     private val binding by viewBinding(FragmentDepositChooseNetworkBottomSheetBinding::inflate)
@@ -60,7 +60,7 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
 
     var callback: (() -> Unit)? = null
 
-    class AssetAdapter : ListAdapter<AssetItem, ItemHolder>(AssetItem.DIFF_CALLBACK) {
+    class AssetAdapter : ListAdapter<TokenItem, ItemHolder>(TokenItem.DIFF_CALLBACK) {
         var callback: (() -> Unit)? = null
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder {
@@ -87,8 +87,8 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
     }
 
     class ItemHolder(val binding: ItemChooseNetworkBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(assetItem: AssetItem?, callback: (() -> Unit)? = null) {
-            if (assetItem == null) {
+        fun bind(tokenItem: TokenItem?, callback: (() -> Unit)? = null) {
+            if (tokenItem == null) {
                 binding.icon.isVisible = true
                 binding.assetIcon.isVisible = false
                 binding.content.setText(R.string.Choose_network_tip)
@@ -98,10 +98,10 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                 binding.icon.isVisible = false
                 binding.assetIcon.isVisible = true
                 binding.assetIcon.bg.loadImage(
-                    assetItem.chainIconUrl,
+                    tokenItem.chainIconUrl,
                     R.drawable.ic_avatar_place_holder,
                 )
-                binding.content.text = getChainName(assetItem.chainId, assetItem.chainName, assetItem.assetKey)
+                binding.content.text = getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey)
                 binding.root.setBackgroundResource(R.drawable.bg_round_choose_network)
                 binding.content.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
                 binding.root.setOnClickListener {

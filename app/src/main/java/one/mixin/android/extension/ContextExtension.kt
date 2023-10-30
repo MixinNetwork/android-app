@@ -79,7 +79,7 @@ import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
@@ -870,7 +870,7 @@ fun Context.isGooglePlayServicesAvailable() =
 fun Context.isFirebaseDecodeAvailable() =
     isGooglePlayServicesAvailable() && Locale.getDefault() != Locale.CHINA
 
-fun Fragment.getTipsByAsset(asset: AssetItem) =
+fun Fragment.getTipsByAsset(asset: TokenItem) =
     when (asset.assetId) {
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)

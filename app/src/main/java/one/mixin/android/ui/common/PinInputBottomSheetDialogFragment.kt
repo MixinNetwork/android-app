@@ -52,6 +52,10 @@ class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             pin.setListener(object : PinView.OnPinListener {
                 override fun onUpdate(index: Int) {
                     if (index == pin.getCount()) {
+                        if (onComplete != null) {
+                            onComplete?.invoke(pin.code(), this@PinInputBottomSheetDialogFragment)
+                            return
+                        }
                         onPinComplete?.invoke(pin.code())
                         dismiss()
                     }
@@ -88,4 +92,11 @@ class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private var onPinComplete: ((String) -> Unit)? = null
+
+    fun setOnComplete(callback: (String, PinInputBottomSheetDialogFragment) -> Unit): PinInputBottomSheetDialogFragment {
+        onComplete = callback
+        return this
+    }
+
+    private var onComplete: ((String, PinInputBottomSheetDialogFragment) -> Unit)? = null
 }

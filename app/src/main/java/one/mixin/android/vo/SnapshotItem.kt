@@ -8,6 +8,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.vo.safe.SafeSnapshot
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -38,12 +39,6 @@ data class SnapshotItem(
     @SerializedName("transaction_hash")
     @ColumnInfo(name = "transaction_hash")
     val transactionHash: String?,
-    @SerializedName("sender")
-    @ColumnInfo(name = "sender")
-    val sender: String?,
-    @SerializedName("receiver")
-    @ColumnInfo(name = "receiver")
-    val receiver: String?,
     @SerializedName("memo")
     @ColumnInfo(name = "memo")
     val memo: String?,
@@ -62,9 +57,6 @@ data class SnapshotItem(
     @SerializedName("trace_id")
     @ColumnInfo(name = "trace_id")
     val traceId: String?,
-    @SerializedName("snapshot_hash")
-    @ColumnInfo(name = "snapshot_hash")
-    val snapshotHash: String?,
     @SerializedName("opening_balance")
     @ColumnInfo(name = "opening_balance")
     val openingBalance: String?,
@@ -81,7 +73,7 @@ data class SnapshotItem(
                 oldItem == newItem
         }
 
-        fun fromSnapshot(snapshot: Snapshot, avatarUrl: String? = null, symbol: String? = null) = SnapshotItem(
+        fun fromSnapshot(snapshot: SafeSnapshot, avatarUrl: String? = null, symbol: String? = null) = SnapshotItem(
             snapshotId = snapshot.snapshotId,
             type = snapshot.type,
             assetId = snapshot.assetId,
@@ -90,15 +82,12 @@ data class SnapshotItem(
             opponentId = snapshot.opponentId,
             opponentFullName = null,
             transactionHash = snapshot.transactionHash,
-            sender = snapshot.sender,
-            receiver = snapshot.receiver,
             memo = snapshot.memo,
             assetSymbol = symbol,
             confirmations = snapshot.confirmations,
             avatarUrl = avatarUrl,
             assetConfirmations = 0,
             traceId = snapshot.traceId,
-            snapshotHash = snapshot.snapshotHash,
             openingBalance = snapshot.openingBalance,
             closingBalance = snapshot.closingBalance,
         )

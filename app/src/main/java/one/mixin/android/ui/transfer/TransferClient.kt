@@ -17,7 +17,7 @@ import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.AppDao
-import one.mixin.android.db.AssetDao
+import one.mixin.android.db.TokenDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.ExpiredMessageDao
@@ -97,7 +97,7 @@ import javax.inject.Inject
 @ExperimentalSerializationApi
 class TransferClient @Inject internal constructor(
     val context: Application,
-    val assetDao: AssetDao,
+    val tokenDao: TokenDao,
     val conversationDao: ConversationDao,
     val conversationExtDao: ConversationExtDao,
     val expiredMessageDao: ExpiredMessageDao,

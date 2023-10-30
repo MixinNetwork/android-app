@@ -18,6 +18,9 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.oldwallet.OldTransferFragment
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
@@ -109,9 +112,9 @@ class UrlInterpreterActivity : BaseActivity() {
             }
             TRANSFER -> {
                 uri.lastPathSegment?.let { lastPathSegment ->
-                    if (Session.getAccount()?.hasPin == true) {
-                        TransferFragment.newInstance(lastPathSegment, supportSwitchAsset = true)
-                            .showNow(supportFragmentManager, TransferFragment.TAG)
+                    if (Session.getAccount()?.hasPin == true && Session.getTipPub() != null && Session.hasSafe()) {
+                        OldTransferFragment.newInstance(lastPathSegment, supportSwitchAsset = true)
+                            .showNow(supportFragmentManager, OldTransferFragment.TAG)
                     } else {
                         toast(R.string.transfer_without_pin)
                         finish()

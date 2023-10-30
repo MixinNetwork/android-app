@@ -42,7 +42,7 @@ class WalletRule : TestRule {
 
             fun initAssets() {
                 val assets = GsonHelper.customGson.fromJson(MOCK_ASSETS_JSON, Array<Asset>::class.java)
-                db.assetDao().insert(*assets)
+                db.tokenDao().insert(*assets)
             }
 
             fun initAssetExtras() {

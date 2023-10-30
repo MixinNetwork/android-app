@@ -81,12 +81,14 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="8dp"
                 android:text="@string/withdrawal_memo"
+                android:visibility="gone"
                 android:textColor="?attr/text_assist" />
 
             <one.mixin.android.widget.ContentQRView
                 android:id="@+id/memo_view"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:visibility="gone"/>
 
             <TextView
                 android:id="@+id/address_title"

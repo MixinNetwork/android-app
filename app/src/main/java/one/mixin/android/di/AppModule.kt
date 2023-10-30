@@ -14,6 +14,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.net.cronet.okhttptransport.MixinCronetInterceptor
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
+import com.lambdapioneer.argon2kt.Argon2Kt
 import com.twilio.audioswitch.AudioDevice
 import com.twilio.audioswitch.AudioSwitch
 import dagger.Module
@@ -49,6 +50,7 @@ import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
+import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ContactService
@@ -63,6 +65,7 @@ import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.PinCipher
@@ -316,6 +319,10 @@ object AppModule {
 
     @Singleton
     @Provides
+    fun provideTokenService(retrofit: Retrofit) = retrofit.create(TokenService::class.java) as TokenService
+
+    @Singleton
+    @Provides
     fun provideAuthService(retrofit: Retrofit) =
         retrofit.create(AuthorizationService::class.java) as AuthorizationService
 
@@ -344,6 +351,11 @@ object AppModule {
     @Provides
     fun provideTipNodeService(retrofit: Retrofit) =
         retrofit.create(TipNodeService::class.java) as TipNodeService
+
+    @Singleton
+    @Provides
+    fun provideUtxoService(retrofit: Retrofit) =
+        retrofit.create(UtxoService::class.java) as UtxoService
 
     @Singleton
     @Provides
@@ -499,11 +511,15 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideIdentity(tipService: TipService) = Identity(tipService)
+    fun provideIdentity(tipService: TipService, argon2Kt: Argon2Kt) = Identity(tipService, argon2Kt)
 
     @Provides
     @Singleton
     fun provideEphemeral(tipService: TipService) = Ephemeral(tipService)
+
+    @Provides
+    @Singleton
+    fun provideArgon2(): Argon2Kt = Argon2Kt()
 
     @Provides
     @Singleton
@@ -515,8 +531,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTip(ephemeral: Ephemeral, identity: Identity, tipNode: TipNode, tipService: TipService, accountService: AccountService, tipCounterSyncedLiveData: TipCounterSyncedLiveData) =
-        Tip(ephemeral, identity, tipService, accountService, tipNode, tipCounterSyncedLiveData)
+    fun provideTip(ephemeral: Ephemeral, identity: Identity, argon2Kt: Argon2Kt, tipNode: TipNode, tipService: TipService, accountService: AccountService, tipCounterSyncedLiveData: TipCounterSyncedLiveData) =
+        Tip(ephemeral, identity, argon2Kt, tipService, accountService, tipNode, tipCounterSyncedLiveData)
 
     @Provides
     @Singleton

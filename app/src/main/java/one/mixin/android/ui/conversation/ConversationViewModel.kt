@@ -12,6 +12,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -47,7 +48,7 @@ import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
-import one.mixin.android.repository.AssetRepository
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
@@ -59,7 +60,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ConversationStatus
@@ -107,6 +108,7 @@ import java.io.File
 import java.util.UUID
 import javax.inject.Inject
 
+@UnstableApi
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 @HiltViewModel
 class ConversationViewModel
@@ -116,7 +118,7 @@ internal constructor(
     private val conversationRepository: ConversationRepository,
     private val userRepository: UserRepository,
     private val jobManager: MixinJobManager,
-    private val assetRepository: AssetRepository,
+    private val tokenRepository: TokenRepository,
     private val accountRepository: AccountRepository,
     private val messenger: SendMessageHelper,
     private val cleanMessageHelper: CleanMessageHelper,
@@ -510,8 +512,8 @@ internal constructor(
 
     suspend fun findAppById(id: String) = userRepository.findAppById(id)
 
-    fun assetItemsWithBalance(): LiveData<List<AssetItem>> =
-        assetRepository.assetItemsWithBalance()
+    fun assetItemsWithBalance(): LiveData<List<TokenItem>> =
+        tokenRepository.assetItemsWithBalance()
 
     fun addStickerAsync(stickerAddRequest: StickerAddRequest) =
         accountRepository.addStickerAsync(stickerAddRequest)
@@ -554,11 +556,11 @@ internal constructor(
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
 
-    fun observeAddress(addressId: String) = assetRepository.observeAddress(addressId)
+    fun observeAddress(addressId: String) = tokenRepository.observeAddress(addressId)
 
-    suspend fun refreshAsset(assetId: String): AssetItem? {
+    suspend fun refreshAsset(assetId: String): TokenItem? {
         return withContext(Dispatchers.IO) {
-            assetRepository.findOrSyncAsset(assetId)
+            tokenRepository.findOrSyncAsset(assetId)
         }
     }
 
@@ -693,7 +695,7 @@ internal constructor(
     fun getUnreadMentionMessageByConversationId(conversationId: String) = conversationRepository.getUnreadMentionMessageByConversationId(conversationId)
 
     suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
-        assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
+        tokenRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
 
     suspend fun checkData(selectItem: SelectItem, callback: suspend (String, EncryptCategory) -> Unit) {
         withContext(Dispatchers.IO) {

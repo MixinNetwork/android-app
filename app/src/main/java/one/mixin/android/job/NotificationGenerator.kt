@@ -326,7 +326,7 @@ object NotificationGenerator : Injector() {
                     contentText = context.getString(R.string.alert_key_contact_transcript_message)
                 }
             }
-            message.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {
+            message.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name  || message.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name -> {
                 if (message.action == SnapshotType.transfer.name) {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_transfer_message))
                     notificationBuilder.setContentTitle(user.fullName)

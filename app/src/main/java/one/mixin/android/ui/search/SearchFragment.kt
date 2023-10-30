@@ -45,7 +45,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.RecentUsedApp
 import one.mixin.android.vo.SearchMessageItem
@@ -184,8 +184,8 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                 url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
             }
 
-            override fun onAsset(assetItem: AssetItem) {
-                activity?.let { WalletActivity.show(it, assetItem) }
+            override fun onAsset(tokenItem: TokenItem) {
+                activity?.let { WalletActivity.show(it, tokenItem) }
             }
 
             override fun onMessageClick(message: SearchMessageItem) {
@@ -265,19 +265,19 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         }
     }
 
-    private suspend fun refreshAssetItems(assetItems: List<AssetItem>?) {
-        if (assetItems.isNullOrEmpty()) return
+    private suspend fun refreshAssetItems(tokenItems: List<TokenItem>?) {
+        if (tokenItems.isNullOrEmpty()) return
 
         val newItems = withContext(Dispatchers.IO) {
             // Only refresh at most 3 assets, not refresh other matching assets when clicking on `more`.
-            searchViewModel.queryAssets(assetItems.take(3).map { it.assetId })
+            searchViewModel.queryAssets(tokenItems.take(3).map { it.assetId })
         }
         if (newItems.isEmpty()) return
 
-        val t = if (newItems.size == assetItems.size) {
+        val t = if (newItems.size == tokenItems.size) {
             newItems
         } else {
-            val m = assetItems.toMutableList()
+            val m = tokenItems.toMutableList()
             m.forEachIndexed { i, a ->
                 newItems.find { it.assetId == a.assetId }?.let {
                     m[i] = it
@@ -310,15 +310,15 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
             }
         }
 
-        val assetItems = searchViewModel.fuzzySearch<AssetItem>(cancellationSignal, keyword) as List<AssetItem>?
+        val tokenItems = searchViewModel.fuzzySearch<TokenItem>(cancellationSignal, keyword) as List<TokenItem>?
         refreshAssetsJob = launch {
-            refreshAssetItems(assetItems)
+            refreshAssetItems(tokenItems)
         }
 
         val users = searchViewModel.fuzzySearch<User>(cancellationSignal, keyword) as List<User>?
         val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, keyword) as List<ChatMinimal>?
         decoration.invalidateHeaders()
-        searchAdapter.setData(assetItems, users, chatMinimals)
+        searchAdapter.setData(tokenItems, users, chatMinimals)
 
         messageSearchJob?.join()
         (requireActivity() as MainActivity).hideSearchLoading()
@@ -369,7 +369,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         fun onUserClick(user: User)
         fun onChatClick(chatMinimal: ChatMinimal)
         fun onMessageClick(message: SearchMessageItem)
-        fun onAsset(assetItem: AssetItem)
+        fun onAsset(tokenItem: TokenItem)
         fun onTipClick()
         fun onUrlClick(url: String)
         fun onChatLongClick(chatMinimal: ChatMinimal, anchor: View): Boolean

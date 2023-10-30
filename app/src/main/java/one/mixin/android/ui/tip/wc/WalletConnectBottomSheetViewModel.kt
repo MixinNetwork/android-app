@@ -7,7 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.service.TipService
-import one.mixin.android.repository.AssetRepository
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WalletConnectBottomSheetViewModel @Inject internal constructor(
-    private val assetRepo: AssetRepository,
+    private val assetRepo: TokenRepository,
     private val tipService: TipService,
     private val tip: Tip,
 ) : ViewModel() {

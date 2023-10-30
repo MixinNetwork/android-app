@@ -21,6 +21,7 @@ object Constants {
         const val FOURSQUARE_URL = "https://api.foursquare.com/v2/"
 
         const val DEFAULT_TIP_SIGN_ENDPOINT = "https://api.mixin.one/tip/notify"
+
     }
 
     object HelpLink {
@@ -37,6 +38,9 @@ object Constants {
 
         const val TIP_PRIV = "tip_priv"
         const val ALIAS_TIP_PRIV = "alias_tip_priv"
+
+        const val SPEND_SALT = "spend_salt"
+        const val ALIAS_SPEND_SALT = "alias_spend_salt"
     }
 
     object Account {
@@ -110,7 +114,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 50
+        const val CURRENT_VERSION = 51
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -296,10 +300,14 @@ object Constants {
     const val TEAM_MIXIN_USER_ID = "773e5e77-4107-45c2-b648-8fc722ed77f5"
     const val MIXIN_BOTS_USER_ID = "68ef7899-3e81-4b3d-8124-83ae652def89"
     const val MIXIN_DATA_USER_ID = "96c1460b-c7c4-480a-a342-acaa73995a37"
+    const val MIXIN_BOND_USER_ID = "84c9dfb1-bfcf-4cb4-8404-cc5a1354005b"
 
     const val TEAM_MIXIN_USER_NAME = "Team Mixin"
+    const val MIXIN_BOND_USER_NAME = "Bond Bot"
     const val MIXIN_BOTS_USER_NAME = "Mixin Bots"
     const val MIXIN_DATA_USER_NAME = "Mixin Data"
+
+    const val SAFE_PUBLIC_KEY = "8f94e89d03fa128a7081c5fe73c6814010c5ca74438411a42df87c6023dfa94d"
 
     // Only for third-party messenger user
     const val TEAM_BOT_ID = ""

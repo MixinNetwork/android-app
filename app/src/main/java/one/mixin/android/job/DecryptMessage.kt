@@ -81,6 +81,7 @@ import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.ResendSessionMessage
 import one.mixin.android.vo.SYSTEM_USER
+import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.TranscriptMessage
@@ -315,6 +316,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val json = Base64.decode(data.data)
             val systemSnapshot = gson.fromJson(String(json), Snapshot::class.java)
             processSystemSnapshotMessage(data, systemSnapshot)
+        }  else if (data.category == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name) {
+            val json = Base64.decode(data.data)
+            val systemSnapshot = gson.fromJson(String(json), SafeSnapshot::class.java)
+            processSystemSafeSnapshotMessage(data, systemSnapshot)
         } else if (data.category == MessageCategory.SYSTEM_SESSION.name) {
             val json = Base64.decode(data.data)
             val systemSession = gson.fromJson(String(json), SystemSessionMessagePayload::class.java)
@@ -1017,6 +1022,25 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         snapshotDao.insert(snapshot)
         insertMessage(message, data)
         jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
+
+        if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
+            generateNotification(message, data)
+        }
+    }
+
+    private fun processSystemSafeSnapshotMessage(data: BlazeMessageData, snapshot: SafeSnapshot) {
+        val message = createMessage(
+            data.messageId, data.conversationId, data.userId, data.category, data.expireIn?.toString() ?: "",
+            data.createdAt, data.status, snapshot.type, null, snapshot.snapshotId,
+        )
+        snapshot.transactionHash?.let {
+            safeSnapshotDao.deletePendingSnapshotByHash(it)
+        }
+
+        safeSnapshotDao.insert(snapshot)
+        insertMessage(message, data)
+        jobManager.addJobInBackground(RefreshTokensJob(snapshot.assetId))
+        jobManager.addJobInBackground(SyncOutputJob())
 
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
             generateNotification(message, data)

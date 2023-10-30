@@ -45,7 +45,7 @@ import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.WithdrawalMemoPossibility
 
 @AndroidEntryPoint
@@ -54,7 +54,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         const val ARGS_ADDRESS = "args_address"
     }
 
-    lateinit var asset: AssetItem
+    lateinit var asset: TokenItem
     private var memoEnabled = true
 
     // for testing
@@ -92,7 +92,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        asset = requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)!!
+        asset = requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)!!
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

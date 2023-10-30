@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 
 @Parcelize
 @Serializable
-class DepositEntry(
+class OldDepositEntry(
     @SerializedName("destination")
     @SerialName("destination")
     val destination: String,

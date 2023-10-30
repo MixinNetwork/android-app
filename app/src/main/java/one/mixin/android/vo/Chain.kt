@@ -20,4 +20,7 @@ data class Chain(
     val iconUrl: String,
     @ColumnInfo(name = "threshold")
     val threshold: Int,
+    @ColumnInfo(name = "withdrawal_memo_possibility")
+    @SerializedName("withdrawal_memo_possibility")
+    val withdrawalMemoPossibility: String = WithdrawalMemoPossibility.POSSIBLE.name,
 )

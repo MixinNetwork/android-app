@@ -73,7 +73,7 @@
         tools:layout="@layout/fragment_transactions">
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem" />
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
 
         <action
             android:id="@+id/action_transactions_fragment_to_transaction_fragment"
@@ -133,7 +133,7 @@
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem" />
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
 
         <argument
             android:name="args_snapshot"
@@ -161,7 +161,7 @@
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem" />
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
 
         <action
             android:id="@+id/action_hidden_assets_to_transactions"
@@ -177,7 +177,7 @@
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem" />
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
 
         <action
             android:id="@+id/action_wallet_fragment_to_all_transactions_fragment"
@@ -214,7 +214,7 @@
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem" />
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
 
         <action
             android:id="@+id/action_address_management_to_address_add"
@@ -238,7 +238,7 @@
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem" />
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
     </fragment>
 
     <fragment
@@ -291,7 +291,7 @@
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem" />
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
 
         <argument
             android:name="args_currency"
@@ -320,7 +320,7 @@
         android:name="one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment">
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem" />
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
         <argument
             android:name="args_currency"
             app:argType="one.mixin.android.ui.setting.Currency" />
@@ -353,7 +353,7 @@
         android:name="one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment">
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem" />
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
         <argument
             android:name="args_currency"
             app:argType="one.mixin.android.ui.setting.Currency" />

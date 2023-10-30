@@ -1,14 +1,14 @@
 package one.mixin.android.ui.search
 
 import one.mixin.android.ui.search.holder.TipItem
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import kotlin.math.min
 
 class SearchDataPackage(
-    var assetList: List<AssetItem>? = null,
+    var assetList: List<TokenItem>? = null,
     var userList: List<User>? = null,
     var chatList: List<ChatMinimal>? = null,
     var messageList: List<SearchMessageItem>? = null,
@@ -28,7 +28,7 @@ class SearchDataPackage(
     fun getHeaderFactor(position: Int) =
         when (getItem(position)) {
             is TipItem -> 0
-            is AssetItem -> if (assetShowMore()) 10 else 0
+            is TokenItem -> if (assetShowMore()) 10 else 0
             is User -> if (userShowMore()) 10 else 0
             is ChatMinimal -> if (chatShowMore()) 10 else 0
             else -> if (messageShowMore()) 10 else 0
@@ -100,7 +100,7 @@ class SearchDataPackage(
 
     fun getCount() = assetCount() + chatCount() + userCount() + messageCount().incTip()
 
-    private fun assetItem(position: Int): AssetItem? {
+    private fun assetItem(position: Int): TokenItem? {
         return assetList?.get(position.decTip())
     }
 

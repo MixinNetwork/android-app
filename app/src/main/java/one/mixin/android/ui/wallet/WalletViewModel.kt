@@ -16,28 +16,32 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.MIXIN_BOND_USER_ID
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAssetsJob
+import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshTopAssetsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
-import one.mixin.android.repository.AssetRepository
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
-import one.mixin.android.vo.Asset
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.ParticipantSession
-import one.mixin.android.vo.Snapshot
+import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.sumsub.ProfileResponse
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
@@ -46,7 +50,7 @@ class WalletViewModel
 internal constructor(
     private val userRepository: UserRepository,
     private val accountRepository: AccountRepository,
-    private val assetRepository: AssetRepository,
+    private val tokenRepository: TokenRepository,
     private val jobManager: MixinJobManager,
 ) : ViewModel() {
 
@@ -54,7 +58,7 @@ internal constructor(
         userRepository.upsert(user)
     }
 
-    fun assetItemsNotHidden(): LiveData<List<AssetItem>> = assetRepository.assetItemsNotHidden()
+    fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
 
     @ExperimentalPagingApi
     fun snapshots(
@@ -64,7 +68,7 @@ internal constructor(
         @Suppress("UNUSED_PARAMETER") initialLoadKey: Int? = 0,
         orderByAmount: Boolean = false,
     ): LiveData<PagingData<SnapshotItem>> =
-        assetRepository.snapshots(assetId, type, otherType, orderByAmount)
+        tokenRepository.snapshots(assetId, type, otherType, orderByAmount)
             .cachedIn(viewModelScope)
 
     fun snapshotsFromDb(
@@ -75,7 +79,7 @@ internal constructor(
         orderByAmount: Boolean = false,
     ): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(
-            assetRepository.snapshotsFromDb(id, type, otherType, orderByAmount),
+            tokenRepository.snapshotsFromDb(id, type, otherType, orderByAmount),
             PagedList.Config.Builder()
                 .setPrefetchDistance(PAGE_SIZE)
                 .setPageSize(PAGE_SIZE)
@@ -90,7 +94,7 @@ internal constructor(
         initialLoadKey: Int? = 0,
     ): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(
-            assetRepository.snapshotsByUserId(opponentId),
+            tokenRepository.snapshotsByUserId(opponentId),
             PagedList.Config.Builder()
                 .setPrefetchDistance(PAGE_SIZE)
                 .setPageSize(PAGE_SIZE)
@@ -100,11 +104,11 @@ internal constructor(
             .setInitialLoadKey(initialLoadKey)
             .build()
 
-    suspend fun snapshotLocal(assetId: String, snapshotId: String) = assetRepository.snapshotLocal(assetId, snapshotId)
+    suspend fun snapshotLocal(assetId: String, snapshotId: String) = tokenRepository.snapshotLocal(assetId, snapshotId)
 
-    fun assetItem(id: String): LiveData<AssetItem> = assetRepository.assetItem(id)
+    fun assetItem(id: String): LiveData<TokenItem> = tokenRepository.assetItem(id)
 
-    suspend fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
+    suspend fun simpleAssetItem(id: String) = tokenRepository.simpleAssetItem(id)
 
     suspend fun verifyPin(code: String) = withContext(Dispatchers.IO) {
         accountRepository.verifyPin(code)
@@ -121,15 +125,15 @@ internal constructor(
         jobManager.addJobInBackground(RefreshUserJob(queryUsers))
     }
 
-    suspend fun updateAssetHidden(id: String, hidden: Boolean) = assetRepository.updateHidden(id, hidden)
+    suspend fun updateAssetHidden(id: String, hidden: Boolean) = tokenRepository.updateHidden(id, hidden)
 
-    fun hiddenAssets(): LiveData<List<AssetItem>> = assetRepository.hiddenAssetItems()
+    fun hiddenAssets(): LiveData<List<TokenItem>> = tokenRepository.hiddenAssetItems()
 
-    fun addresses(id: String) = assetRepository.addresses(id)
+    fun addresses(id: String) = tokenRepository.addresses(id)
 
     fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0, orderByAmount: Boolean = false): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(
-            assetRepository.allSnapshots(type, otherType, orderByAmount = orderByAmount),
+            tokenRepository.allSnapshots(type, otherType, orderByAmount = orderByAmount),
             PagedList.Config.Builder()
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)
@@ -139,16 +143,17 @@ internal constructor(
             .setInitialLoadKey(initialLoadKey)
             .build()
 
-    suspend fun refreshPendingDeposits(asset: AssetItem) = assetRepository.pendingDeposits(asset.assetId, asset.getDestination(), asset.getTag())
 
-    suspend fun clearPendingDepositsByAssetId(assetId: String) = assetRepository.clearPendingDepositsByAssetId(assetId)
+    suspend fun refreshPendingDeposits(asset: TokenItem) = tokenRepository.pendingDeposits(asset.assetId, asset.getDestination()!!, asset.getTag())
 
-    suspend fun findSnapshotByTransactionHashList(assetId: String, hashList: List<String>) = assetRepository.findSnapshotByTransactionHashList(assetId, hashList)
+    suspend fun clearPendingDepositsByAssetId(assetId: String) = tokenRepository.clearPendingDepositsByAssetId(assetId)
 
-    suspend fun insertPendingDeposit(snapshot: List<Snapshot>) = assetRepository.insertPendingDeposit(snapshot)
+    suspend fun findSnapshotByTransactionHashList(assetId: String, hashList: List<String>) = tokenRepository.findSnapshotByTransactionHashList(assetId, hashList)
+
+    suspend fun insertPendingDeposit(snapshot: List<SafeSnapshot>) = tokenRepository.insertPendingDeposit(snapshot)
 
     suspend fun getAsset(assetId: String) = withContext(Dispatchers.IO) {
-        assetRepository.asset(assetId)
+        tokenRepository.asset(assetId)
     }
 
     fun refreshHotAssets() {
@@ -156,38 +161,38 @@ internal constructor(
     }
 
     fun refreshAsset(assetId: String? = null) {
-        jobManager.addJobInBackground(RefreshAssetsJob(assetId))
+        jobManager.addJobInBackground(RefreshTokensJob(assetId))
     }
 
-    suspend fun queryAsset(query: String): List<AssetItem> = assetRepository.queryAsset(query)
+    suspend fun queryAsset(query: String): List<TokenItem> = tokenRepository.queryAsset(query)
 
     fun saveAssets(hotAssetList: List<TopAssetItem>) {
         hotAssetList.forEach {
-            jobManager.addJobInBackground(RefreshAssetsJob(it.assetId))
+            jobManager.addJobInBackground(RefreshTokensJob(it.assetId))
         }
     }
 
-    suspend fun findAssetItemById(assetId: String) = assetRepository.findAssetItemById(assetId)
+    suspend fun findAssetItemById(assetId: String) = tokenRepository.findAssetItemById(assetId)
 
-    suspend fun findOrSyncAsset(assetId: String): AssetItem? {
+    suspend fun findOrSyncAsset(assetId: String): TokenItem? {
         return withContext(Dispatchers.IO) {
-            assetRepository.findOrSyncAsset(assetId)
+            tokenRepository.findOrSyncAsset(assetId)
         }
     }
 
     suspend fun syncNoExistAsset(assetIds: List<String>) = withContext(Dispatchers.IO) {
         assetIds.forEach { id ->
-            if (assetRepository.findAssetItemById(id) == null) {
-                assetRepository.findOrSyncAsset(id)
+            if (tokenRepository.findAssetItemById(id) == null) {
+                tokenRepository.findOrSyncAsset(id)
             }
         }
     }
 
-    fun upsetAsset(asset: Asset) = viewModelScope.launch(Dispatchers.IO) {
-        assetRepository.insert(asset)
+    fun upsetAsset(asset: Token) = viewModelScope.launch(Dispatchers.IO) {
+        tokenRepository.insert(asset)
     }
 
-    fun observeTopAssets() = assetRepository.observeTopAssets()
+    fun observeTopAssets() = tokenRepository.observeTopAssets()
 
     fun getUser(userId: String) = userRepository.getUserById(userId)
 
@@ -202,7 +207,7 @@ internal constructor(
     }
 
     suspend fun getSnapshots(assetId: String, offset: String?, limit: Int, opponent: String?, destination: String?, tag: String?) =
-        assetRepository.getSnapshots(
+        tokenRepository.getSnapshots(
             assetId,
             offset,
             limit,
@@ -215,16 +220,16 @@ internal constructor(
             },
         )
 
-    suspend fun findAssetsByIds(ids: List<String>) = assetRepository.findAssetsByIds(ids)
+    suspend fun findAssetsByIds(ids: List<String>) = tokenRepository.findAssetsByIds(ids)
 
-    suspend fun assetItems() = assetRepository.assetItems()
+    suspend fun assetItems() = tokenRepository.assetItems()
 
-    suspend fun fuzzySearchAssets(query: String?): List<AssetItem>? =
+    suspend fun fuzzySearchAssets(query: String?): List<TokenItem>? =
         if (query.isNullOrBlank()) {
             null
         } else {
             val escapedQuery = query.trim().escapeSql()
-            assetRepository.fuzzySearchAssetIgnoreAmount(escapedQuery)
+            tokenRepository.fuzzySearchAssetIgnoreAmount(escapedQuery)
         }
 
     fun updateRecentSearchAssets(
@@ -257,24 +262,24 @@ internal constructor(
         }
     }
 
-    suspend fun ticker(assetId: String, offset: String?) = assetRepository.ticker(assetId, offset)
+    suspend fun ticker(assetId: String, offset: String?) = tokenRepository.ticker(assetId, offset)
 
     suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> =
-        assetRepository.ticker(tickerRequest)
+        tokenRepository.ticker(tickerRequest)
 
     suspend fun refreshSnapshot(snapshotId: String): SnapshotItem? {
         return withContext(Dispatchers.IO) {
-            assetRepository.refreshAndGetSnapshot(snapshotId)
+            tokenRepository.refreshAndGetSnapshot(snapshotId)
         }
     }
 
     suspend fun findSnapshot(snapshotId: String): SnapshotItem? =
-        assetRepository.findSnapshotById(snapshotId)
+        tokenRepository.findSnapshotById(snapshotId)
 
     suspend fun getExternalAddressFee(assetId: String, destination: String, tag: String?) =
         accountRepository.getExternalAddressFee(assetId, destination, tag)
 
-    suspend fun profile(): MixinResponse<ProfileResponse> = assetRepository.profile()
+    suspend fun profile(): MixinResponse<ProfileResponse> = tokenRepository.profile()
 
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
     suspend fun findBotPublicKey(conversationId: String, botId: String) = userRepository.findBotPublicKey(conversationId, botId)
@@ -285,4 +290,23 @@ internal constructor(
     suspend fun deleteSessionByUserId(conversationId: String, userId: String) = withContext(Dispatchers.IO) {
         userRepository.deleteSessionByUserId(conversationId, userId)
     }
+
+    fun insertDeposit(data: List<DepositEntry>) {
+        tokenRepository.insertDeposit(data)
+    }
+
+    suspend fun checkHasOldAsset(): Boolean {
+       return handleMixinResponse(
+            invokeNetwork = {
+                tokenRepository.findOldAssets()
+            },
+            successBlock = {
+                return@handleMixinResponse it.data?.any { asset ->
+                    BigDecimal(asset.balance) != BigDecimal.ZERO
+                } ?: false
+            },
+        ) ?: false
+    }
+
+    suspend fun findBondBotUrl() = userRepository.findOrSyncApp(MIXIN_BOND_USER_ID)
 }

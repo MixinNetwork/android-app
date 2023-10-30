@@ -5,7 +5,7 @@ import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.calculateAgreement
-import one.mixin.android.crypto.generateAesKey
+import one.mixin.android.crypto.generateRandomBytes
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.publicKeyToCurve25519
@@ -37,7 +37,7 @@ class EncryptedProtocolTest {
     @Test
     fun testAes() {
         val content = "LA".toByteArray()
-        val aesGcmKey = generateAesKey()
+        val aesGcmKey = generateRandomBytes()
         val encodedContent = aesEncrypt(aesGcmKey, content)
         val decryptedContent = aesDecrypt(
             aesGcmKey,

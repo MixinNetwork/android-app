@@ -26,7 +26,7 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.adapter.SearchAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 import java.util.concurrent.TimeUnit
@@ -64,7 +64,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var disposable: Disposable? = null
     private var currentSearch: Job? = null
     private var currentQuery: String = ""
-    private var defaultAssets = emptyList<AssetItem>()
+    private var defaultAssets = emptyList<TokenItem>()
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -84,9 +84,9 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             assetRv.adapter = adapter
             adapter.callback = object : WalletSearchCallback {
-                override fun onAssetClick(assetId: String, assetItem: AssetItem?) {
+                override fun onAssetClick(assetId: String, tokenItem: TokenItem?) {
                     binding.searchEt.hideKeyboard()
-                    assetItem?.let { onAsset?.invoke(it) }
+                    tokenItem?.let { onAsset?.invoke(it) }
                     dismiss()
                 }
             }
@@ -193,7 +193,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    fun setOnAssetClick(callback: (AssetItem) -> Unit): AssetListBottomSheetDialogFragment {
+    fun setOnAssetClick(callback: (TokenItem) -> Unit): AssetListBottomSheetDialogFragment {
         this.onAsset = callback
         return this
     }
@@ -202,6 +202,6 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         return this
     }
 
-    private var onAsset: ((AssetItem) -> Unit)? = null
+    private var onAsset: ((TokenItem) -> Unit)? = null
     private var onDeposit: (() -> Unit)? = null
 }

@@ -720,6 +720,10 @@ class ConversationListFragment : LinkFragment() {
                     binding.msgTv.setText(R.string.content_transfer)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transfer)
                 }
+                conversationItem.contentType == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name -> {
+                    binding.msgTv.setText(R.string.content_transfer)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transfer)
+                }
                 conversationItem.isSticker() -> {
                     setConversationName(conversationItem)
                     binding.msgTv.setText(R.string.content_sticker)
@@ -986,6 +990,7 @@ class ConversationListFragment : LinkFragment() {
             if (conversationItem.senderId == Session.getAccountId() &&
                 conversationItem.contentType != MessageCategory.SYSTEM_CONVERSATION.name &&
                 conversationItem.contentType != MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name &&
+                conversationItem.contentType != MessageCategory.SYSTEM_SAFE_SNAPSHOT.name &&
                 conversationItem.messageStatus != MessageStatus.FAILED.name &&
                 !conversationItem.isCallMessage() && !conversationItem.isRecall() &&
                 !conversationItem.isGroupCall() &&

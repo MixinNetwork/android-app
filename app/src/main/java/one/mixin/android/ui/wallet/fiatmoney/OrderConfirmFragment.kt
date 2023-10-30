@@ -35,7 +35,7 @@ import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment.Companion.ARGS_INFO
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.cardIcon
 import timber.log.Timber
 
@@ -50,16 +50,16 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
         const val ARGS_INSTRUMENT_ID = "args_instrument_id"
         const val ARGS_AMOUNT = "args_amount"
 
-        fun newInstance(assetItem: AssetItem, currency: Currency) =
+        fun newInstance(tokenItem: TokenItem, currency: Currency) =
             OrderConfirmFragment().withArgs {
-                putParcelable(TransactionsFragment.ARGS_ASSET, assetItem)
+                putParcelable(TransactionsFragment.ARGS_ASSET, tokenItem)
                 putParcelable(ARGS_CURRENCY, currency)
             }
     }
 
     private val binding by viewBinding(FragmentOrderConfirmBinding::bind)
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
-    private lateinit var asset: AssetItem
+    private lateinit var asset: TokenItem
     private var amount: Long = 0
     private lateinit var currency: Currency
     private var scheme: String? = null
@@ -72,7 +72,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
         asset = requireNotNull(
             requireArguments().getParcelableCompat(
                 TransactionsFragment.ARGS_ASSET,
-                AssetItem::class.java,
+                TokenItem::class.java,
             ),
         )
         amount = requireArguments().getLong(ARGS_AMOUNT)

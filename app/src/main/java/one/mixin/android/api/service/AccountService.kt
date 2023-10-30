@@ -60,10 +60,10 @@ interface AccountService {
     @POST("me/preferences")
     suspend fun preferences(@Body request: AccountUpdateRequest): MixinResponse<Account>
 
-    @GET("me")
+    @GET("safe/me")
     fun getMe(): Call<MixinResponse<Account>>
 
-    @GET("me")
+    @GET("safe/me")
     suspend fun getMeSuspend(): MixinResponse<Account>
 
     @POST("me/deactivate")

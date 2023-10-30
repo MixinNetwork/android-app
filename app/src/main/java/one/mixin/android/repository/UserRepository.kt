@@ -6,6 +6,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.MIXIN_BOND_USER_ID
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CircleConversationRequest
@@ -255,5 +256,23 @@ constructor(
 
     fun deleteSessionByUserId(conversationId: String, userId: String) {
         participantSessionDao.deleteByUserId(conversationId, userId)
+    }
+
+    suspend fun findOrSyncApp(id: String): App? {
+        val app = appDao.findAppById(id)
+        if (app != null) {
+            return app
+        }
+        return handleMixinResponse(
+            invokeNetwork = {
+                userService.getUserByIdSuspend(id)
+            },
+            successBlock = {
+                it.data?.let { u ->
+                    upsert(u)
+                    return@handleMixinResponse u.app
+                }
+            },
+        )
     }
 }

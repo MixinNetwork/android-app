@@ -11,6 +11,7 @@ import okhttp3.tls.HeldCertificate
 import okio.ByteString.Companion.toByteString
 import one.mixin.android.extension.base64Encode
 import one.mixin.eddsa.Ed25519Sign
+import one.mixin.eddsa.Ed25519Verify
 import one.mixin.eddsa.Field25519
 import org.komputing.khash.keccak.KeccakParameter
 import org.komputing.khash.keccak.extensions.digestKeccak
@@ -97,6 +98,14 @@ fun publicKeyToCurve25519(publicKey: ByteArray): ByteArray {
         Field25519.contract(x)
     }
 }
+
+fun verifyCurve25519Signature(message:ByteArray, sig:ByteArray, pub:ByteArray): Boolean {
+    return if (useGoEd()) {
+        Ed25519.verify(message, sig, pub)
+    } else {
+        Ed25519Verify(pub.toByteString()).verify(sig.toByteString(), message.toByteString())
+    }
+}
 private fun edwardsToMontgomeryX(y: LongArray): LongArray {
     val oneMinusY = LongArray(Field25519.LIMB_CNT)
     oneMinusY[0] = 1
@@ -111,17 +120,24 @@ private fun edwardsToMontgomeryX(y: LongArray): LongArray {
     return outX
 }
 
+fun String.sha3Sum256(): ByteArray {
+    return digestKeccak(KeccakParameter.SHA3_256)
+}
+
 fun ByteArray.sha3Sum256(): ByteArray {
     return digestKeccak(KeccakParameter.SHA3_256)
 }
 
-fun Argon2Kt.argon2IdHash(pin: String, seed: String): Argon2KtResult =
-    argon2IdHash(pin, seed.toByteArray())
+fun Argon2Kt.argon2IHash(pin: String, seed: String): Argon2KtResult =
+    argon2IHash(pin, seed.toByteArray())
 
-fun Argon2Kt.argon2IdHash(pin: String, seed: ByteArray): Argon2KtResult {
+fun Argon2Kt.argon2IHash(pin: String, seed: ByteArray): Argon2KtResult =
+    argon2IHash(pin.toByteArray(), seed)
+
+fun Argon2Kt.argon2IHash(pin: ByteArray, seed: ByteArray): Argon2KtResult {
     return hash(
         mode = Argon2Mode.ARGON2_I,
-        password = pin.toByteArray(),
+        password = pin,
         salt = seed,
         tCostInIterations = 4,
         mCostInKibibyte = 1024,
@@ -129,13 +145,9 @@ fun Argon2Kt.argon2IdHash(pin: String, seed: ByteArray): Argon2KtResult {
     )
 }
 
-fun generateEphemeralSeed(): ByteArray {
-    val key = ByteArray(32)
-    secureRandom.nextBytes(key)
-    return key
-}
+fun generateEphemeralSeed(): ByteArray = generateRandomBytes(32)
 
-fun generateAesKey(len: Int = 16): ByteArray {
+fun generateRandomBytes(len: Int = 16): ByteArray {
     val key = ByteArray(len)
     secureRandom.nextBytes(key)
     return key

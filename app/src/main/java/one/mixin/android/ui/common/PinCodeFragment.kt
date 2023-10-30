@@ -26,7 +26,7 @@ import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.database.clearDatabase
-import one.mixin.android.util.database.clearJobs
+import one.mixin.android.util.database.clearJobsAndRawTransaction
 import one.mixin.android.util.database.getLastUserId
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
@@ -93,7 +93,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         val sameUser = lastUserId != null && lastUserId == account.userId
         if (sameUser) {
             showLoading()
-            clearJobs(requireContext())
+            clearJobsAndRawTransaction(requireContext())
         } else {
             showLoading()
             clearDatabase(requireContext())

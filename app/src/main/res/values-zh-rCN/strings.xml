@@ -381,6 +381,7 @@
     <string name="Enter_your_old_PIN">输入你的旧 PIN</string>
     <string name="Enter_your_PIN">输入你的 PIN</string>
     <string name="Enter_your_PIN_to_continue">输入你的 PIN 以继续</string>
+    <string name="Enter_your_PIN_to_verify">输入你的 PIN 来验证</string>
     <string name="EOS_contract_address">EOS 合约地址</string>
     <string name="error_address_exists">地址不存在，请确保地址是否添加成功</string>
     <string name="error_address_not_sync">地址刷新失败，请重试</string>
@@ -406,6 +407,7 @@
     <string name="error_permission">请开启相关权限</string>
     <string name="error_phone_invalid_format">错误 20110：手机号码不合法</string>
     <string name="error_phone_sms_delivery">错误 10003：发送短信失败</string>
+    <string name="error_user_not_found">对方没有更新到新版本，请通知对方更新</string>
     <string name="error_expired_card">错误 10601: 卡片已过期</string>
     <string name="error_expired_price">错误 10602: 价格已过期</string>
     <string name="error_payment_capture">错误 10603: 支付确认失败</string>
@@ -472,7 +474,7 @@
     <string name="Friday">星期五</string>
     <string name="From">来自</string>
     <string name="Generating_keys">正在创建密钥…</string>
-    <string name="Get_a_new_wallet">创建钱包</string>
+    <string name="Get_a_new_wallet">创建新钱包</string>
     <string name="Go">导航</string>
     <string name="Go_settings">去设置</string>
     <string name="Got_it">知道了</string>
@@ -767,6 +769,7 @@
     <string name="Recent_searches">最近搜索</string>
     <string name="Refresh">刷新</string>
     <string name="Refuse">拒绝</string>
+    <string name="Registering">注册中…</string>
     <string name="Reload">重新载入</string>
     <string name="Remove_all">全部删除</string>
     <string name="Remove_all_floats">确定删除全部浮窗？</string>
@@ -1280,4 +1283,12 @@
     <string name="Fees_by_Mixin">Mixin 手续费</string>
     <string name="Purchase_Total_Amount">购买总金额</string>
     <string name="chat_with_us">联系客服</string>
+    <string name="Asset_Migration">资产迁移</string>
+    <string name="Asset_Migration_Content">Mixin 已升级新的钱包系统，您还有未迁移到资产，请立刻将您的资产从旧的钱包迁移到新的钱包！</string>
+    <string name="Start_Migration">开始迁移 >></string>
+    <string name="empty_utxo">没有可用的 UTXO</string>
+    <string name="not_enough_utxo">余额不足</string>
+    <string name="max_count_not_enough_utxo">归集了 %d UTXOs，但还是不够</string>
+    <string name="gather_utxo">归集 UTXO</string>
+    <string name="Verification_failed">验证失败</string>
 </resources>

@@ -15,8 +15,10 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
+import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.databinding.FragmentTipBinding
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
@@ -24,6 +26,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
@@ -38,6 +41,7 @@ import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 import javax.inject.Inject
@@ -48,9 +52,11 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
     companion object {
         const val TAG = "TipFragment"
         const val ARGS_TIP_BUNDLE = "args_tip_bundle"
+        const val ARGS_SHOULD_WATCH = "args_should_watch"
 
-        fun newInstance(tipBundle: TipBundle) = TipFragment().withArgs {
+        fun newInstance(tipBundle: TipBundle, shouldWatch: Boolean) = TipFragment().withArgs {
             putParcelable(ARGS_TIP_BUNDLE, tipBundle)
+            putBoolean(ARGS_SHOULD_WATCH, shouldWatch)
         }
     }
 
@@ -66,6 +72,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
     private val tipBundle: TipBundle by lazy { requireArguments().getTipBundle() }
 
     private var nodeFailedInfo = ""
+
+    private var disallowClose = true
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -93,8 +101,12 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
         when (tipBundle.tipStep) {
             Processing.Creating -> processTip()
-            else -> tryConnect(false)
+            else -> tryConnect(requireArguments().getBoolean(ARGS_SHOULD_WATCH))
         }
+    }
+
+    override fun onBackPressed(): Boolean {
+        return disallowClose
     }
 
     private fun updateTipStep(newVal: TipStep) {
@@ -108,9 +120,9 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
         binding.apply {
             val forRecover = tipBundle.forRecover()
+            updateAllowClose(tipStep, forRecover)
             when (tipStep) {
                 is TryConnecting -> {
-                    closeIv.isVisible = true
                     setTitle(forRecover)
                     tipsTv.isVisible = true
                     bottomVa.displayedChild = 0
@@ -119,7 +131,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     bottomHintTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
                 }
                 is RetryConnect -> {
-                    closeIv.isVisible = true
                     setTitle(forRecover)
                     tipsTv.isVisible = true
                     bottomVa.displayedChild = 0
@@ -131,7 +142,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
                 }
                 is ReadyStart -> {
-                    closeIv.isVisible = true
                     setTitle(forRecover)
                     tipsTv.isVisible = true
                     bottomVa.displayedChild = 0
@@ -160,7 +170,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     bottomHintTv.text = ""
                 }
                 is RetryProcess -> {
-                    closeIv.isVisible = false
                     setTitle(forRecover)
                     tipsTv.isVisible = true
                     bottomVa.displayedChild = 0
@@ -180,7 +189,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
                 }
                 is Processing -> {
-                    closeIv.isVisible = false
                     descTv.setText(R.string.Syncing_and_verifying_TIP)
                     tipsTv.isVisible = false
                     bottomHintTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
@@ -201,10 +209,48 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                             bottomVa.displayedChild = 2
                             bottomHintTv.text = getString(R.string.Generating_keys)
                         }
+                        is Processing.Registering -> {
+                            bottomVa.displayedChild = 2
+                            bottomHintTv.text = getString(R.string.Registering)
+                        }
                     }
+                }
+                is RetryRegister -> {
+                    setTitle(forRecover)
+                    tipsTv.isVisible = true
+                    bottomVa.displayedChild = 0
+                    innerVa.displayedChild = 0
+                    innerTv.text = getString(R.string.Retry)
+                    innerTv.setOnClickListener {
+                        val pin = tipBundle.pin
+                        if (pin.isNullOrBlank()) {
+                            showInputPin { p ->
+                                tipBundle.pin = p
+                                onTipProcessSuccess(p, tipStep.tipPriv)
+                            }
+                        } else {
+                            lifecycleScope.launch {
+                                onTipProcessSuccess(pin, tipStep.tipPriv)
+                            }
+                        }
+                    }
+                    bottomHintTv.text = tipStep.reason
+                    bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
                 }
             }
         }
+    }
+
+    private fun updateAllowClose(tipStep: TipStep, forRecover: Boolean) {
+        disallowClose = when (tipStep) {
+            is TryConnecting, is RetryConnect, is ReadyStart -> {
+                forRecover || !tipBundle.forChange()
+            }
+            is RetryProcess, is Processing, is RetryRegister -> {
+                true
+            }
+        }
+        binding.closeIv.isVisible = !disallowClose
     }
 
     private fun tryConnect(shouldWatch: Boolean) {
@@ -250,12 +296,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 val tipCounter = Session.getTipCounter()
                 val nodeCounter = tipBundle.tipEvent?.nodeCounter ?: tipCounter
                 val failedSigners = tipBundle.tipEvent?.failedSigners
-                if (nodeCounter != tipCounter && failedSigners.isNullOrEmpty()) {
-                    showInputPin { pin ->
-                        tipBundle.pin = pin
-                        processTip()
-                    }
-                } else if (nodeCounter != tipCounter && failedSigners?.size == tip.tipNodeCount()) {
+                if (nodeCounter != tipCounter && failedSigners?.size == tip.tipNodeCount()) {
                     // for fix tipCounter > nodeCounter
                     showInputPin(getString(R.string.Enter_your_PIN)) { pin ->
                         tipBundle.oldPin = pin
@@ -263,6 +304,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                         processTip()
                     }
                 } else {
+                    // We should always input old PIN to decrypt encryptedSalt
+                    // even if there are no failed signers.
                     showInputPin(getString(R.string.Enter_your_old_PIN)) { oldPin ->
                         tipBundle.oldPin = oldPin
                         showInputPin { pin ->
@@ -313,16 +356,14 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         when {
             tipCounter < 1 ->
                 tip.createTipPriv(requireContext(), pin, deviceId, failedSigners, oldPin)
-            nodeCounter != tipCounter && failedSigners.isNullOrEmpty() ->
-                tip.updateTipPriv(requireContext(), deviceId, pin, null, null)
             else ->
-                tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin) { "process tip step update oldPin can not be null" }, failedSigners)
+                tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin) { "process tip step update oldPin can not be null" }, nodeCounter == tipCounter, failedSigners)
         }.onFailure { e ->
             tip.removeObserver(tipObserver)
             onTipProcessFailure(e, pin, tipCounter, nodeCounter)
         }.onSuccess {
             tip.removeObserver(tipObserver)
-            onTipProcessSuccess(pin)
+            onTipProcessSuccess(pin, it)
         }
     }
 
@@ -375,7 +416,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             // If new session counter equals new node counter,
             // we consider this case as PIN update success.
             if (newNodeCounter == newSessionCounter) {
-                onTipProcessSuccess(pin)
+                onTipProcessSuccess(pin, null)
                 return
             }
         }
@@ -383,7 +424,21 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         updateTipStep(RetryProcess(errMsg))
     }
 
-    private fun onTipProcessSuccess(pin: String) {
+    private suspend fun onTipProcessSuccess(pin: String, tipPriv: ByteArray?) {
+        if (!Session.hasSafe()) {
+            val registerResult: Boolean = try {
+                registerPublicKey(pin, tipPriv).getOrThrow()
+            } catch (e: Exception) {
+                val errorInfo = e.getTipExceptionMsg(requireContext())
+                updateTipStep(RetryRegister(null, errorInfo))
+                false
+            }
+            if (!registerResult) {
+                // register public key failed, already go to RetryRegister
+                return
+            }
+        }
+
         val cur = System.currentTimeMillis()
         defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
         putPrefPinInterval(requireContext(), INTERVAL_10_MINS)
@@ -402,15 +457,58 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         activity?.finish()
     }
 
-    private fun showVerifyPin(title: String? = null, onVerifySuccess: (String) -> Unit) {
+    private suspend fun registerPublicKey(pin: String, tipPriv: ByteArray?): Result<Boolean> =
+        kotlin.runCatching {
+            Timber.d("start registerPublicKey")
+            updateTipStep(Processing.Registering)
+            nodeFailedInfo = ""
+            val seed = try {
+                tipPriv ?: tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
+            } catch (e: Exception) {
+                tipBundle.oldPin = null
+                val errorInfo = e.getTipExceptionMsg(requireContext())
+                updateTipStep(RetryRegister(null, errorInfo))
+                return@runCatching false
+            }
+            val (salt, saltBase64) = tip.generateSaltAndEncryptedSaltBase64(pin, seed)
+            val spendSeed = tip.getSpendPriv(salt, seed)
+            val keyPair = newKeyPairFromSeed(spendSeed)
+            val pkHex = keyPair.publicKey.toHex()
+            val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
+            val registerResp = viewModel.registerPublicKey(
+                registerRequest = RegisterRequest(
+                    publicKey = pkHex,
+                    signature = Session.getRegisterSignature(selfId, spendSeed),
+                    pin = viewModel.getEncryptedTipBody(selfId, pkHex, pin),
+                    salt = saltBase64,
+                )
+            )
+            return@runCatching if (registerResp.isSuccess) {
+                Session.storeAccount(requireNotNull(registerResp.data) { "required account can not be null" })
+                true
+            } else {
+                tipBundle.oldPin = null
+                val error = requireNotNull(registerResp.error) { "error can not be null" }
+                val errorInfo =
+                    requireContext().getMixinErrorStringByCode(error.code, error.description)
+                updateTipStep(RetryRegister(tipPriv, errorInfo))
+                false
+            }
+        }
+
+    private fun showVerifyPin(title: String? = null, onVerifySuccess: suspend (String) -> Unit) {
         VerifyBottomSheetDialogFragment.newInstance(title ?: getString(R.string.Enter_your_old_PIN), true).setOnPinSuccess { pin ->
-            onVerifySuccess(pin)
+            lifecycleScope.launch {
+                onVerifySuccess(pin)
+            }
         }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
     }
 
-    private fun showInputPin(title: String? = null, onInputComplete: (String) -> Unit) {
+    private fun showInputPin(title: String? = null, onInputComplete: suspend (String) -> Unit) {
         PinInputBottomSheetDialogFragment.newInstance(title ?: getString(R.string.Enter_your_new_PIN)).setOnPinComplete { pin ->
-            onInputComplete(pin)
+            lifecycleScope.launch {
+                onInputComplete(pin)
+            }
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
     }
 

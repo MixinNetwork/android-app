@@ -330,7 +330,7 @@ class WalletPasswordFragment :
                 val pin = binding.pin.code()
                 tipBundle.pin = pin
                 tipBundle.tipStep = Processing.Creating
-                val tipFragment = TipFragment.newInstance(tipBundle)
+                val tipFragment = TipFragment.newInstance(tipBundle, false)
                 activity?.replaceFragment(tipFragment, R.id.container, TipFragment.TAG)
             }
         }

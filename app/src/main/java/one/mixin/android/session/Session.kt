@@ -2,6 +2,7 @@ package one.mixin.android.session
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import ed25519.Ed25519
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.EdDSAPrivateKey
 import io.jsonwebtoken.EdDSAPublicKey
@@ -14,10 +15,12 @@ import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.EdKeyPair
+import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.privateKeyToCurve25519
+import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.useGoEd
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
@@ -28,14 +31,18 @@ import one.mixin.android.extension.cutOut
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hmacSha256
+import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toHex
+import one.mixin.android.tip.storeEncryptedSalt
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
+import one.mixin.android.vo.toAccountWithoutSalt
+import one.mixin.eddsa.Ed25519Sign
 import timber.log.Timber
 import java.security.Key
 import java.util.concurrent.ConcurrentHashMap
@@ -61,7 +68,21 @@ object Session {
     fun storeAccount(account: Account) {
         self = account
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
-        preference.putString(PREF_NAME_ACCOUNT, Gson().toJson(account))
+        preference.putString(PREF_NAME_ACCOUNT, Gson().toJson(account.toAccountWithoutSalt()))
+
+        val salt = account.salt
+        if (salt.isNullOrEmpty()) {
+            return
+        }
+        val pinToken = getPinToken()?.decodeBase64()
+        if (pinToken == null) {
+            Timber.e("storeAccount store encrypted salt pin token null")
+            return
+        }
+        val encryptedSalt = aesDecrypt(pinToken, salt.base64RawURLDecode())
+        if (!storeEncryptedSalt(MixinApplication.appContext, encryptedSalt)) {
+            Timber.e("storeAccount store encrypted salt failed")
+        }
     }
 
     fun getAccount(): Account? = if (self != null) {
@@ -93,7 +114,7 @@ object Session {
     }
 
     fun getEd25519Seed(): String? {
-        if (seed != null) {
+        if (this.seed != null) {
             return seed
         } else {
             val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
@@ -164,6 +185,8 @@ object Session {
     }
 
     fun hasEmergencyContact() = getAccount()?.hasEmergencyContact ?: false
+
+    fun hasSafe() = self?.hasSafe ?: false
 
     fun setHasEmergencyContact(enabled: Boolean) {
         getAccount()?.hasEmergencyContact = enabled
@@ -341,9 +364,31 @@ object Session {
         }
         return Pair(ts, (requireNotNull(getAccountId()).toByteArray() + content.hmacSha256(sharedKey)).base64RawURLEncode())
     }
+
+    fun getRegisterSignature(message: String, seed: ByteArray): String {
+        val signTarget = message.sha3Sum256()
+        return if (useGoEd()) {
+            Ed25519.sign(signTarget, seed).base64RawURLEncode()
+        } else {
+            val keyPair =
+                one.mixin.eddsa.KeyPair.newKeyPairFromSeed(seed.toByteString(), checkOnCurve = true)
+            EdKeyPair(keyPair.publicKey.toByteArray(), keyPair.privateKey.toByteArray())
+            val signer =
+                Ed25519Sign(keyPair.privateKey.toByteArray().toByteString(), checkOnCurve = true)
+            signer.sign(signTarget.toByteString(), checkOnCurve = true).toByteArray()
+                .base64RawURLEncode()
+        }
+    }
 }
 
 fun decryptPinToken(serverPublicKey: ByteArray, privateKey: ByteArray): ByteArray {
     val private = privateKeyToCurve25519(privateKey)
     return calculateAgreement(serverPublicKey, private)
+}
+
+fun buildHashMembers(ids: List<String>): String {
+    return ids.sortedBy { it }
+        .joinToString("")
+        .sha3Sum256()
+        .joinToString("") { "%02x".format(it) }
 }

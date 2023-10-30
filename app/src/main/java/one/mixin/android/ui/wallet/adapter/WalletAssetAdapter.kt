@@ -21,13 +21,13 @@ import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.common.recyclerview.HeaderListUpdateCallback
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.util.debug.debugLongClick
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
-class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetItem>() {
+class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<TokenItem>() {
 
-    fun setAssetList(newAssets: List<AssetItem>) {
+    fun setAssetList(newAssets: List<TokenItem>) {
         if (data == null) {
             data = newAssets
             notifyItemRangeInserted(0, newAssets.size)
@@ -60,7 +60,7 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetIt
         }
     }
 
-    fun removeItem(pos: Int): AssetItem? {
+    fun removeItem(pos: Int): TokenItem? {
         val list = data?.toMutableList()
         val addr = list?.removeAt(getPosition(pos))
         data = list
@@ -68,7 +68,7 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetIt
         return addr
     }
 
-    fun restoreItem(item: AssetItem, pos: Int) {
+    fun restoreItem(item: TokenItem, pos: Int) {
         val list = data?.toMutableList()
         list?.add(getPosition(pos), item)
         data = list

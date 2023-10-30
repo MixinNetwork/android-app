@@ -14,7 +14,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.widget.BottomSheet
 
@@ -28,7 +28,7 @@ class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), T
 
         fun newInstance(
             snapshotItem: SnapshotItem? = null,
-            asset: AssetItem? = null,
+            asset: TokenItem? = null,
             assetId: String? = null,
             snapshotId: String? = null,
         ) = TransactionBottomSheetDialogFragment().withArgs {
@@ -43,7 +43,7 @@ class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), T
     private val binding by viewBinding(FragmentTransactionBinding::inflate)
 
     private val snapshot: SnapshotItem? by lazy { requireArguments().getParcelableCompat(ARGS_SNAPSHOT, SnapshotItem::class.java) }
-    private val asset: AssetItem? by lazy { requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java) }
+    private val asset: TokenItem? by lazy { requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java) }
     private val assetId: String? by lazy { requireArguments().getString(ARGS_ASSET_ID) }
     private val snapshotId: String? by lazy { requireArguments().getString(ARGS_SNAPSHOT_ID) }
 

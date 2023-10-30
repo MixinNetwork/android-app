@@ -9,7 +9,7 @@ import androidx.room.util.query
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
@@ -158,6 +158,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
     val cursorIndexOfActionName = cursor.getColumnIndexOrThrow("actionName")
     val cursorIndexOfParticipantUserId = cursor.getColumnIndexOrThrow("participantUserId")
     val cursorIndexOfSnapshotId = cursor.getColumnIndexOrThrow("snapshotId")
+    val cursorIndexOfSnapshotMemo = cursor.getColumnIndexOrThrow("snapshotMemo")
     val cursorIndexOfSnapshotType = cursor.getColumnIndexOrThrow("snapshotType")
     val cursorIndexOfSnapshotAmount = cursor.getColumnIndexOrThrow("snapshotAmount")
     val cursorIndexOfAssetSymbol = cursor.getColumnIndexOrThrow("assetSymbol")
@@ -236,6 +237,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
         val tmpActionName: String? = cursor.getString(cursorIndexOfActionName)
         val tmpParticipantUserId: String? = cursor.getString(cursorIndexOfParticipantUserId)
         val tmpSnapshotId: String? = cursor.getString(cursorIndexOfSnapshotId)
+        val tmpSnapshotMemo: String? = cursor.getString(cursorIndexOfSnapshotMemo)
         val tmpSnapshotType: String? = cursor.getString(cursorIndexOfSnapshotType)
         val tmpSnapshotAmount: String? = cursor.getString(cursorIndexOfSnapshotAmount)
         val tmpAssetSymbol: String? = cursor.getString(cursorIndexOfAssetSymbol)
@@ -322,6 +324,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
             tmpActionName,
             tmpSnapshotId,
             tmpSnapshotType,
+            tmpSnapshotMemo,
             tmpSnapshotAmount,
             tmpAssetId,
             tmpAssetType,
@@ -533,12 +536,12 @@ private val depositEntryListConverter by lazy {
 }
 
 @SuppressLint("RestrictedApi")
-fun callableAssetItem(
+fun callableTokenItem(
     db: MixinDatabase,
     statement: RoomSQLiteQuery,
     cancellationSignal: CancellationSignal,
-): Callable<List<AssetItem>> {
-    return Callable<List<AssetItem>> {
+): Callable<List<TokenItem>> {
+    return Callable<List<TokenItem>> {
         val cursor = query(db, statement, false, cancellationSignal)
         try {
             val cursorIndexOfAssetId = 0
@@ -556,16 +559,16 @@ fun callableAssetItem(
             val cursorIndexOfHidden = 12
             val cursorIndexOfChainPriceUsd = 13
             val cursorIndexOfConfirmations = 14
-            val cursorIndexOfReserve = 15
-            val cursorIndexOfChainIconUrl = 16
-            val cursorIndexOfChainSymbol = 17
-            val cursorIndexOfChainName = 18
-            val cursorIndexOfAssetKey = 19
-            val cursorIndexOfDepositEntries = 20
-            val cursorIndexOfWithdrawalMemoPossibility = 21
-            val result: MutableList<AssetItem> = java.util.ArrayList(cursor.count)
+            val cursorIndexOfChainIconUrl = 15
+            val cursorIndexOfChainSymbol = 16
+            val cursorIndexOfChainName = 17
+            val cursorIndexOfAssetKey = 18
+            val cursorIndexOfWithdrawalMemoPossibility = 19
+            val cursorIndexOfSignature = 20
+
+            val result: MutableList<TokenItem> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
-                val item: AssetItem
+                val item: TokenItem
                 val tmpAssetId: String? = if (cursor.isNull(cursorIndexOfAssetId)) {
                     null
                 } else {
@@ -639,11 +642,6 @@ fun callableAssetItem(
                     cursor.getString(cursorIndexOfChainPriceUsd)
                 }
                 val tmpConfirmations: Int = cursor.getInt(cursorIndexOfConfirmations)
-                val tmpReserve: String? = if (cursor.isNull(cursorIndexOfReserve)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfReserve)
-                }
                 val tmpChainIconUrl: String? = if (cursor.isNull(cursorIndexOfChainIconUrl)) {
                     null
                 } else {
@@ -664,26 +662,24 @@ fun callableAssetItem(
                 } else {
                     cursor.getString(cursorIndexOfAssetKey)
                 }
-                val tmpDepositEntries: String? = if (cursor.isNull(cursorIndexOfDepositEntries)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfDepositEntries)
-                }
-
                 val tmpDepositWithdrawalMemoPossibility: WithdrawalMemoPossibility? = if (cursor.isNull(cursorIndexOfWithdrawalMemoPossibility)) {
                     null
                 } else {
                     WithdrawalMemoPossibilityConverter().revertDate(cursor.getString(cursorIndexOfWithdrawalMemoPossibility))
                 }
+                val tmpSignature: String? = if (cursor.isNull(cursorIndexOfSignature)) {
+                    null
+                } else {
+                    cursor.getString(cursorIndexOfSignature)
+                }
 
-                item = AssetItem(
+                item = TokenItem(
                     tmpAssetId!!,
                     tmpSymbol!!,
                     tmpName!!,
                     tmpIconUrl!!,
                     tmpBalance!!,
-                    tmpDestination!!,
-                    depositEntryListConverter.revertDate(tmpDepositEntries),
+                    tmpDestination,
                     tmpTag,
                     tmpPriceBtc!!,
                     tmpPriceUsd!!,
@@ -697,8 +693,8 @@ fun callableAssetItem(
                     tmpChainName,
                     tmpChainPriceUsd,
                     tmpAssetKey,
-                    tmpReserve,
                     tmpDepositWithdrawalMemoPossibility,
+                    tmpSignature
                 )
                 result.add(item)
             }

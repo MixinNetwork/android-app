@@ -21,7 +21,7 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.adapter.SearchAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 import java.util.concurrent.TimeUnit
 
@@ -46,7 +46,7 @@ class AssetListFixedBottomSheetDialogFragment : MixinBottomSheetDialogFragment()
     }
 
     private var disposable: Disposable? = null
-    private var defaultAssets = emptyList<AssetItem>()
+    private var defaultAssets = emptyList<TokenItem>()
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -66,9 +66,9 @@ class AssetListFixedBottomSheetDialogFragment : MixinBottomSheetDialogFragment()
             }
             assetRv.adapter = adapter
             adapter.callback = object : WalletSearchCallback {
-                override fun onAssetClick(assetId: String, assetItem: AssetItem?) {
+                override fun onAssetClick(assetId: String, tokenItem: TokenItem?) {
                     binding.searchEt.hideKeyboard()
-                    assetItem?.let { onAsset?.invoke(it) }
+                    tokenItem?.let { onAsset?.invoke(it) }
                     dismiss()
                 }
             }
@@ -110,10 +110,10 @@ class AssetListFixedBottomSheetDialogFragment : MixinBottomSheetDialogFragment()
         }
     }
 
-    fun setOnAssetClick(callback: (AssetItem) -> Unit): AssetListFixedBottomSheetDialogFragment {
+    fun setOnAssetClick(callback: (TokenItem) -> Unit): AssetListFixedBottomSheetDialogFragment {
         this.onAsset = callback
         return this
     }
 
-    private var onAsset: ((AssetItem) -> Unit)? = null
+    private var onAsset: ((TokenItem) -> Unit)? = null
 }

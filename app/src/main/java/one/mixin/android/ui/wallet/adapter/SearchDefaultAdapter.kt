@@ -15,7 +15,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.util.getChainNetwork
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.TopAssetItem
 import java.math.BigDecimal
@@ -26,7 +26,7 @@ class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyc
         const val TYPE_TOP = 1
     }
 
-    var recentAssets: List<AssetItem>? = null
+    var recentAssets: List<TokenItem>? = null
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
             if (value == field) return
@@ -133,7 +133,7 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
 }
 
 class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
-    fun bind(asset: AssetItem, callback: WalletSearchCallback? = null) {
+    fun bind(asset: TokenItem, callback: WalletSearchCallback? = null) {
         bindView(
             asset.assetId,
             asset.iconUrl,
@@ -173,5 +173,5 @@ class TopAssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding)
 }
 
 interface WalletSearchCallback {
-    fun onAssetClick(assetId: String, assetItem: AssetItem? = null)
+    fun onAssetClick(assetId: String, tokenItem: TokenItem? = null)
 }

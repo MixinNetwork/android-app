@@ -1,19 +1,16 @@
 package one.mixin.android.ui.wallet
 
-import android.os.Bundle
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.appcompat.view.ContextThemeWrapper
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewWalletTransactionsSendBottomBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.putString
-import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.conversation.TransferFragment
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 
 class SendBottomSheet(
@@ -25,7 +22,7 @@ class SendBottomSheet(
     private var _bottomSendBinding: ViewWalletTransactionsSendBottomBinding? = null
     private val bottomSendBinding get() = requireNotNull(_bottomSendBinding)
 
-    fun show(asset: AssetItem) {
+    fun show(asset: TokenItem) {
         val builder = BottomSheet.Builder(fragment.requireActivity())
         _bottomSendBinding = ViewWalletTransactionsSendBottomBinding.bind(
             View.inflate(
@@ -41,20 +38,6 @@ class SendBottomSheet(
                 bottomSheet.dismiss()
                 fragment.defaultSharedPreferences.putString(TransferFragment.ASSET_PREFERENCE, asset.assetId)
                 this@SendBottomSheet.fragment.view?.navigate(navContactAction)
-            }
-            address.setOnClickListener {
-                bottomSheet.dismiss()
-                this@SendBottomSheet.fragment.view?.navigate(
-                    navAddressAction,
-                    Bundle().apply {
-                        putParcelable(TransactionsFragment.ARGS_ASSET, asset)
-                    },
-                )
-            }
-            tipWallet.isVisible = navTipAction != null && WalletConnect.isEnabled(fragment.requireContext())
-            tipWallet.setOnClickListener {
-                bottomSheet.dismiss()
-                navTipAction?.invoke()
             }
             sendCancel.setOnClickListener { bottomSheet.dismiss() }
         }

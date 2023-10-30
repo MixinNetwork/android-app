@@ -18,42 +18,29 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
 
     open fun bind(snapshot: SnapshotItem, listener: OnSnapshotListener?) {
         val isPositive = snapshot.amount.toFloat() > 0
-        when (snapshot.type) {
-            SnapshotType.pending.name -> {
+        // simulate type
+        val type = if (snapshot.opponentId?.isNotBlank() == true) {
+            SnapshotType.transfer
+        } else if (snapshot.type == SnapshotType.pending.name) {
+            SnapshotType.pending
+        } else {
+            if (isPositive) SnapshotType.deposit else SnapshotType.withdrawal
+        }
+        when (type) {
+            SnapshotType.transfer -> {
+                binding.name.text = snapshot.opponentFullName
+                val opponentId = requireNotNull(snapshot.opponentId) { "required opponentId can not be null" }
+                binding.avatar.setInfo(snapshot.opponentFullName, snapshot.avatarUrl, opponentId)
+                binding.avatar.setOnClickListener {
+                    listener?.onUserClick(opponentId)
+                }
+            }
+            SnapshotType.pending -> {
                 binding.name.text = itemView.context.resources.getQuantityString(R.plurals.pending_confirmation, snapshot.confirmations ?: 0, snapshot.confirmations ?: 0, snapshot.assetConfirmations)
                 binding.avatar.setNet()
                 binding.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
             }
-            SnapshotType.deposit.name -> {
-                binding.name.setText(R.string.Deposit)
-                binding.avatar.setNet()
-            }
-            SnapshotType.transfer.name -> {
-                binding.name.setText(R.string.Transfer)
-                binding.avatar.setInfo(snapshot.opponentFullName, snapshot.avatarUrl, snapshot.opponentId ?: "")
-                binding.avatar.setOnClickListener {
-                    listener?.onUserClick(snapshot.opponentId!!)
-                }
-                binding.avatar.setTextSize(12f)
-            }
-            SnapshotType.withdrawal.name -> {
-                binding.name.setText(R.string.Withdrawal)
-                binding.avatar.setNet()
-            }
-            SnapshotType.fee.name -> {
-                binding.name.setText(R.string.Fee)
-                binding.avatar.setNet()
-            }
-            SnapshotType.rebate.name -> {
-                binding.name.setText(R.string.Rebate)
-                binding.avatar.setNet()
-            }
-            SnapshotType.raw.name -> {
-                binding.name.setText(R.string.Raw)
-                binding.avatar.setNet()
-            }
             else -> {
-                binding.name.text = snapshot.type
                 binding.avatar.setNet()
             }
         }

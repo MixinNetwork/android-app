@@ -15,12 +15,12 @@ import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.getChainNetwork
-import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.safe.TokenItem
 
 class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolder(binding.root) {
     @SuppressLint("SetTextI18n")
-    fun bind(asset: AssetItem, target: String, onItemClickListener: SearchFragment.OnSearchClickListener?) {
+    fun bind(asset: TokenItem, target: String, onItemClickListener: SearchFragment.OnSearchClickListener?) {
         binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         binding.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         binding.root.setOnClickListener { onItemClickListener?.onAsset(asset) }

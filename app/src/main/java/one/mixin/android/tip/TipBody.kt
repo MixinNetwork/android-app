@@ -21,6 +21,7 @@ object TipBody {
     private const val TIPRawTransactionCreate = "TIP:TRANSACTION:CREATE:"
     private const val TIPOAuthApprove = "TIP:OAUTH:APPROVE:"
     private const val TIPProvisioningCreate = "TIP:PROVISIONING:UPDATE:"
+    private const val TIPBodyForSequencerRegister = "SEQUENCER:REGISTER:"
 
     fun forVerify(timestamp: Long): ByteArray =
         String.format("%s%032d", TIPVerify, timestamp).toByteArray()
@@ -77,6 +78,9 @@ object TipBody {
 
     fun forProvisioningCreate(id: String, secret: String): ByteArray =
         (TIPProvisioningCreate + id + secret).hashToBody()
+
+    fun forSequencerRegister(userId: String, publicKey: String): ByteArray =
+        (TIPBodyForSequencerRegister + userId + publicKey).hashToBody()
 
     private fun String.hashToBody() = sha256()
 }

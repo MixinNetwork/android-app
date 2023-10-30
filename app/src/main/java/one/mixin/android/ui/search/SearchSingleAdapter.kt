@@ -15,10 +15,10 @@ import one.mixin.android.ui.search.holder.AssetHolder
 import one.mixin.android.ui.search.holder.ChatHolder
 import one.mixin.android.ui.search.holder.ContactHolder
 import one.mixin.android.ui.search.holder.MessageHolder
-import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
 
 class SearchSingleAdapter(private val type: SearchType) : HeaderAdapter<Parcelable>() {
     var onItemClickListener: SearchFragment.OnSearchClickListener? = null
@@ -37,7 +37,7 @@ class SearchSingleAdapter(private val type: SearchType) : HeaderAdapter<Parcelab
         if (holder is NormalHolder) {
             data?.get(getPos(position)).let {
                 when (type) {
-                    TypeAsset -> (holder as AssetHolder).bind(it as AssetItem, query, onItemClickListener)
+                    TypeAsset -> (holder as AssetHolder).bind(it as TokenItem, query, onItemClickListener)
                     TypeChat -> (holder as ChatHolder).bind(it as ChatMinimal, query, onItemClickListener)
                     TypeUser -> (holder as ContactHolder).bind(it as User, query, onItemClickListener)
                     TypeMessage -> (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener)

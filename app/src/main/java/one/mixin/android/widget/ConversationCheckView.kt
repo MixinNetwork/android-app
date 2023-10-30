@@ -176,6 +176,9 @@ class ConversationCheckView : LinearLayout, Checkable {
             item.contentType == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {
                 binding.mixinIdTv.setText(R.string.content_transfer)
             }
+            item.contentType == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name -> {
+                binding.mixinIdTv.setText(R.string.content_transfer)
+            }
             item.isSticker() -> {
                 binding.mixinIdTv.setText(R.string.content_sticker)
             }

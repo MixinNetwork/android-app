@@ -57,30 +57,30 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipSignAction
 import one.mixin.android.tip.matchTipSignAction
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
-import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.common.NftBottomSheetDialogFragment
-import one.mixin.android.ui.common.OutputBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.AssetBiometricItem
-import one.mixin.android.ui.common.biometric.Multi2MultiBiometricItem
-import one.mixin.android.ui.common.biometric.NftBiometricItem
-import one.mixin.android.ui.common.biometric.One2MultiBiometricItem
-import one.mixin.android.ui.common.biometric.TransferBiometricItem
-import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_LINK
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.oldwallet.BottomSheetViewModel
+import one.mixin.android.ui.oldwallet.OutputBottomSheetDialogFragment
+import one.mixin.android.ui.oldwallet.PinAddrBottomSheetDialogFragment
+import one.mixin.android.ui.oldwallet.PreconditionBottomSheetDialogFragment
+import one.mixin.android.ui.oldwallet.PreconditionBottomSheetDialogFragment.Companion.FROM_LINK
+import one.mixin.android.ui.oldwallet.TransactionBottomSheetDialogFragment
+import one.mixin.android.ui.oldwallet.biometric.AssetBiometricItem
+import one.mixin.android.ui.oldwallet.biometric.Multi2MultiBiometricItem
+import one.mixin.android.ui.oldwallet.biometric.NftBiometricItem
+import one.mixin.android.ui.oldwallet.biometric.One2MultiBiometricItem
+import one.mixin.android.ui.oldwallet.biometric.TransferBiometricItem
+import one.mixin.android.ui.oldwallet.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
@@ -554,68 +554,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 }
             }
-        } else if (url.startsWith(Scheme.HTTPS_WITHDRAWAL, true) || url.startsWith(Scheme.WITHDRAWAL, true)) {
-            if (checkHasPin()) return
-
-            val uri = Uri.parse(url)
-            val assetId = uri.getQueryParameter("asset")
-            val amount = uri.getQueryParameter("amount")?.stripAmountZero()
-            val memo = uri.getQueryParameter("memo")?.run {
-                Uri.decode(this)
-            }
-            val traceId = uri.getQueryParameter("trace")
-            val addressId = uri.getQueryParameter("address")
-            if (assetId.isNullOrEmpty() || addressId.isNullOrEmpty() ||
-                amount.isNullOrEmpty() || traceId.isNullOrEmpty() || !assetId.isUUID() ||
-                !traceId.isUUID()
-            ) {
-                showError()
-            } else {
-                lifecycleScope.launch(errorHandler) {
-                    val pair = linkViewModel.refreshAndGetAddress(addressId, assetId)
-                    val address = pair.first
-                    val asset = checkAsset(assetId)
-                    if (asset != null) {
-                        when {
-                            pair.second -> {
-                                showError(R.string.error_address_exists)
-                            }
-                            address == null -> {
-                                showError(R.string.error_address_not_sync)
-                            }
-                            else -> {
-                                val dust = address.dust?.toBigDecimal()
-                                if (dust != null && amount.toBigDecimal().compareTo(dust) == -1) {
-                                    val errorString = getString(R.string.withdrawal_minimum_amount, address.dust, asset.symbol)
-                                    showError(errorString)
-                                    toast(errorString)
-                                    return@launch
-                                }
-                                val transferRequest = TransferRequest(assetId, null, amount, null, traceId, memo, addressId)
-                                handleMixinResponse(
-                                    invokeNetwork = {
-                                        linkViewModel.paySuspend(transferRequest)
-                                    },
-                                    successBlock = { r ->
-                                        val response = r.data ?: return@handleMixinResponse false
-                                        showWithdrawalBottom(address.addressId, address.destination, address.tag, address.label, address.fee, amount, asset, traceId, response.status, memo)
-                                    },
-                                    failureBlock = {
-                                        showError(R.string.Invalid_payment_link)
-                                        return@handleMixinResponse false
-                                    },
-                                    exceptionBlock = {
-                                        showError(R.string.Checking_payment_info)
-                                        return@handleMixinResponse false
-                                    },
-                                )
-                            }
-                        }
-                    } else {
-                        showError(R.string.Asset_not_found)
-                    }
-                }
-            }
         } else if (url.startsWith(Scheme.CONVERSATIONS, true)) {
             val uri = Uri.parse(url)
             val segments = uri.pathSegments
@@ -685,8 +623,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val newUrl = url.addSlashesIfNeeded()
                     if (isDonateUrl && showTransfer(newUrl)) {
                         dismiss()
-                    } else if (isExternalTransferUrl) {
-                        parseExternalTransferUrl(url)
                     } else {
                         showError()
                     }

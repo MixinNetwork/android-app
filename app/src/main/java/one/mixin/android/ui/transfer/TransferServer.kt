@@ -12,7 +12,7 @@ import kotlinx.serialization.json.Json
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.AppDao
-import one.mixin.android.db.AssetDao
+import one.mixin.android.db.TokenDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.MessageDao
@@ -72,7 +72,7 @@ import kotlin.random.Random
 
 @ExperimentalSerializationApi
 class TransferServer @Inject internal constructor(
-    val assetDao: AssetDao,
+    val tokenDao: TokenDao,
     val conversationDao: ConversationDao,
     val expiredMessageDao: ExpiredMessageDao,
     val messageDao: MessageDao,
@@ -474,12 +474,12 @@ class TransferServer @Inject internal constructor(
                 // skip
                 return
             } else if (transferDataType == TransferDataType.ASSET && primaryId != null) {
-                rowId = assetDao.getAssetRowId(primaryId) ?: -1
+                rowId = tokenDao.getAssetRowId(primaryId) ?: -1
             }
         }
         currentType = TransferDataType.ASSET.value
         while (!quit) {
-            val list = assetDao.getAssetByLimitAndRowId(LIMIT, rowId)
+            val list = tokenDao.getAssetByLimitAndRowId(LIMIT, rowId)
             if (list.isEmpty()) {
                 return
             }
@@ -493,7 +493,7 @@ class TransferServer @Inject internal constructor(
                 return
             }
             currentId = list.last().assetId
-            rowId = assetDao.getAssetRowId(list.last().assetId) ?: return
+            rowId = tokenDao.getAssetRowId(list.last().assetId) ?: return
         }
     }
 
@@ -925,10 +925,10 @@ class TransferServer @Inject internal constructor(
         }
     } private fun totalAssetCount(transferDataType: TransferDataType?, primaryId: String?): Long {
         return if (transferDataType == null || primaryId == null || transferDataType.ordinal < TransferDataType.ASSET.ordinal) {
-            assetDao.countAssets()
+            tokenDao.countAssets()
         } else if (transferDataType == TransferDataType.ASSET) {
-            val rowId = assetDao.getAssetRowId(primaryId) ?: -1L
-            assetDao.countAssets(rowId)
+            val rowId = tokenDao.getAssetRowId(primaryId) ?: -1L
+            tokenDao.countAssets(rowId)
         } else {
             0L
         }

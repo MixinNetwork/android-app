@@ -1,6 +1,7 @@
 package one.mixin.android.ui.conversation
 
 import android.Manifest
+import kernel.Kernel;
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
@@ -62,6 +63,7 @@ import com.twilio.audioswitch.AudioSwitch
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -72,9 +74,14 @@ import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.request.GhostKeyRequest
+import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
+import one.mixin.android.api.request.TransactionRequest
+import one.mixin.android.api.service.UtxoService
+import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.databinding.DialogDeleteBinding
 import one.mixin.android.databinding.DialogForwardBinding
 import one.mixin.android.databinding.DialogImportMessageBinding
@@ -142,21 +149,25 @@ import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.supportsNougat
+import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
+import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.media.AudioEndStatus
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
 import one.mixin.android.session.Session
+import one.mixin.android.tip.Tip
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment.Companion.GROUP_VOICE_MAX_COUNT
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
+import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.message.ChatRoomHelper
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
@@ -182,6 +193,7 @@ import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.imageeditor.ImageEditorActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
+import one.mixin.android.ui.oldwallet.OldTransactionFragment
 import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
@@ -193,6 +205,7 @@ import one.mixin.android.ui.sticker.StickerPreviewBottomSheetFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.wallet.TransactionFragment
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
@@ -215,6 +228,7 @@ import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
+import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.ParticipantRole
@@ -332,6 +346,12 @@ class ConversationFragment() :
 
     @Inject
     lateinit var audioSwitch: AudioSwitch
+
+    @Inject
+    lateinit var tip: Tip
+
+    @Inject
+    lateinit var utxoService: UtxoService
 
     private val chatViewModel by viewModels<ConversationViewModel>()
 
@@ -759,14 +779,25 @@ class ConversationFragment() :
             }
 
             override fun onBillClick(messageItem: MessageItem) {
-                activity?.addFragment(
-                    this@ConversationFragment,
-                    TransactionFragment.newInstance(
-                        assetId = messageItem.assetId,
-                        snapshotId = messageItem.snapshotId,
-                    ),
-                    TransactionFragment.TAG,
-                )
+                if (messageItem.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name) {
+                    activity?.addFragment(
+                        this@ConversationFragment,
+                        TransactionFragment.newInstance(
+                            assetId = messageItem.assetId,
+                            snapshotId = messageItem.snapshotId,
+                        ),
+                        TransactionFragment.TAG,
+                    )
+                } else {
+                    activity?.addFragment(
+                        this@ConversationFragment,
+                        OldTransactionFragment.newInstance(
+                            assetId = messageItem.assetId,
+                            snapshotId = messageItem.snapshotId,
+                        ),
+                        OldTransactionFragment.TAG,
+                    )
+                }
             }
 
             override fun onContactCardClick(userId: String) {
@@ -2452,8 +2483,8 @@ class ConversationFragment() :
                         binding.chatControl.reset()
                         if (Session.getAccount()?.hasPin == true) {
                             recipient?.let {
-                                TransferFragment.newInstance(it.userId, supportSwitchAsset = true)
-                                    .showNow(parentFragmentManager, TransferFragment.TAG)
+                                TransferFragment.newInstance(it.userId, supportSwitchAsset = true).showNow(parentFragmentManager, TransferFragment.TAG)
+                                jobManager.addJobInBackground(SyncOutputJob())
                             }
                         } else {
                             TipActivity.show(requireActivity(), TipType.Create, true)

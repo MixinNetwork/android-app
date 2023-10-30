@@ -20,6 +20,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
+import androidx.annotation.OptIn
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.text.bold
@@ -29,6 +30,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -69,7 +71,7 @@ import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAssetsJob
+import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -85,7 +87,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferOutViewFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.displayAddress
@@ -110,7 +112,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
         fun newInstance(
             userId: String? = null,
-            asset: AssetItem? = null,
+            asset: TokenItem? = null,
             address: Address? = null,
             supportSwitchAsset: Boolean = false,
         ) = TransferFragment().withArgs {
@@ -136,8 +138,8 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
     private val chatViewModel by viewModels<ConversationViewModel>()
 
-    private var assets = listOf<AssetItem>()
-    private var currentAsset: AssetItem? = null
+    private var assets = listOf<TokenItem>()
+    private var currentAsset: TokenItem? = null
         set(value) {
             field = value
             adapter.currentAsset = value
@@ -218,7 +220,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             setCustomView(contentView)
         }
 
-        jobManager.addJobInBackground(RefreshAssetsJob())
+        jobManager.addJobInBackground(RefreshTokensJob())
         binding.titleView.leftIb.setOnClickListener {
             contentView.hideKeyboard()
             dismiss()
@@ -280,7 +282,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         binding.avatar.setNet(requireContext().dpToPx(16f))
         binding.expandIv.isVisible = false
         binding.assetRl.setOnClickListener(null)
-        currentAsset = requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)
+        currentAsset = requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)
         currentAsset?.let { updateAssetUI(it) }
 
         val address = requireArguments().getParcelableCompat(ARGS_ADDRESS, Address::class.java)
@@ -317,7 +319,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             binding.continueVa.displayedChild = POST_TEXT
             val feeAsset = chatViewModel.refreshAsset(address.feeAssetId)
             if (feeAsset == null) {
-                jobManager.addJobInBackground(RefreshAssetsJob(address.feeAssetId))
+                jobManager.addJobInBackground(RefreshTokensJob(address.feeAssetId))
                 return@launch
             }
             binding.memoRl.isVisible = isInnerTransfer()
@@ -366,7 +368,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun handleInnerTransfer() {
+    @OptIn(UnstableApi::class) private fun handleInnerTransfer() {
         if (supportSwitchAsset) {
             binding.assetRl.setOnClickListener {
                 operateKeyboard(false)
@@ -382,7 +384,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                     adapter.setTypeListener(
                         object : OnTypeClickListener {
                             @SuppressLint("NotifyDataSetChanged")
-                            override fun onTypeClick(asset: AssetItem) {
+                            override fun onTypeClick(asset: TokenItem) {
                                 currentAsset = asset
                                 updateAssetUI(asset)
                                 adapter.notifyDataSetChanged()
@@ -420,7 +422,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
         chatViewModel.assetItemsWithBalance().observe(
             this,
-            Observer { r: List<AssetItem>? ->
+            Observer { r: List<TokenItem>? ->
                 if (transferBottomOpened) return@Observer
 
                 if (r != null && r.isNotEmpty()) {
@@ -451,7 +453,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun updateAssetUI(asset: AssetItem) {
+    private fun updateAssetUI(asset: TokenItem) {
         val price = asset.priceUsd.toFloatOrNull()
         val valuable = if (price == null) false else price > 0f
         if (valuable) {
@@ -500,7 +502,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         )
     }
 
-    private fun updateAssetAutoComplete(asset: AssetItem) {
+    private fun updateAssetAutoComplete(asset: TokenItem) {
         binding.amountEt.dropDownWidth = measureText(asset.balance) + 24.dp
         autoCompleteAdapter.clear()
         autoCompleteAdapter.add(asset.balance)
@@ -572,6 +574,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         }
     }
 
+    @OptIn(UnstableApi::class)
     private fun prepareTransferBottom() = lifecycleScope.launch {
         if (currentAsset == null || (user == null && address == null)) {
             return@launch
@@ -710,7 +713,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         }
     }
 
-    class TypeAdapter : ListAdapter<AssetItem, ItemHolder>(AssetItem.DIFF_CALLBACK) {
+    class TypeAdapter : ListAdapter<TokenItem, ItemHolder>(TokenItem.DIFF_CALLBACK) {
         private var typeListener: OnTypeClickListener? = null
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =
@@ -736,11 +739,11 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             typeListener = listener
         }
 
-        var currentAsset: AssetItem? = null
+        var currentAsset: TokenItem? = null
     }
 
     interface OnTypeClickListener {
-        fun onTypeClick(asset: AssetItem)
+        fun onTypeClick(asset: TokenItem)
     }
 
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
