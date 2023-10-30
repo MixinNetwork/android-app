@@ -20,7 +20,7 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
     open fun bind(snapshot: SnapshotItem, listener: OnSnapshotListener?) {
         val isPositive = snapshot.amount.toFloat() > 0
         // simulate type
-        val type = if (snapshot.opponentId != null) {
+        val type = if (snapshot.opponentId?.isNotBlank() == true) {
             SnapshotType.transfer
         } else if (snapshot.type == SnapshotType.pending.name) {
             SnapshotType.pending

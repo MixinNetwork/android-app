@@ -19,15 +19,16 @@ class RefreshUserJob(
     }
 
     override fun onRun() = runBlocking {
-        if (userIds.isEmpty()) {
+        val ids = userIds.filter { it.isNotBlank() }
+        if (ids.isEmpty()) {
             return@runBlocking
         }
         if (forceRefresh) {
-            refreshUsers(userIds)
+            refreshUsers(ids)
             return@runBlocking
         }
-        val existUsers = userDao.findUserExist(userIds)
-        val queryUsers = userIds.filter {
+        val existUsers = userDao.findUserExist(ids)
+        val queryUsers = ids.filter {
             !existUsers.contains(it)
         }
         if (queryUsers.isEmpty()) {

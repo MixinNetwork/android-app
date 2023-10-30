@@ -47,6 +47,11 @@ class RestoreTransactionJob() : BaseJob(
                     }
                     outputDao.updateUtxoToSigned(outputIds)
                     rawTransactionDao.deleteById(transition.requestId)
+                    val token = tokenDao.findTokenByAsset(transactionsData.asset)
+                    if (token?.assetId == null) {
+                        return@forEach
+                    }
+                    insertSnapshotMessage(response.data!!, token.assetId, response.data!!.amount, transition.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
                 } else if (response.errorCode == 404) {
                     val rawTx = Kernel.decodeRawTx(transition.rawTransaction, 0)
                     val transactionsData = GsonHelper.customGson.fromJson(rawTx, TransactionsData::class.java)
