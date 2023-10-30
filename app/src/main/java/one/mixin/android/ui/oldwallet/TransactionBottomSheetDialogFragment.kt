@@ -15,7 +15,6 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint

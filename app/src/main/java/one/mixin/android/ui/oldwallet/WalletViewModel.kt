@@ -18,7 +18,6 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.sumsub.ProfileResponse
 import javax.inject.Inject

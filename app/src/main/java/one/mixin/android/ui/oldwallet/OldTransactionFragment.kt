@@ -13,7 +13,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.SnapshotItem
 
 @AndroidEntryPoint
 class OldTransactionFragment : BaseFragment(R.layout.fragment_transaction), TransactionInterface {

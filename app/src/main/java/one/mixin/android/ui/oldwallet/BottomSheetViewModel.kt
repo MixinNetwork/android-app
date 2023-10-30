@@ -41,7 +41,6 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Snapshot
-import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
