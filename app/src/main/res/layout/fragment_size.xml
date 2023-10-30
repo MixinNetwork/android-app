@@ -74,7 +74,7 @@
                     android:valueFrom="12"
                     android:valueTo="24"
                     android:stepSize="2"
-                    android:value="14"
+                    android:value="16"
                     app:labelBehavior="gone" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
