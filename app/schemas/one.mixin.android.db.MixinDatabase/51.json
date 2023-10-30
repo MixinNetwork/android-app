@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "352fcc5a66a35008fac0c2b52dbc9cb2",
+    "identityHash": "7c07af9f7842635ae8ab5af4c01f333f",
     "entities": [
       {
         "tableName": "users",
@@ -2676,7 +2676,7 @@
       },
       {
         "tableName": "safe_snapshots",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`snapshot_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `created_at` TEXT NOT NULL, `opponent_id` TEXT, `trace_id` TEXT, `transaction_hash` TEXT, `sender` TEXT, `receiver` TEXT, `memo` TEXT, `confirmations` INTEGER, `snapshot_hash` TEXT, `opening_balance` TEXT, `closing_balance` TEXT, PRIMARY KEY(`snapshot_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`snapshot_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `created_at` TEXT NOT NULL, `opponent_id` TEXT, `trace_id` TEXT, `transaction_hash` TEXT NOT NULL, `sender` TEXT, `receiver` TEXT, `memo` TEXT NOT NULL, `confirmations` INTEGER, `snapshot_hash` TEXT NOT NULL, `opening_balance` TEXT, `closing_balance` TEXT, PRIMARY KEY(`snapshot_id`))",
         "fields": [
           {
             "fieldPath": "snapshotId",
@@ -2724,7 +2724,7 @@
             "fieldPath": "transactionHash",
             "columnName": "transaction_hash",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "sender",
@@ -2742,7 +2742,7 @@
             "fieldPath": "memo",
             "columnName": "memo",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "confirmations",
@@ -2754,7 +2754,7 @@
             "fieldPath": "snapshotHash",
             "columnName": "snapshot_hash",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "openingBalance",
@@ -2820,7 +2820,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '352fcc5a66a35008fac0c2b52dbc9cb2')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7c07af9f7842635ae8ab5af4c01f333f')"
     ]
   }
 }

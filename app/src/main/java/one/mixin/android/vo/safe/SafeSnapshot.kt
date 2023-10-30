@@ -49,7 +49,7 @@ data class SafeSnapshot(
     @SerializedName("transaction_hash")
     @SerialName("transaction_hash")
     @ColumnInfo(name = "transaction_hash")
-    val transactionHash: String?,
+    val transactionHash: String,
 
     @SerializedName("sender")
     @SerialName("sender")
@@ -64,7 +64,7 @@ data class SafeSnapshot(
     @SerializedName("memo")
     @SerialName("memo")
     @ColumnInfo(name = "memo")
-    val memo: String?,
+    val memo: String,
 
     @SerializedName("confirmations")
     @SerialName("confirmations")
@@ -74,7 +74,7 @@ data class SafeSnapshot(
     @SerializedName("snapshot_hash")
     @SerialName("snapshot_hash")
     @ColumnInfo(name = "snapshot_hash")
-    val snapshotHash: String?,
+    val snapshotHash: String,
 
     @SerializedName("opening_balance")
     @SerialName("opening_balance")
