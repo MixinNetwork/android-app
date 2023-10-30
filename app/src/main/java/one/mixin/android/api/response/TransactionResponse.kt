@@ -29,5 +29,6 @@ data class TransactionResponse(
     val snapshotHash: String,
     @SerializedName("snapshot_at")
     val snapshotAt: String,
+    @SerializedName("views")
     val views: List<String>
 )
