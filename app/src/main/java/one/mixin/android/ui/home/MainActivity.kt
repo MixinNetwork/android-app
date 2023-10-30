@@ -120,6 +120,7 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.ui.tip.CheckRegisterBottomSheetDialogFragment
 import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
@@ -314,6 +315,17 @@ class MainActivity : BlazeBaseActivity() {
                 }
             }
 
+        if (Session.getAccount()?.hasPin != true || Session.getTipPub() == null) {
+            TipActivity.show(this, TipType.Create, shouldWatch = true)
+        } else {
+            if (Session.hasSafe()) {
+                jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
+            } else {
+                CheckRegisterBottomSheetDialogFragment.newInstance()
+                    .showNow(supportFragmentManager, CheckRegisterBottomSheetDialogFragment.TAG)
+            }
+        }
+
         lifecycleScope.launch(Dispatchers.IO) {
             delay(10_000)
             if (MixinApplication.get().isAppAuthShown()) {
@@ -349,8 +361,6 @@ class MainActivity : BlazeBaseActivity() {
         jobManager.addJobInBackground(RefreshAssetsJob())
         sendSafetyNetRequest()
         checkBatteryOptimization()
-
-        jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
 
         if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
             jobManager.addJobInBackground(RefreshCircleJob())
@@ -413,11 +423,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun handleTipEvent(e: TipEvent, deviceId: String) {
         val nodeCounter = e.nodeCounter
-        if (nodeCounter == -1) {
-            TipActivity.show(this, TipType.Register)
-        } else if (nodeCounter == 0) {
-            TipActivity.show(this, TipType.Create)
-        } else if (nodeCounter == 1) {
+        if (nodeCounter == 1) {
             val tipType = if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
             TipActivity.show(this, TipBundle(tipType, deviceId, TryConnecting, tipEvent = e))
         } else if (nodeCounter > 1) {

@@ -116,6 +116,8 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         binding.errorBtn.updateLayoutParams<MarginLayoutParams> {
             bottomMargin = 0
         }
+        if (keyboard?.isVisible == true) return
+
         keyboard?.isVisible = true
         keyboard?.animateHeight(
             0,

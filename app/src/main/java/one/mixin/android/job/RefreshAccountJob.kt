@@ -5,6 +5,8 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.insertUpdate
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
@@ -12,6 +14,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.PhoneNumberSettingFragment
 import one.mixin.android.ui.setting.SettingConversationFragment
+import one.mixin.android.vo.Account
 import one.mixin.android.vo.MessageSource
 import one.mixin.android.vo.SearchSource
 import one.mixin.android.vo.toUser
@@ -29,61 +32,9 @@ class RefreshAccountJob(
         val response = accountService.getMe().execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             val account = response.data ?: return@runBlocking
-            val u = account.toUser()
-            userRepo.upsert(u)
-            Session.storeAccount(account)
-            val receive = MixinApplication.appContext.defaultSharedPreferences
-                .getInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
-            if (account.receiveMessageSource == MessageSource.EVERYBODY.name &&
-                receive != MessageSource.EVERYBODY.ordinal
-            ) {
-                MixinApplication.appContext.defaultSharedPreferences
-                    .putInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
-            } else if (account.receiveMessageSource == MessageSource.CONTACTS.name &&
-                receive != MessageSource.CONTACTS.ordinal
-            ) {
-                MixinApplication.appContext.defaultSharedPreferences
-                    .putInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.CONTACTS.ordinal)
-            }
+            updateAccount(account)
 
-            val receiveGroup = MixinApplication.appContext.defaultSharedPreferences
-                .getInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
-            if (account.acceptConversationSource == MessageSource.EVERYBODY.name &&
-                receiveGroup != MessageSource.EVERYBODY.ordinal
-            ) {
-                MixinApplication.appContext.defaultSharedPreferences
-                    .putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
-            } else if (account.acceptConversationSource == MessageSource.CONTACTS.name &&
-                receiveGroup != MessageSource.CONTACTS.ordinal
-            ) {
-                MixinApplication.appContext.defaultSharedPreferences
-                    .putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.CONTACTS.ordinal)
-            }
-
-            val searchSource = MixinApplication.appContext.defaultSharedPreferences.getString(
-                PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
-                SearchSource.EVERYBODY.name,
-            )
-            if (account.acceptSearchSource != searchSource) {
-                if (SearchSource.EVERYBODY.name == account.acceptSearchSource) {
-                    MixinApplication.appContext.defaultSharedPreferences.putString(
-                        PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
-                        SearchSource.EVERYBODY.name,
-                    )
-                } else if (SearchSource.CONTACTS.name == account.acceptSearchSource) {
-                    MixinApplication.appContext.defaultSharedPreferences.putString(
-                        PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
-                        SearchSource.CONTACTS.name,
-                    )
-                } else if (SearchSource.NOBODY.name == account.acceptSearchSource) {
-                    MixinApplication.appContext.defaultSharedPreferences.putString(
-                        PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
-                        SearchSource.NOBODY.name,
-                    )
-                }
-            }
-
-            if(checkTip) {
+            if(checkTip && !tipCounterSynced.synced) {
                 tip.checkCounter(
                     account.tipCounter,
                     onNodeCounterNotEqualServer = { nodeMaxCounter, failedSigners ->
@@ -94,15 +45,65 @@ class RefreshAccountJob(
                     },
                 ).onSuccess {
                     tipCounterSynced.synced = true
-
-                    if (Session.getAccount()?.hasPin != true || Session.getTipPub() == null) {
-                        RxBus.publish(TipEvent(0, null))
-                    } else if (!Session.hasSafe()) {
-                        // TipEvent nodeCounter -1 means counter balanced and need register
-                        RxBus.publish(TipEvent(-1, null))
-                    }
                 }
             }
+        }
+    }
+}
+
+fun updateAccount(account: Account) {
+    val db = MixinDatabase.getDatabase(MixinApplication.appContext)
+    val u = account.toUser()
+    db.userDao().insertUpdate(u, db.appDao())
+    Session.storeAccount(account)
+    val receive = MixinApplication.appContext.defaultSharedPreferences
+        .getInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
+    if (account.receiveMessageSource == MessageSource.EVERYBODY.name &&
+        receive != MessageSource.EVERYBODY.ordinal
+    ) {
+        MixinApplication.appContext.defaultSharedPreferences
+            .putInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
+    } else if (account.receiveMessageSource == MessageSource.CONTACTS.name &&
+        receive != MessageSource.CONTACTS.ordinal
+    ) {
+        MixinApplication.appContext.defaultSharedPreferences
+            .putInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.CONTACTS.ordinal)
+    }
+
+    val receiveGroup = MixinApplication.appContext.defaultSharedPreferences
+        .getInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
+    if (account.acceptConversationSource == MessageSource.EVERYBODY.name &&
+        receiveGroup != MessageSource.EVERYBODY.ordinal
+    ) {
+        MixinApplication.appContext.defaultSharedPreferences
+            .putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
+    } else if (account.acceptConversationSource == MessageSource.CONTACTS.name &&
+        receiveGroup != MessageSource.CONTACTS.ordinal
+    ) {
+        MixinApplication.appContext.defaultSharedPreferences
+            .putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.CONTACTS.ordinal)
+    }
+
+    val searchSource = MixinApplication.appContext.defaultSharedPreferences.getString(
+        PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
+        SearchSource.EVERYBODY.name,
+    )
+    if (account.acceptSearchSource != searchSource) {
+        if (SearchSource.EVERYBODY.name == account.acceptSearchSource) {
+            MixinApplication.appContext.defaultSharedPreferences.putString(
+                PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
+                SearchSource.EVERYBODY.name,
+            )
+        } else if (SearchSource.CONTACTS.name == account.acceptSearchSource) {
+            MixinApplication.appContext.defaultSharedPreferences.putString(
+                PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
+                SearchSource.CONTACTS.name,
+            )
+        } else if (SearchSource.NOBODY.name == account.acceptSearchSource) {
+            MixinApplication.appContext.defaultSharedPreferences.putString(
+                PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
+                SearchSource.NOBODY.name,
+            )
         }
     }
 }

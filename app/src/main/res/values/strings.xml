@@ -391,6 +391,7 @@
     <string name="Enter_your_old_PIN">Enter your old PIN</string>
     <string name="Enter_your_PIN">Enter your PIN</string>
     <string name="Enter_your_PIN_to_continue">Enter your PIN to continue</string>
+    <string name="Enter_your_PIN_to_verify">Enter your PIN to verify</string>
     <string name="EOS_contract_address">EOS contract address</string>
     <string name="error_address_exists">The address does not exist, please make sure that the address is added successfully</string>
     <string name="error_address_not_sync">Address refresh failed, please try again</string>
@@ -485,7 +486,6 @@
     <string name="From">From</string>
     <string name="Generating_keys">Generating keys…</string>
     <string name="Get_a_new_wallet">Get a new wallet</string>
-    <string name="Get_a_new_wallet_successfully">Get a new wallet successfully</string>
     <string name="GIF">GIF</string>
     <string name="Go">Go</string>
     <string name="Go_settings">Go settings</string>
@@ -1316,7 +1316,6 @@
     <string name="Asset_Migration">Asset Migration</string>
     <string name="Asset_Migration_Content">Mixin has upgraded the new wallet system, you have not yet migrated to assets, please move your assets from the old wallet to the new wallet immediately!</string>
     <string name="Start_Migration">Start the migration</string>
-    <string name="wait_node_sync_complete">Please wait for node synchronization to complete.</string>
     <string name="empty_utxo">Empty UTXO</string>
     <string name="not_enough_utxo">Insufficient balance</string>
     <string name="max_count_not_enough_utxo">Gathering %d UTXOs, but still not enough</string>

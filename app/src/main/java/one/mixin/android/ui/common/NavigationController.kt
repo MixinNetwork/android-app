@@ -31,15 +31,7 @@ constructor(mainActivity: MainActivity) {
 
     fun pushWallet(deviceId: String? = null) {
         if (Session.getAccount()?.hasPin == true) {
-            if (!Session.hasSafe()) {
-                if (context.tipCounterSynced.synced) {
-                    TipActivity.show(context, TipType.Register)
-                } else {
-                    toast(R.string.wait_node_sync_complete)
-                }
-            } else {
-                WalletActivity.show(context)
-            }
+            WalletActivity.show(context)
         } else {
             val id = deviceId
                 ?: requireNotNull(context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null)) { "required deviceId can not be null" }

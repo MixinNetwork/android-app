@@ -13,6 +13,7 @@ import one.mixin.android.api.response.TipSigner
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.TipService
 import one.mixin.android.crypto.BasePinCipher
+import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.argon2IHash
@@ -138,6 +139,17 @@ class Tip @Inject internal constructor(
                 }
             }
         }
+
+    fun generateSaltAndKeyPair(pin: String, tipPriv: ByteArray): Pair<String, EdKeyPair> {
+        val salt = generateRandomBytes(32)
+        val saltAESKey = generateSaltAESKey(pin, tipPriv)
+        val encryptedSalt = aesEncrypt(saltAESKey, salt)
+        val spendSeed = getSpendPriv(salt, tipPriv)
+        val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
+        val saltBase64 = aesEncrypt(pinToken, encryptedSalt).base64RawURLEncode()
+        val keyPair = newKeyPairFromSeed(spendSeed)
+        return Pair(saltBase64, keyPair)
+    }
 
     suspend fun getEncryptedSalt(context: Context): ByteArray {
         var salt = readEncryptedSalt(context)

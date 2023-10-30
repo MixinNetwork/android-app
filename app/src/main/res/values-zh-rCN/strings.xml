@@ -381,6 +381,7 @@
     <string name="Enter_your_old_PIN">输入你的旧 PIN</string>
     <string name="Enter_your_PIN">输入你的 PIN</string>
     <string name="Enter_your_PIN_to_continue">输入你的 PIN 以继续</string>
+    <string name="Enter_your_PIN_to_verify">输入你的 PIN 来验证</string>
     <string name="EOS_contract_address">EOS 合约地址</string>
     <string name="error_address_exists">地址不存在，请确保地址是否添加成功</string>
     <string name="error_address_not_sync">地址刷新失败，请重试</string>
@@ -474,7 +475,6 @@
     <string name="From">来自</string>
     <string name="Generating_keys">正在创建密钥…</string>
     <string name="Get_a_new_wallet">创建新钱包</string>
-    <string name="Get_a_new_wallet_successfully">创建新钱包成功</string>
     <string name="Go">导航</string>
     <string name="Go_settings">去设置</string>
     <string name="Got_it">知道了</string>
@@ -1286,7 +1286,6 @@
     <string name="Asset_Migration">资产迁移</string>
     <string name="Asset_Migration_Content">Mixin 已升级新的钱包系统，您还有未迁移到资产，请立刻将您的资产从旧的钱包迁移到新的钱包！</string>
     <string name="Start_Migration">开始迁移 >></string>
-    <string name="wait_node_sync_complete">请等待节点信息同步完成。</string>
     <string name="empty_utxo">没有可用的 UTXO</string>
     <string name="not_enough_utxo">余额不足</string>
     <string name="max_count_not_enough_utxo">归集了 %d UTXOs，但还是不够</string>

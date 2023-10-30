@@ -112,13 +112,9 @@ class UrlInterpreterActivity : BaseActivity() {
             }
             TRANSFER -> {
                 uri.lastPathSegment?.let { lastPathSegment ->
-                    if (Session.getAccount()?.hasPin == true) {
-                        if (!Session.hasSafe()) {
-                            TipActivity.show(this, TipType.Register)
-                        } else {
-                            OldTransferFragment.newInstance(lastPathSegment, supportSwitchAsset = true)
-                                .showNow(supportFragmentManager, OldTransferFragment.TAG)
-                        }
+                    if (Session.getAccount()?.hasPin == true && Session.getTipPub() != null && Session.hasSafe()) {
+                        OldTransferFragment.newInstance(lastPathSegment, supportSwitchAsset = true)
+                            .showNow(supportFragmentManager, OldTransferFragment.TAG)
                     } else {
                         toast(R.string.transfer_without_pin)
                         finish()

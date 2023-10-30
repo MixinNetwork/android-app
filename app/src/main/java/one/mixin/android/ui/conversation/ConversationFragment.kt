@@ -2482,13 +2482,9 @@ class ConversationFragment() :
                     MenuType.Transfer -> {
                         binding.chatControl.reset()
                         if (Session.getAccount()?.hasPin == true) {
-                            if (!Session.hasSafe()) {
-                                TipActivity.show(requireActivity(), TipType.Register)
-                            } else {
-                                recipient?.let {
-                                    TransferFragment.newInstance(it.userId, supportSwitchAsset = true).showNow(parentFragmentManager, TransferFragment.TAG)
-                                    jobManager.addJobInBackground(SyncOutputJob())
-                                }
+                            recipient?.let {
+                                TransferFragment.newInstance(it.userId, supportSwitchAsset = true).showNow(parentFragmentManager, TransferFragment.TAG)
+                                jobManager.addJobInBackground(SyncOutputJob())
                             }
                         } else {
                             TipActivity.show(requireActivity(), TipType.Create, true)

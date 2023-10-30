@@ -79,11 +79,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
         } else {
             if (Session.getAccount()?.hasPin == true) {
-                if (!Session.hasSafe()) {
-                    TipActivity.show(requireActivity(), TipType.Register)
-                } else {
-                    WalletActivity.show(requireActivity())
-                }
+                WalletActivity.show(requireActivity())
             } else {
                 TipActivity.show(requireActivity(), TipType.Create, false)
             }

@@ -18,14 +18,9 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
-import one.mixin.android.crypto.aesEncrypt
-import one.mixin.android.crypto.generateRandomBytes
-import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.databinding.FragmentTipBinding
-import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navTo
@@ -38,9 +33,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
-import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
-import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
@@ -48,7 +41,6 @@ import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.getMixinErrorStringByCode
-import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 import javax.inject.Inject
@@ -59,9 +51,11 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
     companion object {
         const val TAG = "TipFragment"
         const val ARGS_TIP_BUNDLE = "args_tip_bundle"
+        const val ARGS_SHOULD_WATCH = "args_should_watch"
 
-        fun newInstance(tipBundle: TipBundle) = TipFragment().withArgs {
+        fun newInstance(tipBundle: TipBundle, shouldWatch: Boolean) = TipFragment().withArgs {
             putParcelable(ARGS_TIP_BUNDLE, tipBundle)
+            putBoolean(ARGS_SHOULD_WATCH, shouldWatch)
         }
     }
 
@@ -101,13 +95,12 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 TipType.Create -> titleTv.setText(R.string.Create_PIN)
                 TipType.Change -> titleTv.setText(R.string.Change_PIN)
                 TipType.Upgrade -> titleTv.setText(R.string.Upgrade_TIP)
-                TipType.Register -> titleTv.setText(R.string.Get_a_new_wallet)
             }
         }
 
         when (tipBundle.tipStep) {
             Processing.Creating -> processTip()
-            else -> tryConnect(false)
+            else -> tryConnect(requireArguments().getBoolean(ARGS_SHOULD_WATCH))
         }
     }
 
@@ -164,15 +157,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                                         tipBundle.oldPin = pin // as legacy pin
                                         tipBundle.pin = pin
                                         processTip()
-                                    }
-                                }
-                            }
-                            TipType.Register -> {
-                                innerTv.text = getString(R.string.Start)
-                                innerTv.setOnClickListener {
-                                    showVerifyPin(getString(R.string.Enter_your_PIN)) { pin ->
-                                        tipBundle.pin = pin
-                                        onTipProcessSuccess(pin, null)
                                     }
                                 }
                             }
@@ -343,12 +327,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     processTip()
                 }
             }
-            TipType.Register -> {
-                showVerifyPin(getString(R.string.Enter_your_PIN)) { pin ->
-                    tipBundle.pin = pin
-                    onTipProcessSuccess(pin, null)
-                }
-            }
         }
     }
 
@@ -460,22 +438,19 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             }
         }
 
-        if (tipBundle.tipType != TipType.Register) {
-            val cur = System.currentTimeMillis()
-            defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
-            putPrefPinInterval(requireContext(), INTERVAL_10_MINS)
+        val cur = System.currentTimeMillis()
+        defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
+        putPrefPinInterval(requireContext(), INTERVAL_10_MINS)
 
-            val openBiometrics = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-            if (openBiometrics) {
-                BiometricUtil.savePin(requireContext(), pin, this)
-            }
+        val openBiometrics = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
+        if (openBiometrics) {
+            BiometricUtil.savePin(requireContext(), pin, this)
         }
 
         when (tipBundle.tipType) {
             TipType.Change -> toast(R.string.Change_PIN_successfully)
             TipType.Create -> toast(R.string.Set_PIN_successfully)
             TipType.Upgrade -> toast(R.string.Upgrade_TIP_successfully)
-            TipType.Register -> toast(R.string.Get_a_new_wallet_successfully)
         }
 
         activity?.finish()
@@ -494,37 +469,19 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 updateTipStep(RetryRegister(null, errorInfo))
                 return@runCatching false
             }
-            val salt = generateRandomBytes(32)
-            val saltAESKey = tip.generateSaltAESKey(pin, seed)
-            val encryptedSalt = aesEncrypt(saltAESKey, salt)
-            val spendSeed = tip.getSpendPriv(salt, seed)
-            val keyPair = newKeyPairFromSeed(spendSeed)
+            val (saltBase64, keyPair) = tip.generateSaltAndKeyPair(pin, seed)
             val pkHex = keyPair.publicKey.toHex()
             val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
-            val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
-            val saltBase64 = aesEncrypt(pinToken, encryptedSalt).base64RawURLEncode()
             val registerResp = viewModel.registerPublicKey(
                 registerRequest = RegisterRequest(
                     publicKey = pkHex,
-                    signature = Session.getRegisterSignature(selfId, spendSeed),
+                    signature = Session.getRegisterSignature(selfId, keyPair.privateKey),
                     pin = viewModel.getEncryptedTipBody(selfId, pkHex, pin),
                     salt = saltBase64,
                 )
             )
             return@runCatching if (registerResp.isSuccess) {
-                if (registerResp.data?.publicKey != pkHex) {
-                    // generally this would not happen, if it did happen, just report and finish.
-                    val exception = TipException("$TAG register public key, response pkHex not equal request pkHex")
-                    reportException(exception)
-                    activity?.finish()
-                }
-
-                val account = Session.getAccount()
-                account?.let {
-                    it.hasSafe = true
-                    it.salt = saltBase64
-                    Session.storeAccount(it)
-                }
+                Session.storeAccount(requireNotNull(registerResp.data) { "required account can not be null" })
                 true
             } else {
                 tipBundle.oldPin = null
@@ -560,7 +517,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                         TipType.Create -> R.string.Creating_wallet_terminated_unexpectedly
                         TipType.Upgrade -> R.string.Upgrading_TIP_terminated_unexpectedly
                         TipType.Change -> R.string.Changing_PIN_terminated_unexpectedly
-                        TipType.Register -> R.string.TIP_introduction  // actually register step has no recover state, so keep string
                     },
                 )
             } else {

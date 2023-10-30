@@ -11,7 +11,7 @@ import one.mixin.android.extension.getParcelableExtraCompat
 
 @Parcelize
 enum class TipType : Parcelable {
-    Create, Change, Upgrade, Register
+    Create, Change, Upgrade
 }
 
 sealed class TipStep : Parcelable
@@ -48,8 +48,6 @@ data class TipBundle(
     fun forChange() = tipType == TipType.Change
 
     fun forCreate() = tipType == TipType.Create
-
-    fun forRegister() = tipType == TipType.Register
 
     fun forRecover() = tipEvent != null
 

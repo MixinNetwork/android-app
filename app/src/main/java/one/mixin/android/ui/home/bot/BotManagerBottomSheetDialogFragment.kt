@@ -34,7 +34,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.showUserBottom
@@ -221,15 +220,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
             when (app.id) {
                 INTERNAL_WALLET_ID -> {
                     if (Session.getAccount()?.hasPin == true) {
-                        if (!Session.hasSafe()) {
-                            if (tipCounterSynced.synced) {
-                                TipActivity.show(requireActivity(), TipType.Register)
-                            } else {
-                                toast(R.string.wait_node_sync_complete)
-                            }
-                        } else {
-                            WalletActivity.show(requireActivity())
-                        }
+                        WalletActivity.show(requireActivity())
                     } else {
                         TipActivity.show(requireActivity(), TipType.Create, false)
                     }

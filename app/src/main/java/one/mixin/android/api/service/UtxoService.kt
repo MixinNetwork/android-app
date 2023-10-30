@@ -7,7 +7,7 @@ import one.mixin.android.api.request.GhostKeyRequest
 import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.response.GhostKey
-import one.mixin.android.api.response.RegisterResponse
+import one.mixin.android.vo.Account
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import retrofit2.http.Body
@@ -34,7 +34,7 @@ interface UtxoService {
     @POST("/safe/users")
     suspend fun registerPublicKey(
         @Body registerRequest: RegisterRequest
-    ): MixinResponse<RegisterResponse>
+    ): MixinResponse<Account>
 
     @POST("/safe/keys")
     suspend fun ghostKey(@Body ghostKeyRequest: List<GhostKeyRequest>): MixinResponse<List<GhostKey>>

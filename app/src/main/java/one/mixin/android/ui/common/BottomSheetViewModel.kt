@@ -22,6 +22,7 @@ import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.RawTransactionsRequest
+import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
@@ -29,6 +30,7 @@ import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.request.buildGhostKeyRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
+import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.escapeSql
@@ -97,6 +99,7 @@ class BottomSheetViewModel @Inject internal constructor(
     private val cleanMessageHelper: CleanMessageHelper,
     private val pinCipher: PinCipher,
     private val tip: Tip,
+    private val utxoService: UtxoService,
 ) : ViewModel() {
     suspend fun searchCode(code: String) = withContext(Dispatchers.IO) {
         accountRepository.searchCode(code)
@@ -753,4 +756,9 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun getAssetPrecisionById(assetId: String): MixinResponse<AssetPrecision> =
         tokenRepository.getAssetPrecisionById(assetId)
+
+    suspend fun registerPublicKey(registerRequest: RegisterRequest) = utxoService.registerPublicKey(registerRequest)
+
+    suspend fun getEncryptedTipBody(userId: String, pkHex: String, pin: String): String =
+        pinCipher.encryptPin(pin, TipBody.forSequencerRegister(userId, pkHex))
 }
