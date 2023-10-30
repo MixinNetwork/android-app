@@ -306,6 +306,7 @@ interface TransactionInterface {
             )
             transactionIdTv.text = snapshot.snapshotId
             transactionTypeTv.text = getSnapshotType(fragment, snapshot.type)
+            transactionTypeLl.isVisible = false
             memoTv.text = snapshot.memo
             openingBalanceLayout.isVisible = !snapshot.openingBalance.isNullOrBlank()
             openingBalanceTv.text = "${snapshot.openingBalance} ${asset.symbol}"
