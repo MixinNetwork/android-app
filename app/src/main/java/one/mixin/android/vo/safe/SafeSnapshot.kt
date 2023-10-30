@@ -31,30 +31,35 @@ data class SafeSnapshot(
     @ColumnInfo(name = "amount")
     val amount: String,
 
-    @SerializedName("created_at")
-    @SerialName("created_at")
-    @ColumnInfo(name = "created_at")
-    val createdAt: String,
+    @SerializedName("userid")
+    @SerialName("user_id")
+    @ColumnInfo(name = "user_id")
+    val userId: String,
 
     @SerializedName("opponent_id")
     @SerialName("opponent_id")
     @ColumnInfo(name = "opponent_id")
-    val opponentId: String?,
+    val opponentId: String,
 
-    @SerializedName("trace_id")
-    @SerialName("trace_id")
-    @ColumnInfo(name = "trace_id")
-    val traceId: String?,
+    @SerializedName("memo")
+    @SerialName("memo")
+    @ColumnInfo(name = "memo")
+    val memo: String,
 
     @SerializedName("transaction_hash")
     @SerialName("transaction_hash")
     @ColumnInfo(name = "transaction_hash")
     val transactionHash: String,
 
-    @SerializedName("memo")
-    @SerialName("memo")
-    @ColumnInfo(name = "memo")
-    val memo: String,
+    @SerializedName("created_at")
+    @SerialName("created_at")
+    @ColumnInfo(name = "created_at")
+    val createdAt: String,
+
+    @SerializedName("trace_id")
+    @SerialName("trace_id")
+    @ColumnInfo(name = "trace_id")
+    val traceId: String?,
 
     @SerializedName("confirmations")
     @SerialName("confirmations")

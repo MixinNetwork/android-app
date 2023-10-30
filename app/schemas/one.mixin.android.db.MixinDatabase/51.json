@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 51,
-    "identityHash": "e8343c7ffbd4783ebe5f24507b6c0d9d",
+    "identityHash": "160c11aafe3c8695f7b9d70846459f7e",
     "entities": [
       {
         "tableName": "users",
@@ -2676,7 +2676,7 @@
       },
       {
         "tableName": "safe_snapshots",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`snapshot_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `created_at` TEXT NOT NULL, `opponent_id` TEXT, `trace_id` TEXT, `transaction_hash` TEXT NOT NULL, `memo` TEXT NOT NULL, `confirmations` INTEGER, `opening_balance` TEXT, `closing_balance` TEXT, PRIMARY KEY(`snapshot_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`snapshot_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `user_id` TEXT NOT NULL, `opponent_id` TEXT NOT NULL, `memo` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `created_at` TEXT NOT NULL, `trace_id` TEXT, `confirmations` INTEGER, `opening_balance` TEXT, `closing_balance` TEXT, PRIMARY KEY(`snapshot_id`))",
         "fields": [
           {
             "fieldPath": "snapshotId",
@@ -2703,26 +2703,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "createdAt",
-            "columnName": "created_at",
+            "fieldPath": "userId",
+            "columnName": "user_id",
             "affinity": "TEXT",
             "notNull": true
           },
           {
             "fieldPath": "opponentId",
             "columnName": "opponent_id",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "traceId",
-            "columnName": "trace_id",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "transactionHash",
-            "columnName": "transaction_hash",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -2731,6 +2719,24 @@
             "columnName": "memo",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "transactionHash",
+            "columnName": "transaction_hash",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "traceId",
+            "columnName": "trace_id",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "confirmations",
@@ -2802,7 +2808,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e8343c7ffbd4783ebe5f24507b6c0d9d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '160c11aafe3c8695f7b9d70846459f7e')"
     ]
   }
 }
