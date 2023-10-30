@@ -103,14 +103,6 @@ interface TransactionInterface {
                 tokenItem.assetId,
                 snapshotItem,
             )
-            refreshNoTransactionHashWithdrawal(
-                fragment,
-                contentBinding,
-                lifecycleScope,
-                walletViewModel,
-                snapshotItem,
-                tokenItem,
-            )
         }
     }
 
@@ -319,8 +311,8 @@ interface TransactionInterface {
             openingBalanceTv.text = "${snapshot.openingBalance} ${asset.symbol}"
             closingBalanceLayout.isVisible = !snapshot.closingBalance.isNullOrBlank()
             closingBalanceTv.text = "${snapshot.closingBalance} ${asset.symbol}"
-            snapshotHashLayout.isVisible = !snapshot.snapshotHash.isNullOrBlank()
-            snapshotHashTv.text = snapshot.snapshotHash
+            snapshotHashLayout.isVisible = !snapshot.transactionHash.isNullOrBlank()
+            snapshotHashTv.text = snapshot.transactionHash
             dateTv.text = snapshot.createdAt.fullDate()
             // simulate type
             val type = if (snapshot.opponentId != null) {
@@ -343,7 +335,7 @@ interface TransactionInterface {
                 }
                 SnapshotType.pending -> {
                     senderTitle.text = fragment.getString(R.string.From)
-                    senderTv.text = snapshot.sender
+                    // senderTv.text = snapshot.sender
                     receiverTitle.text = fragment.getString(R.string.transaction_Hash)
                     receiverTv.text = snapshot.transactionHash
                     transactionStatus.isVisible = true
@@ -357,7 +349,7 @@ interface TransactionInterface {
                 }
                 SnapshotType.deposit -> {
                     senderTitle.text = fragment.getString(R.string.From)
-                    senderTv.text = snapshot.sender
+                    // senderTv.text = snapshot.sender
                     receiverTitle.text = fragment.getString(R.string.transaction_Hash)
                     receiverTv.text = snapshot.transactionHash
                 }
@@ -369,7 +361,7 @@ interface TransactionInterface {
                     }
                     senderTitle.text = fragment.getString(R.string.transaction_Hash)
                     senderTv.text = snapshot.transactionHash
-                    receiverTv.text = snapshot.receiver
+                    // receiverTv.text = snapshot.receiver
                 }
             }
         }
@@ -385,7 +377,7 @@ interface TransactionInterface {
     ) {
         if (snapshot.type == SnapshotType.pending.name) return
 
-        if (snapshot.snapshotHash.isNullOrBlank() || (snapshot.type == SnapshotType.withdrawal.name && snapshot.transactionHash.isNullOrBlank())) {
+        if (snapshot.transactionHash.isNullOrBlank() || (snapshot.type == SnapshotType.withdrawal.name && snapshot.transactionHash.isNullOrBlank())) {
             lifecycleScope.launch {
                 walletViewModel.refreshSnapshot(snapshot.snapshotId)?.let {
                     updateUI(fragment, contentBinding, asset, snapshot)

@@ -41,12 +41,7 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                 binding.avatar.setNet()
                 binding.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
             }
-            SnapshotType.deposit -> {
-                binding.name.text = snapshot.sender?.formatPublicKey()
-                binding.avatar.setNet()
-            }
-            else -> { // withdrawal
-                binding.name.text = snapshot.receiver?.formatPublicKey()
+            else -> {
                 binding.avatar.setNet()
             }
         }

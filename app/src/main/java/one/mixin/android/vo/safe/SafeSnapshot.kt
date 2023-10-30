@@ -51,16 +51,6 @@ data class SafeSnapshot(
     @ColumnInfo(name = "transaction_hash")
     val transactionHash: String,
 
-    @SerializedName("sender")
-    @SerialName("sender")
-    @ColumnInfo(name = "sender")
-    val sender: String?,
-
-    @SerializedName("receiver")
-    @SerialName("receiver")
-    @ColumnInfo(name = "receiver")
-    val receiver: String?,
-
     @SerializedName("memo")
     @SerialName("memo")
     @ColumnInfo(name = "memo")
@@ -70,11 +60,6 @@ data class SafeSnapshot(
     @SerialName("confirmations")
     @ColumnInfo(name = "confirmations")
     val confirmations: Int?,
-
-    @SerializedName("snapshot_hash")
-    @SerialName("snapshot_hash")
-    @ColumnInfo(name = "snapshot_hash")
-    val snapshotHash: String,
 
     @SerializedName("opening_balance")
     @SerialName("opening_balance")
