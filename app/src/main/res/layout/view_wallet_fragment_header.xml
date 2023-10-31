@@ -14,7 +14,7 @@
         <FrameLayout
             android:id="@+id/migrate"
             android:layout_width="match_parent"
-            android:layout_height="26dp"
+            android:layout_height="32dp"
             android:background="@color/colorBlue"
             android:visibility="gone">
 
