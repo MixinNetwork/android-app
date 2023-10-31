@@ -461,17 +461,17 @@ object AppModule {
             addInterceptor { chain ->
                 val requestId = UUID.randomUUID().toString()
                 val sourceRequest = chain.request()
-                val builder = sourceRequest.newBuilder()
-                builder.addHeader("User-Agent", API_UA)
+                val b = sourceRequest.newBuilder()
+                b.addHeader("User-Agent", API_UA)
                     .addHeader("Accept-Language", Locale.getDefault().language)
                     .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
                     .addHeader(xRequestId, requestId)
                 val (ts, signature) = Session.getRouteSignature(sourceRequest)
                 if (!sourceRequest.url.toString().endsWith("checkout/ticker")) {
-                    builder.addHeader(mrAccessTimestamp, ts.toString())
-                    builder.addHeader(mrAccessSign, signature)
+                    b.addHeader(mrAccessTimestamp, ts.toString())
+                    b.addHeader(mrAccessSign, signature)
                 }
-                val request = builder.build()
+                val request = b.build()
                 return@addInterceptor chain.proceed(request)
             }
             httpLoggingInterceptor?.let { interceptor ->
