@@ -12,6 +12,7 @@ import one.mixin.android.db.insertMessage
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
@@ -68,7 +69,8 @@ class RestoreTransactionJob() : BaseJob(
                         rawTransactionDao.deleteById(transactionRsp.data!!.requestId)
                         insertSnapshotMessage(transactionRsp.data!!, token!!.assetId, transactionRsp.data!!.amount, transition.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
                     } else {
-                        rawTransactionDao.deleteById(transactionRsp.data!!.requestId)
+                        reportException(e = Throwable("Transaction Error ${transactionRsp.errorDescription}"))
+                        rawTransactionDao.deleteById(transition.requestId)
                     }
                     jobManager.addJobInBackground(SyncOutputJob())
                 } else {

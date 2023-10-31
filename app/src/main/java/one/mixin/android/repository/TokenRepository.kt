@@ -14,6 +14,7 @@ import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import one.mixin.android.BuildConfig.VERSION_NAME
 import one.mixin.android.Constants
 import one.mixin.android.Constants.SAFE_PUBLIC_KEY
 import one.mixin.android.api.MixinResponse
@@ -566,7 +567,8 @@ constructor(
 
     fun callSumsubToken(): Call<MixinResponse<RouteTokenResponse>> = routeService.callSumsubToken()
 
-    suspend fun profile(): MixinResponse<ProfileResponse> = routeService.profile()
+
+    suspend fun profile(): MixinResponse<ProfileResponse> = routeService.profile(VERSION_NAME)
 
     suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> =
         routeService.payment(traceRequest)

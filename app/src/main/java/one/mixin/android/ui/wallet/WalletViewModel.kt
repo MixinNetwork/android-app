@@ -32,6 +32,7 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.ParticipantSession
@@ -51,6 +52,7 @@ internal constructor(
     private val userRepository: UserRepository,
     private val accountRepository: AccountRepository,
     private val tokenRepository: TokenRepository,
+    private val assetRepository: AssetRepository,
     private val jobManager: MixinJobManager,
 ) : ViewModel() {
 
@@ -59,6 +61,8 @@ internal constructor(
     }
 
     fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
+
+    fun assetsWithBalance() = assetRepository.assetsWithBalance()
 
     @ExperimentalPagingApi
     fun snapshots(

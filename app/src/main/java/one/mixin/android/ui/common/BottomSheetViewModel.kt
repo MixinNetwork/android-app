@@ -59,6 +59,8 @@ import one.mixin.android.ui.common.biometric.NotEnoughUtxoException
 import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.reportEvent
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
@@ -182,7 +184,8 @@ class BottomSheetViewModel @Inject internal constructor(
         }
         val transactionRsp = tokenRepository.transactions(TransactionRequest(signResult.raw, traceId))
         if (transactionRsp.error != null) {
-            tokenRepository.deleteRawTransaction(transactionRsp.data!!.requestId)
+            reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
+            tokenRepository.deleteRawTransaction(traceId)
             return transactionRsp
         } else {
             tokenRepository.deleteRawTransaction(transactionRsp.data!!.requestId)

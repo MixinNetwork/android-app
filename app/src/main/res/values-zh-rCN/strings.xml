@@ -1291,4 +1291,5 @@
     <string name="max_count_not_enough_utxo">归集了 %d UTXOs，但还是不够</string>
     <string name="gather_utxo">归集 UTXO</string>
     <string name="Verification_failed">验证失败</string>
+    <string name="You_have_unmigrated">您有未迁移的资产，请单击开始迁移</string>
 </resources>
