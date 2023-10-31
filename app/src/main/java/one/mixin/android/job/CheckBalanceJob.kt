@@ -21,9 +21,9 @@ class CheckBalanceJob(
 
     override fun onRun() = runBlocking {
         Timber.d("$TAG start checkBalance assetId size: ${assets.size}")
-        assets.forEach { asset ->
+        for (asset in assets) {
             val tokensExtra = tokensExtraDao.findByAsset(asset)
-            val token = tokenDao.findTokenByAsset(asset) ?: return@forEach
+            val token = tokenDao.findTokenByAsset(asset) ?: continue //TODO should sync asset?
             mixinDatabase.withTransaction {
                 val value = calcBalanceByAssetId(asset)
                 if (tokensExtra == null) {

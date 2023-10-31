@@ -85,12 +85,17 @@ class UtxoProcessor(
             Timber.d("$TAG unprocessed outputs empty")
             return
         }
-        outputs.forEach { output ->
+        for (output in outputs) {
             val assetId = tokenDao.checkAssetExists(output.asset)
             if (assetId == null) {
-                val r = tokenService.getAssetByIdSuspend(output.asset)
-                if (!r.isSuccess || r.data == null) return
-                val token = requireNotNull(r.data)
+                val resp = tokenService.getAssetByIdSuspend(output.asset)
+                if (!resp.isSuccess || resp.data == null) {
+                    // workaround not found asset
+                    if (resp.error?.code == 404) {
+                        continue
+                    }
+                }
+                val token = requireNotNull(resp.data)
                 tokenDao.insertSuspend(token)
             }
             propertyDao.updateValueByKey(keyProcessUtxoId, output.outputId)
