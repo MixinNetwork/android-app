@@ -4,7 +4,6 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'dagger.hilt.android.plugin'
     id 'kotlin-parcelize'
-    id 'com.google.firebase.firebase-perf'
     id 'de.undercouch.download'
     id "com.google.devtools.ksp"
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
@@ -12,10 +11,10 @@ plugins {
     id "com.google.protobuf" version "0.9.1"
 }
 
-def versionMajor = 0
-def versionMinor = 41
-def versionPatch = 7
-def versionBuild = 0
+def versionMajor = 1
+def versionMinor = 0
+def versionPatch = 0
+def versionBuild = 2
 
 android {
     compileSdk 34
@@ -298,7 +297,6 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
     implementation 'com.google.firebase:firebase-dynamic-links-ktx'
-    implementation 'com.google.firebase:firebase-perf-ktx'
 
     implementation("com.google.protobuf:protobuf-javalite") {
         version {
