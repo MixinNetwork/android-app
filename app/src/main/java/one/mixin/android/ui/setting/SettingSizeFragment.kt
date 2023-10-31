@@ -48,8 +48,8 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
             requireActivity().onBackPressed()
         }
         binding.titleView.rightTv.setOnClickListener {
-            textSize = 16f
-            requireContext().defaultSharedPreferences.putInt(PREF_TEXT_SIZE, 16)
+            textSize = 14f
+            requireContext().defaultSharedPreferences.putInt(PREF_TEXT_SIZE, 14)
             requireContext().tickVibrate()
             binding.slider.value = textSize
             binding.chatRv.adapter?.notifyDataSetChanged()
@@ -167,8 +167,8 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
     }
 
     private val initTextSize by lazy {
-        requireContext().defaultSharedPreferences.getInt(PREF_TEXT_SIZE, 16)
+        requireContext().defaultSharedPreferences.getInt(PREF_TEXT_SIZE, 14)
     }
 
-    private var textSize = 16f
+    private var textSize = 14f
 }
