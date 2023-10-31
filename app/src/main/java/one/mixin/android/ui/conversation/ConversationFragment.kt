@@ -2484,7 +2484,8 @@ class ConversationFragment() :
                         if (Session.getAccount()?.hasPin == true) {
                             recipient?.let {
                                 TransferFragment.newInstance(it.userId, supportSwitchAsset = true).showNow(parentFragmentManager, TransferFragment.TAG)
-                                jobManager.addJobInBackground(SyncOutputJob())
+                                // FIXME sync
+                                // jobManager.addJobInBackground(SyncOutputJob())
                             }
                         } else {
                             TipActivity.show(requireActivity(), TipType.Create, true)

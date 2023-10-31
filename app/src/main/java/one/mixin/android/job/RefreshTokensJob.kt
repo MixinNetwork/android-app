@@ -31,13 +31,6 @@ class RefreshTokensJob(
             val response = tokenService.fetchAllAssetSuspend()
             if (response.isSuccess && response.data != null) {
                 val list = response.data as List<Token>
-                response.data?.map {
-                    it.assetId
-                }?.let { ids ->
-                    tokenDao.findAllAssetIdSuspend().subtract(ids.toSet()).chunked(100).forEach {
-                        tokenDao.zeroClearSuspend(it)
-                    }
-                }
                 assetRepo.insertList(list)
             }
             refreshChains()

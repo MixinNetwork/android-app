@@ -121,9 +121,6 @@ interface TokenDao : BaseDao<Token> {
     @Query("SELECT t.asset_id FROM tokens t LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE te.balance > 0")
     suspend fun findAllAssetIdSuspend(): List<String>
 
-    @Query("UPDATE tokens_extra SET balance = 0 WHERE asset_id IN (:assetIds)")
-    suspend fun zeroClearSuspend(assetIds: List<String>)
-
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:assetIds)")
     suspend fun suspendFindAssetsByIds(assetIds: List<String>): List<TokenItem>
 
