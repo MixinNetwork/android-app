@@ -31,7 +31,6 @@ import one.mixin.android.extension.cutOut
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hmacSha256
-import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
