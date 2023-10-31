@@ -89,7 +89,7 @@ public class Util {
         return (int) value;
     }
 
-    private static final OkHttpClient client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
+    private static final OkHttpClient client = new OkHttpClient.Builder().retryOnConnectionFailure(false).build();
 
     public static byte[] uploadAttachment(String url, InputStream data, long dataSize, OutputStreamFactory outputStreamFactory, PushAttachmentData.ProgressListener listener, CancelationSignal cancelationSignal) throws IOException {
         DigestingRequestBody requestBody = new DigestingRequestBody(data, outputStreamFactory, "application/octet-stream", dataSize, listener, cancelationSignal, 0);
