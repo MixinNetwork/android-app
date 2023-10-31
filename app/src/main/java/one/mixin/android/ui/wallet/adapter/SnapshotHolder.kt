@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransactionHeaderBinding
 import one.mixin.android.databinding.ItemWalletTransactionsBinding
+import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.timeAgoDay
@@ -42,6 +43,7 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
             }
             else -> {
                 binding.avatar.setNet()
+                binding.name.text = snapshot.transactionHash?.formatPublicKey()
             }
         }
 
