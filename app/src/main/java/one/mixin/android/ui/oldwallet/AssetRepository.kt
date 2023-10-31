@@ -55,6 +55,8 @@ constructor(
 
     suspend fun simpleAssetsWithBalance() = assetDao.simpleAssetsWithBalance()
 
+    fun assetsWithBalance() = assetDao.assetsWithBalance()
+
     fun insert(asset: Asset) {
         assetDao.insert(asset)
     }
@@ -329,8 +331,6 @@ constructor(
         )
 
     suspend fun token(): MixinResponse<RouteTokenResponse> = routeService.sumsubToken()
-
-    suspend fun profile(): MixinResponse<ProfileResponse> = routeService.profile()
 
     suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = routeService.payment(traceRequest)
 

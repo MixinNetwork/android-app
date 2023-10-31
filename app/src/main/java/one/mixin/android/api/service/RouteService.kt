@@ -19,6 +19,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface RouteService {
     @POST("/checkout/payments")
@@ -58,5 +59,5 @@ interface RouteService {
     fun callSumsubToken(): Call<MixinResponse<RouteTokenResponse>>
 
     @GET("/profile")
-    suspend fun profile(): MixinResponse<ProfileResponse>
+    suspend fun profile(@Query("version") version:String): MixinResponse<ProfileResponse>
 }

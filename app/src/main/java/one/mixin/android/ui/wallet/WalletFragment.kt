@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.GOOGLE_PAY
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.request.RouteTickerRequest
@@ -40,6 +41,9 @@ import one.mixin.android.extension.config
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.highLightClick
+import one.mixin.android.extension.highlightLinkText
+import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
@@ -334,8 +338,20 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 }
             }
         }
+        walletViewModel.assetsWithBalance().observe(viewLifecycleOwner) {
+            if (it.isNotEmpty()) {
+                _headBinding?.migrate?.isVisible = true
+                _headBinding?.migrate?.setOnClickListener {
+                    lifecycleScope.launch click@{
+                        val bot = walletViewModel.findBondBotUrl() ?: return@click
+                        WebActivity.show(requireContext(), url = bot.homeUri, null)
+                    }
+                }
+            }else{
+                _headBinding?.migrate?.isVisible = false
+            }
+        }
         checkPin()
-        checkOldAsset()
     }
 
     override fun onStop() {
@@ -495,20 +511,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 })
             }
             pinCheckDialog.show(parentFragmentManager, PinCheckDialogFragment.TAG)
-        }
-    }
-
-    private fun checkOldAsset() {
-        lifecycleScope.launch {
-            if (viewDestroyed()) return@launch
-            binding.migrationLayout.isVisible = walletViewModel.checkHasOldAsset()
-            if (viewDestroyed()) return@launch
-            binding.start.setOnClickListener {
-                lifecycleScope.launch click@{
-                    val bot = walletViewModel.findBondBotUrl() ?: return@click
-                    WebActivity.show(requireContext(), url = bot.homeUri, null)
-                }
-            }
         }
     }
 

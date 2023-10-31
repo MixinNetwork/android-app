@@ -67,8 +67,6 @@ internal constructor(
         }
     }
 
-    suspend fun profile(): MixinResponse<ProfileResponse> = assetRepository.profile()
-
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 
     fun observeAddress(addressId: String) = assetRepository.observeAddress(addressId)

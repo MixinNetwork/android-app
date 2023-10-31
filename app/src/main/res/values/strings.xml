@@ -1321,4 +1321,5 @@
     <string name="max_count_not_enough_utxo">Gathering %d UTXOs, but still not enough</string>
     <string name="gather_utxo">Gather UTXO</string>
     <string name="Verification_failed">Verification failed</string>
+    <string name="You_have_unmigrated">You have unmigrated assets, click to start Migration</string>
 </resources>
