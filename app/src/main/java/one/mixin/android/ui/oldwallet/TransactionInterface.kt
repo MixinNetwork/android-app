@@ -291,8 +291,6 @@ interface TransactionInterface {
             openingBalanceTv.text = "${snapshot.openingBalance} ${asset.symbol}"
             closingBalanceLayout.isVisible = !snapshot.closingBalance.isNullOrBlank()
             closingBalanceTv.text = "${snapshot.closingBalance} ${asset.symbol}"
-            snapshotHashLayout.isVisible = !snapshot.snapshotHash.isNullOrBlank()
-            snapshotHashTv.text = snapshot.snapshotHash
             dateTv.text = snapshot.createdAt.fullDate()
             when (snapshot.type) {
                 SnapshotType.deposit.name -> {

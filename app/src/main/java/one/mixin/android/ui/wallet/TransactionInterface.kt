@@ -312,8 +312,6 @@ interface TransactionInterface {
             openingBalanceTv.text = "${snapshot.openingBalance} ${asset.symbol}"
             closingBalanceLayout.isVisible = !snapshot.closingBalance.isNullOrBlank()
             closingBalanceTv.text = "${snapshot.closingBalance} ${asset.symbol}"
-            snapshotHashLayout.isVisible = !snapshot.transactionHash.isNullOrBlank()
-            snapshotHashTv.text = snapshot.transactionHash
             dateTv.text = snapshot.createdAt.fullDate()
             // simulate type
             val type = if (!snapshot.opponentId.isNullOrBlank()) {
