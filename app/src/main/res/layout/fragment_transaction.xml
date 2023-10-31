@@ -127,25 +127,6 @@
                 </RelativeLayout>
 
                 <LinearLayout
-                        android:id="@+id/snapshot_hash_layout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-                    <TextView
-                            style="@style/TransactionTitleTextStyle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/snapshot_Hash" />
-
-                    <TextView
-                            android:id="@+id/snapshot_hash_tv"
-                            style="@style/TransactionDescTextStyle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textIsSelectable="true" />
-                </LinearLayout>
-
-                <LinearLayout
                     android:id="@+id/transaction_type_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
