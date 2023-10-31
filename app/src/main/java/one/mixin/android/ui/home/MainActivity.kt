@@ -315,8 +315,10 @@ class MainActivity : BlazeBaseActivity() {
                 }
             }
 
-        if (Session.getAccount()?.hasPin != true || Session.getTipPub() == null) {
+        if (Session.getAccount()?.hasPin != true) {
             TipActivity.show(this, TipType.Create, shouldWatch = true)
+        } else if (Session.getTipPub().isNullOrBlank()) {
+            TipActivity.show(this, TipType.Upgrade, shouldWatch = true)
         } else {
             if (Session.hasSafe()) {
                 jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
