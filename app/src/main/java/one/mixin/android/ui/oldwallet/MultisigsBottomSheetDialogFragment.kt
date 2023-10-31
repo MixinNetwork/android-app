@@ -1,4 +1,4 @@
-package one.mixin.android.ui.common
+package one.mixin.android.ui.oldwallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
@@ -10,58 +10,69 @@ import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.request.CollectibleRequest
+import one.mixin.android.api.request.OpponentMultisig
+import one.mixin.android.api.request.RawTransactionsRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.signature.SignatureState
-import one.mixin.android.databinding.FragmentNftBottomSheetBinding
-import one.mixin.android.extension.dp
+import one.mixin.android.databinding.FragmentMultisigsBottomSheetBinding
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.round
 import one.mixin.android.extension.withArgs
-import one.mixin.android.tip.TipBody
-import one.mixin.android.ui.common.biometricbiometric.BiometricBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometricbiometric.BiometricInfo
-import one.mixin.android.ui.common.biometricbiometric.BiometricItem
-import one.mixin.android.ui.common.biometricbiometric.NftBiometricItem
-import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment.Companion.ARGS_BIOMETRIC_ITEM
+import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
+import one.mixin.android.ui.oldwallet.biometric.BiometricInfo
+import one.mixin.android.ui.oldwallet.biometric.BiometricItem
+import one.mixin.android.ui.oldwallet.biometric.Multi2MultiBiometricItem
+import one.mixin.android.ui.oldwallet.biometric.MultisigsBiometricItem
+import one.mixin.android.ui.oldwallet.biometric.One2MultiBiometricItem
+import one.mixin.android.ui.oldwallet.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
-class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
+class MultisigsBottomSheetDialogFragment :
+    ValuableBiometricBottomSheetDialogFragment<MultisigsBiometricItem>() {
     companion object {
-        const val TAG = "NftBottomSheetDialogFragment"
+        const val TAG = "MultisigsBottomSheetDialogFragment"
 
-        fun newInstance(t: NftBiometricItem) =
-            NftBottomSheetDialogFragment().withArgs {
+        inline fun <reified T : BiometricItem> newInstance(t: T) =
+            MultisigsBottomSheetDialogFragment().withArgs {
                 putParcelable(ARGS_BIOMETRIC_ITEM, t)
             }
     }
 
-    private var success: Boolean = false
-
-    private val binding by viewBinding(FragmentNftBottomSheetBinding::inflate)
-    private val t: NftBiometricItem by lazy {
-        requireArguments().getParcelableCompat(ARGS_BIOMETRIC_ITEM, NftBiometricItem::class.java)!!
+    private val t: MultisigsBiometricItem by lazy {
+        requireArguments().getParcelableCompat(ARGS_BIOMETRIC_ITEM, MultisigsBiometricItem::class.java)!!
     }
 
-    @SuppressLint("RestrictedApi", "SetTextI18n")
+    private var success: Boolean = false
+
+    private val binding by viewBinding(FragmentMultisigsBottomSheetBinding::inflate)
+
+    @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
         setBiometricLayout()
-        checkState(t)
+        setBiometricItem()
 
+        val t = this.t
         binding.apply {
-            title.text = getString(R.string.Transfer)
-            arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
+            if (t is Multi2MultiBiometricItem) {
+                if (t.action == SignatureAction.unlock.name) {
+                    title.text = getString(R.string.Revoke_multisig_transaction)
+                    arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_ban)
+                } else {
+                    title.text = getString(R.string.Multisig_Transaction)
+                    arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
+                }
+            } else {
+                title.text = getString(R.string.Multisig_Transaction)
+                arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
+            }
+            subTitle.text = t.memo
             biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
-            nftIv.round(4.dp)
         }
 
         lifecycleScope.launch {
@@ -81,25 +92,10 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
                     }
                 }
             }
-
-            handleMixinResponse(
-                invokeNetwork = { bottomViewModel.getToken(t.tokenId) },
-                successBlock = { response ->
-                    response.data?.let { data ->
-                        data.metadata
-                        binding.apply {
-                            nftIv.loadImage(data.metadata.iconUrl, R.drawable.nft_default)
-                            nftGroup.text = data.metadata.groupName
-                            nftTokenId.text = "#${data.tokenKey}"
-                            nftTokenName.text = data.metadata.tokenName
-                        }
-                    }
-                },
-            )
         }
     }
 
-    private fun checkState(t: BiometricItem) {
+    override fun checkState(t: BiometricItem) {
         when (t.state) {
             SignatureState.signed.name -> {
                 binding.biometricLayout.errorBtn.visibility = GONE
@@ -118,9 +114,9 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
 
     private fun showUserList(userList: ArrayList<User>, isSender: Boolean) {
         val title = if (isSender) {
-            "${getString(R.string.Senders)} ${t.sendersThreshold}/${t.senders.size}"
+            getString(R.string.Senders)
         } else {
-            getString(R.string.multisig_receivers_threshold, "${t.receiversThreshold}/${t.receivers.size}")
+            getString(R.string.multisig_receivers_threshold, "${t.threshold}/${t.receivers.size}")
         }
         UserListBottomSheetDialogFragment.newInstance(userList, title)
             .showNow(parentFragmentManager, UserListBottomSheetDialogFragment.TAG)
@@ -130,28 +126,50 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         val t = this.t
         return BiometricInfo(
             requireContext().getString(
-                if (t.action == SignatureAction.unlock.name) {
-                    R.string.Revoke_multisig_transaction
+                if (t is Multi2MultiBiometricItem) {
+                    if (t.action == SignatureAction.unlock.name) {
+                        R.string.Revoke_multisig_transaction
+                    } else {
+                        R.string.Multisig_Transaction
+                    }
                 } else {
                     R.string.Multisig_Transaction
                 },
             ),
             t.memo ?: "",
-            "",
+            getDescription(),
         )
     }
 
+    override fun getBiometricItem() = t
+
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
-        suspend fun getRequest(body: ByteArray): CollectibleRequest = CollectibleRequest(t.action, t.rawTransaction, pinCipher.encryptPin(pin, body))
-        return when (t.action) {
-            SignatureAction.sign.name -> {
-                bottomViewModel.signCollectibleTransfer(t.requestId, getRequest(TipBody.forCollectibleRequestSign(t.requestId)))
+        return when (val t = this.t) {
+            is Multi2MultiBiometricItem -> {
+                when (t.action) {
+                    SignatureAction.sign.name -> {
+                        bottomViewModel.signMultisigs(t.requestId, pin)
+                    }
+                    else -> {
+                        bottomViewModel.unlockMultisigs(t.requestId, pin)
+                    }
+                }
             }
-            SignatureAction.unlock.name -> {
-                bottomViewModel.unlockCollectibleTransfer(t.requestId, getRequest(TipBody.forCollectibleRequestUnlock(t.requestId)))
+            is One2MultiBiometricItem -> {
+                bottomViewModel.transactions(
+                    RawTransactionsRequest(
+                        assetId = t.asset.assetId,
+                        opponentMultisig = OpponentMultisig(t.receivers, t.threshold),
+                        amount = t.amount,
+                        pin = "",
+                        traceId = t.traceId,
+                        memo = t.memo,
+                    ),
+                    pin,
+                )
             }
             else -> {
-                bottomViewModel.cancelCollectibleTransfer(t.requestId)
+                MixinResponse<Void>()
             }
         }
     }
@@ -165,12 +183,14 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
+        val t = this.t
         if (!success &&
+            t is Multi2MultiBiometricItem &&
             t.state != SignatureState.signed.name &&
             t.state != SignatureState.unlocked.name
         ) {
             MixinApplication.get().applicationScope.launch {
-                bottomViewModel.cancelCollectibleTransfer(t.requestId)
+                bottomViewModel.cancelMultisigs(t.requestId)
             }
         }
     }

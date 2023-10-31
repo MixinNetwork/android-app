@@ -59,8 +59,6 @@ import one.mixin.android.tip.matchTipSignAction
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
-import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
-import one.mixin.android.ui.common.NftBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
@@ -69,6 +67,8 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
+import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
+import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.OutputBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.PreconditionBottomSheetDialogFragment
