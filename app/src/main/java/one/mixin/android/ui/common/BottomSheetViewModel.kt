@@ -1,6 +1,5 @@
 package one.mixin.android.ui.common
 
-import TransactionResponse
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,7 +13,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AddressRequest
@@ -32,6 +30,7 @@ import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.request.buildGhostKeyRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
+import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.runInTransaction

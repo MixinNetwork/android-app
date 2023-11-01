@@ -1,12 +1,12 @@
 package one.mixin.android.api.service
 
-import TransactionResponse
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.DepositEntryRequest
 import one.mixin.android.api.request.GhostKeyRequest
 import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.response.GhostKey
+import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output

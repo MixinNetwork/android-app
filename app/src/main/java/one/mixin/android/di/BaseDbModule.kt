@@ -8,7 +8,6 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.TokensExtraDao
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
 import one.mixin.android.fts.FtsDatabase
