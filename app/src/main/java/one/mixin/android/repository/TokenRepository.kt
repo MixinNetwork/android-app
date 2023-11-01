@@ -651,4 +651,6 @@ constructor(
         appDatabase.insertMessage(message)
         MessageFlow.insert(message.conversationId, message.messageId)
     }
+
+    fun findRawTransaction(traceId: String) = rawTransactionDao.findRawTransaction(traceId)
 }

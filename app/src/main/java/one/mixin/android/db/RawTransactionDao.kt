@@ -11,4 +11,7 @@ interface RawTransactionDao : BaseDao<RawTransaction> {
 
     @Query("SELECT * FROM raw_transactions ORDER BY created_at ASC")
     fun findTransactions(): List<RawTransaction>
+
+    @Query("SELECT * FROM raw_transactions WHERE request_id = :requestId")
+    fun findRawTransaction(requestId: String): RawTransaction?
 }
