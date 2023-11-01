@@ -1313,13 +1313,13 @@
     <string name="Fees_by_Mixin">Fees by Mixin</string>
     <string name="Purchase_Total_Amount">Purchase Total Amount</string>
     <string name="chat_with_us">Chat with us</string>
-    <string name="Asset_Migration">Asset Migration</string>
-    <string name="Asset_Migration_Content">Mixin has upgraded the new wallet system, you have not yet migrated to assets, please move your assets from the old wallet to the new wallet immediately!</string>
+    <string name="Asset_Migration">Network Upgrade</string>
+    <string name="Asset_Migration_Content">Mixin Network is upgraded and you still have assets in the legacy network, it\'s recommended to migrate your assets to the new network.</string>
     <string name="Start_Migration">Start the migration</string>
     <string name="empty_utxo">Empty UTXO</string>
     <string name="not_enough_utxo">Insufficient balance</string>
-    <string name="max_count_not_enough_utxo">Too many UTXO are used in this transaction, please try to transfer money in batches</string>
-    <string name="gather_utxo">Gather UTXO</string>
+    <string name="max_count_not_enough_utxo">This transaction consumes too many UTXOs, please try to combine UTXOs or split the transaction.</string>
+    <string name="gather_utxo">Combine UTXOs</string>
     <string name="Verification_failed">Verification failed</string>
-    <string name="You_have_unmigrated">You have unmigrated assets, click to start Migration</string>
+    <string name="You_have_unmigrated">You have assets in the legacy network, please view here.</string>
 </resources>
