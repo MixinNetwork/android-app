@@ -344,7 +344,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 _headBinding?.migrate?.setOnClickListener {
                     lifecycleScope.launch click@{
                         val bot = walletViewModel.findBondBotUrl() ?: return@click
-                        WebActivity.show(requireContext(), url = bot.homeUri, null)
+                        WebActivity.show(requireContext(), url = bot.homeUri, generateConversationId(bot.appId, Session.getAccountId()!!), app = bot)
                     }
                 }
             }else{

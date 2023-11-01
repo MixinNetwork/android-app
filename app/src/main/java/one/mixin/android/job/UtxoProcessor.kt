@@ -1,5 +1,6 @@
 package one.mixin.android.job
 
+import android.util.ArraySet
 import androidx.room.InvalidationTracker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -66,14 +67,16 @@ class UtxoProcessor(
     }
 
     private suspend fun run() {
-        val changedAssets = ArrayList<String>()
+        val changedAssets = ArraySet<String>()
         processUtxo(changedAssets)
         if (changedAssets.isNotEmpty()) {
-            jobManager.addJobInBackground(CheckBalanceJob(changedAssets))
+            val kernelAssetIds = arrayListOf<String>()
+            kernelAssetIds.addAll(changedAssets)
+            jobManager.addJobInBackground(CheckBalanceJob(kernelAssetIds))
         }
     }
 
-    private tailrec suspend fun processUtxo(changedAssetIds: ArrayList<String>, utxoId: String? = null) {
+    private tailrec suspend fun processUtxo(changedAssetIds: Set<String>, utxoId: String? = null) {
         Timber.d("$TAG processUtxo changedAssetIds size: ${changedAssetIds.size}, utxoId: $utxoId")
         val processedUtxoId = utxoId ?: propertyDao.findValueByKey(keyProcessUtxoId)
         val outputs = if (processedUtxoId.isNullOrBlank()) {
@@ -101,7 +104,7 @@ class UtxoProcessor(
             propertyDao.updateValueByKey(keyProcessUtxoId, output.outputId)
         }
 
-        changedAssetIds.addAll(outputs.groupBy { it.asset }.keys.toSet())
+        changedAssetIds.plus(outputs.groupBy { it.asset }.keys)
         if (outputs.size <= processUtxoLimit) {
             processUtxo(changedAssetIds, outputs.last().outputId)
         }
