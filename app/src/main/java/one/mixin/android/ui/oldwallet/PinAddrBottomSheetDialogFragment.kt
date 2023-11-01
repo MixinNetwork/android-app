@@ -11,10 +11,9 @@ import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.databinding.FragmentOldwalletPinBottomSheetAddressBinding
-import one.mixin.android.databinding.FragmentPinBottomSheetAddressBinding
 import one.mixin.android.extension.loadImage
-import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.oldwallet.biometric.BiometricBottomSheetDialogFragment
+import one.mixin.android.ui.oldwallet.biometric.BiometricInfo
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_ADDRESS
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding

@@ -136,6 +136,10 @@ class BottomSheetViewModel @Inject internal constructor(
         assetRepository.saveAddr(addr)
     }
 
+    suspend fun deleteAddr(id: String, code: String): MixinResponse<Unit> = assetRepository.deleteAddr(id, pinCipher.encryptPin(code, TipBody.forAddressRemove(id)))
+
+    suspend fun deleteLocalAddr(id: String) = assetRepository.deleteLocalAddr(id)
+
     suspend fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
 
     fun findUserById(id: String): LiveData<User> = userRepository.findUserById(id)
