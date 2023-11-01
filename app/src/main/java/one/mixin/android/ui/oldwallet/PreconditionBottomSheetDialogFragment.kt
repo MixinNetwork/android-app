@@ -18,7 +18,6 @@ import one.mixin.android.Constants.Account.PREF_STRANGER_TRANSFER
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.databinding.FragmentOldwalletPreconditionBottomSheetBinding
-import one.mixin.android.databinding.FragmentPreconditionBottomSheetBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences

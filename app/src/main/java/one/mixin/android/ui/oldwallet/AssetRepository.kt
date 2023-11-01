@@ -5,6 +5,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
+import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransferRequest
@@ -30,7 +31,6 @@ import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.route.RoutePaymentRequest
-import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
@@ -131,6 +131,10 @@ constructor(
     fun saveAddr(addr: Address) = addressDao.insert(addr)
 
     suspend fun syncAddr(addressRequest: AddressRequest) = addressService.addresses(addressRequest)
+
+    suspend fun deleteAddr(id: String, pin: String) = addressService.delete(id, Pin(pin))
+
+    suspend fun deleteLocalAddr(id: String) = addressDao.deleteById(id)
 
     fun assetItems() = assetDao.assetItems()
 
