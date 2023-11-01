@@ -1288,7 +1288,7 @@
     <string name="Start_Migration">开始迁移 >></string>
     <string name="empty_utxo">没有可用的 UTXO</string>
     <string name="not_enough_utxo">余额不足</string>
-    <string name="max_count_not_enough_utxo">归集了 %d UTXOs，但还是不够</string>
+    <string name="max_count_not_enough_utxo">该交易使用的 UTXO 数量过多，请尝试分批转账</string>
     <string name="gather_utxo">归集 UTXO</string>
     <string name="Verification_failed">验证失败</string>
     <string name="You_have_unmigrated">您有未迁移的资产，请单击开始迁移</string>
