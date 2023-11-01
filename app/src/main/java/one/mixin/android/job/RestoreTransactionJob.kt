@@ -1,6 +1,5 @@
 package one.mixin.android.job
 
-import TransactionResponse
 import com.birbit.android.jobqueue.Params
 import com.google.gson.annotations.SerializedName
 import kernel.Kernel
@@ -13,6 +12,7 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
+import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
@@ -83,10 +83,10 @@ class RestoreTransactionJob() : BaseJob(
     }
 
     private fun insertSnapshotMessage(data: TransactionResponse, assetId: String, amount: String, opponentId: String, memo: String?) {
-        val snapshotId =  UUID.nameUUIDFromBytes("${data.userId}:${data.transactionHash}".toByteArray()).toString()
+        val snapshotId = UUID.nameUUIDFromBytes("${data.userId}:${data.transactionHash}".toByteArray()).toString()
         val conversationId = generateConversationId(data.userId, opponentId)
         initConversation(conversationId, data.userId, opponentId)
-        val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-${amount}", data.userId, opponentId, memo ?: "", "", data.createdAt, data.requestId,  null, null,null)
+        val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-${amount}", data.userId, opponentId, memo ?: "", "", data.createdAt, data.requestId, null, null, null)
         val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, snapshot.type, null, snapshot.snapshotId)
         safeSnapshotDao.insert(snapshot)
         appDatabase.insertMessage(message)
@@ -117,11 +117,11 @@ class RestoreTransactionJob() : BaseJob(
 
 class TransactionsData(
     @SerializedName("Asset")
-    val asset:String,
+    val asset: String,
     @SerializedName("Extra")
-    val extra:String?,
+    val extra: String?,
     @SerializedName("Inputs")
-    val inputs:List<Input>
+    val inputs: List<Input>
 )
 
 class Input(

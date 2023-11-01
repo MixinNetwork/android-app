@@ -76,7 +76,7 @@ class UtxoProcessor(
         }
     }
 
-    private tailrec suspend fun processUtxo(changedAssetIds: Set<String>, utxoId: String? = null) {
+    private tailrec suspend fun processUtxo(changedAssetIds: MutableSet<String>, utxoId: String? = null) {
         Timber.d("$TAG processUtxo changedAssetIds size: ${changedAssetIds.size}, utxoId: $utxoId")
         val processedUtxoId = utxoId ?: propertyDao.findValueByKey(keyProcessUtxoId)
         val outputs = if (processedUtxoId.isNullOrBlank()) {
@@ -104,7 +104,7 @@ class UtxoProcessor(
             propertyDao.updateValueByKey(keyProcessUtxoId, output.outputId)
         }
 
-        changedAssetIds.plus(outputs.groupBy { it.asset }.keys)
+        changedAssetIds.addAll(outputs.groupBy { it.asset }.keys)
         if (outputs.size <= processUtxoLimit) {
             processUtxo(changedAssetIds, outputs.last().outputId)
         }

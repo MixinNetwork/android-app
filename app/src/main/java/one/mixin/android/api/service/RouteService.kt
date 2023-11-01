@@ -59,5 +59,5 @@ interface RouteService {
     fun callSumsubToken(): Call<MixinResponse<RouteTokenResponse>>
 
     @GET("/profile")
-    suspend fun profile(@Query("version") version:String): MixinResponse<ProfileResponse>
+    suspend fun profile(@Query("version") version: String): MixinResponse<ProfileResponse>
 }

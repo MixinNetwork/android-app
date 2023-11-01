@@ -30,6 +30,7 @@ import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.request.buildGhostKeyRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
+import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.runInTransaction
@@ -134,6 +135,14 @@ class BottomSheetViewModel @Inject internal constructor(
     ): MixinResponse<*> {
         val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
         val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
+
+        if (trace != null) {
+            val rawTransaction = tokenRepository.findRawTransaction(trace)
+            if (rawTransaction != null) {
+                return innerTransaction(rawTransaction.rawTransaction, trace, receiverId, assetId, amount, memo)
+            }
+        }
+
         val traceId = trace ?: UUID.randomUUID().toString()
         val senderId = Session.getAccountId()!!
 
@@ -182,7 +191,11 @@ class BottomSheetViewModel @Inject internal constructor(
             })
             tokenRepository.updateUtxoToSigned(outputIds)
         }
-        val transactionRsp = tokenRepository.transactions(TransactionRequest(signResult.raw, traceId))
+        return innerTransaction(signResult.raw,traceId, receiverId, assetId, amount, memo)
+    }
+
+    private suspend fun innerTransaction(raw: String, traceId: String, receiverId: String, assetId: String, amount: String, memo: String?): MixinResponse<TransactionResponse> {
+        val transactionRsp = tokenRepository.transactions(TransactionRequest(raw, traceId))
         if (transactionRsp.error != null) {
             reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
             tokenRepository.deleteRawTransaction(traceId)
@@ -190,12 +203,12 @@ class BottomSheetViewModel @Inject internal constructor(
         } else {
             tokenRepository.deleteRawTransaction(transactionRsp.data!!.requestId)
         }
-        val conversationId = generateConversationId(transactionResponse.data!!.userId, receiverId)
-        initConversation(conversationId, transactionResponse.data!!.userId, receiverId)
-        tokenRepository.insertSnapshotMessage(transactionResponse.data!!, conversationId,assetId, amount, receiverId, memo)
+        val conversationId = generateConversationId(transactionRsp.data!!.userId, receiverId)
+        initConversation(conversationId, transactionRsp.data!!.userId, receiverId)
+        tokenRepository.insertSnapshotMessage(transactionRsp.data!!, conversationId, assetId, amount, receiverId, memo)
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
         jobManager.addJobInBackground(SyncOutputJob())
-        return transactionResponse
+        return transactionRsp
     }
 
     private fun initConversation(conversationId: String, senderId: String, recipientId: String) {

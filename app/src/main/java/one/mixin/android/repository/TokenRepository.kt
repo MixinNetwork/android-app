@@ -1,6 +1,5 @@
 package one.mixin.android.repository
 
-import TransactionResponse
 import android.os.CancellationSignal
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
@@ -33,6 +32,7 @@ import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.RoutePaymentResponse
 import one.mixin.android.api.response.RouteSessionResponse
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.RouteService
@@ -651,4 +651,6 @@ constructor(
         appDatabase.insertMessage(message)
         MessageFlow.insert(message.conversationId, message.messageId)
     }
+
+    fun findRawTransaction(traceId: String) = rawTransactionDao.findRawTransaction(traceId)
 }
