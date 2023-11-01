@@ -76,6 +76,9 @@
             android:layout_marginTop="12dp"
             android:layout_below="@id/bill_tv"
             android:layout_alignStart="@id/bill_iv"
+            android:layout_toStartOf="@+id/chat_time"
+            android:lines="1"
+            android:layout_marginEnd="3dp"
             tools:text="Thanks" />
 
         <one.mixin.android.widget.bubble.TimeBubble
