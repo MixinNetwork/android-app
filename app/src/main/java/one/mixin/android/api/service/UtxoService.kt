@@ -26,7 +26,7 @@ interface UtxoService {
         @Query("state") state: String? = null,
     ): MixinResponse<List<Output>>
 
-    @POST("/safe/deposit_entries")
+    @POST("/safe/deposit/entries")
     suspend fun createDeposit(
         @Body depositEntryRequest: DepositEntryRequest
     ): MixinResponse<List<DepositEntry>>
