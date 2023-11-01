@@ -1033,7 +1033,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.messageId, data.conversationId, data.userId, data.category, data.expireIn?.toString() ?: "",
             data.createdAt, data.status, snapshot.type, null, snapshot.snapshotId,
         )
-        snapshot.transactionHash?.let {
+        snapshot.transactionHash.let {
             safeSnapshotDao.deletePendingSnapshotByHash(it)
         }
 
@@ -1042,7 +1042,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         jobManager.addJobInBackground(RefreshTokensJob(snapshot.assetId))
         jobManager.addJobInBackground(SyncOutputJob())
 
-        if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
+        if (snapshot.amount.toFloat() > 0) {
             generateNotification(message, data)
         }
     }

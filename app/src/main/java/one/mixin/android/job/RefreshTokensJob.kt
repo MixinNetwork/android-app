@@ -19,7 +19,7 @@ class RefreshTokensJob(
     }
 
     override fun onRun() = runBlocking {
-        if (assetId != null) {
+        if (!assetId.isNullOrEmpty()) {
             val response = tokenService.getAssetByIdSuspend(assetId)
             if (response.isSuccess && response.data != null) {
                 response.data?.let {
