@@ -361,7 +361,6 @@ constructor(
                 if (chainIconUrl == null) {
                     chainIconUrl = fetchAsset(asset.chainId)
                 }
-                // todo check asset balance
                 asset.toAssetItem(chainIconUrl)
             }
             val localExistsIds = arrayListOf<String>()

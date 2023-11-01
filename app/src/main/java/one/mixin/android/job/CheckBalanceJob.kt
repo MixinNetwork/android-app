@@ -23,7 +23,7 @@ class CheckBalanceJob(
         Timber.d("$TAG start checkBalance assetId size: ${assets.size}")
         for (asset in assets) {
             val tokensExtra = tokensExtraDao.findByAsset(asset)
-            val token = tokenDao.findTokenByAsset(asset) ?: continue //TODO should sync asset?
+            val token = tokenDao.findTokenByAsset(asset) ?: continue
             mixinDatabase.withTransaction {
                 val value = calcBalanceByAssetId(asset)
                 if (tokensExtra == null) {

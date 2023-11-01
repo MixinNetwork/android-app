@@ -236,7 +236,12 @@ class DepositFragment : BaseFragment() {
                     if (asset.assetId == Constants.ChainId.RIPPLE_CHAIN_ID) {
                         memoTitle.setText(R.string.Tag)
                     } else {
-                        memoTitle.setText(R.string.transfer_memo)
+                        memoTitle.setText(R.string.Memo)
+                    }
+                    if (asset.assetId == Constants.ChainId.EOS_CHAIN_ID) {
+                        addressTitle.setText(R.string.Account)
+                    } else {
+                        addressTitle.setText(R.string.Address)
                     }
                     memoView.setAsset(
                         parentFragmentManager,

@@ -258,7 +258,6 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         MixinApplication.get().isOnline.set(true)
-        jobManager.addJobInBackground(SyncOutputJob())
         if (checkNeedGo2MigrationPage()) {
             InitializeActivity.showDBUpgrade(this)
             finish()

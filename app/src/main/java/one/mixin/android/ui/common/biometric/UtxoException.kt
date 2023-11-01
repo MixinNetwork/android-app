@@ -22,7 +22,7 @@ fun Throwable.getUtxoExceptionMsg(context: Context): String {
     val msg = when (this) {
         is EmptyUtxoException -> context.getString(R.string.empty_utxo)
         is NotEnoughUtxoException -> context.getString(R.string.not_enough_utxo)
-        is MaxCountNotEnoughUtxoException -> context.getString(R.string.max_count_not_enough_utxo, maxUtxoCount)
+        is MaxCountNotEnoughUtxoException -> context.getString(R.string.max_count_not_enough_utxo)
         else -> {
             "${context.getString(R.string.gather_utxo)}\n${this.getStackTraceString()}"
         }

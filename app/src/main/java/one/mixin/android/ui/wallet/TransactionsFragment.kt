@@ -37,6 +37,7 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToAddress
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
@@ -49,6 +50,7 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
+import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
@@ -94,6 +96,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
         binding.titleView.apply {
             titleTv.text = asset.name
             leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
