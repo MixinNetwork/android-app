@@ -8,7 +8,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.api.service.TokenService
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.reportException
+import one.mixin.android.vo.Property
 import timber.log.Timber
 
 class UtxoProcessor(
@@ -101,11 +103,11 @@ class UtxoProcessor(
                 val token = requireNotNull(resp.data)
                 tokenDao.insertSuspend(token)
             }
-            propertyDao.updateValueByKey(keyProcessUtxoId, output.outputId)
+            propertyDao.insertSuspend(Property(keyProcessUtxoId, output.outputId, nowInUtc()))
         }
 
         changedAssetIds.addAll(outputs.groupBy { it.asset }.keys)
-        if (outputs.size <= processUtxoLimit) {
+        if (outputs.size >= processUtxoLimit) {
             processUtxo(changedAssetIds, outputs.last().outputId)
         }
     }
