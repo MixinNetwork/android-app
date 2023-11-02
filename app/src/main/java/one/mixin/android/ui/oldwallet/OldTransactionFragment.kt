@@ -6,7 +6,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
-import one.mixin.android.databinding.FragmentTransactionBinding
+import one.mixin.android.databinding.FragmentOldTransactionBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -36,7 +36,7 @@ class OldTransactionFragment : BaseFragment(R.layout.fragment_transaction), Tran
     }
 
     private val walletViewModel by viewModels<WalletViewModel>()
-    private val binding by viewBinding(FragmentTransactionBinding::bind)
+    private val binding by viewBinding(FragmentOldTransactionBinding::bind)
 
     private val snapshot: SnapshotItem? by lazy { requireArguments().getParcelableCompat(ARGS_SNAPSHOT, SnapshotItem::class.java) }
     private val asset: AssetItem? by lazy { requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java) }

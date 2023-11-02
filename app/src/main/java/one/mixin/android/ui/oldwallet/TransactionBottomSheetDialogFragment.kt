@@ -7,6 +7,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.databinding.FragmentOldTransactionBinding
 import one.mixin.android.databinding.FragmentTransactionBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.statusBarHeight
@@ -38,7 +39,7 @@ class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), T
     }
 
     private val walletViewModel by viewModels<WalletViewModel>()
-    private val binding by viewBinding(FragmentTransactionBinding::inflate)
+    private val binding by viewBinding(FragmentOldTransactionBinding::inflate)
 
     private val snapshot: SnapshotItem? by lazy { requireArguments().getParcelableCompat(ARGS_SNAPSHOT, SnapshotItem::class.java) }
     private val asset: AssetItem? by lazy { requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java) }

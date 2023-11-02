@@ -127,23 +127,24 @@
                 </RelativeLayout>
 
                 <LinearLayout
-                        android:id="@+id/snapshot_hash_layout"
+                    android:id="@+id/snapshot_hash_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical">
-                    <TextView
-                            style="@style/TransactionTitleTextStyle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/snapshot_Hash" />
+                        android:text="@string/snapshot_Hash" />
 
                     <TextView
-                            android:id="@+id/snapshot_hash_tv"
-                            style="@style/TransactionDescTextStyle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textIsSelectable="true" />
+                        android:id="@+id/snapshot_hash_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
                 </LinearLayout>
+
 
                 <LinearLayout
                     android:id="@+id/transaction_type_ll"
@@ -248,41 +249,41 @@
                 </LinearLayout>
 
                 <LinearLayout
-                        android:id="@+id/opening_balance_layout"
+                    android:id="@+id/opening_balance_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical">
-                    <TextView
-                            style="@style/TransactionTitleTextStyle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/Opening_Balance" />
+                        android:text="@string/Opening_Balance" />
 
                     <TextView
-                            android:id="@+id/opening_balance_tv"
-                            style="@style/TransactionDescTextStyle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textIsSelectable="true" />
+                        android:id="@+id/opening_balance_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
                 </LinearLayout>
 
                 <LinearLayout
-                        android:id="@+id/closing_balance_layout"
+                    android:id="@+id/closing_balance_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical">
-                    <TextView
-                            style="@style/TransactionTitleTextStyle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/Closing_Balance" />
+                        android:text="@string/Closing_Balance" />
 
                     <TextView
-                            android:id="@+id/closing_balance_tv"
-                            style="@style/TransactionDescTextStyle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textIsSelectable="true" />
+                        android:id="@+id/closing_balance_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
                 </LinearLayout>
 
                 <LinearLayout
