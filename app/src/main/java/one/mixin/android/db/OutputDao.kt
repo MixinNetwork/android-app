@@ -16,12 +16,6 @@ interface OutputDao : BaseDao<Output> {
     @Query("SELECT sequence FROM outputs ORDER BY sequence DESC LIMIT 1")
     suspend fun findLatestOutputSequence(): Long?
 
-    @Query("SELECT CAST(amount AS REAL) FROM outputs WHERE asset =:mixinId AND state = 'unspent'")
-    suspend fun calcBalanceByAssetId(mixinId: String): Double
-
-    @Query("SELECT DISTINCT asset FROM outputs")
-    fun getMixinId(): List<String>
-
     @Query("UPDATE outputs SET state = 'signed' WHERE state = 'unspent' AND output_id IN (:outputIds)")
     fun updateUtxoToSigned(outputIds: List<String>)
 }

@@ -43,5 +43,4 @@ class SyncOutputJob() : BaseJob(
             syncOutputs()
         }
     }
-
 }
