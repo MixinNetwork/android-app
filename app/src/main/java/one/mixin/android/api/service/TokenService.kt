@@ -27,6 +27,9 @@ interface TokenService {
     @GET("safe/assets")
     suspend fun fetchAllAssetSuspend(): MixinResponse<List<Token>>
 
+    @POST("safe/assets/fetch")
+    suspend fun fetchAssetSuspend(@Body id: List<String>): MixinResponse<List<Token>>
+
     @GET("safe/assets/{id}")
     suspend fun getAssetByIdSuspend(@Path("id") id: String): MixinResponse<Token>
 

@@ -22,9 +22,13 @@ class CheckBalanceJob(
 
     override fun onRun() = runBlocking {
         Timber.d("$TAG start checkBalance assetId size: ${assets.size}")
+        val nonExistIds = assets.minus(tokenDao.findExistByKernelAssetId(assets).toSet())
+        if (nonExistIds.isNotEmpty()){
+            syncToken(nonExistIds)
+        }
         for (asset in assets) {
             val tokensExtra = tokensExtraDao.findByAsset(asset)
-            val token = tokenDao.findTokenByAsset(asset) ?: syncToken(asset) ?: continue
+            val token = tokenDao.findTokenByAsset(asset) ?: continue
             mixinDatabase.withTransaction {
                 val value = calcBalanceByAssetId(asset)
                 if (tokensExtra == null) {
@@ -36,17 +40,14 @@ class CheckBalanceJob(
         }
     }
 
-    private suspend fun syncToken(asset: String): Token? {
-        val resp = tokenService.getAssetByIdSuspend(asset)
+    private suspend fun syncToken(nonExistIds: List<String>) {
+        val resp = tokenService.fetchAssetSuspend(nonExistIds)
         if (!resp.isSuccess || resp.data == null) {
-            // workaround not found asset
-            if (resp.error?.code == 404) {
-                return null
-            }
+            return
         }
-        val token = requireNotNull(resp.data)
-        tokenDao.insertSuspend(token)
-        return token
+        val tokens = requireNotNull(resp.data)
+        tokenDao.insertList(tokens)
+        return
     }
 
     private tailrec suspend fun calcBalanceByAssetId(asset: String, offset: Int = 0, amount: BigDecimal = BigDecimal.ZERO): BigDecimal {
