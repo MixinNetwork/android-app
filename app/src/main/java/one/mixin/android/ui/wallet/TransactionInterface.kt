@@ -308,12 +308,8 @@ interface TransactionInterface {
             transactionTypeTv.text = getSnapshotType(fragment, snapshot.type)
             transactionTypeLl.isVisible = false
             memoTv.text = snapshot.memo
-            openingBalanceLayout.isVisible = !snapshot.openingBalance.isNullOrBlank()
-            openingBalanceTv.text = "${snapshot.openingBalance} ${asset.symbol}"
-            closingBalanceLayout.isVisible = !snapshot.closingBalance.isNullOrBlank()
-            closingBalanceTv.text = "${snapshot.closingBalance} ${asset.symbol}"
-            snapshotHashLayout.isVisible = !snapshot.transactionHash.isNullOrBlank()
-            snapshotHashTv.text = snapshot.transactionHash
+            transactionHashLayout.isVisible = !snapshot.transactionHash.isNullOrBlank()
+            transactionHashTv.text = snapshot.transactionHash
             dateTv.text = snapshot.createdAt.fullDate()
             // simulate type
             val type = if (!snapshot.opponentId.isNullOrBlank()) {
