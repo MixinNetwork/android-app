@@ -12,10 +12,4 @@ class SafeDeposit(
     @SerializedName("deposit_hash")
     @SerialName("deposit_hash")
     val depositHash: String,
-    @SerializedName("deposit_index")
-    @SerialName("deposit_index")
-    val depositIndex: Long,
-    @SerializedName("sender")
-    @SerialName("sender")
-    val sender: String
 ) : Parcelable
