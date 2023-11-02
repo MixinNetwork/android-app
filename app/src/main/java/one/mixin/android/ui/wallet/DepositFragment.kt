@@ -186,7 +186,8 @@ class DepositFragment : BaseFragment() {
                             if (newAsset == null) {
                                 loading.isVisible = false
                                 toast(R.string.Not_found)
-                            } else if (newAsset.getDestination().isNullOrBlank()){
+                            } else if (newAsset.getDestination().isNullOrBlank()) {
+                                // workaround loading error china
                                 loading.isVisible = true
                                 memoTitle.isVisible = false
                                 memoView.isVisible = false
@@ -213,6 +214,18 @@ class DepositFragment : BaseFragment() {
         lifecycleScope.launch {
             val assetItem = walletViewModel.findOrSyncAsset(asset.assetId)
             if (assetItem == null) {
+                // workaround skip loop
+                if (usdtAssets.contains(asset.assetId)) {
+                    binding.apply {
+                        loading.isVisible = true
+                        memoTitle.isVisible = false
+                        memoView.isVisible = false
+                        addressView.isVisible = false
+                        addressTitle.isVisible = false
+                        tipTv.isVisible = false
+                    }
+                    return@launch
+                }
                 delay(500)
                 refreshAsset(asset)
             } else {
