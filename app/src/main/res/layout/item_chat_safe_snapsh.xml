@@ -42,7 +42,7 @@
             android:layout_marginStart="4dp"
             android:ellipsize="end"
             android:singleLine="true"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_primary"
             android:layout_alignTop="@+id/bill_iv"
             android:layout_alignBottom="@id/bill_iv"
             android:layout_toEndOf="@+id/bill_iv"
