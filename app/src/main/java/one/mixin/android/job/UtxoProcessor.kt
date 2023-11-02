@@ -21,7 +21,7 @@ class UtxoProcessor(
 ) {
     companion object {
         private const val TAG = "UtxoProcessor"
-        private const val keyProcessUtxoId = "keyProcessUtxoId"
+        private const val keyProcessSequence = "keyProcessSequence"
         const val processUtxoLimit = 50
     }
 
@@ -78,13 +78,13 @@ class UtxoProcessor(
         }
     }
 
-    private tailrec suspend fun processUtxo(changedAssetIds: MutableSet<String>, utxoId: String? = null) {
-        Timber.d("$TAG processUtxo changedAssetIds size: ${changedAssetIds.size}, utxoId: $utxoId")
-        val processedUtxoId = utxoId ?: propertyDao.findValueByKey(keyProcessUtxoId)
-        val outputs = if (processedUtxoId.isNullOrBlank()) {
+    private tailrec suspend fun processUtxo(changedAssetIds: MutableSet<String>, sequence: Long? = null) {
+        Timber.d("$TAG processUtxo changedAssetIds size: ${changedAssetIds.size}, sequence: $sequence")
+        val processedSequence = sequence ?: propertyDao.findValueByKey(keyProcessSequence)?.toLong()
+        val outputs = if (processedSequence == null) {
             outputDao.findOutputs()
         } else {
-            outputDao.findOutputsByUtxoId(processedUtxoId)
+            outputDao.findOutputsBySequence(processedSequence)
         }
         if (outputs.isEmpty()) {
             Timber.d("$TAG unprocessed outputs empty")
@@ -103,12 +103,12 @@ class UtxoProcessor(
                 val token = requireNotNull(resp.data)
                 tokenDao.insertSuspend(token)
             }
-            propertyDao.insertSuspend(Property(keyProcessUtxoId, output.outputId, nowInUtc()))
+            propertyDao.insertSuspend(Property(keyProcessSequence, output.sequence.toString(), nowInUtc()))
         }
 
         changedAssetIds.addAll(outputs.groupBy { it.asset }.keys)
         if (outputs.size >= processUtxoLimit) {
-            processUtxo(changedAssetIds, outputs.last().outputId)
+            processUtxo(changedAssetIds, outputs.last().sequence)
         }
     }
 }
