@@ -389,6 +389,13 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
+        val MIGRATION_51_52: Migration = object : Migration(51, 52) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `safe_snapshots` ADD COLUMN `deposit` TEXT")
+                db.execSQL("ALTER TABLE `safe_snapshots` ADD COLUMN  `withdrawal` TEXT")
+            }
+        }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
