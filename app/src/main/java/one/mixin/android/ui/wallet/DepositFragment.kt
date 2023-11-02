@@ -180,12 +180,24 @@ class DepositFragment : BaseFragment() {
                                 alertDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                                     show()
                                 }
-                                newAsset = walletViewModel.findOrSyncAsset(entry.key)
+                                newAsset = walletViewModel.findDepositAsset(entry.key)
                                 alertDialog?.dismiss()
                             }
                             if (newAsset == null) {
+                                loading.isVisible = false
                                 toast(R.string.Not_found)
+                            } else if (newAsset.getDestination().isNullOrBlank()){
+                                loading.isVisible = true
+                                memoTitle.isVisible = false
+                                memoView.isVisible = false
+                                addressView.isVisible = false
+                                addressTitle.isVisible = false
+                                tipTv.isVisible = false
                             } else {
+                                loading.isVisible = false
+                                addressView.isVisible = true
+                                addressTitle.isVisible = true
+                                tipTv.isVisible = true
                                 initView(newAsset)
                             }
                         }
