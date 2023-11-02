@@ -191,6 +191,7 @@ class BottomSheetViewModel @Inject internal constructor(
             })
             tokenRepository.updateUtxoToSigned(outputIds)
         }
+        jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
         return innerTransaction(signResult.raw,traceId, receiverId, assetId, amount, memo)
     }
 
@@ -206,7 +207,6 @@ class BottomSheetViewModel @Inject internal constructor(
         val conversationId = generateConversationId(transactionRsp.data!!.userId, receiverId)
         initConversation(conversationId, transactionRsp.data!!.userId, receiverId)
         tokenRepository.insertSnapshotMessage(transactionRsp.data!!, conversationId, assetId, amount, receiverId, memo)
-        jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
         jobManager.addJobInBackground(SyncOutputJob())
         return transactionRsp
     }

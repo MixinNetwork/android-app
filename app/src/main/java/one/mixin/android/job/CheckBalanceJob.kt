@@ -4,6 +4,7 @@ import androidx.room.withTransaction
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokensExtra
 import timber.log.Timber
 import java.math.BigDecimal
@@ -21,6 +22,10 @@ class CheckBalanceJob(
 
     override fun onRun() = runBlocking {
         Timber.d("$TAG start checkBalance assetId size: ${assets.size}")
+        val nonExistIds = assets.minus(tokenDao.findExistByKernelAssetId(assets).toSet())
+        if (nonExistIds.isNotEmpty()){
+            syncToken(nonExistIds)
+        }
         for (asset in assets) {
             val tokensExtra = tokensExtraDao.findByAsset(asset)
             val token = tokenDao.findTokenByAsset(asset) ?: continue
@@ -33,6 +38,16 @@ class CheckBalanceJob(
                 }
             }
         }
+    }
+
+    private suspend fun syncToken(nonExistIds: List<String>) {
+        val resp = tokenService.fetchAssetSuspend(nonExistIds)
+        if (!resp.isSuccess || resp.data == null) {
+            return
+        }
+        val tokens = requireNotNull(resp.data)
+        tokenDao.insertList(tokens)
+        return
     }
 
     private tailrec suspend fun calcBalanceByAssetId(asset: String, offset: Int = 0, amount: BigDecimal = BigDecimal.ZERO): BigDecimal {
@@ -49,11 +64,5 @@ class CheckBalanceJob(
         } else {
             result
         }
-    }
-}
-
-class BalanceNotEqualsException(message: String) : Exception(message) {
-    companion object {
-        private const val serialVersionUID: Long = 1L
     }
 }

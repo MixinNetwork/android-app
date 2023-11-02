@@ -33,11 +33,14 @@ class SyncOutputJob() : BaseJob(
         val outputs = (requireNotNull(resp.data) { "outputs can not be null or empty at this step" })
         if (outputs.isNotEmpty()) {
             outputDao.insertIgnoreList(outputs)
+            val list = arrayListOf<String>().apply {
+                addAll(outputs.groupBy { it.asset }.keys)
+            }
+            jobManager.addJobInBackground(CheckBalanceJob(list))
         }
         Timber.d("$TAG insertOutputs ${outputs.size}")
         if (outputs.size >= syncOutputLimit) {
             syncOutputs()
         }
     }
-
 }
