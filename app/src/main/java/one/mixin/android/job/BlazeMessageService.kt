@@ -179,10 +179,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         HedwigImp(database, pendingDatabase, conversationService, circleService, jobManager, callState, lifecycleScope)
     }
 
-    private val utxoProcessor by lazy {
-        UtxoProcessor(database, jobManager, tokenService, lifecycleScope)
-    }
-
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
         return null
@@ -194,7 +190,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         webSocket.setWebSocketObserver(this)
         webSocket.connect()
         hedwig.takeOff()
-        utxoProcessor.start()
         startObserveAck()
         startObserveStatus()
         startObserveExpired()
@@ -253,7 +248,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     override fun onDestroy() {
         super.onDestroy()
         hedwig.land()
-        utxoProcessor.stop()
         stopObserveAck()
         stopObserveStatus()
         stopObserveExpired()

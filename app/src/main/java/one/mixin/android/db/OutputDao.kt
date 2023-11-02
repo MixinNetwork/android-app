@@ -2,23 +2,16 @@ package one.mixin.android.db
 
 import androidx.room.Dao
 import androidx.room.Query
-import one.mixin.android.job.UtxoProcessor.Companion.processUtxoLimit
 import one.mixin.android.vo.safe.Output
 
 @Dao
 interface OutputDao : BaseDao<Output> {
-
-    @Query("SELECT * FROM outputs WHERE state = 'unspent' ORDER BY sequence ASC LIMIT :limit")
-    suspend fun findOutputs(limit: Int = processUtxoLimit): List<Output>
 
     @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset ORDER BY amount ASC LIMIT :limit")
     suspend fun findUnspentOutputsByAsset(limit: Int, asset: String): List<Output>
 
     @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset ORDER BY amount ASC LIMIT :limit OFFSET :offset")
     suspend fun findUnspentOutputsByAssetOffset(limit: Int, asset: String, offset: Int): List<Output>
-
-    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND sequence > :sequence ORDER BY sequence ASC LIMIT :limit")
-    suspend fun findOutputsBySequence(sequence: Long, limit: Int = processUtxoLimit): List<Output>
 
     @Query("SELECT sequence FROM outputs ORDER BY sequence DESC LIMIT 1")
     suspend fun findLatestOutputSequence(): Long?
