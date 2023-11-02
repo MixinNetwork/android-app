@@ -407,7 +407,7 @@
     <string name="error_permission">请开启相关权限</string>
     <string name="error_phone_invalid_format">错误 20110：手机号码不合法</string>
     <string name="error_phone_sms_delivery">错误 10003：发送短信失败</string>
-    <string name="error_user_not_found">对方没有更新到新版本，请通知对方更新</string>
+    <string name="error_opponent_not_registered_to_safe">ERROR 10404: 对方客户端版本过低，请提醒对方更新客户端到最新版本</string>
     <string name="error_expired_card">错误 10601: 卡片已过期</string>
     <string name="error_expired_price">错误 10602: 价格已过期</string>
     <string name="error_payment_capture">错误 10603: 支付确认失败</string>
@@ -1287,9 +1287,8 @@
     <string name="Asset_Migration_Content">Mixin Network 进行了网络升级，您还有资产在旧的网络，推荐将您的资产迁移到新系统。</string>
     <string name="Start_Migration">开始迁移</string>
     <string name="empty_utxo">没有可用的 UTXO</string>
-    <string name="not_enough_utxo">余额不足</string>
-    <string name="max_count_not_enough_utxo">该交易使用的 UTXO 数量过多，请尝试首先归集 UTXO 或者分批转账。</string>
-    <string name="gather_utxo">归集 UTXO</string>
-    <string name="Verification_failed">验证失败</string>
-    <string name="You_have_unmigrated">您还有资产在旧的 Mixin 网络，点击查看。</string>
+    <string name="insufficient_balance">余额不足</string>
+    <string name="utxo_count_exceeded">该交易使用的 UTXO 数量过多，请尝试首先归集 UTXO 或者分批转账。</string>
+    <string name="Combine_utxo">归集 UTXO</string>
+    <string name="asset_migration_hint">您还有资产在旧的 Mixin 网络，点击查看。</string>
 </resources>

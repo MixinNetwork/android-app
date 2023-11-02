@@ -163,7 +163,7 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
             getString(R.string.error_old_version, versionName)
         }
         ErrorHandler.USER_NOT_FOUND -> {
-            getString(R.string.error_user_not_found)
+            getString(R.string.error_opponent_not_registered_to_safe)
         }
         ErrorHandler.EXPIRED_CARD -> {
             getString(R.string.error_expired_card)
