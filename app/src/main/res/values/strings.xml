@@ -417,7 +417,7 @@
     <string name="error_permission">Please open the necessary permissions</string>
     <string name="error_phone_invalid_format">ERROR 20110: Invalid phone number</string>
     <string name="error_phone_sms_delivery">ERROR 10003: Failed to deliver SMS</string>
-    <string name="error_user_not_found">The other party has not updated to the new version, please inform the other party to update</string>
+    <string name="error_opponent_not_registered_to_safe">ERROR 10404: The opponent is using an earlier version, you can remind them to update</string>
     <string name="error_expired_card">ERROR 10601: Card expired</string>
     <string name="error_expired_price">ERROR 10602: Price expired</string>
     <string name="error_payment_capture">ERROR 10603: Payment capture failed</string>
@@ -1317,9 +1317,8 @@
     <string name="Asset_Migration_Content">Mixin Network is upgraded and you still have assets in the legacy network, it\'s recommended to migrate your assets to the new network.</string>
     <string name="Start_Migration">Start the migration</string>
     <string name="empty_utxo">Empty UTXO</string>
-    <string name="not_enough_utxo">Insufficient balance</string>
-    <string name="max_count_not_enough_utxo">This transaction consumes too many UTXOs, please try to combine UTXOs or split the transaction.</string>
-    <string name="gather_utxo">Combine UTXOs</string>
-    <string name="Verification_failed">Verification failed</string>
-    <string name="You_have_unmigrated">You have assets in the legacy network, please view here.</string>
+    <string name="insufficient_balance">Insufficient balance</string>
+    <string name="utxo_count_exceeded">This transaction consumes too many UTXOs, please try to combine UTXOs or split the transaction.</string>
+    <string name="Combine_utxo">Combine UTXOs</string>
+    <string name="asset_migration_hint">You have assets in the legacy network, please view here.</string>
 </resources>

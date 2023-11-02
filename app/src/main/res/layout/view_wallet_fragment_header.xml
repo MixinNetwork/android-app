@@ -24,7 +24,7 @@
                 android:layout_gravity="center"
                 android:layout_marginStart="3dp"
                 android:gravity="center"
-                android:text="@string/You_have_unmigrated"
+                android:text="@string/asset_migration_hint"
                 android:textColor="@color/white"
                 android:textSize="14sp"/>
 

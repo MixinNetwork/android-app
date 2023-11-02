@@ -265,7 +265,7 @@ class DepositFragment : BaseFragment() {
             binding.apply {
                 notSupportLl.isVisible = true
                 sv.isVisible = false
-                notSupportTv.setText(R.string.Verification_failed)
+                notSupportTv.setText(R.string.verification_failed)
             }
         }
     }
