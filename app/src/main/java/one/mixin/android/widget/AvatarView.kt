@@ -96,6 +96,16 @@ class AvatarView : ViewAnimator {
         avatarSimple.setPadding(padding)
     }
 
+    fun setDeposit() {
+        displayedChild = POS_AVATAR
+        avatarSimple.setImageResource(R.drawable.ic_snapshot_deposit)
+    }
+
+    fun setWithdrawal() {
+        displayedChild = POS_AVATAR
+        avatarSimple.setImageResource(R.drawable.ic_snapshot_withdrawal)
+    }
+
     fun setInfo(name: String?, url: String?, id: String) {
         binding.avatarTv.text = checkEmoji(name)
         try {
