@@ -8,7 +8,10 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import one.mixin.android.ui.transfer.TransferCipher
 import one.mixin.android.ui.transfer.TransferProtocol
+import one.mixin.android.vo.Asset
+import one.mixin.android.vo.WithdrawalMemoPossibility
 import org.junit.Test
+import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -35,6 +38,42 @@ import kotlin.test.assertEquals
 
 class DeviceTransferTest {
     private val secureRandom: SecureRandom by lazy { SecureRandom() }
+
+
+    @Test
+    fun testAsset() {
+        val content = """
+            {
+            "asset_id": "861963fe-e900-3064-97b9-b732fbb6188b",
+            "symbol": "CNY",
+            "name": "CNY",
+            "icon_url": "https://mixin-images.zeromesh.net/zVJ7-zTyqHpo1cdQul-xiFsg___-CSGE1VnZdAIapqzHsGkhO7Wr4Cnawju3XXOmTtQ4gWqiNblAPnrAzhgYZg=s128",
+            "balance": "0.079899",
+            "destination": "mixin-bts",
+            "tag": "88888",
+            "price_btc": "0",
+            "price_usd": "0",
+            "chain_id": "05891083-63d2-4f3d-bfbe-d14d7fb9b25a",
+            "change_usd": "0",
+            "change_btc": "0",
+            "confirmations": 64,
+            "asset_key": "1.3.113",
+            "reserve": "0",
+            "deposit_entries": [{"destination":"mixin-bts","tag":"88888"}],
+            "withdrawal_memo_possibility": "positive"
+        }
+        """
+        val serializationJson = Json {
+            ignoreUnknownKeys = true
+            explicitNulls = false
+            encodeDefaults = false
+            coerceInputValues = true
+            isLenient = true
+        }
+        val asset = serializationJson.decodeFromString<Asset>(content)
+        assertEquals(WithdrawalMemoPossibility.POSSIBLE, asset.withdrawalMemoPossibility)
+        println(serializationJson.encodeToString(Asset.serializer(), asset))
+    }
 
     @Throws(IOException::class)
     fun generateRandomFile(fileName: String?, fileSize: Long) {
