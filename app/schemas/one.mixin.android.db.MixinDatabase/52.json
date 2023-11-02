@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 52,
-    "identityHash": "c31634231878c1fc8bb63a9a516fe476",
+    "identityHash": "b067f0154fef1fc819d46a81dd82e92a",
     "entities": [
       {
         "tableName": "users",
@@ -2487,15 +2487,14 @@
         },
         "indices": [
           {
-            "name": "index_outputs_asset_state_created_at",
+            "name": "index_outputs_state_sequence",
             "unique": false,
             "columnNames": [
-              "asset",
               "state",
-              "created_at"
+              "sequence"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_outputs_asset_state_created_at` ON `${TABLE_NAME}` (`asset`, `state`, `created_at`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_outputs_state_sequence` ON `${TABLE_NAME}` (`state`, `sequence`)"
           },
           {
             "name": "index_outputs_transaction_hash_output_index",
@@ -2820,7 +2819,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c31634231878c1fc8bb63a9a516fe476')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b067f0154fef1fc819d46a81dd82e92a')"
     ]
   }
 }
