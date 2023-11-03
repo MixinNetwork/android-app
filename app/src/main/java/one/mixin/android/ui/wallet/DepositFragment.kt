@@ -175,7 +175,7 @@ class DepositFragment : BaseFragment() {
 
                         lifecycleScope.launch {
                             var newAsset = walletViewModel.findAssetItemById(entry.key)
-                            if (newAsset == null) {
+                            if (newAsset == null || newAsset.getDestination().isNullOrBlank()) {
                                 alertDialog?.dismiss()
                                 alertDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                                     show()
@@ -186,14 +186,6 @@ class DepositFragment : BaseFragment() {
                             if (newAsset == null) {
                                 loading.isVisible = false
                                 toast(R.string.Not_found)
-                            } else if (newAsset.getDestination().isNullOrBlank()) {
-                                // workaround loading error china
-                                loading.isVisible = true
-                                memoTitle.isVisible = false
-                                memoView.isVisible = false
-                                addressView.isVisible = false
-                                addressTitle.isVisible = false
-                                tipTv.isVisible = false
                             } else {
                                 loading.isVisible = false
                                 addressView.isVisible = true
