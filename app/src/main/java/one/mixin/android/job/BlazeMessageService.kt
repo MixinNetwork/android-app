@@ -5,6 +5,7 @@ import android.app.ActivityManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
@@ -323,7 +324,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
 
         try {
-            startForeground(FOREGROUND_ID, builder.build())
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(FOREGROUND_ID, builder.build(), FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+            } else {
+                startForeground(FOREGROUND_ID, builder.build())
+            }
         } catch (e: Exception) {
             Timber.e(e)
         }
