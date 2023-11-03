@@ -202,7 +202,7 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/Deposit_hash" />
+                        android:text="@string/deposit_hash" />
 
                     <TextView
                         android:id="@+id/hash_tv"

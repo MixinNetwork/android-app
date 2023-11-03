@@ -33,7 +33,6 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.Ticker
-import one.mixin.android.vo.safe.SafeDeposit
 import java.math.BigDecimal
 
 interface TransactionInterface {
@@ -333,7 +332,7 @@ interface TransactionInterface {
                     )
                     if (snapshot.deposit != null) {
                         hashLl.isVisible = true
-                        hashTitle.text = fragment.getString(R.string.Deposit_hash)
+                        hashTitle.text = fragment.getString(R.string.deposit_hash)
                         hashTv.text = snapshot.deposit.depositHash
                     }
                 }
@@ -342,7 +341,7 @@ interface TransactionInterface {
                     memoLl.isVisible = false
                     if (snapshot.deposit != null) {
                         hashLl.isVisible = true
-                        hashTitle.text = fragment.getString(R.string.Deposit_hash)
+                        hashTitle.text = fragment.getString(R.string.deposit_hash)
                         hashTv.text = snapshot.deposit.depositHash
                     }
                 }
@@ -351,7 +350,7 @@ interface TransactionInterface {
                     fromTitle.text = fragment.getString(R.string.To)
                     if (snapshot.withdrawal != null) {
                         hashLl.isVisible = true
-                        hashTitle.text = fragment.getString(R.string.Withdrawal_hash)
+                        hashTitle.text = fragment.getString(R.string.withdrawal_hash)
                         if (snapshot.withdrawal.withdrawalHash.isBlank()) {
                             hashPb.isVisible = true
                             hashTv.isVisible = false
