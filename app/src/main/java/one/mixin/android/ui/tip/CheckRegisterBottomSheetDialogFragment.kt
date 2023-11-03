@@ -23,10 +23,12 @@ import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.job.updateAccount
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.exception.TipException
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricLayout
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
 import one.mixin.android.widget.BottomSheet
@@ -129,7 +131,9 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                 }
             }
         } catch (e: Exception) {
-            Timber.e("TIP $TAG checkCounter ${e.stackTraceToString()}")
+            val msg = "TIP $TAG checkCounter ${e.stackTraceToString()}"
+            Timber.e(msg)
+            reportException(msg, e)
             showErrorWhenCheckCounterFailed(e.message ?: "checkCounter failed", account)
         }
     }
@@ -161,11 +165,15 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                 val errorCode = error.code
                 val errorDescription = error.description
                 val errStr = requireContext().getMixinErrorStringByCode(errorCode, errorDescription)
-                Timber.e("TIP $TAG register public key errorString $errStr")
+                val msg = "TIP $TAG register public key errorString $errStr"
+                Timber.e(msg)
+                reportException(TipException(msg))
                 showErrorWhenRegisterFailed(pin, errStr)
             }
         } catch (e: Exception) {
-            Timber.e("TIP $TAG register public key ${e.stackTraceToString()}")
+            val msg = "TIP $TAG register public key ${e.stackTraceToString()}"
+            Timber.e(msg)
+            reportException(msg, e)
             showErrorWhenRegisterFailed(pin, e.message ?: "register public key failed, please retry")
         }
     }
