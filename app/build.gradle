@@ -387,6 +387,7 @@ dependencies {
     implementation platform("com.walletconnect:android-bom:1.13.1")
     implementation "com.walletconnect:android-core"
     implementation "com.walletconnect:web3wallet"
+    implementation "com.walletconnect:push"
 
     implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
 
