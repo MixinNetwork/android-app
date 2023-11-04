@@ -27,6 +27,7 @@ import com.google.android.gms.safetynet.SafetyNet
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
@@ -560,8 +561,8 @@ class MainActivity : BlazeBaseActivity() {
                 try {
                     appUpdateManager.startUpdateFlowForResult(
                         appUpdateInfo,
-                        AppUpdateType.FLEXIBLE,
                         this,
+                        AppUpdateOptions.defaultOptions(AppUpdateType.FLEXIBLE),
                         0x01,
                     )
                 } catch (ignored: IntentSender.SendIntentException) {
@@ -968,6 +969,7 @@ class MainActivity : BlazeBaseActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
+        super.onBackPressed()
         val searchMessageFragment =
             supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG)
         val searchSingleFragment =
