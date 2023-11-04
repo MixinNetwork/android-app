@@ -7,7 +7,7 @@ import one.mixin.android.session.buildHashMembers
 import timber.log.Timber
 
 class SyncOutputJob() : BaseJob(
-    Params(PRIORITY_UI_HIGH).addTags(TAG).requireNetwork(),
+    Params(PRIORITY_UI_HIGH).addTags(TAG).groupBy(TAG).requireNetwork(),
 ) {
     companion object {
         private const val serialVersionUID = 1L
