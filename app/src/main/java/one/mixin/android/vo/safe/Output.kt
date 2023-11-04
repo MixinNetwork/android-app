@@ -13,8 +13,7 @@ import one.mixin.android.vo.ListConverter
 @Entity(
     tableName = "outputs",
     indices = [
-        Index(value = arrayOf("state", "sequence")),
-        Index(value = arrayOf("asset", "state", "amount")),
+        Index(value = arrayOf("asset", "state", "sequence")),
         Index(value = arrayOf("transaction_hash", "output_index"), unique = true),
     ],
 )

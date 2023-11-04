@@ -394,8 +394,7 @@ class MixinDatabaseMigrations private constructor() {
                 db.execSQL("ALTER TABLE `safe_snapshots` ADD COLUMN `deposit` TEXT")
                 db.execSQL("ALTER TABLE `safe_snapshots` ADD COLUMN  `withdrawal` TEXT")
                 db.execSQL("DROP INDEX IF EXISTS `index_outputs_asset_state_created_at`")
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_outputs_state_sequence` ON `outputs` (`state`, `sequence`)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_outputs_asset_state_amount` ON `outputs` (`asset`, `state`, `amount`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_outputs_asset_state_sequence` ON `outputs` (`asset`, `state`, `sequence`)")
             }
         }
 
