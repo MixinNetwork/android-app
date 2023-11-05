@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.lifecycle.Lifecycle
@@ -35,7 +36,6 @@ import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
@@ -163,9 +163,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     @Inject
     lateinit var circleService: CircleService
-
-    @Inject
-    lateinit var tokenService: TokenService
 
     private val accountId = Session.getAccountId()
     private val gson = GsonHelper.customGson
@@ -324,12 +321,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
 
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(FOREGROUND_ID, builder.build(), FOREGROUND_SERVICE_TYPE_DATA_SYNC)
-            } else {
-                startForeground(FOREGROUND_ID, builder.build())
-            }
+            ServiceCompat.startForeground(this, FOREGROUND_ID, builder.build(), FOREGROUND_SERVICE_TYPE_DATA_SYNC)
         } catch (e: Exception) {
+            reportException(e)
             Timber.e(e)
         }
     }

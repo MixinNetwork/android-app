@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
@@ -34,6 +35,7 @@ import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.microsoft.appcenter.AppCenter
+import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
@@ -338,6 +340,16 @@ class MainActivity : BlazeBaseActivity() {
 
         jobManager.addJobInBackground(SyncOutputJob())
         jobManager.addJobInBackground(RestoreTransactionJob())
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            RxPermissions(this)
+                .request(Manifest.permission.POST_NOTIFICATIONS)
+                .autoDispose(stopScope)
+                .subscribe(
+                    { _ -> },
+                    {},
+                )
+        }
     }
 
     override fun onStart() {
