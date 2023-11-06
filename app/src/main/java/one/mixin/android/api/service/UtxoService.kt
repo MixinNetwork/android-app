@@ -17,7 +17,7 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface UtxoService {
-    @GET("/safe/outputs")
+    @GET("safe/outputs")
     suspend fun getOutputs(
         @Query("members") members: String,
         @Query("threshold") threshold: Int,
@@ -26,26 +26,26 @@ interface UtxoService {
         @Query("state") state: String? = null,
     ): MixinResponse<List<Output>>
 
-    @POST("/safe/deposit/entries")
+    @POST("safe/deposit/entries")
     suspend fun createDeposit(
         @Body depositEntryRequest: DepositEntryRequest
     ): MixinResponse<List<DepositEntry>>
 
-    @POST("/safe/users")
+    @POST("safe/users")
     suspend fun registerPublicKey(
         @Body registerRequest: RegisterRequest
     ): MixinResponse<Account>
 
-    @POST("/safe/keys")
+    @POST("safe/keys")
     suspend fun ghostKey(@Body ghostKeyRequest: List<GhostKeyRequest>): MixinResponse<List<GhostKey>>
 
-    @POST("/safe/transaction/requests")
+    @POST("safe/transaction/requests")
     suspend fun transactionRequest(@Body transactionRequest: TransactionRequest): MixinResponse<TransactionResponse>
 
-    @POST("/safe/transactions")
+    @POST("safe/transactions")
     suspend fun transactions(@Body transactionRequest: TransactionRequest): MixinResponse<TransactionResponse>
 
-    @GET("/safe/transactions/{id}")
+    @GET("safe/transactions/{id}")
     suspend fun getTransactionsById(@Path("id") id: String): MixinResponse<TransactionResponse>
 }
 

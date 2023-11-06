@@ -64,9 +64,6 @@ interface TokenService {
     @POST("payments")
     suspend fun paySuspend(@Body request: TransferRequest): MixinResponse<PaymentResponse>
 
-    @POST("withdrawals")
-    suspend fun withdrawals(@Body request: WithdrawalRequest): MixinResponse<SafeSnapshot>
-
     @GET("safe/snapshots/{id}")
     suspend fun getSnapshotById(@Path("id") id: String): MixinResponse<SafeSnapshot>
 
