@@ -379,6 +379,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                         )
                     }
                     root.post {
+                        if (viewDestroyed()) return@post
+                        
                         bottomRl.updateLayoutParams<ViewGroup.LayoutParams> {
                             height = requireContext().screenHeight() - this@TransactionsFragment.binding.titleView.height - topLl.height - groupInfoMemberTitleLayout.height
                         }
