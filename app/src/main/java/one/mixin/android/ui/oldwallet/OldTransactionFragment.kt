@@ -15,7 +15,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 
 @AndroidEntryPoint
-class OldTransactionFragment : BaseFragment(R.layout.fragment_transaction), TransactionInterface {
+class OldTransactionFragment : BaseFragment(R.layout.fragment_old_transaction), TransactionInterface {
     companion object {
         const val TAG = "OldTransactionFragment"
         const val ARGS_SNAPSHOT = "args_snapshot"
