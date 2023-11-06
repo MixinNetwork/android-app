@@ -15,7 +15,7 @@ import (
 
 type Utxo struct {
 	Hash   string `json:"hash"`
-	Index  int    `json:"index"`
+	Index  uint   `json:"index"`
 	Amount string `json:"amount"`
 }
 
@@ -25,7 +25,7 @@ type Tx struct {
 	Change *Utxo  `json:"change,omitempty"`
 }
 
-func BuildTx(asset string, amount string, threshold int, receiverKeys string, receiverMask string, inputs []byte, changeKeys string, changeMask string, extra string) (string, error) {
+func BuildTx(asset string, amount string, threshold int, receiverKeys string, receiverMask string, inputs []byte, changeKeys, changeMask, extra, reference string) (string, error) {
 	keys := strings.Split(receiverKeys, ",")
 	rks := []*crypto.Key{}
 	for _, k := range keys {
@@ -70,10 +70,90 @@ func BuildTx(asset string, amount string, threshold int, receiverKeys string, re
 		}
 		ins = append(ins, &u)
 	}
-	return buildTransaction(asset, amount, threshold, rks, receiverMask, ins, cks, changeMask, extra)
+	return buildTransaction(asset, amount, threshold, rks, receiverMask, ins, cks, changeMask, extra, reference)
 }
 
-func buildTransaction(asset string, amount string, threshold int, receiverKeys []*crypto.Key, receiverMask string, inputs []*common.UTXO, changeKeys []*crypto.Key, changeMask string, extra string) (string, error) {
+func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, address, tag string, threshold int, feeAmount string, feeKeys []*crypto.Key, feeMask string, changeKeys []*crypto.Key, changeMask string, extra string) (string, error) {
+	assetHash, err := crypto.HashFromString(asset)
+	if err != nil {
+		return "", err
+	}
+
+	amountValue := common.NewIntegerFromString(amount)
+	feeAmountValue := common.NewIntegerFromString(feeAmount)
+	total := common.NewInteger(0)
+
+	tx := common.NewTransactionV5(assetHash)
+	for _, in := range inputs {
+		tx.AddInput(in.Hash, in.Index)
+		total = total.Add(in.Amount)
+	}
+	if total.Cmp(amountValue.Add(feeAmountValue)) < 0 {
+		return "", errors.New("insufficient funds")
+	}
+	withdrawalOutput := &common.Output{
+		Type:   common.OutputTypeWithdrawalSubmit,
+		Amount: amountValue,
+		Withdrawal: &common.WithdrawalData{
+			Address: address,
+			Tag:     tag,
+		},
+	}
+	tx.Outputs = append(tx.Outputs, withdrawalOutput)
+	if feeAmount != "" {
+		if feeMask == "" {
+			return "", errors.New("bad param address")
+		}
+		mask, err := crypto.KeyFromString(feeMask)
+		if err != nil {
+			return "", err
+		}
+		if !mask.CheckKey() {
+			return "", errors.New("invalid mask")
+		}
+
+		feeOutput := &common.Output{
+			Type:   common.OutputTypeScript,
+			Amount: feeAmountValue,
+			Keys:   feeKeys,
+			Mask:   mask,
+			Script: common.NewThresholdScript(1),
+		}
+		tx.Outputs = append(tx.Outputs, feeOutput)
+	}
+
+	if total.Cmp(amountValue.Add(feeAmountValue)) > 0 {
+		change := total.Sub(amountValue).Sub(feeAmountValue)
+		script := common.NewThresholdScript(1)
+
+		changeMaskKey, err := crypto.KeyFromString(changeMask)
+		if err != nil {
+			return "", err
+		}
+
+		out := &common.Output{
+			Type:   common.OutputTypeScript,
+			Amount: change,
+			Script: script,
+			Mask:   changeMaskKey,
+			Keys:   changeKeys,
+		}
+		tx.Outputs = append(tx.Outputs, out)
+	}
+
+	if extra != "" {
+		extraBytes := []byte(extra)
+		if len(extraBytes) > 512 {
+			return "", errors.New("extra data is too long")
+		}
+		tx.Extra = extraBytes
+	}
+
+	ver := tx.AsVersioned()
+	return hex.EncodeToString(ver.Marshal()), nil
+}
+
+func buildTransaction(asset string, amount string, threshold int, receiverKeys []*crypto.Key, receiverMask string, inputs []*common.UTXO, changeKeys []*crypto.Key, changeMask string, extra, reference string) (string, error) {
 	assetHash, err := crypto.HashFromString(asset)
 	if err != nil {
 		return "", err
@@ -99,7 +179,6 @@ func buildTransaction(asset string, amount string, threshold int, receiverKeys [
 	if !mask.CheckKey() {
 		return "", errors.New("invalid mask")
 	}
-
 	output := &common.Output{
 		Type:   common.OutputTypeScript,
 		Amount: amountValue,
@@ -109,6 +188,13 @@ func buildTransaction(asset string, amount string, threshold int, receiverKeys [
 	}
 	tx.Outputs = append(tx.Outputs, output)
 
+	if reference != "" {
+		h, err := crypto.HashFromString(reference)
+		if err != nil {
+			return "", errors.New("bad param reference")
+		}
+		tx.References = append(tx.References, h)
+	}
 	if total.Cmp(amountValue) > 0 {
 		change := total.Sub(amountValue)
 		script := common.NewThresholdScript(1)
