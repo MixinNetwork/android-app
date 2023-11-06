@@ -84,7 +84,7 @@ data class Snapshot(
     @SerializedName("closing_balance")
     @SerialName("closing_balance")
     @ColumnInfo(name = "closing_balance")
-    val closingBalance: String?,
+    val closingBalance: String?
 )
 
 @Suppress("ktlint:standard:enum-entry-name-case", "EnumEntryName")

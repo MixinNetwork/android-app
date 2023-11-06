@@ -184,6 +184,12 @@ internal constructor(
         }
     }
 
+    suspend fun findDepositAsset(assetId: String): TokenItem? {
+        return withContext(Dispatchers.IO) {
+            tokenRepository.findDepositAsset(assetId)
+        }
+    }
+
     suspend fun syncNoExistAsset(assetIds: List<String>) = withContext(Dispatchers.IO) {
         assetIds.forEach { id ->
             if (tokenRepository.findAssetItemById(id) == null) {

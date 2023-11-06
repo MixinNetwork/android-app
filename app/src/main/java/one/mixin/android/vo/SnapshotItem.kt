@@ -8,7 +8,10 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.SerialName
+import one.mixin.android.vo.safe.SafeDeposit
 import one.mixin.android.vo.safe.SafeSnapshot
+import one.mixin.android.vo.safe.SafeWithdrawal
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -63,6 +66,14 @@ data class SnapshotItem(
     @SerializedName("closing_balance")
     @ColumnInfo(name = "closing_balance")
     val closingBalance: String?,
+    @SerializedName("deposit")
+    @SerialName("deposit")
+    @ColumnInfo(name = "deposit")
+    val deposit: SafeDeposit?,
+    @SerializedName("withdrawal")
+    @SerialName("withdrawal")
+    @ColumnInfo(name = "withdrawal")
+    val withdrawal: SafeWithdrawal?
 ) : Parcelable {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SnapshotItem>() {
@@ -90,6 +101,8 @@ data class SnapshotItem(
             traceId = snapshot.traceId,
             openingBalance = snapshot.openingBalance,
             closingBalance = snapshot.closingBalance,
+            deposit = snapshot.deposit,
+            withdrawal = snapshot.withdrawal
         )
     }
 }

@@ -42,7 +42,11 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                 binding.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
             }
             else -> {
-                binding.avatar.setNet()
+                if (type ==SnapshotType.deposit) {
+                    binding.avatar.setDeposit()
+                } else {
+                    binding.avatar.setWithdrawal()
+                }
                 binding.name.text = snapshot.transactionHash?.formatPublicKey()
             }
         }

@@ -175,17 +175,22 @@ class DepositFragment : BaseFragment() {
 
                         lifecycleScope.launch {
                             var newAsset = walletViewModel.findAssetItemById(entry.key)
-                            if (newAsset == null) {
+                            if (newAsset == null || newAsset.getDestination().isNullOrBlank()) {
                                 alertDialog?.dismiss()
                                 alertDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                                     show()
                                 }
-                                newAsset = walletViewModel.findOrSyncAsset(entry.key)
+                                newAsset = walletViewModel.findDepositAsset(entry.key)
                                 alertDialog?.dismiss()
                             }
                             if (newAsset == null) {
+                                loading.isVisible = false
                                 toast(R.string.Not_found)
                             } else {
+                                loading.isVisible = false
+                                addressView.isVisible = true
+                                addressTitle.isVisible = true
+                                tipTv.isVisible = true
                                 initView(newAsset)
                             }
                         }
@@ -201,6 +206,18 @@ class DepositFragment : BaseFragment() {
         lifecycleScope.launch {
             val assetItem = walletViewModel.findOrSyncAsset(asset.assetId)
             if (assetItem == null) {
+                // workaround skip loop
+                if (usdtAssets.contains(asset.assetId)) {
+                    binding.apply {
+                        loading.isVisible = true
+                        memoTitle.isVisible = false
+                        memoView.isVisible = false
+                        addressView.isVisible = false
+                        addressTitle.isVisible = false
+                        tipTv.isVisible = false
+                    }
+                    return@launch
+                }
                 delay(500)
                 refreshAsset(asset)
             } else {

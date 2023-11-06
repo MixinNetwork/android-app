@@ -389,6 +389,15 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
+        val MIGRATION_51_52: Migration = object : Migration(51, 52) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `safe_snapshots` ADD COLUMN `deposit` TEXT")
+                db.execSQL("ALTER TABLE `safe_snapshots` ADD COLUMN  `withdrawal` TEXT")
+                db.execSQL("DROP INDEX IF EXISTS `index_outputs_asset_state_created_at`")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_outputs_asset_state_sequence` ON `outputs` (`asset`, `state`, `sequence`)")
+            }
+        }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }

@@ -20,7 +20,7 @@ fun Throwable.isUtxoException(): Boolean = this is EmptyUtxoException || this is
 
 fun Throwable.getUtxoExceptionMsg(context: Context): String {
     val msg = when (this) {
-        is EmptyUtxoException -> context.getString(R.string.empty_utxo)
+        is EmptyUtxoException -> context.getString(R.string.insufficient_balance)
         is NotEnoughUtxoException -> context.getString(R.string.insufficient_balance)
         is MaxCountNotEnoughUtxoException -> context.getString(R.string.utxo_count_exceeded)
         else -> {

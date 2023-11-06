@@ -75,5 +75,14 @@ data class SafeSnapshot(
     @SerialName("closing_balance")
     @ColumnInfo(name = "closing_balance")
     val closingBalance: String?,
-)
 
+    @SerializedName("deposit")
+    @SerialName("deposit")
+    @ColumnInfo(name = "deposit")
+    val deposit: SafeDeposit?,
+
+    @SerializedName("withdrawal")
+    @SerialName("withdrawal")
+    @ColumnInfo(name = "withdrawal")
+    val withdrawal: SafeWithdrawal?
+)

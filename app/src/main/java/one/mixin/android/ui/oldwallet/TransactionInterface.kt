@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.databinding.FragmentTransactionBinding
+import one.mixin.android.databinding.FragmentOldTransactionBinding
 import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
@@ -34,7 +34,7 @@ import java.math.BigDecimal
 interface TransactionInterface {
     fun initView(
         fragment: Fragment,
-        contentBinding: FragmentTransactionBinding,
+        contentBinding: FragmentOldTransactionBinding,
         lifecycleScope: CoroutineScope,
         walletViewModel: WalletViewModel,
         assetId: String?,
@@ -106,7 +106,7 @@ interface TransactionInterface {
         fragment: Fragment,
         lifecycleScope: CoroutineScope,
         walletViewModel: WalletViewModel,
-        contentBinding: FragmentTransactionBinding,
+        contentBinding: FragmentOldTransactionBinding,
         assetId: String,
         snapshot: SnapshotItem,
     ) = lifecycleScope.launch {
@@ -158,7 +158,7 @@ interface TransactionInterface {
     }
 
     fun updateTickerText(
-        contentBinding: FragmentTransactionBinding,
+        contentBinding: FragmentOldTransactionBinding,
         ticker: Ticker,
         fragment: Fragment,
         snapshot: SnapshotItem,
@@ -213,7 +213,7 @@ interface TransactionInterface {
         fragment: Fragment,
         lifecycleScope: CoroutineScope,
         walletViewModel: WalletViewModel,
-        contentBinding: FragmentTransactionBinding,
+        contentBinding: FragmentOldTransactionBinding,
         assetId: String,
         snapshot: SnapshotItem,
     ) {
@@ -241,7 +241,7 @@ interface TransactionInterface {
     @SuppressLint("SetTextI18n")
     private fun updateUI(
         fragment: Fragment,
-        contentBinding: FragmentTransactionBinding,
+        contentBinding: FragmentOldTransactionBinding,
         asset: AssetItem,
         snapshot: SnapshotItem,
     ) {
@@ -291,6 +291,8 @@ interface TransactionInterface {
             openingBalanceTv.text = "${snapshot.openingBalance} ${asset.symbol}"
             closingBalanceLayout.isVisible = !snapshot.closingBalance.isNullOrBlank()
             closingBalanceTv.text = "${snapshot.closingBalance} ${asset.symbol}"
+            snapshotHashLayout.isVisible = !snapshot.snapshotHash.isNullOrBlank()
+            snapshotHashTv.text = snapshot.snapshotHash
             dateTv.text = snapshot.createdAt.fullDate()
             when (snapshot.type) {
                 SnapshotType.deposit.name -> {
@@ -339,7 +341,7 @@ interface TransactionInterface {
 
     private fun refreshNoTransactionHashWithdrawal(
         fragment: Fragment,
-        contentBinding: FragmentTransactionBinding,
+        contentBinding: FragmentOldTransactionBinding,
         lifecycleScope: CoroutineScope,
         walletViewModel: WalletViewModel,
         snapshot: SnapshotItem,
