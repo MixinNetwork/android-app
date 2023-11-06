@@ -13,6 +13,9 @@ interface OutputDao : BaseDao<Output> {
     @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset ORDER BY sequence ASC LIMIT :limit OFFSET :offset")
     suspend fun findUnspentOutputsByAssetOffset(limit: Int, asset: String, offset: Int): List<Output>
 
+    @Query("SELECT output_id FROM outputs WHERE state = 'signed' AND output_id IN (:ids)")
+    fun findSignedOutput(ids: List<String>): List<String>
+
     @Query("SELECT sequence FROM outputs ORDER BY sequence DESC LIMIT 1")
     suspend fun findLatestOutputSequence(): Long?
 
