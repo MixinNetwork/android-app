@@ -295,10 +295,15 @@ interface TransactionInterface {
                 "${Fiats.getSymbol()}$amount $pricePerUnit",
             )
             transactionIdTv.text = snapshot.snapshotId
-            memoTv.text = snapshot.memo
             transactionHashLayout.isVisible = !snapshot.transactionHash.isNullOrBlank()
             transactionHashTv.text = snapshot.transactionHash
             dateTv.text = snapshot.createdAt.fullDate()
+            memoLl.isVisible = !snapshot.memo.isNullOrBlank()
+            memoTv.text = snapshot.formatMemo
+            memoLayout.setOnClickListener {
+                val memo = snapshot.formatMemo ?: return@setOnClickListener
+                MemoBottomSheetDialogFragment.newInstance(memo).showNow(fragment.parentFragmentManager, MemoBottomSheetDialogFragment.TAG)
+            }
             // simulate type
             val type = if (!snapshot.opponentId.isNullOrBlank()) {
                 SnapshotType.transfer

@@ -8,6 +8,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.extension.hexToString
+import one.mixin.android.extension.isValidHex
 import one.mixin.android.vo.Snapshot
 
 @SuppressLint("ParcelCreator")
@@ -73,6 +75,7 @@ data class SnapshotItem(
     @ColumnInfo(name = "closing_balance")
     val closingBalance: String?,
 ) : Parcelable {
+
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SnapshotItem>() {
             override fun areItemsTheSame(oldItem: SnapshotItem, newItem: SnapshotItem) =
