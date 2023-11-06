@@ -63,12 +63,12 @@ import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment
+import one.mixin.android.ui.oldwallet.OldTransferFragment
 import one.mixin.android.ui.oldwallet.OutputBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.PreconditionBottomSheetDialogFragment
@@ -228,8 +228,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         dismiss()
                         return@launch
                     }
-                    TransferFragment.newInstance(userId, supportSwitchAsset = true)
-                        .showNow(parentFragmentManager, TransferFragment.TAG)
+                    OldTransferFragment.newInstance(userId, supportSwitchAsset = true)
+                        .showNow(parentFragmentManager, OldTransferFragment.TAG)
                     dismiss()
                 }
             }
