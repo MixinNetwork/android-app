@@ -15,6 +15,7 @@ import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isKraken
 import one.mixin.android.vo.isMine
+import one.mixin.android.vo.safe.Output
 
 fun UserDao.insertUpdate(
     user: User,
@@ -167,6 +168,21 @@ fun MixinDatabase.clearParticipant(
 fun JobDao.insertNoReplace(job: Job) {
     if (findJobById(job.jobId) == null) {
         insert(job)
+    }
+}
+
+fun OutputDao.insertUnspentOutputs(outputs: List<Output>) {
+    runInTransaction { 
+        val signed = findSignedOutput(outputs.map { it.outputId })
+        if (signed.isEmpty()){
+            insertList(outputs)
+        } else {
+            // Exclude signed data
+            val list = outputs.filter {
+                signed.contains(it.outputId)
+            }
+            insertList(list)
+        }
     }
 }
 
