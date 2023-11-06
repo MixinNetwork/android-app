@@ -169,7 +169,7 @@ class BottomSheetViewModel @Inject internal constructor(
         val changeKeys = data.last().keys.joinToString(",")
         val changeMask = data.last().mask
 
-        val tx = Kernel.buildTx(asset, amount, threshold, receiverKeys, receiverMask, input, changeKeys, changeMask, memo)
+        val tx = Kernel.buildTx(asset, amount, threshold, receiverKeys, receiverMask, input, changeKeys, changeMask, memo, "")
         val transactionResponse = tokenRepository.transactionRequest(TransactionRequest(tx, traceId))
         if (transactionResponse.error != null) {
             return transactionResponse

@@ -15,7 +15,7 @@ import (
 
 type Utxo struct {
 	Hash   string `json:"hash"`
-	Index  uint   `json:"index"`
+	Index  int    `json:"index"`
 	Amount string `json:"amount"`
 }
 
@@ -62,7 +62,7 @@ func BuildTx(asset string, amount string, threshold int, receiverKeys string, re
 		u := common.UTXO{
 			Input: common.Input{
 				Hash:  h,
-				Index: ut.Index,
+				Index: uint(ut.Index),
 			},
 			Output: common.Output{
 				Amount: amount,
@@ -73,7 +73,55 @@ func BuildTx(asset string, amount string, threshold int, receiverKeys string, re
 	return buildTransaction(asset, amount, threshold, rks, receiverMask, ins, cks, changeMask, extra, reference)
 }
 
-func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, address, tag string, threshold int, feeAmount string, feeKeys []*crypto.Key, feeMask string, changeKeys []*crypto.Key, changeMask string, extra string) (string, error) {
+func BuildWithdrawalTx(asset string, amount, address, tag string, feeAmount, feeKeys string, feeMask string, inputs []byte, changeKeys, changeMask, extra string) (string, error) {
+	keys := strings.Split(feeKeys, ",")
+	rks := []*crypto.Key{}
+	for _, k := range keys {
+		key := k
+		rk, err := crypto.KeyFromString(key)
+		if err != nil {
+			return "", err
+		}
+		rks = append(rks, &rk)
+	}
+	ckeys := strings.Split(changeKeys, ",")
+	cks := []*crypto.Key{}
+	for _, k := range ckeys {
+		ke := k
+		rk, err := crypto.KeyFromString(ke)
+		if err != nil {
+			return "", err
+		}
+		cks = append(cks, &rk)
+	}
+	var utxo []Utxo
+	err := json.Unmarshal(inputs, &utxo)
+	if err != nil {
+		panic(err)
+	}
+	ins := []*common.UTXO{}
+	for _, u := range utxo {
+		ut := u
+		h, err := crypto.HashFromString(ut.Hash)
+		if err != nil {
+			return "", err
+		}
+		amount := common.NewIntegerFromString(ut.Amount)
+		u := common.UTXO{
+			Input: common.Input{
+				Hash:  h,
+				Index: uint(ut.Index),
+			},
+			Output: common.Output{
+				Amount: amount,
+			},
+		}
+		ins = append(ins, &u)
+	}
+	return buildWithrawalTransaction(asset, amount, ins, address, tag, feeAmount, rks, feeMask, cks, changeMask, extra)
+}
+
+func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, address, tag string, feeAmount string, feeKeys []*crypto.Key, feeMask string, changeKeys []*crypto.Key, changeMask string, extra string) (string, error) {
 	assetHash, err := crypto.HashFromString(asset)
 	if err != nil {
 		return "", err
