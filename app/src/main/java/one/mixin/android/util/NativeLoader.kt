@@ -10,7 +10,7 @@ import java.util.zip.ZipFile
 import one.mixin.android.extension.equalsIgnoreCase
 import timber.log.Timber
 
-private val libNames = listOf("mixin", "argon2jni", "barhopper_v3")
+private val libNames = listOf("mixin", "argon2jni", "barhopper_v3", "rlottie")
 private val libSoNames = libNames.map { "lib$it.so" }
 private val localLibSoNames = libNames.map { "lib${it}loc.so" }
 private val nativeLoadedList = libNames.map { false }.toMutableList()
