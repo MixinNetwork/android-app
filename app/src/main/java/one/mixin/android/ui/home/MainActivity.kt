@@ -198,9 +198,6 @@ class MainActivity : BlazeBaseActivity() {
     @Inject
     lateinit var tip: Tip
 
-    @Inject
-    lateinit var tipCounterSynced: TipCounterSyncedLiveData
-
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private val updatedListener = InstallStateUpdatedListener { state ->
         if (isFinishing) return@InstallStateUpdatedListener

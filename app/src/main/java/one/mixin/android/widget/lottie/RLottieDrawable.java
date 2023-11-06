@@ -35,10 +35,6 @@ import one.mixin.android.widget.AndroidUtilities;
 import timber.log.Timber;
 
 public class RLottieDrawable extends BitmapDrawable implements Animatable, BitmapsCache.Cacheable {
-    static {
-        System.loadLibrary("rlottie");
-    }
-
     public boolean skipFrameUpdate;
 
     public static native long create(String src, String json, int w, int h, int[] params, boolean precache, int[] colorReplacement, boolean limitFps, int fitzModifier);
