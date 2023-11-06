@@ -21,7 +21,7 @@
     <string name="access_your_snapshots">access your snapshots</string>
     <string name="Account">Account</string>
     <string name="Add">Add</string>
-    <string name="Add_address">Add address</string>
+    <string name="Add_address">Add Address</string>
     <string name="Add_bot">Add Bot</string>
     <string name="Add_circle">Add Circle</string>
     <string name="Add_Contact">Add Contact</string>
@@ -904,14 +904,14 @@
     <string name="setting_desktop_logout_failed">Logout of desktop failed.</string>
     <string name="setting_duplicate_transfer_desc">Display confirmation dialog when you transfer the same amount to the same person within 6 hours.</string>
     <string name="setting_emergency_change_mobile">Do you want to change your mobile number now?</string>
-    <string name="setting_emergency_content">The emergency contact is designed to help you log in to your account if you are lost and can not retrieve your mobile number.</string>
+    <string name="setting_emergency_content">The emergency contact is designed to help you log in to your account when you are unable to access your phone number.</string>
     <string name="setting_emergency_create_success">Create emergency contact successfully</string>
-    <string name="setting_emergency_desc">When your lost your mobile number, please contact your emergency contact by phone or other means to get the Mixin ID and verification code. Read our Emergency Contact to **learn more**.</string>
+    <string name="setting_emergency_desc">When you lose your mobile number, please contact your emergency contact by phone or other means to get the Mixin ID and verification code. Visit the support center to **learn more**.</string>
     <string name="setting_emergency_pin_tip">Your emergency contact is protected by PIN</string>
     <string name="setting_emergency_send_code">Enter the 4-digit code sent to Mixin ID: %1$s</string>
     <string name="setting_emergency_set">Set emergency contact</string>
     <string name="setting_emergency_set_message">Confirm to set Mixin ID %1$s as your emergency contact? Please note that the other party must add you as a contact to set up successfully.</string>
-    <string name="setting_emergency_warning">Attention: the Emergency Contact cannot help you to recover PIN</string>
+    <string name="setting_emergency_warning">The emergency contact cannot help you to recover your PIN.</string>
     <string name="setting_enable_biometric_pay">Enable Biometric Pay?</string>
     <string name="setting_incognito_prompt">Disable keyboard personalized learning</string>
     <string name="setting_mobile_contact_warning">This will remove your contacts from the Mixin servers.</string>
