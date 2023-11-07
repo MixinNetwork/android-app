@@ -34,7 +34,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:textColor="?attr/text_primary"
+        android:textColor="?attr/text_minor"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title" />
 
@@ -53,7 +53,7 @@
         android:id="@+id/utf_content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_primary"
         android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/utf"
@@ -64,7 +64,7 @@
         android:text="Hex"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="?attr/text_primary"
+        android:textColor="?attr/text_minor"
         android:layout_marginTop="24dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/utf_content" />
@@ -84,7 +84,7 @@
         android:id="@+id/hex_content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_primary"
         android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/hex"
