@@ -94,6 +94,7 @@ import one.mixin.android.vo.displayAddress
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
@@ -618,6 +619,9 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             )
         }
         binding.continueVa.displayedChild = POST_TEXT
+        if (user == null) {
+            refreshFees(biometricItem as WithdrawBiometricItem)
+        }
 
         val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, FROM_TRANSFER)
         preconditionBottom.callback = object : PreconditionBottomSheetDialogFragment.Callback {
@@ -629,6 +633,15 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             }
         }
         preconditionBottom.showNow(parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
+    }
+
+    private fun refreshFees(t:WithdrawBiometricItem) {
+        lifecycleScope.launch {
+            val response = bottomViewModel.getFees(t.asset.assetId, t.destination)
+            if (response.isSuccess) {
+                Timber.e("${response.data}")
+            }
+        }
     }
 
     private fun showTransferBottom(biometricItem: BiometricItem) {

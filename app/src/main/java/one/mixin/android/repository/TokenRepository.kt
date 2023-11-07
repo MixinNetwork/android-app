@@ -684,4 +684,6 @@ constructor(
     }
 
     fun findRawTransaction(traceId: String) = rawTransactionDao.findRawTransaction(traceId)
+
+    suspend fun getFees(id: String, destination: String) = tokenService.getFees(id, destination)
 }

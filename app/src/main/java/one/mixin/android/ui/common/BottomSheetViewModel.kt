@@ -279,6 +279,7 @@ class BottomSheetViewModel @Inject internal constructor(
     ): MixinResponse<String> {
         return MixinResponse<String>(Throwable("Todo"))
     }
+    suspend fun getFees(id: String, destination: String) = tokenRepository.getFees(id, destination)
 
     suspend fun syncAddr(
         assetId: String,
