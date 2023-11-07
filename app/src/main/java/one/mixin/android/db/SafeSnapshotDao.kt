@@ -13,7 +13,7 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
         const val SNAPSHOT_ITEM_PREFIX =
             """
                 SELECT s.snapshot_id, s.type, s.asset_id, s.amount, s.created_at, s.opponent_id, s.trace_id, s.memo,
-                s.confirmations, s.transaction_hash, s.opening_balance, s.closing_balance,
+                s.confirmations, s.transaction_hash, s.opening_balance, s.closing_balance, s.deposit AS deposit, s.withdrawal AS withdrawal,
                 u.avatar_url, u.full_name AS opponent_ful_name, t.symbol AS asset_symbol, t.confirmations AS asset_confirmations 
                 FROM safe_snapshots s 
                 LEFT JOIN users u ON u.user_id = s.opponent_id 

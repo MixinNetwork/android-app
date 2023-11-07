@@ -42,14 +42,14 @@
             android:layout_marginStart="4dp"
             android:ellipsize="end"
             android:singleLine="true"
+            android:gravity="center_vertical"
             android:textColor="?attr/text_primary"
             android:layout_alignTop="@+id/bill_iv"
             android:layout_alignBottom="@id/bill_iv"
-            android:layout_toEndOf="@+id/bill_iv"
-            android:gravity="center_vertical"
+            android:layout_toEndOf="@id/bill_iv"
+            android:includeFontPadding="false"
             android:textSize="14sp"
-            android:layout_marginTop="-3dp"
-            tools:text="Eth"/>
+            tools:text="Eth" />
 
         <TextView
             android:id="@+id/bill_tv"
