@@ -35,7 +35,7 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                 binding.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
             }
             else -> {
-                if (type ==SafeSnapshotType.deposit) {
+                if (type == SafeSnapshotType.deposit) {
                     binding.avatar.setDeposit()
                 } else {
                     binding.avatar.setWithdrawal()

@@ -9,6 +9,8 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
+import one.mixin.android.extension.hexToString
+import one.mixin.android.extension.isValidHex
 import one.mixin.android.vo.safe.SafeDeposit
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.SafeSnapshotType
@@ -76,6 +78,13 @@ data class SnapshotItem(
     @ColumnInfo(name = "withdrawal")
     val withdrawal: SafeWithdrawal?
 ) : Parcelable {
+
+    val formatMemo: String?
+        get() {
+            if (memo.isNullOrBlank()) return memo
+            return if (memo.isValidHex()) memo.hexToString()
+            else memo
+        }
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SnapshotItem>() {
             override fun areItemsTheSame(oldItem: SnapshotItem, newItem: SnapshotItem) =

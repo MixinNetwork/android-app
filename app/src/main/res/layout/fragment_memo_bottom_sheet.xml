@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_upper_round"
+    android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_circle_close"
+        android:foreground="@drawable/mixin_ripple"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="?attr/text_primary"
+        android:textSize="18sp"
+        android:text="@string/Memo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/utf"
+        android:text="UTF-8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:textColor="?attr/text_primary"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title" />
+
+    <ImageView
+        android:id="@+id/utf_copy"
+        android:src="@drawable/ic_copy_gray"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:foreground="@drawable/mixin_ripple"
+        app:layout_constraintEnd_toEndOf="@id/close"
+        app:layout_constraintStart_toStartOf="@id/close"
+        app:layout_constraintTop_toTopOf="@id/utf"
+        app:layout_constraintBottom_toBottomOf="@id/utf" />
+
+    <TextView
+        android:id="@+id/utf_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/text_minor"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/utf"
+        tools:text="hello" />
+
+    <TextView
+        android:id="@+id/hex"
+        android:text="Hex"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/text_primary"
+        android:layout_marginTop="24dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/utf_content" />
+
+    <ImageView
+        android:id="@+id/hex_copy"
+        android:src="@drawable/ic_copy_gray"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:foreground="@drawable/mixin_ripple"
+        app:layout_constraintEnd_toEndOf="@id/close"
+        app:layout_constraintStart_toStartOf="@id/close"
+        app:layout_constraintTop_toTopOf="@id/hex"
+        app:layout_constraintBottom_toBottomOf="@id/hex" />
+
+    <TextView
+        android:id="@+id/hex_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/text_minor"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hex"
+        tools:text="0X68 0X65 0X6c 0X6c 0X6f" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
