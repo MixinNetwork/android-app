@@ -688,14 +688,18 @@ private fun trimFilename(res: java.lang.StringBuilder) {
     }
 }
 
-fun String.hexString(): String {
-    val byteArray = toByteArray()
-    return byteArray.joinToString("") { byte -> "0X%02x ".format(byte) }
+fun ByteArray.hexString(): String {
+    return joinToString("") { byte -> "%02x".format(byte) }
 }
 
-fun String.hexToString():String{
-    val byteArray = chunked(2) { it.toString().toInt(16).toByte() }.toByteArray()
-    return String(byteArray)
+fun ByteArray.isByteArrayValidUtf8(): Boolean {
+    return try {
+        val decodedString = toString(Charsets.UTF_8)
+        val reEncodeBytes = decodedString.toByteArray(Charsets.UTF_8)
+        reEncodeBytes.contentEquals(this)
+    } catch (e: Exception) {
+        false
+    }
 }
 
 fun String.isValidHex():Boolean{
