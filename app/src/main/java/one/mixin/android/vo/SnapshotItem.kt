@@ -13,6 +13,7 @@ import one.mixin.android.extension.hexToString
 import one.mixin.android.extension.isValidHex
 import one.mixin.android.vo.safe.SafeDeposit
 import one.mixin.android.vo.safe.SafeSnapshot
+import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.SafeWithdrawal
 
 @SuppressLint("ParcelCreator")
@@ -37,7 +38,7 @@ data class SnapshotItem(
     val createdAt: String,
     @SerializedName("opponent_id")
     @ColumnInfo(name = "opponent_id")
-    val opponentId: String?,
+    val opponentId: String,
     @SerializedName("opponent_ful_name")
     @ColumnInfo(name = "opponent_ful_name")
     val opponentFullName: String?,
@@ -114,4 +115,15 @@ data class SnapshotItem(
             withdrawal = snapshot.withdrawal
         )
     }
+
+    fun simulateType(): SafeSnapshotType =
+        if (type == SafeSnapshotType.pending.name) {
+            SafeSnapshotType.pending
+        } else if (deposit != null) {
+            SafeSnapshotType.deposit
+        } else if (withdrawal != null) {
+            SafeSnapshotType.withdrawal
+        } else {
+            SafeSnapshotType.transfer
+        }
 }

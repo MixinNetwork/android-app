@@ -76,7 +76,7 @@ buildscript {
 
         ext.junitVersion = '4.13.2'
         ext.testCoreVersion = '1.5.0'
-        ext.mockitoVersion = '5.4.0'
+        ext.mockitoVersion = '5.7.0'
         ext.androidxJunitVersion = '1.1.5'
         ext.leakcanaryVerison = '2.12'
         ext.mockitoVersion = '1.10.19'
@@ -98,7 +98,7 @@ buildscript {
         ext.dnsVersion = '2.1.9'
         ext.appCenterSdkVersion = '4.3.1'
         ext.audioSwitchVersion = '1.1.8'
-        ext.balloonVersion = '1.6.1'
+        ext.balloonVersion = '1.6.2'
         ext.markdownVersion = '0.5.2'
 
         ext.bcVersion = '1.70'

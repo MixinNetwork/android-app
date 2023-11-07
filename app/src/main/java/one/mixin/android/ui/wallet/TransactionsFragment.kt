@@ -49,9 +49,9 @@ import one.mixin.android.ui.wallet.adapter.SnapshotAdapter
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.notMessengerUser
+import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.BottomSheet
@@ -110,8 +110,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
             if (list.isNotEmpty()) {
                 headerAdapter.show = false
                 list.filter {
-                    !it.opponentId.isNullOrBlank()
-                }.mapNotNull {
+                    it.opponentId.isNotBlank()
+                }.map {
                     it.opponentId
                 }.let { ids ->
                     walletViewModel.checkAndRefreshUsers(ids)
@@ -265,8 +265,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                 bindLiveData(
                     walletViewModel.snapshots(
                         asset.assetId,
-                        SnapshotType.transfer.name,
-                        SnapshotType.pending.name,
+                        SafeSnapshotType.transfer.name,
+                        SafeSnapshotType.pending.name,
                         initialLoadKey = initialLoadKey,
                         orderByAmount = orderByAmount,
                     ),
@@ -277,7 +277,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                 bindLiveData(
                     walletViewModel.snapshots(
                         asset.assetId,
-                        SnapshotType.deposit.name,
+                        SafeSnapshotType.deposit.name,
                         initialLoadKey = initialLoadKey,
                         orderByAmount = orderByAmount,
                     ),
@@ -288,23 +288,11 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                 bindLiveData(
                     walletViewModel.snapshots(
                         asset.assetId,
-                        SnapshotType.withdrawal.name,
+                        SafeSnapshotType.withdrawal.name,
                         initialLoadKey = initialLoadKey,
                         orderByAmount = orderByAmount,
                     ),
                 )
-            }
-
-            R.id.filters_radio_fee -> {
-                bindLiveData(walletViewModel.snapshots(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
-            }
-
-            R.id.filters_radio_rebate -> {
-                bindLiveData(walletViewModel.snapshots(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
-            }
-
-            R.id.filters_radio_raw -> {
-                bindLiveData(walletViewModel.snapshots(asset.assetId, SnapshotType.raw.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
             }
         }
         headerAdapter.currentType = currentType
@@ -379,6 +367,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                         )
                     }
                     root.post {
+                        if (viewDestroyed()) return@post
+                        
                         bottomRl.updateLayoutParams<ViewGroup.LayoutParams> {
                             height = requireContext().screenHeight() - this@TransactionsFragment.binding.titleView.height - topLl.height - groupInfoMemberTitleLayout.height
                         }

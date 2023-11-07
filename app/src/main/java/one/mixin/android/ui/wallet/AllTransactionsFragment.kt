@@ -27,8 +27,8 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.notMessengerUser
+import one.mixin.android.vo.safe.SafeSnapshotType
 
 @AndroidEntryPoint
 class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
@@ -146,27 +146,18 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             R.id.filters_radio_transfer -> {
                 bindLiveData(
                     walletViewModel.allSnapshots(
-                        SnapshotType.transfer.name,
-                        SnapshotType.pending.name,
+                        SafeSnapshotType.transfer.name,
+                        SafeSnapshotType.pending.name,
                         initialLoadKey = initialLoadKey,
                         orderByAmount = orderByAmount,
                     ),
                 )
             }
             R.id.filters_radio_deposit -> {
-                bindLiveData(walletViewModel.allSnapshots(SnapshotType.deposit.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+                bindLiveData(walletViewModel.allSnapshots(SafeSnapshotType.deposit.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
             }
             R.id.filters_radio_withdrawal -> {
-                bindLiveData(walletViewModel.allSnapshots(SnapshotType.withdrawal.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
-            }
-            R.id.filters_radio_fee -> {
-                bindLiveData(walletViewModel.allSnapshots(SnapshotType.fee.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
-            }
-            R.id.filters_radio_rebate -> {
-                bindLiveData(walletViewModel.allSnapshots(SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
-            }
-            R.id.filters_radio_raw -> {
-                bindLiveData(walletViewModel.allSnapshots(SnapshotType.raw.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+                bindLiveData(walletViewModel.allSnapshots(SafeSnapshotType.withdrawal.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
             }
         }
     }
