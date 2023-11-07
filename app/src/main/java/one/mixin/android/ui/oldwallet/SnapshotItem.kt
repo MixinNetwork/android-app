@@ -8,8 +8,6 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.extension.hexToString
-import one.mixin.android.extension.isValidHex
 import one.mixin.android.vo.Snapshot
 
 @SuppressLint("ParcelCreator")

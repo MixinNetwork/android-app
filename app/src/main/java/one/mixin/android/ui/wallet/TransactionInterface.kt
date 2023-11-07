@@ -298,8 +298,8 @@ interface TransactionInterface {
             transactionHashLayout.isVisible = !snapshot.transactionHash.isNullOrBlank()
             transactionHashTv.text = snapshot.transactionHash
             dateTv.text = snapshot.createdAt.fullDate()
-            memoLl.isVisible = !snapshot.memo.isNullOrBlank()
-            memoTv.text = snapshot.formatMemo
+            memoLl.isVisible = snapshot.formatMemo != null
+            memoTv.text = snapshot.formatMemo?.utf ?: snapshot.formatMemo?.hex
             memoLayout.setOnClickListener {
                 val memo = snapshot.formatMemo ?: return@setOnClickListener
                 MemoBottomSheetDialogFragment.newInstance(memo).showNow(fragment.parentFragmentManager, MemoBottomSheetDialogFragment.TAG)

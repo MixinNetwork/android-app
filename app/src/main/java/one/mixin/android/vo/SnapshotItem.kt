@@ -9,7 +9,8 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
-import one.mixin.android.extension.hexToString
+import one.mixin.android.extension.hexString
+import one.mixin.android.extension.isByteArrayValidUtf8
 import one.mixin.android.extension.isValidHex
 import one.mixin.android.vo.safe.SafeDeposit
 import one.mixin.android.vo.safe.SafeSnapshot
@@ -79,12 +80,12 @@ data class SnapshotItem(
     val withdrawal: SafeWithdrawal?
 ) : Parcelable {
 
-    val formatMemo: String?
+    val formatMemo: FormatMemo?
         get() {
-            if (memo.isNullOrBlank()) return memo
-            return if (memo.isValidHex()) memo.hexToString()
-            else memo
+            return if (memo.isNullOrBlank()) null
+            else FormatMemo(memo)
         }
+
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SnapshotItem>() {
             override fun areItemsTheSame(oldItem: SnapshotItem, newItem: SnapshotItem) =
@@ -126,4 +127,22 @@ data class SnapshotItem(
         } else {
             SafeSnapshotType.transfer
         }
+}
+
+@Parcelize
+class FormatMemo(var utf: String?, var hex: String?) : Parcelable {
+    constructor(input: String) : this(null, null) {
+        if (input.isValidHex()) {
+            val byteArray = input.chunked(2) { it.toString().toInt(16).toByte() }.toByteArray()
+            if (byteArray.isByteArrayValidUtf8()) {
+                utf = String(byteArray)
+                hex = byteArray.hexString()
+            } else {
+                hex = input
+            }
+        } else {
+            utf = input
+            hex = input.toByteArray().hexString()
+        }
+    }
 }
