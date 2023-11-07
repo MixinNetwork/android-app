@@ -689,7 +689,7 @@ private fun trimFilename(res: java.lang.StringBuilder) {
 }
 
 fun ByteArray.hexString(): String {
-    return joinToString("") { byte -> "0X%02x ".format(byte) }
+    return joinToString("") { byte -> "%02x".format(byte) }
 }
 
 fun ByteArray.isByteArrayValidUtf8(): Boolean {

@@ -136,7 +136,7 @@ class FormatMemo(var utf: String?, var hex: String?) : Parcelable {
             val byteArray = input.chunked(2) { it.toString().toInt(16).toByte() }.toByteArray()
             if (byteArray.isByteArrayValidUtf8()) {
                 utf = String(byteArray)
-                hex = byteArray.hexString()
+                hex = input
             } else {
                 hex = input
             }
