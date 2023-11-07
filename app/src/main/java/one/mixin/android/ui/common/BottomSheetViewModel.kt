@@ -276,22 +276,9 @@ class BottomSheetViewModel @Inject internal constructor(
         assetId: String?,
         destination: String?,
         tag: String?,
-    ) = tokenRepository.withdrawal(
-        WithdrawalRequest(
-            addressId,
-            amount,
-            pinCipher.encryptPin(
-                code,
-                TipBody.forWithdrawalCreate(if (addressId.isNullOrBlank()) generateAddressId(requireNotNull(Session.getAccountId()), assetId ?: "", destination ?: "", tag) else addressId, amount, fee, traceId, memo),
-            ),
-            traceId,
-            memo,
-            fee,
-            assetId,
-            destination,
-            tag,
-        ),
-    )
+    ): MixinResponse<String> {
+        return MixinResponse<String>(Throwable("Todo"))
+    }
 
     suspend fun syncAddr(
         assetId: String,

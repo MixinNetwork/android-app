@@ -320,9 +320,6 @@ constructor(
 
     fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 
-    suspend fun withdrawal(withdrawalRequest: WithdrawalRequest) =
-        tokenService.withdrawals(withdrawalRequest)
-
     fun saveAddr(addr: Address) = addressDao.insert(addr)
 
     suspend fun syncAddr(addressRequest: AddressRequest) = addressService.addresses(addressRequest)
