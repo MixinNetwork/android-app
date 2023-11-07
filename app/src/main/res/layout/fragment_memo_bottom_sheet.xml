@@ -46,8 +46,8 @@
         android:foreground="@drawable/mixin_ripple"
         app:layout_constraintEnd_toEndOf="@id/close"
         app:layout_constraintStart_toStartOf="@id/close"
-        app:layout_constraintTop_toTopOf="@id/utf"
-        app:layout_constraintBottom_toBottomOf="@id/utf" />
+        app:layout_constraintTop_toTopOf="@id/utf_content"
+        app:layout_constraintBottom_toBottomOf="@id/utf_content" />
 
     <TextView
         android:id="@+id/utf_content"
@@ -77,8 +77,8 @@
         android:foreground="@drawable/mixin_ripple"
         app:layout_constraintEnd_toEndOf="@id/close"
         app:layout_constraintStart_toStartOf="@id/close"
-        app:layout_constraintTop_toTopOf="@id/hex"
-        app:layout_constraintBottom_toBottomOf="@id/hex" />
+        app:layout_constraintTop_toTopOf="@id/hex_content"
+        app:layout_constraintBottom_toBottomOf="@id/hex_content" />
 
     <TextView
         android:id="@+id/hex_content"
