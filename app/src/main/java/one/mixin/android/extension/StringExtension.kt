@@ -695,7 +695,18 @@ fun String.hexString(): String {
 
 fun String.hexToString():String{
     val byteArray = chunked(2) { it.toString().toInt(16).toByte() }.toByteArray()
+    if (!isByteArrayValidUtf8(byteArray)) return this
     return String(byteArray)
+}
+
+private fun isByteArrayValidUtf8(byteArray: ByteArray): Boolean {
+    return try {
+        val decodedString = byteArray.toString(Charsets.UTF_8)
+        val reEncodeBytes = decodedString.toByteArray(Charsets.UTF_8)
+        reEncodeBytes.contentEquals(byteArray)
+    } catch (e: Exception) {
+        false
+    }
 }
 
 fun String.isValidHex():Boolean{
