@@ -1,7 +1,6 @@
 package one.mixin.android.vo.safe
 
 import com.google.gson.annotations.SerializedName
-import one.mixin.android.vo.SnapshotType
 
 data class PendingDeposit(
     @SerializedName("deposit_id")
@@ -17,6 +16,6 @@ data class PendingDeposit(
 
 fun PendingDeposit.toSnapshot(assetId: String): SafeSnapshot =
     SafeSnapshot(
-        this.depositId, SnapshotType.pending.name, assetId, this.amount, "",
+        this.depositId, SafeSnapshotType.pending.name, assetId, this.amount, "",
         "", "", this.transactionHash, this.createdAt, "" , this.confirmations, "", "", null, null
     )

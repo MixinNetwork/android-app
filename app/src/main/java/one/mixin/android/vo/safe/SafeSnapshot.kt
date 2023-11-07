@@ -86,3 +86,6 @@ data class SafeSnapshot(
     @ColumnInfo(name = "withdrawal")
     val withdrawal: SafeWithdrawal?
 )
+
+@Suppress("ktlint:standard:enum-entry-name-case", "EnumEntryName")
+enum class SafeSnapshotType { transfer, deposit, withdrawal, pending }
