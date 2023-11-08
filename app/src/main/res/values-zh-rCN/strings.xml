@@ -1291,5 +1291,5 @@
     <string name="withdrawal_hash">提现哈希</string>
     <string name="Anonymous">匿名</string>
     <string name="Confirmations">区块确认数</string>
-    <string name="legacy_wallet_transfer_hint">当前转账使用的是旧钱包</string>
+    <string name="legacy_network_transfer_hint">当前转账使用的是旧网络</string>
 </resources>
