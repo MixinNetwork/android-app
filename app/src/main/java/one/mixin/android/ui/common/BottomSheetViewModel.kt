@@ -171,7 +171,7 @@ class BottomSheetViewModel @Inject internal constructor(
         val changeKeys = data.last().keys.joinToString(",")
         val changeMask = data.last().mask
 
-        val feeChangeKeys = if (differece) data[1].keys else null
+        val feeChangeKeys = if (differece) data[1].keys.joinToString(",") else null
         val feeChangeMask = if (differece) data[1].mask else null
 
         // BuildWithdrawalTx(asset string, amount, address, tag string, feeAmount, feeKeys string, feeMask string, inputs []byte, changeKeys, changeMask, extra string) (string, error)
@@ -180,7 +180,7 @@ class BottomSheetViewModel @Inject internal constructor(
 
         val feeTx = if (differece) {
             // todo transaction_hash
-            Kernel.buildTx(asset, amount, threshold, feeKeys, feeMask, input, changeKeys, changeMask, memo, withdrawalTx.hash)
+            Kernel.buildTx(asset, amount, threshold, feeKeys, feeMask, input, feeChangeKeys, feeChangeMask, memo, withdrawalTx.hash)
         } else {
             null
         }
