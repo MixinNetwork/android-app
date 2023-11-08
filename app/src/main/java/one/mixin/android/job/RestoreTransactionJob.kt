@@ -66,13 +66,14 @@ class RestoreTransactionJob() : BaseJob(
                     val outputIds = transactionsData.inputs.map {
                         UUID.nameUUIDFromBytes("${it.hash}:${it.index}".toByteArray()).toString()
                     }
-                    val transactionRsp = utxoService.transactions(TransactionRequest(transition.rawTransaction, transition.requestId))
+                    val transactionRsp = utxoService.transactions(listOf(TransactionRequest(transition.rawTransaction, transition.requestId)))
                     if (transactionRsp.error == null) {
+                        val transactionResponse = transactionRsp.data!!.first()
                         runInTransaction {
                             outputDao.updateUtxoToSigned(outputIds)
-                            rawTransactionDao.deleteById(transactionRsp.data!!.requestId)
+                            rawTransactionDao.deleteById(transactionResponse.requestId)
                         }
-                        insertSnapshotMessage(transactionRsp.data!!, token!!.assetId, transactionRsp.data!!.amount, transition.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
+                        insertSnapshotMessage(transactionResponse, token!!.assetId, transactionResponse.amount, transition.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
                     } else {
                         reportException(e = Throwable("Transaction Error ${transactionRsp.errorDescription}"))
                         rawTransactionDao.deleteById(transition.requestId)
