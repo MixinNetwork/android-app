@@ -51,7 +51,7 @@ class SafeSnapshotHolder constructor(val binding: ItemChatSafeSnapshBinding) : B
             }
         }
 
-        binding.billMemo.text = messageItem.snapshotMemo
+        binding.billMemo.text = messageItem.formatMemo?.utf
         binding.chatTime.load(messageItem.createdAt)
 
         if (hasSelect && isSelect) {

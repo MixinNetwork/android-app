@@ -125,6 +125,12 @@ data class MessageItem(
     @Ignore
     private var appCardShareable: Boolean? = null
 
+    val formatMemo: FormatMemo?
+        get() {
+            return if (snapshotMemo.isNullOrBlank()) null
+            else FormatMemo(snapshotMemo)
+        }
+
     fun isShareable(): Boolean? {
         if (type != MessageCategory.APP_CARD.name &&
             type != MessageCategory.PLAIN_LIVE.name &&
