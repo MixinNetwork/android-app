@@ -88,6 +88,7 @@ import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
 import java.io.File
+import java.lang.IllegalArgumentException
 import java.math.BigDecimal
 import java.util.UUID
 import javax.inject.Inject
@@ -174,6 +175,10 @@ class BottomSheetViewModel @Inject internal constructor(
         if (transactionResponse.error != null) {
             return transactionResponse
         }
+        if ((transactionResponse.data?.size ?: 0) > 1){
+            throw IllegalArgumentException("Parameter exception")
+        }
+        // Workaround with only the case of a single transfer
         val views = transactionResponse.data!!.first().views.joinToString(",")
         val keys = GsonHelper.customGson.toJson(inputKeys)
         val sign = Kernel.signTx(tx, keys, views, spendKey.toHex())
@@ -204,6 +209,7 @@ class BottomSheetViewModel @Inject internal constructor(
         } else {
             tokenRepository.deleteRawTransaction(transactionRsp.data!!.first().requestId)
         }
+        // Workaround with only the case of a single transfer
         val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)
         initConversation(conversationId, transactionRsp.data!!.first().userId, receiverId)
         tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), conversationId, assetId, amount, receiverId, memo)
