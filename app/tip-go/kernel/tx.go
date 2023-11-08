@@ -73,14 +73,14 @@ func BuildTx(asset string, amount string, threshold int, receiverKeys string, re
 	return buildTransaction(asset, amount, threshold, rks, receiverMask, ins, cks, changeMask, extra, reference)
 }
 
-func BuildWithdrawalTx(asset string, amount, address, tag string, feeAmount, feeKeys string, feeMask string, inputs []byte, changeKeys, changeMask, extra string) (string, error) {
+func BuildWithdrawalTx(asset string, amount, address, tag string, feeAmount, feeKeys string, feeMask string, inputs []byte, changeKeys, changeMask, extra string) (*Tx, error) {
 	keys := strings.Split(feeKeys, ",")
 	rks := []*crypto.Key{}
 	for _, k := range keys {
 		key := k
 		rk, err := crypto.KeyFromString(key)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		rks = append(rks, &rk)
 	}
@@ -90,7 +90,7 @@ func BuildWithdrawalTx(asset string, amount, address, tag string, feeAmount, fee
 		ke := k
 		rk, err := crypto.KeyFromString(ke)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		cks = append(cks, &rk)
 	}
@@ -104,7 +104,7 @@ func BuildWithdrawalTx(asset string, amount, address, tag string, feeAmount, fee
 		ut := u
 		h, err := crypto.HashFromString(ut.Hash)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		amount := common.NewIntegerFromString(ut.Amount)
 		u := common.UTXO{
@@ -121,10 +121,10 @@ func BuildWithdrawalTx(asset string, amount, address, tag string, feeAmount, fee
 	return buildWithrawalTransaction(asset, amount, ins, address, tag, feeAmount, rks, feeMask, cks, changeMask, extra)
 }
 
-func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, address, tag string, feeAmount string, feeKeys []*crypto.Key, feeMask string, changeKeys []*crypto.Key, changeMask string, extra string) (string, error) {
+func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, address, tag string, feeAmount string, feeKeys []*crypto.Key, feeMask string, changeKeys []*crypto.Key, changeMask string, extra string) (*Tx, error) {
 	assetHash, err := crypto.HashFromString(asset)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	amountValue := common.NewIntegerFromString(amount)
@@ -137,7 +137,7 @@ func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, addr
 		total = total.Add(in.Amount)
 	}
 	if total.Cmp(amountValue.Add(feeAmountValue)) < 0 {
-		return "", errors.New("insufficient funds")
+		return nil, errors.New("insufficient funds")
 	}
 	withdrawalOutput := &common.Output{
 		Type:   common.OutputTypeWithdrawalSubmit,
@@ -150,14 +150,14 @@ func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, addr
 	tx.Outputs = append(tx.Outputs, withdrawalOutput)
 	if feeAmount != "" {
 		if feeMask == "" {
-			return "", errors.New("bad param address")
+			return nil, errors.New("bad param address")
 		}
 		mask, err := crypto.KeyFromString(feeMask)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		if !mask.CheckKey() {
-			return "", errors.New("invalid mask")
+			return nil, errors.New("invalid mask")
 		}
 
 		feeOutput := &common.Output{
@@ -176,7 +176,7 @@ func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, addr
 
 		changeMaskKey, err := crypto.KeyFromString(changeMask)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		out := &common.Output{
@@ -192,13 +192,17 @@ func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, addr
 	if extra != "" {
 		extraBytes := []byte(extra)
 		if len(extraBytes) > 512 {
-			return "", errors.New("extra data is too long")
+			return nil, errors.New("extra data is too long")
 		}
 		tx.Extra = extraBytes
 	}
 
 	ver := tx.AsVersioned()
-	return hex.EncodeToString(ver.Marshal()), nil
+	t := &Tx{
+		Raw:  hex.EncodeToString(ver.Marshal()),
+		Hash: ver.PayloadHash().String(),
+	}
+	return t, nil
 }
 
 func buildTransaction(asset string, amount string, threshold int, receiverKeys []*crypto.Key, receiverMask string, inputs []*common.UTXO, changeKeys []*crypto.Key, changeMask string, extra, reference string) (string, error) {
