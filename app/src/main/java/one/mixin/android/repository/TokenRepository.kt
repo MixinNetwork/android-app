@@ -647,9 +647,9 @@ constructor(
 
     suspend fun deleteInstruments(id: String): MixinResponse<Void> = routeService.deleteInstruments(id)
 
-    suspend fun transactionRequest(transactionRequest: TransactionRequest) = utxoService.transactionRequest(transactionRequest)
+    suspend fun transactionRequest(transactionRequests: List<TransactionRequest>) = utxoService.transactionRequest(transactionRequests)
 
-    suspend fun transactions(transactionRequest: TransactionRequest) = utxoService.transactions(transactionRequest)
+    suspend fun transactions(transactionRequests: List<TransactionRequest>) = utxoService.transactions(transactionRequests)
 
     suspend fun ghostKey(ghostKeyRequest: List<GhostKeyRequest>) = utxoService.ghostKey(ghostKeyRequest)
 

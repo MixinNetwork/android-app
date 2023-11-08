@@ -687,3 +687,21 @@ private fun trimFilename(res: java.lang.StringBuilder) {
         res.insert(res.length / 2, "...")
     }
 }
+
+fun ByteArray.hexString(): String {
+    return joinToString("") { byte -> "%02x".format(byte) }
+}
+
+fun ByteArray.isByteArrayValidUtf8(): Boolean {
+    return try {
+        val decodedString = toString(Charsets.UTF_8)
+        val reEncodeBytes = decodedString.toByteArray(Charsets.UTF_8)
+        reEncodeBytes.contentEquals(this)
+    } catch (e: Exception) {
+        false
+    }
+}
+
+fun String.isValidHex():Boolean{
+    return matches("[0-9a-fA-F]+".toRegex())
+}

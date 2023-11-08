@@ -11,7 +11,7 @@ import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.timeAgoDay
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.SnapshotType
+import one.mixin.android.vo.safe.SafeSnapshotType
 
 open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
 
@@ -19,30 +19,23 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
 
     open fun bind(snapshot: SnapshotItem, listener: OnSnapshotListener?) {
         val isPositive = snapshot.amount.toFloat() > 0
-        // simulate type
-        val type = if (snapshot.opponentId?.isNotBlank() == true) {
-            SnapshotType.transfer
-        } else if (snapshot.type == SnapshotType.pending.name) {
-            SnapshotType.pending
-        } else {
-            if (isPositive) SnapshotType.deposit else SnapshotType.withdrawal
-        }
-        when (type) {
-            SnapshotType.transfer -> {
-                binding.name.text = snapshot.opponentFullName
-                val opponentId = requireNotNull(snapshot.opponentId) { "required opponentId can not be null" }
-                binding.avatar.setInfo(snapshot.opponentFullName, snapshot.avatarUrl, opponentId)
+        when (val type = snapshot.simulateType()) {
+            SafeSnapshotType.transfer -> {
+                binding.name.text = if (snapshot.opponentId.isBlank()) {
+                    "N/A"
+                } else snapshot.opponentFullName
+                binding.avatar.setInfo(snapshot.opponentFullName, snapshot.avatarUrl, snapshot.opponentId)
                 binding.avatar.setOnClickListener {
-                    listener?.onUserClick(opponentId)
+                    listener?.onUserClick(snapshot.opponentId)
                 }
             }
-            SnapshotType.pending -> {
+            SafeSnapshotType.pending -> {
                 binding.name.text = itemView.context.resources.getQuantityString(R.plurals.pending_confirmation, snapshot.confirmations ?: 0, snapshot.confirmations ?: 0, snapshot.assetConfirmations)
                 binding.avatar.setNet()
                 binding.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
             }
             else -> {
-                if (type ==SnapshotType.deposit) {
+                if (type == SafeSnapshotType.deposit) {
                     binding.avatar.setDeposit()
                 } else {
                     binding.avatar.setWithdrawal()
@@ -57,7 +50,7 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
             snapshot.amount.numberFormat()
         }
         binding.value.textColorResource = when {
-            snapshot.type == SnapshotType.pending.name -> R.color.wallet_pending_text_color
+            snapshot.type == SafeSnapshotType.pending.name -> R.color.wallet_pending_text_color
             isPositive -> R.color.wallet_green
             else -> R.color.wallet_pink
         }

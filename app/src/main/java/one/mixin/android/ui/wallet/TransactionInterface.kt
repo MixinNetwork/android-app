@@ -31,8 +31,8 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.Ticker
+import one.mixin.android.vo.safe.SafeSnapshotType
 import java.math.BigDecimal
 
 interface TransactionInterface {
@@ -272,7 +272,7 @@ interface TransactionInterface {
             }
             val amountColor = fragment.resources.getColor(
                 when {
-                    snapshot.type == SnapshotType.pending.name -> {
+                    snapshot.type == SafeSnapshotType.pending.name -> {
                         R.color.wallet_text_gray
                     }
                     isPositive -> {
@@ -295,22 +295,21 @@ interface TransactionInterface {
                 "${Fiats.getSymbol()}$amount $pricePerUnit",
             )
             transactionIdTv.text = snapshot.snapshotId
-            memoTv.text = snapshot.memo
             transactionHashLayout.isVisible = !snapshot.transactionHash.isNullOrBlank()
             transactionHashTv.text = snapshot.transactionHash
             dateTv.text = snapshot.createdAt.fullDate()
-            // simulate type
-            val type = if (!snapshot.opponentId.isNullOrBlank()) {
-                SnapshotType.transfer
-            } else if (snapshot.type == SnapshotType.pending.name) {
-                SnapshotType.pending
-            } else {
-                if (isPositive) SnapshotType.deposit else SnapshotType.withdrawal
+            memoLl.isVisible = snapshot.formatMemo != null
+            memoTv.text = snapshot.formatMemo?.utf ?: snapshot.formatMemo?.hex
+            memoLayout.setOnClickListener {
+                val memo = snapshot.formatMemo ?: return@setOnClickListener
+                MemoBottomSheetDialogFragment.newInstance(memo).showNow(fragment.parentFragmentManager, MemoBottomSheetDialogFragment.TAG)
             }
+            val type = snapshot.simulateType()
+
             when (type) {
-                SnapshotType.transfer -> {
-                    fromTv.text = if (snapshot.opponentFullName.isNullOrBlank()) {
-                        fragment.getString(R.string.Anonymous_Number)
+                SafeSnapshotType.transfer -> {
+                    fromTv.text = if (snapshot.opponentId.isBlank()) {
+                        "N/A"
                     } else snapshot.opponentFullName
                     if (isPositive) {
                         fromTitle.text = fragment.getString(R.string.From)
@@ -318,7 +317,7 @@ interface TransactionInterface {
                         fromTitle.text = fragment.getString(R.string.To)
                     }
                 }
-                SnapshotType.pending -> {
+                SafeSnapshotType.pending -> {
                     fromLl.isVisible = false
                     memoLl.isVisible = false
                     transactionIdLl.isVisible = false
@@ -336,7 +335,7 @@ interface TransactionInterface {
                         hashTv.text = snapshot.deposit.depositHash
                     }
                 }
-                SnapshotType.deposit -> {
+                SafeSnapshotType.deposit -> {
                     fromLl.isVisible = false
                     memoLl.isVisible = false
                     if (snapshot.deposit != null) {
@@ -345,7 +344,7 @@ interface TransactionInterface {
                         hashTv.text = snapshot.deposit.depositHash
                     }
                 }
-                SnapshotType.withdrawal -> {
+                SafeSnapshotType.withdrawal -> {
                     memoLl.isVisible = false
                     fromTitle.text = fragment.getString(R.string.To)
                     if (snapshot.withdrawal != null) {
@@ -378,7 +377,7 @@ interface TransactionInterface {
         snapshot: SnapshotItem,
         asset: TokenItem,
     ) {
-        if (snapshot.type == SnapshotType.pending.name) return
+        if (snapshot.type == SafeSnapshotType.pending.name) return
 
         val amountVal = snapshot.amount.toFloatOrNull()
         val isPositive = if (amountVal == null) false else amountVal > 0

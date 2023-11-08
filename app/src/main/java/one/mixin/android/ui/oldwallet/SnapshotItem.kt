@@ -73,6 +73,7 @@ data class SnapshotItem(
     @ColumnInfo(name = "closing_balance")
     val closingBalance: String?,
 ) : Parcelable {
+
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SnapshotItem>() {
             override fun areItemsTheSame(oldItem: SnapshotItem, newItem: SnapshotItem) =
