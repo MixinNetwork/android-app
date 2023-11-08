@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="64dp"
+    android:layout_margin="4dp"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:background="@drawable/bg_round_8_solid_gray">
+
+    <one.mixin.android.widget.BadgeCircleImageView
+        android:id="@+id/asset_icon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="14dp"
+        android:layout_centerVertical="true"/>
+
+    <androidx.legacy.widget.Space
+        android:id="@+id/center_place_holder"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:layout_centerInParent="true"/>
+
+    <TextView
+        android:id="@+id/name_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="?attr/text_primary"
+        android:layout_above="@id/center_place_holder"
+        android:layout_toEndOf="@id/asset_icon"
+        tool:text="Mixin"/>
+
+    <TextView
+        android:id="@+id/fee_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="13sp"
+        android:textColor="?attr/text_minor"
+        android:layout_below="@id/center_place_holder"
+        android:layout_toEndOf="@id/asset_icon"
+        tool:text="0.005 XIN"/>
+
+    <ImageView
+        android:id="@+id/check_iv"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_alignParentEnd="true"
+        android:layout_above="@id/center_place_holder"
+        android:layout_marginEnd="20dp"
+        android:visibility="gone"
+        android:src="@drawable/ic_check_blue_24dp" />
+</RelativeLayout>

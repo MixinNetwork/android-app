@@ -334,6 +334,8 @@ constructor(
 
     fun assetItems(assetIds: List<String>) = tokenDao.assetItems(assetIds)
 
+    suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenDao.findTokenItems(ids)
+
     suspend fun fuzzySearchToken(query: String, cancellationSignal: CancellationSignal) =
         DataProvider.fuzzySearchToken(query, query, appDatabase, cancellationSignal)
 

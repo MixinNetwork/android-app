@@ -78,6 +78,10 @@ interface TokenDao : BaseDao<Token> {
     fun assetItems(assetIds: List<String>): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:ids)")
+    suspend fun findTokenItems(ids: List<String>): List<TokenItem>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """$PREFIX_ASSET_ITEM 
         WHERE ae.balance > 0 

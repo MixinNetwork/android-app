@@ -1291,4 +1291,5 @@
     <string name="withdrawal_hash">提现哈希</string>
     <string name="Anonymous">匿名</string>
     <string name="Confirmations">区块确认数</string>
+    <string name="choose_network_fee">选择支付手续费的币种</string>
 </resources>

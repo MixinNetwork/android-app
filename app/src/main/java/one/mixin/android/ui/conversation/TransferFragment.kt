@@ -83,6 +83,8 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_TRANSFER
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
+import one.mixin.android.ui.wallet.NetworkFee
+import one.mixin.android.ui.wallet.NetworkFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferOutViewFragment
 import one.mixin.android.util.viewBinding
@@ -97,6 +99,7 @@ import one.mixin.android.widget.getMaxCustomViewHeight
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.util.ArrayList
 import java.util.UUID
 import javax.inject.Inject
 
@@ -152,6 +155,9 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     private val userId: String? by lazy { requireArguments().getString(ARGS_USER_ID) }
     private var address: Address? = null
     private val supportSwitchAsset by lazy { requireArguments().getBoolean(ARGS_SWITCH_ASSET) }
+
+    private val fees: ArrayList<NetworkFee> = arrayListOf()
+    private var currentFee: String? = null
 
     private var user: User? = null
 
@@ -366,6 +372,18 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             }
             binding.feeTv.text =
                 buildBulletLines(requireContext(), networkSpan, dustSpan, reserveSpan)
+            binding.feeTv.setOnClickListener {
+                if (fees.isEmpty()) return@setOnClickListener
+
+                NetworkFeeBottomSheetDialogFragment.newInstance(fees, currentFee).apply {
+                    callback = { networkFee ->
+                        currentFee = networkFee.token.assetId
+                        Timber.d("choose networkFee: $networkFee")
+                    }
+                }.showNow(parentFragmentManager, NetworkFeeBottomSheetDialogFragment.TAG)
+            }
+
+            refreshFees(address.assetId, address.destination)
         }
     }
 
@@ -619,9 +637,6 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             )
         }
         binding.continueVa.displayedChild = POST_TEXT
-        if (user == null) {
-            refreshFees(biometricItem as WithdrawBiometricItem)
-        }
 
         val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, FROM_TRANSFER)
         preconditionBottom.callback = object : PreconditionBottomSheetDialogFragment.Callback {
@@ -635,11 +650,19 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         preconditionBottom.showNow(parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
     }
 
-    private fun refreshFees(t:WithdrawBiometricItem) {
+    private fun refreshFees(assetId: String, destination: String) {
         lifecycleScope.launch {
-            val response = bottomViewModel.getFees(t.asset.assetId, t.destination)
+            val response = bottomViewModel.getFees(assetId, destination)
             if (response.isSuccess) {
-                Timber.e("${response.data}")
+                val data = requireNotNull(response.data) { "required list can not be null" }
+                val ids = data.mapNotNull { it.assetId }
+                val tokens = bottomViewModel.findTokenItems(ids)
+                fees.clear()
+                fees.addAll(ArrayList(tokens.map { t ->
+                    data.find { it.assetId == t.assetId }?.amount?.let { amount ->
+                        NetworkFee(t, amount)
+                    }
+                }))
             }
         }
     }
