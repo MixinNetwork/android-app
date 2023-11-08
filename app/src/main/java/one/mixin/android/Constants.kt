@@ -301,6 +301,8 @@ object Constants {
     const val MIXIN_BOTS_USER_ID = "68ef7899-3e81-4b3d-8124-83ae652def89"
     const val MIXIN_DATA_USER_ID = "96c1460b-c7c4-480a-a342-acaa73995a37"
     const val MIXIN_BOND_USER_ID = "84c9dfb1-bfcf-4cb4-8404-cc5a1354005b"
+    const val MIXIN_FEE_USER_ID = ""
+
 
     const val TEAM_MIXIN_USER_NAME = "Team Mixin"
     const val MIXIN_BOND_USER_NAME = "Bond Bot"

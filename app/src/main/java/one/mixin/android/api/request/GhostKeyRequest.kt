@@ -13,5 +13,13 @@ data class GhostKeyRequest(
 )
 
 fun buildGhostKeyRequest(receiverId: String, senderId: String, traceId:String): List<GhostKeyRequest> {
-    return listOf(GhostKeyRequest(listOf(receiverId), 0, traceId), GhostKeyRequest(listOf(senderId), 1, UUID.randomUUID().toString()))
+    return listOf(GhostKeyRequest(listOf(receiverId), TARGET_INDEX, traceId), GhostKeyRequest(listOf(senderId), CHANGE_INDEX, UUID.randomUUID().toString()))
 }
+
+fun buildGhostKeyRequest(receiverId: String, senderId: String, targetId: String, traceId: String): List<GhostKeyRequest> {
+    return listOf(GhostKeyRequest(listOf(receiverId), TARGET_INDEX, traceId), GhostKeyRequest(listOf(targetId), FEE_CHANGE_INDEX, UUID.randomUUID().toString()), GhostKeyRequest(listOf(senderId), CHANGE_INDEX, UUID.randomUUID().toString()))
+}
+
+private const val TARGET_INDEX = 0
+private const val FEE_CHANGE_INDEX = 1
+private const val CHANGE_INDEX = 2

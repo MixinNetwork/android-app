@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.MIXIN_FEE_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.PaymentStatus
@@ -144,7 +145,8 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             else -> {
                 t as WithdrawBiometricItem
                 trace = Trace(t.traceId!!, t.asset.assetId, t.amount, null, t.destination, t.tag, null, nowInUtc())
-                bottomViewModel.withdrawal(t.addressId, t.amount, pin, t.traceId!!, t.memo, t.fee, t.asset.assetId, t.destination, t.tag)
+                // Todo replace real fee
+                bottomViewModel.withdrawal(MIXIN_FEE_USER_ID, t.traceId!!, t.asset.assetId, t.asset.assetId, t.amount, "10", t.destination, t.tag, t.memo, pin)
             }
         }
         bottomViewModel.insertTrace(trace)

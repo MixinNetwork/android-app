@@ -26,7 +26,6 @@ import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
-import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.request.buildGhostKeyRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
@@ -46,7 +45,6 @@ import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.UpdateRelationshipJob
-import one.mixin.android.pay.generateAddressId
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.ConversationRepository
@@ -60,7 +58,6 @@ import one.mixin.android.ui.common.biometric.NotEnoughUtxoException
 import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.reportEvent
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
@@ -87,6 +84,7 @@ import one.mixin.android.vo.toSimpleChat
 import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
+import timber.log.Timber
 import java.io.File
 import java.math.BigDecimal
 import java.util.UUID
@@ -124,6 +122,81 @@ class BottomSheetViewModel @Inject internal constructor(
     fun assetItems(assetIds: List<String>): LiveData<List<TokenItem>> = tokenRepository.assetItems(assetIds)
 
     fun assetItemsWithBalance(): LiveData<List<TokenItem>> = tokenRepository.assetItemsWithBalance()
+
+    suspend fun withdrawal(
+        receiverId: String,
+        traceId: String,
+        assetId: String,
+        feeAssetId: String,
+        amount: String,
+        feeAmount: String,
+        destination: String,
+        tag: String?,
+        memo: String?,
+        pin: String
+    ): MixinResponse<*> {
+        val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
+        val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
+        val senderId = Session.getAccountId()!!
+        val differece = feeAssetId != assetId
+
+        val asset = assetIdToAsset(assetId)
+        val feeAsset = assetIdToAsset(feeAssetId)
+        val threshold = 1L
+
+        val ghostKeyResponse = tokenRepository.ghostKey(
+            if (differece) {
+                buildGhostKeyRequest(receiverId, senderId, traceId)
+            } else {
+                buildGhostKeyRequest(receiverId, senderId, senderId, traceId)
+            }
+        )
+        if (ghostKeyResponse.error != null) {
+            return ghostKeyResponse
+        }
+        val data = ghostKeyResponse.data!!
+        val inputs = arrayListOf<Utxo>()
+        val inputKeys = arrayListOf<List<String>>()
+
+        val utxos = packUtxo(asset, amount)
+
+        for (output in utxos) {
+            inputs.add(Utxo(output.transactionHash, output.amount, output.outputIndex))
+            inputKeys.add(output.keys)
+        }
+        val input = GsonHelper.customGson.toJson(inputs).toByteArray()
+        val feeKeys = data.first().keys.joinToString(",")
+        val feeMask = data.first().mask
+
+        val changeKeys = data.last().keys.joinToString(",")
+        val changeMask = data.last().mask
+
+        val feeChangeKeys = if (differece) data[1].keys else null
+        val feeChangeMask = if (differece) data[1].mask else null
+
+        // BuildWithdrawalTx(asset string, amount, address, tag string, feeAmount, feeKeys string, feeMask string, inputs []byte, changeKeys, changeMask, extra string) (string, error)
+        val withdrawalTx = Kernel.buildWithdrawalTx(asset, amount, destination, tag ?: "", if (differece) "0" else "10", feeKeys, feeMask, input, changeKeys, changeMask, memo)
+        Timber.e("withdrawalTx: $withdrawalTx")
+
+        val feeTx = if (differece) {
+            // todo transaction_hash
+            Kernel.buildTx(asset, amount, threshold, feeKeys, feeMask, input, changeKeys, changeMask, memo, withdrawalTx.hash)
+        } else {
+            null
+        }
+
+        val withdrawalRequestResponse = tokenRepository.transactionRequest(
+            if (feeTx == null) {
+                listOf(TransactionRequest(withdrawalTx.raw, traceId))
+            } else {
+                listOf(TransactionRequest(withdrawalTx.raw, traceId), TransactionRequest(feeTx, traceId))
+            }
+        )
+        if (withdrawalRequestResponse.error != null) {
+            return withdrawalRequestResponse
+        }
+        return withdrawalRequestResponse
+    }
 
     suspend fun newTransfer(
         assetId: String,
@@ -174,7 +247,12 @@ class BottomSheetViewModel @Inject internal constructor(
         if (transactionResponse.error != null) {
             return transactionResponse
         }
-        val views = transactionResponse.data!!.views.joinToString(",")
+        if ((transactionResponse.data?.size ?: 0) > 1) {
+            throw IllegalArgumentException("Parameter exception")
+        }
+        // Workaround with only the case of a single transfer
+
+        val views = transactionResponse.data!!.first().views.joinToString(",")
         val keys = GsonHelper.customGson.toJson(inputKeys)
         val sign = Kernel.signTx(tx, keys, views, spendKey.toHex())
         val signResult = SignResult(sign.raw, sign.change)
@@ -192,7 +270,7 @@ class BottomSheetViewModel @Inject internal constructor(
             tokenRepository.updateUtxoToSigned(outputIds)
         }
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
-        return innerTransaction(signResult.raw,traceId, receiverId, assetId, amount, memo)
+        return innerTransaction(signResult.raw, traceId, receiverId, assetId, amount, memo)
     }
 
     private suspend fun innerTransaction(raw: String, traceId: String, receiverId: String, assetId: String, amount: String, memo: String?): MixinResponse<TransactionResponse> {
@@ -266,19 +344,6 @@ class BottomSheetViewModel @Inject internal constructor(
         tokenRepository.paySuspend(request)
     }
 
-    suspend fun withdrawal(
-        addressId: String?,
-        amount: String,
-        code: String,
-        traceId: String,
-        memo: String?,
-        fee: String?,
-        assetId: String?,
-        destination: String?,
-        tag: String?,
-    ): MixinResponse<String> {
-        return MixinResponse<String>(Throwable("Todo"))
-    }
     suspend fun getFees(id: String, destination: String) = tokenRepository.getFees(id, destination)
 
     suspend fun syncAddr(
