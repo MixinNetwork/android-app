@@ -159,7 +159,11 @@ class BottomSheetViewModel @Inject internal constructor(
         val inputs = arrayListOf<Utxo>()
         val inputKeys = arrayListOf<List<String>>()
 
-        val utxos = packUtxo(asset, amount)
+        val utxos = packUtxo(
+            asset, if (differece) amount else {
+                (BigDecimal(amount) + BigDecimal(feeAmount)).toPlainString()
+            }
+        )
 
         for (output in utxos) {
             inputs.add(Utxo(output.transactionHash, output.amount, output.outputIndex))
