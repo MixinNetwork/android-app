@@ -266,7 +266,11 @@ class DepositFragment : BaseFragment() {
                         asset,
                         null,
                         true,
-                        getString(R.string.deposit_memo_notice),
+                        if (asset.assetId == Constants.ChainId.RIPPLE_CHAIN_ID) {
+                            getString(R.string.deposit_tag_notice)
+                        } else {
+                            getString(R.string.deposit_memo_notice)
+                        }
                     )
                 }
                 addressView.setAsset(
@@ -275,7 +279,7 @@ class DepositFragment : BaseFragment() {
                     asset,
                     null,
                     false,
-                    if (noTag) null else getString(R.string.deposit_notice, asset.symbol),
+                    if (noTag) null else if (asset.assetId == Constants.ChainId.RIPPLE_CHAIN_ID) getString(R.string.deposit_notice_tag, asset.symbol) else getString(R.string.deposit_notice, asset.symbol),
                 )
             }
         } else {
