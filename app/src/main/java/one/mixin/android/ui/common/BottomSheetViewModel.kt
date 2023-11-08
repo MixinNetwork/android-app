@@ -88,6 +88,7 @@ import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
 import java.io.File
+import java.lang.IllegalArgumentException
 import java.math.BigDecimal
 import java.util.UUID
 import javax.inject.Inject
@@ -170,11 +171,15 @@ class BottomSheetViewModel @Inject internal constructor(
         val changeMask = data.last().mask
 
         val tx = Kernel.buildTx(asset, amount, threshold, receiverKeys, receiverMask, input, changeKeys, changeMask, memo, "")
-        val transactionResponse = tokenRepository.transactionRequest(TransactionRequest(tx, traceId))
+        val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, traceId)))
         if (transactionResponse.error != null) {
             return transactionResponse
         }
-        val views = transactionResponse.data!!.views.joinToString(",")
+        if ((transactionResponse.data?.size ?: 0) > 1){
+            throw IllegalArgumentException("Parameter exception")
+        }
+        // Workaround with only the case of a single transfer
+        val views = transactionResponse.data!!.first().views.joinToString(",")
         val keys = GsonHelper.customGson.toJson(inputKeys)
         val sign = Kernel.signTx(tx, keys, views, spendKey.toHex())
         val signResult = SignResult(sign.raw, sign.change)
@@ -183,7 +188,7 @@ class BottomSheetViewModel @Inject internal constructor(
                 val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxos.last())
                 tokenRepository.insertOutput(changeOutput)
             }
-            tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.requestId, signResult.raw, receiverId, nowInUtc()))
+            tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverId, nowInUtc()))
 
             val outputIds = arrayListOf<String>()
             outputIds.addAll(inputs.map {
@@ -195,18 +200,19 @@ class BottomSheetViewModel @Inject internal constructor(
         return innerTransaction(signResult.raw,traceId, receiverId, assetId, amount, memo)
     }
 
-    private suspend fun innerTransaction(raw: String, traceId: String, receiverId: String, assetId: String, amount: String, memo: String?): MixinResponse<TransactionResponse> {
-        val transactionRsp = tokenRepository.transactions(TransactionRequest(raw, traceId))
+    private suspend fun innerTransaction(raw: String, traceId: String, receiverId: String, assetId: String, amount: String, memo: String?): MixinResponse<List<TransactionResponse>> {
+        val transactionRsp = tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
         if (transactionRsp.error != null) {
             reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
             tokenRepository.deleteRawTransaction(traceId)
             return transactionRsp
         } else {
-            tokenRepository.deleteRawTransaction(transactionRsp.data!!.requestId)
+            tokenRepository.deleteRawTransaction(transactionRsp.data!!.first().requestId)
         }
-        val conversationId = generateConversationId(transactionRsp.data!!.userId, receiverId)
-        initConversation(conversationId, transactionRsp.data!!.userId, receiverId)
-        tokenRepository.insertSnapshotMessage(transactionRsp.data!!, conversationId, assetId, amount, receiverId, memo)
+        // Workaround with only the case of a single transfer
+        val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)
+        initConversation(conversationId, transactionRsp.data!!.first().userId, receiverId)
+        tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), conversationId, assetId, amount, receiverId, memo)
         jobManager.addJobInBackground(SyncOutputJob())
         return transactionRsp
     }

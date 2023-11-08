@@ -13,6 +13,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.api.response.TransactionResponse
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
@@ -46,8 +47,10 @@ class RestoreTransactionJob() : BaseJob(
                     val outputIds = transactionsData.inputs.map {
                         UUID.nameUUIDFromBytes("${it.hash}:${it.index}".toByteArray()).toString()
                     }
-                    outputDao.updateUtxoToSigned(outputIds)
-                    rawTransactionDao.deleteById(transition.requestId)
+                    runInTransaction {
+                        outputDao.updateUtxoToSigned(outputIds)
+                        rawTransactionDao.deleteById(transition.requestId)
+                    }
                     val token = tokenDao.findTokenByAsset(transactionsData.asset)
                     if (token?.assetId == null) {
                         return@forEach
@@ -63,11 +66,14 @@ class RestoreTransactionJob() : BaseJob(
                     val outputIds = transactionsData.inputs.map {
                         UUID.nameUUIDFromBytes("${it.hash}:${it.index}".toByteArray()).toString()
                     }
-                    val transactionRsp = utxoService.transactions(TransactionRequest(transition.rawTransaction, transition.requestId))
+                    val transactionRsp = utxoService.transactions(listOf(TransactionRequest(transition.rawTransaction, transition.requestId)))
                     if (transactionRsp.error == null) {
-                        outputDao.updateUtxoToSigned(outputIds)
-                        rawTransactionDao.deleteById(transactionRsp.data!!.requestId)
-                        insertSnapshotMessage(transactionRsp.data!!, token!!.assetId, transactionRsp.data!!.amount, transition.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
+                        val transactionResponse = transactionRsp.data!!.first()
+                        runInTransaction {
+                            outputDao.updateUtxoToSigned(outputIds)
+                            rawTransactionDao.deleteById(transactionResponse.requestId)
+                        }
+                        insertSnapshotMessage(transactionResponse, token!!.assetId, transactionResponse.amount, transition.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
                     } else {
                         reportException(e = Throwable("Transaction Error ${transactionRsp.errorDescription}"))
                         rawTransactionDao.deleteById(transition.requestId)
