@@ -21,12 +21,15 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
         val isPositive = snapshot.amount.toFloat() > 0
         when (val type = snapshot.simulateType()) {
             SafeSnapshotType.transfer -> {
-                binding.name.text = if (snapshot.opponentId.isBlank()) {
-                    "N/A"
-                } else snapshot.opponentFullName
-                binding.avatar.setInfo(snapshot.opponentFullName, snapshot.avatarUrl, snapshot.opponentId)
-                binding.avatar.setOnClickListener {
-                    listener?.onUserClick(snapshot.opponentId)
+                if (snapshot.opponentId.isBlank()) {
+                    binding.name.text = "N/A"
+                    binding.avatar.setAnonymous()
+                } else {
+                    binding.name.text = snapshot.opponentFullName
+                    binding.avatar.setInfo(snapshot.opponentFullName, snapshot.avatarUrl, snapshot.opponentId)
+                    binding.avatar.setOnClickListener {
+                        listener?.onUserClick(snapshot.opponentId)
+                    }
                 }
             }
             SafeSnapshotType.pending -> {

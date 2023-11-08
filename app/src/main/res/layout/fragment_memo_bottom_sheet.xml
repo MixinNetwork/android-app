@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:contentDescription="@null"
         android:src="@drawable/ic_circle_close"
-        android:foreground="@drawable/mixin_ripple"
+        android:foreground="@drawable/play_ripple"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -43,19 +43,21 @@
         android:src="@drawable/ic_copy_gray"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:foreground="@drawable/mixin_ripple"
+        android:foreground="@drawable/mixin_ripple_small"
         app:layout_constraintEnd_toEndOf="@id/close"
-        app:layout_constraintStart_toStartOf="@id/close"
+        app:layout_constraintStart_toEndOf="@id/utf_content"
         app:layout_constraintTop_toTopOf="@id/utf_content"
         app:layout_constraintBottom_toBottomOf="@id/utf_content" />
 
     <TextView
         android:id="@+id/utf_content"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:textColor="?attr/text_primary"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/utf_copy"
         app:layout_constraintTop_toBottomOf="@+id/utf"
         tools:text="hello" />
 
@@ -74,7 +76,7 @@
         android:src="@drawable/ic_copy_gray"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:foreground="@drawable/mixin_ripple"
+        android:foreground="@drawable/mixin_ripple_small"
         app:layout_constraintEnd_toEndOf="@id/close"
         app:layout_constraintStart_toStartOf="@id/close"
         app:layout_constraintTop_toTopOf="@id/hex_content"
@@ -82,12 +84,14 @@
 
     <TextView
         android:id="@+id/hex_content"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:textColor="?attr/text_primary"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/hex"
+        app:layout_constraintEnd_toStartOf="@id/hex_copy"
         tools:text="0X68 0X65 0X6c 0X6c 0X6f" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1321,4 +1321,5 @@
     <string name="withdrawal_hash">Withdrawal hash</string>
     <string name="Anonymous">Anonymous</string>
     <string name="Confirmations">Confirmations</string>
+    <string name="legacy_network_transfer_hint">Current transfer is using legacy network</string>
 </resources>

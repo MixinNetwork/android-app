@@ -106,6 +106,11 @@ class AvatarView : ViewAnimator {
         avatarSimple.setImageResource(R.drawable.ic_snapshot_withdrawal)
     }
 
+    fun setAnonymous() {
+        displayedChild = POS_AVATAR
+        avatarSimple.setImageResource(R.drawable.ic_snapshot_anonymous)
+    }
+
     fun setInfo(name: String?, url: String?, id: String) {
         binding.avatarTv.text = checkEmoji(name)
         try {

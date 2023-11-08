@@ -113,19 +113,13 @@
         android:layout_below="@+id/group_info_member_title_layout"
         android:minHeight="240dp">
 
-        <Space
-            android:id="@+id/center"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:layout_centerInParent="true" />
-
         <ImageView
             android:id="@+id/bottom_iv"
-            android:layout_width="125dp"
-            android:layout_height="125dp"
-            android:layout_above="@+id/center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:src="@drawable/ic_transactions_empty"
+            android:layout_marginTop="132dp"
+            android:src="@drawable/ic_empty_transaction"
             android:contentDescription="@null" />
 
         <TextView
@@ -134,7 +128,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/bottom_iv"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="@dimen/margin16"
+            android:layout_marginTop="24dp"
             android:text="@string/No_transactions"
             android:textColor="?attr/text_minor" />
     </RelativeLayout>
