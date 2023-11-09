@@ -327,11 +327,9 @@ object NotificationGenerator : Injector() {
                 }
             }
             message.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name  || message.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name -> {
-                if (message.action == SnapshotType.transfer.name) {
-                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_transfer_message))
-                    notificationBuilder.setContentTitle(user.fullName)
-                    contentText = context.getString(R.string.alert_key_contact_transfer_message)
-                }
+                notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_transfer_message))
+                notificationBuilder.setContentTitle(user.fullName)
+                contentText = context.getString(R.string.alert_key_contact_transfer_message)
             }
             message.type == MessageCategory.APP_BUTTON_GROUP.name ||
                 message.type == MessageCategory.APP_CARD.name -> {
