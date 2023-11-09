@@ -189,8 +189,8 @@ class BottomSheetViewModel @Inject internal constructor(
         val withdrawalRequests = mutableListOf(TransactionRequest(withdrawalTx.raw, traceId))
 
         val feeTx = if (isDifferentFee) {
-            val feeTx = Kernel.buildTx(asset, amount, threshold, feeKeys, feeMask, feeUtxos!!.input, feeChangeKeys, feeChangeMask, memo, withdrawalTx.hash)
-            withdrawalRequests.add(TransactionRequest(feeTx, traceId))
+            val feeTx = Kernel.buildTx(feeAsset, feeAmount, threshold, feeKeys, feeMask, feeUtxos!!.input, feeChangeKeys, feeChangeMask, memo, withdrawalTx.hash)
+            withdrawalRequests.add(TransactionRequest(feeTx, UUID.randomUUID().toString()))
             Timber.e("feeTx $feeTx")
             feeTx
         } else {
