@@ -459,8 +459,25 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
     private suspend fun registerPublicKey(pin: String, tipPriv: ByteArray?): Result<Boolean> =
         kotlin.runCatching {
-            Timber.d("start registerPublicKey")
+            Timber.d("Tip start registerPublicKey")
             updateTipStep(Processing.Registering)
+
+            val meResp = accountService.getMeSuspend()
+            if (meResp.isSuccess) {
+                val account = requireNotNull(meResp.data) { "required account can not be null" }
+                Session.storeAccount(account)
+                if (account.hasSafe) {
+                    return@runCatching true
+                }
+            } else {
+                tipBundle.oldPin = null
+                val error = requireNotNull(meResp.error) { "error can not be null" }
+                val errorInfo =
+                    requireContext().getMixinErrorStringByCode(error.code, error.description)
+                updateTipStep(RetryRegister(tipPriv, errorInfo))
+                return@runCatching false
+            }
+
             nodeFailedInfo = ""
             val seed = try {
                 tipPriv ?: tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
