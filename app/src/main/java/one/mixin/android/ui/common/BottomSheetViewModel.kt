@@ -33,6 +33,7 @@ import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.runInTransaction
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
@@ -82,6 +83,7 @@ import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.safe.Utxo
 import one.mixin.android.vo.toSimpleChat
 import one.mixin.android.vo.safe.RawTransaction
+import one.mixin.android.vo.safe.UtxoWrapper
 import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
 import timber.log.Timber
@@ -138,70 +140,97 @@ class BottomSheetViewModel @Inject internal constructor(
         memo: String?,
         pin: String
     ): MixinResponse<*> {
-        val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
-        val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
-        val senderId = Session.getAccountId()!!
-        val differece = feeAssetId != assetId
-
+        val isDifferentFee = feeAssetId != assetId
         val asset = assetIdToAsset(assetId)
         val feeAsset = assetIdToAsset(feeAssetId)
+        val senderId = Session.getAccountId()!!
         val threshold = 1L
 
+        val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
+        val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
+
         val ghostKeyResponse = tokenRepository.ghostKey(
-            if (differece) {
-                buildGhostKeyRequest(receiverId, senderId, traceId)
-            } else {
+            if (isDifferentFee) {
                 buildGhostKeyRequest(receiverId, senderId, senderId, traceId)
+            } else {
+                buildGhostKeyRequest(receiverId, senderId, traceId)
             }
         )
         if (ghostKeyResponse.error != null) {
             return ghostKeyResponse
         }
         val data = ghostKeyResponse.data!!
-        val inputs = arrayListOf<Utxo>()
-        val inputKeys = arrayListOf<List<String>>()
-
-        val utxos = packUtxo(
-            asset, if (differece) amount else {
-                (BigDecimal(amount) + BigDecimal(feeAmount)).toPlainString()
-            }
+        val withdrawalUtxos = UtxoWrapper(
+            packUtxo(
+                asset, if (isDifferentFee) amount else {
+                    (BigDecimal(amount) + BigDecimal(feeAmount)).toPlainString()
+                }
+            )
         )
-
-        for (output in utxos) {
-            inputs.add(Utxo(output.transactionHash, output.amount, output.outputIndex))
-            inputKeys.add(output.keys)
+        val feeUtxos = if (isDifferentFee) {
+            UtxoWrapper(packUtxo(feeAsset, feeAmount))
+        } else {
+            null
         }
-        val input = GsonHelper.customGson.toJson(inputs).toByteArray()
+
         val feeKeys = data.first().keys.joinToString(",")
         val feeMask = data.first().mask
 
         val changeKeys = data.last().keys.joinToString(",")
         val changeMask = data.last().mask
 
-        val feeChangeKeys = if (differece) data[1].keys.joinToString(",") else null
-        val feeChangeMask = if (differece) data[1].mask else null
+        val feeChangeKeys = if (isDifferentFee) data[1].keys.joinToString(",") else null
+        val feeChangeMask = if (isDifferentFee) data[1].mask else null
 
         // BuildWithdrawalTx(asset string, amount, address, tag string, feeAmount, feeKeys string, feeMask string, inputs []byte, changeKeys, changeMask, extra string) (string, error)
-        val withdrawalTx = Kernel.buildWithdrawalTx(asset, amount, destination, tag ?: "", if (differece) "0" else "10", feeKeys, feeMask, input, changeKeys, changeMask, memo)
-        Timber.e("withdrawalTx: $withdrawalTx")
+        Timber.e("asset: $asset, amount: $amount, destination: $destination, tag: ${tag ?: ""}, feeAmount: ${if (isDifferentFee) "" else feeAmount}, feeKeys: ${if (isDifferentFee) "" else feeKeys}, feeMask: ${if (isDifferentFee) "" else feeMask}, input: ${withdrawalUtxos.input.base64RawURLEncode()}, changeKeys: $changeKeys, changeMask: $changeMask, memo: $memo")
+        val withdrawalTx = Kernel.buildWithdrawalTx(asset, amount, destination, tag ?: "", if (isDifferentFee) "" else feeAmount, if (isDifferentFee) "" else feeKeys, if (isDifferentFee) "" else feeMask, withdrawalUtxos.input, changeKeys, changeMask, memo)
+        Timber.e("withdrawalTx ${withdrawalTx.raw} ${withdrawalTx.hash}")
+        val withdrawalRequests = mutableListOf(TransactionRequest(withdrawalTx.raw, traceId))
 
-        val feeTx = if (differece) {
-            // todo transaction_hash
-            Kernel.buildTx(asset, amount, threshold, feeKeys, feeMask, input, feeChangeKeys, feeChangeMask, memo, withdrawalTx.hash)
+        val feeTx = if (isDifferentFee) {
+            val feeTx = Kernel.buildTx(asset, amount, threshold, feeKeys, feeMask, feeUtxos!!.input, feeChangeKeys, feeChangeMask, memo, withdrawalTx.hash)
+            withdrawalRequests.add(TransactionRequest(feeTx, traceId))
+            Timber.e("feeTx $feeTx")
+            feeTx
         } else {
             null
         }
 
-        val withdrawalRequestResponse = tokenRepository.transactionRequest(
-            if (feeTx == null) {
-                listOf(TransactionRequest(withdrawalTx.raw, traceId))
-            } else {
-                listOf(TransactionRequest(withdrawalTx.raw, traceId), TransactionRequest(feeTx, traceId))
-            }
-        )
+        val withdrawalRequestResponse = tokenRepository.transactionRequest(withdrawalRequests)
         if (withdrawalRequestResponse.error != null) {
             return withdrawalRequestResponse
         }
+        // val views = withdrawalRequestResponse.data!!.first().views.joinToString(",")
+        // val sign = Kernel.signTx(withdrawalTx.raw, withdrawalUtxos.formatKeys, views, spendKey.toHex())
+        // val signResult = SignResult(sign.raw, sign.change)
+        // val rawRequest = mutableListOf(TransactionRequest(signResult.raw, traceId))
+        // if (isDifferentFee) {
+        //     val feeUtxos = UtxoWrapper(
+        //         packUtxo(
+        //             feeAsset, feeAmount
+        //         )
+        //     )
+        //     val feeViews = withdrawalRequestResponse.data!!.last().views.joinToString(",")
+        //     val signFee = Kernel.signTx(feeTx, feeUtxos.formatKeys, feeViews, spendKey.toHex())
+        //     val signFeeResult = SignResult(signFee.raw, signFee.change)
+        //     rawRequest.add(TransactionRequest(signFeeResult.raw, UUID.randomUUID().toString()))
+        //     tokenRepository.updateUtxoToSigned(feeUtxos.ids)
+        // }
+        // // todo save fee raw and signed utxo and insert change
+        // runInTransaction {
+        //     tokenRepository.updateUtxoToSigned(withdrawalUtxos.ids)
+        // }
+        // val transactionRsp = tokenRepository.transactions(rawRequest)
+        // if (transactionRsp.error != null) {
+        //     reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
+        //     tokenRepository.deleteRawTransaction(traceId)
+        //     return transactionRsp
+        // } else {
+        //     tokenRepository.deleteRawTransaction(transactionRsp.data!!.first().requestId)
+        // }
+        // return transactionRsp
+        // todo replace response
         return withdrawalRequestResponse
     }
 
@@ -213,9 +242,10 @@ class BottomSheetViewModel @Inject internal constructor(
         trace: String?,
         memo: String?,
     ): MixinResponse<*> {
+        val asset = assetIdToAsset(assetId)
         val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
         val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
-
+        val utxoWrapper = UtxoWrapper(packUtxo(asset, amount))
         if (trace != null) {
             val rawTransaction = tokenRepository.findRawTransaction(trace)
             if (rawTransaction != null) {
@@ -226,9 +256,7 @@ class BottomSheetViewModel @Inject internal constructor(
         val traceId = trace ?: UUID.randomUUID().toString()
         val senderId = Session.getAccountId()!!
 
-        val asset = assetIdToAsset(assetId)
         val threshold = 1L
-        val utxos = packUtxo(asset, amount)
 
         val ghostKeyResponse = tokenRepository.ghostKey(buildGhostKeyRequest(receiverId, senderId, traceId))
         if (ghostKeyResponse.error != null) {
@@ -236,13 +264,7 @@ class BottomSheetViewModel @Inject internal constructor(
         }
         val data = ghostKeyResponse.data!!
 
-        val inputs = arrayListOf<Utxo>()
-        val inputKeys = arrayListOf<List<String>>()
-        for (output in utxos) {
-            inputs.add(Utxo(output.transactionHash, output.amount, output.outputIndex))
-            inputKeys.add(output.keys)
-        }
-        val input = GsonHelper.customGson.toJson(inputs).toByteArray()
+        val input = utxoWrapper.input
         val receiverKeys = data.first().keys.joinToString(",")
         val receiverMask = data.first().mask
 
@@ -259,21 +281,16 @@ class BottomSheetViewModel @Inject internal constructor(
         }
         // Workaround with only the case of a single transfer
         val views = transactionResponse.data!!.first().views.joinToString(",")
-        val keys = GsonHelper.customGson.toJson(inputKeys)
+        val keys = utxoWrapper.formatKeys
         val sign = Kernel.signTx(tx, keys, views, spendKey.toHex())
         val signResult = SignResult(sign.raw, sign.change)
         runInTransaction {
             if (signResult.change != null) {
-                val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxos.last())
+                val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxoWrapper.lastOutput)
                 tokenRepository.insertOutput(changeOutput)
             }
             tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverId, nowInUtc()))
-
-            val outputIds = arrayListOf<String>()
-            outputIds.addAll(inputs.map {
-                UUID.nameUUIDFromBytes("${it.hash}:${it.index}".toByteArray()).toString()
-            })
-            tokenRepository.updateUtxoToSigned(outputIds)
+            tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
         }
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
         return innerTransaction(signResult.raw, traceId, receiverId, assetId, amount, memo)
