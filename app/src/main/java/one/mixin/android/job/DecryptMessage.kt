@@ -1023,7 +1023,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         insertMessage(message, data)
         jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
 
-        if (snapshot.amount.toFloat() > 0) {
+        if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
             generateNotification(message, data)
         }
     }
