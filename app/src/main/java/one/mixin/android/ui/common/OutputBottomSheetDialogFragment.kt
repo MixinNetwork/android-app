@@ -145,8 +145,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             else -> {
                 t as WithdrawBiometricItem
                 trace = Trace(t.traceId!!, t.asset.assetId, t.amount, null, t.destination, t.tag, null, nowInUtc())
-                // Todo replace real fee
-                bottomViewModel.withdrawal(MIXIN_FEE_USER_ID, t.traceId!!, t.asset.assetId, t.asset.assetId, t.amount, "10", t.destination, t.tag, t.memo, pin)
+                bottomViewModel.withdrawal(MIXIN_FEE_USER_ID, t.traceId!!, t.asset.assetId, t.feeAssetId, t.amount, t.fee, t.destination, t.tag, t.memo, pin)
             }
         }
         bottomViewModel.insertTrace(trace)

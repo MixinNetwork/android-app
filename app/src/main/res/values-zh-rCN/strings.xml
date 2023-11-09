@@ -1292,4 +1292,5 @@
     <string name="Anonymous">匿名</string>
     <string name="Confirmations">区块确认数</string>
     <string name="choose_network_fee">选择支付手续费的币种</string>
+    <string name="zero_fee_hint">网络手续费为 0 的原因可能您是会员或者提现到属于 Mixin 的充值地址因而没有手续费。</string>
 </resources>

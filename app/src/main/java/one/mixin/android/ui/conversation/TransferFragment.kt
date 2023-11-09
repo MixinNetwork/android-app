@@ -8,7 +8,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.text.Editable
 import android.text.InputFilter
-import android.text.SpannableStringBuilder
 import android.text.TextPaint
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -22,9 +21,8 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.OptIn
 import androidx.annotation.VisibleForTesting
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.text.bold
-import androidx.core.text.color
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -36,19 +34,20 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.databinding.FragmentTransferBinding
 import one.mixin.android.databinding.ItemTransferTypeBinding
 import one.mixin.android.databinding.ViewWalletTransferTypeBottomBinding
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.appCompatActionBarHeight
-import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.clearCharacterStyle
-import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -87,6 +86,7 @@ import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.NetworkFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferOutViewFragment
+import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.safe.TokenItem
@@ -96,7 +96,6 @@ import one.mixin.android.vo.displayAddress
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
-import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.ArrayList
@@ -157,7 +156,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     private val supportSwitchAsset by lazy { requireArguments().getBoolean(ARGS_SWITCH_ASSET) }
 
     private val fees: ArrayList<NetworkFee> = arrayListOf()
-    private var currentFee: String? = null
+    private var currentFee: NetworkFee? = null
 
     private var user: User? = null
 
@@ -289,7 +288,8 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         binding.avatar.setNet(requireContext().dpToPx(16f))
         binding.expandIv.isVisible = false
         binding.assetRl.setOnClickListener(null)
-        currentAsset = requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)
+        val currentAsset = requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)
+        this.currentAsset = currentAsset
         currentAsset?.let { updateAssetUI(it) }
 
         val address = requireArguments().getParcelableCompat(ARGS_ADDRESS, Address::class.java)
@@ -301,7 +301,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 getString(R.string.send_to, address.label),
                 address.displayAddress().formatPublicKey(),
             )
-            updateFeeUI(address)
+            updateFeeUI(currentAsset, address)
         } else {
             chatViewModel.observeAddress(address.addressId).observe(
                 this,
@@ -311,79 +311,88 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                     getString(R.string.send_to, it.label),
                     it.displayAddress().formatPublicKey(),
                 )
-                updateFeeUI(it)
+                updateFeeUI(currentAsset, it)
             }
         }
     }
 
-    private fun updateFeeUI(address: Address) = lifecycleScope.launch {
+    @SuppressLint("SetTextI18n")
+    private fun updateFeeUI(token: TokenItem, address: Address) = lifecycleScope.launch {
         if (address.feeAssetId.isBlank()) {
-            binding.memoRl.isVisible = false
-            binding.feeTv.isVisible = false
-            binding.continueVa.displayedChild = POST_PB
-            binding.continueVa.setBackgroundResource(R.drawable.selector_round_bn_gray)
+            binding.apply {
+                memoRl.isVisible = false
+                networkHtv.isVisible = false
+                dustHtv.isVisible = false
+                reserveHtv.isVisible = false
+                feeHtv.isVisible = false
+                continueVa.displayedChild = POST_PB
+                continueVa.setBackgroundResource(R.drawable.selector_round_bn_gray)
+            }
         } else {
-            binding.continueVa.displayedChild = POST_TEXT
+            binding.continueVa.displayedChild = POST_PB
             val feeAsset = chatViewModel.refreshAsset(address.feeAssetId)
             if (feeAsset == null) {
                 jobManager.addJobInBackground(RefreshTokensJob(address.feeAssetId))
                 return@launch
             }
-            binding.memoRl.isVisible = isInnerTransfer()
-            binding.feeTv.isVisible = true
-            binding.continueVa.setBackgroundResource(R.drawable.bg_round_blue_btn)
-
             val reserveDouble = address.reserve.toBigDecimalOrNull()
             val dustDouble = address.dust?.toBigDecimalOrNull()
-            val color = requireContext().colorFromAttribute(R.attr.text_primary)
+            binding.apply {
+                memoRl.isVisible = isInnerTransfer()
+                networkHtv.isVisible = true
+                feeHtv.isVisible = true
+                continueVa.setBackgroundResource(R.drawable.bg_round_blue_btn)
+                networkHtv.tail.text = getChainName(token.chainId, token.chainName, token.assetKey)
+                if (dustDouble != null && dustDouble != BigDecimal.ZERO) {
+                    dustHtv.isVisible = true
+                    dustHtv.tail.text = "${address.dust} ${token.symbol}"
+                }
+                if (reserveDouble != null && reserveDouble != BigDecimal.ZERO) {
+                    reserveHtv.isVisible = true
+                    reserveHtv.tail.text = "${address.reserve} ${token.symbol}"
+                }
+            }
+            var success = refreshFees(token, address)
+            while(!success) {
+                success = refreshFees(token, address)
+                delay(500)
+            }
+            currentFee?.let { fee ->
+                binding.apply {
+                    feeHtv.tail.text = "${fee.fee} ${token.symbol}"
+                    if (fee.fee.toDouble() == 0.0) {
+                        val drawable = AppCompatResources.getDrawable(requireContext(), R.drawable.ic_setting_about)?.apply {
+                            setBounds(0, 0, 12.dp, 12.dp)
+                        }
+                        feeHtv.tail.setCompoundDrawables(null, null, drawable, null)
+                        feeHtv.tail.compoundDrawablePadding = 4.dp
+                        feeHtv.tail.setOnClickListener {
+                            alertDialogBuilder()
+                                .setMessage(getString(R.string.zero_fee_hint))
+                                .setPositiveButton(R.string.OK) { dialog, _ ->
+                                    dialog.dismiss()
+                                }
+                                .show()
+                        }
+                    } else if (fees.size > 1) {
+                        val drawable = AppCompatResources.getDrawable(requireContext(), R.drawable.ic_keyboard_arrow_down)?.apply {
+                            setBounds(0, 0, 12.dp, 12.dp)
+                        }
+                        feeHtv.tail.setCompoundDrawables(null, null, drawable, null)
+                        feeHtv.tail.compoundDrawablePadding = 4.dp
+                        feeHtv.tail.setOnClickListener {
+                            if (fees.isEmpty()) return@setOnClickListener
 
-            val networkSpan =
-                SpannableStringBuilder(getString(R.string.withdrawal_network_fee)).apply {
-                    bold {
-                        append(' ')
-                        color(color) {
-                            append(address.fee + " " + feeAsset.symbol)
+                            NetworkFeeBottomSheetDialogFragment.newInstance(fees, currentFee?.token?.assetId).apply {
+                                callback = { networkFee ->
+                                    currentFee = networkFee
+                                }
+                            }.showNow(parentFragmentManager, NetworkFeeBottomSheetDialogFragment.TAG)
                         }
                     }
+                    continueVa.displayedChild = POST_TEXT
                 }
-            val dustSpan = if (dustDouble != null && dustDouble > BigDecimal.ZERO) {
-                SpannableStringBuilder().apply {
-                    append(getString(R.string.withdrawal_minimum_withdrawal))
-                    color(color) {
-                        bold {
-                            append(" ${address.dust} ${currentAsset!!.symbol}")
-                        }
-                    }
-                }
-            } else {
-                SpannableStringBuilder()
             }
-            val reserveSpan = if (reserveDouble != null && reserveDouble > BigDecimal.ZERO) {
-                SpannableStringBuilder().apply {
-                    append(getString(R.string.withdrawal_minimum_reserve))
-                    color(color) {
-                        bold {
-                            append(" ${address.reserve} ${currentAsset!!.symbol}")
-                        }
-                    }
-                }
-            } else {
-                SpannableStringBuilder()
-            }
-            binding.feeTv.text =
-                buildBulletLines(requireContext(), networkSpan, dustSpan, reserveSpan)
-            binding.feeTv.setOnClickListener {
-                if (fees.isEmpty()) return@setOnClickListener
-
-                NetworkFeeBottomSheetDialogFragment.newInstance(fees, currentFee).apply {
-                    callback = { networkFee ->
-                        currentFee = networkFee.token.assetId
-                        Timber.d("choose networkFee: $networkFee")
-                    }
-                }.showNow(parentFragmentManager, NetworkFeeBottomSheetDialogFragment.TAG)
-            }
-
-            refreshFees(address.assetId, address.destination)
         }
     }
 
@@ -595,7 +604,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
     @OptIn(UnstableApi::class)
     private fun prepareTransferBottom() = lifecycleScope.launch {
-        if (currentAsset == null || (user == null && address == null)) {
+        if (currentAsset == null || (user == null && (address == null || currentFee == null))) {
             return@launch
         }
         var amount = getAmount()
@@ -631,8 +640,9 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         val biometricItem = if (user != null) {
             TransferBiometricItem(user!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace, null)
         } else {
+            val fee = requireNotNull(currentFee) { "withdrawal currentFee can not be null" }
             WithdrawBiometricItem(
-                address!!.destination, address!!.tag, address!!.addressId, address!!.label, address!!.fee,
+                address!!.destination, address!!.tag, address!!.addressId, address!!.label, fee.fee, fee.token.assetId,
                 currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace,
             )
         }
@@ -650,11 +660,11 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         preconditionBottom.showNow(parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
     }
 
-    private fun refreshFees(assetId: String, destination: String) {
-        lifecycleScope.launch {
-            val response = bottomViewModel.getFees(assetId, destination)
-            if (response.isSuccess) {
-                val data = requireNotNull(response.data) { "required list can not be null" }
+    private suspend fun refreshFees(token: TokenItem, address: Address): Boolean {
+        return handleMixinResponse(
+            invokeNetwork = { bottomViewModel.getFees(token.assetId, address.destination) },
+            successBlock = { resp ->
+                val data = requireNotNull(resp.data) { "required list can not be null" }
                 val ids = data.mapNotNull { it.assetId }
                 val tokens = bottomViewModel.findTokenItems(ids)
                 fees.clear()
@@ -663,8 +673,12 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                         NetworkFee(t, amount)
                     }
                 }))
+                if (currentFee == null) {
+                    currentFee = fees.firstOrNull()
+                }
+                return@handleMixinResponse true
             }
-        }
+        ) ?: false
     }
 
     private fun showTransferBottom(biometricItem: BiometricItem) {
