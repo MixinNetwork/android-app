@@ -140,6 +140,27 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
 
     private suspend fun registerPublicKey(pin: String) {
         try {
+            val meResp = accountService.getMeSuspend()
+            if (meResp.isSuccess) {
+                val account = requireNotNull(meResp.data) { "required account can not be null" }
+                Session.storeAccount(account)
+                if (account.hasSafe) {
+                    dismiss()
+                    toast(R.string.Successful)
+                    return
+                }
+            } else {
+                val error = requireNotNull(meResp.error)
+                val errorCode = error.code
+                val errorDescription = error.description
+                val errStr = requireContext().getMixinErrorStringByCode(errorCode, errorDescription)
+                val msg = "TIP $TAG sync account before register public key errorString $errStr"
+                Timber.e(msg)
+                reportException(TipException(msg))
+                showErrorWhenRegisterFailed(pin, errStr)
+                return
+            }
+
             val seed = tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
             val (salt, saltBase64) = tip.generateSaltAndEncryptedSaltBase64(pin, seed)
             val spendSeed = tip.getSpendPriv(salt, seed)
