@@ -132,7 +132,10 @@ func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, addr
 	}
 
 	amountValue := common.NewIntegerFromString(amount)
-	feeAmountValue := common.NewIntegerFromString(feeAmount)
+	feeAmountValue := common.NewInteger(0)
+    if feeAmount != "" {
+        feeAmountValue = common.NewIntegerFromString(feeAmount)
+    }
 	total := common.NewInteger(0)
 
 	tx := common.NewTransactionV5(assetHash)
@@ -140,7 +143,7 @@ func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, addr
 		tx.AddInput(in.Hash, in.Index)
 		total = total.Add(in.Amount)
 	}
-	if total.Cmp(amountValue.Add(feeAmountValue)) < 0 {
+	if feeAmountValue.Cmp(common.Zero) != 0 && total.Cmp(amountValue.Add(feeAmountValue)) < 0 {
 		return nil, errors.New("insufficient funds")
 	}
 	withdrawalOutput := &common.Output{
@@ -174,8 +177,11 @@ func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, addr
 		tx.Outputs = append(tx.Outputs, feeOutput)
 	}
 
-	if total.Cmp(amountValue.Add(feeAmountValue)) > 0 {
-		change := total.Sub(amountValue).Sub(feeAmountValue)
+	if feeAmountValue.Cmp(common.Zero) != 0 && total.Cmp(amountValue.Add(feeAmountValue)) > 0 || total.Cmp(common.Zero) > 0{
+		change := total.Sub(amountValue)
+		if feeAmount != "" {
+            change = change.Sub(feeAmountValue)
+		}
 		script := common.NewThresholdScript(1)
 
 		changeMaskKey, err := crypto.KeyFromString(changeMask)
