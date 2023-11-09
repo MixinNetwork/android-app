@@ -284,7 +284,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     }
 
     private fun handleAddressTransfer() {
-        binding.avatar.setNet(requireContext().dpToPx(16f))
+        binding.avatar.isVisible = false
         binding.expandIv.isVisible = false
         binding.assetRl.setOnClickListener(null)
         val currentAsset = requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)
