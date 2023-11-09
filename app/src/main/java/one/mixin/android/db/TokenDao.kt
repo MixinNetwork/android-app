@@ -52,6 +52,9 @@ interface TokenDao : BaseDao<Token> {
     @Query("SELECT kernel_asset_id FROM tokens WHERE kernel_asset_id IN (:kernelIds)")
     suspend fun findExistByKernelAssetId(kernelIds: List<String>): List<String>
 
+    @Query("SELECT asset_id FROM tokens")
+    suspend fun findAllTokenIds(): List<String>
+
     @Query("$PREFIX_ASSET_ITEM WHERE a1.symbol = 'XIN' $POSTFIX_ASSET_ITEM limit 1")
     fun getXIN(): TokenItem?
 

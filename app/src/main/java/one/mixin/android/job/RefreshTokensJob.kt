@@ -3,7 +3,6 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.db.flow.MessageFlow
-import one.mixin.android.event.MessageEvent
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.Token
 
@@ -35,7 +34,12 @@ class RefreshTokensJob(
                 }
             }
         } else {
-            val response = tokenService.fetchAllAssetSuspend()
+            val tokenIds = tokenDao.findAllTokenIds()
+            val response = if (tokenIds.isEmpty()) {
+                tokenService.fetchAllTokenSuspend()
+            } else {
+                tokenService.fetchTokenSuspend(tokenIds)
+            }
             if (response.isSuccess && response.data != null) {
                 val list = response.data as List<Token>
                 assetRepo.insertList(list)

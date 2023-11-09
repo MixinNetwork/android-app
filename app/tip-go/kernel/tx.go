@@ -74,25 +74,29 @@ func BuildTx(asset string, amount string, threshold int, receiverKeys string, re
 }
 
 func BuildWithdrawalTx(asset string, amount, address, tag string, feeAmount, feeKeys string, feeMask string, inputs []byte, changeKeys, changeMask, extra string) (*Tx, error) {
-	keys := strings.Split(feeKeys, ",")
 	rks := []*crypto.Key{}
-	for _, k := range keys {
-		key := k
-		rk, err := crypto.KeyFromString(key)
-		if err != nil {
-			return nil, err
+	if feeKeys != "" {
+		keys := strings.Split(feeKeys, ",")
+		for _, k := range keys {
+			key := k
+			rk, err := crypto.KeyFromString(key)
+			if err != nil {
+				return nil, err
+			}
+			rks = append(rks, &rk)
 		}
-		rks = append(rks, &rk)
 	}
-	ckeys := strings.Split(changeKeys, ",")
 	cks := []*crypto.Key{}
-	for _, k := range ckeys {
-		ke := k
-		rk, err := crypto.KeyFromString(ke)
-		if err != nil {
-			return nil, err
+	if changeKeys != "" {
+		ckeys := strings.Split(changeKeys, ",")
+		for _, k := range ckeys {
+			ke := k
+			rk, err := crypto.KeyFromString(ke)
+			if err != nil {
+				return nil, err
+			}
+			cks = append(cks, &rk)
 		}
-		cks = append(cks, &rk)
 	}
 	var utxo []Utxo
 	err := json.Unmarshal(inputs, &utxo)
