@@ -44,7 +44,6 @@ import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.databinding.FragmentTransferBinding
 import one.mixin.android.databinding.ItemTransferTypeBinding
 import one.mixin.android.databinding.ViewWalletTransferTypeBottomBinding
-import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.clearCharacterStyle
@@ -359,35 +358,25 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             }
             currentFee?.let { fee ->
                 binding.apply {
-                    feeHtv.tail.text = "${fee.fee} ${token.symbol}"
                     if (fee.fee.toDouble() == 0.0) {
-                        val drawable = AppCompatResources.getDrawable(requireContext(), R.drawable.ic_setting_about)?.apply {
-                            setBounds(0, 0, 12.dp, 12.dp)
-                        }
-                        feeHtv.tail.setCompoundDrawables(null, null, drawable, null)
-                        feeHtv.tail.compoundDrawablePadding = 4.dp
-                        feeHtv.tail.setOnClickListener {
-                            alertDialogBuilder()
-                                .setMessage(getString(R.string.zero_fee_hint))
-                                .setPositiveButton(R.string.OK) { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                                .show()
-                        }
-                    } else if (fees.size > 1) {
-                        val drawable = AppCompatResources.getDrawable(requireContext(), R.drawable.ic_keyboard_arrow_down)?.apply {
-                            setBounds(0, 0, 12.dp, 12.dp)
-                        }
-                        feeHtv.tail.setCompoundDrawables(null, null, drawable, null)
-                        feeHtv.tail.compoundDrawablePadding = 4.dp
-                        feeHtv.tail.setOnClickListener {
-                            if (fees.isEmpty()) return@setOnClickListener
+                        feeHtv.tail.text = "0"
+                    } else{
+                        feeHtv.tail.text = "${fee.fee} ${token.symbol}"
+                        if (fees.size > 1) {
+                            val drawable = AppCompatResources.getDrawable(requireContext(), R.drawable.ic_keyboard_arrow_down)?.apply {
+                                setBounds(0, 0, 12.dp, 12.dp)
+                            }
+                            feeHtv.tail.setCompoundDrawables(null, null, drawable, null)
+                            feeHtv.tail.compoundDrawablePadding = 4.dp
+                            feeHtv.tail.setOnClickListener {
+                                if (fees.isEmpty()) return@setOnClickListener
 
-                            NetworkFeeBottomSheetDialogFragment.newInstance(fees, currentFee?.token?.assetId).apply {
-                                callback = { networkFee ->
-                                    currentFee = networkFee
-                                }
-                            }.showNow(parentFragmentManager, NetworkFeeBottomSheetDialogFragment.TAG)
+                                NetworkFeeBottomSheetDialogFragment.newInstance(fees, currentFee?.token?.assetId).apply {
+                                    callback = { networkFee ->
+                                        currentFee = networkFee
+                                    }
+                                }.showNow(parentFragmentManager, NetworkFeeBottomSheetDialogFragment.TAG)
+                            }
                         }
                     }
                     continueVa.displayedChild = POST_TEXT

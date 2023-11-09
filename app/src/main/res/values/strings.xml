@@ -1322,5 +1322,4 @@
     <string name="Anonymous">Anonymous</string>
     <string name="Confirmations">Confirmations</string>
     <string name="choose_network_fee">Choose an asset to pay network fee</string>
-    <string name="zero_fee_hint">The reason why the network fee is 0</string>
 </resources>
