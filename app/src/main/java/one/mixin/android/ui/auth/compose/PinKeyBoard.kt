@@ -14,7 +14,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.with
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -109,15 +109,15 @@ fun PinKeyBoard(
 
     AnimatedContent(targetState = step, transitionSpec = {
         if (targetState == AuthStep.INPUT) {
-            (slideInVertically(initialOffsetY = { it }) with scaleOut() + fadeOut())
+            (slideInVertically(initialOffsetY = { it }) togetherWith scaleOut() + fadeOut())
         } else if (initialState == AuthStep.INPUT) {
             if (targetState == AuthStep.LOADING) {
-                (EnterTransition.None with ExitTransition.None)
+                (EnterTransition.None togetherWith ExitTransition.None)
             } else {
-                (scaleIn() + fadeIn() with fadeOut())
+                (scaleIn() + fadeIn() togetherWith fadeOut())
             }
         } else {
-            (scaleIn() + fadeIn() with scaleOut() + fadeOut())
+            (scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut())
         }
     }, label = "") { s ->
         when (s) {
@@ -193,7 +193,7 @@ fun PinKeyBoard(
             }
             else -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 AnimatedContent(targetState = step, transitionSpec = {
-                    (fadeIn() with fadeOut())
+                    (fadeIn() togetherWith fadeOut())
                 }, label = "") {
                     if (step == AuthStep.INPUT) {
                         Column(
@@ -222,9 +222,9 @@ fun PinKeyBoard(
                                             targetState = hasContent,
                                             transitionSpec = {
                                                 if (targetState > initialState) {
-                                                    scaleIn() + fadeIn() with scaleOut() + fadeOut()
+                                                    scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
                                                 } else {
-                                                    scaleIn() + fadeIn() with scaleOut() + fadeOut()
+                                                    scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
                                                 }.using(
                                                     SizeTransform(clip = false),
                                                 )
