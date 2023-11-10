@@ -136,7 +136,7 @@ constructor(
             return assetItem
         } else if (assetItem != null) {
             val depositResponse = utxoService.createDeposit(
-                DepositEntryRequest(assetItem!!.chainId)
+                DepositEntryRequest(assetItem.chainId)
             )
             val pub = SAFE_PUBLIC_KEY.hexStringToByteArray()
             if (depositResponse.error != null) return assetItem
