@@ -125,8 +125,7 @@ class BiometricDialog(
             } catch (e: Exception) {
                 if (e is IllegalStateException ||
                     e is IllegalBlockSizeException ||
-                    e is BadPaddingException ||
-                    e is AEADBadTagException
+                    e is BadPaddingException
                 ) {
                     BiometricUtil.deleteKey(context)
                     toast(R.string.wallet_biometric_invalid)

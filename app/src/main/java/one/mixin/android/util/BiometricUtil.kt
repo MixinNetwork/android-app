@@ -6,6 +6,7 @@ import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
+import android.security.keystore.KeyProperties.AUTH_BIOMETRIC_STRONG
 import android.security.keystore.KeyProperties.AUTH_DEVICE_CREDENTIAL
 import android.security.keystore.KeyProperties.SECURITY_LEVEL_STRONGBOX
 import android.security.keystore.KeyProperties.SECURITY_LEVEL_TRUSTED_ENVIRONMENT
@@ -168,7 +169,7 @@ object BiometricUtil {
                         )
                         .setUserAuthenticationRequired(true).apply {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                setUserAuthenticationParameters(2 * 60 * 60, AUTH_DEVICE_CREDENTIAL)
+                                setUserAuthenticationParameters(2 * 60 * 60, AUTH_DEVICE_CREDENTIAL or AUTH_BIOMETRIC_STRONG)
                             } else {
                                 @Suppress("DEPRECATION")
                                 setUserAuthenticationValidityDurationSeconds(2 * 60 * 60)
