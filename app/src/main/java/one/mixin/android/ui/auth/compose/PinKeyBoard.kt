@@ -72,7 +72,6 @@ import one.mixin.android.ui.setting.ui.compose.booleanValueAsState
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.util.BiometricUtil
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun PinKeyBoard(
     step: AuthStep,
@@ -194,7 +193,7 @@ fun PinKeyBoard(
             else -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 AnimatedContent(targetState = step, transitionSpec = {
                     (fadeIn() togetherWith fadeOut())
-                }, label = "") {
+                }, label = "") { step ->
                     if (step == AuthStep.INPUT) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
