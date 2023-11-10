@@ -352,40 +352,57 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 }
             }
             var success = refreshFees(token, address)
-            while(!success) {
+            while (!success) {
                 success = refreshFees(token, address)
                 delay(500)
             }
-            currentFee?.let { fee ->
-                binding.apply {
-                    if (fee.fee.toDouble() == 0.0) {
-                        feeHtv.tail.text = "0"
-                    } else{
-                        feeHtv.tail.text = "${fee.fee} ${fee.token.symbol}"
-                        if (fees.size > 1) {
-                            val drawable = AppCompatResources.getDrawable(requireContext(), R.drawable.ic_keyboard_arrow_down)?.apply {
-                                setBounds(0, 0, 12.dp, 12.dp)
-                            }
-                            feeHtv.tail.setCompoundDrawables(null, null, drawable, null)
-                            feeHtv.tail.compoundDrawablePadding = 4.dp
-                            feeHtv.tail.setOnClickListener {
-                                if (fees.isEmpty()) return@setOnClickListener
+            updateFeeUI()
+        }
+    }
 
-                                NetworkFeeBottomSheetDialogFragment.newInstance(fees, currentFee?.token?.assetId).apply {
-                                    callback = { networkFee ->
-                                        currentFee = networkFee
-                                    }
-                                }.showNow(parentFragmentManager, NetworkFeeBottomSheetDialogFragment.TAG)
-                            }
+    private fun updateFeeUI() {
+        currentFee?.let { fee ->
+            binding.apply {
+                if (fee.fee.toDouble() == 0.0) {
+                    feeHtv.tail.text = "0"
+                } else {
+                    feeHtv.tail.text = "${fee.fee} ${fee.token.symbol}"
+                    if (fees.size > 1) {
+                        val drawable = AppCompatResources.getDrawable(
+                            requireContext(),
+                            R.drawable.ic_keyboard_arrow_down
+                        )?.apply {
+                            setBounds(0, 0, 12.dp, 12.dp)
+                        }
+                        feeHtv.tail.setCompoundDrawables(null, null, drawable, null)
+                        feeHtv.tail.compoundDrawablePadding = 4.dp
+                        feeHtv.tail.setOnClickListener {
+                            if (fees.isEmpty()) return@setOnClickListener
+
+                            NetworkFeeBottomSheetDialogFragment.newInstance(
+                                fees,
+                                currentFee?.token?.assetId
+                            ).apply {
+                                callback = { networkFee ->
+                                    currentFee = networkFee
+                                    updateFeeUI()
+                                }
+                            }.showNow(
+                                parentFragmentManager,
+                                NetworkFeeBottomSheetDialogFragment.TAG
+                            )
                         }
                     }
+                }
+                if (continueVa.displayedChild != POST_TEXT) {
                     continueVa.displayedChild = POST_TEXT
                 }
             }
         }
     }
 
-    @OptIn(UnstableApi::class) private fun handleInnerTransfer() {
+    @OptIn(UnstableApi::class)
+    private fun handleInnerTransfer() {
         if (supportSwitchAsset) {
             binding.assetRl.setOnClickListener {
                 operateKeyboard(false)
