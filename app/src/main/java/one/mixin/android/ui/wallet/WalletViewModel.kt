@@ -148,7 +148,7 @@ internal constructor(
             .build()
 
 
-    suspend fun refreshPendingDeposits(asset: TokenItem) = tokenRepository.pendingDeposits(asset.assetId, asset.getDestination()!!, asset.getTag())
+    suspend fun refreshPendingDeposits(asset: TokenItem) = tokenRepository.pendingDeposits(asset.assetId, requireNotNull(asset.destination) { "refreshPendingDeposit required destination not null" }, asset.tag)
 
     suspend fun clearPendingDepositsByAssetId(assetId: String) = tokenRepository.clearPendingDepositsByAssetId(assetId)
 
