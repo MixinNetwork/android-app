@@ -448,8 +448,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         if (openBiometrics) {
             try {
                 BiometricUtil.savePin(requireContext(), pin)
-            } catch (e: UserNotAuthenticatedException) {
-                // TODO should go setting or show biometric here?
+            } catch (ignored: UserNotAuthenticatedException) {
+                Timber.e("$TAG savePin $ignored")
             }
         }
 

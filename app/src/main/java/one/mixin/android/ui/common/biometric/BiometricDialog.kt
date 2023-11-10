@@ -34,6 +34,7 @@ class BiometricInfo(
 class BiometricDialog(
     private val context: FragmentActivity,
     private val biometricInfo: BiometricInfo,
+    private val onlyVerify: Boolean = false,
 ) {
     var callback: Callback? = null
 
@@ -46,6 +47,12 @@ class BiometricDialog(
             .setConfirmationRequired(true)
             .setAllowedAuthenticators(BIOMETRIC_STRONG)
             .build()
+        if (onlyVerify) {
+            val biometricPrompt = BiometricPrompt(context, ContextCompat.getMainExecutor(context), authenticationCallback)
+            biometricPrompt.authenticate(biometricPromptInfo)
+            return
+        }
+
         val cipher: Cipher? = try {
             BiometricUtil.getDecryptCipher(context)
         } catch (e: Exception) {
@@ -94,6 +101,11 @@ class BiometricDialog(
         }
 
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+            if (onlyVerify) {
+                callback?.onPinComplete("")
+                return
+            }
+
             var cipher = result.cryptoObject?.cipher
             if (cipher == null) {
                 cipher = try {
