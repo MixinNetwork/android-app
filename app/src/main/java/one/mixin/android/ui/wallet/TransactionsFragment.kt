@@ -141,7 +141,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         }
 
         walletViewModel.refreshAsset(asset.assetId)
-        if (!asset.getDestination().isNullOrBlank()) {
+        if (!asset.destination.isNullOrBlank()) {
             refreshPendingDeposits(asset)
         }
     }

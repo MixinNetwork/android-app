@@ -81,7 +81,7 @@ class DepositFragment : BaseFragment() {
             DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset)
                 .apply {
                     this.callback = {
-                        val noTag = asset.getTag().isNullOrBlank()
+                        val noTag = asset.tag.isNullOrBlank()
                         if (noTag.not()) {
                             alertDialogBuilder()
                                 .setTitle(R.string.Notice)
@@ -175,7 +175,7 @@ class DepositFragment : BaseFragment() {
 
                         lifecycleScope.launch {
                             var newAsset = walletViewModel.findAssetItemById(entry.key)
-                            if (newAsset == null || newAsset.getDestination().isNullOrBlank()) {
+                            if (newAsset == null || newAsset.destination.isNullOrBlank()) {
                                 alertDialog?.dismiss()
                                 alertDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                                     show()
@@ -202,7 +202,7 @@ class DepositFragment : BaseFragment() {
     }
 
     private fun refreshAsset(asset: TokenItem) {
-        if (!asset.getDestination().isNullOrBlank()) return
+        if (!asset.destination.isNullOrBlank()) return
         lifecycleScope.launch {
             val assetItem = walletViewModel.findOrSyncAsset(asset.assetId)
             if (assetItem == null) {
@@ -229,8 +229,8 @@ class DepositFragment : BaseFragment() {
     private fun updateUI(asset: TokenItem) {
         if (viewDestroyed()) return
 
-        val destination = asset.getDestination()
-        val tag = asset.getTag()
+        val destination = asset.destination
+        val tag = asset.tag
         val signature = asset.signature?.hexStringToByteArray()
 
         if (destination.isNullOrBlank() || signature.isNullOrEmpty()) return

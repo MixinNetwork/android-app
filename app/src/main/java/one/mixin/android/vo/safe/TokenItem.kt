@@ -17,8 +17,8 @@ data class TokenItem(
     val name: String,
     val iconUrl: String,
     val balance: String,
-    private val destination: String?,
-    private val tag: String?,
+    val destination: String?,
+    val tag: String?,
     val priceBtc: String,
     val priceUsd: String,
     val chainId: String,
@@ -60,14 +60,6 @@ data class TokenItem(
         BigDecimal(balance).multiply(BigDecimal(priceBtc))
     }
 
-    fun getDestination(): String? {
-        return destination
-    }
-
-    fun getTag(): String? {
-        return tag
-    }
-
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<TokenItem>() {
             override fun areItemsTheSame(oldItem: TokenItem, newItem: TokenItem) =
@@ -82,16 +74,3 @@ data class TokenItem(
 fun TokenItem.toPriceAndChange(): PriceAndChange {
     return PriceAndChange(assetId, priceBtc, priceUsd, changeUsd, changeBtc)
 }
-
-fun TokenItem.differentProcess(
-    keyAction: () -> Unit,
-    memoAction: () -> Unit,
-    errorAction: () -> Unit,
-) {
-    when {
-        getDestination().isNullOrEmpty() && !getTag().isNullOrEmpty() -> memoAction()
-        getDestination().isNullOrEmpty() -> keyAction()
-        else -> errorAction()
-    }
-}
-

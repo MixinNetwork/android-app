@@ -41,9 +41,9 @@ class ContentQRView : ViewAnimator {
     ) {
         binding.apply {
             val showPb = if (isTag) {
-                asset.getTag().isNullOrBlank()
+                asset.tag.isNullOrBlank()
             } else {
-                asset.getDestination().isNullOrBlank()
+                asset.destination.isNullOrBlank()
             }
 
             (binding.root as ViewAnimator).displayedChild = if (showPb) 1 else 0
@@ -55,8 +55,8 @@ class ContentQRView : ViewAnimator {
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
                 setBorder()
             }
-            val destination = selectedDestination ?: asset.getDestination()
-            val content = if (isTag) asset.getTag() else destination
+            val destination = selectedDestination ?: asset.destination
+            val content = if (isTag) asset.tag else destination
             contentTv.text = content
             copyIv.setOnClickListener {
                 context.heavyClickVibrate()
@@ -76,7 +76,7 @@ class ContentQRView : ViewAnimator {
             qr.post {
                 Observable.create<Pair<Bitmap, Int>> { e ->
                     val r = if (isTag) {
-                        requireNotNull(asset.getTag())
+                        requireNotNull(asset.tag)
                     } else {
                         // Todo check
                         destination!!

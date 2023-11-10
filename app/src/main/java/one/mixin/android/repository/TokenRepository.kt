@@ -132,7 +132,7 @@ constructor(
 
     suspend fun findDepositAsset(assetId: String): TokenItem? {
         var assetItem = tokenDao.findAssetItemById(assetId)
-        if (assetItem != null && !assetItem.getDestination().isNullOrBlank()) {
+        if (assetItem != null && !assetItem.destination.isNullOrBlank()) {
             return assetItem
         } else if (assetItem != null) {
             val depositResponse = utxoService.createDeposit(
@@ -166,7 +166,7 @@ constructor(
 
     suspend fun findOrSyncAsset(assetId: String): TokenItem? {
         var assetItem = tokenDao.findAssetItemById(assetId)
-        if (assetItem != null && !assetItem.getDestination().isNullOrBlank()) {
+        if (assetItem != null && !assetItem.destination.isNullOrBlank()) {
             return assetItem
         } else if (assetItem != null) {
             handleMixinResponse(
