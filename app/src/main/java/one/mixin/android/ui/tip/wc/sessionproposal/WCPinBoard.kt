@@ -386,7 +386,7 @@ fun WCPinBoard(
                         if (Session.getTipPub() != null) {
                             Row(
                                 modifier = Modifier
-                                    .background(MixinAppTheme.colors.backgroundGray)
+                                    .background(MixinAppTheme.colors.backgroundWindow)
                                     .height(36.dp)
                                     .fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
