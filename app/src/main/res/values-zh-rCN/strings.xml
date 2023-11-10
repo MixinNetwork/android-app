@@ -1295,4 +1295,7 @@
     <string name="Confirmations">区块确认数</string>
     <string name="choose_network_fee">选择支付手续费的币种</string>
     <string name="legacy_network_transfer_hint">当前转账使用的是旧网络</string>
+    <string name="FREE">免费</string>
+    <string name="Send_crypto_to_contact">向 Mixin 联系人发送加密货币</string>
+    <string name="Send_crypto_to_address">向钱包或交易所发送加密货币</string>
 </resources>

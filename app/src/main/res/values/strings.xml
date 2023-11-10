@@ -1325,4 +1325,7 @@
     <string name="Confirmations">Confirmations</string>
     <string name="choose_network_fee">Choose an asset to pay network fee</string>
     <string name="legacy_network_transfer_hint">Current transfer is using legacy network</string>
+    <string name="FREE">FREE</string>
+    <string name="Send_crypto_to_contact">Send crypto to Mixin contact</string>
+    <string name="Send_crypto_to_address">Send crypto to a wallet or exchange</string>
 </resources>
