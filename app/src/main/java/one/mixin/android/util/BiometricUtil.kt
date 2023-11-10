@@ -40,9 +40,6 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.IvParameterSpec
 
 object BiometricUtil {
-
-    const val REQUEST_CODE_CREDENTIALS = 101
-
     const val CRASHLYTICS_BIOMETRIC = "biometric"
 
     fun isSupport(ctx: Context): Boolean {
@@ -78,22 +75,12 @@ object BiometricUtil {
         return Pair(true, null)
     }
 
-    fun showAuthenticationScreen(activity: FragmentActivity) {
-        val intent = activity.getSystemService<KeyguardManager>()?.createConfirmDeviceCredentialIntent(
-            activity.getString(R.string.Screen_Lock),
-            activity.getString(R.string.wallet_biometric_screen_lock_desc),
-        )
-        if (intent != null) {
-            activity.startActivityForResult(intent, REQUEST_CODE_CREDENTIALS)
-        }
-    }
-
-    fun savePin(ctx: Context, pin: String, fragment: Fragment): Boolean {
+    fun savePin(ctx: Context, pin: String): Boolean {
         val cipher = try {
             getEncryptCipher()
         } catch (e: Exception) {
             when (e) {
-                is UserNotAuthenticatedException -> showAuthenticationScreen(fragment.requireActivity())
+                is UserNotAuthenticatedException -> throw e
                 is InvalidKeyException -> {
                     deleteKey(ctx)
                     toast(R.string.wallet_biometric_invalid)

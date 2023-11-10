@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.security.keystore.UserNotAuthenticatedException
 import androidx.core.os.bundleOf
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
@@ -46,16 +47,20 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
 
     override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
         if (fromWalletSetting) {
-            val success = BiometricUtil.savePin(
-                requireContext(),
-                pin,
-                this@PinBiometricsBottomSheetDialogFragment,
-            )
-            if (success) {
-                onSavePinSuccess?.invoke()
+            return try {
+                val success = BiometricUtil.savePin(
+                    requireContext(),
+                    pin,
+                )
+                if (success) {
+                    onSavePinSuccess?.invoke()
+                }
+                success
+            } catch (e: UserNotAuthenticatedException) {
+                showBiometricPrompt()
+                false
             }
         }
-
         return true
     }
 

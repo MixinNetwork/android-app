@@ -133,8 +133,6 @@ class BiometricDialog(
 
         fun showPin()
 
-        fun showAuthenticationScreen()
-
         fun onCancel()
     }
 }
