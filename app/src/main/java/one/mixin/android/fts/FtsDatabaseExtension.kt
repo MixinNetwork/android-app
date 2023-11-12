@@ -9,6 +9,7 @@ import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.util.FTS_THREAD
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.FtsSearchResult
 import one.mixin.android.vo.Message
@@ -17,6 +18,7 @@ import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
 import one.mixin.android.vo.isFtsMessage
+import timber.log.Timber
 
 fun FtsDatabase.deleteByMessageId(messageId: String) = runBlocking(FTS_THREAD) {
     messageFtsDao().deleteMessageFtsByMessageId(messageId)
@@ -49,31 +51,36 @@ private suspend fun FtsDatabase.insertMessageFts4(
 }
 
 fun FtsDatabase.insertOrReplaceMessageFts4(message: Message) {
-    // If the message is not a full-text search message, or its status is "FAILED" or "UNKNOWN", do not perform subsequent operations
-    if (!message.isFtsMessage() || message.status == MessageStatus.FAILED.name || message.status == MessageStatus.UNKNOWN.name) return
-    val content = if (message.isContact() || message.isData()) {
-        message.name
-    } else if (message.isAppCard()) {
-        try {
-            val actionCard =
-                GsonHelper.customGson.fromJson(message.content, AppCardData::class.java)
-            "${actionCard.title} ${actionCard.description}"
-        } catch (e: Exception) {
-            null
+    try {
+        // If the message is not a full-text search message, or its status is "FAILED" or "UNKNOWN", do not perform subsequent operations
+        if (!message.isFtsMessage() || message.status == MessageStatus.FAILED.name || message.status == MessageStatus.UNKNOWN.name) return
+        val content = if (message.isContact() || message.isData()) {
+            message.name
+        } else if (message.isAppCard()) {
+            try {
+                val actionCard =
+                    GsonHelper.customGson.fromJson(message.content, AppCardData::class.java)
+                "${actionCard.title} ${actionCard.description}"
+            } catch (e: Exception) {
+                null
+            }
+        } else {
+            message.content
         }
-    } else {
-        message.content
-    }
-    val ftsContent = content?.joinWhiteSpace() ?: return
-    runBlocking {
-        insertMessageFts4(
-            content = ftsContent,
-            conversationId = message.conversationId,
-            messageId = message.messageId,
-            category = message.category,
-            userId = message.userId,
-            createdAt = message.createdAt.createAtToLong(),
-        )
+        val ftsContent = content?.joinWhiteSpace() ?: return
+        runBlocking {
+            insertMessageFts4(
+                content = ftsContent,
+                conversationId = message.conversationId,
+                messageId = message.messageId,
+                category = message.category,
+                userId = message.userId,
+                createdAt = message.createdAt.createAtToLong(),
+            )
+        }
+    } catch (e: Exception) {
+        Timber.e(e)
+        reportException(e)
     }
 }
 
@@ -86,14 +93,19 @@ fun FtsDatabase.insertFts4(
     userId: String,
     createdAt: String,
 ) = runBlocking {
-    insertMessageFts4(
-        content,
-        conversationId = conversationId,
-        messageId = messageId,
-        category = category,
-        userId = userId,
-        createdAt = createdAt.createAtToLong(),
-    )
+    try {
+        insertMessageFts4(
+            content,
+            conversationId = conversationId,
+            messageId = messageId,
+            category = category,
+            userId = userId,
+            createdAt = createdAt.createAtToLong(),
+        )
+    } catch (e: Exception) {
+        Timber.e(e)
+        reportException(e)
+    }
 }
 
 fun FtsDatabase.rawSearch(
