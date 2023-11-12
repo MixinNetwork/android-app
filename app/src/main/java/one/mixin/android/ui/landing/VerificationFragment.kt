@@ -13,6 +13,7 @@ import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.auth.api.phone.SmsRetriever
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +37,8 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putInt
+import one.mixin.android.receiver.SMSListener
+import one.mixin.android.receiver.SMSReceiver
 import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.PinCodeFragment
@@ -53,6 +56,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CaptchaView
+import timber.log.Timber
 
 @AndroidEntryPoint
 class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
@@ -105,11 +109,13 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         binding.verificationResendTv.setOnClickListener { sendVerification() }
         binding.verificationNeedHelpTv.setOnClickListener { showBottom() }
 
+        startRetrieverSMS()
         startCountDown()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        SMSReceiver.smsListener = null
         mCountDownTimer?.cancel()
     }
 
@@ -137,6 +143,25 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
 
     override fun insertUser(u: User) {
         viewModel.insertUser(u)
+    }
+
+    private fun startRetrieverSMS() {
+        SmsRetriever.getClient(requireContext())
+            .startSmsRetriever()
+            .addOnSuccessListener {
+                Timber.d("$TAG startRetrieverSMS success")
+                SMSReceiver.smsListener = object : SMSListener {
+                    override fun onSuccess(message: String) {
+                        Timber.d("$TAG receive SMS message: $message")
+                        // TODO extract code and use
+                    }
+
+                    override fun onError(message: String) {}
+                }
+            }
+            .addOnFailureListener {
+                Timber.d("$TAG startRetrieverSMS failure ${it.stackTraceToString()}")
+            }
     }
 
     private fun isPhoneModification() = pin != null

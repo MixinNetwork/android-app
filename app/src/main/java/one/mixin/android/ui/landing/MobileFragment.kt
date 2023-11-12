@@ -12,9 +12,14 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.auth.api.identity.GetPhoneNumberHintIntentRequest
+import com.google.android.gms.auth.api.identity.Identity
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
 import com.mukesh.countrypicker.Country
@@ -95,6 +100,27 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         }
     }
 
+    @SuppressLint("SetTextI18n")
+    private val phoneNumberHintIntentResultLauncher: ActivityResultLauncher<IntentSenderRequest> = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult(),
+    ) { result ->
+        try {
+            val phoneNumberString = Identity.getSignInClient(requireActivity()).getPhoneNumberFromIntent(result.data)
+            val number = phoneUtil.parse(phoneNumberString, null)
+            if (!phoneUtil.isValidNumber(number)) {
+                return@registerForActivityResult
+            }
+            if (viewDestroyed()) return@registerForActivityResult
+
+            binding.apply {
+                countryCodeEt.setText("+${number.countryCode}")
+                mobileEt.setText(number.nationalNumber.toString())
+            }
+        } catch (e: Exception) {
+            Timber.d(e)
+        }
+    }
+
     @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -139,6 +165,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             keyboard.setOnClickKeyboardListener(mKeyboardListener)
             keyboard.animate().translationY(0f).start()
         }
+
+        requestHint()
     }
 
     override fun onBackPressed(): Boolean {
@@ -167,6 +195,20 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                 dialog.dismiss()
             }
             .show()
+    }
+
+    private fun requestHint() {
+        val request: GetPhoneNumberHintIntentRequest = GetPhoneNumberHintIntentRequest.builder().build()
+        Identity.getSignInClient(requireActivity())
+            .getPhoneNumberHintIntent(request)
+            .addOnSuccessListener {
+                phoneNumberHintIntentResultLauncher.launch(
+                    IntentSenderRequest.Builder(it.intentSender).build(),
+                )
+            }
+            .addOnFailureListener {
+                Timber.d(it)
+            }
     }
 
     private fun requestSend(captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null) {
