@@ -14,7 +14,7 @@
         <FrameLayout
             android:id="@+id/migrate"
             android:layout_width="match_parent"
-            android:layout_height="32dp"
+            android:layout_height="36dp"
             android:background="@color/colorBlue"
             android:visibility="gone">
 
@@ -26,7 +26,7 @@
                 android:gravity="center"
                 android:text="@string/asset_migration_hint"
                 android:textColor="@color/white"
-                android:textSize="14sp"/>
+                android:textSize="12sp"/>
 
         </FrameLayout>
 
