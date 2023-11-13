@@ -13,6 +13,8 @@ data class RawTransaction(
     val rawTransaction: String,
     @ColumnInfo(name = "receiver_id")
     val receiverId: String,
+    @ColumnInfo(name = "state")
+    val state: String,
     @ColumnInfo(name = "created_at")
     val createdAt: String,
 )

@@ -1,6 +1,7 @@
 package one.mixin.android.api.request
 
 import com.google.gson.annotations.SerializedName
+import uniqueObjectId
 import java.util.UUID
 
 data class GhostKeyRequest(
@@ -12,14 +13,27 @@ data class GhostKeyRequest(
     val hint: String,
 )
 
-fun buildGhostKeyRequest(receiverId: String, senderId: String, traceId:String): List<GhostKeyRequest> {
-    return listOf(GhostKeyRequest(listOf(receiverId), TARGET_INDEX, traceId), GhostKeyRequest(listOf(senderId), CHANGE_INDEX, UUID.randomUUID().toString()))
+fun buildGhostKeyRequest(receiverId: String, senderId: String, traceId: String): List<GhostKeyRequest> {
+    val output = uniqueObjectId(traceId, "OUTPUT", "0")
+    val change = uniqueObjectId(traceId, "OUTPUT", "1")
+    return listOf(GhostKeyRequest(listOf(receiverId), 0, output),
+        GhostKeyRequest(listOf(senderId), 1, change))
 }
 
-fun buildGhostKeyRequest(receiverId: String, senderId: String, targetId: String, traceId: String): List<GhostKeyRequest> {
-    return listOf(GhostKeyRequest(listOf(receiverId), TARGET_INDEX, traceId), GhostKeyRequest(listOf(targetId), FEE_CHANGE_INDEX, UUID.randomUUID().toString()), GhostKeyRequest(listOf(senderId), CHANGE_INDEX, UUID.randomUUID().toString()))
+fun buildWithdrawalSubmitGhostKeyRequest(receiverId: String, senderId: String, traceId: String): List<GhostKeyRequest> {
+    // 0 is withdrawal
+    val output = uniqueObjectId(traceId, "OUTPUT", "1")
+    val change = uniqueObjectId(traceId, "OUTPUT", "2")
+    return listOf(GhostKeyRequest(listOf(receiverId), 1, output),
+        GhostKeyRequest(listOf(senderId), 2, change))
 }
 
-private const val TARGET_INDEX = 0
-private const val FEE_CHANGE_INDEX = 1
-private const val CHANGE_INDEX = 2
+fun buildWithdrawalFeeGhostKeyRequest(receiverId: String, senderId: String, traceId: String): List<GhostKeyRequest> {
+    val change = uniqueObjectId(traceId, "OUTPUT", "1")
+    val requestId = uniqueObjectId(traceId, "FEE")
+    val feeOutput = uniqueObjectId(requestId, "OUTPUT", "0")
+    val feeChange = uniqueObjectId(requestId, "OUTPUT", "1")
+    return listOf(GhostKeyRequest(listOf(senderId), 1, change),
+        GhostKeyRequest(listOf(receiverId), 0, feeOutput),
+        GhostKeyRequest(listOf(senderId), 1, feeChange))
+}
