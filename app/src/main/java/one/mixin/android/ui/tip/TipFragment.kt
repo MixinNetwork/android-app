@@ -2,6 +2,7 @@ package one.mixin.android.ui.tip
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.security.keystore.UserNotAuthenticatedException
 import android.text.SpannableStringBuilder
 import android.text.method.ScrollingMovementMethod
 import android.view.View
@@ -445,7 +446,11 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
         val openBiometrics = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
         if (openBiometrics) {
-            BiometricUtil.savePin(requireContext(), pin, this)
+            try {
+                BiometricUtil.savePin(requireContext(), pin)
+            } catch (ignored: UserNotAuthenticatedException) {
+                Timber.e("$TAG savePin $ignored")
+            }
         }
 
         when (tipBundle.tipType) {

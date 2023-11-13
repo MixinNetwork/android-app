@@ -1,8 +1,6 @@
 package one.mixin.android.ui.oldwallet.biometric
 
-import android.app.Activity
 import android.content.DialogInterface
-import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.lifecycle.lifecycleScope
@@ -41,13 +39,6 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         return dialog
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == BiometricUtil.REQUEST_CODE_CREDENTIALS && resultCode == Activity.RESULT_OK) {
-            showBiometricPrompt()
-        }
     }
 
     override fun onDestroyView() {
@@ -217,10 +208,6 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         override fun showPin() {
             dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
             biometricLayout.showPin(false)
-        }
-
-        override fun showAuthenticationScreen() {
-            BiometricUtil.showAuthenticationScreen(this@BiometricBottomSheetDialogFragment.requireActivity())
         }
 
         override fun onCancel() {

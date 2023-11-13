@@ -2,16 +2,21 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.security.keystore.UserNotAuthenticatedException
+import android.view.WindowManager
 import androidx.core.os.bundleOf
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.databinding.FragmentPinBottomSheetBinding
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.BiometricDialog
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 
 @AndroidEntryPoint
 class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
@@ -46,16 +51,50 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
 
     override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
         if (fromWalletSetting) {
-            val success = BiometricUtil.savePin(
-                requireContext(),
-                pin,
-                this@PinBiometricsBottomSheetDialogFragment,
-            )
-            if (success) {
-                onSavePinSuccess?.invoke()
+            return try {
+                val success = BiometricUtil.savePin(requireContext(), pin)
+                if (success) {
+                    onSavePinSuccess?.invoke()
+                    return true
+                } else {
+                    dismiss()
+                    return false
+                }
+            } catch (e: UserNotAuthenticatedException) {
+                val biometricDialog = BiometricDialog(
+                    requireActivity(),
+                    getBiometricInfo(),
+                    onlyVerify = true
+                )
+                biometricDialog.callback = object : BiometricDialog.Callback {
+                    @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+                    override fun onPinComplete(empty: String) {
+                        val success = try {
+                            BiometricUtil.savePin(requireContext(), pin)
+                        } catch (e: UserNotAuthenticatedException) {
+                            Timber.e("$TAG savePin meet UserNotAuthenticatedException")
+                            dismiss()
+                            return
+                        }
+                        if (success) {
+                            onSavePinSuccess?.invoke()
+                        }
+                        dismiss()
+                    }
+
+                    override fun showPin() {
+                        dismiss()
+                    }
+
+                    override fun onCancel() {
+                        dismiss()
+                    }
+
+                }
+                biometricDialog.show()
+                false
             }
         }
-
         return true
     }
 
