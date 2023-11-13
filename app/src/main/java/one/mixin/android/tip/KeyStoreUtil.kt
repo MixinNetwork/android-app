@@ -1,7 +1,10 @@
 package one.mixin.android.tip
 
+import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import android.security.keystore.KeyProperties.AUTH_BIOMETRIC_STRONG
+import android.security.keystore.KeyProperties.AUTH_DEVICE_CREDENTIAL
 import one.mixin.android.util.reportException
 import java.security.KeyStore
 import javax.crypto.Cipher
@@ -63,8 +66,14 @@ private fun getKeyByAlias(
                 KeyProperties.ENCRYPTION_PADDING_NONE,
             )
         if (userAuthenticationRequired) {
-            builder.setUserAuthenticationRequired(true)
-                .setUserAuthenticationValidityDurationSeconds(2 * 60 * 60)
+            builder.setUserAuthenticationRequired(true).apply {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    setUserAuthenticationParameters(2 * 60 * 60, AUTH_DEVICE_CREDENTIAL or AUTH_BIOMETRIC_STRONG)
+                } else {
+                    @Suppress("DEPRECATION")
+                    setUserAuthenticationValidityDurationSeconds(2 * 60 * 60)
+                }
+            }
         }
         keyGenerator.init(builder.build())
         key = keyGenerator.generateKey()

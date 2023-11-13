@@ -6,6 +6,7 @@ import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
+import android.security.keystore.KeyProperties.AUTH_BIOMETRIC_STRONG
 import android.security.keystore.KeyProperties.AUTH_DEVICE_CREDENTIAL
 import android.security.keystore.KeyProperties.SECURITY_LEVEL_STRONGBOX
 import android.security.keystore.KeyProperties.SECURITY_LEVEL_TRUSTED_ENVIRONMENT
@@ -19,9 +20,6 @@ import androidx.biometric.BiometricManager.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUI
 import androidx.biometric.BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED
 import androidx.biometric.BiometricManager.BIOMETRIC_STATUS_UNKNOWN
 import androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS
-import androidx.core.content.getSystemService
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import one.mixin.android.Constants
 import one.mixin.android.Constants.BIOMETRICS_ALIAS
 import one.mixin.android.R
@@ -40,9 +38,6 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.IvParameterSpec
 
 object BiometricUtil {
-
-    const val REQUEST_CODE_CREDENTIALS = 101
-
     const val CRASHLYTICS_BIOMETRIC = "biometric"
 
     fun isSupport(ctx: Context): Boolean {
@@ -70,7 +65,7 @@ object BiometricUtil {
             return Pair(false, ctx.getString(R.string.setting_biometric_error_pin_not_set))
         }
         if (!isSecureHardware()) {
-            return Pair(false, ctx.getString(R.string.setting_biometric_error_not_secure))
+            return Pair(false, "isSecureHardware ${ctx.getString(R.string.setting_biometric_error_not_secure)}")
         }
         if (RootUtil.isDeviceRooted) {
             return Pair(false, ctx.getString(R.string.setting_biometric_error_rooted))
@@ -78,22 +73,12 @@ object BiometricUtil {
         return Pair(true, null)
     }
 
-    fun showAuthenticationScreen(activity: FragmentActivity) {
-        val intent = activity.getSystemService<KeyguardManager>()?.createConfirmDeviceCredentialIntent(
-            activity.getString(R.string.Screen_Lock),
-            activity.getString(R.string.wallet_biometric_screen_lock_desc),
-        )
-        if (intent != null) {
-            activity.startActivityForResult(intent, REQUEST_CODE_CREDENTIALS)
-        }
-    }
-
-    fun savePin(ctx: Context, pin: String, fragment: Fragment): Boolean {
+    fun savePin(ctx: Context, pin: String): Boolean {
         val cipher = try {
             getEncryptCipher()
         } catch (e: Exception) {
             when (e) {
-                is UserNotAuthenticatedException -> showAuthenticationScreen(fragment.requireActivity())
+                is UserNotAuthenticatedException -> throw e
                 is InvalidKeyException -> {
                     deleteKey(ctx)
                     toast(R.string.wallet_biometric_invalid)
@@ -178,13 +163,18 @@ object BiometricUtil {
                         .setEncryptionPaddings(
                             KeyProperties.ENCRYPTION_PADDING_PKCS7,
                             KeyProperties.ENCRYPTION_PADDING_NONE,
-                        )
-                        .setUserAuthenticationRequired(true).apply {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                setUserAuthenticationParameters(2 * 60 * 60, AUTH_DEVICE_CREDENTIAL)
+                        ).apply {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                // https://issuetracker.google.com/issues/301069939
+                                setUserAuthenticationRequired(false)
                             } else {
-                                @Suppress("DEPRECATION")
-                                setUserAuthenticationValidityDurationSeconds(2 * 60 * 60)
+                                setUserAuthenticationRequired(true)
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                    setUserAuthenticationParameters(2 * 60 * 60, AUTH_DEVICE_CREDENTIAL or AUTH_BIOMETRIC_STRONG)
+                                } else {
+                                    @Suppress("DEPRECATION")
+                                    setUserAuthenticationValidityDurationSeconds(2 * 60 * 60)
+                                }
                             }
                         }
                         .build(),
@@ -220,7 +210,7 @@ object BiometricUtil {
             keyInfo.securityLevel == SECURITY_LEVEL_TRUSTED_ENVIRONMENT || keyInfo.securityLevel == SECURITY_LEVEL_STRONGBOX
         } else {
             @Suppress("DEPRECATION")
-            keyInfo.isInsideSecureHardware
-        } && keyInfo.isUserAuthenticationRequirementEnforcedBySecureHardware
+            keyInfo.isInsideSecureHardware && keyInfo.isUserAuthenticationRequirementEnforcedBySecureHardware
+        }
     }
 }

@@ -54,14 +54,13 @@ import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.tip.wc.internal.getChain
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
-import one.mixin.android.ui.oldwallet.biometric.BiometricDialog
-import one.mixin.android.ui.oldwallet.biometric.BiometricInfo
+import one.mixin.android.ui.common.biometric.BiometricDialog
+import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.connections.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
@@ -488,10 +487,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         override fun showPin() {
             dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        }
-
-        override fun showAuthenticationScreen() {
-            BiometricUtil.showAuthenticationScreen(this@WalletConnectBottomSheetDialogFragment.requireActivity())
         }
 
         override fun onCancel() {}

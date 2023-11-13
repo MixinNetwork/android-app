@@ -17,10 +17,12 @@ import one.mixin.android.extension.toast
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.BiometricUtil.CRASHLYTICS_BIOMETRIC
 import one.mixin.android.util.reportException
+import timber.log.Timber
 import java.nio.charset.Charset
 import java.security.InvalidKeyException
 import javax.crypto.AEADBadTagException
 import javax.crypto.BadPaddingException
+import javax.crypto.Cipher
 import javax.crypto.IllegalBlockSizeException
 
 class BiometricInfo(
@@ -32,6 +34,7 @@ class BiometricInfo(
 class BiometricDialog(
     private val context: FragmentActivity,
     private val biometricInfo: BiometricInfo,
+    private val onlyVerify: Boolean = false,
 ) {
     var callback: Callback? = null
 
@@ -44,58 +47,95 @@ class BiometricDialog(
             .setConfirmationRequired(true)
             .setAllowedAuthenticators(BIOMETRIC_STRONG)
             .build()
-        val cipher = try {
-            BiometricUtil.getDecryptCipher(context)
-        } catch (e: Exception) {
-            when (e) {
-                is UserNotAuthenticatedException -> callback?.showAuthenticationScreen()
-                is InvalidKeyException, is NullPointerException -> {
-                    BiometricUtil.deleteKey(context)
-                    toast(R.string.wallet_biometric_invalid)
-                    reportException("$CRASHLYTICS_BIOMETRIC-getDecryptCipher", e)
-                    callback?.onCancel()
-                }
-                else ->
-                    reportException("$CRASHLYTICS_BIOMETRIC-getDecryptCipher", e)
-            }
+        if (onlyVerify) {
+            val biometricPrompt = BiometricPrompt(context, ContextCompat.getMainExecutor(context), authenticationCallback)
+            biometricPrompt.authenticate(biometricPromptInfo)
             return
         }
-        val cryptoObject = BiometricPrompt.CryptoObject(cipher)
+
+        val cipher: Cipher? = try {
+            BiometricUtil.getDecryptCipher(context)
+        } catch (e: Exception) {
+            if (e is UserNotAuthenticatedException) {
+                null
+            } else {
+                handleNonUserAuthException(e)
+                return
+            }
+        }
         val biometricPrompt = BiometricPrompt(context, ContextCompat.getMainExecutor(context), authenticationCallback)
-        biometricPrompt.authenticate(biometricPromptInfo, cryptoObject)
+        if (cipher != null) {
+            val cryptoObject = BiometricPrompt.CryptoObject(cipher)
+            biometricPrompt.authenticate(biometricPromptInfo, cryptoObject)
+        } else {
+            biometricPrompt.authenticate(biometricPromptInfo)
+        }
+    }
+
+    private fun handleNonUserAuthException(e: Exception) {
+        when (e) {
+            is InvalidKeyException, is NullPointerException -> {
+                BiometricUtil.deleteKey(context)
+                toast(R.string.wallet_biometric_invalid)
+                reportException("$CRASHLYTICS_BIOMETRIC-getDecryptCipher", e)
+                callback?.onCancel()
+            }
+            else ->
+                reportException("$CRASHLYTICS_BIOMETRIC-getDecryptCipher", e)
+        }
     }
 
     private val authenticationCallback = object : BiometricPrompt.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-            if (errorCode == ERROR_CANCELED || errorCode == ERROR_USER_CANCELED) {
-                callback?.onCancel()
-            } else if (errorCode == ERROR_LOCKOUT || errorCode == ERROR_LOCKOUT_PERMANENT) {
-                callback?.showPin()
-            } else {
-                toast(errString)
+            when (errorCode) {
+                ERROR_CANCELED, ERROR_USER_CANCELED -> {
+                    callback?.onCancel()
+                }
+                ERROR_LOCKOUT, ERROR_LOCKOUT_PERMANENT -> {
+                    callback?.showPin()
+                }
+                else -> {
+                    toast(errString)
+                }
             }
         }
 
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-            val cipher = result.cryptoObject?.cipher
-            if (cipher != null) {
-                try {
-                    val encrypt = context.defaultSharedPreferences.getString(Constants.BIOMETRICS_PIN, null)
-                    val decryptByteArray = cipher.doFinal(Base64.decode(encrypt, Base64.URL_SAFE))
-                    val pin = decryptByteArray.toString(Charset.defaultCharset())
-                    callback?.onPinComplete(pin)
+            if (onlyVerify) {
+                callback?.onPinComplete("")
+                return
+            }
+
+            var cipher = result.cryptoObject?.cipher
+            if (cipher == null) {
+                cipher = try {
+                    BiometricUtil.getDecryptCipher(context)
                 } catch (e: Exception) {
-                    if (e is IllegalStateException ||
-                        e is IllegalBlockSizeException ||
-                        e is BadPaddingException ||
-                        e is AEADBadTagException
-                    ) {
-                        BiometricUtil.deleteKey(context)
-                        toast(R.string.wallet_biometric_invalid)
-                    }
-                    reportException("$CRASHLYTICS_BIOMETRIC-onAuthenticationSucceeded", e)
+                    handleNonUserAuthException(e)
+                    null
                 }
             }
+            if (cipher == null) return
+
+            try {
+                val encrypt = context.defaultSharedPreferences.getString(Constants.BIOMETRICS_PIN, null)
+                val decryptByteArray = cipher.doFinal(Base64.decode(encrypt, Base64.URL_SAFE))
+                val pin = decryptByteArray.toString(Charset.defaultCharset())
+                callback?.onPinComplete(pin)
+            } catch (e: Exception) {
+                if (e is IllegalStateException ||
+                    e is IllegalBlockSizeException ||
+                    e is BadPaddingException
+                ) {
+                    BiometricUtil.deleteKey(context)
+                    toast(R.string.wallet_biometric_invalid)
+                }
+                reportException("$CRASHLYTICS_BIOMETRIC-onAuthenticationSucceeded", e)
+            }
+        }
+
+        override fun onAuthenticationFailed() {
+            Timber.e("onAuthenticationFailed")
         }
     }
 
@@ -103,8 +143,6 @@ class BiometricDialog(
         fun onPinComplete(pin: String)
 
         fun showPin()
-
-        fun showAuthenticationScreen()
 
         fun onCancel()
     }
