@@ -22,9 +22,9 @@ fun buildGhostKeyRequest(receiverId: String, senderId: String, traceId: String):
 
 fun buildWithdrawalSubmitGhostKeyRequest(receiverId: String, senderId: String, traceId: String): List<GhostKeyRequest> {
     // 0 is withdrawal
-    val output = uniqueObjectId(traceId, "OUTPUT", "1")
+    val feeOutput = uniqueObjectId(traceId, "OUTPUT", "1")
     val change = uniqueObjectId(traceId, "OUTPUT", "2")
-    return listOf(GhostKeyRequest(listOf(receiverId), 1, output),
+    return listOf(GhostKeyRequest(listOf(receiverId), 1, feeOutput),
         GhostKeyRequest(listOf(senderId), 2, change))
 }
 
