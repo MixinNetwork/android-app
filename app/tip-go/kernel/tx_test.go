@@ -25,6 +25,7 @@ func TestBuildWithdrawalTx(t *testing.T) {
 	extra := ""
 	tx, err := BuildWithdrawalTx(assetId, amount, address, tag, feeAmount, feeKeys, feeMask, inputs, changeKeys, changeMask, extra)
 	assert.Nil(err)
+	assert.Equal("a6b10f4183f7e8ab358806ad08ed686cdc3b1983dd2612ea7df8f09b52d42bb3", tx.Hash)
 	d, err := json.Marshal(tx)
 	assert.Nil(err)
 	log.Println(string(d))
