@@ -132,11 +132,11 @@ constructor(
 
     suspend fun findDepositAsset(assetId: String): TokenItem? {
         var assetItem = tokenDao.findAssetItemById(assetId)
-        if (assetItem != null && !assetItem.getDestination().isNullOrBlank()) {
+        if (assetItem != null && !assetItem.destination.isNullOrBlank()) {
             return assetItem
         } else if (assetItem != null) {
             val depositResponse = utxoService.createDeposit(
-                DepositEntryRequest(assetItem!!.chainId)
+                DepositEntryRequest(assetItem.chainId)
             )
             val pub = SAFE_PUBLIC_KEY.hexStringToByteArray()
             if (depositResponse.error != null) return assetItem
@@ -166,7 +166,7 @@ constructor(
 
     suspend fun findOrSyncAsset(assetId: String): TokenItem? {
         var assetItem = tokenDao.findAssetItemById(assetId)
-        if (assetItem != null && !assetItem.getDestination().isNullOrBlank()) {
+        if (assetItem != null && !assetItem.destination.isNullOrBlank()) {
             return assetItem
         } else if (assetItem != null) {
             handleMixinResponse(
@@ -678,7 +678,7 @@ constructor(
     suspend fun findOldAssets() = assetService.fetchAllAssetSuspend()
     fun insertSnapshotMessage(data: TransactionResponse, conversationId:String ,assetId: String, amount: String, opponentId: String, memo: String?) {
         val snapshotId =  UUID.nameUUIDFromBytes("${data.userId}:${data.transactionHash}".toByteArray()).toString()
-        val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-${amount}", data.userId, opponentId, memo ?: "", "", data.createdAt, data.requestId,  null, null,null, null, null)
+        val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-${amount}", data.userId, opponentId, memo ?: "", data.transactionHash, data.createdAt, data.requestId,  null, null,null, null, null)
         val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, snapshot.type, null, snapshot.snapshotId)
         safeSnapshotDao.insert(snapshot)
         appDatabase.insertMessage(message)

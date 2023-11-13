@@ -10,7 +10,7 @@
         android:id="@+id/tip_fl"
         android:layout_width="match_parent"
         android:layout_height="36dp"
-        android:background="?attr/bg_gray_light"
+        android:background="?attr/bg_window"
         android:visibility="gone">
 
         <TextView

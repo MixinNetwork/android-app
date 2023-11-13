@@ -134,7 +134,7 @@ fun AuthBottomSheetDialogCompose(
                 }
                 Text(
                     name,
-                    color = MixinAppTheme.colors.textPrimary,
+                    color = MixinAppTheme.colors.textMinor,
                 )
             }
             AnimatedContent(
@@ -229,6 +229,7 @@ fun ScopesContent(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 LazyColumn(
+                    contentPadding = PaddingValues(vertical = 8.dp),
                     modifier = Modifier
                         .padding(16.dp)
                         .fillMaxWidth()
