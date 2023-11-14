@@ -25,8 +25,8 @@ type Tx struct {
 	Change *Utxo  `json:"change,omitempty"`
 }
 
-func BuildTxToKernelAddress(asset string, amount string, kenerlAddress, traceId string, inputs []byte, changeKeys, changeMask, extra, reference string) (string, error) {
-	a, err := common.NewAddressFromString(kenerlAddress)
+func BuildTxToKernelAddress(asset string, amount string, kenelAddress, traceId string, inputs []byte, changeKeys, changeMask, extra, reference string) (string, error) {
+	a, err := common.NewAddressFromString(kenelAddress)
 	if err != nil {
 		return "", err
 	}
