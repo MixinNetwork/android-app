@@ -20,7 +20,9 @@ import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.okhttp.ProgressResponseBody
+import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.widget.gallery.MimeType
@@ -75,7 +77,14 @@ class TranscriptAttachmentDownloadJob(
         }
         jobManager.saveJob(this)
         transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.PENDING.name)
-        val attachmentId = requireNotNull(transcriptMessage.content)
+        val attachmentId = try {
+            GsonHelper.customGson.fromJson(
+                transcriptMessage.content,
+                AttachmentExtra::class.java,
+            ).attachmentId
+        } catch (e: Exception) {
+            requireNotNull(transcriptMessage.content)
+        }
         attachmentCall = conversationApi.getAttachment(attachmentId)
         val body = attachmentCall!!.execute().body()
         if (body != null && (body.isSuccess || !isCancelled) && body.data != null) {
@@ -96,6 +105,7 @@ class TranscriptAttachmentDownloadJob(
 
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {
         super.onCancel(cancelReason, throwable)
+        transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
         removeJob()
     }
 
