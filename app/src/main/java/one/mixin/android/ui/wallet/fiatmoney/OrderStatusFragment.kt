@@ -35,6 +35,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants.RouteConfig.CRYPTOGRAM_3DS
 import one.mixin.android.Constants.RouteConfig.ENVIRONMENT_3DS
 import one.mixin.android.Constants.RouteConfig.PAN_ONLY
+import one.mixin.android.Constants.RouteConfig.PREPAID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.RouteSessionRequest
@@ -72,6 +73,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         const val ARGS_GOOGLE_PAY = "args_google_pay"
         const val ARGS_SCHEME = "args_scheme"
         const val ARGS_INSTRUMENT_ID = "args_instrument_id"
+        const val ARGS_CARD_TYPE = "args_card_type"
         const val ARGS_AMOUNT = "args_amount"
         const val ARGS_INFO = "args_info"
 
@@ -97,6 +99,10 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
 
     private val instrumentId by lazy {
         requireArguments().getString(ARGS_INSTRUMENT_ID)
+    }
+
+    private val cardType by lazy {
+        requireArguments().getString(ARGS_CARD_TYPE)
     }
 
     private val scheme by lazy {
@@ -365,7 +371,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
 
     private fun payWithCheckout() = lifecycleScope.launch(defaultErrorHandler) {
         status = OrderStatus.PROCESSING
-        createSession(scheme!!, null)
+        if (cardType.equals(PREPAID, true)) {
+            payments(null, instrumentId, null, null)
+        } else {
+            createSession(scheme!!, null)
+        }
     }
 
     private fun payWithGoogle() {

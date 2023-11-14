@@ -123,8 +123,8 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
         CardAdapter({
             addCallback?.invoke()
             dismiss()
-        }, { instrumentId, scheme, cardNumber ->
-            paymentCallback?.invoke(instrumentId, scheme, cardNumber)
+        }, { instrumentId, scheme, cardNumber, cardType ->
+            paymentCallback?.invoke(instrumentId, scheme, cardNumber, cardType)
             dismiss()
         })
     }
@@ -169,9 +169,9 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
             .show()
     }
 
-    var paymentCallback: ((String, String, String) -> Unit)? = null
+    var paymentCallback: ((String, String, String, String) -> Unit)? = null
 
-    class CardAdapter(val addCallback: () -> Unit, val callback: (String, String, String) -> Unit) :
+    class CardAdapter(val addCallback: () -> Unit, val callback: (String, String, String, String) -> Unit) :
         RecyclerView.Adapter<CardViewHolder>() {
 
         var data: List<Card>? = null
@@ -197,7 +197,7 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val card = data?.get(position) ?: return
                 holder.bind(card, deletingIds.contains(card.instrumentId))
                 holder.itemView.setOnClickListener {
-                    callback.invoke(card.instrumentId, card.scheme, card.number)
+                    callback.invoke(card.instrumentId, card.scheme, card.number, card.cardType)
                 }
             }
         }
