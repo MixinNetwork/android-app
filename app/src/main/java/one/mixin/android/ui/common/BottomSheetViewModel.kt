@@ -211,7 +211,7 @@ class BottomSheetViewModel @Inject internal constructor(
             val feeViews = withdrawalRequestResponse.data!!.last().views.joinToString(",")
             val signFee = Kernel.signTx(feeTx, feeUtxos.formatKeys, feeViews, spendKey.toHex())
             val signFeeResult = SignResult(signFee.raw, signFee.change)
-            rawRequest.add(TransactionRequest(signFeeResult.raw, traceId))
+            rawRequest.add(TransactionRequest(signFeeResult.raw, feeTraceId))
             runInTransaction {
                 tokenRepository.updateUtxoToSigned(feeUtxos.ids)
                 tokenRepository.updateUtxoToSigned(withdrawalUtxos.ids)
