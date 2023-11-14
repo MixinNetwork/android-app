@@ -80,6 +80,7 @@ import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
+import one.mixin.android.vo.safe.OutputState
 import one.mixin.android.vo.toSimpleChat
 import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.safe.UtxoWrapper
@@ -195,6 +196,10 @@ class BottomSheetViewModel @Inject internal constructor(
         val withdrawalRequestResponse = tokenRepository.transactionRequest(withdrawalRequests)
         if (withdrawalRequestResponse.error != null) {
             return withdrawalRequestResponse
+        } else if ((withdrawalRequestResponse.data?.size ?: 0) < 1) {
+            throw IllegalArgumentException("Parameter exception")
+        } else if (withdrawalRequestResponse.data?.first()?.state != OutputState.unspent.name) {
+            throw IllegalArgumentException("Transfer is already paid")
         }
         val views = withdrawalRequestResponse.data!!.first().views.joinToString(",")
         val sign = Kernel.signTx(withdrawalTx.raw, withdrawalUtxos.formatKeys, views, spendKey.toHex())
@@ -221,8 +226,8 @@ class BottomSheetViewModel @Inject internal constructor(
                     val changeOutput = changeToOutput(signFeeResult.change, asset, changeMask, data[1].keys, feeUtxos.lastOutput)
                     tokenRepository.insertOutput(changeOutput)
                 }
-                tokenRepository.insetRawTransaction(RawTransaction(withdrawalRequestResponse.data!!.first().requestId, signWithdrawalResult.raw, receiverId, withdrawalRequestResponse.data!!.first().state, nowInUtc()))
-                tokenRepository.insetRawTransaction(RawTransaction(withdrawalRequestResponse.data!!.last().requestId, signFeeResult.raw, receiverId, withdrawalRequestResponse.data!!.last().state, nowInUtc()))
+                tokenRepository.insetRawTransaction(RawTransaction(withdrawalRequestResponse.data!!.first().requestId, signWithdrawalResult.raw, receiverId, OutputState.unspent.name, nowInUtc()))
+                tokenRepository.insetRawTransaction(RawTransaction(withdrawalRequestResponse.data!!.last().requestId, signFeeResult.raw, receiverId, OutputState.unspent.name, nowInUtc()))
             }
         } else {
             runInTransaction {
@@ -231,18 +236,18 @@ class BottomSheetViewModel @Inject internal constructor(
                     tokenRepository.insertOutput(changeOutput)
                 }
                 tokenRepository.updateUtxoToSigned(withdrawalUtxos.ids)
-                tokenRepository.insetRawTransaction(RawTransaction(withdrawalRequestResponse.data!!.first().requestId, signWithdrawalResult.raw, receiverId, withdrawalRequestResponse.data!!.first().state, nowInUtc()))
+                tokenRepository.insetRawTransaction(RawTransaction(withdrawalRequestResponse.data!!.first().requestId, signWithdrawalResult.raw, receiverId, OutputState.unspent.name, nowInUtc()))
             }
         }
         val transactionRsp = tokenRepository.transactions(rawRequest)
         if (transactionRsp.error != null) {
             reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
-            tokenRepository.deleteRawTransaction(traceId)
-            tokenRepository.deleteRawTransaction(feeTraceId)
+            tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
+            tokenRepository.updateRawTransaction(feeTraceId, OutputState.signed.name)
             return transactionRsp
         } else {
-            tokenRepository.deleteRawTransaction(traceId)
-            tokenRepository.deleteRawTransaction(feeTraceId)
+            tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
+            tokenRepository.updateRawTransaction(feeTraceId, OutputState.signed.name)
         }
         jobManager.addJobInBackground(SyncOutputJob())
         return withdrawalRequestResponse
@@ -289,9 +294,10 @@ class BottomSheetViewModel @Inject internal constructor(
         val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, traceId)))
         if (transactionResponse.error != null) {
             return transactionResponse
-        }
-        if ((transactionResponse.data?.size ?: 0) > 1) {
+        } else if ((transactionResponse.data?.size ?: 0) > 1) {
             throw IllegalArgumentException("Parameter exception")
+        } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name) {
+            throw IllegalArgumentException("Transfer is already paid")
         }
         // Workaround with only the case of a single transfer
         val views = transactionResponse.data!!.first().views.joinToString(",")
@@ -303,7 +309,7 @@ class BottomSheetViewModel @Inject internal constructor(
                 val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxoWrapper.lastOutput)
                 tokenRepository.insertOutput(changeOutput)
             }
-            tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverId, transactionResponse.data!!.first().state, nowInUtc()))
+            tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverId, OutputState.unspent.name, nowInUtc()))
             tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
         }
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
@@ -314,10 +320,10 @@ class BottomSheetViewModel @Inject internal constructor(
         val transactionRsp = tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
         if (transactionRsp.error != null) {
             reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
-            tokenRepository.deleteRawTransaction(traceId)
+            tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, OutputState.signed.name)
             return transactionRsp
         } else {
-            tokenRepository.deleteRawTransaction(transactionRsp.data!!.first().requestId)
+            tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, OutputState.signed.name)
         }
         // Workaround with only the case of a single transfer
         val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)

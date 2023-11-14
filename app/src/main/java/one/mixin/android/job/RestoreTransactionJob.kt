@@ -23,9 +23,11 @@ import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.safe.OutputState
 import one.mixin.android.vo.safe.SafeSnapshot
 import timber.log.Timber
 import uniqueObjectId
+import java.lang.IllegalArgumentException
 import java.util.UUID
 
 class RestoreTransactionJob : BaseJob(
@@ -41,13 +43,12 @@ class RestoreTransactionJob : BaseJob(
     }) {
         while (true) {
             val transaction =
-                rawTransactionDao.findTransaction() ?: return@runBlocking
+                rawTransactionDao.findUnspentTransaction() ?: return@runBlocking
 
             val feeTraceId = uniqueObjectId(transaction.requestId, "FEE")
             val feeTransaction = rawTransactionDao.findTransactionById(feeTraceId)
             try {
                 val response = utxoService.getTransactionsById(transaction.requestId)
-                Timber.e("${response.data}")
                 if (response.isSuccess) {
                     val rawTx = Kernel.decodeRawTx(transaction.rawTransaction, 0)
                     val transactionsData = GsonHelper.customGson.fromJson(rawTx, TransactionsData::class.java)
@@ -56,27 +57,27 @@ class RestoreTransactionJob : BaseJob(
                     }
                     runInTransaction {
                         outputDao.updateUtxoToSigned(outputIds)
-                        rawTransactionDao.deleteById(transaction.requestId)
-                        rawTransactionDao.deleteById(feeTraceId)
-
+                        rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
+                        rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
                     }
                     val token = tokenDao.findTokenByAsset(transactionsData.asset)
                     if (token?.assetId == null) {
                         return@runBlocking
                     }
-                    insertSnapshotMessage(response.data!!, token.assetId, response.data!!.amount, transaction.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
+                    if (feeTransaction == null) {
+                        val data = response.data!!
+                        insertSnapshotMessage(data, token.assetId, data.amount, transaction.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
+                    }
                 } else if (response.errorCode == 404) {
                     val rawTx = Kernel.decodeRawTx(transaction.rawTransaction, 0)
                     val transactionsData = GsonHelper.customGson.fromJson(rawTx, TransactionsData::class.java)
                     val token = tokenDao.findTokenByAsset(transactionsData.asset)
                     if (token?.assetId == null) {
-                        rawTransactionDao.deleteById(transaction.requestId)
-                        rawTransactionDao.deleteById(feeTraceId)
+                        throw IllegalArgumentException("Lost token ${transactionsData.asset}")
                     }
                     val outputIds = transactionsData.inputs.map {
                         UUID.nameUUIDFromBytes("${it.hash}:${it.index}".toByteArray()).toString()
                     }
-
                     val transactionRsp = utxoService.transactions(
                         if (feeTransaction != null) {
                             listOf(TransactionRequest(transaction.rawTransaction, transaction.requestId), TransactionRequest(feeTransaction.rawTransaction, feeTransaction.requestId))
@@ -88,21 +89,25 @@ class RestoreTransactionJob : BaseJob(
                         val transactionResponse = transactionRsp.data!!.first()
                         runInTransaction {
                             outputDao.updateUtxoToSigned(outputIds)
-                            rawTransactionDao.deleteById(transactionResponse.requestId)
+                            rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
+                            rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
                         }
-                        insertSnapshotMessage(transactionResponse, token!!.assetId, transactionResponse.amount, transaction.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
+                        if (feeTransaction == null) {
+                            insertSnapshotMessage(transactionResponse, token.assetId, transactionResponse.amount, transaction.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
+                        }
                     } else {
                         reportException(e = Throwable("Transaction Error ${transactionRsp.errorDescription}"))
-                        rawTransactionDao.deleteById(transaction.requestId)
+                        rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
+                        rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
                     }
                     jobManager.addJobInBackground(SyncOutputJob())
                 } else {
-                    rawTransactionDao.deleteById(transaction.requestId)
-                    rawTransactionDao.deleteById(feeTraceId)
+                    rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
+                    rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
                 }
             } catch (e: Exception) {
-                rawTransactionDao.deleteById(transaction.requestId)
-                rawTransactionDao.deleteById(feeTraceId)
+                rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
+                rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
             }
         }
     }

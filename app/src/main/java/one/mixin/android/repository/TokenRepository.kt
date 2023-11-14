@@ -667,8 +667,8 @@ constructor(
         rawTransactionDao.insert(rawTransaction)
     }
 
-    fun deleteRawTransaction(requestId: String) {
-        rawTransactionDao.deleteById(requestId)
+    suspend fun updateRawTransaction(requestId: String, state: String) {
+        rawTransactionDao.updateRawTransaction(requestId, state)
     }
 
     fun updateUtxoToSigned(ids: List<String>) {

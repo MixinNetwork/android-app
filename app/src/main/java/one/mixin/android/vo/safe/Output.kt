@@ -72,3 +72,8 @@ data class Output(
     @ColumnInfo(name = "spent_at")
     val spentAt: String,
 )
+
+enum class OutputState {
+    unspent,
+    signed,
+}
