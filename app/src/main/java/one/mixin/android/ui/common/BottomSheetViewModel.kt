@@ -27,6 +27,8 @@ import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.buildGhostKeyRequest
+import one.mixin.android.api.request.buildWithdrawalFeeGhostKeyRequest
+import one.mixin.android.api.request.buildWithdrawalSubmitGhostKeyRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.TransactionResponse
@@ -149,9 +151,9 @@ class BottomSheetViewModel @Inject internal constructor(
 
         val ghostKeyResponse = tokenRepository.ghostKey(
             if (isDifferentFee) {
-                buildGhostKeyRequest(receiverId, senderId, senderId, traceId)
+                buildWithdrawalFeeGhostKeyRequest(receiverId, senderId, traceId)
             } else {
-                buildGhostKeyRequest(receiverId, senderId, traceId)
+                buildWithdrawalSubmitGhostKeyRequest(receiverId, senderId, traceId)
             }
         )
         if (ghostKeyResponse.error != null) {
@@ -221,7 +223,7 @@ class BottomSheetViewModel @Inject internal constructor(
                     tokenRepository.insertOutput(changeOutput)
                 }
                 // todo save fee raw transaction
-                tokenRepository.insetRawTransaction(RawTransaction(withdrawalRequestResponse.data!!.first().requestId, signWithdrawalResult.raw, receiverId, nowInUtc()))
+                tokenRepository.insetRawTransaction(RawTransaction(withdrawalRequestResponse.data!!.first().requestId, signWithdrawalResult.raw, receiverId, withdrawalRequestResponse.data!!.first().state,nowInUtc()))
             }
         } else {
             runInTransaction {
@@ -230,7 +232,7 @@ class BottomSheetViewModel @Inject internal constructor(
                     tokenRepository.insertOutput(changeOutput)
                 }
                 tokenRepository.updateUtxoToSigned(withdrawalUtxos.ids)
-                tokenRepository.insetRawTransaction(RawTransaction(withdrawalRequestResponse.data!!.first().requestId, signWithdrawalResult.raw, receiverId, nowInUtc()))
+                tokenRepository.insetRawTransaction(RawTransaction(withdrawalRequestResponse.data!!.first().requestId, signWithdrawalResult.raw, receiverId, withdrawalRequestResponse.data!!.first().state, nowInUtc()))
             }
         }
         val transactionRsp = tokenRepository.transactions(rawRequest)
@@ -300,7 +302,7 @@ class BottomSheetViewModel @Inject internal constructor(
                 val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxoWrapper.lastOutput)
                 tokenRepository.insertOutput(changeOutput)
             }
-            tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverId, nowInUtc()))
+            tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverId, transactionResponse.data!!.first().state, nowInUtc()))
             tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
         }
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))

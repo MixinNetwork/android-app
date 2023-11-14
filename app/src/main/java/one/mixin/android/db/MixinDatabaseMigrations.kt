@@ -398,7 +398,7 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        val MIGRATION_52_53: Migration = object : Migration(51, 52) {
+        val MIGRATION_52_53: Migration = object : Migration(52, 53) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE `raw_transactions` ADD COLUMN `state` TEXT NOT NULL")
             }
