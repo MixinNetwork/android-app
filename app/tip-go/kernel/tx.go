@@ -25,6 +25,55 @@ type Tx struct {
 	Change *Utxo  `json:"change,omitempty"`
 }
 
+func BuildTxToKernelAddress(asset string, amount string, kenerlAddress, traceId string, inputs []byte, changeKeys, changeMask, extra, reference string) (string, error) {
+	a, err := common.NewAddressFromString(kenerlAddress)
+	if err != nil {
+		return "", err
+	}
+	hash := crypto.Blake3Hash([]byte(traceId))
+	seed := append(hash[:], hash[:]...)
+	r := crypto.NewKeyFromSeed(seed)
+	receiverMask := r.Public()
+	keys := crypto.DeriveGhostPublicKey(&r, &a.PublicViewKey, &a.PublicSpendKey, uint64(0))
+
+	ckeys := strings.Split(changeKeys, ",")
+	cks := []*crypto.Key{}
+	for _, k := range ckeys {
+		ke := k
+		rk, err := crypto.KeyFromString(ke)
+		if err != nil {
+			return "", err
+		}
+		cks = append(cks, &rk)
+	}
+	var utxo []Utxo
+	err = json.Unmarshal(inputs, &utxo)
+	if err != nil {
+		panic(err)
+	}
+	ins := []*common.UTXO{}
+	for _, u := range utxo {
+		ut := u
+		h, err := crypto.HashFromString(ut.Hash)
+		if err != nil {
+			return "", err
+		}
+		amount := common.NewIntegerFromString(ut.Amount)
+		u := common.UTXO{
+			Input: common.Input{
+				Hash:  h,
+				Index: uint(ut.Index),
+			},
+			Output: common.Output{
+				Amount: amount,
+			},
+		}
+		ins = append(ins, &u)
+	}
+
+	return buildTransaction(asset, amount, 1, []*crypto.Key{keys}, receiverMask, ins, cks, changeMask, extra, reference)
+}
+
 func BuildTx(asset string, amount string, threshold int, receiverKeys string, receiverMask string, inputs []byte, changeKeys, changeMask, extra, reference string) (string, error) {
 	keys := strings.Split(receiverKeys, ",")
 	rks := []*crypto.Key{}
@@ -70,7 +119,11 @@ func BuildTx(asset string, amount string, threshold int, receiverKeys string, re
 		}
 		ins = append(ins, &u)
 	}
-	return buildTransaction(asset, amount, threshold, rks, receiverMask, ins, cks, changeMask, extra, reference)
+	mask, err := crypto.KeyFromString(receiverMask)
+	if err != nil {
+		return "", err
+	}
+	return buildTransaction(asset, amount, threshold, rks, mask, ins, cks, changeMask, extra, reference)
 }
 
 func BuildWithdrawalTx(asset string, amount, address, tag string, feeAmount, feeKeys string, feeMask string, inputs []byte, changeKeys, changeMask, extra string) (*Tx, error) {
@@ -216,7 +269,7 @@ func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, addr
 	return t, nil
 }
 
-func buildTransaction(asset string, amount string, threshold int, receiverKeys []*crypto.Key, receiverMask string, inputs []*common.UTXO, changeKeys []*crypto.Key, changeMask string, extra, reference string) (string, error) {
+func buildTransaction(asset string, amount string, threshold int, receiverKeys []*crypto.Key, receiverMask crypto.Key, inputs []*common.UTXO, changeKeys []*crypto.Key, changeMask string, extra, reference string) (string, error) {
 	assetHash, err := crypto.HashFromString(asset)
 	if err != nil {
 		return "", err
@@ -235,18 +288,14 @@ func buildTransaction(asset string, amount string, threshold int, receiverKeys [
 		return "", errors.New("insufficient funds")
 	}
 
-	mask, err := crypto.KeyFromString(receiverMask)
-	if err != nil {
-		return "", err
-	}
-	if !mask.CheckKey() {
+	if !receiverMask.CheckKey() {
 		return "", errors.New("invalid mask")
 	}
 	output := &common.Output{
 		Type:   common.OutputTypeScript,
 		Amount: amountValue,
 		Keys:   receiverKeys,
-		Mask:   mask,
+		Mask:   receiverMask,
 		Script: common.NewThresholdScript(uint8(threshold)),
 	}
 	tx.Outputs = append(tx.Outputs, output)
