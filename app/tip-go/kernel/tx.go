@@ -350,14 +350,24 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string) (*Tx, error) {
 		ver.SignaturesMap = append(ver.SignaturesMap, sigs)
 	}
 	var changeUtxo *Utxo
-	if len(ver.Outputs) == 2 {
-		changeUtxo = &Utxo{
-			Hash:   ver.PayloadHash().String(),
-			Amount: ver.Outputs[1].Amount.String(),
-			Index:  1,
-		}
-	}
-
+   	if len(ver.Outputs) == 2 {
+   		if ver.Outputs[0].Withdrawal == nil {
+    		changeUtxo = &Utxo{
+    			Hash:   ver.PayloadHash().String(),
+    			Amount: ver.Outputs[1].Amount.String(),
+    			Index:  1,
+    		}
+        }
+    }
+    if len(ver.Outputs) == 3 {
+       if ver.Outputs[0].Withdrawal == nil {
+            changeUtxo = &Utxo{
+                Hash:   ver.PayloadHash().String(),
+   				Amount: ver.Outputs[2].Amount.String(),
+   				Index:  2,
+   			}
+   		}
+    }
 	transaction := &Tx{
 		Hash:   ver.PayloadHash().String(),
 		Raw:    hex.EncodeToString(ver.Marshal()),
