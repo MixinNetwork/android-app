@@ -302,7 +302,7 @@ class BottomSheetViewModel @Inject internal constructor(
         // Workaround with only the case of a single transfer
         val views = transactionResponse.data!!.first().views.joinToString(",")
         val keys = utxoWrapper.formatKeys
-        val sign = Kernel.signTx(tx, keys, views, spendKey.toHex())
+        val sign = Kernel.signTx(tx, keys, views, spendKey.toHex(), false)
         val signResult = SignResult(sign.raw, sign.change)
         runInTransaction {
             if (signResult.change != null) {
