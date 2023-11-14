@@ -202,8 +202,8 @@ class BottomSheetViewModel @Inject internal constructor(
             throw IllegalArgumentException("Transfer is already paid")
         }
         val views = withdrawalRequestResponse.data!!.first().views.joinToString(",")
-        val sign = Kernel.signTx(withdrawalTx.raw, withdrawalUtxos.formatKeys, views, spendKey.toHex())
-        val signWithdrawalResult = SignResult(sign.raw, sign.change)
+        val signWithdrawal = Kernel.signTx(withdrawalTx.raw, withdrawalUtxos.formatKeys, views, spendKey.toHex(), isDifferentFee)
+        val signWithdrawalResult = SignResult(signWithdrawal.raw, signWithdrawal.change)
         val rawRequest = mutableListOf(TransactionRequest(signWithdrawalResult.raw, traceId))
         if (isDifferentFee) {
             val feeUtxos = UtxoWrapper(
@@ -212,7 +212,7 @@ class BottomSheetViewModel @Inject internal constructor(
                 )
             )
             val feeViews = withdrawalRequestResponse.data!!.last().views.joinToString(",")
-            val signFee = Kernel.signTx(feeTx, feeUtxos.formatKeys, feeViews, spendKey.toHex())
+            val signFee = Kernel.signTx(feeTx, feeUtxos.formatKeys, feeViews, spendKey.toHex(), false)
             val signFeeResult = SignResult(signFee.raw, signFee.change)
             rawRequest.add(TransactionRequest(signFeeResult.raw, feeTraceId))
             runInTransaction {
