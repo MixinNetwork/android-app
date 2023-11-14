@@ -35,7 +35,6 @@ import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.runInTransaction
-import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
@@ -86,7 +85,6 @@ import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.safe.UtxoWrapper
 import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
-import timber.log.Timber
 import uniqueObjectId
 import java.io.File
 import java.lang.IllegalArgumentException
