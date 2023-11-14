@@ -4,6 +4,7 @@ import androidx.paging.DataSource
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
+import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.SafeSnapshot
 
@@ -71,6 +72,9 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
 
     @Query("DELETE FROM safe_snapshots WHERE asset_id = :assetId AND type = 'pending'")
     suspend fun clearPendingDepositsByAssetId(assetId: String)
+
+    @Query("DELETE FROM safe_snapshots WHERE type = 'pending' AND deposit LIKE '%' || :depositHash || '%' $ESCAPE_SUFFIX")
+    fun deletePendingSnapshotByHash(depositHash: String)
 
     @Query("SELECT transaction_hash FROM safe_snapshots WHERE asset_id = :assetId AND snapshot_id IN (:ids)")
     suspend fun findPendingSnapshotsByIds(assetId: String, ids: List<String>): List<String>

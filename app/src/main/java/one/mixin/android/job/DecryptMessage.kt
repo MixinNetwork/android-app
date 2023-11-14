@@ -1033,8 +1033,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.messageId, data.conversationId, data.userId, data.category, data.expireIn?.toString() ?: "",
             data.createdAt, data.status, snapshot.type, null, snapshot.snapshotId,
         )
-        // TODO refresh pending deposit
-
+        snapshot.deposit?.let {
+            safeSnapshotDao.deletePendingSnapshotByHash(it.depositHash)
+        }
         safeSnapshotDao.insert(snapshot)
         insertMessage(message, data)
         jobManager.addJobInBackground(RefreshTokensJob(snapshot.assetId, data.conversationId, data.messageId))
