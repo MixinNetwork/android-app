@@ -33,7 +33,8 @@ fun buildWithdrawalFeeGhostKeyRequest(receiverId: String, senderId: String, trac
     val requestId = uniqueObjectId(traceId, "FEE")
     val feeOutput = uniqueObjectId(requestId, "OUTPUT", "0")
     val feeChange = uniqueObjectId(requestId, "OUTPUT", "1")
-    return listOf(GhostKeyRequest(listOf(senderId), 1, change),
+    return listOf(
         GhostKeyRequest(listOf(receiverId), 0, feeOutput),
+        GhostKeyRequest(listOf(senderId), 1, change),
         GhostKeyRequest(listOf(senderId), 1, feeChange))
 }

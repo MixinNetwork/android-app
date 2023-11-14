@@ -87,6 +87,7 @@ import one.mixin.android.vo.safe.UtxoWrapper
 import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
 import timber.log.Timber
+import uniqueObjectId
 import java.io.File
 import java.lang.IllegalArgumentException
 import java.math.BigDecimal
@@ -145,6 +146,7 @@ class BottomSheetViewModel @Inject internal constructor(
         val feeAsset = assetIdToAsset(feeAssetId)
         val senderId = Session.getAccountId()!!
         val threshold = 1L
+        val feeTraceId = uniqueObjectId(traceId, "FEE")
 
         val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
         val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
@@ -173,21 +175,20 @@ class BottomSheetViewModel @Inject internal constructor(
             null
         }
 
-        val feeKeys = data.first().keys.joinToString(",")
-        val feeMask = data.first().mask
+        val feeOutputKeys = data[0].keys.joinToString(",")
+        val feeOutputMask = data[0].mask
 
-        val changeKeys = data.last().keys.joinToString(",")
-        val changeMask = data.last().mask
+        val changeKeys = data[1].keys.joinToString(",")
+        val changeMask = data[1].mask
 
-        val withdrawalTx = Kernel.buildWithdrawalTx(asset, amount, destination, tag ?: "", if (isDifferentFee) "" else feeAmount, if (isDifferentFee) "" else feeKeys, if (isDifferentFee) "" else feeMask, withdrawalUtxos.input, changeKeys, changeMask, memo)
+        val withdrawalTx = Kernel.buildWithdrawalTx(asset, amount, destination, tag ?: "", if (isDifferentFee) "" else feeAmount, if (isDifferentFee) "" else feeOutputKeys, if (isDifferentFee) "" else feeOutputMask, withdrawalUtxos.input, changeKeys, changeMask, memo)
         val withdrawalRequests = mutableListOf(TransactionRequest(withdrawalTx.raw, traceId))
 
         val feeTx = if (isDifferentFee) {
-            val feeChangeKeys = data[1].keys.joinToString(",")
-            val feeChangeMask = data[1].mask
-            val feeTx = Kernel.buildTx(feeAsset, feeAmount, threshold, feeKeys, feeMask, feeUtxos!!.input, feeChangeKeys, feeChangeMask, memo, withdrawalTx.hash)
-            withdrawalRequests.add(TransactionRequest(feeTx, UUID.randomUUID().toString()))
-            Timber.e("feeTx $feeTx")
+            val feeChangeKeys = data[2].keys.joinToString(",")
+            val feeChangeMask = data[2].mask
+            val feeTx = Kernel.buildTx(feeAsset, feeAmount, threshold, feeOutputKeys, feeOutputMask, feeUtxos!!.input, feeChangeKeys, feeChangeMask, memo, withdrawalTx.hash)
+            withdrawalRequests.add(TransactionRequest(feeTx, feeTraceId))
             feeTx
         } else {
             null
@@ -210,7 +211,7 @@ class BottomSheetViewModel @Inject internal constructor(
             val feeViews = withdrawalRequestResponse.data!!.last().views.joinToString(",")
             val signFee = Kernel.signTx(feeTx, feeUtxos.formatKeys, feeViews, spendKey.toHex())
             val signFeeResult = SignResult(signFee.raw, signFee.change)
-            rawRequest.add(TransactionRequest(signFeeResult.raw, UUID.randomUUID().toString()))
+            rawRequest.add(TransactionRequest(signFeeResult.raw, traceId))
             runInTransaction {
                 tokenRepository.updateUtxoToSigned(feeUtxos.ids)
                 tokenRepository.updateUtxoToSigned(withdrawalUtxos.ids)
@@ -222,8 +223,8 @@ class BottomSheetViewModel @Inject internal constructor(
                     val changeOutput = changeToOutput(signFeeResult.change, asset, changeMask, data[1].keys, feeUtxos.lastOutput)
                     tokenRepository.insertOutput(changeOutput)
                 }
-                // todo save fee raw transaction
-                tokenRepository.insetRawTransaction(RawTransaction(withdrawalRequestResponse.data!!.first().requestId, signWithdrawalResult.raw, receiverId, withdrawalRequestResponse.data!!.first().state,nowInUtc()))
+                tokenRepository.insetRawTransaction(RawTransaction(withdrawalRequestResponse.data!!.first().requestId, signWithdrawalResult.raw, receiverId, withdrawalRequestResponse.data!!.first().state, nowInUtc()))
+                tokenRepository.insetRawTransaction(RawTransaction(withdrawalRequestResponse.data!!.last().requestId, signFeeResult.raw, receiverId, withdrawalRequestResponse.data!!.last().state, nowInUtc()))
             }
         } else {
             runInTransaction {
@@ -239,12 +240,14 @@ class BottomSheetViewModel @Inject internal constructor(
         if (transactionRsp.error != null) {
             reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
             tokenRepository.deleteRawTransaction(traceId)
+            tokenRepository.deleteRawTransaction(feeTraceId)
             return transactionRsp
         } else {
-            tokenRepository.deleteRawTransaction(transactionRsp.data!!.first().requestId)
+            tokenRepository.deleteRawTransaction(traceId)
+            tokenRepository.deleteRawTransaction(feeTraceId)
         }
         jobManager.addJobInBackground(SyncOutputJob())
-        return transactionRsp
+        return withdrawalRequestResponse
     }
 
     suspend fun newTransfer(

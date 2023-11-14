@@ -11,9 +11,9 @@ import one.mixin.android.db.insertMessage
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.reportException
 import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.db.runInTransaction
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
@@ -25,9 +25,10 @@ import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.SafeSnapshot
 import timber.log.Timber
+import uniqueObjectId
 import java.util.UUID
 
-class RestoreTransactionJob() : BaseJob(
+class RestoreTransactionJob : BaseJob(
     Params(PRIORITY_UI_HIGH).addTags(TAG).requireNetwork(),
 ) {
     companion object {
@@ -38,52 +39,70 @@ class RestoreTransactionJob() : BaseJob(
     override fun onRun() = runBlocking(CoroutineExceptionHandler { _, error ->
         Timber.e(error)
     }) {
-        rawTransactionDao.findTransactions().forEach { transition ->
+        while (true) {
+            val transaction =
+                rawTransactionDao.findTransaction() ?: return@runBlocking
+
+            val feeTraceId = uniqueObjectId(transaction.requestId, "FEE")
+            val feeTransaction = rawTransactionDao.findTransactionById(feeTraceId)
             try {
-                val response = utxoService.getTransactionsById(transition.requestId)
+                val response = utxoService.getTransactionsById(transaction.requestId)
+                Timber.e("${response.data}")
                 if (response.isSuccess) {
-                    val rawTx = Kernel.decodeRawTx(transition.rawTransaction, 0)
+                    val rawTx = Kernel.decodeRawTx(transaction.rawTransaction, 0)
                     val transactionsData = GsonHelper.customGson.fromJson(rawTx, TransactionsData::class.java)
                     val outputIds = transactionsData.inputs.map {
                         UUID.nameUUIDFromBytes("${it.hash}:${it.index}".toByteArray()).toString()
                     }
                     runInTransaction {
                         outputDao.updateUtxoToSigned(outputIds)
-                        rawTransactionDao.deleteById(transition.requestId)
+                        rawTransactionDao.deleteById(transaction.requestId)
+                        rawTransactionDao.deleteById(feeTraceId)
+
                     }
                     val token = tokenDao.findTokenByAsset(transactionsData.asset)
                     if (token?.assetId == null) {
-                        return@forEach
+                        return@runBlocking
                     }
-                    insertSnapshotMessage(response.data!!, token.assetId, response.data!!.amount, transition.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
+                    insertSnapshotMessage(response.data!!, token.assetId, response.data!!.amount, transaction.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
                 } else if (response.errorCode == 404) {
-                    val rawTx = Kernel.decodeRawTx(transition.rawTransaction, 0)
+                    val rawTx = Kernel.decodeRawTx(transaction.rawTransaction, 0)
                     val transactionsData = GsonHelper.customGson.fromJson(rawTx, TransactionsData::class.java)
                     val token = tokenDao.findTokenByAsset(transactionsData.asset)
                     if (token?.assetId == null) {
-                        rawTransactionDao.deleteById(transition.requestId)
+                        rawTransactionDao.deleteById(transaction.requestId)
+                        rawTransactionDao.deleteById(feeTraceId)
                     }
                     val outputIds = transactionsData.inputs.map {
                         UUID.nameUUIDFromBytes("${it.hash}:${it.index}".toByteArray()).toString()
                     }
-                    val transactionRsp = utxoService.transactions(listOf(TransactionRequest(transition.rawTransaction, transition.requestId)))
+
+                    val transactionRsp = utxoService.transactions(
+                        if (feeTransaction != null) {
+                            listOf(TransactionRequest(transaction.rawTransaction, transaction.requestId), TransactionRequest(feeTransaction.rawTransaction, feeTransaction.requestId))
+                        } else {
+                            listOf(TransactionRequest(transaction.rawTransaction, transaction.requestId))
+                        }
+                    )
                     if (transactionRsp.error == null) {
                         val transactionResponse = transactionRsp.data!!.first()
                         runInTransaction {
                             outputDao.updateUtxoToSigned(outputIds)
                             rawTransactionDao.deleteById(transactionResponse.requestId)
                         }
-                        insertSnapshotMessage(transactionResponse, token!!.assetId, transactionResponse.amount, transition.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
+                        insertSnapshotMessage(transactionResponse, token!!.assetId, transactionResponse.amount, transaction.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
                     } else {
                         reportException(e = Throwable("Transaction Error ${transactionRsp.errorDescription}"))
-                        rawTransactionDao.deleteById(transition.requestId)
+                        rawTransactionDao.deleteById(transaction.requestId)
                     }
                     jobManager.addJobInBackground(SyncOutputJob())
                 } else {
-                    rawTransactionDao.deleteById(transition.requestId)
+                    rawTransactionDao.deleteById(transaction.requestId)
+                    rawTransactionDao.deleteById(feeTraceId)
                 }
             } catch (e: Exception) {
-                rawTransactionDao.deleteById(transition.requestId)
+                rawTransactionDao.deleteById(transaction.requestId)
+                rawTransactionDao.deleteById(feeTraceId)
             }
         }
     }
