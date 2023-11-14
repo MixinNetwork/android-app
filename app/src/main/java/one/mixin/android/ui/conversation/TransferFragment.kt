@@ -523,7 +523,9 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         binding.assetAvatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         binding.assetAvatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
 
-        operateKeyboard(true)
+        if (!binding.transferMemo.isFocused) {
+            operateKeyboard(true)
+        }
         updateAssetAutoComplete(asset)
     }
 
