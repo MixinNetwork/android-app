@@ -289,7 +289,7 @@ func buildTransaction(asset string, amount string, threshold int, receiverKeys [
 	return hex.EncodeToString(ver.Marshal()), nil
 }
 
-func SignTx(raw, inputKeys, viewKeys string, spendKey string) (*Tx, error) {
+func SignTx(raw, inputKeys, viewKeys string, spendKey string, withoutFee bool) (*Tx, error) {
 	views := strings.Split(viewKeys, ",")
 	rawBytes, err := hex.DecodeString(raw)
 	if err != nil {
@@ -350,21 +350,31 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string) (*Tx, error) {
 		ver.SignaturesMap = append(ver.SignaturesMap, sigs)
 	}
 	var changeUtxo *Utxo
-	if len(ver.Outputs) == 2 {
-		if ver.Outputs[0].Withdrawal == nil {
+	if ver.Outputs[0].Withdrawal != nil {
+		if len(ver.Outputs) == 3 {
+			changeIndex := len(ver.Outputs) - 1
 			changeUtxo = &Utxo{
 				Hash:   ver.PayloadHash().String(),
-				Amount: ver.Outputs[1].Amount.String(),
-				Index:  1,
+				Amount: ver.Outputs[changeIndex].Amount.String(),
+				Index:  changeIndex,
+			}
+		} else if len(ver.Outputs) == 2 {
+			if withoutFee {
+				changeIndex := len(ver.Outputs) - 1
+				changeUtxo = &Utxo{
+					Hash:   ver.PayloadHash().String(),
+					Amount: ver.Outputs[changeIndex].Amount.String(),
+					Index:  changeIndex,
+				}
 			}
 		}
-	}
-	if len(ver.Outputs) == 3 {
-		if ver.Outputs[0].Withdrawal == nil {
+	} else {
+		if len(ver.Outputs) > 1 {
+			changeIndex := len(ver.Outputs) - 1
 			changeUtxo = &Utxo{
 				Hash:   ver.PayloadHash().String(),
-				Amount: ver.Outputs[2].Amount.String(),
-				Index:  2,
+				Amount: ver.Outputs[changeIndex].Amount.String(),
+				Index:  changeIndex,
 			}
 		}
 	}
