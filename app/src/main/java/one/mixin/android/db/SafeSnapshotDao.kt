@@ -72,11 +72,8 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     @Query("DELETE FROM safe_snapshots WHERE asset_id = :assetId AND type = 'pending'")
     suspend fun clearPendingDepositsByAssetId(assetId: String)
 
-    @Query("DELETE FROM safe_snapshots WHERE type = 'pending' AND transaction_hash = :transactionHash")
-    fun deletePendingSnapshotByHash(transactionHash: String)
-
-    @Query("SELECT transaction_hash FROM safe_snapshots WHERE asset_id = :assetId AND type = 'deposit' AND transaction_hash IN (:hashList)")
-    suspend fun findSnapshotIdsByTransactionHashList(assetId: String, hashList: List<String>): List<String>
+    @Query("SELECT transaction_hash FROM safe_snapshots WHERE asset_id = :assetId AND snapshot_id IN (:ids)")
+    suspend fun findPendingSnapshotsByIds(assetId: String, ids: List<String>): List<String>
 
     @Query("SELECT sn.* FROM safe_snapshots sn WHERE sn.rowid > :rowId ORDER BY sn.rowid ASC LIMIT :limit")
     fun getSnapshotByLimitAndRowId(limit: Int, rowId: Long): List<SafeSnapshot>

@@ -1033,9 +1033,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.messageId, data.conversationId, data.userId, data.category, data.expireIn?.toString() ?: "",
             data.createdAt, data.status, snapshot.type, null, snapshot.snapshotId,
         )
-        snapshot.transactionHash.let {
-            safeSnapshotDao.deletePendingSnapshotByHash(it)
-        }
+        // TODO refresh pending deposit
 
         safeSnapshotDao.insert(snapshot)
         insertMessage(message, data)
