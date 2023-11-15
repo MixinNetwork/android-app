@@ -257,6 +257,24 @@ class BottomSheetViewModel @Inject internal constructor(
         return withdrawalRequestResponse
     }
 
+    suspend fun addressTransfer(
+        assetId: String,
+        receiverId: String,
+        amount: String,
+        pin: String,
+        trace: String?,
+        memo: String?,
+    ): MixinResponse<*> {
+        val asset = assetIdToAsset(assetId)
+        val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
+        val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
+        val utxoWrapper = UtxoWrapper(packUtxo(asset, amount))
+        if (trace != null) {
+
+        }
+        return MixinResponse<String>(Throwable("Todo"))
+    }
+
     suspend fun newTransfer(
         assetId: String,
         receiverId: String,

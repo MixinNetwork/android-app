@@ -607,6 +607,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 ConfirmBottomFragment.show(requireContext(), parentFragmentManager, url)
                 dismiss()
             }
+        } else if (url.startsWith(Scheme.MIXIN_PAY, true)) {
+            // Todo
         } else if (url.startsWith(Scheme.BUY, true)) {
             WalletActivity.show(requireActivity(), buy = true)
             dismiss()

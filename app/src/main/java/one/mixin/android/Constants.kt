@@ -99,6 +99,7 @@ object Constants {
         const val DEVICE_TRANSFER = "mixin://device-transfer"
         const val TIP = "mixin://tip"
         const val BUY = "mixin://buy"
+        const val MIXIN_PAY = "mixin://mixin.one/pay/"
 
         const val HTTPS_CODES = "https://mixin.one/codes"
         const val HTTPS_PAY = "https://mixin.one/pay"
@@ -107,6 +108,7 @@ object Constants {
         const val HTTPS_ADDRESS = "https://mixin.one/address"
         const val HTTPS_WITHDRAWAL = "https://mixin.one/withdrawal"
         const val HTTPS_APPS = "https://mixin.one/apps"
+        const val HTTP_MIXIN_PAY = "https://mixin.one/pay/"
 
         const val WALLET_CONNECT_PREFIX = "wc:"
     }
