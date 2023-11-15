@@ -24,6 +24,7 @@ import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.OutputState
+import one.mixin.android.vo.safe.RawTransactionType
 import one.mixin.android.vo.safe.SafeSnapshot
 import timber.log.Timber
 import uniqueObjectId
@@ -46,7 +47,7 @@ class RestoreTransactionJob : BaseJob(
                 rawTransactionDao.findUnspentTransaction() ?: return@runBlocking
 
             val feeTraceId = uniqueObjectId(transaction.requestId, "FEE")
-            val feeTransaction = rawTransactionDao.findTransactionById(feeTraceId)
+            val feeTransaction = rawTransactionDao.findRawTransaction(feeTraceId, RawTransactionType.FEE.value)
             try {
                 val response = utxoService.getTransactionsById(transaction.requestId)
                 if (response.isSuccess) {

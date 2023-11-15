@@ -400,7 +400,9 @@ class MixinDatabaseMigrations private constructor() {
 
         val MIGRATION_52_53: Migration = object : Migration(52, 53) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE `raw_transactions` ADD COLUMN `state` TEXT NOT NULL")
+                db.execSQL("ALTER TABLE `raw_transactions` ADD COLUMN `state` TEXT NOT NULL DEFAULT 'unspent'")
+                db.execSQL("ALTER TABLE `raw_transactions` ADD COLUMN `type` INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_raw_transactions_state_type` ON `raw_transactions` (`state`, `type`)")
             }
         }
         // If you add a new table, be sure to add a clear method to the DatabaseUtil

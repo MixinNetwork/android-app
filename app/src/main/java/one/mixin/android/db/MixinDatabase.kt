@@ -56,6 +56,8 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_51_52
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_52_53
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MessageStatusConverter
+import one.mixin.android.db.converter.OutputStateConverter
+import one.mixin.android.db.converter.RawTransactionTypeConverter
 import one.mixin.android.db.converter.SafeDepositConverter
 import one.mixin.android.db.converter.SafeWithdrawalConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
@@ -104,6 +106,7 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.RawTransaction
+import one.mixin.android.vo.safe.RawTransactionType
 import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
@@ -154,7 +157,7 @@ import kotlin.math.min
     ],
     version = CURRENT_VERSION,
 )
-@TypeConverters(MessageStatusConverter::class, DepositEntryListConverter::class, WithdrawalMemoPossibilityConverter::class, SafeDepositConverter::class, SafeWithdrawalConverter::class)
+@TypeConverters(MessageStatusConverter::class, DepositEntryListConverter::class, WithdrawalMemoPossibilityConverter::class, SafeDepositConverter::class, SafeWithdrawalConverter::class, RawTransactionTypeConverter::class, OutputStateConverter::class)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun conversationExtDao(): ConversationExtDao

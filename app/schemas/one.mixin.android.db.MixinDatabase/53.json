@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 53,
-    "identityHash": "b99895217f98baa520a7f8c337b81685",
+    "identityHash": "328c44708e354a0f8f50858f54e0ebf1",
     "entities": [
       {
         "tableName": "users",
@@ -2780,7 +2780,7 @@
       },
       {
         "tableName": "raw_transactions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`request_id` TEXT NOT NULL, `raw_transaction` TEXT NOT NULL, `receiver_id` TEXT NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`request_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`request_id` TEXT NOT NULL, `raw_transaction` TEXT NOT NULL, `receiver_id` TEXT NOT NULL, `type` INTEGER NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`request_id`))",
         "fields": [
           {
             "fieldPath": "requestId",
@@ -2798,6 +2798,12 @@
             "fieldPath": "receiverId",
             "columnName": "receiver_id",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -2819,14 +2825,25 @@
             "request_id"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_raw_transactions_state_type",
+            "unique": false,
+            "columnNames": [
+              "state",
+              "type"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_raw_transactions_state_type` ON `${TABLE_NAME}` (`state`, `type`)"
+          }
+        ],
         "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b99895217f98baa520a7f8c337b81685')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '328c44708e354a0f8f50858f54e0ebf1')"
     ]
   }
 }
