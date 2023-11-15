@@ -38,6 +38,17 @@ class TransferBiometricItem(
 ) : AssetBiometricItem(asset, traceId, amount, pin, memo, state)
 
 @Parcelize
+class AddressTransferBiometricItem(
+    val address: String,
+    override val asset: TokenItem,
+    override val amount: String,
+    override var pin: String?,
+    override val traceId: String?,
+    override val memo: String?,
+    override val state: String,
+) : AssetBiometricItem(asset, traceId, amount, pin, memo, state)
+
+@Parcelize
 class WithdrawBiometricItem(
     val destination: String,
     val tag: String?,

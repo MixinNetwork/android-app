@@ -23,6 +23,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putStringSet
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricItem
@@ -81,6 +82,13 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
                     }
                     biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
                 }
+                is AddressTransferBiometricItem -> {
+                    (t as AddressTransferBiometricItem).let {
+                        title.text = getString(R.string.Transfer)
+                        subTitle.text = it.address
+                    }
+                    biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
+                }
                 is WithdrawBiometricItem -> {
                     (t as WithdrawBiometricItem).let {
                         title.text = if (it.hasAddress()) {
@@ -124,6 +132,16 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
                     getDescription(),
                 )
             }
+            is AddressTransferBiometricItem -> {
+                BiometricInfo(
+                    getString(
+                        R.string.transfer_to,
+                        t.address,
+                    ),
+                    "",
+                    getDescription(),
+                )
+            }
             else -> {
                 t as WithdrawBiometricItem
                 BiometricInfo(
@@ -143,6 +161,10 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             is TransferBiometricItem -> {
                 trace = Trace(t.traceId!!, t.asset.assetId, t.amount, t.user.userId, null, null, null, nowInUtc())
                 bottomViewModel.newTransfer(t.asset.assetId, t.user.userId, t.amount, pin, t.traceId, t.memo)
+            }
+            is AddressTransferBiometricItem -> {
+                trace = Trace(t.traceId!!, t.asset.assetId, t.amount, null, t.address, null, null, nowInUtc())
+                bottomViewModel.addressTransfer(t.asset.assetId, t.address, t.amount, pin, t.traceId, t.memo)
             }
             else -> {
                 t as WithdrawBiometricItem
@@ -169,6 +191,9 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
         when (val t = this@OutputBottomSheetDialogFragment.t) {
             is TransferBiometricItem -> {
                 returnTo = t.returnTo
+            }
+            is AddressTransferBiometricItem -> {
+                // left empty
             }
             else -> {
                 t as WithdrawBiometricItem

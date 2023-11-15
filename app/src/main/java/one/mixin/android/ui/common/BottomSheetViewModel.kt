@@ -263,7 +263,7 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun addressTransfer(
         assetId: String,
-        kenelAddress: String,
+        kernelAddress: String,
         amount: String,
         pin: String,
         trace: String?,
@@ -295,7 +295,7 @@ class BottomSheetViewModel @Inject internal constructor(
         val changeKeys = data.first().keys.joinToString(",")
         val changeMask = data.first().mask
 
-        val tx = Kernel.buildTxToKernelAddress(asset, amount, kenelAddress, input, changeKeys, changeMask, memo)
+        val tx = Kernel.buildTxToKernelAddress(asset, amount, kernelAddress, input, changeKeys, changeMask, memo)
         val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, traceId)))
         if (transactionResponse.error != null) {
             return transactionResponse

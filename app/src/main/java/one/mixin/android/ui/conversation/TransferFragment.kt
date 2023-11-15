@@ -74,6 +74,7 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.OutputBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
@@ -108,6 +109,10 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         const val TAG = "TransferFragment"
         const val ASSET_PREFERENCE = "TRANSFER_ASSET"
         const val ARGS_SWITCH_ASSET = "args_switch_asset"
+        const val ARGS_MAINNET_ADDRSS = "args_mainnet_address"
+        const val ARGS_AMOUNT = "args_amount"
+        const val ARGS_MEMO = "args_memo"
+        const val ARGS_TRACE = "args_trace"
 
         const val POST_TEXT = 0
         const val POST_PB = 1
@@ -116,11 +121,19 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             userId: String? = null,
             asset: TokenItem? = null,
             address: Address? = null,
+            mainnetAddress: String? = null,
+            amount: String? = null,
+            memo: String? = null,
+            trace: String? = null,
             supportSwitchAsset: Boolean = false,
         ) = TransferFragment().withArgs {
             userId?.let { putString(ARGS_USER_ID, it) }
             asset?.let { putParcelable(ARGS_ASSET, it) }
             address?.let { putParcelable(ARGS_ADDRESS, it) }
+            mainnetAddress?.let { putString(ARGS_MAINNET_ADDRSS, it) }
+            amount?.let { putString(ARGS_AMOUNT, it) }
+            memo?.let { putString(ARGS_MEMO, it) }
+            trace?.let { putString(ARGS_TRACE, it) }
             putBoolean(ARGS_SWITCH_ASSET, supportSwitchAsset)
         }
 
@@ -152,6 +165,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
     private val userId: String? by lazy { requireArguments().getString(ARGS_USER_ID) }
     private var address: Address? = null
+    private val mainnetAddress: String? by lazy { requireArguments().getString(ARGS_MAINNET_ADDRSS) }
     private val supportSwitchAsset by lazy { requireArguments().getBoolean(ARGS_SWITCH_ASSET) }
 
     private val fees: ArrayList<NetworkFee> = arrayListOf()
@@ -268,11 +282,15 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         } else {
             handleAddressTransfer()
         }
-        binding.titleView.rightIb.setOnClickListener {
-            currentAsset?.let { asset ->
-                TransferOutViewFragment.newInstance(asset.assetId, userId, user?.avatarUrl, asset.symbol, address)
-                    .show(parentFragmentManager, TransferOutViewFragment.TAG)
+        if (mainnetAddress == null) {
+            binding.titleView.rightIb.setOnClickListener {
+                currentAsset?.let { asset ->
+                    TransferOutViewFragment.newInstance(asset.assetId, userId, user?.avatarUrl, asset.symbol, address)
+                        .show(parentFragmentManager, TransferOutViewFragment.TAG)
+                }
             }
+        } else {
+            binding.titleView.rightIb.isVisible = false
         }
 
         binding.continueTv.setOnClickListener {
@@ -281,6 +299,8 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             operateKeyboard(false)
             prepareTransferBottom()
         }
+        requireArguments().getString(ARGS_AMOUNT)?.let { binding.amountEt.setText(it)}
+        requireArguments().getString(ARGS_MEMO)?.let { binding.transferMemo.setText(it) }
     }
 
     private fun handleAddressTransfer() {
@@ -439,19 +459,28 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         } else {
             binding.expandIv.isVisible = false
         }
-        chatViewModel.findUserById(userId!!).observe(
-            this,
-        ) { u ->
-            if (u == null) {
-                jobManager.addJobInBackground(RefreshUserJob(listOf(userId!!)))
-            } else {
-                user = u
-                binding.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
-                binding.titleView.setSubTitle(
-                    getString(R.string.send_to, u.fullName),
-                    u.identityNumber,
-                )
+        val uid = userId
+        if (uid != null) {
+            chatViewModel.findUserById(uid).observe(
+                this,
+            ) { u ->
+                if (u == null) {
+                    jobManager.addJobInBackground(RefreshUserJob(listOf(uid)))
+                } else {
+                    user = u
+                    binding.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
+                    binding.titleView.setSubTitle(
+                        getString(R.string.send_to, u.fullName),
+                        u.identityNumber,
+                    )
+                }
             }
+        } else {
+            binding.avatar.isVisible = false
+            binding.titleView.setSubTitle(
+                getString(R.string.Transfer),
+                mainnetAddress?.formatPublicKey() ?: "",
+            )
         }
 
         chatViewModel.assetItemsWithBalance().observe(
@@ -459,7 +488,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             Observer { r: List<TokenItem>? ->
                 if (transferBottomOpened) return@Observer
 
-                if (r != null && r.isNotEmpty()) {
+                if (!r.isNullOrEmpty()) {
                     assets = r
                     adapter.submitList(r)
                     r.find {
@@ -529,7 +558,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         updateAssetAutoComplete(asset)
     }
 
-    private fun isInnerTransfer() = userId != null
+    private fun isInnerTransfer() = address == null
     private val autoCompleteAdapter by lazy {
         ArrayAdapter(
             requireContext(),
@@ -612,7 +641,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
     @OptIn(UnstableApi::class)
     private fun prepareTransferBottom() = lifecycleScope.launch {
-        if (currentAsset == null || (user == null && (address == null || currentFee == null))) {
+        if (currentAsset == null || (user == null && (address == null || currentFee == null) && mainnetAddress == null)) {
             return@launch
         }
         var amount = getAmount()
@@ -622,7 +651,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             return@launch
         }
 
-        if (user == null) {
+        if (!isInnerTransfer()) {
             val dust = address!!.dust?.toBigDecimalOrNull()
             val amountDouble = amount.toBigDecimalOrNull()
             if (dust != null && amountDouble != null && amountDouble < dust) {
@@ -637,7 +666,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             return@launch
         }
         binding.continueVa.displayedChild = POST_PB
-        val traceId = UUID.randomUUID().toString()
+        val traceId = requireArguments().getString(ARGS_TRACE) ?: UUID.randomUUID().toString()
         val pair = chatViewModel.findLatestTrace(user?.userId, address?.destination, address?.tag, amount, currentAsset!!.assetId)
         if (pair.second) {
             binding.continueVa.displayedChild = POST_TEXT
@@ -647,6 +676,8 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         val trace = pair.first
         val biometricItem = if (user != null) {
             TransferBiometricItem(user!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace, null)
+        } else if (mainnetAddress != null) {
+            AddressTransferBiometricItem(mainnetAddress!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name)
         } else {
             val fee = requireNotNull(currentFee) { "withdrawal currentFee can not be null" }
             WithdrawBiometricItem(
