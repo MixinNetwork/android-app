@@ -1299,6 +1299,6 @@
     <string name="FREE">免费</string>
     <string name="Send_crypto_to_contact">向 Mixin 联系人发送加密货币</string>
     <string name="Send_crypto_to_address">向钱包或交易所发送加密货币</string>
-    <string name="Withdrawal_Suspended">%1$s 提现已暂停</string>
+    <string name="Withdrawal_Suspended">%1$s 提现暂停</string>
     <string name="Withdrawal_Suspended_Content">%1$s 提现已暂停，可能的原因是因为节点故障、区块链网络硬分叉或者拥堵，请耐心等候并稍后重试</string>
 </resources>
