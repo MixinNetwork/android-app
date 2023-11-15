@@ -235,6 +235,7 @@ class BottomSheetViewModel @Inject internal constructor(
                 tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, receiverId, RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))
                 tokenRepository.insetRawTransaction(RawTransaction(feeData.requestId, signFeeResult.raw, receiverId, RawTransactionType.FEE, OutputState.unspent, nowInUtc()))
             }
+            jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId), assetIdToAsset(feeAssetId))))
         } else {
             runInTransaction {
                 if (signWithdrawalResult.change != null) {
@@ -244,6 +245,7 @@ class BottomSheetViewModel @Inject internal constructor(
                 tokenRepository.updateUtxoToSigned(withdrawalUtxos.ids)
                 tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, receiverId, RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))
             }
+            jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
         }
         val transactionRsp = tokenRepository.transactions(rawRequest)
         if (transactionRsp.error != null) {
