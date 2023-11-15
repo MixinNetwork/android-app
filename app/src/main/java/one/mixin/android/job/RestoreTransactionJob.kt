@@ -62,7 +62,9 @@ class RestoreTransactionJob : BaseJob(
                     }
                     if (feeTransaction == null) {
                         val data = response.data!!
-                        insertSnapshotMessage(data, token.assetId, data.amount, transaction.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
+                        if (transaction.receiverId.isNotBlank()) {
+                            insertSnapshotMessage(data, token.assetId, data.amount, transaction.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
+                        }
                     }
                 } else if (response.errorCode == 404) {
                     val rawTx = Kernel.decodeRawTx(transaction.rawTransaction, 0)
@@ -84,7 +86,7 @@ class RestoreTransactionJob : BaseJob(
                             rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
                             rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
                         }
-                        if (feeTransaction == null) {
+                        if (feeTransaction == null && transaction.receiverId.isNotBlank()) {
                             insertSnapshotMessage(transactionResponse, token.assetId, transactionResponse.amount, transaction.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
                         }
                     } else {

@@ -27,6 +27,7 @@ import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.buildGhostKeyRequest
+import one.mixin.android.api.request.buildKernelTransferGhostKeyRequest
 import one.mixin.android.api.request.buildWithdrawalFeeGhostKeyRequest
 import one.mixin.android.api.request.buildWithdrawalSubmitGhostKeyRequest
 import one.mixin.android.api.response.AuthorizationResponse
@@ -259,7 +260,7 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun addressTransfer(
         assetId: String,
-        receiverId: String,
+        kenelAddress: String,
         amount: String,
         pin: String,
         trace: String?,
@@ -270,9 +271,51 @@ class BottomSheetViewModel @Inject internal constructor(
         val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
         val utxoWrapper = UtxoWrapper(packUtxo(asset, amount))
         if (trace != null) {
-
+            val rawTransaction = tokenRepository.findRawTransaction(trace)
+            if (rawTransaction != null) {
+                return innerTransaction(rawTransaction.rawTransaction, trace, null, assetId, amount, memo)
+            }
         }
-        return MixinResponse<String>(Throwable("Todo"))
+
+        val traceId = trace ?: UUID.randomUUID().toString()
+        val senderId = Session.getAccountId()!!
+
+
+        val ghostKeyResponse = tokenRepository.ghostKey(buildKernelTransferGhostKeyRequest(senderId, traceId))
+        if (ghostKeyResponse.error != null) {
+            return ghostKeyResponse
+        }
+        val data = ghostKeyResponse.data!!
+
+        val input = utxoWrapper.input
+
+        val changeKeys = data.first().keys.joinToString(",")
+        val changeMask = data.first().mask
+
+        val tx = Kernel.buildTxToKernelAddress(asset, amount, kenelAddress, input, changeKeys, changeMask, memo)
+        val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, traceId)))
+        if (transactionResponse.error != null) {
+            return transactionResponse
+        } else if ((transactionResponse.data?.size ?: 0) > 1) {
+            throw IllegalArgumentException("Parameter exception")
+        } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name) {
+            throw IllegalArgumentException("Transfer is already paid")
+        }
+        // Workaround with only the case of a single transfer
+        val views = transactionResponse.data!!.first().views.joinToString(",")
+        val keys = utxoWrapper.formatKeys
+        val sign = Kernel.signTx(tx, keys, views, spendKey.toHex(), false)
+        val signResult = SignResult(sign.raw, sign.change)
+        runInTransaction {
+            if (signResult.change != null) {
+                val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxoWrapper.lastOutput)
+                tokenRepository.insertOutput(changeOutput)
+            }
+            tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, "", OutputState.unspent.name, nowInUtc()))
+            tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
+        }
+        jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
+        return innerTransaction(signResult.raw, traceId, null, assetId, amount, memo)
     }
 
     suspend fun newTransfer(
@@ -338,7 +381,7 @@ class BottomSheetViewModel @Inject internal constructor(
         return innerTransaction(signResult.raw, traceId, receiverId, assetId, amount, memo)
     }
 
-    private suspend fun innerTransaction(raw: String, traceId: String, receiverId: String, assetId: String, amount: String, memo: String?): MixinResponse<List<TransactionResponse>> {
+    private suspend fun innerTransaction(raw: String, traceId: String, receiverId: String?, assetId: String, amount: String, memo: String?): MixinResponse<List<TransactionResponse>> {
         val transactionRsp = tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
         if (transactionRsp.error != null) {
             reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
@@ -347,10 +390,12 @@ class BottomSheetViewModel @Inject internal constructor(
         } else {
             tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, OutputState.signed.name)
         }
-        // Workaround with only the case of a single transfer
-        val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)
-        initConversation(conversationId, transactionRsp.data!!.first().userId, receiverId)
-        tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), conversationId, assetId, amount, receiverId, memo)
+        if (receiverId!=null) {
+            // Workaround with only the case of a single transfer
+            val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)
+            initConversation(conversationId, transactionRsp.data!!.first().userId, receiverId)
+            tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), conversationId, assetId, amount, receiverId, memo)
+        }
         jobManager.addJobInBackground(SyncOutputJob())
         return transactionRsp
     }

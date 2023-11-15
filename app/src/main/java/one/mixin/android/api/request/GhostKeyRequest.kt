@@ -13,6 +13,11 @@ data class GhostKeyRequest(
     val hint: String,
 )
 
+fun buildKernelTransferGhostKeyRequest(senderId: String, traceId: String): List<GhostKeyRequest> {
+    val change = uniqueObjectId(traceId, "OUTPUT", "1")
+    return listOf(GhostKeyRequest(listOf(senderId), 1, change))
+}
+
 fun buildGhostKeyRequest(receiverId: String, senderId: String, traceId: String): List<GhostKeyRequest> {
     val output = uniqueObjectId(traceId, "OUTPUT", "0")
     val change = uniqueObjectId(traceId, "OUTPUT", "1")
