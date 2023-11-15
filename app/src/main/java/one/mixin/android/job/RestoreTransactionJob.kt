@@ -52,11 +52,7 @@ class RestoreTransactionJob : BaseJob(
                 if (response.isSuccess) {
                     val rawTx = Kernel.decodeRawTx(transaction.rawTransaction, 0)
                     val transactionsData = GsonHelper.customGson.fromJson(rawTx, TransactionsData::class.java)
-                    val outputIds = transactionsData.inputs.map {
-                        UUID.nameUUIDFromBytes("${it.hash}:${it.index}".toByteArray()).toString()
-                    }
                     runInTransaction {
-                        outputDao.updateUtxoToSigned(outputIds)
                         rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
                         rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
                     }
@@ -75,9 +71,6 @@ class RestoreTransactionJob : BaseJob(
                     if (token?.assetId == null) {
                         throw IllegalArgumentException("Lost token ${transactionsData.asset}")
                     }
-                    val outputIds = transactionsData.inputs.map {
-                        UUID.nameUUIDFromBytes("${it.hash}:${it.index}".toByteArray()).toString()
-                    }
                     val transactionRsp = utxoService.transactions(
                         if (feeTransaction != null) {
                             listOf(TransactionRequest(transaction.rawTransaction, transaction.requestId), TransactionRequest(feeTransaction.rawTransaction, feeTransaction.requestId))
@@ -88,7 +81,6 @@ class RestoreTransactionJob : BaseJob(
                     if (transactionRsp.error == null) {
                         val transactionResponse = transactionRsp.data!!.first()
                         runInTransaction {
-                            outputDao.updateUtxoToSigned(outputIds)
                             rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
                             rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
                         }

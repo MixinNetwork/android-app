@@ -147,6 +147,23 @@ class BottomSheetViewModel @Inject internal constructor(
         val threshold = 1L
         val feeTraceId = uniqueObjectId(traceId, "FEE")
 
+        val withdrawalUtxos = UtxoWrapper(
+            packUtxo(
+                asset, if (isDifferentFee) amount else {
+                    (BigDecimal(amount) + BigDecimal(feeAmount)).toPlainString()
+                }
+            )
+        )
+        val feeUtxos = if (isDifferentFee) {
+            UtxoWrapper(
+                packUtxo(
+                    feeAsset, feeAmount
+                )
+            )
+        } else {
+            null
+        }
+
         val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
         val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
 
@@ -161,18 +178,6 @@ class BottomSheetViewModel @Inject internal constructor(
             return ghostKeyResponse
         }
         val data = ghostKeyResponse.data!!
-        val withdrawalUtxos = UtxoWrapper(
-            packUtxo(
-                asset, if (isDifferentFee) amount else {
-                    (BigDecimal(amount) + BigDecimal(feeAmount)).toPlainString()
-                }
-            )
-        )
-        val feeUtxos = if (isDifferentFee) {
-            UtxoWrapper(packUtxo(feeAsset, feeAmount))
-        } else {
-            null
-        }
 
         val feeOutputKeys = data[0].keys.joinToString(",")
         val feeOutputMask = data[0].mask
@@ -206,11 +211,6 @@ class BottomSheetViewModel @Inject internal constructor(
         val signWithdrawalResult = SignResult(signWithdrawal.raw, signWithdrawal.change)
         val rawRequest = mutableListOf(TransactionRequest(signWithdrawalResult.raw, traceId))
         if (isDifferentFee) {
-            val feeUtxos = UtxoWrapper(
-                packUtxo(
-                    feeAsset, feeAmount
-                )
-            )
             val feeViews = withdrawalRequestResponse.data!!.last().views.joinToString(",")
             val signFee = Kernel.signTx(feeTx, feeUtxos.formatKeys, feeViews, spendKey.toHex(), false)
             val signFeeResult = SignResult(signFee.raw, signFee.change)
