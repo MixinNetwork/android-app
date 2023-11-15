@@ -25,13 +25,13 @@ type Tx struct {
 	Change *Utxo  `json:"change,omitempty"`
 }
 
-func BuildTxToKernelAddress(asset string, amount string, kenelAddress, traceId string, inputs []byte, changeKeys, changeMask, extra, reference string) (string, error) {
+func BuildTxToKernelAddress(asset string, amount string, kenelAddress string, inputs []byte, changeKeys, changeMask, extra string) (string, error) {
 	a, err := common.NewAddressFromString(kenelAddress)
 	if err != nil {
 		return "", err
 	}
-	hash := crypto.Blake3Hash([]byte(traceId))
-	seed := append(hash[:], hash[:]...)
+	seed := make([]byte, 64)
+	crypto.ReadRand(seed)
 	r := crypto.NewKeyFromSeed(seed)
 	receiverMask := r.Public()
 	keys := crypto.DeriveGhostPublicKey(&r, &a.PublicViewKey, &a.PublicSpendKey, uint64(0))
@@ -71,7 +71,7 @@ func BuildTxToKernelAddress(asset string, amount string, kenelAddress, traceId s
 		ins = append(ins, &u)
 	}
 
-	return buildTransaction(asset, amount, 1, []*crypto.Key{keys}, receiverMask, ins, cks, changeMask, extra, reference)
+	return buildTransaction(asset, amount, 1, []*crypto.Key{keys}, receiverMask, ins, cks, changeMask, extra, "")
 }
 
 func BuildTx(asset string, amount string, threshold int, receiverKeys string, receiverMask string, inputs []byte, changeKeys, changeMask, extra, reference string) (string, error) {
