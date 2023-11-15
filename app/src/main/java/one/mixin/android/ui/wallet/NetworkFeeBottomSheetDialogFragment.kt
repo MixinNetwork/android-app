@@ -51,7 +51,7 @@ class NetworkFeeBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val fees: ArrayList<NetworkFee> = requireArguments().getParcelableArrayListCompat(ARGS_FEES, NetworkFee::class.java) as ArrayList<NetworkFee>
         binding.apply {
             title.rightIv.setOnClickListener { dismiss() }
-            title.setSubTitle(getString(R.string.choose_network_fee))
+            title.setSubTitle(getString(R.string.network_fee), getString(R.string.choose_network_fee))
             val currentFee = requireArguments().getString(ARGS_CURRENT_FEE)
             val feeAdapter = FeeAdapter(currentFee ?: fees.first().token.assetId)
             feeAdapter.callback = { networkFee ->

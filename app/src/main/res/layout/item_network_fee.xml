@@ -4,7 +4,7 @@
     android:layout_height="64dp"
     android:layout_margin="4dp"
     xmlns:tool="http://schemas.android.com/tools"
-    android:background="@drawable/bg_round_8_solid_gray">
+    android:background="@drawable/ripple_round_window">
 
     <one.mixin.android.widget.BadgeCircleImageView
         android:id="@+id/asset_icon"
