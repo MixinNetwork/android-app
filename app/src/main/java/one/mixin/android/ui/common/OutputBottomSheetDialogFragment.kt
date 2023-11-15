@@ -14,6 +14,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.MIXIN_FEE_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.ResponseError
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.extension.defaultSharedPreferences
@@ -30,6 +31,7 @@ import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogF
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.ui.common.biometric.hasAddress
+import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.BLOCKCHAIN_ERROR
 import one.mixin.android.util.ErrorHandler.Companion.INSUFFICIENT_BALANCE
@@ -151,6 +153,15 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
         bottomViewModel.insertTrace(trace)
         bottomViewModel.deletePreviousTraces()
         return response
+    }
+
+    override suspend fun handleWithErrorCodeAndDesc(pin: String, error: ResponseError) {
+        if (error.code == ErrorHandler.WITHDRAWAL_SUSPEND) {
+            WithdrawalSuspendedBottomSheet.newInstance(t.asset).show(parentFragmentManager, WithdrawalSuspendedBottomSheet.TAG)
+            dismissNow()
+        } else {
+            super.handleWithErrorCodeAndDesc(pin, error)
+        }
     }
 
     override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {

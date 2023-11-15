@@ -180,7 +180,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         }
     }
 
-    protected suspend fun handleWithErrorCodeAndDesc(pin: String, error: ResponseError) {
+    protected open suspend fun handleWithErrorCodeAndDesc(pin: String, error: ResponseError) {
         val errorCode = error.code
         val errorDescription = error.description
         val errorString = doWithMixinErrorCode(errorCode, pin)

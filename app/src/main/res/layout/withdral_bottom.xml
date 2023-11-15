@@ -56,6 +56,21 @@
         android:textSize="14sp"
         android:textColor="@color/white"/>
 
+    <TextView
+        android:id="@+id/contact_support"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:layout_marginTop="32dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="@string/Contact_Support"
+        android:textSize="14sp"
+        android:textColor="@color/selector_blue_tv"/>
+
     <View
         android:layout_width="0dp"
         android:layout_height="40dp" />
