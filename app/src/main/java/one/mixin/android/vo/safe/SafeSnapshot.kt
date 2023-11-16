@@ -2,8 +2,10 @@ package one.mixin.android.vo.safe
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -84,8 +86,13 @@ data class SafeSnapshot(
     @SerializedName("withdrawal")
     @SerialName("withdrawal")
     @ColumnInfo(name = "withdrawal")
-    val withdrawal: SafeWithdrawal?
-)
+    val withdrawal: SafeWithdrawal?,
+) {
+    @Ignore
+    @SerializedName("deposit_hash")
+    @IgnoredOnParcel
+    val depositHash: String? = null
+}
 
 @Suppress("ktlint:standard:enum-entry-name-case", "EnumEntryName")
 enum class SafeSnapshotType { transfer, deposit, withdrawal, pending }

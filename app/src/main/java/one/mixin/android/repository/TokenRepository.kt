@@ -564,11 +564,11 @@ constructor(
     suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> =
         routeService.ticker(tickerRequest)
 
-    suspend fun findSnapshotByTransactionHashList(
+    suspend fun findPendingSnapshotsByIds(
         assetId: String,
-        hashList: List<String>
+        ids: List<String>
     ): List<String> =
-        safeSnapshotDao.findSnapshotIdsByTransactionHashList(assetId, hashList)
+        safeSnapshotDao.findPendingSnapshotsByIds(assetId, ids)
 
     suspend fun suspendUpdatePrices(priceAndChange: List<PriceAndChange>) =
         tokenDao.suspendUpdatePrices(priceAndChange)
