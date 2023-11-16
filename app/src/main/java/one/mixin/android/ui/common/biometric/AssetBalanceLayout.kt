@@ -46,8 +46,8 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
                     .append("\n")
                     .append(context.getString(R.string.Fee))
                     .append(" ")
-                    .bold { append(t.fee.numberFormat()).append(" ").append(asset.chainSymbol).append(" ") }
-                    .append(getValueText(t.fee, asset.chainPriceFiat()))
+                    .bold { append(t.fee.numberFormat()).append(" ").append(t.feeSymbol).append(" ") }
+                    .append(getValueText(t.fee, t.feePriceFiat))
                 balanceAs.text = subText
             } else {
                 balanceAs.text = getValueText(amount, asset.priceFiat())

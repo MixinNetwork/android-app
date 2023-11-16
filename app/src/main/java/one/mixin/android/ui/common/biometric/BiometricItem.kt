@@ -5,6 +5,7 @@ import kotlinx.parcelize.Parcelize
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
+import java.math.BigDecimal
 
 @Parcelize
 open class BiometricItem(
@@ -56,6 +57,8 @@ class WithdrawBiometricItem(
     val label: String?,
     var fee: String,
     val feeAssetId: String,
+    val feeSymbol: String,
+    val feePriceFiat: BigDecimal,
     override val asset: TokenItem,
     override val amount: String,
     override var pin: String?,

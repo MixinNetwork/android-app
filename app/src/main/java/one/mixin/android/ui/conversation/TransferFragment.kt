@@ -689,7 +689,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         } else {
             val fee = requireNotNull(currentFee) { "withdrawal currentFee can not be null" }
             WithdrawBiometricItem(
-                address!!.destination, address!!.tag, address!!.addressId, address!!.label, fee.fee, fee.token.assetId,
+                address!!.destination, address!!.tag, address!!.addressId, address!!.label, fee.fee, fee.token.assetId, fee.token.symbol, fee.token.priceFiat(),
                 currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace,
             )
         }
