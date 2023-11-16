@@ -4,6 +4,7 @@ import com.birbit.android.jobqueue.Params
 import com.google.gson.annotations.SerializedName
 import kernel.Kernel
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.db.flow.MessageFlow
@@ -40,6 +41,7 @@ class RestoreTransactionJob : BaseJob(
     }
 
     override fun onRun() = runBlocking(CoroutineExceptionHandler { _, error ->
+        reportException(error)
         Timber.e(error)
     }) {
         while (true) {
@@ -96,13 +98,18 @@ class RestoreTransactionJob : BaseJob(
                         rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
                     }
                     jobManager.addJobInBackground(SyncOutputJob())
+                } else if (response.errorCode >= 500){
+                    reportException(Exception("Restore Transaction Error${transaction.requestId} - ${response.errorCode}"))
+                    delay(3000)
                 } else {
+                    reportException(Exception("Restore Transaction Error${transaction.requestId} - ${response.errorCode}"))
                     rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
                     rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
                 }
             } catch (e: Exception) {
-                rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
-                rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
+                Timber.e(e)
+                reportException(e)
+                delay(3000)
             }
         }
     }
