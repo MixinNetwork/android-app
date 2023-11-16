@@ -43,7 +43,6 @@ import one.mixin.android.util.ErrorHandler.Companion.TOO_SMALL
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.safe.SafeSnapshot
-import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Trace
 import one.mixin.android.widget.BottomSheet
 
@@ -209,7 +208,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             lifecycleScope.launch {
                 val trace = bottomViewModel.suspendFindTraceById(traceId)
                 if (trace != null) {
-                    if (data is Snapshot) {
+                    if (data is SafeSnapshot) {
                         trace.snapshotId = data.snapshotId
                         bottomViewModel.insertTrace(trace)
                     }

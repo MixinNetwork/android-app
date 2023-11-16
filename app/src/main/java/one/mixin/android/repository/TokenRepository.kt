@@ -86,6 +86,7 @@ import one.mixin.android.vo.safe.toPriceAndChange
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.Call
+import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -518,11 +519,7 @@ constructor(
         amount: String,
         assetId: String
     ): Pair<Trace?, Boolean> {
-        val trace =
-            traceDao.suspendFindTrace(opponentId, destination, tag, amount, assetId) ?: return Pair(
-                null,
-                false
-            )
+        val trace = traceDao.suspendFindTrace(opponentId, destination, tag, amount, assetId) ?: return Pair(null, false)
 
         val with6hours = trace.createdAt.within6Hours()
         if (!with6hours) {

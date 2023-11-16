@@ -33,7 +33,7 @@ class TransferBiometricItem(
     override val traceId: String?,
     override val memo: String?,
     override val state: String,
-    val trace: Trace?,
+    var trace: Trace?,
     val returnTo: String?,
 ) : AssetBiometricItem(asset, traceId, amount, pin, memo, state)
 
