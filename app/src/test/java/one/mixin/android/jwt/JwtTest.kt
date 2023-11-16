@@ -20,7 +20,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class JwtTest {
-
     init {
         Security.addProvider(BouncyCastleProvider())
     }

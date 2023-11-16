@@ -34,7 +34,10 @@ class QuoteLayout : ViewGroup {
         }
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
         val childCount = childCount
         if (childCount < 2) {
             throw RuntimeException("QuoteLayout child count must >=2")
@@ -61,7 +64,6 @@ class QuoteLayout : ViewGroup {
                 MeasureSpec.EXACTLY,
             ),
             heightMeasureSpec,
-
         )
         if (childCount >= 3) {
             val thirdView = getChildAt(2)
@@ -79,7 +81,13 @@ class QuoteLayout : ViewGroup {
         )
     }
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+    override fun onLayout(
+        changed: Boolean,
+        l: Int,
+        t: Int,
+        r: Int,
+        b: Int,
+    ) {
         val firstView = getChildAt(0)
         val secondView = getChildAt(1)
         firstView.layout(offset, offset, width - offset, firstView.measuredHeight + offset)

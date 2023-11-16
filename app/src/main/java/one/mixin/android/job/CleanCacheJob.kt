@@ -4,7 +4,6 @@ import com.birbit.android.jobqueue.Params
 
 class CleanCacheJob() :
     BaseJob(Params(PRIORITY_BACKGROUND).addTags(GROUP).groupBy("clean_cache").persist()) {
-
     companion object {
         private const val serialVersionUID: Long = 1L
         const val PREF_CLEAN_CACHE_SCHEMES = "pref_clean_cache_schemes"

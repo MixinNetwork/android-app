@@ -8,7 +8,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.databinding.FragmentOldTransactionBinding
-import one.mixin.android.databinding.FragmentTransactionBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
@@ -47,7 +46,10 @@ class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), T
     private val snapshotId: String? by lazy { requireArguments().getString(ARGS_SNAPSHOT_ID) }
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {

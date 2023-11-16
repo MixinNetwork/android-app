@@ -27,15 +27,16 @@ suspend fun <T, R> requestRouteAPI(
     authErrorRetryCount: Int = 1,
     requestSession: suspend (List<String>) -> MixinResponse<List<UserSession>>,
 ): R? {
-    val response = try {
-        invokeNetwork()
-    } catch (t: Throwable) {
-        if (exceptionBlock?.invoke(t) != true) {
-            defaultExceptionHandle.invoke(t)
+    val response =
+        try {
+            invokeNetwork()
+        } catch (t: Throwable) {
+            if (exceptionBlock?.invoke(t) != true) {
+                defaultExceptionHandle.invoke(t)
+            }
+            endBlock?.invoke()
+            return null
         }
-        endBlock?.invoke()
-        return null
-    }
 
     doAfterNetworkSuccess?.invoke()
 

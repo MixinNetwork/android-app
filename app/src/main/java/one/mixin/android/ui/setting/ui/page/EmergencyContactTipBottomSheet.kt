@@ -58,13 +58,15 @@ fun EmergencyContactTipBottomSheet(
             TextButton(
                 onClick = { onConfirmed() },
                 shape = RoundedCornerShape(20.dp),
-                modifier = Modifier
-                    .width(116.dp)
-                    .height(40.dp),
-                colors = ButtonDefaults.textButtonColors(
-                    backgroundColor = MixinAppTheme.colors.accent,
-                    contentColor = MixinAppTheme.colors.textPrimary,
-                ),
+                modifier =
+                    Modifier
+                        .width(116.dp)
+                        .height(40.dp),
+                colors =
+                    ButtonDefaults.textButtonColors(
+                        backgroundColor = MixinAppTheme.colors.accent,
+                        contentColor = MixinAppTheme.colors.textPrimary,
+                    ),
             ) {
                 Text(
                     text = stringResource(id = R.string.Got_it),

@@ -33,10 +33,14 @@ data class TransactionResponse(
     @SerializedName("snapshot_at")
     val snapshotAt: String,
     @SerializedName("views")
-    val views: List<String>
+    val views: List<String>,
 )
 
-fun getTransactionResult(transactionList: List<TransactionResponse>?, firstRequestId: String, secondRequestId: String?): Pair<TransactionResponse, TransactionResponse?> {
+fun getTransactionResult(
+    transactionList: List<TransactionResponse>?,
+    firstRequestId: String,
+    secondRequestId: String?,
+): Pair<TransactionResponse, TransactionResponse?> {
     transactionList ?: throw NullPointerException("Empty response")
     var firstTransaction: TransactionResponse? = null
     var secondTransaction: TransactionResponse? = null

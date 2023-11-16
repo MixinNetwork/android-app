@@ -28,7 +28,6 @@ import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.linktext.AutoLinkMode
 
 class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHolder(binding.root), Terminable {
-
     init {
         binding.root.context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14).apply {
             if (this != 14) {
@@ -43,7 +42,11 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         binding.chatLayout.setMaxWidth(itemView.context.maxItemWidth())
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
@@ -168,9 +171,10 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         binding.chatLayout.listener = textGestureListener
 
         if (messageItem.mentions?.isNotBlank() == true) {
-            val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
-                messageItem.mentions,
-            )
+            val mentionRenderContext =
+                MentionRenderCache.singleton.getMentionRenderContext(
+                    messageItem.mentions,
+                )
             binding.chatTv.renderMessage(messageItem.content, keyword, mentionRenderContext)
         } else {
             binding.chatTv.renderMessage(messageItem.content, keyword)
@@ -212,14 +216,15 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
 
         chatLayout(isMe, isLast)
 
-        attachAction = if (messageItem.mentionRead == false) {
-            {
-                blink()
-                RxBus.publish(MentionReadEvent(messageItem.conversationId, messageItem.messageId))
+        attachAction =
+            if (messageItem.mentionRead == false) {
+                {
+                    blink()
+                    RxBus.publish(MentionReadEvent(messageItem.conversationId, messageItem.messageId))
+                }
+            } else {
+                null
             }
-        } else {
-            null
-        }
     }
 
     private var textGestureListener: TextGestureListener? = null

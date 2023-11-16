@@ -14,10 +14,12 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.SafeSnapshotType
 
 open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
-
     private val binding = ItemWalletTransactionsBinding.bind(itemView)
 
-    open fun bind(snapshot: SnapshotItem, listener: OnSnapshotListener?) {
+    open fun bind(
+        snapshot: SnapshotItem,
+        listener: OnSnapshotListener?,
+    ) {
         val isPositive = snapshot.amount.toFloat() > 0
         when (val type = snapshot.simulateType()) {
             SafeSnapshotType.transfer -> {
@@ -47,16 +49,18 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
             }
         }
 
-        binding.value.text = if (isPositive) {
-            "+${snapshot.amount.numberFormat()}"
-        } else {
-            snapshot.amount.numberFormat()
-        }
-        binding.value.textColorResource = when {
-            snapshot.type == SafeSnapshotType.pending.name -> R.color.wallet_pending_text_color
-            isPositive -> R.color.wallet_green
-            else -> R.color.wallet_pink
-        }
+        binding.value.text =
+            if (isPositive) {
+                "+${snapshot.amount.numberFormat()}"
+            } else {
+                snapshot.amount.numberFormat()
+            }
+        binding.value.textColorResource =
+            when {
+                snapshot.type == SafeSnapshotType.pending.name -> R.color.wallet_pending_text_color
+                isPositive -> R.color.wallet_green
+                else -> R.color.wallet_pink
+            }
         binding.symbolTv.text = snapshot.assetSymbol
 
         itemView.setOnClickListener {
@@ -67,6 +71,7 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
 
 class SnapshotHeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val binding = ItemTransactionHeaderBinding.bind(itemView)
+
     fun bind(time: String) {
         binding.dateTv.timeAgoDay(time)
     }
@@ -74,5 +79,6 @@ class SnapshotHeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemVie
 
 interface OnSnapshotListener {
     fun <T> onNormalItemClick(item: T)
+
     fun onUserClick(userId: String)
 }

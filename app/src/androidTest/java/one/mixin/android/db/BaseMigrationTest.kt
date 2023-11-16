@@ -9,14 +9,14 @@ import org.junit.Before
 import org.junit.Rule
 
 open class BaseMigrationTest {
-
     @Suppress("DEPRECATION")
-    @get: Rule
-    val migrationTestHelper = MigrationTestHelper(
-        InstrumentationRegistry.getInstrumentation(),
-        MixinDatabase::class.java.canonicalName,
-        FrameworkSQLiteOpenHelperFactory(),
-    )
+    @get:Rule
+    val migrationTestHelper =
+        MigrationTestHelper(
+            InstrumentationRegistry.getInstrumentation(),
+            MixinDatabase::class.java.canonicalName,
+            FrameworkSQLiteOpenHelperFactory(),
+        )
 
     @Before
     fun setUp() {

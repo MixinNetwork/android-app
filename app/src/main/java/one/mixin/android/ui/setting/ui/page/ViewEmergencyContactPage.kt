@@ -49,9 +49,10 @@ fun ViewEmergencyContactPage(user: User) {
         },
     ) {
         Column(
-            modifier = Modifier
-                .background(MixinAppTheme.colors.background)
-                .fillMaxWidth(),
+            modifier =
+                Modifier
+                    .background(MixinAppTheme.colors.background)
+                    .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(modifier = Modifier.height(42.dp))
@@ -83,10 +84,11 @@ fun ViewEmergencyContactPage(user: User) {
             modifier = Modifier.padding(horizontal = 16.dp),
             source = stringResource(id = R.string.setting_emergency_desc),
             links = arrayOf(Constants.HelpLink.EMERGENCY),
-            textStyle = TextStyle(
-                fontSize = 12.sp,
-                color = MixinAppTheme.colors.textSubtitle,
-            ),
+            textStyle =
+                TextStyle(
+                    fontSize = 12.sp,
+                    color = MixinAppTheme.colors.textSubtitle,
+                ),
         ) {
             context.openUrl(Constants.HelpLink.EMERGENCY)
         }

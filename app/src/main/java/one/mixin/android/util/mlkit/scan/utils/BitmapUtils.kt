@@ -22,18 +22,24 @@ import java.nio.ByteBuffer
 
 object BitmapUtils {
     /** Converts NV21 format byte buffer to bitmap.  */
-    fun getBitmap(data: ByteBuffer, width: Int, height: Int, rotationDegrees: Int): Bitmap? {
+    fun getBitmap(
+        data: ByteBuffer,
+        width: Int,
+        height: Int,
+        rotationDegrees: Int,
+    ): Bitmap? {
         data.rewind()
         val imageInBuffer = ByteArray(data.limit())
         data[imageInBuffer, 0, imageInBuffer.size]
         try {
-            val image = YuvImage(
-                imageInBuffer,
-                ImageFormat.NV21,
-                width,
-                height,
-                null,
-            )
+            val image =
+                YuvImage(
+                    imageInBuffer,
+                    ImageFormat.NV21,
+                    width,
+                    height,
+                    null,
+                )
             val stream = ByteArrayOutputStream()
             image.compressToJpeg(Rect(0, 0, width, height), 80, stream)
             val bmp = BitmapFactory.decodeByteArray(stream.toByteArray(), 0, stream.size())
@@ -48,11 +54,12 @@ object BitmapUtils {
     /** Converts a YUV_420_888 image from CameraX API to a bitmap.  */
     fun getBitmap(image: ImageProxy): Bitmap? {
         @SuppressLint("UnsafeOptInUsageError")
-        val nv21Buffer = yuv420ThreePlanesToNV21(
-            image.image!!.planes,
-            image.width,
-            image.height,
-        )
+        val nv21Buffer =
+            yuv420ThreePlanesToNV21(
+                image.image!!.planes,
+                image.width,
+                image.height,
+            )
         return getBitmap(nv21Buffer, image.width, image.height, image.imageInfo.rotationDegrees)
     }
 
@@ -82,7 +89,10 @@ object BitmapUtils {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Throws(IOException::class)
-    fun getBitmapFromContentUri(contentResolver: ContentResolver, imageUri: Uri): Bitmap? {
+    fun getBitmapFromContentUri(
+        contentResolver: ContentResolver,
+        imageUri: Uri,
+    ): Bitmap? {
         val decodedBitmap =
             MediaStore.Images.Media.getBitmap(contentResolver, imageUri) ?: return null
         val orientation = getExifOrientationTag(contentResolver, imageUri)
@@ -112,7 +122,10 @@ object BitmapUtils {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    private fun getExifOrientationTag(resolver: ContentResolver, imageUri: Uri): Int {
+    private fun getExifOrientationTag(
+        resolver: ContentResolver,
+        imageUri: Uri,
+    ): Int {
         // We only support parsing EXIF orientation tag from local file on the device.
         // See also:
         // https://android-developers.googleblog.com/2016/12/introducing-the-exifinterface-support-library.html
@@ -184,7 +197,11 @@ object BitmapUtils {
     }
 
     /** Checks if the UV plane buffers of a YUV_420_888 image are in the NV21 format.  */
-    private fun areUVPlanesNV21(planes: Array<Plane>, width: Int, height: Int): Boolean {
+    private fun areUVPlanesNV21(
+        planes: Array<Plane>,
+        width: Int,
+        height: Int,
+    ): Boolean {
         val imageSize = width * height
         val uBuffer = planes[1].buffer
         val vBuffer = planes[2].buffer

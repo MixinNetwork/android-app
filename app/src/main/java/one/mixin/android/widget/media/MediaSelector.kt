@@ -30,7 +30,6 @@ class MediaSelector(
     private var listener: MediaSelectorListener?,
     onDismissListener: OnDismissListener,
 ) : PopupWindow(context) {
-
     private var currentAnchor: View? = null
     private val recentPhotos: RecentPhotoRecyclerView
     private val menuCamera: View
@@ -120,18 +119,22 @@ class MediaSelector(
         animateButtonIn(menuDown, 0)
     }
 
-    private fun animateButtonIn(button: View, delay: Int) {
+    private fun animateButtonIn(
+        button: View,
+        delay: Int,
+    ) {
         val animation = AnimationSet(true)
-        val scale = ScaleAnimation(
-            0.0f,
-            1.0f,
-            0.0f,
-            1.0f,
-            Animation.RELATIVE_TO_SELF,
-            0.5f,
-            Animation.RELATIVE_TO_SELF,
-            0.0f,
-        )
+        val scale =
+            ScaleAnimation(
+                0.0f,
+                1.0f,
+                0.0f,
+                1.0f,
+                Animation.RELATIVE_TO_SELF,
+                0.5f,
+                Animation.RELATIVE_TO_SELF,
+                0.0f,
+            )
 
         animation.addAnimation(scale)
         animation.interpolator = OvershootInterpolator(1f)
@@ -149,28 +152,36 @@ class MediaSelector(
         this.listener = listener
     }
 
-    private fun animateWindowInCircular(anchor: View?, contentView: View) {
+    private fun animateWindowInCircular(
+        anchor: View?,
+        contentView: View,
+    ) {
         val coordinates = getClickOrigin(anchor, contentView)
-        val animator = ViewAnimationUtils.createCircularReveal(
-            contentView,
-            coordinates.first,
-            coordinates.second,
-            0f,
-            Math.max(contentView.width, contentView.height).toFloat(),
-        )
+        val animator =
+            ViewAnimationUtils.createCircularReveal(
+                contentView,
+                coordinates.first,
+                coordinates.second,
+                0f,
+                Math.max(contentView.width, contentView.height).toFloat(),
+            )
         animator.duration = ANIMATION_DURATION.toLong()
         animator.start()
     }
 
-    private fun animateWindowOutCircular(anchor: View?, contentView: View) {
+    private fun animateWindowOutCircular(
+        anchor: View?,
+        contentView: View,
+    ) {
         val coordinates = getClickOrigin(anchor, contentView)
-        val animator = ViewAnimationUtils.createCircularReveal(
-            getContentView(),
-            coordinates.first,
-            coordinates.second,
-            Math.max(getContentView().width, getContentView().height).toFloat(),
-            0f,
-        )
+        val animator =
+            ViewAnimationUtils.createCircularReveal(
+                getContentView(),
+                coordinates.first,
+                coordinates.second,
+                Math.max(getContentView().width, getContentView().height).toFloat(),
+                0f,
+            )
 
         animator.duration = ANIMATION_DURATION.toLong()
         animator.addListener(
@@ -208,7 +219,10 @@ class MediaSelector(
         getContentView().startAnimation(animation)
     }
 
-    private fun getClickOrigin(anchor: View?, contentView: View): Pair<Int, Int> {
+    private fun getClickOrigin(
+        anchor: View?,
+        contentView: View,
+    ): Pair<Int, Int> {
         if (anchor == null) return Pair(0, 0)
 
         val anchorCoordinates = IntArray(2)

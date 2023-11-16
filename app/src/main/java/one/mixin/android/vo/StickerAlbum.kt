@@ -45,13 +45,20 @@ data class StickerAlbum(
     var added: Boolean = false,
 ) {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<StickerAlbum>() {
-            override fun areItemsTheSame(oldItem: StickerAlbum, newItem: StickerAlbum) =
-                oldItem.albumId == newItem.albumId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<StickerAlbum>() {
+                override fun areItemsTheSame(
+                    oldItem: StickerAlbum,
+                    newItem: StickerAlbum,
+                ) =
+                    oldItem.albumId == newItem.albumId
 
-            override fun areContentsTheSame(oldItem: StickerAlbum, newItem: StickerAlbum) =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: StickerAlbum,
+                    newItem: StickerAlbum,
+                ) =
+                    oldItem == newItem
+            }
     }
 }
 

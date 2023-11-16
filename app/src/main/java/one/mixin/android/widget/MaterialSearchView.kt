@@ -82,20 +82,25 @@ class MaterialSearchView : FrameLayout {
 
     @Suppress("unused")
     val currentQuery: String
-        get() = if (!TextUtils.isEmpty(mCurrentQuery)) {
-            mCurrentQuery.toString()
-        } else {
-            ""
-        }
+        get() =
+            if (!TextUtils.isEmpty(mCurrentQuery)) {
+                mCurrentQuery.toString()
+            } else {
+                ""
+            }
 
-    private fun initStyle(attributeSet: AttributeSet?, defStyleAttribute: Int) {
+    private fun initStyle(
+        attributeSet: AttributeSet?,
+        defStyleAttribute: Int,
+    ) {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
-        val typedArray = context.obtainStyledAttributes(
-            attributeSet,
-            R.styleable.MaterialSearchView,
-            defStyleAttribute,
-            0,
-        )
+        val typedArray =
+            context.obtainStyledAttributes(
+                attributeSet,
+                R.styleable.MaterialSearchView,
+                defStyleAttribute,
+                0,
+            )
         if (typedArray.hasValue(R.styleable.MaterialSearchView_android_hint)) {
             setHint(typedArray.getString(R.styleable.MaterialSearchView_android_hint))
         }
@@ -172,14 +177,15 @@ class MaterialSearchView : FrameLayout {
         }
 
         // Don't auto dispose
-        disposable = binding.searchEt.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                {
-                    this@MaterialSearchView.onTextChanged(it)
-                },
-                {},
-            )
+        disposable =
+            binding.searchEt.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    {
+                        this@MaterialSearchView.onTextChanged(it)
+                    },
+                    {},
+                )
 
         binding.rightClear.setOnClickListener {
             if (!binding.searchEt.text.isNullOrEmpty()) {
@@ -204,14 +210,16 @@ class MaterialSearchView : FrameLayout {
         binding.avatar.fadeIn()
         binding.actionVa.fadeOut()
         ValueAnimator.ofFloat(1f, 0f).apply {
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    binding.containerShadow.isVisible = false
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        (context as Activity).window.navigationBarColor = context.colorFromAttribute(R.attr.bg_white)
+            addListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        binding.containerShadow.isVisible = false
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            (context as Activity).window.navigationBarColor = context.colorFromAttribute(R.attr.bg_white)
+                        }
                     }
-                }
-            })
+                },
+            )
             addUpdateListener {
                 val c = Color.BLACK.withAlpha(0.32f * it.animatedValue as Float)
                 binding.containerShadow.setBackgroundColor(c)
@@ -235,12 +243,14 @@ class MaterialSearchView : FrameLayout {
         binding.actionVa.fadeIn()
         binding.containerCircle.isVisible = true
         ValueAnimator.ofFloat(0f, 1f).apply {
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationStart(animation: Animator) {
-                    binding.containerShadow.isVisible = true
-                    binding.containerShadow.setBackgroundColor(Color.TRANSPARENT)
-                }
-            })
+            addListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationStart(animation: Animator) {
+                        binding.containerShadow.isVisible = true
+                        binding.containerShadow.setBackgroundColor(Color.TRANSPARENT)
+                    }
+                },
+            )
             addUpdateListener {
                 val c = Color.BLACK.withAlpha(0.32f * it.animatedValue as Float)
                 binding.containerShadow.setBackgroundColor(c)
@@ -423,7 +433,10 @@ class MaterialSearchView : FrameLayout {
         this.mSearchViewListener = mSearchViewListener
     }
 
-    fun setQuery(query: CharSequence?, submit: Boolean) {
+    fun setQuery(
+        query: CharSequence?,
+        submit: Boolean,
+    ) {
         binding.searchEt.setText(query)
 
         if (query != null) {
@@ -440,7 +453,10 @@ class MaterialSearchView : FrameLayout {
         binding.searchEt.setBackgroundColor(color)
     }
 
-    private fun adjustAlpha(color: Int, factor: Float): Int {
+    private fun adjustAlpha(
+        color: Int,
+        factor: Float,
+    ): Int {
         if (factor < 0) return color
 
         val alpha = (Color.alpha(color) * factor).roundToInt()
@@ -519,7 +535,10 @@ internal class SavedState : View.BaseSavedState {
 
     constructor(superState: Parcelable) : super(superState)
 
-    override fun writeToParcel(out: Parcel, flags: Int) {
+    override fun writeToParcel(
+        out: Parcel,
+        flags: Int,
+    ) {
         super.writeToParcel(out, flags)
         out.writeInt(if (isOpen) 1 else 0)
     }
@@ -527,14 +546,15 @@ internal class SavedState : View.BaseSavedState {
     companion object {
         @JvmField
         @NotNull
-        val CREATOR: Parcelable.Creator<SavedState> = object : Parcelable.Creator<SavedState> {
-            override fun createFromParcel(`in`: Parcel): SavedState {
-                return SavedState(`in`)
-            }
+        val CREATOR: Parcelable.Creator<SavedState> =
+            object : Parcelable.Creator<SavedState> {
+                override fun createFromParcel(`in`: Parcel): SavedState {
+                    return SavedState(`in`)
+                }
 
-            override fun newArray(size: Int): Array<SavedState?> {
-                return arrayOfNulls(size)
+                override fun newArray(size: Int): Array<SavedState?> {
+                    return arrayOfNulls(size)
+                }
             }
-        }
     }
 }

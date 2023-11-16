@@ -40,11 +40,12 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         backDrawable.alpha = 0
         sheetContainer = window!!.findViewById(com.google.android.material.R.id.design_bottom_sheet)
         sheetContainer.updateLayoutParams<ViewGroup.LayoutParams> {
-            width = when {
-                context.isWideScreen() -> (context.displayMetrics.widthPixels * 0.5).toInt()
-                context.isTablet() -> (context.displayMetrics.widthPixels * 0.8).toInt()
-                else -> width
-            }
+            width =
+                when {
+                    context.isWideScreen() -> (context.displayMetrics.widthPixels * 0.5).toInt()
+                    context.isTablet() -> (context.displayMetrics.widthPixels * 0.8).toInt()
+                    else -> width
+                }
         }
         behavior.addBottomSheetCallback(bottomSheetBehaviorCallback)
     }
@@ -63,15 +64,16 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         if (isShown) return
         backDrawable.alpha = 0
         sheetContainer.translationY = sheetContainer.measuredHeight.toFloat()
-        startAnimationRunnable = object : Runnable {
-            override fun run() {
-                if (startAnimationRunnable != this || isDismissed) {
-                    return
+        startAnimationRunnable =
+            object : Runnable {
+                override fun run() {
+                    if (startAnimationRunnable != this || isDismissed) {
+                        return
+                    }
+                    startAnimationRunnable = null
+                    startOpenAnimation()
                 }
-                startAnimationRunnable = null
-                startOpenAnimation()
             }
-        }
         sheetContainer.post(startAnimationRunnable)
     }
 
@@ -165,18 +167,25 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         curSheetAnimation = null
     }
 
-    private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
-
-        override fun onStateChanged(bottomSheet: View, newState: Int) {
-        }
-
-        override fun onSlide(bottomSheet: View, slideOffset: Float) {
-            val alpha = if (slideOffset in 0.0..1.0) {
-                BACK_DRAWABLE_ALPHA
-            } else {
-                (BACK_DRAWABLE_ALPHA - abs(slideOffset) * BACK_DRAWABLE_ALPHA).toInt()
+    private val bottomSheetBehaviorCallback =
+        object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(
+                bottomSheet: View,
+                newState: Int,
+            ) {
             }
-            backDrawable.alpha = alpha
+
+            override fun onSlide(
+                bottomSheet: View,
+                slideOffset: Float,
+            ) {
+                val alpha =
+                    if (slideOffset in 0.0..1.0) {
+                        BACK_DRAWABLE_ALPHA
+                    } else {
+                        (BACK_DRAWABLE_ALPHA - abs(slideOffset) * BACK_DRAWABLE_ALPHA).toInt()
+                    }
+                backDrawable.alpha = alpha
+            }
         }
-    }
 }

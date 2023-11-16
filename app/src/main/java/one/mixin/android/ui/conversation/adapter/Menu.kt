@@ -11,10 +11,16 @@ class Menu(
 
 sealed class MenuType {
     object Camera : MenuType()
+
     object Transfer : MenuType()
+
     object Voice : MenuType()
+
     object File : MenuType()
+
     object Contact : MenuType()
+
     object App : MenuType()
+
     object Location : MenuType()
 }

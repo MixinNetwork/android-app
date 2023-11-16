@@ -22,7 +22,10 @@ object SafeBoxSerializer : Serializer<SafeBox> {
         }
     }
 
-    override suspend fun writeTo(safeBox: SafeBox, output: OutputStream) {
+    override suspend fun writeTo(
+        safeBox: SafeBox,
+        output: OutputStream,
+    ) {
         output.write(Json.encodeToString(SafeBox.serializer(), safeBox).encodeToByteArray())
     }
 }

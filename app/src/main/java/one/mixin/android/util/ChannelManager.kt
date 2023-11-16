@@ -25,7 +25,6 @@ import one.mixin.android.util.RomUtil.isEmui
 import timber.log.Timber
 
 class ChannelManager {
-
     companion object {
         private const val CHANNEL_GROUP = "channel_group"
         const val CHANNEL_MESSAGE = "channel_message"
@@ -46,11 +45,12 @@ class ChannelManager {
 
         @RequiresApi(Build.VERSION_CODES.O)
         fun createNodeChannel(notificationManager: NotificationManager) {
-            val channel = NotificationChannel(
-                BlazeMessageService.CHANNEL_NODE,
-                MixinApplication.get().getString(R.string.Messaging_Node),
-                NotificationManager.IMPORTANCE_LOW,
-            )
+            val channel =
+                NotificationChannel(
+                    BlazeMessageService.CHANNEL_NODE,
+                    MixinApplication.get().getString(R.string.Messaging_Node),
+                    NotificationManager.IMPORTANCE_LOW,
+                )
             channel.lockscreenVisibility = Notification.VISIBILITY_SECRET
             channel.setSound(null, null)
             channel.setShowBadge(false)
@@ -82,11 +82,12 @@ class ChannelManager {
                     )
 
                 messageChannel.group = CHANNEL_MESSAGE_GROUP
-                val uri = if (isEmui) {
-                    Settings.System.DEFAULT_NOTIFICATION_URI
-                } else {
-                    Uri.parse("${ContentResolver.SCHEME_ANDROID_RESOURCE}://${context.packageName}/raw/mixin")
-                }
+                val uri =
+                    if (isEmui) {
+                        Settings.System.DEFAULT_NOTIFICATION_URI
+                    } else {
+                        Uri.parse("${ContentResolver.SCHEME_ANDROID_RESOURCE}://${context.packageName}/raw/mixin")
+                    }
                 messageChannel.setSound(
                     uri,
                     AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -168,7 +169,9 @@ class ChannelManager {
             }
         }
 
-        fun getChannelId(@ChannelCategory category: Int): String {
+        fun getChannelId(
+            @ChannelCategory category: Int,
+        ): String {
             val currentUserVersion = MixinApplication.appContext.defaultSharedPreferences.getInt(CHANNEL_CURRENT_USER_VERSION, 0)
             return when (category) {
                 GROUP -> {
@@ -184,7 +187,10 @@ class ChannelManager {
         }
 
         @RequiresApi(Build.VERSION_CODES.O)
-        private fun copyChannel(original: NotificationChannel, id: String): NotificationChannel {
+        private fun copyChannel(
+            original: NotificationChannel,
+            id: String,
+        ): NotificationChannel {
             val copy = NotificationChannel(id, original.name, original.importance)
 
             copy.group = original.group

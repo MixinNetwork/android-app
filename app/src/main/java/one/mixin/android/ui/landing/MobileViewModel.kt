@@ -26,45 +26,61 @@ import one.mixin.android.vo.User
 import javax.inject.Inject
 
 @HiltViewModel
-class MobileViewModel @Inject internal constructor(
-    private val accountRepository: AccountRepository,
-    private val userRepository: UserRepository,
-    private val jobManager: MixinJobManager,
-    private val pinCipher: PinCipher,
-) : ViewModel() {
+class MobileViewModel
+    @Inject
+    internal constructor(
+        private val accountRepository: AccountRepository,
+        private val userRepository: UserRepository,
+        private val jobManager: MixinJobManager,
+        private val pinCipher: PinCipher,
+    ) : ViewModel() {
+        fun loginVerification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
+            accountRepository.verificationObserver(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    fun loginVerification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
-        accountRepository.verificationObserver(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        fun verification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
+            accountRepository.verificationObserver(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    fun verification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
-        accountRepository.verificationObserver(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        suspend fun create(
+            id: String,
+            request: AccountRequest,
+        ): MixinResponse<Account> =
+            withContext(Dispatchers.IO) {
+                accountRepository.create(id, request)
+            }
 
-    suspend fun create(id: String, request: AccountRequest): MixinResponse<Account> = withContext(Dispatchers.IO) {
-        accountRepository.create(id, request)
+        suspend fun changePhone(
+            id: String,
+            verificationCode: String,
+            pin: String,
+        ): MixinResponse<Account> =
+            accountRepository.changePhone(
+                id,
+                AccountRequest(
+                    verificationCode,
+                    purpose = VerificationPurpose.PHONE.name,
+                    pin = pinCipher.encryptPin(pin, TipBody.forPhoneNumberUpdate(id, verificationCode)),
+                ),
+            )
+
+        fun deactiveVerification(
+            id: String,
+            code: String,
+        ): Observable<MixinResponse<VerificationResponse>> =
+            accountRepository.deactiveVerification(
+                id,
+                DeactivateVerificationRequest(VerificationPurpose.DEACTIVATED.name, code),
+            ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+
+        fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
+            accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+
+        fun insertUser(user: User) =
+            viewModelScope.launch(Dispatchers.IO) {
+                userRepository.upsert(user)
+            }
+
+        fun updatePhone(
+            id: String,
+            phone: String,
+        ) = userRepository.updatePhone(id, phone)
     }
-
-    suspend fun changePhone(id: String, verificationCode: String, pin: String): MixinResponse<Account> =
-        accountRepository.changePhone(
-            id,
-            AccountRequest(
-                verificationCode,
-                purpose = VerificationPurpose.PHONE.name,
-                pin = pinCipher.encryptPin(pin, TipBody.forPhoneNumberUpdate(id, verificationCode)),
-            ),
-        )
-
-    fun deactiveVerification(id: String, code: String): Observable<MixinResponse<VerificationResponse>> =
-        accountRepository.deactiveVerification(
-            id,
-            DeactivateVerificationRequest(VerificationPurpose.DEACTIVATED.name, code),
-        ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-
-    fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
-        accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-
-    fun insertUser(user: User) = viewModelScope.launch(Dispatchers.IO) {
-        userRepository.upsert(user)
-    }
-
-    fun updatePhone(id: String, phone: String) = userRepository.updatePhone(id, phone)
-}

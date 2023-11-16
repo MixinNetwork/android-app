@@ -8,7 +8,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewTimeIntervalPickerBinding
 
 class TimeIntervalPicker : LinearLayout {
-
     private var binding: ViewTimeIntervalPickerBinding =
         ViewTimeIntervalPickerBinding.inflate(LayoutInflater.from(context), this)
 

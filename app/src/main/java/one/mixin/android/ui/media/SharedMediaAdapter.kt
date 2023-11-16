@@ -16,21 +16,26 @@ class SharedMediaAdapter(
 
     override fun createFragment(position: Int): Fragment {
         return when (position) {
-            0 -> MediaFragment.newInstance(conversationId).apply {
-                this.onLongClickListener = this@SharedMediaAdapter.onLongClickListener
-            }
-            1 -> AudioFragment.newInstance(conversationId).apply {
-                this.onLongClickListener = this@SharedMediaAdapter.onLongClickListener
-            }
-            2 -> PostFragment.newInstance(conversationId).apply {
-                this.onLongClickListener = this@SharedMediaAdapter.onLongClickListener
-            }
-            3 -> LinkFragment.newInstance(conversationId).apply {
-                this.onLongClickListener = this@SharedMediaAdapter.onLongClickListener
-            }
-            else -> FileFragment.newInstance(conversationId).apply {
-                this.onLongClickListener = this@SharedMediaAdapter.onLongClickListener
-            }
+            0 ->
+                MediaFragment.newInstance(conversationId).apply {
+                    this.onLongClickListener = this@SharedMediaAdapter.onLongClickListener
+                }
+            1 ->
+                AudioFragment.newInstance(conversationId).apply {
+                    this.onLongClickListener = this@SharedMediaAdapter.onLongClickListener
+                }
+            2 ->
+                PostFragment.newInstance(conversationId).apply {
+                    this.onLongClickListener = this@SharedMediaAdapter.onLongClickListener
+                }
+            3 ->
+                LinkFragment.newInstance(conversationId).apply {
+                    this.onLongClickListener = this@SharedMediaAdapter.onLongClickListener
+                }
+            else ->
+                FileFragment.newInstance(conversationId).apply {
+                    this.onLongClickListener = this@SharedMediaAdapter.onLongClickListener
+                }
         }
     }
 }

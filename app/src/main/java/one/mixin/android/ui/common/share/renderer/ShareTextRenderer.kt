@@ -12,7 +12,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.widget.linktext.AutoLinkMode
 
 open class ShareTextRenderer(val context: Context, maxWidth: Int) {
-
     val binding = ItemChatTextBinding.inflate(LayoutInflater.from(context), null, false)
     val contentView get() = binding.root
 
@@ -22,7 +21,10 @@ open class ShareTextRenderer(val context: Context, maxWidth: Int) {
         binding.chatLayout.setMaxWidth(maxWidth - 16.dp)
     }
 
-    fun render(content: String, isNightMode: Boolean) {
+    fun render(
+        content: String,
+        isNightMode: Boolean,
+    ) {
         binding.chatName.isVisible = false
         binding.chatTime.load(
             true,

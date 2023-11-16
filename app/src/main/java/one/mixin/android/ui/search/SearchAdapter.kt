@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
-import java.util.Locale
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemSearchAssetBinding
 import one.mixin.android.databinding.ItemSearchChatBinding
@@ -25,9 +24,9 @@ import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
+import java.util.Locale
 
 class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRecyclerHeadersAdapter<HeaderHolder> {
-
     var onItemClickListener: SearchFragment.OnSearchClickListener? = null
     var query: String = ""
         set(value) {
@@ -43,13 +42,17 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             }
         }
 
-    override fun getHeaderId(position: Int): Long = if (position == 0 && data.showTip) {
-        -1
-    } else {
-        getItemViewType(position).toLong() + data.getHeaderFactor(position)
-    }
+    override fun getHeaderId(position: Int): Long =
+        if (position == 0 && data.showTip) {
+            -1
+        } else {
+            getItemViewType(position).toLong() + data.getHeaderFactor(position)
+        }
 
-    override fun onBindHeaderViewHolder(holder: HeaderHolder, position: Int) {
+    override fun onBindHeaderViewHolder(
+        holder: HeaderHolder,
+        position: Int,
+    ) {
         val context = holder.itemView.context
         when (getItemViewType(position)) {
             TypeAsset.index -> holder.bind(context.getText(R.string.ASSETS).toString(), data.assetShowMore())
@@ -84,7 +87,11 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setData(tokenItems: List<TokenItem>?, users: List<User>?, chatMinimals: List<ChatMinimal>?) {
+    fun setData(
+        tokenItems: List<TokenItem>?,
+        users: List<User>?,
+        chatMinimals: List<ChatMinimal>?,
+    ) {
         data.assetList = tokenItems
         data.userList = users
         data.showTip = shouldTips(query)
@@ -133,7 +140,9 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     }
 
     private fun shouldTips(keyword: String): Boolean {
-        if (data.url != null) { return true }
+        if (data.url != null) {
+            return true
+        }
         if (keyword.length < 4) return false
         if (!keyword.all { it.isDigit() or (it == '+') }) return false
         return if (keyword.startsWith('+')) {
@@ -148,7 +157,10 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         } && data.userList.isNullOrEmpty()
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+    ) {
         when (getItemViewType(position)) {
             0 -> {
                 (holder as TipHolder).bind(query, searchingId, data.url, onItemClickListener)
@@ -178,7 +190,10 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
 
     override fun getItemCount(): Int = data.getCount()
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): RecyclerView.ViewHolder =
         when (viewType) {
             0 -> {
                 TipHolder(ItemSearchTipBinding.inflate(LayoutInflater.from(parent.context), parent, false))

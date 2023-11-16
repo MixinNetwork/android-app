@@ -9,7 +9,9 @@ import com.uber.autodispose.android.lifecycle.scope
 
 open class BaseFragment : Fragment {
     constructor() : super()
-    constructor(@LayoutRes contentLayoutId: Int) : super(contentLayoutId)
+    constructor(
+        @LayoutRes contentLayoutId: Int,
+    ) : super(contentLayoutId)
 
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
     protected val pauseScope = scope(Lifecycle.Event.ON_PAUSE)
@@ -17,7 +19,10 @@ open class BaseFragment : Fragment {
 
     open fun onBackPressed() = false
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         interceptClick(view)
     }
 

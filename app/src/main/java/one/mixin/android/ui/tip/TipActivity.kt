@@ -20,7 +20,11 @@ class TipActivity : BlazeBaseActivity() {
     companion object {
         const val TAG = "TipActivity"
 
-        fun show(context: Context, tipBundle: TipBundle, shouldWatch: Boolean = false) {
+        fun show(
+            context: Context,
+            tipBundle: TipBundle,
+            shouldWatch: Boolean = false,
+        ) {
             context.startActivity(
                 Intent(context, TipActivity::class.java).apply {
                     putExtra(ARGS_TIP_BUNDLE, tipBundle)
@@ -30,7 +34,12 @@ class TipActivity : BlazeBaseActivity() {
             )
         }
 
-        fun show(context: Activity, tipType: TipType, bottomUpAnim: Boolean = false, shouldWatch: Boolean = false) {
+        fun show(
+            context: Activity,
+            tipType: TipType,
+            bottomUpAnim: Boolean = false,
+            shouldWatch: Boolean = false,
+        ) {
             val deviceId = requireNotNull(context.defaultSharedPreferences.getString(DEVICE_ID, null)) { "required deviceId can not be null" }
             val tipBundle = TipBundle(tipType, deviceId, TryConnecting)
             show(context, tipBundle, shouldWatch)

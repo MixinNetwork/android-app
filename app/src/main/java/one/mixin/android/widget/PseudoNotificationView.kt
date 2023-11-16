@@ -18,7 +18,6 @@ import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isMixinUrl
 
 class PseudoNotificationView : RelativeLayout {
-
     var currContent: String? = null
 
     private val contentSet = ArraySet<String>()
@@ -43,11 +42,12 @@ class PseudoNotificationView : RelativeLayout {
         }
         contentSet.add(s)
         currContent = s
-        binding.contentTv.text = if (s.isMixinUrl() || s.isDonateUrl() || s.isExternalTransferUrl()) {
-            context.getString(R.string.detect_qr_tip)
-        } else {
-            s
-        }
+        binding.contentTv.text =
+            if (s.isMixinUrl() || s.isDonateUrl() || s.isExternalTransferUrl()) {
+                context.getString(R.string.detect_qr_tip)
+            } else {
+                s
+            }
         if (!visible) {
             animate().apply {
                 translationY(0f)
@@ -65,21 +65,27 @@ class PseudoNotificationView : RelativeLayout {
         visible = false
     }
 
-    private val gestureDetector = GestureDetector(
-        context,
-        object : GestureDetector.SimpleOnGestureListener() {
-            override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
-                hide()
-                return super.onFling(e1, e2, velocityX, velocityY)
-            }
+    private val gestureDetector =
+        GestureDetector(
+            context,
+            object : GestureDetector.SimpleOnGestureListener() {
+                override fun onFling(
+                    e1: MotionEvent?,
+                    e2: MotionEvent,
+                    velocityX: Float,
+                    velocityY: Float,
+                ): Boolean {
+                    hide()
+                    return super.onFling(e1, e2, velocityX, velocityY)
+                }
 
-            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-                currContent?.let { callback.onClick(it) }
-                hide()
-                return super.onSingleTapConfirmed(e)
-            }
-        },
-    )
+                override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                    currContent?.let { callback.onClick(it) }
+                    hide()
+                    return super.onSingleTapConfirmed(e)
+                }
+            },
+        )
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {

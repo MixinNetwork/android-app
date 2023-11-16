@@ -26,27 +26,58 @@ object TipBody {
     fun forVerify(timestamp: Long): ByteArray =
         String.format("%s%032d", TIPVerify, timestamp).toByteArray()
 
-    fun forRawTransactionCreate(assetId: String, opponentKey: String, opponentReceivers: List<String>, opponentThreshold: Int, amount: String, traceId: String?, memo: String?): ByteArray {
+    fun forRawTransactionCreate(
+        assetId: String,
+        opponentKey: String,
+        opponentReceivers: List<String>,
+        opponentThreshold: Int,
+        amount: String,
+        traceId: String?,
+        memo: String?,
+    ): ByteArray {
         var body = assetId + opponentKey
         body += opponentReceivers.joinToString(separator = "")
         body = body + opponentThreshold + amount.stripAmountZero() + (traceId ?: "") + (memo ?: "")
         return (TIPRawTransactionCreate + body).hashToBody()
     }
 
-    fun forWithdrawalCreate(addressId: String, amount: String, fee: String?, traceId: String, memo: String?): ByteArray =
+    fun forWithdrawalCreate(
+        addressId: String,
+        amount: String,
+        fee: String?,
+        traceId: String,
+        memo: String?,
+    ): ByteArray =
         (TIPWithdrawalCreate + addressId + amount.stripAmountZero() + (fee?.stripAmountZero() ?: "") + traceId + (memo ?: "")).hashToBody()
 
-    fun forTransfer(assetId: String, counterUserId: String, amount: String, traceId: String?, memo: String?): ByteArray {
+    fun forTransfer(
+        assetId: String,
+        counterUserId: String,
+        amount: String,
+        traceId: String?,
+        memo: String?,
+    ): ByteArray {
         return (TIPTransferCreate + assetId + counterUserId + amount.stripAmountZero() + (traceId ?: "") + (memo ?: "")).hashToBody()
     }
 
-    fun forPhoneNumberUpdate(verificationId: String, code: String): ByteArray =
+    fun forPhoneNumberUpdate(
+        verificationId: String,
+        code: String,
+    ): ByteArray =
         (TIPPhoneNumberUpdate + verificationId + code).hashToBody()
 
-    fun forEmergencyContactCreate(verificationId: String, code: String): ByteArray =
+    fun forEmergencyContactCreate(
+        verificationId: String,
+        code: String,
+    ): ByteArray =
         (TIPEmergencyContactCreate + verificationId + code).hashToBody()
 
-    fun forAddressAdd(assetId: String, publicKey: String?, keyTag: String?, name: String?): ByteArray =
+    fun forAddressAdd(
+        assetId: String,
+        publicKey: String?,
+        keyTag: String?,
+        name: String?,
+    ): ByteArray =
         (TIPAddressAdd + assetId + (publicKey ?: "") + (keyTag ?: "") + (name ?: "")).hashToBody()
 
     fun forAddressRemove(addressId: String): ByteArray =
@@ -76,10 +107,16 @@ object TipBody {
     fun forOAuthApprove(authorizationId: String): ByteArray =
         (TIPOAuthApprove + authorizationId).hashToBody()
 
-    fun forProvisioningCreate(id: String, secret: String): ByteArray =
+    fun forProvisioningCreate(
+        id: String,
+        secret: String,
+    ): ByteArray =
         (TIPProvisioningCreate + id + secret).hashToBody()
 
-    fun forSequencerRegister(userId: String, publicKey: String): ByteArray =
+    fun forSequencerRegister(
+        userId: String,
+        publicKey: String,
+    ): ByteArray =
         (TIPBodyForSequencerRegister + userId + publicKey).hashToBody()
 
     private fun String.hashToBody() = sha256()

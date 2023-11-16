@@ -64,7 +64,10 @@ fun hasWritePermission(): Boolean {
     ) == PackageManager.PERMISSION_GRANTED
 }
 
-fun Context.checkStorageNotLow(lowAction: () -> Unit, defaultAction: () -> Unit) {
+fun Context.checkStorageNotLow(
+    lowAction: () -> Unit,
+    defaultAction: () -> Unit,
+) {
     if (isLowDisk()) { // 100MB
         lowAction()
     } else {
@@ -107,7 +110,10 @@ fun Context.getAncientMediaPath(): File? {
     return null
 }
 
-fun Context.getLegacyBackupPath(create: Boolean = false, legacy: Boolean = false): File? {
+fun Context.getLegacyBackupPath(
+    create: Boolean = false,
+    legacy: Boolean = false,
+): File? {
     val path = getAppPath(legacy) ?: return null
     val identityNumber = Session.getAccount()?.identityNumber ?: return null
     val f = File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Backup")
@@ -118,7 +124,10 @@ fun Context.getLegacyBackupPath(create: Boolean = false, legacy: Boolean = false
     return f
 }
 
-fun Context.getOldBackupPath(create: Boolean = false, legacy: Boolean = false): File? {
+fun Context.getOldBackupPath(
+    create: Boolean = false,
+    legacy: Boolean = false,
+): File? {
     val path = getAppPath(legacy) ?: return null
     val identityNumber = Session.getAccount()?.identityNumber ?: return null
     val f = File("${path.absolutePath}${File.separator}Backup${File.separator}$identityNumber")
@@ -142,25 +151,27 @@ fun getMimeType(
         type = MixinApplication.get().contentResolver.getType(uri)
     } else {
         val path = uri.getFilePath()
-        val extension = try {
-            MimeTypeMap.getFileExtensionFromUrl(path)
-        } catch (e: Exception) {
-            null
-        }
+        val extension =
+            try {
+                MimeTypeMap.getFileExtensionFromUrl(path)
+            } catch (e: Exception) {
+                null
+            }
         if (extension != null) {
             type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
         }
         if (isImage && type == null && path != null) {
-            type = try {
-                val options = BitmapFactory.Options()
-                options.inJustDecodeBounds = true
-                FileInputStream(path).use {
-                    BitmapFactory.decodeStream(it, null, options)
+            type =
+                try {
+                    val options = BitmapFactory.Options()
+                    options.inJustDecodeBounds = true
+                    FileInputStream(path).use {
+                        BitmapFactory.decodeStream(it, null, options)
+                    }
+                    options.outMimeType
+                } catch (e: Exception) {
+                    null
                 }
-                options.outMimeType
-            } catch (e: Exception) {
-                null
-            }
         }
     }
     return type
@@ -204,10 +215,11 @@ fun String.fileExists(): Boolean {
 private fun getOrientationFromExif(imagePath: String): Int {
     var orientation = -1
     val exif = ExifInterface(imagePath)
-    val exifOrientation = exif.getAttributeInt(
-        ExifInterface.TAG_ORIENTATION,
-        ExifInterface.ORIENTATION_NORMAL,
-    )
+    val exifOrientation =
+        exif.getAttributeInt(
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.ORIENTATION_NORMAL,
+        )
     when (exifOrientation) {
         ExifInterface.ORIENTATION_ROTATE_270 -> orientation = 270
         ExifInterface.ORIENTATION_ROTATE_180 -> orientation = 180
@@ -227,6 +239,7 @@ private fun Context.getBestAvailableCacheRoot(): File {
 fun File.generateConversationPath(conversationId: String): File {
     return File("$this${File.separator}$conversationId")
 }
+
 fun Context.getImagePath(legacy: Boolean = false): File {
     val root = getMediaPath(legacy)
     return File("$root${File.separator}Images")
@@ -252,7 +265,11 @@ fun Context.getAudioPath(legacy: Boolean = false): File {
     return File("${root}${File.separator}Audios")
 }
 
-fun Context.getTranscriptFile(name: String, type: String, legacy: Boolean = false): File {
+fun Context.getTranscriptFile(
+    name: String,
+    type: String,
+    legacy: Boolean = false,
+): File {
     return getTranscriptDirPath(legacy).newTempFile(
         name,
         type,
@@ -314,14 +331,18 @@ fun Context.getConversationMediaSize(conversationId: String): Long {
     return mediaSize
 }
 
-fun Context.getStorageUsageByConversationAndType(conversationId: String, type: String): StorageUsage? {
-    val dir = when (type) {
-        IMAGE -> getConversationImagePath(conversationId)
-        VIDEO -> getConversationVideoPath(conversationId)
-        AUDIO -> getConversationAudioPath(conversationId)
-        DATA -> getConversationDocumentPath(conversationId)
-        else -> null
-    } ?: return null
+fun Context.getStorageUsageByConversationAndType(
+    conversationId: String,
+    type: String,
+): StorageUsage? {
+    val dir =
+        when (type) {
+            IMAGE -> getConversationImagePath(conversationId)
+            VIDEO -> getConversationVideoPath(conversationId)
+            AUDIO -> getConversationAudioPath(conversationId)
+            DATA -> getConversationDocumentPath(conversationId)
+            else -> null
+        } ?: return null
     return dir.run {
         if (exists()) {
             val mediaSize = dirSize() ?: return@run null
@@ -355,7 +376,10 @@ fun Context.getImageCachePath(): File {
     return File("$root${File.separator}Images")
 }
 
-fun Context.getGroupAvatarPath(name: String, create: Boolean = true): File {
+fun Context.getGroupAvatarPath(
+    name: String,
+    create: Boolean = true,
+): File {
     val root = getBestAvailableCacheRoot()
     val file = File("$root${File.separator}$name.png")
     if (create && !file.exists()) {
@@ -383,7 +407,12 @@ fun File.createNoMediaDir() {
     }
 }
 
-fun File.createImageTemp(conversationId: String, messageId: String, type: String? = null, noMedia: Boolean = true): File {
+fun File.createImageTemp(
+    conversationId: String,
+    messageId: String,
+    type: String? = null,
+    noMedia: Boolean = true,
+): File {
     val conversationPath = generateConversationPath(conversationId)
     return conversationPath.newTempFile(messageId, type ?: ".jpg", noMedia)
 }
@@ -398,7 +427,10 @@ fun File.createImagePngTemp(noMedia: Boolean = true): File {
     return newTempFile("IMAGE_$time", ".png", noMedia)
 }
 
-fun File.createPostTemp(prefix: String? = null, type: String? = null): File {
+fun File.createPostTemp(
+    prefix: String? = null,
+    type: String? = null,
+): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
     return if (prefix != null) {
         newTempFile("${prefix}_POST_$time", type ?: ".md", false)
@@ -416,7 +448,11 @@ fun File.createPdfTemp(prefix: String? = null): File {
     }
 }
 
-fun File.createGifTemp(conversationId: String, messageId: String, noMedia: Boolean = true): File {
+fun File.createGifTemp(
+    conversationId: String,
+    messageId: String,
+    noMedia: Boolean = true,
+): File {
     val path = generateConversationPath(conversationId)
     return path.newTempFile(messageId, ".gif", noMedia)
 }
@@ -431,17 +467,30 @@ fun File.createPngTemp(noMedia: Boolean = true): File {
     return newTempFile("IMAGE_$time", ".png", noMedia)
 }
 
-fun File.createWebpTemp(conversationId: String, messageId: String, noMedia: Boolean = true): File {
+fun File.createWebpTemp(
+    conversationId: String,
+    messageId: String,
+    noMedia: Boolean = true,
+): File {
     val path = generateConversationPath(conversationId)
     return path.newTempFile(messageId, ".webp", noMedia)
 }
 
-fun File.createEmptyTemp(conversationId: String, messageId: String, noMedia: Boolean = true): File {
+fun File.createEmptyTemp(
+    conversationId: String,
+    messageId: String,
+    noMedia: Boolean = true,
+): File {
     val path = generateConversationPath(conversationId)
     return path.newTempFile(messageId, "", noMedia)
 }
 
-fun File.createDocumentTemp(conversationId: String, messageId: String, type: String?, noMedia: Boolean = true): File {
+fun File.createDocumentTemp(
+    conversationId: String,
+    messageId: String,
+    type: String?,
+    noMedia: Boolean = true,
+): File {
     val path = generateConversationPath(conversationId)
     return path.newTempFile(
         messageId,
@@ -481,17 +530,30 @@ private fun File.createDocumentFile(
     return File(this, fileName)
 }
 
-fun File.createVideoTemp(conversationId: String, messageId: String, type: String, noMedia: Boolean = true): File {
+fun File.createVideoTemp(
+    conversationId: String,
+    messageId: String,
+    type: String,
+    noMedia: Boolean = true,
+): File {
     val path = generateConversationPath(conversationId)
     return path.newTempFile(messageId, ".$type", noMedia)
 }
 
-fun File.createVideoTemp(type: String, noMedia: Boolean = true): File {
+fun File.createVideoTemp(
+    type: String,
+    noMedia: Boolean = true,
+): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
     return newTempFile("VIDEO_$time", ".$type", noMedia)
 }
 
-fun File.createAudioTemp(conversationId: String, messageId: String, type: String, noMedia: Boolean = true): File {
+fun File.createAudioTemp(
+    conversationId: String,
+    messageId: String,
+    type: String,
+    noMedia: Boolean = true,
+): File {
     val path = generateConversationPath(conversationId)
     return path.newTempFile(messageId, ".$type", noMedia)
 }
@@ -506,7 +568,11 @@ fun File.getAudioPreviewTemp(conversationId: String): File {
     return File(path, "audio-preview")
 }
 
-fun File.newTempFile(name: String, type: String, noMedia: Boolean): File {
+fun File.newTempFile(
+    name: String,
+    type: String,
+    noMedia: Boolean,
+): File {
     if (!this.exists()) {
         this.mkdirs()
     }
@@ -559,16 +625,17 @@ fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
                 reportException = e
             } catch (e: UnsupportedOperationException) {
                 cursor = context.contentResolver.query(this, null, null, null, null)
-                val name = try {
-                    if (cursor != null && cursor.moveToFirst()) {
-                        val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                        cursor.getString(index)
-                    } else {
+                val name =
+                    try {
+                        if (cursor != null && cursor.moveToFirst()) {
+                            val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                            cursor.getString(index)
+                        } else {
+                            null
+                        }
+                    } catch (e: Exception) {
                         null
                     }
-                } catch (e: Exception) {
-                    null
-                }
                 data = copyFileUrlWithAuthority(context, name)
             } finally {
                 cursor?.close()
@@ -617,7 +684,10 @@ fun Uri.getFileName(context: Context = MixinApplication.appContext): String {
     return ""
 }
 
-fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String? {
+fun Uri.copyFileUrlWithAuthority(
+    context: Context,
+    name: String? = null,
+): String? {
     if (this.authority != null) {
         var input: InputStream? = null
         return try {
@@ -636,7 +706,10 @@ fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String
     return null
 }
 
-fun Uri.getOrCreate(context: Context = MixinApplication.appContext, name: String): String? {
+fun Uri.getOrCreate(
+    context: Context = MixinApplication.appContext,
+    name: String,
+): String? {
     val file = File(context.getDocumentPath(), name)
     if (!file.exists()) {
         context.contentResolver.openInputStream(this)?.use {
@@ -717,11 +790,12 @@ fun File.dirSize(): Long? {
 
 private fun File.getDirSize(): Long? {
     try {
-        val du = Runtime.getRuntime().exec(
-            "/system/bin/du -s $canonicalPath",
-            arrayOf(),
-            Environment.getRootDirectory(),
-        )
+        val du =
+            Runtime.getRuntime().exec(
+                "/system/bin/du -s $canonicalPath",
+                arrayOf(),
+                Environment.getRootDirectory(),
+            )
         val br = BufferedReader(InputStreamReader(du.inputStream))
         return Scanner(br.readLine()).nextLong()
     } catch (e: Exception) {
@@ -734,11 +808,17 @@ fun File.encodeBlurHash(): String? {
     return BlurHashEncoder.encode(inputStream())
 }
 
-fun String.decodeBlurHash(width: Int, height: Int): Bitmap? {
+fun String.decodeBlurHash(
+    width: Int,
+    height: Int,
+): Bitmap? {
     return BlurHashDecoder.decode(this, width, height, 1.0)
 }
 
-fun File.moveChileFileToDir(dir: File, eachCallback: ((newFile: File, oldFile: File) -> Unit)? = null) {
+fun File.moveChileFileToDir(
+    dir: File,
+    eachCallback: ((newFile: File, oldFile: File) -> Unit)? = null,
+) {
     if (!dir.exists()) {
         dir.mkdirs()
     }
@@ -765,7 +845,10 @@ fun Bitmap.zoomOut(): Bitmap? {
     return Bitmap.createScaledBitmap(this, (width / scale), (height / scale), false)
 }
 
-private fun File.blurThumbnail(width: Int, height: Int): Bitmap? {
+private fun File.blurThumbnail(
+    width: Int,
+    height: Int,
+): Bitmap? {
     try {
         return ThumbnailUtils.extractThumbnail(
             BitmapFactory.decodeFile(this.absolutePath),
@@ -777,7 +860,10 @@ private fun File.blurThumbnail(width: Int, height: Int): Bitmap? {
     return null
 }
 
-fun Bitmap.bitmap2String(mimeType: String = "", bitmapQuality: Int = 90): String? {
+fun Bitmap.bitmap2String(
+    mimeType: String = "",
+    bitmapQuality: Int = 90,
+): String? {
     val stream = ByteArrayOutputStream()
     if (mimeType == MimeType.PNG.toString()) {
         this.compress(Bitmap.CompressFormat.PNG, bitmapQuality, stream)
@@ -801,7 +887,10 @@ fun Bitmap.toDrawable(): Drawable = BitmapDrawable(MixinApplication.appContext.r
 
 private const val MAX_BLUR_HASH_DIMEN = 20
 
-fun String.toDrawable(width: Int, height: Int): Drawable? {
+fun String.toDrawable(
+    width: Int,
+    height: Int,
+): Drawable? {
     return try {
         if (!Base83.isValid(this)) {
             this.decodeBase64().encodeBitmap()?.toDrawable()
@@ -813,7 +902,10 @@ fun String.toDrawable(width: Int, height: Int): Drawable? {
     }
 }
 
-fun String.toBitmap(width: Int, height: Int): Bitmap? {
+fun String.toBitmap(
+    width: Int,
+    height: Int,
+): Bitmap? {
     return try {
         if (!Base83.isValid(this)) {
             this.decodeBase64().encodeBitmap()
@@ -843,7 +935,10 @@ fun String.getExtensionName(): String? {
     return null
 }
 
-fun Bitmap.fastBlur(scale: Float, radius: Int): Bitmap? {
+fun Bitmap.fastBlur(
+    scale: Float,
+    radius: Int,
+): Bitmap? {
     var sentBitmap = this
 
     val width = Math.round(sentBitmap.width * scale)

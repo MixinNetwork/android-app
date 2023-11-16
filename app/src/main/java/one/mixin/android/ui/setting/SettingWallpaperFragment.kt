@@ -49,6 +49,7 @@ import one.mixin.android.widget.theme.ThemeActivity
 class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
     companion object {
         const val TAG = "SettingChatFragment"
+
         fun newInstance() = SettingWallpaperFragment()
     }
 
@@ -56,7 +57,10 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
 
     private var currentSelected = 1
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         currentSelected = WallpaperManager.getCurrentSelected(requireContext())
         binding.container.backgroundImage =
@@ -70,133 +74,141 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
         }
         binding.backgroundRv.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        binding.backgroundRv.adapter = object : RecyclerView.Adapter<BackgroundHolder>() {
-            override fun onCreateViewHolder(
-                parent: ViewGroup,
-                viewType: Int,
-            ): BackgroundHolder {
-                return BackgroundHolder(
-                    ItemBackgroudBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false,
-                    ).apply {
-                        image.round(3.dp)
-                    },
-                )
-            }
-
-            @SuppressLint("NotifyDataSetChanged")
-            override fun onBindViewHolder(
-                holder: BackgroundHolder,
-                @SuppressLint("RecyclerView") position: Int,
-            ) {
-                holder.bind(
-                    WallpaperManager.getWallpaperByPosition(requireContext(), position),
-                    position == 0,
-                    position == currentSelected,
-                    !(position == 1 && WallpaperManager.wallpaperExists(requireContext())),
-                )
-                holder.itemView.setOnClickListener {
-                    if (position == 0) {
-                        selectWallpaper()
-                    } else {
-                        notifyDataSetChanged()
-                        scrollToPosition(position)
-                        switchWallpaper(it)
-                        binding.container.backgroundImage =
-                            WallpaperManager.getWallpaperByPosition(requireContext(), position)
-                    }
-                }
-            }
-
-            override fun getItemCount(): Int = WallpaperManager.getWallpaperCount(requireContext())
-        }
-        binding.chatRv.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-            override fun onCreateViewHolder(
-                parent: ViewGroup,
-                viewType: Int,
-            ): RecyclerView.ViewHolder {
-                return when (viewType) {
-                    0 -> {
-                        TimeHolder(
-                            ItemChatTimeBinding.inflate(
-                                LayoutInflater.from(parent.context),
-                                parent,
-                                false,
-                            ),
-                        )
-                    }
-                    1 -> {
-                        TextHolder(
-                            ItemChatTextBinding.inflate(
-                                LayoutInflater.from(parent.context),
-                                parent,
-                                false,
-                            ),
-                        )
-                    }
-                    else -> {
-                        TextHolder(
-                            ItemChatTextBinding.inflate(
-                                LayoutInflater.from(parent.context),
-                                parent,
-                                false,
-                            ),
-                        )
-                    }
-                }
-            }
-
-            override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-                when (position) {
-                    1 -> (holder as TextHolder).apply {
-                        val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
-                        lp.horizontalBias = 0f
-                        binding.chatName.isVisible = false
-                        binding.chatTv.text = requireContext().getString(R.string.how_are_you)
-                        binding.chatTime.load(
+        binding.backgroundRv.adapter =
+            object : RecyclerView.Adapter<BackgroundHolder>() {
+                override fun onCreateViewHolder(
+                    parent: ViewGroup,
+                    viewType: Int,
+                ): BackgroundHolder {
+                    return BackgroundHolder(
+                        ItemBackgroudBinding.inflate(
+                            LayoutInflater.from(parent.context),
+                            parent,
                             false,
-                            nowInUtc(),
-                            MessageStatus.DELIVERED.name,
-                            isPin = false,
-                            isRepresentative = false,
-                            isSecret = false,
-                        )
-                        setItemBackgroundResource(
-                            binding.chatLayout,
-                            R.drawable.chat_bubble_other_last,
-                            R.drawable.chat_bubble_other_last_night,
-                        )
-                    }
-                    2 -> (holder as TextHolder).apply {
-                        val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
-                        lp.horizontalBias = 1f
-                        binding.chatName.isVisible = false
-                        binding.chatTime.load(
-                            true,
-                            nowInUtc(),
-                            MessageStatus.READ.name,
-                            isPin = false,
-                            isRepresentative = false,
-                            isSecret = false,
-                        )
-                        binding.chatTv.text = requireContext().getString(R.string.i_am_good)
-                        setItemBackgroundResource(
-                            binding.chatLayout,
-                            R.drawable.chat_bubble_me_last,
-                            R.drawable.chat_bubble_me_last_night,
-                        )
-                    }
-                    else -> (holder as TimeHolder).binding.chatTime.text =
-                        requireContext().getString(R.string.Today)
+                        ).apply {
+                            image.round(3.dp)
+                        },
+                    )
                 }
+
+                @SuppressLint("NotifyDataSetChanged")
+                override fun onBindViewHolder(
+                    holder: BackgroundHolder,
+                    @SuppressLint("RecyclerView") position: Int,
+                ) {
+                    holder.bind(
+                        WallpaperManager.getWallpaperByPosition(requireContext(), position),
+                        position == 0,
+                        position == currentSelected,
+                        !(position == 1 && WallpaperManager.wallpaperExists(requireContext())),
+                    )
+                    holder.itemView.setOnClickListener {
+                        if (position == 0) {
+                            selectWallpaper()
+                        } else {
+                            notifyDataSetChanged()
+                            scrollToPosition(position)
+                            switchWallpaper(it)
+                            binding.container.backgroundImage =
+                                WallpaperManager.getWallpaperByPosition(requireContext(), position)
+                        }
+                    }
+                }
+
+                override fun getItemCount(): Int = WallpaperManager.getWallpaperCount(requireContext())
             }
+        binding.chatRv.adapter =
+            object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+                override fun onCreateViewHolder(
+                    parent: ViewGroup,
+                    viewType: Int,
+                ): RecyclerView.ViewHolder {
+                    return when (viewType) {
+                        0 -> {
+                            TimeHolder(
+                                ItemChatTimeBinding.inflate(
+                                    LayoutInflater.from(parent.context),
+                                    parent,
+                                    false,
+                                ),
+                            )
+                        }
+                        1 -> {
+                            TextHolder(
+                                ItemChatTextBinding.inflate(
+                                    LayoutInflater.from(parent.context),
+                                    parent,
+                                    false,
+                                ),
+                            )
+                        }
+                        else -> {
+                            TextHolder(
+                                ItemChatTextBinding.inflate(
+                                    LayoutInflater.from(parent.context),
+                                    parent,
+                                    false,
+                                ),
+                            )
+                        }
+                    }
+                }
 
-            override fun getItemViewType(position: Int) = position
+                override fun onBindViewHolder(
+                    holder: RecyclerView.ViewHolder,
+                    position: Int,
+                ) {
+                    when (position) {
+                        1 ->
+                            (holder as TextHolder).apply {
+                                val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
+                                lp.horizontalBias = 0f
+                                binding.chatName.isVisible = false
+                                binding.chatTv.text = requireContext().getString(R.string.how_are_you)
+                                binding.chatTime.load(
+                                    false,
+                                    nowInUtc(),
+                                    MessageStatus.DELIVERED.name,
+                                    isPin = false,
+                                    isRepresentative = false,
+                                    isSecret = false,
+                                )
+                                setItemBackgroundResource(
+                                    binding.chatLayout,
+                                    R.drawable.chat_bubble_other_last,
+                                    R.drawable.chat_bubble_other_last_night,
+                                )
+                            }
+                        2 ->
+                            (holder as TextHolder).apply {
+                                val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
+                                lp.horizontalBias = 1f
+                                binding.chatName.isVisible = false
+                                binding.chatTime.load(
+                                    true,
+                                    nowInUtc(),
+                                    MessageStatus.READ.name,
+                                    isPin = false,
+                                    isRepresentative = false,
+                                    isSecret = false,
+                                )
+                                binding.chatTv.text = requireContext().getString(R.string.i_am_good)
+                                setItemBackgroundResource(
+                                    binding.chatLayout,
+                                    R.drawable.chat_bubble_me_last,
+                                    R.drawable.chat_bubble_me_last_night,
+                                )
+                            }
+                        else ->
+                            (holder as TimeHolder).binding.chatTime.text =
+                                requireContext().getString(R.string.Today)
+                    }
+                }
 
-            override fun getItemCount(): Int = 3
-        }
+                override fun getItemViewType(position: Int) = position
+
+                override fun getItemCount(): Int = 3
+            }
     }
 
     private fun scrollToPosition(position: Int) {
@@ -229,7 +241,11 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             var selectedImageUri: Uri?
             if (data == null || data.action != null && data.action == MediaStore.ACTION_IMAGE_CAPTURE) {
@@ -263,19 +279,19 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
 
     class BackgroundHolder constructor(val binding: ItemBackgroudBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(
-            drawable: Drawable?,
-            iconVisible: Boolean,
-            selected: Boolean,
-            center: Boolean = true,
-        ) {
-            binding.image.setImageDrawable(drawable)
-            binding.icon.isVisible = iconVisible
-            binding.image.scaleType =
-                if (center) ImageView.ScaleType.CENTER else ImageView.ScaleType.CENTER_CROP
-            binding.selected.isVisible = selected
+            fun bind(
+                drawable: Drawable?,
+                iconVisible: Boolean,
+                selected: Boolean,
+                center: Boolean = true,
+            ) {
+                binding.image.setImageDrawable(drawable)
+                binding.icon.isVisible = iconVisible
+                binding.image.scaleType =
+                    if (center) ImageView.ScaleType.CENTER else ImageView.ScaleType.CENTER_CROP
+                binding.selected.isVisible = selected
+            }
         }
-    }
 
     private fun switchWallpaper(view: View) {
         (requireActivity() as ThemeActivity).run {
@@ -299,9 +315,10 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
         return if ((myView.parent as View).id == ThemeActivity.ROOT_ID) {
             myView.left
         } else {
-            myView.left + getRelativeLeft(
-                myView.parent as View,
-            )
+            myView.left +
+                getRelativeLeft(
+                    myView.parent as View,
+                )
         }
     }
 
@@ -309,9 +326,10 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
         return if ((myView.parent as View).id == ThemeActivity.ROOT_ID) {
             myView.top
         } else {
-            myView.top + getRelativeTop(
-                myView.parent as View,
-            )
+            myView.top +
+                getRelativeTop(
+                    myView.parent as View,
+                )
         }
     }
 }

@@ -1,5 +1,11 @@
 package one.mixin.android.di
 
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.Interceptor
+import okhttp3.Request
+import one.mixin.android.Constants
+import one.mixin.android.Constants.API.URL
 import java.io.IOException
 import java.net.ConnectException
 import java.net.NoRouteToHostException
@@ -9,12 +15,6 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.net.ssl.SSLHandshakeException
 import javax.net.ssl.SSLPeerUnverifiedException
-import okhttp3.HttpUrl
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.Interceptor
-import okhttp3.Request
-import one.mixin.android.Constants
-import one.mixin.android.Constants.API.URL
 
 fun Throwable.isNeedSwitch(): Boolean {
     return (
@@ -26,7 +26,7 @@ fun Throwable.isNeedSwitch(): Boolean {
             this is SocketException ||
             this is SSLPeerUnverifiedException ||
             this is SSLHandshakeException
-        )
+    )
 }
 
 class HostSelectionInterceptor private constructor() : Interceptor {
@@ -55,12 +55,14 @@ class HostSelectionInterceptor private constructor() : Interceptor {
             return chain.proceed(request)
         }
         this.host?.let {
-            val newUrl = request.url.newBuilder()
-                .host(it.toUrl().toURI().host)
-                .build()
-            request = request.newBuilder()
-                .url(newUrl)
-                .build()
+            val newUrl =
+                request.url.newBuilder()
+                    .host(it.toUrl().toURI().host)
+                    .build()
+            request =
+                request.newBuilder()
+                    .url(newUrl)
+                    .build()
         }
         return chain.proceed(request)
     }

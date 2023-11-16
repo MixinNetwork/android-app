@@ -378,7 +378,14 @@ class TransferInserter {
             } else {
                 stmt.bindString(7, user.phone)
             }
-            val isVerified = if (user.isVerified == null) null else if (user.isVerified) 1 else 0
+            val isVerified =
+                if (user.isVerified == null) {
+                    null
+                } else if (user.isVerified) {
+                    1
+                } else {
+                    0
+                }
             if (isVerified == null) {
                 stmt.bindNull(8)
             } else {
@@ -395,7 +402,14 @@ class TransferInserter {
             } else {
                 stmt.bindString(10, muteUntil)
             }
-            val hasPin = if (user.hasPin == null) null else if (user.hasPin) 1 else 0
+            val hasPin =
+                if (user.hasPin == null) {
+                    null
+                } else if (user.hasPin) {
+                    1
+                } else {
+                    0
+                }
             if (hasPin == null) {
                 stmt.bindNull(11)
             } else {
@@ -408,14 +422,28 @@ class TransferInserter {
                 stmt.bindString(12, appId)
             }
             val isScam = user.isScam
-            val userIsScam = if (isScam == null) null else if (isScam) 1 else 0
+            val userIsScam =
+                if (isScam == null) {
+                    null
+                } else if (isScam) {
+                    1
+                } else {
+                    0
+                }
             if (userIsScam == null) {
                 stmt.bindNull(13)
             } else {
                 stmt.bindLong(13, userIsScam.toLong())
             }
             val isDeactivated = user.isDeactivated
-            val userIsDeactivated = if (isDeactivated == null) null else if (isDeactivated) 1 else 0
+            val userIsDeactivated =
+                if (isDeactivated == null) {
+                    null
+                } else if (isDeactivated) {
+                    1
+                } else {
+                    0
+                }
             if (userIsDeactivated == null) {
                 stmt.bindNull(14)
             } else {

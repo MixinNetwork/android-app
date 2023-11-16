@@ -11,32 +11,43 @@ import one.mixin.android.tip.wc.internal.Chain
 import javax.inject.Inject
 
 @HiltViewModel
-class SessionProposalViewModel @Inject internal constructor() : ViewModel() {
-
-    fun rejectSession(version: WalletConnect.Version, topic: String) {
-        when (version) {
-            WalletConnect.Version.V2 -> { WalletConnectV2.rejectSession(topic) }
-            WalletConnect.Version.TIP -> {}
-        }
-    }
-
-    fun getSessionProposalUI(version: WalletConnect.Version, chain: Chain, sessionProposal: Wallet.Model.SessionProposal?): SessionProposalUI? {
-        when (version) {
-            WalletConnect.Version.V2 -> {
-                if (sessionProposal == null) return null
-                return SessionProposalUI(
-                    peer = PeerUI(
-                        icon = sessionProposal.icons.firstOrNull().toString(),
-                        name = sessionProposal.name,
-                        desc = sessionProposal.description,
-                        uri = sessionProposal.url.toUri().host ?: "",
-                    ),
-                    chain = chain,
-                )
-            }
-            WalletConnect.Version.TIP -> {
-                return WalletConnectTIP.getSessionProposalUI()
+class SessionProposalViewModel
+    @Inject
+    internal constructor() : ViewModel() {
+        fun rejectSession(
+            version: WalletConnect.Version,
+            topic: String,
+        ) {
+            when (version) {
+                WalletConnect.Version.V2 -> {
+                    WalletConnectV2.rejectSession(topic)
+                }
+                WalletConnect.Version.TIP -> {}
             }
         }
+
+        fun getSessionProposalUI(
+            version: WalletConnect.Version,
+            chain: Chain,
+            sessionProposal: Wallet.Model.SessionProposal?,
+        ): SessionProposalUI? {
+            when (version) {
+                WalletConnect.Version.V2 -> {
+                    if (sessionProposal == null) return null
+                    return SessionProposalUI(
+                        peer =
+                            PeerUI(
+                                icon = sessionProposal.icons.firstOrNull().toString(),
+                                name = sessionProposal.name,
+                                desc = sessionProposal.description,
+                                uri = sessionProposal.url.toUri().host ?: "",
+                            ),
+                        chain = chain,
+                    )
+                }
+                WalletConnect.Version.TIP -> {
+                    return WalletConnectTIP.getSessionProposalUI()
+                }
+            }
+        }
     }
-}

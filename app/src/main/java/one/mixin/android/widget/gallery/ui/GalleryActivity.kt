@@ -61,6 +61,7 @@ class GalleryActivity :
     }
 
     private lateinit var binding: ActivityGalleryBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         if (isNightMode()) {
             setTheme(getNightThemeId())
@@ -143,7 +144,12 @@ class GalleryActivity :
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+    override fun onItemSelected(
+        parent: AdapterView<*>,
+        view: View,
+        position: Int,
+        id: Long,
+    ) {
         mAlbumCollection.setStateCurrentSelection(position)
         mAlbumsAdapter.cursor.moveToPosition(position)
         val album = Album.valueOf(mAlbumsAdapter.cursor)
@@ -205,7 +211,10 @@ class GalleryActivity :
 
     private var previewDialogFragment: PreviewDialogFragment? = null
 
-    private fun showPreview(uri: Uri, action: (Uri, Float, Float) -> Unit) {
+    private fun showPreview(
+        uri: Uri,
+        action: (Uri, Float, Float) -> Unit,
+    ) {
         if (previewDialogFragment == null) {
             previewDialogFragment = PreviewDialogFragment.newInstance()
         }
@@ -214,14 +223,21 @@ class GalleryActivity :
 
     private var previewVideoDialogFragment: PreviewDialogFragment? = null
 
-    private fun showVideoPreview(uri: Uri, action: (Uri, Float, Float) -> Unit) {
+    private fun showVideoPreview(
+        uri: Uri,
+        action: (Uri, Float, Float) -> Unit,
+    ) {
         if (previewVideoDialogFragment == null) {
             previewVideoDialogFragment = PreviewDialogFragment.newInstance(true)
         }
         previewVideoDialogFragment?.show(supportFragmentManager, uri, okText = null, action)
     }
 
-    override fun onMediaClick(album: Album, item: Item, adapterPosition: Int) {
+    override fun onMediaClick(
+        album: Album,
+        item: Item,
+        adapterPosition: Int,
+    ) {
         if (!mSpec.preview) {
             val result = Intent()
             result.data = item.uri

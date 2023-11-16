@@ -1,7 +1,6 @@
 package one.mixin.android.crypto.storage
 
 import android.content.Context
-import java.io.IOException
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.SessionDao
 import one.mixin.android.crypto.db.SignalDatabase
@@ -11,9 +10,9 @@ import org.whispersystems.libsignal.protocol.CiphertextMessage
 import org.whispersystems.libsignal.state.SessionRecord
 import org.whispersystems.libsignal.state.SessionStore
 import timber.log.Timber
+import java.io.IOException
 
 class MixinSessionStore(context: Context) : SessionStore {
-
     private val sessionDao: SessionDao = SignalDatabase.getDatabase(context).sessionDao()
 
     override fun loadSession(address: SignalProtocolAddress): SessionRecord {
@@ -36,7 +35,10 @@ class MixinSessionStore(context: Context) : SessionStore {
         }
     }
 
-    override fun storeSession(address: SignalProtocolAddress, record: SessionRecord) {
+    override fun storeSession(
+        address: SignalProtocolAddress,
+        record: SessionRecord,
+    ) {
         synchronized(FILE_LOCK) {
             val session = sessionDao.getSession(address.name, address.deviceId)
             if (session == null) {
@@ -97,7 +99,6 @@ class MixinSessionStore(context: Context) : SessionStore {
     }
 
     companion object {
-
         private val TAG = MixinSessionStore::class.java.simpleName
         private val FILE_LOCK = Any()
     }

@@ -21,7 +21,6 @@ import one.mixin.android.vo.isSecret
 import kotlin.math.min
 
 class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : MediaHolder(binding.root), Terminable {
-
     private val dp16 = itemView.context.dpToPx(16f)
 
     init {
@@ -30,7 +29,11 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         binding.chatTime.round(radius)
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f

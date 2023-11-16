@@ -19,16 +19,18 @@ fun MixinSettingFragment(
 ) {
     val context = LocalContext.current
 
-    val fragment = remember {
-        createFragment()
-    }
+    val fragment =
+        remember {
+            createFragment()
+        }
 
     val navigationController = LocalSettingNav.current
 
-    val initialBackStackEntryCount = remember {
-        val activity = context.findFragmentActivityOrNull()
-        activity?.supportFragmentManager?.backStackEntryCount ?: 0
-    }
+    val initialBackStackEntryCount =
+        remember {
+            val activity = context.findFragmentActivityOrNull()
+            activity?.supportFragmentManager?.backStackEntryCount ?: 0
+        }
 
     BackHandler {
         val activity = context.findFragmentActivityOrNull()

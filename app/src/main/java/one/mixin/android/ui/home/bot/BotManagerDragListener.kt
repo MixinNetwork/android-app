@@ -9,7 +9,10 @@ import one.mixin.android.vo.BotInterface
 import one.mixin.android.widget.bot.BotDock
 
 class BotManagerDragListener : OnDragListener {
-    override fun onDrag(v: View, event: DragEvent): Boolean {
+    override fun onDrag(
+        v: View,
+        event: DragEvent,
+    ): Boolean {
         val viewSource = event.localState as View? ?: return false
         when (event.action) {
             DragEvent.ACTION_DRAG_ENDED -> {
@@ -73,40 +76,42 @@ class BotManagerDragListener : OnDragListener {
                             val adapterSource = source.adapter as BotManagerAdapter? ?: return false
                             val list = adapterSource.list
                             val positionSource = viewSource.tag as Int
-                            val position = when (v.id) {
-                                R.id.dock_1 -> {
-                                    0
+                            val position =
+                                when (v.id) {
+                                    R.id.dock_1 -> {
+                                        0
+                                    }
+                                    R.id.dock_2 -> {
+                                        1
+                                    }
+                                    R.id.dock_3 -> {
+                                        2
+                                    }
+                                    else -> {
+                                        3
+                                    }
                                 }
-                                R.id.dock_2 -> {
-                                    1
-                                }
-                                R.id.dock_3 -> {
-                                    2
-                                }
-                                else -> {
-                                    3
-                                }
-                            }
                             if (v.id == R.id.bot_dock) {
                                 (v as BotDock).addApp(position, list[positionSource])
                             } else {
                                 (v.parent as BotDock).addApp(position, list[positionSource])
                             }
                         } else if (source is BotDock) {
-                            val position = when (v.id) {
-                                R.id.dock_1 -> {
-                                    0
+                            val position =
+                                when (v.id) {
+                                    R.id.dock_1 -> {
+                                        0
+                                    }
+                                    R.id.dock_2 -> {
+                                        1
+                                    }
+                                    R.id.dock_3 -> {
+                                        2
+                                    }
+                                    else -> {
+                                        3
+                                    }
                                 }
-                                R.id.dock_2 -> {
-                                    1
-                                }
-                                R.id.dock_3 -> {
-                                    2
-                                }
-                                else -> {
-                                    3
-                                }
-                            }
                             source.switch(position, viewSource.tag as BotInterface)
                         }
                     }

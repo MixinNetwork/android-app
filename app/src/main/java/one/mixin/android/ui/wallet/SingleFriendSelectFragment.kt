@@ -17,9 +17,10 @@ import one.mixin.android.vo.User
 @AndroidEntryPoint
 class SingleFriendSelectFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListener {
     init {
-        adapter = FriendsAdapter(userCallback).apply {
-            listener = this@SingleFriendSelectFragment
-        }
+        adapter =
+            FriendsAdapter(userCallback).apply {
+                listener = this@SingleFriendSelectFragment
+            }
     }
 
     override fun getTitleResId() = R.string.Send_to_contact

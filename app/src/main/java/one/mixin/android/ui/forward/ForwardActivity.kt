@@ -32,28 +32,37 @@ class ForwardActivity : BlazeBaseActivity() {
             messages: ArrayList<ForwardMessage>,
             action: ForwardAction,
         ) {
-            val intent = Intent(context, ForwardActivity::class.java).apply {
-                putParcelableArrayListExtra(ARGS_MESSAGES, messages)
-                putExtra(ARGS_ACTION, action)
-            }
+            val intent =
+                Intent(context, ForwardActivity::class.java).apply {
+                    putParcelableArrayListExtra(ARGS_MESSAGES, messages)
+                    putExtra(ARGS_ACTION, action)
+                }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             context.startActivity(intent)
         }
 
-        fun show(context: Context, link: String) {
-            val list = ArrayList<ForwardMessage>().apply {
-                add(ForwardMessage(ShareCategory.Text, content = link))
-            }
+        fun show(
+            context: Context,
+            link: String,
+        ) {
+            val list =
+                ArrayList<ForwardMessage>().apply {
+                    add(ForwardMessage(ShareCategory.Text, content = link))
+                }
             show(context, list, ForwardAction.App.Resultless())
         }
 
-        fun combineForward(context: Context, messages: ArrayList<TranscriptMessage>) {
-            val intent = Intent(context, ForwardActivity::class.java).apply {
-                putParcelableArrayListExtra(ARGS_COMBINE_MESSAGES, messages)
-                putExtra(ARGS_ACTION, ForwardAction.Combine())
-            }
+        fun combineForward(
+            context: Context,
+            messages: ArrayList<TranscriptMessage>,
+        ) {
+            val intent =
+                Intent(context, ForwardActivity::class.java).apply {
+                    putParcelableArrayListExtra(ARGS_COMBINE_MESSAGES, messages)
+                    putExtra(ARGS_ACTION, ForwardAction.Combine())
+                }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
@@ -62,12 +71,18 @@ class ForwardActivity : BlazeBaseActivity() {
     }
 
     class ForwardContract : ActivityResultContract<Pair<ArrayList<ForwardMessage>, String?>, Intent?>() {
-        override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
+        override fun parseResult(
+            resultCode: Int,
+            intent: Intent?,
+        ): Intent? {
             if (intent == null || resultCode != Activity.RESULT_OK) return null
             return intent
         }
 
-        override fun createIntent(context: Context, input: Pair<ArrayList<ForwardMessage>, String?>): Intent {
+        override fun createIntent(
+            context: Context,
+            input: Pair<ArrayList<ForwardMessage>, String?>,
+        ): Intent {
             return Intent(context, ForwardActivity::class.java).apply {
                 putParcelableArrayListExtra(ARGS_MESSAGES, input.first)
                 putExtra(ARGS_ACTION, ForwardAction.App.Resultful(input.second))
@@ -76,12 +91,18 @@ class ForwardActivity : BlazeBaseActivity() {
     }
 
     class CombineForwardContract : ActivityResultContract<ArrayList<TranscriptMessage>, Intent?>() {
-        override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
+        override fun parseResult(
+            resultCode: Int,
+            intent: Intent?,
+        ): Intent? {
             if (intent == null || resultCode != Activity.RESULT_OK) return null
             return intent
         }
 
-        override fun createIntent(context: Context, input: ArrayList<TranscriptMessage>): Intent {
+        override fun createIntent(
+            context: Context,
+            input: ArrayList<TranscriptMessage>,
+        ): Intent {
             return Intent(context, ForwardActivity::class.java).apply {
                 putParcelableArrayListExtra(ARGS_COMBINE_MESSAGES, input)
                 putExtra(ARGS_ACTION, ForwardAction.Combine())
@@ -98,14 +119,15 @@ class ForwardActivity : BlazeBaseActivity() {
             val f = ForwardFragment.newInstance(list, action)
             replaceFragment(f, R.id.container, ForwardFragment.TAG)
         } else if (action is ForwardAction.Combine) {
-            val f = ForwardFragment.newCombineInstance(
-                requireNotNull(
-                    intent.getParcelableArrayListExtra(
-                        ARGS_COMBINE_MESSAGES,
+            val f =
+                ForwardFragment.newCombineInstance(
+                    requireNotNull(
+                        intent.getParcelableArrayListExtra(
+                            ARGS_COMBINE_MESSAGES,
+                        ),
                     ),
-                ),
-                action,
-            )
+                    action,
+                )
             replaceFragment(f, R.id.container, ForwardFragment.TAG)
         } else {
             if (Session.getAccount() == null) {
@@ -114,11 +136,12 @@ class ForwardActivity : BlazeBaseActivity() {
                 return
             }
             val forwardMessageList = ShareHelper.get().generateForwardMessageList(intent)
-            val conversationId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && intent.hasExtra(Intent.EXTRA_SHORTCUT_ID)) {
-                intent.getStringExtra(Intent.EXTRA_SHORTCUT_ID)
-            } else {
-                null
-            }
+            val conversationId =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && intent.hasExtra(Intent.EXTRA_SHORTCUT_ID)) {
+                    intent.getStringExtra(Intent.EXTRA_SHORTCUT_ID)
+                } else {
+                    null
+                }
             if (!forwardMessageList.isNullOrEmpty()) {
                 replaceFragment(
                     ForwardFragment.newInstance(

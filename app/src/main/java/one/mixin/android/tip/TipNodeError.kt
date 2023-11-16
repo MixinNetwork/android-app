@@ -8,21 +8,25 @@ sealed class TipNodeError(
 ) {
     fun notRetry() = this is TooManyRequestError || this is IncorrectPinError
 }
+
 data class TooManyRequestError(
     override val signerIndex: Int,
     override val requestId: String,
     override val code: Int,
 ) : TipNodeError(signerIndex, requestId, code, 0)
+
 data class IncorrectPinError(
     override val signerIndex: Int,
     override val requestId: String,
     override val code: Int,
 ) : TipNodeError(signerIndex, requestId, code, 1)
+
 data class ServerError(
     override val signerIndex: Int,
     override val requestId: String,
     override val code: Int,
 ) : TipNodeError(signerIndex, requestId, code, 2)
+
 data class OtherTipNodeError(
     override val signerIndex: Int,
     override val requestId: String,
@@ -30,12 +34,17 @@ data class OtherTipNodeError(
     val message: String?,
 ) : TipNodeError(signerIndex, requestId, code, 3)
 
-internal fun Int.toTipNodeError(signerIndex: Int, requestId: String, message: String?) = when (this) {
-    500 -> ServerError(signerIndex, requestId, this)
-    429 -> TooManyRequestError(signerIndex, requestId, this)
-    403 -> IncorrectPinError(signerIndex, requestId, this)
-    else -> OtherTipNodeError(signerIndex, requestId, this, message)
-}
+internal fun Int.toTipNodeError(
+    signerIndex: Int,
+    requestId: String,
+    message: String?,
+) =
+    when (this) {
+        500 -> ServerError(signerIndex, requestId, this)
+        429 -> TooManyRequestError(signerIndex, requestId, this)
+        403 -> IncorrectPinError(signerIndex, requestId, this)
+        else -> OtherTipNodeError(signerIndex, requestId, this, message)
+    }
 
 internal fun List<TipNodeError>.getRepresentative(): TipNodeError? {
     if (isNullOrEmpty()) return null

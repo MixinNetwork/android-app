@@ -29,7 +29,6 @@ class CallAudioManager(
     private val audioSwitch: AudioSwitch,
     private val callback: Callback,
 ) {
-
     private val audioManager: AudioManager? = context.getSystemService()
     private val vibrator: Vibrator? = context.getSystemService()
 
@@ -80,7 +79,10 @@ class CallAudioManager(
         }
     }
 
-    fun start(isInitiator: Boolean, playRingtone: Boolean = true) {
+    fun start(
+        isInitiator: Boolean,
+        playRingtone: Boolean = true,
+    ) {
         initAudioSwitch()
         mainThread {
             AudioPlayer.pause()
@@ -151,7 +153,7 @@ class CallAudioManager(
             mediaPlayerStopped: $mediaPlayerStopped
             isSpeakerOn: $isSpeakerOn
             audioSwitch selectedAudioDevice: ${audioSwitch.selectedAudioDevice}, availableAudioDevices: ${audioSwitch.availableAudioDevices}
-        """.trimIndent()
+            """.trimIndent()
     }
 
     private fun setSpeaker(enable: Boolean) {
@@ -177,11 +179,12 @@ class CallAudioManager(
         }
         mediaPlayer?.isLooping = true
 
-        val sound = if (isInitiator) {
-            R.raw.call_outgoing
-        } else {
-            R.raw.call_incoming
-        }
+        val sound =
+            if (isInitiator) {
+                R.raw.call_outgoing
+            } else {
+                R.raw.call_incoming
+            }
         val uri = Uri.parse("android.resource://${context.packageName}/$sound")
         try {
             mediaPlayer?.setDataSource(context, uri)

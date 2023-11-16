@@ -18,7 +18,6 @@ import one.mixin.android.vo.createAttachmentMessage
 class ConvertDataJob(
     private val message: Message,
 ) : MixinJob(Params(PRIORITY_BACKGROUND).groupBy(GROUP_ID), message.messageId) {
-
     companion object {
         private const val serialVersionUID = 1L
         const val GROUP_ID = "convert_data_group"

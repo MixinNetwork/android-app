@@ -18,12 +18,18 @@ class ColorPaletteAdapter(
     @ColorInt checked: Int,
     private val onColorChanged: (color: Int) -> Unit,
 ) : ListAdapter<Int, ColorPaletteAdapter.ColorHolder>(
-    object : DiffUtil.ItemCallback<Int>() {
-        override fun areItemsTheSame(oldItem: Int, newItem: Int) = oldItem == newItem
+        object : DiffUtil.ItemCallback<Int>() {
+            override fun areItemsTheSame(
+                oldItem: Int,
+                newItem: Int,
+            ) = oldItem == newItem
 
-        override fun areContentsTheSame(oldItem: Int, newItem: Int) = oldItem == newItem
-    },
-) {
+            override fun areContentsTheSame(
+                oldItem: Int,
+                newItem: Int,
+            ) = oldItem == newItem
+        },
+    ) {
     private val size = 24.dp
     private val margin = 10.dp
 
@@ -37,25 +43,35 @@ class ColorPaletteAdapter(
             onColorChanged.invoke(value)
         }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ColorHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ColorHolder {
         val binding = ItemColorPaleteeBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         binding.root.apply {
-            layoutParams = RecyclerView.LayoutParams(size, size).apply {
-                setMargins(this@ColorPaletteAdapter.margin)
-            }
+            layoutParams =
+                RecyclerView.LayoutParams(size, size).apply {
+                    setMargins(this@ColorPaletteAdapter.margin)
+                }
         }
         return ColorHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: ColorHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ColorHolder,
+        position: Int,
+    ) {
         getItem(position)?.let { holder.bind(it) }
     }
 
-    private fun getCircleBg(@ColorInt bg: Int) = GradientDrawable().apply {
-        shape = GradientDrawable.OVAL
-        cornerRadii = floatArrayOf(0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f)
-        setColor(bg)
-    }
+    private fun getCircleBg(
+        @ColorInt bg: Int,
+    ) =
+        GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            cornerRadii = floatArrayOf(0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f)
+            setColor(bg)
+        }
 
     inner class ColorHolder(private val binding: ItemColorPaleteeBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(color: Int) {
@@ -70,25 +86,26 @@ class ColorPaletteAdapter(
     }
 
     companion object {
-        val paletteColors = listOf(
-            Color.parseColor("#DBDCE0"),
-            Color.parseColor("#81868C"),
-            Color.parseColor("#202125"),
-            Color.parseColor("#F5AEA8"),
-            Color.parseColor("#F28B82"),
-            Color.parseColor("#D83025"),
-            Color.parseColor("#D2E4FC"),
-            Color.parseColor("#669DF7"),
-            Color.parseColor("#1A73E9"),
-            Color.parseColor("#FDE293"),
-            Color.parseColor("#FCC834"),
-            Color.parseColor("#EB8600"),
-            Color.parseColor("#A8DAB5"),
-            Color.parseColor("#34A853"),
-            Color.parseColor("#198039"),
-            Color.parseColor("#D7AEFC"),
-            Color.parseColor("#A142F4"),
-            Color.parseColor("#B430CE"),
-        )
+        val paletteColors =
+            listOf(
+                Color.parseColor("#DBDCE0"),
+                Color.parseColor("#81868C"),
+                Color.parseColor("#202125"),
+                Color.parseColor("#F5AEA8"),
+                Color.parseColor("#F28B82"),
+                Color.parseColor("#D83025"),
+                Color.parseColor("#D2E4FC"),
+                Color.parseColor("#669DF7"),
+                Color.parseColor("#1A73E9"),
+                Color.parseColor("#FDE293"),
+                Color.parseColor("#FCC834"),
+                Color.parseColor("#EB8600"),
+                Color.parseColor("#A8DAB5"),
+                Color.parseColor("#34A853"),
+                Color.parseColor("#198039"),
+                Color.parseColor("#D7AEFC"),
+                Color.parseColor("#A142F4"),
+                Color.parseColor("#B430CE"),
+            )
     }
 }

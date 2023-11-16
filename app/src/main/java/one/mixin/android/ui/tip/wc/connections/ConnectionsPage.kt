@@ -60,9 +60,10 @@ fun ConnectionsPage(
     ) {
         val viewModel = hiltViewModel<ConnectionsViewModel>()
 
-        val text = rememberSaveable {
-            mutableStateOf("")
-        }
+        val text =
+            rememberSaveable {
+                mutableStateOf("")
+            }
         SearchTextField(text, stringResource(id = R.string.search_placeholder_dapp))
 
         viewModel.refreshConnections()
@@ -82,15 +83,16 @@ private fun ConnectionList(
     keyword: String,
     toDetails: (Int) -> Unit,
 ) {
-    val filteredData = remember(data, keyword) {
-        if (keyword.isEmpty()) {
-            data
-        } else {
-            data.filter {
-                it.name.containsIgnoreCase(keyword)
+    val filteredData =
+        remember(data, keyword) {
+            if (keyword.isEmpty()) {
+                data
+            } else {
+                data.filter {
+                    it.name.containsIgnoreCase(keyword)
+                }
             }
         }
-    }
     LazyColumn {
         items(filteredData, key = {
             listOf(it.index, keyword)
@@ -109,19 +111,21 @@ private fun ConnectionItem(
     onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp)
-            .background(MixinAppTheme.colors.background)
-            .clickable(onClick = onClick),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(80.dp)
+                .background(MixinAppTheme.colors.background)
+                .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.width(20.dp))
         GlideImage(
             data = connectionUI.icon ?: "",
-            modifier = Modifier
-                .size(50.dp)
-                .clip(CircleShape),
+            modifier =
+                Modifier
+                    .size(50.dp)
+                    .clip(CircleShape),
             placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
         )
         Box(modifier = Modifier.width(16.dp))
@@ -131,20 +135,22 @@ private fun ConnectionItem(
         ) {
             HighlightText(
                 text = connectionUI.name,
-                textStyle = TextStyle(
-                    fontSize = 16.sp,
-                    color = MixinAppTheme.colors.textPrimary,
-                ),
+                textStyle =
+                    TextStyle(
+                        fontSize = 16.sp,
+                        color = MixinAppTheme.colors.textPrimary,
+                    ),
                 overflow = TextOverflow.Ellipsis,
                 target = highlight,
             )
             Box(modifier = Modifier.width(8.dp))
             HighlightText(
                 text = connectionUI.uri,
-                textStyle = TextStyle(
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textSubtitle,
-                ),
+                textStyle =
+                    TextStyle(
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.textSubtitle,
+                    ),
                 overflow = TextOverflow.Ellipsis,
                 target = highlight,
             )
@@ -156,9 +162,10 @@ private fun ConnectionItem(
 @Composable
 private fun EmptyLayout() {
     Box(
-        modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth(),
+        modifier =
+            Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(),
         contentAlignment = Alignment.Center,
     ) {
         Column(

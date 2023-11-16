@@ -33,6 +33,7 @@ class VideoHolder(
     private val mediaPagerAdapterListener: MediaPagerAdapterListener,
 ) : MediaPagerHolder(itemView) {
     val binding = ItemPagerVideoLayoutBinding.bind(itemView)
+
     init {
         itemView.post {
             binding.playerView.playerControlView.bottomLayout.setPadding(12.dp, 24.dp, 12.dp, 12.dp + itemView.context.navigationBarHeight())
@@ -75,27 +76,28 @@ class VideoHolder(
             refreshAction = {
                 messageItem.loadVideoOrLive { showPb() }
             }
-            callback = object : PlayerView.Callback {
-                override fun onLongClick() {
-                    mediaPagerAdapterListener.onLongClick(messageItem, itemView)
-                }
+            callback =
+                object : PlayerView.Callback {
+                    override fun onLongClick() {
+                        mediaPagerAdapterListener.onLongClick(messageItem, itemView)
+                    }
 
-                override fun onRenderFirstFrame() {
-                    if (VideoPlayer.player().mId == messageItem.messageId) {
-                        binding.playerView.videoAspectRatio.updateLayoutParams {
-                            width = MATCH_PARENT
-                            height = MATCH_PARENT
+                    override fun onRenderFirstFrame() {
+                        if (VideoPlayer.player().mId == messageItem.messageId) {
+                            binding.playerView.videoAspectRatio.updateLayoutParams {
+                                width = MATCH_PARENT
+                                height = MATCH_PARENT
+                            }
+                            binding.previewIv.isVisible = false
+                            binding.playerView.playerControlView.pipView.isEnabled = true
+                            binding.playerView.playerControlView.pipView.alpha = 1f
+                        } else {
+                            binding.previewIv.isVisible = true
+                            binding.playerView.playerControlView.pipView.isEnabled = false
+                            binding.playerView.playerControlView.pipView.alpha = .5f
                         }
-                        binding.previewIv.isVisible = false
-                        binding.playerView.playerControlView.pipView.isEnabled = true
-                        binding.playerView.playerControlView.pipView.alpha = 1f
-                    } else {
-                        binding.previewIv.isVisible = true
-                        binding.playerView.playerControlView.pipView.isEnabled = false
-                        binding.playerView.playerControlView.pipView.alpha = .5f
                     }
                 }
-            }
         }
         val ratio = (messageItem.mediaWidth ?: 1).toFloat() / (messageItem.mediaHeight ?: 1).toFloat()
         setSize(context, ratio)
@@ -107,10 +109,11 @@ class VideoHolder(
             if (messageItem.absolutePath() != null) {
                 binding.previewIv.loadVideo(messageItem.absolutePath())
             } else {
-                val imageData = messageItem.thumbImage?.toBitmap(
-                    messageItem.mediaWidth ?: 0,
-                    messageItem.mediaHeight ?: 0,
-                )
+                val imageData =
+                    messageItem.thumbImage?.toBitmap(
+                        messageItem.mediaWidth ?: 0,
+                        messageItem.mediaHeight ?: 0,
+                    )
                 Glide.with(itemView).load(imageData).into(binding.previewIv)
             }
             if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
@@ -142,7 +145,10 @@ class VideoHolder(
         }
     }
 
-    private fun maybeLoadVideo(videoStatusCache: LruCache<String, String>, messageItem: MessageItem) {
+    private fun maybeLoadVideo(
+        videoStatusCache: LruCache<String, String>,
+        messageItem: MessageItem,
+    ) {
         val preStatus = videoStatusCache[messageItem.messageId] ?: return
         if (preStatus != MediaStatus.DONE.name && preStatus != MediaStatus.READ.name &&
             (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name)
@@ -153,7 +159,10 @@ class VideoHolder(
         }
     }
 
-    private fun setSize(context: Context, ratio: Float) {
+    private fun setSize(
+        context: Context,
+        ratio: Float,
+    ) {
         val w = context.realSize().x
         val h = context.realSize().y
         val deviceRatio = w / h.toFloat()

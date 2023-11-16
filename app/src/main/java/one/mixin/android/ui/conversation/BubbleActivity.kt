@@ -25,17 +25,19 @@ import javax.inject.Inject
 class BubbleActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        isBubbled = if (Build.VERSION.SDK_INT >= 31) {
-            isLaunchedFromBubble
-        } else {
-            val displayId = if (Build.VERSION.SDK_INT >= 30) {
-                display?.displayId
+        isBubbled =
+            if (Build.VERSION.SDK_INT >= 31) {
+                isLaunchedFromBubble
             } else {
-                @Suppress("DEPRECATION")
-                windowManager.defaultDisplay.displayId
+                val displayId =
+                    if (Build.VERSION.SDK_INT >= 30) {
+                        display?.displayId
+                    } else {
+                        @Suppress("DEPRECATION")
+                        windowManager.defaultDisplay.displayId
+                    }
+                displayId != Display.DEFAULT_DISPLAY
             }
-            displayId != Display.DEFAULT_DISPLAY
-        }
         setContentView(R.layout.activity_chat)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         showConversation(intent)

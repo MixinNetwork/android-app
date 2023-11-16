@@ -22,7 +22,6 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 class PercentView : View {
-
     private val colorBlue by lazy { context.getColor(R.color.wallet_blue) }
     private val colorBlueDark by lazy { context.getColor(R.color.wallet_blue_dark) }
     private val colorYellow by lazy { context.getColor(R.color.wallet_yellow) }
@@ -30,13 +29,15 @@ class PercentView : View {
     private val colorPurple by lazy { context.getColor(R.color.wallet_purple) }
     private val colorPurpleDark by lazy { context.getColor(R.color.wallet_purple_dark) }
 
-    private val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        colorFilter = ColorMatrixColorFilter(
-            ColorMatrix().apply {
-                setScale(SHADOW_SCALE_RGB, SHADOW_SCALE_RGB, SHADOW_SCALE_RGB, SHADOW_SCALE_ALPHA)
-            },
-        )
-    }
+    private val shadowPaint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            colorFilter =
+                ColorMatrixColorFilter(
+                    ColorMatrix().apply {
+                        setScale(SHADOW_SCALE_RGB, SHADOW_SCALE_RGB, SHADOW_SCALE_RGB, SHADOW_SCALE_ALPHA)
+                    },
+                )
+        }
     private val strokeHeight = context.dpToPx(4f)
     private val radius = context.dpToPx(2f).toFloat()
     private var percents = arrayListOf<Float>()
@@ -65,7 +66,12 @@ class PercentView : View {
         yellowGradient?.draw(canvas)
     }
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+    override fun onSizeChanged(
+        w: Int,
+        h: Int,
+        oldw: Int,
+        oldh: Int,
+    ) {
         createShadowByData()
     }
 
@@ -93,22 +99,25 @@ class PercentView : View {
             val w = (width * p).toInt()
             when (i) {
                 0 -> {
-                    blueGradient = GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, intArrayOf(colorBlue, colorBlueDark)).apply {
-                        cornerRadii = getCornerRadii(i, percents.size)
-                        bounds.set(startW, strokeHeight, startW + w, strokeHeight * 2)
-                    }
+                    blueGradient =
+                        GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, intArrayOf(colorBlue, colorBlueDark)).apply {
+                            cornerRadii = getCornerRadii(i, percents.size)
+                            bounds.set(startW, strokeHeight, startW + w, strokeHeight * 2)
+                        }
                 }
                 1 -> {
-                    purpleGradient = GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, intArrayOf(colorPurple, colorPurpleDark)).apply {
-                        cornerRadii = getCornerRadii(i, percents.size)
-                        bounds.set(startW, strokeHeight, startW + w, strokeHeight * 2)
-                    }
+                    purpleGradient =
+                        GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, intArrayOf(colorPurple, colorPurpleDark)).apply {
+                            cornerRadii = getCornerRadii(i, percents.size)
+                            bounds.set(startW, strokeHeight, startW + w, strokeHeight * 2)
+                        }
                 }
                 else -> {
-                    yellowGradient = GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, intArrayOf(colorYellow, colorYellowDark)).apply {
-                        cornerRadii = getCornerRadii(i, percents.size)
-                        bounds.set(startW, strokeHeight, startW + w, strokeHeight * 2)
-                    }
+                    yellowGradient =
+                        GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, intArrayOf(colorYellow, colorYellowDark)).apply {
+                            cornerRadii = getCornerRadii(i, percents.size)
+                            bounds.set(startW, strokeHeight, startW + w, strokeHeight * 2)
+                        }
                 }
             }
             startW += w
@@ -119,11 +128,12 @@ class PercentView : View {
 
         shadowBounds.set(radius / 2, 0f, width.toFloat(), height.toFloat())
         if (blurShadow == null) {
-            blurShadow = Bitmap.createBitmap(
-                shadowBounds.width().toInt(),
-                (shadowBounds.height() * 1.5f).toInt(),
-                Bitmap.Config.ARGB_8888,
-            )
+            blurShadow =
+                Bitmap.createBitmap(
+                    shadowBounds.width().toInt(),
+                    (shadowBounds.height() * 1.5f).toInt(),
+                    Bitmap.Config.ARGB_8888,
+                )
         } else {
             blurShadow?.eraseColor(Color.TRANSPARENT)
         }
@@ -132,7 +142,11 @@ class PercentView : View {
         return false
     }
 
-    private fun createShadow(bitmap: Bitmap?, canvas: Canvas, blurRadius: Float) {
+    private fun createShadow(
+        bitmap: Bitmap?,
+        canvas: Canvas,
+        blurRadius: Float,
+    ) {
         canvas.setBitmap(bitmap)
         canvas.translate(0f, -strokeHeight.toFloat())
         blueGradient?.draw(canvas)
@@ -150,7 +164,10 @@ class PercentView : View {
         output.destroy()
     }
 
-    private fun getCornerRadii(index: Int, size: Int): FloatArray {
+    private fun getCornerRadii(
+        index: Int,
+        size: Int,
+    ): FloatArray {
         return when (size) {
             1 -> floatArrayOf(radius, radius, radius, radius, radius, radius, radius, radius)
             2 -> {
@@ -174,13 +191,16 @@ class PercentView : View {
         private const val SHADOW_SCALE_ALPHA = 0.6f
 
         private var rs: RenderScript? = null
+
         fun getRS(context: Context): RenderScript {
             if (rs == null) {
                 rs = RenderScript.create(context.applicationContext)
             }
             return rs!!
         }
+
         private var blur: ScriptIntrinsicBlur? = null
+
         fun getBlur(context: Context): ScriptIntrinsicBlur {
             if (blur == null) {
                 val rs = getRS(context)

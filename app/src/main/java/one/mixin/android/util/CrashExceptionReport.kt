@@ -16,7 +16,10 @@ fun reportException(e: Throwable) {
     Crashes.trackError(e)
 }
 
-fun reportException(msg: String, e: Throwable) {
+fun reportException(
+    msg: String,
+    e: Throwable,
+) {
     FirebaseCrashlytics.getInstance().log(msg + e.getStackTraceString())
     Crashes.trackError(
         e,
@@ -40,7 +43,10 @@ fun reportEvent(msg: String) {
     )
 }
 
-fun reportExoPlayerException(prefix: String, error: PlaybackException) {
+fun reportExoPlayerException(
+    prefix: String,
+    error: PlaybackException,
+) {
     val cause = error.cause
     if (cause is HttpDataSource.InvalidResponseCodeException && cause.responseCode == 404) {
         return

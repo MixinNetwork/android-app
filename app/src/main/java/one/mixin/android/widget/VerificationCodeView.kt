@@ -21,7 +21,6 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 
 class VerificationCodeView : LinearLayout {
-
     companion object {
         const val DEFAULT_COUNT = 4
     }
@@ -58,19 +57,24 @@ class VerificationCodeView : LinearLayout {
         initialize(context, attrs)
     }
 
-    private fun initialize(context: Context, attrs: AttributeSet?) {
+    private fun initialize(
+        context: Context,
+        attrs: AttributeSet?,
+    ) {
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.VerificationCodeView)
         try {
             count = typedArray.getInteger(R.styleable.VerificationCodeView_vcv_count, DEFAULT_COUNT)
             inputColor = typedArray.getColor(R.styleable.VerificationCodeView_vcv_inputColor, inputColor)
-            inputWidth = typedArray.getDimensionPixelSize(
-                R.styleable.VerificationCodeView_vcv_inputWidth,
-                context.dpToPx(20f),
-            )
-            inputHeight = typedArray.getDimensionPixelSize(
-                R.styleable.VerificationCodeView_vcv_inputHeight,
-                context.dpToPx(1f),
-            )
+            inputWidth =
+                typedArray.getDimensionPixelSize(
+                    R.styleable.VerificationCodeView_vcv_inputWidth,
+                    context.dpToPx(20f),
+                )
+            inputHeight =
+                typedArray.getDimensionPixelSize(
+                    R.styleable.VerificationCodeView_vcv_inputHeight,
+                    context.dpToPx(1f),
+                )
             textSize = typedArray.getDimension(R.styleable.VerificationCodeView_vcv_textSize, 30f)
             textColor = typedArray.getColor(R.styleable.VerificationCodeView_vcv_textColor, textColor)
             spacing = typedArray.getDimensionPixelSize(R.styleable.VerificationCodeView_vcv_spacing, context.dpToPx(5f))
@@ -145,7 +149,10 @@ class VerificationCodeView : LinearLayout {
         }
     }
 
-    private fun updateSpace(index: Int, isPre: Boolean) {
+    private fun updateSpace(
+        index: Int,
+        isPre: Boolean,
+    ) {
         var nextIndex = index
         if (!isPre && index < codes.size - 1) {
             nextIndex = index + 1

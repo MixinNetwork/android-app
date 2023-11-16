@@ -39,6 +39,7 @@ class StickerAlbumBottomSheetFragment : BottomSheetDialogFragment() {
 
         @SuppressLint("StaticFieldLeak")
         private var instant: StickerAlbumBottomSheetFragment? = null
+
         fun newInstance(
             albumId: String,
         ): StickerAlbumBottomSheetFragment {
@@ -48,9 +49,10 @@ class StickerAlbumBottomSheetFragment : BottomSheetDialogFragment() {
             }
             instant = null
             return StickerAlbumBottomSheetFragment().apply {
-                arguments = Bundle().apply {
-                    putString(EXTRA_ALBUM_ID, albumId)
-                }
+                arguments =
+                    Bundle().apply {
+                        putString(EXTRA_ALBUM_ID, albumId)
+                    }
                 instant = this
             }
         }
@@ -74,7 +76,10 @@ class StickerAlbumBottomSheetFragment : BottomSheetDialogFragment() {
     private var translationOffset by Delegates.notNull<Float>()
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         _binding = FragmentStickerAlbumBottomSheetBinding.inflate(LayoutInflater.from(context), null, false)
         contentView = binding.root
@@ -87,14 +92,22 @@ class StickerAlbumBottomSheetFragment : BottomSheetDialogFragment() {
             translationOffset = (peekHeight - root.measuredHeight).toFloat()
             binding.bottomFl.translationY = translationOffset
         }
-        behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-            }
+        behavior.addBottomSheetCallback(
+            object : BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(
+                    bottomSheet: View,
+                    newState: Int,
+                ) {
+                }
 
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                binding.bottomFl.translationY = translationOffset * (1 - slideOffset)
-            }
-        })
+                override fun onSlide(
+                    bottomSheet: View,
+                    slideOffset: Float,
+                ) {
+                    binding.bottomFl.translationY = translationOffset * (1 - slideOffset)
+                }
+            },
+        )
         dialog.window?.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT,

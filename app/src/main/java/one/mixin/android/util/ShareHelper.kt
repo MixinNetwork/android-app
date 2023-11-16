@@ -13,7 +13,6 @@ import one.mixin.android.vo.addTo
 import one.mixin.android.vo.systemMediaToMessage
 
 class ShareHelper {
-
     companion object {
         @Volatile
         private var INSTANCE: ShareHelper? = null

@@ -25,6 +25,7 @@ class NonMessengerUserBottomSheetDialogFragment : MixinBottomSheetDialogFragment
 
         @SuppressLint("StaticFieldLeak")
         private var instant: NonMessengerUserBottomSheetDialogFragment? = null
+
         fun newInstance(
             user: User,
             conversationId: String? = null,
@@ -35,10 +36,11 @@ class NonMessengerUserBottomSheetDialogFragment : MixinBottomSheetDialogFragment
             }
             instant = null
             return NonMessengerUserBottomSheetDialogFragment().apply {
-                arguments = Bundle().apply {
-                    putParcelable(ARGS_USER, user)
-                    putString(ARGS_CONVERSATION_ID, conversationId)
-                }
+                arguments =
+                    Bundle().apply {
+                        putParcelable(ARGS_USER, user)
+                        putString(ARGS_CONVERSATION_ID, conversationId)
+                    }
                 instant = this
             }
         }
@@ -52,7 +54,10 @@ class NonMessengerUserBottomSheetDialogFragment : MixinBottomSheetDialogFragment
     private var conversationId: String? = null
 
     @SuppressLint("RestrictedApi", "ClickableViewAccessibility")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -73,11 +78,12 @@ class NonMessengerUserBottomSheetDialogFragment : MixinBottomSheetDialogFragment
                 Observer { u ->
                     if (u == null) return@Observer
                     binding.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
-                    binding.name.text = if (u.fullName.isNullOrBlank()) {
-                        u.userId
-                    } else {
-                        u.fullName
-                    }
+                    binding.name.text =
+                        if (u.fullName.isNullOrBlank()) {
+                            u.userId
+                        } else {
+                            u.fullName
+                        }
                     if (u.biography.isNotEmpty()) {
                         binding.detailTv.text = u.biography
                         binding.detailTv.isVisible = true

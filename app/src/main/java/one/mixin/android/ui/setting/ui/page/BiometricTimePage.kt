@@ -40,23 +40,24 @@ fun BiometricTimePage() {
 
         val context = LocalContext.current
 
-        val values: ArrayList<String> = remember {
-            val strings = arrayListOf<String>()
-            presetDurations.forEach { v ->
-                if (v < 1) {
-                    strings.add(
-                        context.resources.getQuantityString(
-                            R.plurals.Minute,
-                            (v * 60).toInt(),
-                            (v * 60).toInt(),
-                        ),
-                    )
-                } else {
-                    strings.add(context.resources.getQuantityString(R.plurals.Hour, v.toInt(), v.toInt()))
+        val values: ArrayList<String> =
+            remember {
+                val strings = arrayListOf<String>()
+                presetDurations.forEach { v ->
+                    if (v < 1) {
+                        strings.add(
+                            context.resources.getQuantityString(
+                                R.plurals.Minute,
+                                (v * 60).toInt(),
+                                (v * 60).toInt(),
+                            ),
+                        )
+                    } else {
+                        strings.add(context.resources.getQuantityString(R.plurals.Hour, v.toInt(), v.toInt()))
+                    }
                 }
+                strings
             }
-            strings
-        }
 
         var biometricInterval by remember {
             context.defaultSharedPreferences
@@ -65,10 +66,11 @@ fun BiometricTimePage() {
             Constants.BIOMETRIC_INTERVAL_DEFAULT,
         )
 
-        val selectedIndex = remember(biometricInterval) {
-            val intervalHour = biometricInterval.toFloat() / X_HOUR
-            presetDurations.indexOfFirst { it == intervalHour }
-        }
+        val selectedIndex =
+            remember(biometricInterval) {
+                val intervalHour = biometricInterval.toFloat() / X_HOUR
+                presetDurations.indexOfFirst { it == intervalHour }
+            }
 
         values.forEachWithIndex { index, value ->
 
@@ -83,9 +85,10 @@ fun BiometricTimePage() {
                         Image(
                             painter = painterResource(id = R.drawable.ic_check_black_24dp),
                             contentDescription = null,
-                            modifier = Modifier
-                                .size(28.dp)
-                                .padding(4.dp),
+                            modifier =
+                                Modifier
+                                    .size(28.dp)
+                                    .padding(4.dp),
                         )
                     }
                 },
@@ -100,17 +103,19 @@ fun BiometricTimePage() {
                 MixinBottomSheetDialog(
                     createDialog = {
                         PinBiometricsBottomSheetDialogFragment.newInstance(false).apply {
-                            setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
-                                override fun onDismiss(success: Boolean) {
-                                    if (success) {
-                                        val intervalMillis = (presetDurations[index] * X_HOUR).toLong()
-                                        biometricInterval = intervalMillis
-                                        Timber.d("set biometric interval $intervalMillis")
-                                    } else {
-                                        showDialog = false
+                            setCallback(
+                                object : BiometricBottomSheetDialogFragment.Callback() {
+                                    override fun onDismiss(success: Boolean) {
+                                        if (success) {
+                                            val intervalMillis = (presetDurations[index] * X_HOUR).toLong()
+                                            biometricInterval = intervalMillis
+                                            Timber.d("set biometric interval $intervalMillis")
+                                        } else {
+                                            showDialog = false
+                                        }
                                     }
-                                }
-                            })
+                                },
+                            )
                         }
                     },
                     tag = PinBiometricsBottomSheetDialogFragment.TAG,

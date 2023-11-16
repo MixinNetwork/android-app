@@ -53,9 +53,10 @@ class AppAuthActivity : BaseActivity() {
         binding = ActivityAppAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
         updateLayout()
-        fingerprintManager = FingerprintManagerCompat.from(this).apply {
-            this@AppAuthActivity.hasEnrolledFingerprints = hasEnrolledFingerprints()
-        }
+        fingerprintManager =
+            FingerprintManagerCompat.from(this).apply {
+                this@AppAuthActivity.hasEnrolledFingerprints = hasEnrolledFingerprints()
+            }
         if (!hasEnrolledFingerprints) {
             biometricManager = BiometricManager.from(this)
         }
@@ -113,7 +114,10 @@ class AppAuthActivity : BaseActivity() {
         }
     }
 
-    private fun refreshSwirl(errString: CharSequence, show: Boolean) {
+    private fun refreshSwirl(
+        errString: CharSequence,
+        show: Boolean,
+    ) {
         showError(errString)
         binding.swirl.postDelayed(resetSwirlRunnable, 1000)
         if (show) {
@@ -151,75 +155,88 @@ class AppAuthActivity : BaseActivity() {
         }
     }
 
-    private val resetSwirlRunnable = Runnable {
-        binding.info.text = getString(R.string.Confirm_fingerprint)
-        binding.info.setTextColor(colorFromAttribute(R.attr.text_minor))
-        binding.swirl.setState(SwirlView.State.ON)
-    }
+    private val resetSwirlRunnable =
+        Runnable {
+            binding.info.text = getString(R.string.Confirm_fingerprint)
+            binding.info.setTextColor(colorFromAttribute(R.attr.text_minor))
+            binding.swirl.setState(SwirlView.State.ON)
+        }
 
-    private val showPromptRunnable = Runnable {
-        showPrompt()
-    }
+    private val showPromptRunnable =
+        Runnable {
+            showPrompt()
+        }
 
-    private val biometricCallback = object : BiometricPrompt.AuthenticationCallback() {
-        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-            when (errorCode) {
-                BiometricPrompt.ERROR_CANCELED, BiometricPrompt.ERROR_USER_CANCELED, BiometricPrompt.ERROR_NEGATIVE_BUTTON -> {
-                    moveTaskToBack(true)
+    private val biometricCallback =
+        object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationError(
+                errorCode: Int,
+                errString: CharSequence,
+            ) {
+                when (errorCode) {
+                    BiometricPrompt.ERROR_CANCELED, BiometricPrompt.ERROR_USER_CANCELED, BiometricPrompt.ERROR_NEGATIVE_BUTTON -> {
+                        moveTaskToBack(true)
+                    }
+                    BiometricPrompt.ERROR_LOCKOUT, BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> {
+                        showError(errString)
+                    }
+                    BiometricPrompt.ERROR_NO_BIOMETRICS -> {
+                        defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
+                        defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
+                        finishAndCheckNeed2GoUrlInterpreter()
+                    }
+                    else -> {
+                        refreshSwirl(errString, true)
+                    }
                 }
-                BiometricPrompt.ERROR_LOCKOUT, BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> {
-                    showError(errString)
-                }
-                BiometricPrompt.ERROR_NO_BIOMETRICS -> {
-                    defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
-                    defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
-                    finishAndCheckNeed2GoUrlInterpreter()
-                }
-                else -> {
-                    refreshSwirl(errString, true)
-                }
+            }
+
+            override fun onAuthenticationFailed() {
+                refreshSwirl(getString(R.string.Not_recognized), false)
+            }
+
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                finishAndCheckNeed2GoUrlInterpreter()
             }
         }
 
-        override fun onAuthenticationFailed() {
-            refreshSwirl(getString(R.string.Not_recognized), false)
-        }
-
-        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-            finishAndCheckNeed2GoUrlInterpreter()
-        }
-    }
-
-    private val fingerprintCallback = object : FingerprintManagerCompat.AuthenticationCallback() {
-        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-            when (errorCode) {
-                FingerprintManager.FINGERPRINT_ERROR_CANCELED, FingerprintManager.FINGERPRINT_ERROR_USER_CANCELED, 1010 -> {
-                    moveTaskToBack(true)
-                }
-                FingerprintManager.FINGERPRINT_ERROR_LOCKOUT, FingerprintManager.FINGERPRINT_ERROR_LOCKOUT_PERMANENT -> {
-                    showError(errString)
-                }
-                FingerprintManager.FINGERPRINT_ERROR_NO_FINGERPRINTS -> {
-                    defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
-                    defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
-                    finishAndCheckNeed2GoUrlInterpreter()
-                }
-                else -> {
-                    refreshSwirl(errString, true)
+    private val fingerprintCallback =
+        object : FingerprintManagerCompat.AuthenticationCallback() {
+            override fun onAuthenticationError(
+                errorCode: Int,
+                errString: CharSequence,
+            ) {
+                when (errorCode) {
+                    FingerprintManager.FINGERPRINT_ERROR_CANCELED, FingerprintManager.FINGERPRINT_ERROR_USER_CANCELED, 1010 -> {
+                        moveTaskToBack(true)
+                    }
+                    FingerprintManager.FINGERPRINT_ERROR_LOCKOUT, FingerprintManager.FINGERPRINT_ERROR_LOCKOUT_PERMANENT -> {
+                        showError(errString)
+                    }
+                    FingerprintManager.FINGERPRINT_ERROR_NO_FINGERPRINTS -> {
+                        defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
+                        defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
+                        finishAndCheckNeed2GoUrlInterpreter()
+                    }
+                    else -> {
+                        refreshSwirl(errString, true)
+                    }
                 }
             }
-        }
 
-        override fun onAuthenticationFailed() {
-            refreshSwirl(getString(R.string.Not_recognized), false)
-        }
+            override fun onAuthenticationFailed() {
+                refreshSwirl(getString(R.string.Not_recognized), false)
+            }
 
-        override fun onAuthenticationSucceeded(result: FingerprintManagerCompat.AuthenticationResult?) {
-            finishAndCheckNeed2GoUrlInterpreter()
-        }
+            override fun onAuthenticationSucceeded(result: FingerprintManagerCompat.AuthenticationResult?) {
+                finishAndCheckNeed2GoUrlInterpreter()
+            }
 
-        override fun onAuthenticationHelp(helpMsgId: Int, helpString: CharSequence?) {
-            refreshSwirl(helpString.toString(), true)
+            override fun onAuthenticationHelp(
+                helpMsgId: Int,
+                helpString: CharSequence?,
+            ) {
+                refreshSwirl(helpString.toString(), true)
+            }
         }
-    }
 }

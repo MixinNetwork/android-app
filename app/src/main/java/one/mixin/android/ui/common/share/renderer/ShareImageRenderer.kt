@@ -16,7 +16,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.ShareImageData
 
 class ShareImageRenderer(val context: Context) {
-
     private val binding = ItemChatImageBinding.inflate(LayoutInflater.from(context), null, false)
     val contentView get() = binding.root
 

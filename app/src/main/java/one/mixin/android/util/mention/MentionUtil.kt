@@ -38,7 +38,11 @@ fun deleteMentionEnd(editText: EditText) {
     }
 }
 
-fun mentionReplace(editText: MentionEditText, user: User, selectionEnd: Int) {
+fun mentionReplace(
+    editText: MentionEditText,
+    user: User,
+    selectionEnd: Int,
+) {
     val edit = editText.text ?: return
     val text = edit.substring(0, selectionEnd)
     val index = text.lastIndexOf("@")

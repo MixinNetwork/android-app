@@ -59,28 +59,32 @@ fun AppAuthSettingPage() {
             defaultValue = FINGERPRINT_DISABLED,
         )
 
-        val authCallback = remember {
-            object : BiometricPrompt.AuthenticationCallback() {
-                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                    if (errorCode == BiometricPrompt.ERROR_CANCELED ||
-                        errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
-                        errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON ||
-                        errorCode == BiometricPrompt.ERROR_LOCKOUT ||
-                        errorCode == BiometricPrompt.ERROR_LOCKOUT_PERMANENT
+        val authCallback =
+            remember {
+                object : BiometricPrompt.AuthenticationCallback() {
+                    override fun onAuthenticationError(
+                        errorCode: Int,
+                        errString: CharSequence,
                     ) {
+                        if (errorCode == BiometricPrompt.ERROR_CANCELED ||
+                            errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
+                            errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON ||
+                            errorCode == BiometricPrompt.ERROR_LOCKOUT ||
+                            errorCode == BiometricPrompt.ERROR_LOCKOUT_PERMANENT
+                        ) {
+                            fingerPrintEnabled = FINGERPRINT_DISABLED
+                        }
+                    }
+
+                    override fun onAuthenticationFailed() {
                         fingerPrintEnabled = FINGERPRINT_DISABLED
                     }
-                }
 
-                override fun onAuthenticationFailed() {
-                    fingerPrintEnabled = FINGERPRINT_DISABLED
-                }
-
-                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                    fingerPrintEnabled = FINGERPRINT_ENABLED_IMMEDIATELY
+                    override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                        fingerPrintEnabled = FINGERPRINT_ENABLED_IMMEDIATELY
+                    }
                 }
             }
-        }
 
         SettingTile(
             title = stringResource(id = R.string.fingerprint_lock),
@@ -88,12 +92,13 @@ fun AppAuthSettingPage() {
             trailing = {
                 Switch(
                     checked = fingerPrintEnabled != FINGERPRINT_DISABLED,
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = MixinAppTheme.colors.accent,
-                        uncheckedThumbColor = MixinAppTheme.colors.unchecked,
-                        checkedTrackColor = MixinAppTheme.colors.accent,
-                        uncheckedTrackColor = MixinAppTheme.colors.unchecked,
-                    ),
+                    colors =
+                        SwitchDefaults.colors(
+                            checkedThumbColor = MixinAppTheme.colors.accent,
+                            uncheckedThumbColor = MixinAppTheme.colors.unchecked,
+                            checkedTrackColor = MixinAppTheme.colors.accent,
+                            uncheckedTrackColor = MixinAppTheme.colors.unchecked,
+                        ),
                     onCheckedChange = null,
                 )
             },
@@ -144,7 +149,10 @@ fun AppAuthSettingPage() {
 }
 
 @Composable
-private fun FingerprintRadioGroup(index: Int, onCheckedChange: (Int) -> Unit) {
+private fun FingerprintRadioGroup(
+    index: Int,
+    onCheckedChange: (Int) -> Unit,
+) {
     FingerprintRadioButton(
         checked = index == FINGERPRINT_ENABLED_IMMEDIATELY,
         title = stringResource(id = R.string.Immediately),
@@ -188,9 +196,10 @@ private fun FingerprintRadioButton(
         RadioButton(
             selected = checked,
             onClick = null,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = MixinAppTheme.colors.accent,
-            ),
+            colors =
+                RadioButtonDefaults.colors(
+                    selectedColor = MixinAppTheme.colors.accent,
+                ),
         )
         Box(modifier = Modifier.width(16.dp))
         Text(text = title, fontSize = 16.sp, color = MixinAppTheme.colors.textPrimary)

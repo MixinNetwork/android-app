@@ -35,18 +35,19 @@ suspend fun entityInitialize() {
     }
 }
 
-suspend fun firstUrl(input: String): String? = withContext(Dispatchers.IO) {
-    val extractor = mlExtractor ?: return@withContext null
-    return@withContext try {
-        if (Tasks.await(extractor.isModelDownloaded)) {
-            val annotations = Tasks.await(extractor.annotate(input))
-            annotations.firstOrNull { annotation -> annotation.entities.any { entity -> entity.type == Entity.TYPE_URL } }?.annotatedText
-        } else {
-            entityInitialize()
-            null
+suspend fun firstUrl(input: String): String? =
+    withContext(Dispatchers.IO) {
+        val extractor = mlExtractor ?: return@withContext null
+        return@withContext try {
+            if (Tasks.await(extractor.isModelDownloaded)) {
+                val annotations = Tasks.await(extractor.annotate(input))
+                annotations.firstOrNull { annotation -> annotation.entities.any { entity -> entity.type == Entity.TYPE_URL } }?.annotatedText
+            } else {
+                entityInitialize()
+                null
+            }
+        } catch (e: Throwable) {
+            reportException("MLKit firstUrl", e)
+            return@withContext null
         }
-    } catch (e: Throwable) {
-        reportException("MLKit firstUrl", e)
-        return@withContext null
     }
-}

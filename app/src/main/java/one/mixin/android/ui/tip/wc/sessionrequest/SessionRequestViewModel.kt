@@ -13,51 +13,63 @@ import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
 import javax.inject.Inject
 
 @HiltViewModel
-class SessionRequestViewModel @Inject internal constructor() : ViewModel() {
-
-    fun rejectRequest(version: WalletConnect.Version, topic: String, msg: String? = null) {
-        when (version) {
-            WalletConnect.Version.V2 -> {
-                WalletConnectV2.rejectRequest(msg, topic)
-            }
-            WalletConnect.Version.TIP -> {}
-        }
-    }
-
-    fun getSessionRequestUI(version: WalletConnect.Version, chain: Chain, signData: WalletConnect.WCSignData.V2SignData<*>?, sessionRequest: Wallet.Model.SessionRequest?): SessionRequestUI<*>? {
-        when (version) {
-            WalletConnect.Version.V2 -> {
-                if (signData == null || sessionRequest == null) return null
-                val peer = sessionRequest.peerMetaData ?: return null
-                val peerUI = PeerUI(
-                    name = peer.name,
-                    icon = peer.icons.firstOrNull() ?: "",
-                    uri = peer.url.toUri().host ?: "",
-                    desc = peer.description,
-                )
-                return SessionRequestUI(
-                    peerUI = peerUI,
-                    requestId = signData.requestId,
-                    data = signData.signMessage,
-                    chain = chain,
-                )
-            }
-            WalletConnect.Version.TIP -> {
-                return WalletConnectTIP.getSessionRequestUI()
+class SessionRequestViewModel
+    @Inject
+    internal constructor() : ViewModel() {
+        fun rejectRequest(
+            version: WalletConnect.Version,
+            topic: String,
+            msg: String? = null,
+        ) {
+            when (version) {
+                WalletConnect.Version.V2 -> {
+                    WalletConnectV2.rejectRequest(msg, topic)
+                }
+                WalletConnect.Version.TIP -> {}
             }
         }
-    }
 
-    fun <T> getContent(
-        version: WalletConnect.Version,
-        gson: Gson,
-        data: T,
-    ): String = when (version) {
-        WalletConnect.Version.V2 -> {
-            gson.toJson(data)
+        fun getSessionRequestUI(
+            version: WalletConnect.Version,
+            chain: Chain,
+            signData: WalletConnect.WCSignData.V2SignData<*>?,
+            sessionRequest: Wallet.Model.SessionRequest?,
+        ): SessionRequestUI<*>? {
+            when (version) {
+                WalletConnect.Version.V2 -> {
+                    if (signData == null || sessionRequest == null) return null
+                    val peer = sessionRequest.peerMetaData ?: return null
+                    val peerUI =
+                        PeerUI(
+                            name = peer.name,
+                            icon = peer.icons.firstOrNull() ?: "",
+                            uri = peer.url.toUri().host ?: "",
+                            desc = peer.description,
+                        )
+                    return SessionRequestUI(
+                        peerUI = peerUI,
+                        requestId = signData.requestId,
+                        data = signData.signMessage,
+                        chain = chain,
+                    )
+                }
+                WalletConnect.Version.TIP -> {
+                    return WalletConnectTIP.getSessionRequestUI()
+                }
+            }
         }
-        WalletConnect.Version.TIP -> {
-            data as String
-        }
+
+        fun <T> getContent(
+            version: WalletConnect.Version,
+            gson: Gson,
+            data: T,
+        ): String =
+            when (version) {
+                WalletConnect.Version.V2 -> {
+                    gson.toJson(data)
+                }
+                WalletConnect.Version.TIP -> {
+                    data as String
+                }
+            }
     }
-}

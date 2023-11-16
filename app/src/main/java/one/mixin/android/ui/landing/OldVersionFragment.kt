@@ -11,15 +11,18 @@ import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
 class OldVersionFragment : BaseFragment(R.layout.fragment_old_version) {
-
     companion object {
         const val TAG: String = "OldVersionFragment"
+
         fun newInstance() = OldVersionFragment()
     }
 
     private val binding by viewBinding(FragmentOldVersionBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             desTv.text =

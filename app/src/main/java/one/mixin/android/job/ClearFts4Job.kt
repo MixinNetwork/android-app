@@ -14,14 +14,15 @@ class ClearFts4Job :
         const val FTS_CLEAR = "fts_clear"
     }
 
-    override fun onRun() = runBlocking(SINGLE_DB_THREAD) {
-        val count = messageDao.deleteFts()
-        if (count > 0) {
-            jobManager.addJobInBackground(ClearFts4Job())
-        } else {
-            PropertyHelper.updateKeyValue(FTS_CLEAR, false)
+    override fun onRun() =
+        runBlocking(SINGLE_DB_THREAD) {
+            val count = messageDao.deleteFts()
+            if (count > 0) {
+                jobManager.addJobInBackground(ClearFts4Job())
+            } else {
+                PropertyHelper.updateKeyValue(FTS_CLEAR, false)
+            }
+            Timber.e("DELETE fts count: $count")
+            return@runBlocking
         }
-        Timber.e("DELETE fts count: $count")
-        return@runBlocking
-    }
 }

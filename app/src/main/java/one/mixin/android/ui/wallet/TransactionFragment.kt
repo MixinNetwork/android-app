@@ -12,8 +12,8 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
 class TransactionFragment : BaseFragment(R.layout.fragment_transaction), TransactionInterface {
@@ -44,7 +44,10 @@ class TransactionFragment : BaseFragment(R.layout.fragment_transaction), Transac
     private val assetId: String? by lazy { requireArguments().getString(ARGS_ASSET_ID) }
     private val snapshotId: String? by lazy { requireArguments().getString(ARGS_SNAPSHOT_ID) }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.root.isClickable = true

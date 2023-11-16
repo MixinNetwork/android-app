@@ -8,7 +8,6 @@ import one.mixin.android.db.BaseDao
 
 @Dao
 interface IdentityDao : BaseDao<Identity> {
-
     @Transaction
     @Query("SELECT * FROM identities WHERE address = '-1'")
     fun getLocalIdentity(): Identity

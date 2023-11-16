@@ -20,11 +20,13 @@ class LandingDeleteAccountFragment : MixinBottomSheetDialogFragment() {
         const val TAG = "LandingDeleteAccountFragment"
 
         private val ARGS_TIME = "ARGS_TIME"
-        fun newInstance(time: String?) = LandingDeleteAccountFragment().withArgs {
-            time?.let {
-                putLong(ARGS_TIME, it.createAtToLong())
+
+        fun newInstance(time: String?) =
+            LandingDeleteAccountFragment().withArgs {
+                time?.let {
+                    putLong(ARGS_TIME, it.createAtToLong())
+                }
             }
-        }
     }
 
     private val binding by viewBinding(FragmentLandingDeleteAccountBinding::inflate)
@@ -34,7 +36,10 @@ class LandingDeleteAccountFragment : MixinBottomSheetDialogFragment() {
     }
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).run {
@@ -42,10 +47,11 @@ class LandingDeleteAccountFragment : MixinBottomSheetDialogFragment() {
             dismissClickOutside = false
         }
         binding.apply {
-            content.text = getString(
-                R.string.landing_delete_content,
-                localDateString(time),
-            )
+            content.text =
+                getString(
+                    R.string.landing_delete_content,
+                    localDateString(time),
+                )
             continueTv.setOnClickListener {
                 dismiss()
                 continueCallback?.invoke()
@@ -76,19 +82,19 @@ class LandingDeleteAccountFragment : MixinBottomSheetDialogFragment() {
         binding.apply {
             continueTv.isEnabled = false
             continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-            countDownTimer = object : CountDownTimer(5000, 1000) {
+            countDownTimer =
+                object : CountDownTimer(5000, 1000) {
+                    override fun onTick(l: Long) {
+                        continueTv.text =
+                            requireContext().getString(R.string.got_it_count_down, l / 1000)
+                    }
 
-                override fun onTick(l: Long) {
-                    continueTv.text =
-                        requireContext().getString(R.string.got_it_count_down, l / 1000)
+                    override fun onFinish() {
+                        continueTv.text = getString(R.string.Got_it)
+                        continueTv.isEnabled = true
+                        continueTv.textColor = requireContext().getColor(R.color.white)
+                    }
                 }
-
-                override fun onFinish() {
-                    continueTv.text = getString(R.string.Got_it)
-                    continueTv.isEnabled = true
-                    continueTv.textColor = requireContext().getColor(R.color.white)
-                }
-            }
             countDownTimer?.start()
         }
     }

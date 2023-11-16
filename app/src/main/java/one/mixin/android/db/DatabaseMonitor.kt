@@ -9,7 +9,6 @@ import one.mixin.android.db.property.PropertyHelper
 import timber.log.Timber
 
 object DatabaseMonitor {
-
     private val logSet = HashMap<String, Long>()
     private var str = StringBuffer()
     var enable = false
@@ -25,7 +24,10 @@ object DatabaseMonitor {
         reset()
     }
 
-    fun monitor(sqlQuery: String, args: List<Any?>) {
+    fun monitor(
+        sqlQuery: String,
+        args: List<Any?>,
+    ) {
         if (!BuildConfig.DEBUG || !enable) return
         MonitorPrinter.print(sqlQuery, args)
     }

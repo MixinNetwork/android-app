@@ -6,7 +6,10 @@ import android.os.Bundle
 import android.os.Parcelable
 import java.io.Serializable
 
-fun <T> Bundle.getParcelableCompat(key: String?, clazz: Class<T>): T? {
+fun <T> Bundle.getParcelableCompat(
+    key: String?,
+    clazz: Class<T>,
+): T? {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         getParcelable(key, clazz)
     } else {
@@ -15,7 +18,10 @@ fun <T> Bundle.getParcelableCompat(key: String?, clazz: Class<T>): T? {
     }
 }
 
-fun <T : Parcelable> Bundle.getParcelableArrayListCompat(key: String?, clazz: Class<out T>): ArrayList<T>? {
+fun <T : Parcelable> Bundle.getParcelableArrayListCompat(
+    key: String?,
+    clazz: Class<out T>,
+): ArrayList<T>? {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         getParcelableArrayList(key, clazz)
     } else {
@@ -24,7 +30,10 @@ fun <T : Parcelable> Bundle.getParcelableArrayListCompat(key: String?, clazz: Cl
     }
 }
 
-fun <T> Intent.getParcelableExtraCompat(key: String?, clazz: Class<T>): T? {
+fun <T> Intent.getParcelableExtraCompat(
+    key: String?,
+    clazz: Class<T>,
+): T? {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         getParcelableExtra(key, clazz)
     } else {
@@ -33,7 +42,10 @@ fun <T> Intent.getParcelableExtraCompat(key: String?, clazz: Class<T>): T? {
     }
 }
 
-fun <T : Parcelable> Intent.getParcelableArrayListCompat(key: String?, clazz: Class<out T>): ArrayList<T>? {
+fun <T : Parcelable> Intent.getParcelableArrayListCompat(
+    key: String?,
+    clazz: Class<out T>,
+): ArrayList<T>? {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         getParcelableArrayListExtra(key, clazz)
     } else {
@@ -43,7 +55,10 @@ fun <T : Parcelable> Intent.getParcelableArrayListCompat(key: String?, clazz: Cl
 }
 
 @SuppressWarnings("deprecation")
-fun <T : Serializable?> Intent.getSerializableExtraCompat(name: String, clazz: Class<T>): T? {
+fun <T : Serializable?> Intent.getSerializableExtraCompat(
+    name: String,
+    clazz: Class<T>,
+): T? {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         getSerializableExtra(name, clazz)
     } else {

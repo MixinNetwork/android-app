@@ -12,8 +12,8 @@ import one.mixin.android.extension.FileSizeUnit
 import one.mixin.android.extension.fileSize
 
 class CheckView(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs), Checkable {
-
     private val binding = ViewCheckBinding.inflate(LayoutInflater.from(context), this, true)
+
     init {
         setOnClickListener {
             toggle()
@@ -36,7 +36,9 @@ class CheckView(context: Context, attrs: AttributeSet) : FrameLayout(context, at
         binding.nameTv.text = name
     }
 
-    fun setName(@StringRes name: Int) {
+    fun setName(
+        @StringRes name: Int,
+    ) {
         binding.nameTv.setText(name)
     }
 

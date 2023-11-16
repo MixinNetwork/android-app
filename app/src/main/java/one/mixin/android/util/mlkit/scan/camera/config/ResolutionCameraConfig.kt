@@ -16,23 +16,24 @@ class ResolutionCameraConfig(context: Context) : CameraConfig() {
         val width: Int = displayMetrics.widthPixels
         val height: Int = displayMetrics.heightPixels
         Timber.d(String.format("displayMetrics:%d x %d", width, height))
-        targetSize = if (width < height) {
-            val size = width.coerceAtMost(1080)
-            val ratio = width / height.toFloat()
-            if (ratio > 0.7) {
-                Size(size, (size / 3.0f * 4.0f).toInt())
+        targetSize =
+            if (width < height) {
+                val size = width.coerceAtMost(1080)
+                val ratio = width / height.toFloat()
+                if (ratio > 0.7) {
+                    Size(size, (size / 3.0f * 4.0f).toInt())
+                } else {
+                    Size(size, (size / 9.0f * 16.0f).toInt())
+                }
             } else {
-                Size(size, (size / 9.0f * 16.0f).toInt())
+                val size = height.coerceAtMost(1080)
+                val ratio = height / width.toFloat()
+                if (ratio > 0.7) {
+                    Size((size / 3.0f * 4.0f).toInt(), size)
+                } else {
+                    Size((size / 9.0f * 16.0).toInt(), size)
+                }
             }
-        } else {
-            val size = height.coerceAtMost(1080)
-            val ratio = height / width.toFloat()
-            if (ratio > 0.7) {
-                Size((size / 3.0f * 4.0f).toInt(), size)
-            } else {
-                Size((size / 9.0f * 16.0).toInt(), size)
-            }
-        }
         Timber.d("targetSize:$targetSize")
     }
 

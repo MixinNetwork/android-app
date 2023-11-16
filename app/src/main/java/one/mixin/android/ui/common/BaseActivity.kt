@@ -16,7 +16,6 @@ import one.mixin.android.util.SystemUIManager
 
 @SuppressLint("Registered")
 open class BaseActivity : AppCompatActivity() {
-
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
     protected val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
@@ -45,7 +44,10 @@ open class BaseActivity : AppCompatActivity() {
         }
     }
 
-    override fun setContentView(view: View?, params: ViewGroup.LayoutParams?) {
+    override fun setContentView(
+        view: View?,
+        params: ViewGroup.LayoutParams?,
+    ) {
         super.setContentView(view, params)
         if (!skipSystemUi) {
             view?.doOnPreDraw {

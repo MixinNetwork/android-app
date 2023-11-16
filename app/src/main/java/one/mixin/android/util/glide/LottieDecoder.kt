@@ -8,8 +8,10 @@ import java.io.File
 import java.io.IOException
 
 class LottieDecoder : ResourceDecoder<Any, RLottie> {
-
-    override fun handles(source: Any, options: Options): Boolean = true
+    override fun handles(
+        source: Any,
+        options: Options,
+    ): Boolean = true
 
     @Throws(IOException::class)
     override fun decode(

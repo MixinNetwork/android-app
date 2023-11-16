@@ -49,10 +49,11 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
             joinGroupConversation: JoinGroupConversation,
             code: String,
         ) = JoinGroupBottomSheetDialogFragment().apply {
-            arguments = bundleOf(
-                ARGS_JOIN_GROUP_CONVERSATION to joinGroupConversation,
-                CODE to code,
-            )
+            arguments =
+                bundleOf(
+                    ARGS_JOIN_GROUP_CONVERSATION to joinGroupConversation,
+                    CODE to code,
+                )
         }
     }
 
@@ -67,7 +68,10 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
         FragmentJoinGroupBottomSheetBinding.bind(contentView)
     }
 
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         behavior?.isDraggable = false
         binding.title.rightIv.setOnClickListener { dismiss() }
@@ -81,9 +85,10 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
                     if (it.isSuccess) {
                         val conversationResponse = it.data as ConversationResponse
                         val accountId = Session.getAccountId()
-                        val result = conversationResponse.participants.any { participant ->
-                            participant.userId == accountId
-                        }
+                        val result =
+                            conversationResponse.participants.any { participant ->
+                                participant.userId == accountId
+                            }
                         if (result) {
                             bottomViewModel.refreshConversation(c.conversationId)
                             ConversationActivity.showAndClear(requireContext(), c.conversationId)
@@ -123,27 +128,31 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
         loadConversation()
     }
 
-    private fun loadConversation() = lifecycleScope.launch {
-        if (!isAdded) return@launch
+    private fun loadConversation() =
+        lifecycleScope.launch {
+            if (!isAdded) return@launch
 
-        binding.name.text = c.name
-        if (c.announcement.isBlank()) {
-            binding.detailTv.isVisible = false
-        } else {
-            binding.detailTv.isVisible = true
-            binding.detailTv.text = c.announcement
+            binding.name.text = c.name
+            if (c.announcement.isBlank()) {
+                binding.detailTv.isVisible = false
+            } else {
+                binding.detailTv.isVisible = true
+                binding.detailTv.text = c.announcement
+            }
+            binding.countTv.text =
+                requireContext().resources.getQuantityString(R.plurals.title_participants, c.participantsCount, c.participantsCount)
+            c.iconUrl?.let { binding.avatar.setGroup(it) }
+            binding.joinTv.isVisible = true
+
+            contentView.doOnPreDraw {
+                behavior?.peekHeight = binding.title.height + binding.scrollContent.height
+            }
         }
-        binding.countTv.text =
-            requireContext().resources.getQuantityString(R.plurals.title_participants, c.participantsCount, c.participantsCount)
-        c.iconUrl?.let { binding.avatar.setGroup(it) }
-        binding.joinTv.isVisible = true
 
-        contentView.doOnPreDraw {
-            behavior?.peekHeight = binding.title.height + binding.scrollContent.height
-        }
-    }
-
-    override fun onStateChanged(bottomSheet: View, newState: Int) {
+    override fun onStateChanged(
+        bottomSheet: View,
+        newState: Int,
+    ) {
         when (newState) {
             BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
         }

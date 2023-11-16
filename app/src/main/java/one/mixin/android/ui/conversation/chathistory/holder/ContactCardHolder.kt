@@ -13,7 +13,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.showVerifiedOrBot
 
 class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolder(binding.root) {
-
     fun bind(
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
@@ -72,7 +71,11 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
         }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             if (isLast) {

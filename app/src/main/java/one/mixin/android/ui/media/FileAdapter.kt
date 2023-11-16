@@ -16,7 +16,10 @@ import java.util.Locale
 
 class FileAdapter(private val onClickListener: (MessageItem) -> Unit, private val onLongClickListener: (String) -> Unit) :
     SharedMediaHeaderAdapter<FileHolder>() {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         FileHolder(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_file,
@@ -25,7 +28,10 @@ class FileAdapter(private val onClickListener: (MessageItem) -> Unit, private va
             ),
         )
 
-    override fun onBindViewHolder(holder: FileHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: FileHolder,
+        position: Int,
+    ) {
         getItem(position)?.let {
             holder.bind(it, onClickListener, onLongClickListener)
         }
@@ -36,12 +42,18 @@ class FileAdapter(private val onClickListener: (MessageItem) -> Unit, private va
 
 class FileHolder(itemView: View) : NormalHolder(itemView) {
     private val binding = ItemFileBinding.bind(itemView)
-    fun bind(item: MessageItem, onClickListener: (MessageItem) -> Unit, onLongClickListener: (String) -> Unit) {
+
+    fun bind(
+        item: MessageItem,
+        onClickListener: (MessageItem) -> Unit,
+        onLongClickListener: (String) -> Unit,
+    ) {
         binding.nameTv.text = item.mediaName
         binding.sizeTv.text = item.mediaSize?.fileSize()
-        var type = item.mediaName
-            ?.substringAfterLast(".", "")
-            ?.toUpperCase(Locale.getDefault())
+        var type =
+            item.mediaName
+                ?.substringAfterLast(".", "")
+                ?.toUpperCase(Locale.getDefault())
         if (type != null && type.length > 3) {
             type = type.substring(0, 3)
         }

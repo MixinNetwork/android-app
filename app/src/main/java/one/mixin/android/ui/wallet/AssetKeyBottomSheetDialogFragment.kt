@@ -17,9 +17,10 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "AssetKeyBottomSheetDialogFragment"
 
-        fun newInstance(asset: TokenItem) = AssetKeyBottomSheetDialogFragment().withArgs {
-            putParcelable(ARGS_ASSET, asset)
-        }
+        fun newInstance(asset: TokenItem) =
+            AssetKeyBottomSheetDialogFragment().withArgs {
+                putParcelable(ARGS_ASSET, asset)
+            }
     }
 
     private val binding by viewBinding(FragmentAssetKeyBottomBinding::inflate)
@@ -29,7 +30,10 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)

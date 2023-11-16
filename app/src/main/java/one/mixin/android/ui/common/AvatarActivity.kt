@@ -32,21 +32,26 @@ import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.widget.AvatarTransform
 
 class AvatarActivity : BaseActivity() {
-
     companion object {
         const val TAG = "AvatarActivity"
         const val ARGS_URL = "args_url"
 
-        fun show(activity: Activity, url: String, view: View) {
+        fun show(
+            activity: Activity,
+            url: String,
+            view: View,
+        ) {
             refreshScreenshot(activity)
-            val intent = Intent(activity, AvatarActivity::class.java).apply {
-                putExtra(ARGS_URL, url)
-            }
-            val options = ActivityOptions.makeSceneTransitionAnimation(
-                activity,
-                view,
-                activity.getString(R.string.avatar_transition_name),
-            )
+            val intent =
+                Intent(activity, AvatarActivity::class.java).apply {
+                    putExtra(ARGS_URL, url)
+                }
+            val options =
+                ActivityOptions.makeSceneTransitionAnimation(
+                    activity,
+                    view,
+                    activity.getString(R.string.avatar_transition_name),
+                )
             activity.startActivity(intent, options.toBundle())
         }
     }

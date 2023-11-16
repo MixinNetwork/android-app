@@ -17,30 +17,29 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingBlockedViewModel
-@Inject
-internal constructor(
-    private val userService: UserService,
-    private val accountRepository: AccountRepository,
-    private val userRepository: UserRepository,
-) : ViewModel() {
-
-    fun blockingUsers(scopeProvider: ScopeProvider): LiveData<List<User>> {
-        userService.blockingUsers().subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
-            .autoDispose(scopeProvider).subscribe(
-                {
-                    if (it.isSuccess) {
-                        it.data?.let {
-                            for (user in it) {
-                                user.relationship = UserRelationship.BLOCKING.name
-                                viewModelScope.launch {
-                                    userRepository.upsertBlock(user)
+    @Inject
+    internal constructor(
+        private val userService: UserService,
+        private val accountRepository: AccountRepository,
+        private val userRepository: UserRepository,
+    ) : ViewModel() {
+        fun blockingUsers(scopeProvider: ScopeProvider): LiveData<List<User>> {
+            userService.blockingUsers().subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
+                .autoDispose(scopeProvider).subscribe(
+                    {
+                        if (it.isSuccess) {
+                            it.data?.let {
+                                for (user in it) {
+                                    user.relationship = UserRelationship.BLOCKING.name
+                                    viewModelScope.launch {
+                                        userRepository.upsertBlock(user)
+                                    }
                                 }
                             }
                         }
-                    }
-                },
-                {},
-            )
-        return accountRepository.findUsersByType(UserRelationship.BLOCKING.name)
+                    },
+                    {},
+                )
+            return accountRepository.findUsersByType(UserRelationship.BLOCKING.name)
+        }
     }
-}

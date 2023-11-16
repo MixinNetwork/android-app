@@ -38,7 +38,10 @@ class WarningBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).run {
@@ -69,19 +72,19 @@ class WarningBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         binding.apply {
             continueTv.isEnabled = false
             continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-            countDownTimer = object : CountDownTimer(seconds * 1000L, 1000) {
+            countDownTimer =
+                object : CountDownTimer(seconds * 1000L, 1000) {
+                    override fun onTick(l: Long) {
+                        continueTv.text =
+                            requireContext().getString(R.string.got_it_count_down, l / 1000)
+                    }
 
-                override fun onTick(l: Long) {
-                    continueTv.text =
-                        requireContext().getString(R.string.got_it_count_down, l / 1000)
+                    override fun onFinish() {
+                        continueTv.text = getString(R.string.Got_it)
+                        continueTv.isEnabled = true
+                        continueTv.textColor = requireContext().getColor(R.color.white)
+                    }
                 }
-
-                override fun onFinish() {
-                    continueTv.text = getString(R.string.Got_it)
-                    continueTv.isEnabled = true
-                    continueTv.textColor = requireContext().getColor(R.color.white)
-                }
-            }
             countDownTimer?.start()
         }
     }

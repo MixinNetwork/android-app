@@ -11,8 +11,9 @@ class CleanupThumbJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist
         private const val GROUP_ID = "CleanupThumbJob"
     }
 
-    override fun onRun() = runBlocking {
-        messageDao.cleanupBigThumb()
-        PropertyHelper.updateKeyValue(Constants.Account.PREF_CLEANUP_THUMB, false)
-    }
+    override fun onRun() =
+        runBlocking {
+            messageDao.cleanupBigThumb()
+            PropertyHelper.updateKeyValue(Constants.Account.PREF_CLEANUP_THUMB, false)
+        }
 }

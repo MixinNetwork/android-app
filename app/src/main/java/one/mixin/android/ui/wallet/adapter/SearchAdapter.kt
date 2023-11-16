@@ -9,10 +9,17 @@ import one.mixin.android.vo.safe.TokenItem
 class SearchAdapter : ListAdapter<TokenItem, AssetHolder>(TokenItem.DIFF_CALLBACK) {
     var callback: WalletSearchCallback? = null
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AssetHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): AssetHolder {
         return AssetHolder(ItemWalletSearchBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
-    override fun onBindViewHolder(holder: AssetHolder, position: Int) {
+
+    override fun onBindViewHolder(
+        holder: AssetHolder,
+        position: Int,
+    ) {
         getItem(position)?.let { holder.bind(it, callback) }
     }
 }

@@ -21,10 +21,16 @@ class BannerAdapter : RecyclerView.Adapter<BannerHolder>() {
 
     var bannerListener: BannerListener? = null
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         BannerHolder(ItemBannerBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-    override fun onBindViewHolder(holder: BannerHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: BannerHolder,
+        position: Int,
+    ) {
         data?.get(position)?.let { banner -> holder.bind(banner, bannerListener) }
     }
 
@@ -32,7 +38,10 @@ class BannerAdapter : RecyclerView.Adapter<BannerHolder>() {
 }
 
 class BannerHolder(val binding: ItemBannerBinding) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(banner: Banner, bannerListener: BannerListener? = null) {
+    fun bind(
+        banner: Banner,
+        bannerListener: BannerListener? = null,
+    ) {
         binding.apply {
             bannerIv.loadImage(banner.img)
             bannerIv.round(12.dp)

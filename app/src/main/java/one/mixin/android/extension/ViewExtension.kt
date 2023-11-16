@@ -66,7 +66,10 @@ fun View.fadeIn(maxAlpha: Float = 1f) {
     this.fadeIn(ANIMATION_DURATION_SHORT, maxAlpha)
 }
 
-fun View.fadeIn(duration: Long, maxAlpha: Float = 1f) {
+fun View.fadeIn(
+    duration: Long,
+    maxAlpha: Float = 1f,
+) {
     this.visibility = VISIBLE
     this.alpha = 0f
     ViewCompat.animate(this).alpha(maxAlpha).setDuration(duration).setListener(
@@ -86,7 +89,11 @@ fun View.fadeOut(isGone: Boolean = false) {
     this.fadeOut(ANIMATION_DURATION_SHORT, isGone = isGone)
 }
 
-fun View.fadeOut(duration: Long, delay: Long = 0, isGone: Boolean = false) {
+fun View.fadeOut(
+    duration: Long,
+    delay: Long = 0,
+    isGone: Boolean = false,
+) {
     this.alpha = 1f
     ViewCompat.animate(this).alpha(0f).setStartDelay(delay).setDuration(duration).setListener(
         object : ViewPropertyAnimatorListener {
@@ -109,15 +116,25 @@ fun View.translationX(value: Float) {
     this.translationX(value, ANIMATION_DURATION_SHORT)
 }
 
-fun View.translationX(value: Float, duration: Long) {
+fun View.translationX(
+    value: Float,
+    duration: Long,
+) {
     ViewCompat.animate(this).setDuration(duration).translationX(value).start()
 }
 
-fun View.translationY(value: Float, endAction: (() -> Unit)? = null) {
+fun View.translationY(
+    value: Float,
+    endAction: (() -> Unit)? = null,
+) {
     this.translationY(value, ANIMATION_DURATION_SHORT, endAction)
 }
 
-fun View.translationY(value: Float, duration: Long, endAction: (() -> Unit)? = null) {
+fun View.translationY(
+    value: Float,
+    duration: Long,
+    endAction: (() -> Unit)? = null,
+) {
     ViewCompat.animate(this).setDuration(duration).translationY(value)
         .setListener(
             object : ViewPropertyAnimatorListener {
@@ -150,11 +167,18 @@ fun View.shakeAnimator() =
         duration = 450
     }
 
-fun View.animateWidth(form: Int, to: Int) {
+fun View.animateWidth(
+    form: Int,
+    to: Int,
+) {
     this.animateWidth(form, to, ANIMATION_DURATION_SHORT)
 }
 
-fun View.animateWidth(form: Int, to: Int, duration: Long) {
+fun View.animateWidth(
+    form: Int,
+    to: Int,
+    duration: Long,
+) {
     val anim = ValueAnimator.ofInt(form, to)
     anim.addUpdateListener { valueAnimator ->
         layoutParams.width = valueAnimator.animatedValue as Int
@@ -172,36 +196,41 @@ fun View.animateHeight(
     action: ((ValueAnimator) -> Unit)? = null,
     onEndAction: (() -> Unit)? = null,
 ) {
-    val anim = ValueAnimator.ofInt(from, to).apply {
-        this.duration = duration
-        this.interpolator = interpolator
-        addUpdateListener { valueAnimator ->
-            updateLayoutParams<ViewGroup.LayoutParams> {
-                this.height = valueAnimator.animatedValue as Int
+    val anim =
+        ValueAnimator.ofInt(from, to).apply {
+            this.duration = duration
+            this.interpolator = interpolator
+            addUpdateListener { valueAnimator ->
+                updateLayoutParams<ViewGroup.LayoutParams> {
+                    this.height = valueAnimator.animatedValue as Int
+                }
+            }
+            doOnEnd {
+                if (to == 0) {
+                    this@animateHeight.visibility = GONE
+                }
+                onEndAction?.invoke()
+            }
+            doOnStart {
+                if (from == 0) {
+                    this@animateHeight.visibility = VISIBLE
+                }
             }
         }
-        doOnEnd {
-            if (to == 0) {
-                this@animateHeight.visibility = GONE
-            }
-            onEndAction?.invoke()
-        }
-        doOnStart {
-            if (from == 0) {
-                this@animateHeight.visibility = VISIBLE
-            }
-        }
-    }
     action?.invoke(anim)
     anim.start()
 }
 
 fun View.round(radius: Float) {
-    this.outlineProvider = object : ViewOutlineProvider() {
-        override fun getOutline(view: View, outline: Outline) {
-            outline.setRoundRect(0, 0, view.width, view.height, radius)
+    this.outlineProvider =
+        object : ViewOutlineProvider() {
+            override fun getOutline(
+                view: View,
+                outline: Outline,
+            ) {
+                outline.setRoundRect(0, 0, view.width, view.height, radius)
+            }
         }
-    }
     this.clipToOutline = true
 }
 
@@ -209,22 +238,32 @@ fun View.round(radius: Int) {
     round(radius.toFloat())
 }
 
-fun View.roundTopOrBottom(radius: Float, top: Boolean, bottom: Boolean) {
-    this.outlineProvider = object : ViewOutlineProvider() {
-        override fun getOutline(view: View, outline: Outline) {
-            val t = if (!top) {
-                -radius.toInt()
-            } else {
-                0
+fun View.roundTopOrBottom(
+    radius: Float,
+    top: Boolean,
+    bottom: Boolean,
+) {
+    this.outlineProvider =
+        object : ViewOutlineProvider() {
+            override fun getOutline(
+                view: View,
+                outline: Outline,
+            ) {
+                val t =
+                    if (!top) {
+                        -radius.toInt()
+                    } else {
+                        0
+                    }
+                val b =
+                    if (!bottom) {
+                        (height + radius).toInt()
+                    } else {
+                        height
+                    }
+                outline.setRoundRect(0, t, view.width, b, radius)
             }
-            val b = if (!bottom) {
-                (height + radius).toInt()
-            } else {
-                height
-            }
-            outline.setRoundRect(0, t, view.width, b, radius)
         }
-    }
     this.clipToOutline = true
 }
 
@@ -306,27 +345,35 @@ private val springSystem = SpringSystem.create()
 private val sprintConfig = SpringConfig.fromOrigamiTensionAndFriction(80.0, 4.0)
 
 fun View.bounce() {
-    val spring = springSystem.createSpring()
-        .setSpringConfig(sprintConfig)
-        .addListener(
-            object : SimpleSpringListener() {
-                override fun onSpringUpdate(spring: Spring) {
-                    val value = spring.currentValue.toFloat()
-                    scaleX = value
-                    scaleY = value
-                }
-            },
-        )
+    val spring =
+        springSystem.createSpring()
+            .setSpringConfig(sprintConfig)
+            .addListener(
+                object : SimpleSpringListener() {
+                    override fun onSpringUpdate(spring: Spring) {
+                        val value = spring.currentValue.toFloat()
+                        scaleX = value
+                        scaleY = value
+                    }
+                },
+            )
     spring.endValue = 1.0
 }
 
-fun View.IntProperty(name: String, getAction: (View) -> Int, setAction: (View, Int) -> Unit): Property<View, Int> {
+fun View.IntProperty(
+    name: String,
+    getAction: (View) -> Int,
+    setAction: (View, Int) -> Unit,
+): Property<View, Int> {
     return object : Property<View, Int>(Int::class.java, name) {
         override fun get(obj: View): Int {
             return getAction(obj)
         }
 
-        override fun set(obj: View, value: Int) {
+        override fun set(
+            obj: View,
+            value: Int,
+        ) {
             return setAction(obj, value)
         }
     }
@@ -342,7 +389,9 @@ fun View.isActivityNotDestroyed(): Boolean {
     return true
 }
 
-fun isDarkColor(@ColorInt color: Int) = ColorUtils.calculateLuminance(color) < 0.5
+fun isDarkColor(
+    @ColorInt color: Int,
+) = ColorUtils.calculateLuminance(color) < 0.5
 
 @ColorInt
 fun Int.withAlpha(alpha: Float): Int {
@@ -365,7 +414,10 @@ fun PopupMenu.showIcon() {
     }
 }
 
-fun WindowManager.safeAddView(view: View?, params: ViewGroup.LayoutParams) {
+fun WindowManager.safeAddView(
+    view: View?,
+    params: ViewGroup.LayoutParams,
+) {
     if (view == null) return
 
     try {

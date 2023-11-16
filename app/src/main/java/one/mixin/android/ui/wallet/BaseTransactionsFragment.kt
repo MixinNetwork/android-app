@@ -21,7 +21,6 @@ import one.mixin.android.widget.CheckedFlowLayout
 import javax.inject.Inject
 
 abstract class BaseTransactionsFragment<C> : BaseFragment() {
-
     @Inject
     lateinit var jobManager: MixinJobManager
 
@@ -67,6 +66,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     protected var currentOrder = R.id.sort_time
 
     abstract fun refreshSnapshots()
+
     abstract fun onApplyClick()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,14 +79,21 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
             }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         transactionsRv = view.findViewById(R.id.transactions_rv)
         val transactionLayoutManager = LinearLayoutManager(requireContext())
         transactionsRv?.layoutManager = transactionLayoutManager
         transactionsRv?.addOnScrollListener(
             object : RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                override fun onScrolled(
+                    recyclerView: RecyclerView,
+                    dx: Int,
+                    dy: Int,
+                ) {
                     val lastPos = transactionLayoutManager.findLastVisibleItemPosition()
                     if (lastPos >= refreshPosition + LIMIT - 1 && lastRefreshOffset != refreshOffset) {
                         refreshPosition += LIMIT - 1

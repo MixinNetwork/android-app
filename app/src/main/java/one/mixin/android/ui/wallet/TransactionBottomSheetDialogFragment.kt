@@ -14,8 +14,8 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
@@ -48,7 +48,10 @@ class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), T
     private val snapshotId: String? by lazy { requireArguments().getString(ARGS_SNAPSHOT_ID) }
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {

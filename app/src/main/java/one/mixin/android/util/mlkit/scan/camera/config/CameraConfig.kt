@@ -5,7 +5,6 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 
 open class CameraConfig {
-
     open fun options(builder: Preview.Builder): Preview {
         return builder.build()
     }

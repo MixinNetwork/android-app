@@ -14,7 +14,6 @@ import kotlin.math.abs
 class SnapshotPagedAdapter :
     SafePagedListAdapter<SnapshotItem, SnapshotHolder>(DIFF_CALLBACK),
     StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
-
     var listener: OnSnapshotListener? = null
 
     override fun getHeaderId(pos: Int): Long {
@@ -29,19 +28,28 @@ class SnapshotPagedAdapter :
     override fun onCreateHeaderViewHolder(parent: ViewGroup) =
         SnapshotHeaderViewHolder(parent.inflate(R.layout.item_transaction_header, false))
 
-    override fun onBindHeaderViewHolder(vh: SnapshotHeaderViewHolder, pos: Int) {
+    override fun onBindHeaderViewHolder(
+        vh: SnapshotHeaderViewHolder,
+        pos: Int,
+    ) {
         getItem(pos)?.let {
             vh.bind(it.createdAt)
         }
     }
 
-    override fun onBindViewHolder(holder: SnapshotHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: SnapshotHolder,
+        position: Int,
+    ) {
         getItem(position)?.let {
             holder.bind(it, listener)
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SnapshotHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): SnapshotHolder {
         return SnapshotHolder(
             LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_wallet_transactions, parent, false),

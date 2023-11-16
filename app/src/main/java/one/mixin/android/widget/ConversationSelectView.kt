@@ -61,7 +61,10 @@ class ConversationSelectView : LinearLayout, Checkable {
 
     private var checkEnabled: Boolean = true
 
-    fun bind(item: ConversationMinimal, listener: (Boolean) -> Unit) {
+    fun bind(
+        item: ConversationMinimal,
+        listener: (Boolean) -> Unit,
+    ) {
         binding.apply {
             if (item.isGroupConversation()) {
                 normal.text = item.groupName

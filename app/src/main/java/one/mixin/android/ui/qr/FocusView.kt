@@ -10,17 +10,18 @@ import android.view.animation.DecelerateInterpolator
 import one.mixin.android.extension.dp
 
 class FocusView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
-
     private val interpolator = DecelerateInterpolator()
 
-    private val outerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
-        style = Paint.Style.STROKE
-        strokeWidth = 2.dp.toFloat()
-    }
-    private val innerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0x7fffffff
-    }
+    private val outerPaint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            style = Paint.Style.STROKE
+            strokeWidth = 2.dp.toFloat()
+        }
+    private val innerPaint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = 0x7fffffff
+        }
 
     private var focusProgress = 1f
     private var outerAlpha = 1f
@@ -72,7 +73,10 @@ class FocusView(context: Context, attributeSet: AttributeSet) : View(context, at
         }
     }
 
-    fun focusAndMeter(x: Float, y: Float) {
+    fun focusAndMeter(
+        x: Float,
+        y: Float,
+    ) {
         focusProgress = 0f
         outerAlpha = 1f
         innerAlpha = 1f

@@ -62,33 +62,35 @@ fun String.withinTime(hours: Long): Boolean {
 
 fun String.timeAgo(context: Context): String {
     val localeZone = localeZone()
-    val today = ZonedDateTime.of(
-        ZonedDateTime.now().toLocalDate(),
-        LocalTime.MIN,
-        localeZone.normalized(),
-    )
+    val today =
+        ZonedDateTime.of(
+            ZonedDateTime.now().toLocalDate(),
+            LocalTime.MIN,
+            localeZone.normalized(),
+        )
     var timeAgo = TimeCache.singleton.getTimeAgo(this + today)
     if (timeAgo == null) {
         val date = ZonedDateTime.parse(this).withZoneSameInstant(localeZone)
         val todayMilli = today.toInstant().toEpochMilli()
         val offset = todayMilli - date.toInstant().toEpochMilli()
-        timeAgo = when {
-            (todayMilli <= date.toInstant().toEpochMilli()) -> date.format(DateTimeFormatter.ofPattern("HH:mm").withZone(localeZone))
-            (offset < 7 * DAY_DURATION) -> {
-                when (date.dayOfWeek) {
-                    DayOfWeek.MONDAY -> context.getString(R.string.Monday)
-                    DayOfWeek.TUESDAY -> context.getString(R.string.Tuesday)
-                    DayOfWeek.WEDNESDAY -> context.getString(R.string.Wednesday)
-                    DayOfWeek.THURSDAY -> context.getString(R.string.Thursday)
-                    DayOfWeek.FRIDAY -> context.getString(R.string.Friday)
-                    DayOfWeek.SATURDAY -> context.getString(R.string.Saturday)
-                    else -> context.getString(R.string.Sunday)
+        timeAgo =
+            when {
+                (todayMilli <= date.toInstant().toEpochMilli()) -> date.format(DateTimeFormatter.ofPattern("HH:mm").withZone(localeZone))
+                (offset < 7 * DAY_DURATION) -> {
+                    when (date.dayOfWeek) {
+                        DayOfWeek.MONDAY -> context.getString(R.string.Monday)
+                        DayOfWeek.TUESDAY -> context.getString(R.string.Tuesday)
+                        DayOfWeek.WEDNESDAY -> context.getString(R.string.Wednesday)
+                        DayOfWeek.THURSDAY -> context.getString(R.string.Thursday)
+                        DayOfWeek.FRIDAY -> context.getString(R.string.Friday)
+                        DayOfWeek.SATURDAY -> context.getString(R.string.Saturday)
+                        else -> context.getString(R.string.Sunday)
+                    }
+                }
+                else -> {
+                    date.format(DateTimeFormatter.ofPattern("yyyy/MM/dd").withZone(localeZone))
                 }
             }
-            else -> {
-                date.format(DateTimeFormatter.ofPattern("yyyy/MM/dd").withZone(localeZone))
-            }
-        }
         TimeCache.singleton.putTimeAgo(this, timeAgo)
     }
     return timeAgo as String
@@ -96,40 +98,42 @@ fun String.timeAgo(context: Context): String {
 
 fun String.timeAgoDate(context: Context): String {
     val localeZone = localeZone()
-    val today = ZonedDateTime.of(
-        ZonedDateTime.now().toLocalDate(),
-        LocalTime.MIN,
-        localeZone.normalized(),
-    )
+    val today =
+        ZonedDateTime.of(
+            ZonedDateTime.now().toLocalDate(),
+            LocalTime.MIN,
+            localeZone.normalized(),
+        )
     val todayMilli = today.toInstant().toEpochMilli()
     var timeAgoDate = TimeCache.singleton.getTimeAgoDate(this + today)
     if (timeAgoDate == null) {
         val date = ZonedDateTime.parse(this).withZoneSameInstant(localeZone)
-        timeAgoDate = when {
-            (todayMilli <= date.toInstant().toEpochMilli()) -> context.getString(R.string.Today)
-            (today.year == date.year) -> {
-                date.format(
-                    DateTimeFormatter.ofPattern(
-                        if (isCurrChinese()) {
-                            weekPatternCn
-                        } else {
-                            weekPatternEn
-                        },
-                    ).withZone(localeZone),
-                )
+        timeAgoDate =
+            when {
+                (todayMilli <= date.toInstant().toEpochMilli()) -> context.getString(R.string.Today)
+                (today.year == date.year) -> {
+                    date.format(
+                        DateTimeFormatter.ofPattern(
+                            if (isCurrChinese()) {
+                                weekPatternCn
+                            } else {
+                                weekPatternEn
+                            },
+                        ).withZone(localeZone),
+                    )
+                }
+                else -> {
+                    date.format(
+                        DateTimeFormatter.ofPattern(
+                            if (isCurrChinese()) {
+                                yearPatternCn
+                            } else {
+                                yearPatternEn
+                            },
+                        ).withZone(localeZone),
+                    )
+                }
             }
-            else -> {
-                date.format(
-                    DateTimeFormatter.ofPattern(
-                        if (isCurrChinese()) {
-                            yearPatternCn
-                        } else {
-                            yearPatternEn
-                        },
-                    ).withZone(localeZone),
-                )
-            }
-        }
         TimeCache.singleton.putTimeAgoDate(this + today, timeAgoDate)
     }
     return timeAgoDate as String
@@ -137,11 +141,12 @@ fun String.timeAgoDate(context: Context): String {
 
 fun String.timeAgoDay(patten: String = "dd/MM/yyyy"): String {
     val localeZone = localeZone()
-    val today = ZonedDateTime.of(
-        ZonedDateTime.now().toLocalDate(),
-        LocalTime.MIN,
-        localeZone.normalized(),
-    ).toInstant().toEpochMilli()
+    val today =
+        ZonedDateTime.of(
+            ZonedDateTime.now().toLocalDate(),
+            LocalTime.MIN,
+            localeZone.normalized(),
+        ).toInstant().toEpochMilli()
     var timeAgoDate = TimeCache.singleton.getTimeAgoDate(this + today)
     if (timeAgoDate == null) {
         val date = ZonedDateTime.parse(this).withZoneSameInstant(localeZone)
@@ -192,17 +197,21 @@ fun String.timeAgoClock(): String {
     if (timeAgoClock == null) {
         val date = ZonedDateTime.parse(this).toOffsetDateTime()
         val time = date.format(DateTimeFormatter.ofPattern("HH:mm").withZone(localeZone()))
-        timeAgoClock = if (time.startsWith("0")) {
-            time.substring(1)
-        } else {
-            time
-        }
+        timeAgoClock =
+            if (time.startsWith("0")) {
+                time.substring(1)
+            } else {
+                time
+            }
         TimeCache.singleton.putTimeAgoClock(this, timeAgoClock)
     }
     return timeAgoClock as String
 }
 
-fun isSameDay(time: String?, otherTime: String?): Boolean {
+fun isSameDay(
+    time: String?,
+    otherTime: String?,
+): Boolean {
     if (time == null || otherTime == null) {
         return false
     }
@@ -246,16 +255,17 @@ fun String.getRFC3339Nano(): String {
 
 fun Long.getRelativeTimeSpan(): String {
     val now = Date().time
-    val time = DateUtils.getRelativeTimeSpanString(
-        this,
-        now,
-        when {
-            ((now - this) < 60000L) -> DateUtils.SECOND_IN_MILLIS
-            ((now - this) < 3600000L) -> DateUtils.MINUTE_IN_MILLIS
-            ((now - this) < 86400000L) -> DateUtils.HOUR_IN_MILLIS
-            else -> DateUtils.DAY_IN_MILLIS
-        },
-    )
+    val time =
+        DateUtils.getRelativeTimeSpanString(
+            this,
+            now,
+            when {
+                ((now - this) < 60000L) -> DateUtils.SECOND_IN_MILLIS
+                ((now - this) < 3600000L) -> DateUtils.MINUTE_IN_MILLIS
+                ((now - this) < 86400000L) -> DateUtils.HOUR_IN_MILLIS
+                else -> DateUtils.DAY_IN_MILLIS
+            },
+        )
     return time.toString()
 }
 
@@ -269,7 +279,8 @@ fun currentTimeSeconds() = System.currentTimeMillis() / 1000
 fun String.toSeconds() = ZonedDateTime.parse(this).toOffsetDateTime().toEpochSecond()
 
 fun getTimeMonthsAgo(x: Int): Instant {
-    val startOfDay = ZonedDateTime.now(ZoneId.systemDefault())
-        .withHour(0).withMinute(0).withSecond(0).withNano(0)
+    val startOfDay =
+        ZonedDateTime.now(ZoneId.systemDefault())
+            .withHour(0).withMinute(0).withSecond(0).withNano(0)
     return startOfDay.minusMonths(x.toLong()).toInstant()
 }

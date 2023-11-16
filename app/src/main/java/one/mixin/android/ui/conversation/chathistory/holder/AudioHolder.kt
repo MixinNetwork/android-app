@@ -61,11 +61,12 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
         }
 
         messageItem.mediaDuration?.let {
-            val duration = try {
-                it.toLong()
-            } catch (e: Exception) {
-                0L
-            }
+            val duration =
+                try {
+                    it.toLong()
+                } catch (e: Exception) {
+                    0L
+                }
             binding.chatLayout.layoutParams.width =
                 min((minWidth + (duration / 1000f) * dp15).toInt(), maxWidth)
         }
@@ -182,7 +183,11 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
         }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             if (isLast) {

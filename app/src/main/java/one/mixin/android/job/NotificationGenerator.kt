@@ -48,7 +48,6 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.getEncryptedCategory
 import one.mixin.android.vo.isAudio
@@ -72,7 +71,6 @@ const val CONVERSATION_ID = "conversation_id"
 const val ENCRYPTED_CATEGORY = "encrypted_category"
 
 object NotificationGenerator : Injector() {
-
     private val notificationManager: NotificationManager by lazy {
         MixinApplication.appContext.notificationManager
     }
@@ -99,20 +97,22 @@ object NotificationGenerator : Injector() {
             return@launch
         }
         val mainIntent = MainActivity.getSingleIntent(context)
-        val conversationIntent = ConversationActivity
-            .putIntent(context, message.conversationId)
+        val conversationIntent =
+            ConversationActivity
+                .putIntent(context, message.conversationId)
 
-        val channelId: String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (isSilent) {
-                ChannelManager.getChannelId(SILENCE)
-            } else if (conversation.isGroupConversation()) {
-                ChannelManager.getChannelId(GROUP)
+        val channelId: String =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (isSilent) {
+                    ChannelManager.getChannelId(SILENCE)
+                } else if (conversation.isGroupConversation()) {
+                    ChannelManager.getChannelId(GROUP)
+                } else {
+                    ChannelManager.getChannelId(MESSAGES)
+                }
             } else {
-                ChannelManager.getChannelId(MESSAGES)
+                ChannelManager.CHANNEL_MESSAGE
             }
-        } else {
-            ChannelManager.CHANNEL_MESSAGE
-        }
 
         val notificationBuilder = NotificationCompat.Builder(context, channelId)
         notificationBuilder.setContentIntent(
@@ -128,9 +128,10 @@ object NotificationGenerator : Injector() {
             ),
         ).setCategory(CATEGORY_MESSAGE)
         supportsNougat {
-            val remoteInput = RemoteInput.Builder(KEY_REPLY)
-                .setLabel(context.getString(R.string.Reply))
-                .build()
+            val remoteInput =
+                RemoteInput.Builder(KEY_REPLY)
+                    .setLabel(context.getString(R.string.Reply))
+                    .build()
             val sendIntent = Intent(context, SendService::class.java)
             sendIntent.putExtra(CONVERSATION_ID, message.conversationId)
             var app: App? = null
@@ -150,34 +151,37 @@ object NotificationGenerator : Injector() {
             }
             val encryptCategory = getEncryptedCategory(isBot, app)
             sendIntent.putExtra(ENCRYPTED_CATEGORY, encryptCategory.ordinal)
-            val pendingIntent = PendingIntent.getService(
-                context,
-                message.conversationId.hashCode(),
-                sendIntent,
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    PendingIntent.FLAG_MUTABLE
-                } else {
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                },
-            )
-            val action = NotificationCompat.Action.Builder(
-                R.mipmap.ic_launcher,
-                context.getString(R.string.Reply),
-                pendingIntent,
-            )
-                .addRemoteInput(remoteInput)
-                .setAllowGeneratedReplies(true)
-                .setSemanticAction(SEMANTIC_ACTION_REPLY)
-                .setShowsUserInterface(false)
-                .build()
+            val pendingIntent =
+                PendingIntent.getService(
+                    context,
+                    message.conversationId.hashCode(),
+                    sendIntent,
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        PendingIntent.FLAG_MUTABLE
+                    } else {
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                    },
+                )
+            val action =
+                NotificationCompat.Action.Builder(
+                    R.mipmap.ic_launcher,
+                    context.getString(R.string.Reply),
+                    pendingIntent,
+                )
+                    .addRemoteInput(remoteInput)
+                    .setAllowGeneratedReplies(true)
+                    .setSemanticAction(SEMANTIC_ACTION_REPLY)
+                    .setShowsUserInterface(false)
+                    .build()
             notificationBuilder.addAction(action)
-            val readAction = NotificationCompat.Action.Builder(
-                R.mipmap.ic_launcher,
-                context.getString(R.string.Mark_as_read),
-                pendingIntent,
-            ).setSemanticAction(SEMANTIC_ACTION_MARK_AS_READ)
-                .setShowsUserInterface(false)
-                .build()
+            val readAction =
+                NotificationCompat.Action.Builder(
+                    R.mipmap.ic_launcher,
+                    context.getString(R.string.Mark_as_read),
+                    pendingIntent,
+                ).setSemanticAction(SEMANTIC_ACTION_MARK_AS_READ)
+                    .setShowsUserInterface(false)
+                    .build()
             notificationBuilder.addAction(readAction)
         }
 
@@ -326,7 +330,7 @@ object NotificationGenerator : Injector() {
                     contentText = context.getString(R.string.alert_key_contact_transcript_message)
                 }
             }
-            message.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name  || message.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name -> {
+            message.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name || message.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name -> {
                 notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_transfer_message))
                 notificationBuilder.setContentTitle(user.fullName)
                 contentText = context.getString(R.string.alert_key_contact_transfer_message)
@@ -348,93 +352,94 @@ object NotificationGenerator : Injector() {
             message.type == MessageCategory.SYSTEM_CONVERSATION.name -> {
                 val self = Session.getAccountId() ?: return@launch
                 val participantId = message.participantId ?: ""
-                val participantFullName = if (participantId.isEmpty()) {
-                    ""
-                } else {
-                    syncUser(participantId)?.fullName ?: ""
-                }
-                val content = when (message.action) {
-                    SystemConversationAction.CREATE.name -> {
-                        String.format(
-                            context.getString(R.string.created_this_group),
-                            user.fullName,
-                        )
+                val participantFullName =
+                    if (participantId.isEmpty()) {
+                        ""
+                    } else {
+                        syncUser(participantId)?.fullName ?: ""
                     }
-                    SystemConversationAction.ADD.name -> {
-                        String.format(
-                            context.getString(R.string.chat_group_add),
-
-                            user.fullName,
-                            if (self == participantId) {
-                                context.getString(R.string.you)
-                            } else {
-                                participantFullName
-                            },
-                        )
-                    }
-                    SystemConversationAction.REMOVE.name -> {
-                        String.format(
-                            context.getString(
-                                R.string.chat_group_remove,
-                            ),
-                            user.fullName,
-                            if (self == participantId) {
-                                context.getString(R.string.you)
-                            } else {
-                                participantFullName
-                            },
-                        )
-                    }
-                    SystemConversationAction.JOIN.name -> {
-                        String.format(
-                            context.getString(
-                                R.string.chat_group_join,
-                            ),
-                            if (self == participantId) {
-                                context.getString(R.string.You)
-                            } else {
-                                participantFullName
-                            },
-                        )
-                    }
-                    SystemConversationAction.EXIT.name -> {
-                        String.format(
-                            context.getString(
-                                R.string.chat_group_exit,
-                            ),
-                            if (self == participantId) {
-                                context.getString(R.string.You)
-                            } else {
-                                participantFullName
-                            },
-                        )
-                    }
-                    SystemConversationAction.ROLE.name -> {
-                        context.getString(R.string.group_role)
-                    }
-                    SystemConversationAction.EXPIRE.name -> {
-                        val timeInterval = message.content?.toLongOrNull() ?: return@launch
-                        when {
-                            timeInterval <= 0 -> {
-                                String.format(
-                                    context.getString(R.string.disable_disappearing_message),
-                                    participantFullName,
-                                )
-                            }
-                            else -> {
-                                String.format(
-                                    context.getString(R.string.set_disappearing_message_time_to),
-                                    participantFullName,
-                                    toTimeInterval(timeInterval),
-                                )
+                val content =
+                    when (message.action) {
+                        SystemConversationAction.CREATE.name -> {
+                            String.format(
+                                context.getString(R.string.created_this_group),
+                                user.fullName,
+                            )
+                        }
+                        SystemConversationAction.ADD.name -> {
+                            String.format(
+                                context.getString(R.string.chat_group_add),
+                                user.fullName,
+                                if (self == participantId) {
+                                    context.getString(R.string.you)
+                                } else {
+                                    participantFullName
+                                },
+                            )
+                        }
+                        SystemConversationAction.REMOVE.name -> {
+                            String.format(
+                                context.getString(
+                                    R.string.chat_group_remove,
+                                ),
+                                user.fullName,
+                                if (self == participantId) {
+                                    context.getString(R.string.you)
+                                } else {
+                                    participantFullName
+                                },
+                            )
+                        }
+                        SystemConversationAction.JOIN.name -> {
+                            String.format(
+                                context.getString(
+                                    R.string.chat_group_join,
+                                ),
+                                if (self == participantId) {
+                                    context.getString(R.string.You)
+                                } else {
+                                    participantFullName
+                                },
+                            )
+                        }
+                        SystemConversationAction.EXIT.name -> {
+                            String.format(
+                                context.getString(
+                                    R.string.chat_group_exit,
+                                ),
+                                if (self == participantId) {
+                                    context.getString(R.string.You)
+                                } else {
+                                    participantFullName
+                                },
+                            )
+                        }
+                        SystemConversationAction.ROLE.name -> {
+                            context.getString(R.string.group_role)
+                        }
+                        SystemConversationAction.EXPIRE.name -> {
+                            val timeInterval = message.content?.toLongOrNull() ?: return@launch
+                            when {
+                                timeInterval <= 0 -> {
+                                    String.format(
+                                        context.getString(R.string.disable_disappearing_message),
+                                        participantFullName,
+                                    )
+                                }
+                                else -> {
+                                    String.format(
+                                        context.getString(R.string.set_disappearing_message_time_to),
+                                        participantFullName,
+                                        toTimeInterval(timeInterval),
+                                    )
+                                }
                             }
                         }
-                    }
-                    else -> {
-                        // No support
-                        null
-                    }
-                } ?: return@launch
+                        else -> {
+                            // No support
+                            null
+                        }
+                    } ?: return@launch
                 notificationBuilder.setContentTitle(user.fullName)
                 notificationBuilder.setTicker(content)
                 contentText = content
@@ -460,11 +465,12 @@ object NotificationGenerator : Injector() {
         if (!isSilent && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             notificationBuilder.setSound(Uri.parse("android.resource://" + context.packageName + "/" + R.raw.mixin))
         }
-        notificationBuilder.priority = if (isSilent) {
-            NotificationCompat.PRIORITY_MIN
-        } else {
-            NotificationCompat.PRIORITY_HIGH
-        }
+        notificationBuilder.priority =
+            if (isSilent) {
+                NotificationCompat.PRIORITY_MIN
+            } else {
+                NotificationCompat.PRIORITY_HIGH
+            }
 
         var person: Person? = null
         supportsR({
@@ -472,15 +478,17 @@ object NotificationGenerator : Injector() {
             if (name.isBlank()) {
                 return@supportsR
             }
-            person = Person.Builder()
-                .setName(name)
-                .setImportant(true)
-                .build()
+            person =
+                Person.Builder()
+                    .setName(name)
+                    .setImportant(true)
+                    .build()
 
-            val messagingStyle = NotificationCompat.MessagingStyle(requireNotNull(person) { "Required person was null." }).also { style ->
-                style.addMessage(NotificationCompat.MessagingStyle.Message(contentText, time, person))
-                style.isGroupConversation = false
-            }
+            val messagingStyle =
+                NotificationCompat.MessagingStyle(requireNotNull(person) { "Required person was null." }).also { style ->
+                    style.addMessage(NotificationCompat.MessagingStyle.Message(contentText, time, person))
+                    style.isGroupConversation = false
+                }
 
             notificationBuilder.setShortcutId(conversation.conversationId)
                 .addPerson(person)
@@ -489,10 +497,11 @@ object NotificationGenerator : Injector() {
         })
 
         loadBitmap(context, conversation.iconUrl()) { bitmap ->
-            val resource = bitmap ?: BitmapFactory.decodeResource(
-                context.resources,
-                if (conversation.isGroupConversation()) R.drawable.ic_group_place_holder else R.drawable.default_avatar,
-            )
+            val resource =
+                bitmap ?: BitmapFactory.decodeResource(
+                    context.resources,
+                    if (conversation.isGroupConversation()) R.drawable.ic_group_place_holder else R.drawable.default_avatar,
+                )
             notificationBuilder.setLargeIcon(resource)
             notificationBuilder.setGroup(conversation.conversationId)
 
@@ -500,66 +509,82 @@ object NotificationGenerator : Injector() {
             notificationManager.notify(message.messageId.hashCode(), notificationBuilder.build())
 
             supportsNougat {
-                val summaryNotification = NotificationCompat.Builder(context, channelId)
-                    .setContentTitle(conversation.getConversationName())
-                    .setSmallIcon(R.drawable.ic_msg_default)
-                    .setStyle(
-                        NotificationCompat.InboxStyle()
-                            .addLine(conversation.content)
-                            .setSummaryText(conversation.getConversationName()),
-                    )
-                    .setGroup(conversation.conversationId)
-                    .setGroupSummary(true)
-                    .build()
+                val summaryNotification =
+                    NotificationCompat.Builder(context, channelId)
+                        .setContentTitle(conversation.getConversationName())
+                        .setSmallIcon(R.drawable.ic_msg_default)
+                        .setStyle(
+                            NotificationCompat.InboxStyle()
+                                .addLine(conversation.content)
+                                .setSummaryText(conversation.getConversationName()),
+                        )
+                        .setGroup(conversation.conversationId)
+                        .setGroupSummary(true)
+                        .build()
                 notificationManager.notify(conversation.conversationId.hashCode(), summaryNotification)
             }
         }
     }
 
-    private fun buildBubble(context: Context, conversation: ConversationItem, notificationBuilder: NotificationCompat.Builder, message: Message, bitmap: Bitmap, person: Person? = null) {
+    private fun buildBubble(
+        context: Context,
+        conversation: ConversationItem,
+        notificationBuilder: NotificationCompat.Builder,
+        message: Message,
+        bitmap: Bitmap,
+        person: Person? = null,
+    ) {
         supportsR({
             val name = conversation.getConversationName()
             if (name.isBlank()) {
                 return@supportsR
             }
             val icon = IconCompat.createWithBitmap(bitmap)
-            val shortcut = ShortcutInfoCompat.Builder(context, "Bubble-${conversation.conversationId}")
-                .setIntent(Intent(Intent.ACTION_DEFAULT))
-                .setLongLived(true)
-                .setIcon(icon)
-                .setShortLabel(name).apply {
-                    person?.let { setPerson(it) }
-                }
-                .build()
+            val shortcut =
+                ShortcutInfoCompat.Builder(context, "Bubble-${conversation.conversationId}")
+                    .setIntent(Intent(Intent.ACTION_DEFAULT))
+                    .setLongLived(true)
+                    .setIcon(icon)
+                    .setShortLabel(name).apply {
+                        person?.let { setPerson(it) }
+                    }
+                    .build()
             updateShortcuts(mutableListOf(shortcut))
             notificationBuilder.setShortcutInfo(shortcut)
 
-            val userId = when {
-                conversation.isGroupConversation() -> null
-                message.isRepresentativeMessage(conversation) -> conversation.ownerId
-                else -> message.userId
-            }
+            val userId =
+                when {
+                    conversation.isGroupConversation() -> null
+                    message.isRepresentativeMessage(conversation) -> conversation.ownerId
+                    else -> message.userId
+                }
             val target = BubbleActivity.putIntent(context, conversation.conversationId, userId)
-            val bubbleIntent = PendingIntent.getActivity(
-                context,
-                conversation.conversationId.hashCode(),
-                target,
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-                } else {
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                },
-            )
-            val bubbleMetadata = NotificationCompat.BubbleMetadata.Builder(bubbleIntent, icon)
-                .setDesiredHeight(640.dp)
-                .setSuppressNotification(MixinApplication.conversationId == conversation.conversationId)
-                .setAutoExpandBubble(false)
-                .build()
+            val bubbleIntent =
+                PendingIntent.getActivity(
+                    context,
+                    conversation.conversationId.hashCode(),
+                    target,
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+                    } else {
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                    },
+                )
+            val bubbleMetadata =
+                NotificationCompat.BubbleMetadata.Builder(bubbleIntent, icon)
+                    .setDesiredHeight(640.dp)
+                    .setSuppressNotification(MixinApplication.conversationId == conversation.conversationId)
+                    .setAutoExpandBubble(false)
+                    .build()
             notificationBuilder.bubbleMetadata = bubbleMetadata
         })
     }
 
-    private fun loadBitmap(context: Context, url: String?, onComplete: (Bitmap?) -> Unit) {
+    private fun loadBitmap(
+        context: Context,
+        url: String?,
+        onComplete: (Bitmap?) -> Unit,
+    ) {
         mainThread {
             val height =
                 context.resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height)

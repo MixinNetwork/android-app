@@ -13,7 +13,6 @@ import one.mixin.android.vo.User
 
 @Dao
 interface UserDao : BaseDao<User> {
-
     @Query("SELECT * FROM users WHERE relationship = 'FRIEND' ORDER BY full_name, identity_number ASC")
     fun findFriends(): LiveData<List<User>>
 
@@ -71,7 +70,12 @@ interface UserDao : BaseDao<User> {
             full_name = :username COLLATE NOCASE OR identity_number = :identityNumber COLLATE NOCASE DESC
         """,
     )
-    suspend fun fuzzySearchUser(username: String, identityNumber: String, phone: String, id: String): List<User>
+    suspend fun fuzzySearchUser(
+        username: String,
+        identityNumber: String,
+        phone: String,
+        id: String,
+    ): List<User>
 
     @Query(
         """
@@ -82,7 +86,12 @@ interface UserDao : BaseDao<User> {
         ORDER BY u.full_name = :username COLLATE NOCASE OR u.identity_number = :identityNumber COLLATE NOCASE DESC
         """,
     )
-    suspend fun fuzzySearchGroupUser(conversationId: String, username: String, identityNumber: String, id: String): List<User>
+    suspend fun fuzzySearchGroupUser(
+        conversationId: String,
+        username: String,
+        identityNumber: String,
+        id: String,
+    ): List<User>
 
     @Query(
         """SELECT u.* FROM users u 
@@ -95,13 +104,25 @@ interface UserDao : BaseDao<User> {
         u.relationship OR u.full_name = :username COLLATE NOCASE OR u.identity_number = :identityNumber COLLATE NOCASE DESC 
         """,
     )
-    suspend fun fuzzySearchBotGroupUser(conversationId: String, username: String, identityNumber: String, id: String, createdAt: String): List<User>
+    suspend fun fuzzySearchBotGroupUser(
+        conversationId: String,
+        username: String,
+        identityNumber: String,
+        id: String,
+        createdAt: String,
+    ): List<User>
 
     @Query("SELECT u.* FROM participants p, users u WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id AND u.user_id != :id")
-    suspend fun suspendGetGroupParticipants(conversationId: String, id: String): List<User>
+    suspend fun suspendGetGroupParticipants(
+        conversationId: String,
+        id: String,
+    ): List<User>
 
     @Query("UPDATE users SET relationship = :relationship WHERE user_id = :id")
-    fun updateUserRelationship(id: String, relationship: String)
+    fun updateUserRelationship(
+        id: String,
+        relationship: String,
+    )
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
@@ -111,10 +132,16 @@ interface UserDao : BaseDao<User> {
     fun getGroupParticipants(conversationId: String): LiveData<List<User>>
 
     @Query("UPDATE users SET mute_until = :muteUntil WHERE user_id = :id")
-    fun updateMuteUntil(id: String, muteUntil: String)
+    fun updateMuteUntil(
+        id: String,
+        muteUntil: String,
+    )
 
     @Query("UPDATE users SET phone = :phone WHERE user_id = :id")
-    fun updatePhone(id: String, phone: String)
+    fun updatePhone(
+        id: String,
+        phone: String,
+    )
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT u.* FROM users u INNER JOIN conversations c ON c.owner_id = u.user_id WHERE c.category = 'CONTACT' AND u.app_id IS NULL")
@@ -129,7 +156,10 @@ interface UserDao : BaseDao<User> {
         WHERE p.conversation_id = :conversationId AND u.user_id IN (:userIds)
         """,
     )
-    suspend fun findMultiCallUsersByIds(conversationId: String, userIds: Set<String>): List<CallUser>
+    suspend fun findMultiCallUsersByIds(
+        conversationId: String,
+        userIds: Set<String>,
+    ): List<CallUser>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
@@ -137,7 +167,10 @@ interface UserDao : BaseDao<User> {
         WHERE p.conversation_id = :conversationId AND u.user_id = :userId
         """,
     )
-    suspend fun findSelfCallUser(conversationId: String, userId: String): CallUser?
+    suspend fun findSelfCallUser(
+        conversationId: String,
+        userId: String,
+    ): CallUser?
 
     @Query("SELECT user_id FROM users WHERE identity_number IN (:identityNumbers)")
     fun findMultiUserIdsByIdentityNumbers(identityNumbers: Set<String>): List<String>
@@ -155,7 +188,10 @@ interface UserDao : BaseDao<User> {
     fun findForwardUserById(id: String): ForwardUser?
 
     @Query("SELECT u.* FROM users u WHERE u.rowid > :rowId ORDER BY u.rowid ASC LIMIT :limit ")
-    fun getUsersByLimitAndRowId(limit: Int, rowId: Long): List<User>
+    fun getUsersByLimitAndRowId(
+        limit: Int,
+        rowId: Long,
+    ): List<User>
 
     @Query("SELECT rowid FROM users WHERE user_id = :userId")
     fun getUserRowId(userId: String): Long?

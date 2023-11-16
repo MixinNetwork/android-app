@@ -16,7 +16,6 @@ import kotlin.time.Duration.Companion.days
 @RunWith(AndroidJUnit4::class)
 @HiltAndroidTest
 class TipTest {
-
     @Test
     fun testTipGuard() {
         val suite = Tip.newSuiteBn256()
@@ -49,13 +48,14 @@ class TipTest {
         val sig = user.sign(msg)
         println("sig: ${sig.toHex()}")
 
-        val data = TipSignData(
-            identity = uPk.publicKeyString(),
-            ephemeral = eBytes.toHex(),
-            nonce = nonce,
-            grace = grace,
-            watcher = "",
-        )
+        val data =
+            TipSignData(
+                identity = uPk.publicKeyString(),
+                ephemeral = eBytes.toHex(),
+                nonce = nonce,
+                grace = grace,
+                watcher = "",
+            )
         println("data: ${Gson().toJson(data)}")
         val json = Gson().toJson(data).toByteArray()
         println("json: ${json.toHex()}")

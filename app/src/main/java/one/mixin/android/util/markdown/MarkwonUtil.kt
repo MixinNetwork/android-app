@@ -41,7 +41,6 @@ import org.commonmark.node.SoftLineBreak
 
 class MarkwonUtil {
     companion object {
-
         val simpleMarkwon by lazy {
             Markwon.builderNoCore(MixinApplication.appContext).usePlugin(SimplePlugin()).build()
         }
@@ -53,11 +52,12 @@ class MarkwonUtil {
         ): Markwon {
             val isNightMode = context.isNightMode()
             val prism4j = Prism4j(LanguageGrammerLocator())
-            val prism4jTheme = if (isNightMode) {
-                Prism4jThemeDarkula.create()
-            } else {
-                Prism4jThemeDefault.create()
-            }
+            val prism4jTheme =
+                if (isNightMode) {
+                    Prism4jThemeDarkula.create()
+                } else {
+                    Prism4jThemeDefault.create()
+                }
             return Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
                 .usePlugin(HtmlPlugin.create())
@@ -99,12 +99,13 @@ class MarkwonUtil {
 
                         override fun configureVisitor(builder: MarkwonVisitor.Builder) {
                             builder.on(FencedCodeBlock::class.java) { visitor: MarkwonVisitor, fencedCodeBlock: FencedCodeBlock ->
-                                val code = visitor.configuration()
-                                    .syntaxHighlight()
-                                    .highlight(
-                                        fencedCodeBlock.info,
-                                        fencedCodeBlock.literal.trim { it <= ' ' },
-                                    )
+                                val code =
+                                    visitor.configuration()
+                                        .syntaxHighlight()
+                                        .highlight(
+                                            fencedCodeBlock.info,
+                                            fencedCodeBlock.literal.trim { it <= ' ' },
+                                        )
                                 visitor.builder().append(code)
                             }
                             builder.on(SoftLineBreak::class.java) { visitor: MarkwonVisitor, _: SoftLineBreak ->
@@ -115,7 +116,10 @@ class MarkwonUtil {
                         override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
                             builder.linkResolver(
                                 object : LinkResolverDef() {
-                                    override fun resolve(view: View, link: String) {
+                                    override fun resolve(
+                                        view: View,
+                                        link: String,
+                                    ) {
                                         if (link.isMixinUrl()) {
                                             mixinLinkResolver.invoke(link)
                                         } else {
@@ -132,11 +136,12 @@ class MarkwonUtil {
         fun getMiniMarkwon(context: Activity): Markwon {
             val isNightMode = context.isNightMode()
             val prism4j = Prism4j(LanguageGrammerLocator())
-            val prism4jTheme = if (isNightMode) {
-                Prism4jThemeDarkula.create()
-            } else {
-                Prism4jThemeDefault.create()
-            }
+            val prism4jTheme =
+                if (isNightMode) {
+                    Prism4jThemeDarkula.create()
+                } else {
+                    Prism4jThemeDefault.create()
+                }
             return Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
                 .usePlugin(HtmlPlugin.create())
@@ -184,12 +189,13 @@ class MarkwonUtil {
 
                         override fun configureVisitor(builder: MarkwonVisitor.Builder) {
                             builder.on(FencedCodeBlock::class.java) { visitor: MarkwonVisitor, fencedCodeBlock: FencedCodeBlock ->
-                                val code = visitor.configuration()
-                                    .syntaxHighlight()
-                                    .highlight(
-                                        fencedCodeBlock.info,
-                                        fencedCodeBlock.literal.trim { it <= ' ' },
-                                    )
+                                val code =
+                                    visitor.configuration()
+                                        .syntaxHighlight()
+                                        .highlight(
+                                            fencedCodeBlock.info,
+                                            fencedCodeBlock.literal.trim { it <= ' ' },
+                                        )
                                 visitor.builder().append(code)
                             }
                             builder.on(SoftLineBreak::class.java) { visitor: MarkwonVisitor, _: SoftLineBreak ->

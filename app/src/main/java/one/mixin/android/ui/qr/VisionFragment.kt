@@ -26,20 +26,25 @@ import one.mixin.android.widget.PseudoNotificationView
 abstract class VisionFragment : BaseFragment() {
     protected var pseudoNotificationView: PseudoNotificationView? = null
 
-    protected val scanner: BarcodeScanner = BarcodeScanning.getClient(
-        BarcodeScannerOptions.Builder()
-            .setBarcodeFormats(FORMAT_QR_CODE)
-            .build(),
-    )
+    protected val scanner: BarcodeScanner =
+        BarcodeScanning.getClient(
+            BarcodeScannerOptions.Builder()
+                .setBarcodeFormats(FORMAT_QR_CODE)
+                .build(),
+        )
 
     protected var fromShortcut = false
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        pseudoNotificationView = view.findViewById<PseudoNotificationView>(R.id.pseudo_view)?.apply {
-            translationY = -300.dp.toFloat()
-            callback = pseudoViewCallback
-        }
+        pseudoNotificationView =
+            view.findViewById<PseudoNotificationView>(R.id.pseudo_view)?.apply {
+                translationY = -300.dp.toFloat()
+                callback = pseudoViewCallback
+            }
     }
 
     override fun onDestroyView() {
@@ -47,19 +52,25 @@ abstract class VisionFragment : BaseFragment() {
         scanner.closeSilently()
     }
 
-    private val pseudoViewCallback = object : PseudoNotificationView.Callback {
-        override fun onClick(content: String) {
-            handleResult(requireActivity(), fromShortcut, content)
+    private val pseudoViewCallback =
+        object : PseudoNotificationView.Callback {
+            override fun onClick(content: String) {
+                handleResult(requireActivity(), fromShortcut, content)
+            }
         }
-    }
 }
 
-fun handleResult(activity: FragmentActivity, fromShortcut: Boolean, content: String) {
-    val result = if (fromShortcut) {
-        Intent(activity, MainActivity::class.java)
-    } else {
-        Intent()
-    }
+fun handleResult(
+    activity: FragmentActivity,
+    fromShortcut: Boolean,
+    content: String,
+) {
+    val result =
+        if (fromShortcut) {
+            Intent(activity, MainActivity::class.java)
+        } else {
+            Intent()
+        }
     if (content.isDonateUrl() || content.isExternalScheme(activity) || content.isExternalTransferUrl()) {
         result.putExtra(MainActivity.URL, content)
     } else if (content.startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX) && WalletConnect.isEnabled(activity)) {
@@ -72,11 +83,12 @@ fun handleResult(activity: FragmentActivity, fromShortcut: Boolean, content: Str
         val segments = Uri.parse(content).pathSegments
         if (segments.isEmpty()) return
 
-        val userId = if (segments.size >= 2) {
-            segments[1]
-        } else {
-            segments[0]
-        }
+        val userId =
+            if (segments.size >= 2) {
+                segments[1]
+            } else {
+                segments[0]
+            }
         result.putExtra(MainActivity.TRANSFER, userId)
     } else {
         result.putExtra(MainActivity.URL, content)

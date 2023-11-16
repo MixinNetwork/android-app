@@ -11,7 +11,6 @@ data class EmergencyRequest(
     val pin: String? = null,
     val code: String? = null,
     val purpose: String,
-
     val platform: String = "Android",
     @SerializedName("platform_version")
     val platformVersion: String = Build.VERSION.RELEASE,

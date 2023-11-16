@@ -12,7 +12,10 @@ class MentionTextView(context: Context, attrs: AttributeSet?) :
     AppCompatTextView(context, attrs) {
     var mentionRenderContext: MentionRenderContext? = null
 
-    override fun setText(text: CharSequence?, type: BufferType) {
+    override fun setText(
+        text: CharSequence?,
+        type: BufferType,
+    ) {
         if (text.isNullOrBlank()) {
             super.setText(text, type)
             return
@@ -28,7 +31,10 @@ class MentionTextView(context: Context, attrs: AttributeSet?) :
         }
     }
 
-    private fun renderMarkdown(sp: SpannableStringBuilder, node: Node) {
+    private fun renderMarkdown(
+        sp: SpannableStringBuilder,
+        node: Node,
+    ) {
         sp.append(simpleMarkwon.render(node))
         if (node.next != null) {
             renderMarkdown(sp, node.next)

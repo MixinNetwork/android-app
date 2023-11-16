@@ -105,7 +105,10 @@ import one.mixin.android.widget.AspectRatioFrameLayout
         }
     }
 
-    private fun applyTextureViewRotation(textureView: TextureView, video_textureRotation: Int) {
+    private fun applyTextureViewRotation(
+        textureView: TextureView,
+        video_textureRotation: Int,
+    ) {
         val videoTextureWidth = textureView.width.toFloat()
         val videoTextureHeight = textureView.height.toFloat()
         if (videoTextureWidth == 0f || videoTextureHeight == 0f || video_textureRotation == 0) {
@@ -194,7 +197,7 @@ import one.mixin.android.widget.AspectRatioFrameLayout
                 playbackState == Player.STATE_IDLE ||
                     playbackState == Player.STATE_ENDED ||
                     !player!!.playWhenReady
-                )
+            )
     }
 
     inner class ComponentListener :
@@ -244,7 +247,10 @@ import one.mixin.android.widget.AspectRatioFrameLayout
             onContentAspectRatioChanged(videoAspectRatio, binding.videoAspectRatio)
         }
 
-        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+        override fun onPlayerStateChanged(
+            playWhenReady: Boolean,
+            playbackState: Int,
+        ) {
             if (VideoPlayer.player().mId == currentMessageId) {
                 when (playbackState) {
                     Player.STATE_BUFFERING -> {

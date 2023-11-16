@@ -6,5 +6,5 @@ data class GhostKey(
     @SerializedName("mask")
     val mask: String,
     @SerializedName("keys")
-    val keys: List<String>
+    val keys: List<String>,
 )

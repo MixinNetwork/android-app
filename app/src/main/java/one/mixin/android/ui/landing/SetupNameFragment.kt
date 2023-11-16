@@ -36,7 +36,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
-
     private val mobileViewModel by viewModels<MobileViewModel>()
     private val binding by viewBinding(FragmentSetupNameBinding::bind)
 
@@ -47,7 +46,10 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
         fun newInstance() = SetupNameFragment()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         MixinApplication.get().isOnline.set(true)
         binding.apply {
@@ -117,15 +119,26 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
         }
     }
 
-    private val mWatcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
+    private val mWatcher: TextWatcher =
+        object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {
+            }
 
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        }
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {
+            }
 
-        override fun afterTextChanged(s: Editable?) {
-            handleEditView(s.toString())
+            override fun afterTextChanged(s: Editable?) {
+                handleEditView(s.toString())
+            }
         }
-    }
 }

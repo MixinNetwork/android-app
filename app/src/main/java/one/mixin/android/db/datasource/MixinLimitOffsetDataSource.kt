@@ -38,6 +38,7 @@ abstract class MixinLimitOffsetDataSource<T : Any> protected constructor(
     }
 
     protected abstract fun convertRows(cursor: Cursor?): List<T>
+
     override fun loadInitial(
         params: LoadInitialParams,
         callback: LoadInitialCallback<T>,
@@ -77,7 +78,10 @@ abstract class MixinLimitOffsetDataSource<T : Any> protected constructor(
     /**
      * Return the rows from startPos to startPos + loadCount
      */
-    private fun loadRange(startPosition: Int, loadCount: Int): List<T> {
+    private fun loadRange(
+        startPosition: Int,
+        loadCount: Int,
+    ): List<T> {
         val ids = itemIds(startPosition, loadCount)
         val sqLiteQuery = querySqlGenerator(ids)
         val cursor = db.query(sqLiteQuery)
@@ -89,7 +93,10 @@ abstract class MixinLimitOffsetDataSource<T : Any> protected constructor(
         }
     }
 
-    private fun itemIds(startPosition: Int, loadCount: Int): String {
+    private fun itemIds(
+        startPosition: Int,
+        loadCount: Int,
+    ): String {
         val offsetQuery = RoomSQLiteQuery.copyFrom(offsetStatement)
         val argCount = offsetStatement.argCount
         offsetQuery.bindLong(argCount - 1, loadCount.toLong())
@@ -109,11 +116,12 @@ abstract class MixinLimitOffsetDataSource<T : Any> protected constructor(
     }
 
     init {
-        observer = object : InvalidationTracker.Observer(tables) {
-            override fun onInvalidated(tables: Set<String>) {
-                invalidate()
+        observer =
+            object : InvalidationTracker.Observer(tables) {
+                override fun onInvalidated(tables: Set<String>) {
+                    invalidate()
+                }
             }
-        }
         db.invalidationTracker.addWeakObserver(observer)
     }
 }

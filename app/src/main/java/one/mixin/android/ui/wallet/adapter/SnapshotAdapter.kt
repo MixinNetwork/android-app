@@ -25,12 +25,18 @@ class SnapshotAdapter :
     override fun onCreateHeaderViewHolder(parent: ViewGroup) =
         SnapshotHeaderViewHolder(parent.inflate(R.layout.item_transaction_header, false))
 
-    override fun onBindHeaderViewHolder(vh: SnapshotHeaderViewHolder, pos: Int) {
+    override fun onBindHeaderViewHolder(
+        vh: SnapshotHeaderViewHolder,
+        pos: Int,
+    ) {
         val time = getItem(pos)?.createdAt ?: return
         vh.bind(time)
     }
 
-    override fun onBindViewHolder(holder: SnapshotHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: SnapshotHolder,
+        position: Int,
+    ) {
         getItem(position)?.let {
             holder.bind(it, listener)
             debugLongClick(
@@ -43,7 +49,10 @@ class SnapshotAdapter :
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SnapshotHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): SnapshotHolder {
         return SnapshotHolder(parent.inflate(R.layout.item_wallet_transactions, false))
     }
 }

@@ -15,7 +15,10 @@ object MessageFlow {
         MutableSharedFlow<MessageEvent>(0, 1, BufferOverflow.SUSPEND)
     }
 
-    fun update(conversationId: String, messageId: String) {
+    fun update(
+        conversationId: String,
+        messageId: String,
+    ) {
         emit(MessageEvent(conversationId, MessageEventAction.UPDATE, listOf(messageId)))
     }
 
@@ -23,23 +26,38 @@ object MessageFlow {
         emit(MessageEvent(conversationId, MessageEventAction.RELATIIONSHIP, listOf()))
     }
 
-    fun update(conversationId: String, messageIds: List<String>) {
+    fun update(
+        conversationId: String,
+        messageIds: List<String>,
+    ) {
         emit(MessageEvent(conversationId, MessageEventAction.UPDATE, messageIds))
     }
 
-    fun delete(conversationId: String, messageId: String) {
+    fun delete(
+        conversationId: String,
+        messageId: String,
+    ) {
         emit(MessageEvent(conversationId, MessageEventAction.DELETE, listOf(messageId)))
     }
 
-    fun delete(conversationId: String, messageIds: List<String>) {
+    fun delete(
+        conversationId: String,
+        messageIds: List<String>,
+    ) {
         emit(MessageEvent(conversationId, MessageEventAction.DELETE, messageIds))
     }
 
-    fun insert(conversationId: String, messageId: String) {
+    fun insert(
+        conversationId: String,
+        messageId: String,
+    ) {
         emit(MessageEvent(conversationId, MessageEventAction.INSERT, listOf(messageId)))
     }
 
-    fun insert(conversationId: String, messageIds: List<String>) {
+    fun insert(
+        conversationId: String,
+        messageIds: List<String>,
+    ) {
         emit(MessageEvent(conversationId, MessageEventAction.INSERT, messageIds))
     }
 
@@ -49,7 +67,10 @@ object MessageFlow {
         }
     }
 
-    suspend fun collect(predicate: suspend (MessageEvent) -> Boolean, collector: FlowCollector<MessageEvent>) {
+    suspend fun collect(
+        predicate: suspend (MessageEvent) -> Boolean,
+        collector: FlowCollector<MessageEvent>,
+    ) {
         messageEventFlow.filter(predicate).collect(collector)
     }
 }

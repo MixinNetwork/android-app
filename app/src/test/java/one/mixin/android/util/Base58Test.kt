@@ -6,9 +6,9 @@ import org.junit.Test
 import kotlin.test.assertEquals
 
 class Base58Test {
-
     // Tests from https://github.com/bitcoin/bitcoin/blob/master/src/test/data/base58_encode_decode.json
-    val TEST_VECTORS = mapOf(
+    val TEST_VECTORS =
+        mapOf(
             "" to "",
             "61" to "2g",
             "626262" to "a3gV",
@@ -20,8 +20,8 @@ class Base58Test {
             "572e4794" to "3EFU7m",
             "ecac89cad93923c02321" to "EJDM8drfXA6uyA",
             "10c8511e" to "Rt5zm",
-            "00000000000000000000" to "1111111111"
-    )
+            "00000000000000000000" to "1111111111",
+        )
 
     @Test
     fun encodingToBase58Works() {

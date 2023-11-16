@@ -30,7 +30,6 @@ import kotlin.math.min
 @UnstableApi
 class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
     FrameLayout(context, attributeSet) {
-
     private val componentListener = ComponentListener()
     private val formatBuilder = StringBuilder()
     private val formatter = Formatter(formatBuilder, Locale.getDefault())
@@ -46,9 +45,10 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
     private var currentWindowOffset = 0L
     private var timeBarMinUpdateIntervalMs = DEFAULT_TIME_BAR_MIN_UPDATE_INTERVAL_MS
 
-    private val updateProgressAction = Runnable {
-        updateProgress()
-    }
+    private val updateProgressAction =
+        Runnable {
+            updateProgress()
+        }
 
     var inRefreshState = false
         set(value) {
@@ -147,12 +147,19 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
         timeBar.addListener(componentListener)
     }
 
-    private fun seekTo(player: Player, windowIndex: Int, positionMs: Long): Boolean {
+    private fun seekTo(
+        player: Player,
+        windowIndex: Int,
+        positionMs: Long,
+    ): Boolean {
         player.seekTo(windowIndex, positionMs)
         return true
     }
 
-    private fun seekToTimeBarPosition(player: Player, positionMsParams: Long) {
+    private fun seekToTimeBarPosition(
+        player: Player,
+        positionMsParams: Long,
+    ) {
         var positionMs = positionMsParams
         var windowIndex: Int
         val timeline = player.currentTimeline
@@ -189,23 +196,25 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
         updatePrevAndNext()
 
         player?.let {
-            playMode = when (it.repeatMode) {
-                Player.REPEAT_MODE_OFF, Player.REPEAT_MODE_ALL -> {
-                    PlayMode.RepeatAll
+            playMode =
+                when (it.repeatMode) {
+                    Player.REPEAT_MODE_OFF, Player.REPEAT_MODE_ALL -> {
+                        PlayMode.RepeatAll
+                    }
+                    Player.REPEAT_MODE_ONE -> {
+                        PlayMode.RepeatOne
+                    }
+                    else -> {
+                        PlayMode.Shuffle
+                    }
                 }
-                Player.REPEAT_MODE_ONE -> {
-                    PlayMode.RepeatOne
-                }
-                else -> {
-                    PlayMode.Shuffle
-                }
-            }
 
-            playSpeed = when (it.playbackParameters.speed) {
-                1.5f -> PlaySpeed.Speed15
-                2f -> PlaySpeed.Speed20
-                else -> PlaySpeed.Speed1
-            }
+            playSpeed =
+                when (it.playbackParameters.speed) {
+                    1.5f -> PlaySpeed.Speed15
+                    2f -> PlaySpeed.Speed20
+                    else -> PlaySpeed.Speed1
+                }
         }
     }
 
@@ -366,11 +375,12 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
                 if (playbackSpeed > 0) (mediaTimeDelayMs / playbackSpeed).toLong() else MAX_UPDATE_INTERVAL_MS
 
             // Constrain the delay to avoid too frequent / infrequent updates.
-            delayMs = Util.constrainValue(
-                delayMs,
-                timeBarMinUpdateIntervalMs.toLong(),
-                MAX_UPDATE_INTERVAL_MS,
-            )
+            delayMs =
+                Util.constrainValue(
+                    delayMs,
+                    timeBarMinUpdateIntervalMs.toLong(),
+                    MAX_UPDATE_INTERVAL_MS,
+                )
             postDelayed(updateProgressAction, delayMs)
         } else if (playbackState != Player.STATE_ENDED && playbackState != Player.STATE_IDLE) {
             postDelayed(updateProgressAction, MAX_UPDATE_INTERVAL_MS)
@@ -381,23 +391,36 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
         Player.Listener,
         TimeBar.OnScrubListener,
         OnClickListener {
-        override fun onScrubMove(timeBar: TimeBar, position: Long) {
+        override fun onScrubMove(
+            timeBar: TimeBar,
+            position: Long,
+        ) {
             positionView.text = Util.getStringForTime(formatBuilder, formatter, position)
         }
 
-        override fun onScrubStart(timeBar: TimeBar, position: Long) {
+        override fun onScrubStart(
+            timeBar: TimeBar,
+            position: Long,
+        ) {
             scrubbing = true
             positionView.text = Util.getStringForTime(formatBuilder, formatter, position)
         }
 
-        override fun onScrubStop(timeBar: TimeBar, position: Long, canceled: Boolean) {
+        override fun onScrubStop(
+            timeBar: TimeBar,
+            position: Long,
+            canceled: Boolean,
+        ) {
             scrubbing = false
             if (!canceled) {
                 player?.let { seekToTimeBarPosition(it, position) }
             }
         }
 
-        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+        override fun onPlayerStateChanged(
+            playWhenReady: Boolean,
+            playbackState: Int,
+        ) {
             updatePlayView()
             updateProgress()
         }
@@ -406,17 +429,25 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
             updateProgress()
         }
 
-        override fun onPositionDiscontinuity(@Player.DiscontinuityReason reason: Int) {
+        override fun onPositionDiscontinuity(
+            @Player.DiscontinuityReason reason: Int,
+        ) {
             updateNavigation()
             updateTimeline()
         }
 
-        override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+        override fun onTimelineChanged(
+            timeline: Timeline,
+            reason: Int,
+        ) {
             updateNavigation()
             updateTimeline()
         }
 
-        override fun onEvents(player: Player, events: Player.Events) {
+        override fun onEvents(
+            player: Player,
+            events: Player.Events,
+        ) {
             if (events.containsAny(
                     Player.EVENT_PLAYBACK_STATE_CHANGED,
                     Player.EVENT_PLAY_WHEN_READY_CHANGED,
@@ -453,17 +484,18 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
                     }
                 }
                 modeView -> {
-                    playMode = when (playMode) {
-                        PlayMode.RepeatAll -> {
-                            PlayMode.RepeatOne
+                    playMode =
+                        when (playMode) {
+                            PlayMode.RepeatAll -> {
+                                PlayMode.RepeatOne
+                            }
+                            PlayMode.RepeatOne -> {
+                                PlayMode.Shuffle
+                            }
+                            PlayMode.Shuffle -> {
+                                PlayMode.RepeatAll
+                            }
                         }
-                        PlayMode.RepeatOne -> {
-                            PlayMode.Shuffle
-                        }
-                        PlayMode.Shuffle -> {
-                            PlayMode.RepeatAll
-                        }
-                    }
                 }
                 nextView -> {
                     player.seekToNextMediaItem()
@@ -472,25 +504,28 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
                     player.seekToPreviousMediaItem()
                 }
                 speedView -> {
-                    playSpeed = when (playSpeed) {
-                        PlaySpeed.Speed1 -> {
-                            PlaySpeed.Speed15
+                    playSpeed =
+                        when (playSpeed) {
+                            PlaySpeed.Speed1 -> {
+                                PlaySpeed.Speed15
+                            }
+                            PlaySpeed.Speed15 -> {
+                                PlaySpeed.Speed20
+                            }
+                            PlaySpeed.Speed20 -> {
+                                PlaySpeed.Speed1
+                            }
                         }
-                        PlaySpeed.Speed15 -> {
-                            PlaySpeed.Speed20
-                        }
-                        PlaySpeed.Speed20 -> {
-                            PlaySpeed.Speed1
-                        }
-                    }
                 }
             }
         }
     }
 
     interface ProgressUpdateListener {
-
-        fun onProgressUpdate(position: Long, bufferedPosition: Long)
+        fun onProgressUpdate(
+            position: Long,
+            bufferedPosition: Long,
+        )
     }
 
     companion object {
@@ -499,7 +534,10 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
         private const val MAX_WINDOWS_FOR_MULTI_WINDOW_TIME_BAR = 100
         private const val DEFAULT_TIME_BAR_MIN_UPDATE_INTERVAL_MS = 200
 
-        fun canShowMultiWindowTimeBar(timeline: Timeline, window: Timeline.Window): Boolean {
+        fun canShowMultiWindowTimeBar(
+            timeline: Timeline,
+            window: Timeline.Window,
+        ): Boolean {
             if (timeline.windowCount > MAX_WINDOWS_FOR_MULTI_WINDOW_TIME_BAR) {
                 return false
             }
@@ -514,9 +552,13 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
 }
 
 enum class PlayMode {
-    RepeatAll, RepeatOne, Shuffle
+    RepeatAll,
+    RepeatOne,
+    Shuffle,
 }
 
 enum class PlaySpeed {
-    Speed1, Speed15, Speed20
+    Speed1,
+    Speed15,
+    Speed20,
 }

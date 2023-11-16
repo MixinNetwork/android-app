@@ -42,7 +42,10 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val POS_EMPTY_RECEIVE = 1
         const val POS_EMPTY_SEND = 2
 
-        fun newInstance(forSend: Boolean, assets: ArrayList<String>? = null) =
+        fun newInstance(
+            forSend: Boolean,
+            assets: ArrayList<String>? = null,
+        ) =
             AssetListBottomSheetDialogFragment().withArgs {
                 putBoolean(ARGS_FOR_SEND, forSend)
                 putStringArrayList(ARGS_ASSETS, assets)
@@ -67,7 +70,10 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var defaultAssets = emptyList<TokenItem>()
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
@@ -83,13 +89,17 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 dismiss()
             }
             assetRv.adapter = adapter
-            adapter.callback = object : WalletSearchCallback {
-                override fun onAssetClick(assetId: String, tokenItem: TokenItem?) {
-                    binding.searchEt.hideKeyboard()
-                    tokenItem?.let { onAsset?.invoke(it) }
-                    dismiss()
+            adapter.callback =
+                object : WalletSearchCallback {
+                    override fun onAssetClick(
+                        assetId: String,
+                        tokenItem: TokenItem?,
+                    ) {
+                        binding.searchEt.hideKeyboard()
+                        tokenItem?.let { onAsset?.invoke(it) }
+                        dismiss()
+                    }
                 }
-            }
             searchEt.setHint(getString(R.string.search_placeholder_asset))
             if (forSend) {
                 depositTv.setOnClickListener {
@@ -97,32 +107,34 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     dismiss()
                 }
 
-                searchEt.listener = object : SearchView.OnSearchViewListener {
-                    override fun afterTextChanged(s: Editable?) {
-                        filter(s.toString())
-                    }
+                searchEt.listener =
+                    object : SearchView.OnSearchViewListener {
+                        override fun afterTextChanged(s: Editable?) {
+                            filter(s.toString())
+                        }
 
-                    override fun onSearch() {}
-                }
+                        override fun onSearch() {}
+                    }
             } else {
                 @SuppressLint("AutoDispose")
-                disposable = searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .autoDispose(destroyScope)
-                    .subscribe(
-                        {
-                            if (it.isNullOrBlank()) {
-                                binding.rvVa.displayedChild = POS_RV
-                                adapter.submitList(defaultAssets)
-                            } else {
-                                if (it.toString() != currentQuery) {
-                                    currentQuery = it.toString()
-                                    search(it.toString())
+                disposable =
+                    searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .autoDispose(destroyScope)
+                        .subscribe(
+                            {
+                                if (it.isNullOrBlank()) {
+                                    binding.rvVa.displayedChild = POS_RV
+                                    adapter.submitList(defaultAssets)
+                                } else {
+                                    if (it.toString() != currentQuery) {
+                                        currentQuery = it.toString()
+                                        search(it.toString())
+                                    }
                                 }
-                            }
-                        },
-                        {},
-                    )
+                            },
+                            {},
+                        )
             }
         }
 
@@ -131,13 +143,14 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         } else {
             bottomViewModel.assetItems()
         }.observe(this) {
-            defaultAssets = it.let { list ->
-                if (!assetIds.isNullOrEmpty()) {
-                    list.filter { item -> assetIds!!.contains(item.assetId) }
-                } else {
-                    list
+            defaultAssets =
+                it.let { list ->
+                    if (!assetIds.isNullOrEmpty()) {
+                        list.filter { item -> assetIds!!.contains(item.assetId) }
+                    } else {
+                        list
+                    }
                 }
-            }
             if (forSend) {
                 adapter.submitList(defaultAssets)
                 if (defaultAssets.isEmpty()) {
@@ -154,9 +167,10 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun filter(s: String) {
-        val assetList = defaultAssets.filter {
-            it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
-        }.sortedByDescending { it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) }
+        val assetList =
+            defaultAssets.filter {
+                it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
+            }.sortedByDescending { it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) }
         adapter.submitList(assetList) {
             binding.assetRv.scrollToPosition(0)
         }
@@ -164,39 +178,42 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun search(query: String) {
         currentSearch?.cancel()
-        currentSearch = lifecycleScope.launch {
-            if (!isAdded) return@launch
+        currentSearch =
+            lifecycleScope.launch {
+                if (!isAdded) return@launch
 
-            binding.rvVa.displayedChild = POS_RV
-            binding.pb.isVisible = true
+                binding.rvVa.displayedChild = POS_RV
+                binding.pb.isVisible = true
 
-            val localAssets = bottomViewModel.fuzzySearchAssets(query).let { list ->
-                if (!assetIds.isNullOrEmpty()) {
-                    list?.filter { item -> assetIds!!.contains(item.assetId) }
-                } else {
-                    list
+                val localAssets =
+                    bottomViewModel.fuzzySearchAssets(query).let { list ->
+                        if (!assetIds.isNullOrEmpty()) {
+                            list?.filter { item -> assetIds!!.contains(item.assetId) }
+                        } else {
+                            list
+                        }
+                    }
+                adapter.submitList(localAssets)
+
+                val remoteAssets = bottomViewModel.queryAsset(query)
+                val result = sortQueryAsset(query, localAssets, remoteAssets)
+
+                adapter.submitList(result) {
+                    binding.assetRv.scrollToPosition(0)
+                }
+                binding.pb.isVisible = false
+
+                if (localAssets.isNullOrEmpty() && remoteAssets.isEmpty()) {
+                    binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
                 }
             }
-            adapter.submitList(localAssets)
-
-            val remoteAssets = bottomViewModel.queryAsset(query)
-            val result = sortQueryAsset(query, localAssets, remoteAssets)
-
-            adapter.submitList(result) {
-                binding.assetRv.scrollToPosition(0)
-            }
-            binding.pb.isVisible = false
-
-            if (localAssets.isNullOrEmpty() && remoteAssets.isEmpty()) {
-                binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
-            }
-        }
     }
 
     fun setOnAssetClick(callback: (TokenItem) -> Unit): AssetListBottomSheetDialogFragment {
         this.onAsset = callback
         return this
     }
+
     fun setOnDepositClick(callback: () -> Unit): AssetListBottomSheetDialogFragment {
         this.onDeposit = callback
         return this

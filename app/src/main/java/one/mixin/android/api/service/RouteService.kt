@@ -23,34 +23,50 @@ import retrofit2.http.Query
 
 interface RouteService {
     @POST("checkout/payments")
-    suspend fun payment(@Body request: RoutePaymentRequest): MixinResponse<RoutePaymentResponse>
+    suspend fun payment(
+        @Body request: RoutePaymentRequest,
+    ): MixinResponse<RoutePaymentResponse>
 
     @GET("checkout/payments/{id}")
-    suspend fun payment(@Path("id") id: String): MixinResponse<RoutePaymentResponse>
+    suspend fun payment(
+        @Path("id") id: String,
+    ): MixinResponse<RoutePaymentResponse>
 
     @GET("checkout/payments")
     suspend fun payments(): MixinResponse<List<RoutePaymentResponse>>
 
     @POST("checkout/sessions")
-    suspend fun createSession(@Body session: RouteSessionRequest): MixinResponse<RouteSessionResponse>
+    suspend fun createSession(
+        @Body session: RouteSessionRequest,
+    ): MixinResponse<RouteSessionResponse>
 
     @POST("checkout/instruments")
-    suspend fun createInstrument(@Body session: RouteInstrumentRequest): MixinResponse<Card>
+    suspend fun createInstrument(
+        @Body session: RouteInstrumentRequest,
+    ): MixinResponse<Card>
 
     @GET("checkout/instruments")
     suspend fun instruments(): MixinResponse<List<Card>>
 
     @DELETE("/checkout/instruments/{id}")
-    suspend fun deleteInstruments(@Path("id") id: String): MixinResponse<Void>
+    suspend fun deleteInstruments(
+        @Path("id") id: String,
+    ): MixinResponse<Void>
 
     @GET("checkout/sessions/{id}")
-    suspend fun getSession(@Path("id") id: String): MixinResponse<RouteSessionResponse>
+    suspend fun getSession(
+        @Path("id") id: String,
+    ): MixinResponse<RouteSessionResponse>
 
     @POST("checkout/tokens")
-    suspend fun token(@Body tokenRequest: RouteTokenRequest): MixinResponse<RouteCreateTokenResponse>
+    suspend fun token(
+        @Body tokenRequest: RouteTokenRequest,
+    ): MixinResponse<RouteCreateTokenResponse>
 
     @POST("checkout/ticker")
-    suspend fun ticker(@Body ticker: RouteTickerRequest): MixinResponse<RouteTickerResponse>
+    suspend fun ticker(
+        @Body ticker: RouteTickerRequest,
+    ): MixinResponse<RouteTickerResponse>
 
     @GET("kyc/token")
     suspend fun sumsubToken(): MixinResponse<RouteTokenResponse>
@@ -59,5 +75,7 @@ interface RouteService {
     fun callSumsubToken(): Call<MixinResponse<RouteTokenResponse>>
 
     @GET("profile")
-    suspend fun profile(@Query("version") version: String): MixinResponse<ProfileResponse>
+    suspend fun profile(
+        @Query("version") version: String,
+    ): MixinResponse<ProfileResponse>
 }

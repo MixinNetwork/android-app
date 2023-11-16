@@ -12,7 +12,6 @@ import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.dp
 
 class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
-
     private val binding: ViewTitleBinding =
         ViewTitleBinding.inflate(LayoutInflater.from(context), this, true)
 
@@ -77,7 +76,10 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
         ta.recycle()
     }
 
-    fun setSubTitle(first: String, second: String) {
+    fun setSubTitle(
+        first: String,
+        second: String,
+    ) {
         binding.titleTv.text = first
         if (second.isBlank()) {
             binding.subTitleTv.visibility = View.GONE
@@ -87,13 +89,17 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
         }
     }
 
-    fun initProgress(max: Int, progress: Int) {
+    fun initProgress(
+        max: Int,
+        progress: Int,
+    ) {
         binding.pb.max = max
         binding.pb.indicatorSize = 24.dp
         binding.pb.progress = progress
         binding.rightAnimator.isVisible = true
         binding.rightAnimator.displayedChild = POS_PROGRESS
     }
+
     fun setProgress(index: Int) {
         binding.pb.setProgress(index, true)
     }

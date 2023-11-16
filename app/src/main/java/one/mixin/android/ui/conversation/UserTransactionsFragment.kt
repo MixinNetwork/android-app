@@ -27,13 +27,13 @@ import one.mixin.android.vo.SnapshotItem
 @Suppress("DEPRECATION")
 @AndroidEntryPoint
 class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
-
     companion object {
         const val TAG = "UserTransactionsFragment"
 
-        fun newInstance(userId: String) = UserTransactionsFragment().withArgs {
-            putString(ARGS_USER_ID, userId)
-        }
+        fun newInstance(userId: String) =
+            UserTransactionsFragment().withArgs {
+                putString(ARGS_USER_ID, userId)
+            }
     }
 
     override fun onCreateView(
@@ -53,26 +53,30 @@ class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem
         requireArguments().getString(ARGS_USER_ID)!!
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         binding.titleView.rightAnimator.visibility = View.GONE
         binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         adapter.listener = this
         binding.transactionsRv.adapter = adapter
-        dataObserver = Observer {
-            if (it.isNotEmpty()) {
-                showEmpty(false)
-            } else {
-                showEmpty(true)
-            }
-            adapter.submitList(it)
+        dataObserver =
+            Observer {
+                if (it.isNotEmpty()) {
+                    showEmpty(false)
+                } else {
+                    showEmpty(true)
+                }
+                adapter.submitList(it)
 
-            if (!refreshedSnapshots) {
-                walletViewModel.refreshSnapshots(opponent = userId)
-                refreshedSnapshots = true
+                if (!refreshedSnapshots) {
+                    walletViewModel.refreshSnapshots(opponent = userId)
+                    refreshedSnapshots = true
+                }
             }
-        }
         bindLiveData(walletViewModel.snapshotsByUserId(userId, initialLoadKey))
     }
 

@@ -29,7 +29,10 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
     private val binding get() = requireNotNull(_binding)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         _binding = FragmentEmergencyContactBottomBinding.bind(View.inflate(context, R.layout.fragment_emergency_contact_bottom, null))
         contentView = binding.root
@@ -56,8 +59,9 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
 
             scrollView.post {
                 val childHeight = scrollContent.height
-                val isScrollable = scrollView.height <
-                    childHeight + scrollView.paddingTop + scrollView.paddingBottom
+                val isScrollable =
+                    scrollView.height <
+                        childHeight + scrollView.paddingTop + scrollView.paddingBottom
                 if (isScrollable) {
                     imageView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                         topMargin = context?.dpToPx(12f) ?: 0

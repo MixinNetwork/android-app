@@ -39,10 +39,10 @@ import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 
 class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, attrs) {
-
     private val binding = ViewReplyBinding.inflate(LayoutInflater.from(context), this, true)
 
     val replyCloseIv = binding.replyCloseIv
+
     init {
         setBackgroundColor(context.colorFromAttribute(R.attr.bg_white))
         binding.replyViewIv.round(3.dp)
@@ -55,13 +55,17 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
         context.dpToPx(12f)
     }
 
-    private fun setIcon(@DrawableRes icon: Int) = AppCompatResources.getDrawable(context, icon)?.also {
-        it.setBounds(0, 0, dp12, dp12)
-    }.let {
-        TextViewCompat.setCompoundDrawablesRelative(binding.replyViewTv, it, null, null, null)
-    }
+    private fun setIcon(
+        @DrawableRes icon: Int,
+    ) =
+        AppCompatResources.getDrawable(context, icon)?.also {
+            it.setBounds(0, 0, dp12, dp12)
+        }.let {
+            TextViewCompat.setCompoundDrawablesRelative(binding.replyViewTv, it, null, null, null)
+        }
 
     var messageItem: MessageItem? = null
+
     fun bind(messageItem: MessageItem) {
         this.messageItem = messageItem
         binding.replyStartView.setBackgroundColor(BaseViewHolder.getColorById(messageItem.userId))

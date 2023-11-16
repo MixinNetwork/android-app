@@ -3,3 +3,4 @@
 # it's automatically set to 100 on `ktlint --android ...` (per Android Kotlin Style Guide)
 max_line_length=off
 ij_kotlin_allow_trailing_comma=true
+ktlint_code_style=ktlint_official

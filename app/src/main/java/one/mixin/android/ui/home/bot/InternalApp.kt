@@ -8,7 +8,11 @@ import one.mixin.android.util.getLocalString
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
 
-data class Bot(val id: String, val name: String, @DrawableRes val icon: Int) : BotInterface {
+data class Bot(
+    val id: String,
+    val name: String,
+    @DrawableRes val icon: Int,
+) : BotInterface {
     override fun getBotId() = id
 }
 
@@ -24,7 +28,9 @@ val InternalWallet = Bot(INTERNAL_WALLET_ID, getLocalString(MixinApplication.app
 val InternalCamera = Bot(INTERNAL_CAMERA_ID, getLocalString(MixinApplication.appContext, R.string.Camera), R.drawable.ic_bot_camera)
 val InternalScan = Bot(INTERNAL_SCAN_ID, getLocalString(MixinApplication.appContext, R.string.Scan_QR), R.drawable.ic_bot_scan)
 
-enum class BotCategory(@DrawableRes val icon: Int) {
+enum class BotCategory(
+    @DrawableRes val icon: Int,
+) {
     TRADING(R.drawable.ic_bot_category_trading),
     BUSINESS(R.drawable.ic_bot_category_business),
     BOOKS(R.drawable.ic_bot_category_books),
@@ -42,20 +48,21 @@ enum class BotCategory(@DrawableRes val icon: Int) {
 }
 
 @DrawableRes
-fun App.getCategoryIcon(): Int = when (category) {
-    BotCategory.BOOKS.name -> BotCategory.BOOKS.icon
-    BotCategory.BUSINESS.name -> BotCategory.BUSINESS.icon
-    BotCategory.SOCIAL.name -> BotCategory.SOCIAL.icon
-    BotCategory.TRADING.name -> BotCategory.TRADING.icon
-    BotCategory.GAMES.name -> BotCategory.GAMES.icon
-    BotCategory.MUSIC.name -> BotCategory.MUSIC.icon
-    BotCategory.NEWS.name -> BotCategory.NEWS.icon
-    BotCategory.OTHER.name -> BotCategory.OTHER.icon
-    BotCategory.SHOPPING.name -> BotCategory.SHOPPING.icon
-    BotCategory.EDUCATION.name -> BotCategory.EDUCATION.icon
-    BotCategory.TOOLS.name -> BotCategory.TOOLS.icon
-    BotCategory.VIDEO.name -> BotCategory.VIDEO.icon
-    BotCategory.WALLET.name -> BotCategory.WALLET.icon
-    BotCategory.PHOTO.name -> BotCategory.PHOTO.icon
-    else -> BotCategory.OTHER.icon
-}
+fun App.getCategoryIcon(): Int =
+    when (category) {
+        BotCategory.BOOKS.name -> BotCategory.BOOKS.icon
+        BotCategory.BUSINESS.name -> BotCategory.BUSINESS.icon
+        BotCategory.SOCIAL.name -> BotCategory.SOCIAL.icon
+        BotCategory.TRADING.name -> BotCategory.TRADING.icon
+        BotCategory.GAMES.name -> BotCategory.GAMES.icon
+        BotCategory.MUSIC.name -> BotCategory.MUSIC.icon
+        BotCategory.NEWS.name -> BotCategory.NEWS.icon
+        BotCategory.OTHER.name -> BotCategory.OTHER.icon
+        BotCategory.SHOPPING.name -> BotCategory.SHOPPING.icon
+        BotCategory.EDUCATION.name -> BotCategory.EDUCATION.icon
+        BotCategory.TOOLS.name -> BotCategory.TOOLS.icon
+        BotCategory.VIDEO.name -> BotCategory.VIDEO.icon
+        BotCategory.WALLET.name -> BotCategory.WALLET.icon
+        BotCategory.PHOTO.name -> BotCategory.PHOTO.icon
+        else -> BotCategory.OTHER.icon
+    }

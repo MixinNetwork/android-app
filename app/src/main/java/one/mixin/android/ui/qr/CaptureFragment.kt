@@ -114,7 +114,10 @@ class CaptureFragment() : BaseCameraxFragment() {
     override fun getContentView(): View = binding.root
 
     @SuppressLint("RestrictedApi")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.op.post {
             if (viewDestroyed()) return@post
@@ -158,11 +161,12 @@ class CaptureFragment() : BaseCameraxFragment() {
         useCases: ArrayList<UseCase>,
         rotation: Int,
     ) {
-        imageCapture = ImageCapture.Builder()
-            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-            .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
-            .setTargetRotation(rotation)
-            .build()
+        imageCapture =
+            ImageCapture.Builder()
+                .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
+                .setTargetRotation(rotation)
+                .build()
         useCases.add(imageCapture!!)
     }
 
@@ -176,12 +180,13 @@ class CaptureFragment() : BaseCameraxFragment() {
 
     @SuppressLint("RestrictedApi")
     private fun onSwitchClick() {
-        lensFacing = if (CameraSelector.LENS_FACING_FRONT == lensFacing) {
-            CameraSelector.LENS_FACING_BACK
-        } else {
-            binding.flash.setImageResource(R.drawable.ic_flash_off)
-            CameraSelector.LENS_FACING_FRONT
-        }
+        lensFacing =
+            if (CameraSelector.LENS_FACING_FRONT == lensFacing) {
+                CameraSelector.LENS_FACING_BACK
+            } else {
+                binding.flash.setImageResource(R.drawable.ic_flash_off)
+                CameraSelector.LENS_FACING_FRONT
+            }
         try {
             bindCameraUseCase()
         } catch (e: Exception) {
@@ -192,9 +197,10 @@ class CaptureFragment() : BaseCameraxFragment() {
     @SuppressLint("RestrictedApi")
     private fun onTakePicture() {
         imageCaptureFile = requireContext().getImageCachePath().createImageTemp()
-        val metadata = ImageCapture.Metadata().apply {
-            isReversedHorizontal = lensFacing == CameraSelector.LENS_FACING_FRONT
-        }
+        val metadata =
+            ImageCapture.Metadata().apply {
+                isReversedHorizontal = lensFacing == CameraSelector.LENS_FACING_FRONT
+            }
         val outputFileOptions =
             ImageCapture.OutputFileOptions.Builder(imageCaptureFile!!)
                 .setMetadata(metadata)
@@ -206,48 +212,83 @@ class CaptureFragment() : BaseCameraxFragment() {
     private fun getVideoCapture(): VideoCapture<Recorder> {
         if (videoCapture != null) return videoCapture!!
 
-        val recorder = Recorder.Builder()
-            .build()
+        val recorder =
+            Recorder.Builder()
+                .build()
         videoCapture = VideoCapture.withOutput(recorder)
         return requireNotNull(videoCapture)
     }
 
-    private val imageSavedListener = object : ImageCapture.OnImageSavedCallback {
-        override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-            imageCaptureFile?.let { uri ->
-                getEditResult.launch(Pair(uri.toUri(), getString(R.string.Send)))
+    private val imageSavedListener =
+        object : ImageCapture.OnImageSavedCallback {
+            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                imageCaptureFile?.let { uri ->
+                    getEditResult.launch(Pair(uri.toUri(), getString(R.string.Send)))
+                }
+            }
+
+            override fun onError(exception: ImageCaptureException) {
+                toast("Photo capture failed: ${exception.message}")
+                reportException("$CRASHLYTICS_CAMERAX-Photo capture failed,", exception)
             }
         }
 
-        override fun onError(exception: ImageCaptureException) {
-            toast("Photo capture failed: ${exception.message}")
-            reportException("$CRASHLYTICS_CAMERAX-Photo capture failed,", exception)
-        }
-    }
+    private val opCallback =
+        object : CameraOpView.CameraOpCallback {
+            val audioManager by lazy { requireContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager }
+            var oldStreamVolume = 0
 
-    private val opCallback = object : CameraOpView.CameraOpCallback {
-        val audioManager by lazy { requireContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager }
-        var oldStreamVolume = 0
-        override fun onClick() {
-            fun afterGranted() {
-                onTakePicture()
-                binding.captureBorderView.isVisible = true
-                binding.captureBorderView.postDelayed(
-                    {
-                        binding.captureBorderView
-                            .isVisible = false
-                    },
-                    100,
-                )
+            override fun onClick() {
+                fun afterGranted() {
+                    onTakePicture()
+                    binding.captureBorderView.isVisible = true
+                    binding.captureBorderView.postDelayed(
+                        {
+                            binding.captureBorderView
+                                .isVisible = false
+                        },
+                        100,
+                    )
+                }
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                    RxPermissions(requireActivity())
+                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .autoDispose(stopScope)
+                        .subscribe(
+                            { granted ->
+                                if (granted) {
+                                    afterGranted()
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            },
+                            {
+                            },
+                        )
+                } else {
+                    afterGranted()
+                }
             }
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+
+            override fun readyForProgress() {
+                try {
+                    oldStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
+                    audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, 0)
+                } catch (ignored: SecurityException) {
+                }
                 RxPermissions(requireActivity())
-                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .request(
+                        *mutableListOf(Manifest.permission.RECORD_AUDIO).apply {
+                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        }.toTypedArray(),
+                    )
                     .autoDispose(stopScope)
                     .subscribe(
                         { granted ->
                             if (granted) {
-                                afterGranted()
+                                if (binding.op.isRecording()) {
+                                    startRecord()
+                                }
                             } else {
                                 context?.openPermissionSetting()
                             }
@@ -255,67 +296,36 @@ class CaptureFragment() : BaseCameraxFragment() {
                         {
                         },
                     )
-            } else {
-                afterGranted()
             }
-        }
 
-        override fun readyForProgress() {
-            try {
-                oldStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
-                audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, 0)
-            } catch (ignored: SecurityException) {
-            }
-            RxPermissions(requireActivity())
-                .request(
-                    *mutableListOf(Manifest.permission.RECORD_AUDIO).apply {
-                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    }.toTypedArray(),
-                )
-                .autoDispose(stopScope)
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            if (binding.op.isRecording()) {
-                                startRecord()
+            @SuppressLint("RestrictedApi")
+            override fun onProgressStop(time: Float) {
+                binding.close.fadeIn()
+                binding.flash.fadeIn()
+                binding.switchCamera.fadeIn()
+                binding.chronometerLayout.fadeOut()
+                binding.chronometer.stop()
+
+                val recording: Recording? = currentRecording
+                if (recording != null) {
+                    recording.stop()
+                    currentRecording = null
+                }
+                unbindUseCases(getVideoCapture())
+
+                if (Build.VERSION.SDK_INT != Build.VERSION_CODES.N && Build.VERSION.SDK_INT != Build.VERSION_CODES.N_MR1) {
+                    mainThreadDelayed(
+                        {
+                            try {
+                                audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, oldStreamVolume, 0)
+                            } catch (ignored: SecurityException) {
                             }
-                        } else {
-                            context?.openPermissionSetting()
-                        }
-                    },
-                    {
-                    },
-                )
-        }
-
-        @SuppressLint("RestrictedApi")
-        override fun onProgressStop(time: Float) {
-            binding.close.fadeIn()
-            binding.flash.fadeIn()
-            binding.switchCamera.fadeIn()
-            binding.chronometerLayout.fadeOut()
-            binding.chronometer.stop()
-
-            val recording: Recording? = currentRecording
-            if (recording != null) {
-                recording.stop()
-                currentRecording = null
-            }
-            unbindUseCases(getVideoCapture())
-
-            if (Build.VERSION.SDK_INT != Build.VERSION_CODES.N && Build.VERSION.SDK_INT != Build.VERSION_CODES.N_MR1) {
-                mainThreadDelayed(
-                    {
-                        try {
-                            audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, oldStreamVolume, 0)
-                        } catch (ignored: SecurityException) {
-                        }
-                    },
-                    300,
-                )
+                        },
+                        300,
+                    )
+                }
             }
         }
-    }
 
     @SuppressLint("RestrictedApi", "MissingPermission")
     private fun startRecord() {
@@ -328,12 +338,13 @@ class CaptureFragment() : BaseCameraxFragment() {
         bindUseCases(videoCapture)
         val videoFile = requireContext().getVideoPath().createVideoTemp("mp4")
         val outputOptions = FileOutputOptions.Builder(videoFile).build()
-        currentRecording = videoCapture.output
-            .prepareRecording(requireContext(), outputOptions)
-            .apply {
-                withAudioEnabled()
-            }
-            .start(mainExecutor, videoListener)
+        currentRecording =
+            videoCapture.output
+                .prepareRecording(requireContext(), outputOptions)
+                .apply {
+                    withAudioEnabled()
+                }
+                .start(mainExecutor, videoListener)
 
         binding.close.fadeOut()
         binding.flash.fadeOut()
@@ -344,31 +355,32 @@ class CaptureFragment() : BaseCameraxFragment() {
         binding.op.startProgress()
     }
 
-    private val videoListener = Consumer<VideoRecordEvent> { event ->
-        if (event !is VideoRecordEvent.Finalize) return@Consumer
+    private val videoListener =
+        Consumer<VideoRecordEvent> { event ->
+            if (event !is VideoRecordEvent.Finalize) return@Consumer
 
-        if (event.hasError()) {
-            toast("Video capture failed: ${event.cause?.message}")
-            reportException(
-                IllegalStateException(
-                    "$CRASHLYTICS_CAMERAX-Video capture failed, " +
-                        "message: videoCaptureError: ${event.error}, cause: ${event.cause}",
-                ),
-            )
-            startImageAnalysis()
-        } else {
-            if (binding.op.time < CaptureActivity.MIN_DURATION) {
-                toast(R.string.Duration_is_too_short)
-                event.outputResults.outputUri.path?.apply {
-                    File(this).delete()
-                }
+            if (event.hasError()) {
+                toast("Video capture failed: ${event.cause?.message}")
+                reportException(
+                    IllegalStateException(
+                        "$CRASHLYTICS_CAMERAX-Video capture failed, " +
+                            "message: videoCaptureError: ${event.error}, cause: ${event.cause}",
+                    ),
+                )
                 startImageAnalysis()
             } else {
-                openEdit(event.outputResults.outputUri.path ?: "", true, fromGallery = false)
+                if (binding.op.time < CaptureActivity.MIN_DURATION) {
+                    toast(R.string.Duration_is_too_short)
+                    event.outputResults.outputUri.path?.apply {
+                        File(this).delete()
+                    }
+                    startImageAnalysis()
+                } else {
+                    openEdit(event.outputResults.outputUri.path ?: "", true, fromGallery = false)
+                }
+                binding.op.time = 0f
             }
-            binding.op.time = 0f
         }
-    }
 
     private fun callbackEdit(data: Intent?) {
         val uri = data?.getParcelableExtra<Uri>(ARGS_EDITOR_RESULT)

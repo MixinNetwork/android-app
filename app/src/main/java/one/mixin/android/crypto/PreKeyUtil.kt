@@ -11,7 +11,6 @@ import org.whispersystems.libsignal.util.KeyHelper
 import org.whispersystems.libsignal.util.Medium
 
 object PreKeyUtil {
-
     @Synchronized
     fun generatePreKeys(context: Context): List<PreKeyRecord> {
         val preKeyStore = MixinPreKeyStore(context)
@@ -27,7 +26,11 @@ object PreKeyUtil {
     }
 
     @Synchronized
-    fun generateSignedPreKey(context: Context, identityKeyPair: IdentityKeyPair, active: Boolean): SignedPreKeyRecord {
+    fun generateSignedPreKey(
+        context: Context,
+        identityKeyPair: IdentityKeyPair,
+        active: Boolean,
+    ): SignedPreKeyRecord {
         val signedPreKeyStore = MixinPreKeyStore(context)
         val signedPreKeyId = CryptoPreference.getNextSignedPreKeyId(context)
         val record = KeyHelper.generateSignedPreKey(identityKeyPair, signedPreKeyId)
@@ -41,7 +44,10 @@ object PreKeyUtil {
     }
 
     @Synchronized
-    fun setActiveSignedPreKeyId(context: Context, id: Int) {
+    fun setActiveSignedPreKeyId(
+        context: Context,
+        id: Int,
+    ) {
         CryptoPreference.setActiveSignedPreKeyId(context, id)
     }
 

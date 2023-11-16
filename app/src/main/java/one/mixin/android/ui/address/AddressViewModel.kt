@@ -8,15 +8,15 @@ import one.mixin.android.repository.TokenRepository
 import javax.inject.Inject
 
 @HiltViewModel
-class AddressViewModel @Inject
-internal constructor(
-    private val tokenRepository: TokenRepository,
-    private val jobManager: MixinJobManager,
-) : ViewModel() {
+class AddressViewModel
+    @Inject
+    internal constructor(
+        private val tokenRepository: TokenRepository,
+        private val jobManager: MixinJobManager,
+    ) : ViewModel() {
+        fun addresses(id: String) = tokenRepository.addresses(id)
 
-    fun addresses(id: String) = tokenRepository.addresses(id)
-
-    fun refreshAddressesByAssetId(assetId: String) {
-        jobManager.addJobInBackground(RefreshAddressJob(assetId))
+        fun refreshAddressesByAssetId(assetId: String) {
+            jobManager.addJobInBackground(RefreshAddressJob(assetId))
+        }
     }
-}

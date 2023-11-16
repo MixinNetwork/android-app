@@ -9,7 +9,6 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageMedia
 
 interface PendingDatabase {
-
     fun getLastBlazeMessageCreatedAt(): String?
 
     fun insertJob(job: Job)

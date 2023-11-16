@@ -14,38 +14,40 @@ class RefreshTopAssetsJob : BaseJob(
     Params(PRIORITY_UI_HIGH)
         .addTags(GROUP).requireNetwork(),
 ) {
-
     companion object {
         private const val serialVersionUID = 1L
         const val GROUP = "RefreshTopAssetsJob"
     }
 
-    override fun onRun() = runBlocking {
-        val response = tokenService.topAssets().execute().body()
-        if (response != null && response.isSuccess && response.data != null) {
-            val assetList = response.data as List<TopAsset>
-            assetList.map { it.assetId }.chunked(200) {
-                launch { topAssetDao.deleteNotInIds(it) }
-            }
-            topAssetDao.insertListSuspend(assetList)
+    override fun onRun() =
+        runBlocking {
+            val response = tokenService.topAssets().execute().body()
+            if (response != null && response.isSuccess && response.data != null) {
+                val assetList = response.data as List<TopAsset>
+                assetList.map { it.assetId }.chunked(200) {
+                    launch { topAssetDao.deleteNotInIds(it) }
+                }
+                topAssetDao.insertListSuspend(assetList)
 
-            val recentArray = MixinApplication.appContext.defaultSharedPreferences
-                .getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)?.split("=")
-            if (recentArray.isNullOrEmpty()) return@runBlocking
-            val recentList = tokenDao.suspendFindAssetsByIds(recentArray.take(2))
-            if (recentList.isNullOrEmpty()) return@runBlocking
-            val needUpdatePrice = arrayListOf<PriceAndChange>()
-            assetList.forEach { t ->
-                val needUpdate = recentList.find { r ->
-                    r.assetId == t.assetId && r.priceUsd != t.priceUsd
+                val recentArray =
+                    MixinApplication.appContext.defaultSharedPreferences
+                        .getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)?.split("=")
+                if (recentArray.isNullOrEmpty()) return@runBlocking
+                val recentList = tokenDao.suspendFindAssetsByIds(recentArray.take(2))
+                if (recentList.isNullOrEmpty()) return@runBlocking
+                val needUpdatePrice = arrayListOf<PriceAndChange>()
+                assetList.forEach { t ->
+                    val needUpdate =
+                        recentList.find { r ->
+                            r.assetId == t.assetId && r.priceUsd != t.priceUsd
+                        }
+                    if (needUpdate != null) {
+                        needUpdatePrice.add(t.toPriceAndChange())
+                    }
                 }
-                if (needUpdate != null) {
-                    needUpdatePrice.add(t.toPriceAndChange())
+                if (needUpdatePrice.isNotEmpty()) {
+                    tokenDao.suspendUpdatePrices(needUpdatePrice)
                 }
-            }
-            if (needUpdatePrice.isNotEmpty()) {
-                tokenDao.suspendUpdatePrices(needUpdatePrice)
             }
         }
-    }
 }

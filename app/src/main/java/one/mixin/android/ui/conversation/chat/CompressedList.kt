@@ -23,11 +23,17 @@ class CompressedList<E : Any> : AbstractList<E?> {
     override val size: Int
         get() = wrapped.size
 
-    override fun set(globalIndex: Int, element: E?): E? {
+    override fun set(
+        globalIndex: Int,
+        element: E?,
+    ): E? {
         return wrapped.set(globalIndex, element)
     }
 
-    override fun add(index: Int, element: E?) {
+    override fun add(
+        index: Int,
+        element: E?,
+    ) {
         wrapped.add(index, element)
     }
 
@@ -50,7 +56,11 @@ class CompressedList<E : Any> : AbstractList<E?> {
     override fun indexOf(element: E?): Int {
         return wrapped.indexOf(element)
     }
-    fun update(index: Int, item: E) {
+
+    fun update(
+        index: Int,
+        item: E,
+    ) {
         wrapped.removeAt(index)
         wrapped.add(index, item)
     }

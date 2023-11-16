@@ -21,7 +21,6 @@ import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.internal.model.AlbumCollection
 
 class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCollection.AlbumCallbacks {
-
     companion object {
         const val TAG = "GalleryAlbumFragment"
 
@@ -42,7 +41,10 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
 
     private val binding by viewBinding(FragmentGalleryAlbumBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             viewPager.adapter = albumAdapter
@@ -58,24 +60,30 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
             albumTl.tabMode = TabLayout.MODE_SCROLLABLE
             viewPager.currentItem = 0
             va.displayedChild = POS_LOADING
-            albumAdapter.callback = object : GalleryCallback {
-                override fun onItemClick(pos: Int, item: Item, send: Boolean) {
-                    callback?.onItemClick(pos, item, send)
-                }
+            albumAdapter.callback =
+                object : GalleryCallback {
+                    override fun onItemClick(
+                        pos: Int,
+                        item: Item,
+                        send: Boolean,
+                    ) {
+                        callback?.onItemClick(pos, item, send)
+                    }
 
-                override fun onCameraClick() {
-                    callback?.onCameraClick()
+                    override fun onCameraClick() {
+                        callback?.onCameraClick()
+                    }
                 }
-            }
-            albumAdapter.rvCallback = object : DraggableRecyclerView.Callback {
-                override fun onScroll(dis: Float) {
-                    rvCallback?.onScroll(dis)
-                }
+            albumAdapter.rvCallback =
+                object : DraggableRecyclerView.Callback {
+                    override fun onScroll(dis: Float) {
+                        rvCallback?.onScroll(dis)
+                    }
 
-                override fun onRelease(fling: Int) {
-                    rvCallback?.onRelease(fling)
+                    override fun onRelease(fling: Int) {
+                        rvCallback?.onRelease(fling)
+                    }
                 }
-            }
         }
 
         albumCollection.onCreate(this, this)
@@ -144,31 +152,35 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
 
     override fun onAlbumReset() {}
 
-    private val onPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
-        override fun onPageScrollStateChanged(state: Int) {
-            if (state != ViewPager.SCROLL_STATE_IDLE) {
-                albumAdapter.getFragment(binding.viewPager.currentItem)?.hideBlur()
+    private val onPageChangeCallback =
+        object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageScrollStateChanged(state: Int) {
+                if (state != ViewPager.SCROLL_STATE_IDLE) {
+                    albumAdapter.getFragment(binding.viewPager.currentItem)?.hideBlur()
+                }
             }
         }
-    }
 
-    private val internalObserver = object : ContentObserver(Handler()) {
-        override fun onChange(selfChange: Boolean) {
-            if (this@GalleryAlbumFragment.isAdded) {
-                binding.va.postDelayed(restartLoadRunnable, 2000)
+    private val internalObserver =
+        object : ContentObserver(Handler()) {
+            override fun onChange(selfChange: Boolean) {
+                if (this@GalleryAlbumFragment.isAdded) {
+                    binding.va.postDelayed(restartLoadRunnable, 2000)
+                }
             }
         }
-    }
 
-    private val externalObserver = object : ContentObserver(Handler()) {
-        override fun onChange(selfChange: Boolean) {
-            if (this@GalleryAlbumFragment.isAdded) {
-                binding.va.postDelayed(restartLoadRunnable, 2000)
+    private val externalObserver =
+        object : ContentObserver(Handler()) {
+            override fun onChange(selfChange: Boolean) {
+                if (this@GalleryAlbumFragment.isAdded) {
+                    binding.va.postDelayed(restartLoadRunnable, 2000)
+                }
             }
         }
-    }
 
-    private val restartLoadRunnable = Runnable {
-        albumCollection.restartLoader()
-    }
+    private val restartLoadRunnable =
+        Runnable {
+            albumCollection.restartLoader()
+        }
 }

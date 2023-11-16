@@ -20,10 +20,16 @@ class AddressAdapter : RecyclerView.Adapter<AddressAdapter.ItemHolder>() {
 
     private var addrListener: AddressListener? = null
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ItemHolder =
         ItemHolder(ItemAddressBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-    override fun onBindViewHolder(holder: ItemHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ItemHolder,
+        position: Int,
+    ) {
         if (addresses == null || addresses!!.isEmpty()) {
             return
         }
@@ -48,7 +54,10 @@ class AddressAdapter : RecyclerView.Adapter<AddressAdapter.ItemHolder>() {
         return addr
     }
 
-    fun restoreItem(item: Address, pos: Int) {
+    fun restoreItem(
+        item: Address,
+        pos: Int,
+    ) {
         addresses?.add(pos, item)
         notifyItemInserted(pos)
     }
@@ -60,12 +69,19 @@ class AddressAdapter : RecyclerView.Adapter<AddressAdapter.ItemHolder>() {
     interface AddressListener {
         fun onAddrClick(addr: Address)
 
-        fun onAddrLongClick(view: View, addr: Address)
+        fun onAddrLongClick(
+            view: View,
+            addr: Address,
+        )
     }
 
     open class SimpleAddressListener : AddressListener {
         override fun onAddrClick(addr: Address) {}
-        override fun onAddrLongClick(view: View, addr: Address) {}
+
+        override fun onAddrLongClick(
+            view: View,
+            addr: Address,
+        ) {}
     }
 
     class ItemHolder(val itemBinding: ItemAddressBinding) : RecyclerView.ViewHolder(itemBinding.root)

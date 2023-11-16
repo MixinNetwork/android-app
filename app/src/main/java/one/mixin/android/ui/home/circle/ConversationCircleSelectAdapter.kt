@@ -14,12 +14,14 @@ import one.mixin.android.vo.isGroupConversation
 class ConversationCircleSelectAdapter(
     val removeItem: (Any) -> Unit,
 ) : RecyclerView.Adapter<ConversationCircleSelectAdapter.SelectViewHolder>() {
-
     var checkedItems = mutableListOf<Any>()
 
     class SelectViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SelectViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): SelectViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.item_circle_select, parent, false)
         return SelectViewHolder(itemView)
     }
@@ -28,7 +30,10 @@ class ConversationCircleSelectAdapter(
         return checkedItems.notNullWithElse({ it.size }, 0)
     }
 
-    override fun onBindViewHolder(holder: SelectViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: SelectViewHolder,
+        position: Int,
+    ) {
         val item = checkedItems[position]
         val binding = ItemGroupSelectBinding.bind(holder.itemView)
         if (item is User) {

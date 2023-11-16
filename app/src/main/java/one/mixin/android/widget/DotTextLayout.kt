@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 
 open class DotTextLayout : ViewGroup {
-
     constructor(context: Context) : this(context, null)
 
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -20,7 +19,10 @@ open class DotTextLayout : ViewGroup {
 
     private var offset = 0
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
         val childCount = childCount
         if (childCount < 2) {
             throw RuntimeException("CustomLayout child count must >= 2")
@@ -44,7 +46,13 @@ open class DotTextLayout : ViewGroup {
         )
     }
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+    override fun onLayout(
+        changed: Boolean,
+        l: Int,
+        t: Int,
+        r: Int,
+        b: Int,
+    ) {
         val firstView = getChildAt(0)
         val secondView = getChildAt(1)
 
@@ -62,7 +70,10 @@ open class DotTextLayout : ViewGroup {
         )
     }
 
-    private fun initTextParams(textView: TextView, view: View) {
+    private fun initTextParams(
+        textView: TextView,
+        view: View,
+    ) {
         offset = (textView.lineHeight - view.measuredHeight) / 2
     }
 

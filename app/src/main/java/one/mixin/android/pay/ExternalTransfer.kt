@@ -11,6 +11,11 @@ data class ExternalTransfer(
     val memo: String? = null,
 )
 
-fun generateAddressId(userId: String, assetId: String, destination: String, tag: String?): String {
+fun generateAddressId(
+    userId: String,
+    assetId: String,
+    destination: String,
+    tag: String?,
+): String {
     return UUID.nameUUIDFromBytes((userId + assetId + destination + (tag ?: "")).toByteArray()).toString()
 }

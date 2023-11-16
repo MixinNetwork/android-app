@@ -10,11 +10,11 @@ import org.json.JSONException
 import org.json.JSONObject
 
 object PaymentsUtil {
-
-    private val baseRequest = JSONObject().apply {
-        put("apiVersion", 2)
-        put("apiVersionMinor", 0)
-    }
+    private val baseRequest =
+        JSONObject().apply {
+            put("apiVersion", 2)
+            put("apiVersionMinor", 0)
+        }
 
     private val allowedCardNetworks = JSONArray(Constants.RouteConfig.SUPPORTED_NETWORKS)
 
@@ -22,17 +22,18 @@ object PaymentsUtil {
 
     private fun baseCardPaymentMethod(): JSONObject {
         return JSONObject().apply {
-            val parameters = JSONObject().apply {
-                put("allowedAuthMethods", allowedCardAuthMethods)
-                put("allowedCardNetworks", allowedCardNetworks)
-                put("billingAddressRequired", true)
-                put(
-                    "billingAddressParameters",
-                    JSONObject().apply {
-                        put("format", "FULL")
-                    },
-                )
-            }
+            val parameters =
+                JSONObject().apply {
+                    put("allowedAuthMethods", allowedCardAuthMethods)
+                    put("allowedCardNetworks", allowedCardNetworks)
+                    put("billingAddressRequired", true)
+                    put(
+                        "billingAddressParameters",
+                        JSONObject().apply {
+                            put("format", "FULL")
+                        },
+                    )
+                }
 
             put("type", "CARD")
             put("parameters", parameters)
@@ -50,9 +51,10 @@ object PaymentsUtil {
     }
 
     fun createPaymentsClient(context: Context): PaymentsClient {
-        val walletOptions = Wallet.WalletOptions.Builder()
-            .setEnvironment(PAYMENTS_ENVIRONMENT)
-            .build()
+        val walletOptions =
+            Wallet.WalletOptions.Builder()
+                .setEnvironment(PAYMENTS_ENVIRONMENT)
+                .build()
 
         return Wallet.getPaymentsClient(context, walletOptions)
     }

@@ -3,11 +3,11 @@ package one.mixin.android.vo.safe
 import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
-import java.math.BigDecimal
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.WithdrawalMemoPossibility
+import java.math.BigDecimal
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -32,7 +32,7 @@ data class TokenItem(
     var chainPriceUsd: String?,
     val assetKey: String?,
     val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
-    val signature: String?
+    val signature: String?,
 ) : Parcelable {
     fun fiat(): BigDecimal {
         return try {
@@ -42,32 +42,42 @@ data class TokenItem(
         }
     }
 
-    fun priceFiat(): BigDecimal = if (priceUsd == "0") {
-        BigDecimal.ZERO
-    } else {
-        BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
-    }
+    fun priceFiat(): BigDecimal =
+        if (priceUsd == "0") {
+            BigDecimal.ZERO
+        } else {
+            BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
+        }
 
-    fun chainPriceFiat(): BigDecimal = if (chainPriceUsd == null || chainPriceUsd == "0") {
-        BigDecimal.ZERO
-    } else {
-        BigDecimal(chainPriceUsd).multiply(BigDecimal(Fiats.getRate()))
-    }
+    fun chainPriceFiat(): BigDecimal =
+        if (chainPriceUsd == null || chainPriceUsd == "0") {
+            BigDecimal.ZERO
+        } else {
+            BigDecimal(chainPriceUsd).multiply(BigDecimal(Fiats.getRate()))
+        }
 
-    fun btc(): BigDecimal = if (priceBtc == "0") {
-        BigDecimal.ZERO
-    } else {
-        BigDecimal(balance).multiply(BigDecimal(priceBtc))
-    }
+    fun btc(): BigDecimal =
+        if (priceBtc == "0") {
+            BigDecimal.ZERO
+        } else {
+            BigDecimal(balance).multiply(BigDecimal(priceBtc))
+        }
 
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<TokenItem>() {
-            override fun areItemsTheSame(oldItem: TokenItem, newItem: TokenItem) =
-                oldItem.assetId == newItem.assetId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<TokenItem>() {
+                override fun areItemsTheSame(
+                    oldItem: TokenItem,
+                    newItem: TokenItem,
+                ) =
+                    oldItem.assetId == newItem.assetId
 
-            override fun areContentsTheSame(oldItem: TokenItem, newItem: TokenItem) =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: TokenItem,
+                    newItem: TokenItem,
+                ) =
+                    oldItem == newItem
+            }
     }
 }
 

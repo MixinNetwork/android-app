@@ -10,7 +10,8 @@ class SyncFts4Job : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) 
         private const val GROUP_ID = "sync_fts_group"
     }
 
-    override fun onRun() = runBlocking {
-        return@runBlocking
-    }
+    override fun onRun() =
+        runBlocking {
+            return@runBlocking
+        }
 }

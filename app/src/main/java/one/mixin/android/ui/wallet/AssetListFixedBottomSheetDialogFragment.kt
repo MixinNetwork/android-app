@@ -49,7 +49,10 @@ class AssetListFixedBottomSheetDialogFragment : MixinBottomSheetDialogFragment()
     private var defaultAssets = emptyList<TokenItem>()
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
@@ -65,29 +68,34 @@ class AssetListFixedBottomSheetDialogFragment : MixinBottomSheetDialogFragment()
                 dismiss()
             }
             assetRv.adapter = adapter
-            adapter.callback = object : WalletSearchCallback {
-                override fun onAssetClick(assetId: String, tokenItem: TokenItem?) {
-                    binding.searchEt.hideKeyboard()
-                    tokenItem?.let { onAsset?.invoke(it) }
-                    dismiss()
+            adapter.callback =
+                object : WalletSearchCallback {
+                    override fun onAssetClick(
+                        assetId: String,
+                        tokenItem: TokenItem?,
+                    ) {
+                        binding.searchEt.hideKeyboard()
+                        tokenItem?.let { onAsset?.invoke(it) }
+                        dismiss()
+                    }
                 }
-            }
             searchEt.setHint(getString(R.string.search_placeholder_asset))
 
             @SuppressLint("AutoDispose")
-            disposable = searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(destroyScope)
-                .subscribe(
-                    {
-                        if (it.isNullOrBlank()) {
-                            adapter.submitList(defaultAssets)
-                        } else {
-                            filter(it.toString())
-                        }
-                    },
-                    {},
-                )
+            disposable =
+                searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDispose(destroyScope)
+                    .subscribe(
+                        {
+                            if (it.isNullOrBlank()) {
+                                adapter.submitList(defaultAssets)
+                            } else {
+                                filter(it.toString())
+                            }
+                        },
+                        {},
+                    )
         }
 
         bottomViewModel.assetItems(assetIds).observe(this) {
@@ -102,9 +110,10 @@ class AssetListFixedBottomSheetDialogFragment : MixinBottomSheetDialogFragment()
     }
 
     private fun filter(s: String) {
-        val assetList = defaultAssets.filter {
-            it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
-        }.sortedByDescending { it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) }
+        val assetList =
+            defaultAssets.filter {
+                it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
+            }.sortedByDescending { it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) }
         adapter.submitList(assetList) {
             binding.assetRv.scrollToPosition(0)
         }

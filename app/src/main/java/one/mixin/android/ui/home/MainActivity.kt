@@ -99,7 +99,6 @@ import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshAssetsJob
-import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshCircleJob
 import one.mixin.android.job.RefreshContactJob
 import one.mixin.android.job.RefreshExternalSchemeJob
@@ -107,10 +106,10 @@ import one.mixin.android.job.RefreshFcmJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
+import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RestoreTransactionJob
 import one.mixin.android.job.SyncOutputJob
-import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
@@ -123,7 +122,6 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
-import one.mixin.android.ui.tip.CheckRegisterBottomSheetDialogFragment
 import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
@@ -145,6 +143,7 @@ import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.search.SearchSingleFragment
+import one.mixin.android.ui.tip.CheckRegisterBottomSheetDialogFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
@@ -168,7 +167,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : BlazeBaseActivity() {
-
     lateinit var navigationController: NavigationController
 
     @Inject
@@ -199,12 +197,13 @@ class MainActivity : BlazeBaseActivity() {
     lateinit var tip: Tip
 
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
-    private val updatedListener = InstallStateUpdatedListener { state ->
-        if (isFinishing) return@InstallStateUpdatedListener
-        if (state.installStatus() == InstallStatus.DOWNLOADED) {
-            popupSnackbarForCompleteUpdate()
+    private val updatedListener =
+        InstallStateUpdatedListener { state ->
+            if (isFinishing) return@InstallStateUpdatedListener
+            if (state.installStatus() == InstallStatus.DOWNLOADED) {
+                popupSnackbarForCompleteUpdate()
+            }
         }
-    }
 
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_NoActionBar
@@ -362,77 +361,81 @@ class MainActivity : BlazeBaseActivity() {
         appUpdateManager.unregisterListener(updatedListener)
     }
 
-    private fun checkAsync() = lifecycleScope.launch(Dispatchers.IO) {
-        checkRoot()
-        checkStorage()
-        refreshStickerAlbum()
-        refreshExternalSchemes()
-        cleanCache()
-        jobManager.addJobInBackground(RefreshTokensJob())
-        jobManager.addJobInBackground(RefreshAssetsJob())
-        sendSafetyNetRequest()
-        checkBatteryOptimization()
+    private fun checkAsync() =
+        lifecycleScope.launch(Dispatchers.IO) {
+            checkRoot()
+            checkStorage()
+            refreshStickerAlbum()
+            refreshExternalSchemes()
+            cleanCache()
+            jobManager.addJobInBackground(RefreshTokensJob())
+            jobManager.addJobInBackground(RefreshAssetsJob())
+            sendSafetyNetRequest()
+            checkBatteryOptimization()
 
-        if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
-            jobManager.addJobInBackground(RefreshCircleJob())
-            defaultSharedPreferences.putBoolean(PREF_SYNC_CIRCLE, true)
+            if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
+                jobManager.addJobInBackground(RefreshCircleJob())
+                defaultSharedPreferences.putBoolean(PREF_SYNC_CIRCLE, true)
+            }
+
+            jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && PropertyHelper.findValueByKey(PREF_BACKUP, false)) {
+                jobManager.addJobInBackground(BackupJob())
+            }
+
+            if (defaultSharedPreferences.getInt(PREF_LOGIN_FROM, FROM_LOGIN) == FROM_EMERGENCY) {
+                defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
+                delayShowModifyMobile()
+            }
+
+            if (Fiats.isRateEmpty()) {
+                jobManager.addJobInBackground(RefreshFiatsJob())
+            }
+
+            val sdk = PropertyHelper.findValueByKey(PREF_DEVICE_SDK, -1)
+            if (sdk == -1) {
+                PropertyHelper.updateKeyValue(PREF_DEVICE_SDK, Build.VERSION.SDK_INT)
+            } else if (sdk < Build.VERSION_CODES.Q && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                PropertyHelper.migration()
+            }
+
+            PropertyHelper.checkAttachmentMigrated {
+                jobManager.addJobInBackground(AttachmentMigrationJob())
+            }
+
+            PropertyHelper.checkTranscriptAttachmentMigrated {
+                jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
+            }
+
+            PropertyHelper.checkTranscriptAttachmentMigrated {
+                jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
+            }
+
+            PropertyHelper.checkBackupMigrated {
+                jobManager.addJobInBackground(BackupJob(force = true, delete = true))
+            }
+            PropertyHelper.checkFtsMigrated {
+                jobManager.addJobInBackground(MigratedFts4Job())
+            }
+
+            PropertyHelper.checkCleanupThumb {
+                jobManager.addJobInBackground(CleanupThumbJob())
+            }
+
+            PropertyHelper.checkCleanupQuoteContent {
+                jobManager.addJobInBackground(CleanupQuoteContentJob(-1L))
+            }
+
+            jobManager.addJobInBackground(RefreshContactJob())
+            jobManager.addJobInBackground(RefreshFcmJob())
+
+            initWalletConnect()
         }
 
-        jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && PropertyHelper.findValueByKey(PREF_BACKUP, false)) {
-            jobManager.addJobInBackground(BackupJob())
-        }
-
-        if (defaultSharedPreferences.getInt(PREF_LOGIN_FROM, FROM_LOGIN) == FROM_EMERGENCY) {
-            defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
-            delayShowModifyMobile()
-        }
-
-        if (Fiats.isRateEmpty()) {
-            jobManager.addJobInBackground(RefreshFiatsJob())
-        }
-
-        val sdk = PropertyHelper.findValueByKey(PREF_DEVICE_SDK, -1)
-        if (sdk == -1) {
-            PropertyHelper.updateKeyValue(PREF_DEVICE_SDK, Build.VERSION.SDK_INT)
-        } else if (sdk < Build.VERSION_CODES.Q && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            PropertyHelper.migration()
-        }
-
-        PropertyHelper.checkAttachmentMigrated {
-            jobManager.addJobInBackground(AttachmentMigrationJob())
-        }
-
-        PropertyHelper.checkTranscriptAttachmentMigrated {
-            jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
-        }
-
-        PropertyHelper.checkTranscriptAttachmentMigrated {
-            jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
-        }
-
-        PropertyHelper.checkBackupMigrated {
-            jobManager.addJobInBackground(BackupJob(force = true, delete = true))
-        }
-        PropertyHelper.checkFtsMigrated {
-            jobManager.addJobInBackground(MigratedFts4Job())
-        }
-
-        PropertyHelper.checkCleanupThumb {
-            jobManager.addJobInBackground(CleanupThumbJob())
-        }
-
-        PropertyHelper.checkCleanupQuoteContent {
-            jobManager.addJobInBackground(CleanupQuoteContentJob(-1L))
-        }
-
-        jobManager.addJobInBackground(RefreshContactJob())
-        jobManager.addJobInBackground(RefreshFcmJob())
-
-        initWalletConnect()
-    }
-
-    private fun handleTipEvent(e: TipEvent, deviceId: String) {
+    private fun handleTipEvent(
+        e: TipEvent,
+        deviceId: String,
+    ) {
         val nodeCounter = e.nodeCounter
         if (nodeCounter == 1) {
             val tipType = if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
@@ -446,11 +449,12 @@ class MainActivity : BlazeBaseActivity() {
 
     @SuppressLint("RestrictedApi")
     private fun checkNeedGo2MigrationPage(): Boolean {
-        val currentVersion = try {
-            readVersion(getDatabasePath(DB_NAME))
-        } catch (e: Exception) {
-            0
-        }
+        val currentVersion =
+            try {
+                readVersion(getDatabasePath(DB_NAME))
+            } catch (e: Exception) {
+                0
+            }
         return currentVersion > MINI_VERSION && CURRENT_VERSION != currentVersion
     }
 
@@ -476,31 +480,33 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
-    private fun delayShowModifyMobile() = lifecycleScope.launch {
-        delay(2000)
-        MaterialAlertDialogBuilder(this@MainActivity, R.style.MixinAlertDialogTheme)
-            .setTitle(getString(R.string.setting_emergency_change_mobile))
-            .setPositiveButton(R.string.Change) { dialog, _ ->
-                supportFragmentManager.inTransaction {
-                    setCustomAnimations(
-                        R.anim.slide_in_bottom,
-                        R.anim.slide_out_bottom,
-                        R.anim.slide_in_bottom,
-                        R.anim.slide_out_bottom,
-                    )
-                        .add(R.id.root_view, VerifyFragment.newInstance(VerifyFragment.FROM_PHONE))
-                        .addToBackStack(null)
+    private fun delayShowModifyMobile() =
+        lifecycleScope.launch {
+            delay(2000)
+            MaterialAlertDialogBuilder(this@MainActivity, R.style.MixinAlertDialogTheme)
+                .setTitle(getString(R.string.setting_emergency_change_mobile))
+                .setPositiveButton(R.string.Change) { dialog, _ ->
+                    supportFragmentManager.inTransaction {
+                        setCustomAnimations(
+                            R.anim.slide_in_bottom,
+                            R.anim.slide_out_bottom,
+                            R.anim.slide_in_bottom,
+                            R.anim.slide_out_bottom,
+                        )
+                            .add(R.id.root_view, VerifyFragment.newInstance(VerifyFragment.FROM_PHONE))
+                            .addToBackStack(null)
+                        dialog.dismiss()
+                    }
+                }
+                .setNegativeButton(R.string.Later) { dialog, _ ->
                     dialog.dismiss()
                 }
-            }
-            .setNegativeButton(R.string.Later) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
-    }
+                .show()
+        }
 
     private fun checkRoot() {
-        if (RootUtil.isDeviceRooted && defaultSharedPreferences.getBoolean(
+        if (RootUtil.isDeviceRooted &&
+            defaultSharedPreferences.getBoolean(
                 Constants.Account.PREF_BIOMETRICS,
                 false,
             )
@@ -640,11 +646,12 @@ class MainActivity : BlazeBaseActivity() {
         getScanResult.launch(Pair(ARGS_SHOW_SCAN, scan))
     }
 
-    private val getScanResult = registerForActivityResult(CaptureActivity.CaptureContract()) { data ->
-        if (data != null) {
-            handlerCode(data)
+    private val getScanResult =
+        registerForActivityResult(CaptureActivity.CaptureContract()) { data ->
+            if (data != null) {
+                handlerCode(data)
+            }
         }
-    }
 
     private var bottomSheet: DialogFragment? = null
     private var alertDialog: Dialog? = null
@@ -694,23 +701,24 @@ class MainActivity : BlazeBaseActivity() {
                             }
                             var c = conversationDao.findConversationById(data.conversationId)
                             if (c == null) {
-                                c = Conversation(
-                                    data.conversationId,
-                                    ownerId,
-                                    data.category,
-                                    data.name,
-                                    data.iconUrl,
-                                    data.announcement,
-                                    data.codeUrl,
-                                    "",
-                                    data.createdAt,
-                                    null,
-                                    null,
-                                    null,
-                                    0,
-                                    ConversationStatus.SUCCESS.ordinal,
-                                    null,
-                                )
+                                c =
+                                    Conversation(
+                                        data.conversationId,
+                                        ownerId,
+                                        data.category,
+                                        data.name,
+                                        data.iconUrl,
+                                        data.announcement,
+                                        data.codeUrl,
+                                        "",
+                                        data.createdAt,
+                                        null,
+                                        null,
+                                        null,
+                                        0,
+                                        ConversationStatus.SUCCESS.ordinal,
+                                        null,
+                                    )
                                 conversation = c
                                 conversationDao.upsert(c)
                             } else {
@@ -789,9 +797,10 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun showDialog() {
         alertDialog?.dismiss()
-        alertDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-            show()
-        }
+        alertDialog =
+            indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                show()
+            }
     }
 
     private fun dismissDialog() {
@@ -799,7 +808,10 @@ class MainActivity : BlazeBaseActivity() {
         alertDialog = null
     }
 
-    private fun clearCodeAfterConsume(intent: Intent, code: String) {
+    private fun clearCodeAfterConsume(
+        intent: Intent,
+        code: String,
+    ) {
         intent.removeExtra(code)
     }
 
@@ -827,14 +839,15 @@ class MainActivity : BlazeBaseActivity() {
         binding.searchBar.setOnBackClickListener {
             binding.searchBar.closeSearch()
         }
-        binding.searchBar.mOnQueryTextListener = object : MaterialSearchView.OnQueryTextListener {
-            override fun onQueryTextChange(newText: String): Boolean {
-                (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(
-                    newText,
-                )
-                return true
+        binding.searchBar.mOnQueryTextListener =
+            object : MaterialSearchView.OnQueryTextListener {
+                override fun onQueryTextChange(newText: String): Boolean {
+                    (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(
+                        newText,
+                    )
+                    return true
+                }
             }
-        }
 
         binding.searchBar.setSearchViewListener(
             object : MaterialSearchView.SearchViewListener {
@@ -891,7 +904,10 @@ class MainActivity : BlazeBaseActivity() {
         binding.searchBar.hideLoading()
     }
 
-    fun selectCircle(name: String?, circleId: String?) {
+    fun selectCircle(
+        name: String?,
+        circleId: String?,
+    ) {
         setCircleName(name)
         defaultSharedPreferences.putString(CIRCLE_NAME, name)
         defaultSharedPreferences.putString(CIRCLE_ID, circleId)
@@ -919,20 +935,22 @@ class MainActivity : BlazeBaseActivity() {
         binding.searchBar.actionVa.showNext()
     }
 
-    private var dotObserver = Observer<Boolean> {
-        binding.searchBar.dot.isVisible = it
-    }
+    private var dotObserver =
+        Observer<Boolean> {
+            binding.searchBar.dot.isVisible = it
+        }
     private var dotLiveData: LiveData<Boolean>? = null
 
-    private fun observeOtherCircleUnread(circleId: String?) = lifecycleScope.launch {
-        dotLiveData?.removeObserver(dotObserver)
-        if (circleId == null) {
-            binding.searchBar.dot.isVisible = false
-            return@launch
+    private fun observeOtherCircleUnread(circleId: String?) =
+        lifecycleScope.launch {
+            dotLiveData?.removeObserver(dotObserver)
+            if (circleId == null) {
+                binding.searchBar.dot.isVisible = false
+                return@launch
+            }
+            dotLiveData = userRepo.hasUnreadMessage(circleId = circleId)
+            dotLiveData?.observe(this@MainActivity, dotObserver)
         }
-        dotLiveData = userRepo.hasUnreadMessage(circleId = circleId)
-        dotLiveData?.observe(this@MainActivity, dotObserver)
-    }
 
     private fun addCircle() {
         editDialog {
@@ -950,9 +968,10 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun createCircle(name: String) {
         lifecycleScope.launch(errorHandler) {
-            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                setCancelable(false)
-            }
+            val dialog =
+                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                    setCancelable(false)
+                }
             handleMixinResponse(
                 invokeNetwork = {
                     userRepo.createCircle(name)

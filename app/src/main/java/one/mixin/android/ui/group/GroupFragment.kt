@@ -36,7 +36,6 @@ import one.mixin.android.vo.User
 @SuppressLint("NotifyDataSetChanged")
 @AndroidEntryPoint
 class GroupFragment : BaseFragment() {
-
     companion object {
         const val TAG = "GroupFragment"
 
@@ -105,7 +104,10 @@ class GroupFragment : BaseFragment() {
 
     private val binding by viewBinding(FragmentGroupBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener {
             activity?.onBackPressedDispatcher?.onBackPressed()
@@ -164,7 +166,10 @@ class GroupFragment : BaseFragment() {
         }
     }
 
-    private fun filterAndSet(keyword: String, userList: List<User>?) {
+    private fun filterAndSet(
+        keyword: String,
+        userList: List<User>?,
+    ) {
         groupFriendAdapter.setData(
             userList?.filter {
                 it.fullName!!.containsIgnoreCase(keyword) ||
@@ -179,28 +184,30 @@ class GroupFragment : BaseFragment() {
         dialog?.dismiss()
     }
 
-    private fun handleAddOrRemove() = lifecycleScope.launch {
-        if (dialog == null) {
-            val title =
-                if (from == TYPE_ADD) R.string.Adding else R.string.Removing
-            dialog = indeterminateProgressDialog(
-                message = R.string.Please_wait_a_bit,
-                title = title,
-            ).apply {
-                setCancelable(false)
+    private fun handleAddOrRemove() =
+        lifecycleScope.launch {
+            if (dialog == null) {
+                val title =
+                    if (from == TYPE_ADD) R.string.Adding else R.string.Removing
+                dialog =
+                    indeterminateProgressDialog(
+                        message = R.string.Please_wait_a_bit,
+                        title = title,
+                    ).apply {
+                        setCancelable(false)
+                    }
+            }
+            dialog?.show()
+            val result = groupViewModel.modifyMember(conversationId!!, checkedUsers, from)
+            dialog?.dismiss()
+            if (result) {
+                if (isAdded) {
+                    activity?.supportFragmentManager?.popBackStackImmediate()
+                } else {
+                    activity?.supportFragmentManager?.popBackStack()
+                }
             }
         }
-        dialog?.show()
-        val result = groupViewModel.modifyMember(conversationId!!, checkedUsers, from)
-        dialog?.dismiss()
-        if (result) {
-            if (isAdded) {
-                activity?.supportFragmentManager?.popBackStackImmediate()
-            } else {
-                activity?.supportFragmentManager?.popBackStack()
-            }
-        }
-    }
 
     private fun updateTitle(size: Int) {
         binding.titleView.setSubTitle(
@@ -212,45 +219,60 @@ class GroupFragment : BaseFragment() {
         )
     }
 
-    private val mGroupFriendListener = object : GroupFriendAdapter.GroupFriendListener {
-        @SuppressLint("NotifyDataSetChanged")
-        override fun onItemClick(user: User, checked: Boolean) {
-            if (checked) {
-                checkedUsers.add(user)
-                binding.searchEt.text?.clear()
-            } else {
-                checkedUsers.remove(user)
-            }
-            val existCount = if (alreadyUsers == null) 0 else alreadyUsers!!.size
-            updateTitle(
-                if (from == TYPE_ADD || from == TYPE_CREATE) {
-                    checkedUsers.size + existCount
+    private val mGroupFriendListener =
+        object : GroupFriendAdapter.GroupFriendListener {
+            @SuppressLint("NotifyDataSetChanged")
+            override fun onItemClick(
+                user: User,
+                checked: Boolean,
+            ) {
+                if (checked) {
+                    checkedUsers.add(user)
+                    binding.searchEt.text?.clear()
                 } else {
-                    existCount - checkedUsers.size
-                },
-            )
-            groupAdapter.notifyDataSetChanged()
-            binding.selectRv.layoutManager?.scrollToPosition(checkedUsers.size - 1)
-            if (checkedUsers.isEmpty()) {
-                binding.titleView.rightTv.textColor = resources.getColor(R.color.text_gray, null)
-                binding.titleView.rightAnimator.isEnabled = false
-            } else {
-                binding.titleView.rightTv.textColor = resources.getColor(R.color.colorBlue, null)
-                binding.titleView.rightAnimator.isEnabled = true
+                    checkedUsers.remove(user)
+                }
+                val existCount = if (alreadyUsers == null) 0 else alreadyUsers!!.size
+                updateTitle(
+                    if (from == TYPE_ADD || from == TYPE_CREATE) {
+                        checkedUsers.size + existCount
+                    } else {
+                        existCount - checkedUsers.size
+                    },
+                )
+                groupAdapter.notifyDataSetChanged()
+                binding.selectRv.layoutManager?.scrollToPosition(checkedUsers.size - 1)
+                if (checkedUsers.isEmpty()) {
+                    binding.titleView.rightTv.textColor = resources.getColor(R.color.text_gray, null)
+                    binding.titleView.rightAnimator.isEnabled = false
+                } else {
+                    binding.titleView.rightTv.textColor = resources.getColor(R.color.colorBlue, null)
+                    binding.titleView.rightAnimator.isEnabled = true
+                }
             }
         }
-    }
 
-    private val mWatcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
+    private val mWatcher: TextWatcher =
+        object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {
+            }
 
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        }
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {
+            }
 
-        override fun afterTextChanged(s: Editable?) {
-            val keyword = s.toString().trim()
-            filterAndSet(keyword, users)
+            override fun afterTextChanged(s: Editable?) {
+                val keyword = s.toString().trim()
+                filterAndSet(keyword, users)
+            }
         }
-    }
 }

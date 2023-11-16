@@ -37,7 +37,6 @@ import java.net.SocketTimeoutException
 class SendAttachmentMessageJob(
     val message: Message,
 ) : MixinJob(Params(PRIORITY_SEND_ATTACHMENT_MESSAGE).groupBy("send_media_job").requireNetwork().persist(), message.messageId) {
-
     companion object {
         private const val serialVersionUID = 1L
     }
@@ -90,7 +89,10 @@ class SendAttachmentMessageJob(
         }
     }
 
-    override fun onCancel(cancelReason: Int, throwable: Throwable?) {
+    override fun onCancel(
+        cancelReason: Int,
+        throwable: Throwable?,
+    ) {
         super.onCancel(cancelReason, throwable)
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
         MessageFlow.update(message.conversationId, message.messageId)
@@ -109,53 +111,56 @@ class SendAttachmentMessageJob(
         }
         jobManager.saveJob(this)
 
-        disposable = conversationApi.requestAttachment().map {
-            if (it.isSuccess && !isCancelled) {
-                val result = it.data!!
-                processAttachment(result)
-            } else {
-                false
-            }
-        }.subscribe(
-            {
-                if (it) {
-                    messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
-                    MessageFlow.update(message.conversationId, message.messageId)
-                    attachmentProcess.remove(message.messageId)
-                    removeJob()
+        disposable =
+            conversationApi.requestAttachment().map {
+                if (it.isSuccess && !isCancelled) {
+                    val result = it.data!!
+                    processAttachment(result)
                 } else {
+                    false
+                }
+            }.subscribe(
+                {
+                    if (it) {
+                        messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
+                        MessageFlow.update(message.conversationId, message.messageId)
+                        attachmentProcess.remove(message.messageId)
+                        removeJob()
+                    } else {
+                        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+                        MessageFlow.update(message.conversationId, message.messageId)
+                        attachmentProcess.remove(message.messageId)
+                        removeJob()
+                    }
+                },
+                {
+                    Timber.e("upload attachment error, ${it.getStackTraceString()}")
+                    reportException(it)
                     messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
                     MessageFlow.update(message.conversationId, message.messageId)
                     attachmentProcess.remove(message.messageId)
                     removeJob()
-                }
-            },
-            {
-                Timber.e("upload attachment error, ${it.getStackTraceString()}")
-                reportException(it)
-                messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-                MessageFlow.update(message.conversationId, message.messageId)
-                attachmentProcess.remove(message.messageId)
-                removeJob()
-            },
-        )
+                },
+            )
     }
 
     private fun processAttachment(attachResponse: AttachmentResponse): Boolean {
         val isPlain = message.isPlain()
-        val key = if (isPlain) {
-            null
-        } else {
-            Util.getSecretBytes(64)
-        }
-        val inputStream = try {
-            MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.absolutePath()))
-        } catch (e: FileNotFoundException) {
-            applicationScope.launch(Dispatchers.Main) {
-                toast(R.string.File_does_not_exist)
+        val key =
+            if (isPlain) {
+                null
+            } else {
+                Util.getSecretBytes(64)
             }
-            null
-        }
+        val inputStream =
+            try {
+                MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.absolutePath()))
+            } catch (e: FileNotFoundException) {
+                applicationScope.launch(Dispatchers.Main) {
+                    toast(R.string.File_does_not_exist)
+                }
+                null
+            }
         val attachmentData =
             PushAttachmentData(
                 message.mediaMimeType,
@@ -167,42 +172,47 @@ class SendAttachmentMessageJob(
                     AttachmentCipherOutputStreamFactory(key, null)
                 },
             ) { total, progress ->
-                val pg = try {
-                    progress.toFloat() / total.toFloat()
-                } catch (e: Exception) {
-                    0f
-                }
+                val pg =
+                    try {
+                        progress.toFloat() / total.toFloat()
+                    } catch (e: Exception) {
+                        0f
+                    }
                 attachmentProcess[message.messageId] = (pg * 100).toInt()
                 RxBus.publish(loadingEvent(message.messageId, pg))
             }
-        val digest = try {
-            val transmittedDigest = Util.uploadAttachment(
-                attachResponse.upload_url!!,
-                attachmentData.data,
-                if (isPlain) {
-                    message.mediaSize
-                } else {
-                    AttachmentCipherOutputStream.getCiphertextLength(attachmentData.dataSize)
-                },
-                attachmentData.outputStreamFactory,
-                attachmentData.listener,
-            ) { isCancelled }
-            if (key != null && transmittedDigest == null) { throw IllegalStateException("Digest is null") }
-            transmittedDigest
-        } catch (e: Exception) {
-            Timber.e(e)
-            if (e is SocketTimeoutException) {
-                applicationScope.launch(Dispatchers.Main) {
-                    toast(R.string.Upload_timeout)
+        val digest =
+            try {
+                val transmittedDigest =
+                    Util.uploadAttachment(
+                        attachResponse.upload_url!!,
+                        attachmentData.data,
+                        if (isPlain) {
+                            message.mediaSize
+                        } else {
+                            AttachmentCipherOutputStream.getCiphertextLength(attachmentData.dataSize)
+                        },
+                        attachmentData.outputStreamFactory,
+                        attachmentData.listener,
+                    ) { isCancelled }
+                if (key != null && transmittedDigest == null) {
+                    throw IllegalStateException("Digest is null")
                 }
+                transmittedDigest
+            } catch (e: Exception) {
+                Timber.e(e)
+                if (e is SocketTimeoutException) {
+                    applicationScope.launch(Dispatchers.Main) {
+                        toast(R.string.Upload_timeout)
+                    }
+                }
+                messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+                MessageFlow.update(message.conversationId, message.messageId)
+                attachmentProcess.remove(message.messageId)
+                removeJob()
+                reportException(e)
+                return false
             }
-            messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-            MessageFlow.update(message.conversationId, message.messageId)
-            attachmentProcess.remove(message.messageId)
-            removeJob()
-            reportException(e)
-            return false
-        }
         if (isCancelled) {
             removeJob()
             return true
@@ -222,10 +232,11 @@ class SendAttachmentMessageJob(
         val mimeType = message.mediaMimeType!!
         val duration = if (message.mediaDuration == null) null else message.mediaDuration.toLong()
         val waveform = message.mediaWaveform
-        val transferMediaData = AttachmentMessagePayload(
-            key, digest, attachmentId, mimeType, size, name, width, height,
-            thumbnail, duration, waveform, createdAt = attachResponse.created_at,
-        )
+        val transferMediaData =
+            AttachmentMessagePayload(
+                key, digest, attachmentId, mimeType, size, name, width, height,
+                thumbnail, duration, waveform, createdAt = attachResponse.created_at,
+            )
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = plainText.base64Encode()
         message.content = encoded

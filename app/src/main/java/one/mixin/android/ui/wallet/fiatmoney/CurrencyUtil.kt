@@ -7,19 +7,23 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.Currency
 import timber.log.Timber
 
-fun getDefaultCurrency(context: Context, supportCurrencies: List<Currency>): String {
-    val currency = context.defaultSharedPreferences.getString(
-        CalculateFragment.CURRENT_CURRENCY,
-        getCurrencyFromPhoneNumber(Session.getAccount()?.phone),
-    ).let {
-        if (it == null) {
-            val localCurrency = Session.getFiatCurrency()
-            val c = supportCurrencies.find { item -> localCurrency == item.name }
-            c?.name ?: supportCurrencies.last().name
-        } else {
-            it
+fun getDefaultCurrency(
+    context: Context,
+    supportCurrencies: List<Currency>,
+): String {
+    val currency =
+        context.defaultSharedPreferences.getString(
+            CalculateFragment.CURRENT_CURRENCY,
+            getCurrencyFromPhoneNumber(Session.getAccount()?.phone),
+        ).let {
+            if (it == null) {
+                val localCurrency = Session.getFiatCurrency()
+                val c = supportCurrencies.find { item -> localCurrency == item.name }
+                c?.name ?: supportCurrencies.last().name
+            } else {
+                it
+            }
         }
-    }
     return currency
 }
 

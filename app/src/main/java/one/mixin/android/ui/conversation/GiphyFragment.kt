@@ -40,6 +40,7 @@ import timber.log.Timber
 class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
     companion object {
         const val TAG = "GiphyFragment"
+
         fun newInstance() = GiphyFragment()
     }
 
@@ -56,20 +57,25 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
     private val binding by viewBinding(FragmentStickerBinding::bind)
 
     @SuppressLint("NotifyDataSetChanged")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            stickerRv.layoutManager = GridLayoutManager(context, COLUMN).apply {
-                spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                    override fun getSpanSize(pos: Int): Int {
-                        return if (pos == giphyAdapter.itemCount - 1) {
-                            COLUMN
-                        } else {
-                            1
+            stickerRv.layoutManager =
+                GridLayoutManager(context, COLUMN).apply {
+                    spanSizeLookup =
+                        object : GridLayoutManager.SpanSizeLookup() {
+                            override fun getSpanSize(pos: Int): Int {
+                                return if (pos == giphyAdapter.itemCount - 1) {
+                                    COLUMN
+                                } else {
+                                    1
+                                }
+                            }
                         }
-                    }
                 }
-            }
             val foot = layoutInflater.inflate(R.layout.view_giphy_foot, stickerRv, false)
             giphyAdapter.footerView = foot
             stickerRv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
@@ -77,30 +83,39 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
             stickerRv.adapter = giphyAdapter
             giphyAdapter.setOnGiphyListener(
                 object : GiphyListener {
-                    override fun onItemClick(pos: Int, image: Image, previewUrl: String) {
+                    override fun onItemClick(
+                        pos: Int,
+                        image: Image,
+                        previewUrl: String,
+                    ) {
                         callback?.onGiphyClick(image, previewUrl)
                     }
 
                     override fun onSearchClick() {
                         val f = GiphyBottomSheetFragment.newInstance()
                         f.showNow(parentFragmentManager, GiphyBottomSheetFragment.TAG)
-                        f.callback = object : GiphyBottomSheetFragment.Callback {
-                            override fun onGiphyClick(image: Image, previewUrl: String) {
-                                callback?.onGiphyClick(image, previewUrl)
+                        f.callback =
+                            object : GiphyBottomSheetFragment.Callback {
+                                override fun onGiphyClick(
+                                    image: Image,
+                                    previewUrl: String,
+                                ) {
+                                    callback?.onGiphyClick(image, previewUrl)
+                                }
                             }
-                        }
                     }
                 },
             )
-            stickerRv.callback = object : DraggableRecyclerView.Callback {
-                override fun onScroll(dis: Float) {
-                    rvCallback?.onScroll(dis)
-                }
+            stickerRv.callback =
+                object : DraggableRecyclerView.Callback {
+                    override fun onScroll(dis: Float) {
+                        rvCallback?.onScroll(dis)
+                    }
 
-                override fun onRelease(fling: Int) {
-                    rvCallback?.onRelease(fling)
+                    override fun onRelease(fling: Int) {
+                        rvCallback?.onRelease(fling)
+                    }
                 }
-            }
             stickerProgress.visibility = View.VISIBLE
             stickerViewModel.trendingGifs(26, 0)
                 .autoDispose(stopScope)
@@ -126,7 +141,10 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
         private var listener: GiphyListener? = null
         var size: Int = 0
 
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: RecyclerView.ViewHolder,
+            position: Int,
+        ) {
             if (position == itemCount - 1) {
                 return
             }
@@ -158,17 +176,21 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
             }
         }
 
-        override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder {
+        override fun getNormalViewHolder(
+            context: Context,
+            parent: ViewGroup,
+        ): NormalHolder {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.item_sticker, parent, false)
             return NormalHolder(view)
         }
 
-        override fun getItemCount(): Int = data.notNullWithElse(
-            {
-                if (footerView != null) it.size + 2 else it.size + 1
-            },
-            0,
-        )
+        override fun getItemCount(): Int =
+            data.notNullWithElse(
+                {
+                    if (footerView != null) it.size + 2 else it.size + 1
+                },
+                0,
+            )
 
         fun setOnGiphyListener(giphyListener: GiphyListener) {
             listener = giphyListener
@@ -176,7 +198,12 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
     }
 
     interface GiphyListener {
-        fun onItemClick(pos: Int, image: Image, previewUrl: String)
+        fun onItemClick(
+            pos: Int,
+            image: Image,
+            previewUrl: String,
+        )
+
         fun onSearchClick()
     }
 }

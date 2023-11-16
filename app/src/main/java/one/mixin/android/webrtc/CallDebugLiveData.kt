@@ -12,9 +12,14 @@ class CallDebugLiveData : LiveData<CallDebugLiveData.Type>() {
         }
 
     enum class Type {
-        None, Log, Report, All;
+        None,
+        Log,
+        Report,
+        All,
+        ;
 
         fun logEnable() = this == Log || this == All
+
         fun reportEnable() = this == Report || this == All
     }
 

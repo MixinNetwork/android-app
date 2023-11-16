@@ -53,7 +53,11 @@ fun Context.isRoaming(): Boolean {
     return false
 }
 
-suspend fun Context.differentNetWorkAction(wifiAction: suspend () -> Unit, mobileAction: suspend () -> Unit, roaming: suspend () -> Unit) {
+suspend fun Context.differentNetWorkAction(
+    wifiAction: suspend () -> Unit,
+    mobileAction: suspend () -> Unit,
+    roaming: suspend () -> Unit,
+) {
     when {
         isConnectedToWiFi() -> {
             wifiAction()
@@ -67,7 +71,10 @@ suspend fun Context.differentNetWorkAction(wifiAction: suspend () -> Unit, mobil
     }
 }
 
-suspend fun Context.autoDownload(support: suspend (value: Int) -> Boolean, action: () -> Unit) {
+suspend fun Context.autoDownload(
+    support: suspend (value: Int) -> Boolean,
+    action: () -> Unit,
+) {
     if (hasWritePermission()) {
         differentNetWorkAction(
             {
@@ -90,7 +97,9 @@ suspend fun Context.autoDownload(support: suspend (value: Int) -> Boolean, actio
 }
 
 suspend fun getAutoDownloadWifiValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_WIFI, WIFI_DEFAULT)
+
 suspend fun getAutoDownloadMobileValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_MOBILE, MOBILE_DEFAULT)
+
 suspend fun getAutoDownloadRoamingValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_ROAMING, ROAMING_DEFAULT)
 
 fun Context.networkType(): String {

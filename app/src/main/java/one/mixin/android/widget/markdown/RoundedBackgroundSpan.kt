@@ -14,6 +14,7 @@ class RoundedBackgroundSpan(private val theme: MarkwonTheme) : ReplacementSpan()
     private val roundRadius by lazy { 4.dp.toFloat() }
 
     private var size = 0
+
     override fun getSize(
         paint: Paint,
         text: CharSequence,

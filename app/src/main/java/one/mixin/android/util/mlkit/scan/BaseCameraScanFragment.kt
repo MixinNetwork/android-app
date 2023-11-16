@@ -12,7 +12,6 @@ import one.mixin.android.util.mlkit.scan.analyze.Analyzer
 import one.mixin.android.util.mlkit.scan.camera.CameraScan
 
 abstract class BaseCameraScanFragment<T> : BaseFragment(), CameraScan.OnScanResultCallback<T> {
-
     protected lateinit var rootView: View
 
     protected lateinit var previewView: PreviewView
@@ -52,7 +51,10 @@ abstract class BaseCameraScanFragment<T> : BaseFragment(), CameraScan.OnScanResu
         super.onDestroy()
     }
 
-    open fun createRootView(inflater: LayoutInflater, container: ViewGroup?): View {
+    open fun createRootView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+    ): View {
         return inflater.inflate(getLayoutId(), container, false)
     }
 

@@ -74,9 +74,10 @@ fun EmergencyContactPage() {
         ) {
             Box(modifier = Modifier.height(36.dp))
             Image(
-                modifier = Modifier
-                    .height(83.dp)
-                    .width(92.dp),
+                modifier =
+                    Modifier
+                        .height(83.dp)
+                        .width(92.dp),
                 painter = painterResource(id = MixinAppTheme.drawables.emergencyAvatar),
                 contentDescription = null,
             )
@@ -208,9 +209,10 @@ private fun RemoveEmergencyButton(
         trailing = {
             if (showLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .padding(4.dp),
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .padding(4.dp),
                     color = MixinAppTheme.colors.accent,
                     strokeWidth = 2.dp,
                 )
@@ -309,9 +311,10 @@ private fun ShowEmergencyButton() {
         trailing = {
             if (loading) {
                 CircularProgressIndicator(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .padding(4.dp),
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .padding(4.dp),
                     color = MixinAppTheme.colors.accent,
                     strokeWidth = 2.dp,
                 )
@@ -329,18 +332,21 @@ private fun PinEmergencyBottomSheetDialog(
 ) {
     MixinBottomSheetDialog(createDialog = {
         PinEmergencyBottomSheetDialog.newInstance().apply {
-            pinEmergencyCallback = object : PinEmergencyBottomSheetDialog.PinEmergencyCallback() {
-                override fun onSuccess(pinCode: String) {
-                    onConfirm(pinCode)
-                }
-            }
-            setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
-                override fun onDismiss(success: Boolean) {
-                    if (!success) {
-                        onDismissRequest()
+            pinEmergencyCallback =
+                object : PinEmergencyBottomSheetDialog.PinEmergencyCallback() {
+                    override fun onSuccess(pinCode: String) {
+                        onConfirm(pinCode)
                     }
                 }
-            })
+            setCallback(
+                object : BiometricBottomSheetDialogFragment.Callback() {
+                    override fun onDismiss(success: Boolean) {
+                        if (!success) {
+                            onDismissRequest()
+                        }
+                    }
+                },
+            )
         }
     })
 }
@@ -349,13 +355,15 @@ private fun PinEmergencyBottomSheetDialog(
 private fun OnPageResumeFromBackStack(onResume: () -> Unit) {
     val context = LocalContext.current
 
-    val fragmentManager = remember {
-        context.findFragmentActivityOrNull()?.supportFragmentManager
-    }
+    val fragmentManager =
+        remember {
+            context.findFragmentActivityOrNull()?.supportFragmentManager
+        }
 
-    val initialBackStackEntryCount = remember {
-        fragmentManager?.backStackEntryCount ?: 0
-    }
+    val initialBackStackEntryCount =
+        remember {
+            fragmentManager?.backStackEntryCount ?: 0
+        }
 
     DisposableEffect(fragmentManager) {
         val backStackChanged = {

@@ -21,16 +21,23 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         const val TAG = "VerifyBottomSheetDialogFragment"
         const val ARGS_DISABLE_BIOMETRIC = "args_disable_biometric"
 
-        fun newInstance(title: String? = null, disableBiometric: Boolean = false) = VerifyBottomSheetDialogFragment().withArgs {
-            title?.let { putString(ARGS_TITLE, it) }
-            putBoolean(ARGS_DISABLE_BIOMETRIC, disableBiometric)
-        }
+        fun newInstance(
+            title: String? = null,
+            disableBiometric: Boolean = false,
+        ) =
+            VerifyBottomSheetDialogFragment().withArgs {
+                title?.let { putString(ARGS_TITLE, it) }
+                putBoolean(ARGS_DISABLE_BIOMETRIC, disableBiometric)
+            }
     }
 
     private val binding by viewBinding(FragmentVerifyBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -48,13 +55,15 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             binding.biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
         }
         binding.biometricLayout.measureAllChildren = false
-        setCallback(object : Callback() {
-            override fun onDismiss(success: Boolean) {
-                if (success) {
-                    continueCallback?.invoke(this@VerifyBottomSheetDialogFragment)
+        setCallback(
+            object : Callback() {
+                override fun onDismiss(success: Boolean) {
+                    if (success) {
+                        continueCallback?.invoke(this@VerifyBottomSheetDialogFragment)
+                    }
                 }
-            }
-        })
+            },
+        )
     }
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
@@ -62,7 +71,11 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     }
 
     var disableToast = false
-    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
+
+    override fun doWhenInvokeNetworkSuccess(
+        response: MixinResponse<*>,
+        pin: String,
+    ): Boolean {
         onPinSuccess?.invoke(pin)
         if (disableToast) {
             dismiss()
@@ -72,11 +85,12 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         }
     }
 
-    override fun getBiometricInfo() = BiometricInfo(
-        getString(R.string.Verify_by_Biometric),
-        "",
-        "",
-    )
+    override fun getBiometricInfo() =
+        BiometricInfo(
+            getString(R.string.Verify_by_Biometric),
+            "",
+            "",
+        )
 
     fun setContinueCallback(callback: (DialogFragment) -> Unit): VerifyBottomSheetDialogFragment {
         continueCallback = callback

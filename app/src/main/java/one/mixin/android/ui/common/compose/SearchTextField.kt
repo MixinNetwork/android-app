@@ -34,9 +34,10 @@ fun SearchTextField(
     text: MutableState<String>,
     hint: String,
 ) {
-    val focusRequester = remember {
-        FocusRequester()
-    }
+    val focusRequester =
+        remember {
+            FocusRequester()
+        }
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -45,21 +46,23 @@ fun SearchTextField(
     BasicTextField(
         value = text.value,
         onValueChange = { text.value = it },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(60.dp)
-            .focusRequester(focusRequester)
-            .background(MixinAppTheme.colors.background)
-            .onFocusChanged {
-                if (it.isFocused) {
-                    keyboardController?.show()
-                }
-            },
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+                .focusRequester(focusRequester)
+                .background(MixinAppTheme.colors.background)
+                .onFocusChanged {
+                    if (it.isFocused) {
+                        keyboardController?.show()
+                    }
+                },
         interactionSource = interactionSource,
-        textStyle = TextStyle(
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textPrimary,
-        ),
+        textStyle =
+            TextStyle(
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textPrimary,
+            ),
         cursorBrush = SolidColor(MixinAppTheme.colors.accent),
     ) { innerTextField ->
         Row(

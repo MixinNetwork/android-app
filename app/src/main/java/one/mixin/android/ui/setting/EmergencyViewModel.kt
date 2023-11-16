@@ -14,37 +14,48 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EmergencyViewModel
-@Inject
-internal constructor(
-    private val accountRepository: AccountRepository,
-    private val userRepository: UserRepository,
-) : ViewModel() {
+    @Inject
+    internal constructor(
+        private val accountRepository: AccountRepository,
+        private val userRepository: UserRepository,
+    ) : ViewModel() {
+        suspend fun createEmergency(request: EmergencyRequest) =
+            withContext(Dispatchers.IO) {
+                accountRepository.createEmergency(request)
+            }
 
-    suspend fun createEmergency(request: EmergencyRequest) = withContext(Dispatchers.IO) {
-        accountRepository.createEmergency(request)
+        suspend fun createVerifyEmergency(
+            id: String,
+            request: EmergencyRequest,
+        ) =
+            withContext(Dispatchers.IO) {
+                accountRepository.createVerifyEmergency(id, request)
+            }
+
+        suspend fun loginVerifyEmergency(
+            id: String,
+            request: EmergencyRequest,
+        ) =
+            withContext(Dispatchers.IO) {
+                accountRepository.loginVerifyEmergency(id, request)
+            }
+
+        suspend fun findFriendsNotBot() = userRepository.findFriendsNotBot()
+
+        suspend fun findUserById(userId: String) = userRepository.suspendFindUserById(userId)
+
+        suspend fun showEmergency(pin: String) =
+            withContext(Dispatchers.IO) {
+                accountRepository.showEmergency(pin)
+            }
+
+        fun upsertUser(u: User) =
+            viewModelScope.launch(Dispatchers.IO) {
+                userRepository.upsert(u)
+            }
+
+        suspend fun deleteEmergency(pin: String) =
+            withContext(Dispatchers.IO) {
+                accountRepository.deleteEmergency(pin)
+            }
     }
-
-    suspend fun createVerifyEmergency(id: String, request: EmergencyRequest) = withContext(Dispatchers.IO) {
-        accountRepository.createVerifyEmergency(id, request)
-    }
-
-    suspend fun loginVerifyEmergency(id: String, request: EmergencyRequest) = withContext(Dispatchers.IO) {
-        accountRepository.loginVerifyEmergency(id, request)
-    }
-
-    suspend fun findFriendsNotBot() = userRepository.findFriendsNotBot()
-
-    suspend fun findUserById(userId: String) = userRepository.suspendFindUserById(userId)
-
-    suspend fun showEmergency(pin: String) = withContext(Dispatchers.IO) {
-        accountRepository.showEmergency(pin)
-    }
-
-    fun upsertUser(u: User) = viewModelScope.launch(Dispatchers.IO) {
-        userRepository.upsert(u)
-    }
-
-    suspend fun deleteEmergency(pin: String) = withContext(Dispatchers.IO) {
-        accountRepository.deleteEmergency(pin)
-    }
-}

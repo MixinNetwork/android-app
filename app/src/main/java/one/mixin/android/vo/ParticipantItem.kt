@@ -21,17 +21,25 @@ data class ParticipantItem(
     var isScam: Boolean? = null,
 ) {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ParticipantItem>() {
-            override fun areItemsTheSame(oldItem: ParticipantItem, newItem: ParticipantItem) =
-                oldItem.userId == newItem.userId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<ParticipantItem>() {
+                override fun areItemsTheSame(
+                    oldItem: ParticipantItem,
+                    newItem: ParticipantItem,
+                ) =
+                    oldItem.userId == newItem.userId
 
-            override fun areContentsTheSame(oldItem: ParticipantItem, newItem: ParticipantItem) =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: ParticipantItem,
+                    newItem: ParticipantItem,
+                ) =
+                    oldItem == newItem
+            }
     }
 
-    fun toUser() = User(
-        userId, identityNumber, relationship, biography, fullName, avatarUrl,
-        phone, isVerified, userCreatedAt, muteUntil, hasPin, appId, isScam,
-    )
+    fun toUser() =
+        User(
+            userId, identityNumber, relationship, biography, fullName, avatarUrl,
+            phone, isVerified, userCreatedAt, muteUntil, hasPin, appId, isScam,
+        )
 }

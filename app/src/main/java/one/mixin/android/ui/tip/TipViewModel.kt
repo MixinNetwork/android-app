@@ -19,37 +19,40 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TipViewModel
-@Inject
-internal constructor(
-    private val tipNodeService: TipNodeService,
-    private val tipConfig: TipConfig,
-    private val utxoService: UtxoService,
-    private val pinCipher: PinCipher,
-) : ViewModel() {
-
-    suspend fun checkTipNodeConnect(): Pair<Boolean, String> {
-        val signers = tipConfig.signers
-        val nodeFailedInfo = StringBuffer()
-        val successSum = AtomicInteger(0)
-        coroutineScope {
-            signers.map { signer ->
-                async(Dispatchers.IO) {
-                    kotlin.runCatching {
-                        tipNodeService.get(tipNodeApi2Path(signer.api))
-                        successSum.incrementAndGet()
-                    }.onFailure {
-                        if (it is HttpException) {
-                            nodeFailedInfo.append("[${signer.index}, ${it.code()}] ")
+    @Inject
+    internal constructor(
+        private val tipNodeService: TipNodeService,
+        private val tipConfig: TipConfig,
+        private val utxoService: UtxoService,
+        private val pinCipher: PinCipher,
+    ) : ViewModel() {
+        suspend fun checkTipNodeConnect(): Pair<Boolean, String> {
+            val signers = tipConfig.signers
+            val nodeFailedInfo = StringBuffer()
+            val successSum = AtomicInteger(0)
+            coroutineScope {
+                signers.map { signer ->
+                    async(Dispatchers.IO) {
+                        kotlin.runCatching {
+                            tipNodeService.get(tipNodeApi2Path(signer.api))
+                            successSum.incrementAndGet()
+                        }.onFailure {
+                            if (it is HttpException) {
+                                nodeFailedInfo.append("[${signer.index}, ${it.code()}] ")
+                            }
                         }
                     }
-                }
-            }.awaitAll()
+                }.awaitAll()
+            }
+            return Pair(successSum.get() == signers.size, nodeFailedInfo.toString())
         }
-        return Pair(successSum.get() == signers.size, nodeFailedInfo.toString())
+
+        suspend fun registerPublicKey(registerRequest: RegisterRequest) = utxoService.registerPublicKey(registerRequest)
+
+        suspend fun getEncryptedTipBody(
+            userId: String,
+            pkHex: String,
+            pin: String,
+        ): String =
+            pinCipher.encryptPin(pin, TipBody.forSequencerRegister(userId, pkHex))
     }
-
-    suspend fun registerPublicKey(registerRequest: RegisterRequest) = utxoService.registerPublicKey(registerRequest)
-
-    suspend fun getEncryptedTipBody(userId: String, pkHex: String, pin: String): String =
-        pinCipher.encryptPin(pin, TipBody.forSequencerRegister(userId, pkHex))
-}

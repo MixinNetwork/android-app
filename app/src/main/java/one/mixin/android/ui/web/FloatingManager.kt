@@ -38,12 +38,13 @@ fun refreshScreenshot(context: Context) {
         if (!rootView.isLaidOut) return@let
 
         val screenBitmap = rootView.drawToBitmap()
-        val resultBitmap = Bitmap.createScaledBitmap(
-            screenBitmap,
-            screenBitmap.width / 3,
-            screenBitmap.height / 3,
-            false,
-        )
+        val resultBitmap =
+            Bitmap.createScaledBitmap(
+                screenBitmap,
+                screenBitmap.width / 3,
+                screenBitmap.height / 3,
+                false,
+            )
 
         val cv = Canvas(resultBitmap)
         cv.drawBitmap(resultBitmap, 0f, 0f, Paint())
@@ -53,11 +54,12 @@ fun refreshScreenshot(context: Context) {
             screenBitmap.width.toFloat(),
             screenBitmap.height.toFloat(),
             Paint().apply {
-                color = if (context.isNightMode()) {
-                    Color.parseColor("#CC1C1C1C")
-                } else {
-                    Color.parseColor("#E6F6F7FA")
-                }
+                color =
+                    if (context.isNightMode()) {
+                        Color.parseColor("#CC1C1C1C")
+                    } else {
+                        Color.parseColor("#E6F6F7FA")
+                    }
             },
         )
         screenshot = resultBitmap
@@ -93,7 +95,10 @@ data class WebClip(
     @Transient val isFinished: Boolean = false,
 )
 
-fun updateClip(index: Int, webClip: WebClip) {
+fun updateClip(
+    index: Int,
+    webClip: WebClip,
+) {
     if (index < clips.size) {
         if (clips[index].webView != webClip.webView) {
             clips[index].webView?.destroy()
@@ -162,17 +167,20 @@ fun releaseClip(index: Int) {
 }
 
 var saveJob: Job? = null
+
 fun saveClips() {
     saveJob?.cancel()
-    saveJob = MixinApplication.get().applicationScope.launch(SINGLE_THREAD) {
-        val localClips = mutableListOf<WebClip>().apply {
-            addAll(clips)
+    saveJob =
+        MixinApplication.get().applicationScope.launch(SINGLE_THREAD) {
+            val localClips =
+                mutableListOf<WebClip>().apply {
+                    addAll(clips)
+                }
+            MixinApplication.appContext.defaultSharedPreferences.putString(
+                PREF_FLOATING,
+                GsonHelper.customGson.toJson(localClips),
+            )
         }
-        MixinApplication.appContext.defaultSharedPreferences.putString(
-            PREF_FLOATING,
-            GsonHelper.customGson.toJson(localClips),
-        )
-    }
 }
 
 fun replaceApp(app: App) {

@@ -18,7 +18,6 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 
 class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(binding.root) {
-
     @SuppressLint("SetTextI18n")
     fun bind(
         messageItem: ChatHistoryMessageItem,
@@ -70,7 +69,11 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         )
         binding.bottomLayout.seekBar.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                override fun onProgressChanged(
+                    seekBar: SeekBar?,
+                    progress: Int,
+                    fromUser: Boolean,
+                ) {
                 }
 
                 override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -175,7 +178,11 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             if (isLast) {

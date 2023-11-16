@@ -17,7 +17,10 @@ class BulletinView(context: Context) : ConstraintLayout(context) {
     private val settingView get() = binding.headerSettings
 
     enum class Type {
-        NewWallet, Notification, EmergencyContact, TipUpgrade
+        NewWallet,
+        Notification,
+        EmergencyContact,
+        TipUpgrade,
     }
 
     private var type: Type = Type.NewWallet
@@ -30,7 +33,10 @@ class BulletinView(context: Context) : ConstraintLayout(context) {
         settingView.setOnClickListener { callback?.onSetting() }
     }
 
-    fun setTypeAndCallback(type: Type, callback: Callback) {
+    fun setTypeAndCallback(
+        type: Type,
+        callback: Callback,
+    ) {
         this.type = type
         this.callback = callback
         when (type) {
@@ -60,6 +66,7 @@ class BulletinView(context: Context) : ConstraintLayout(context) {
 
     interface Callback {
         fun onClose()
+
         fun onSetting()
     }
 }

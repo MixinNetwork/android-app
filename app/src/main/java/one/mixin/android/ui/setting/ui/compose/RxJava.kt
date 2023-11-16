@@ -8,14 +8,16 @@ import io.reactivex.subjects.CompletableSubject
 
 @Composable
 fun rememberComposeScope(): ScopeProvider {
-    val completable = remember {
-        CompletableSubject.create()
-    }
-    val scope = remember {
-        ScopeProvider {
-            completable
+    val completable =
+        remember {
+            CompletableSubject.create()
         }
-    }
+    val scope =
+        remember {
+            ScopeProvider {
+                completable
+            }
+        }
     DisposableEffect(Unit) {
         onDispose {
             completable.onComplete()

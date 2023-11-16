@@ -36,21 +36,34 @@ interface MessageMentionDao : BaseDao<MessageMention> {
     fun deleteMessage(ids: List<String>)
 
     @Query("DELETE FROM message_mentions WHERE message_id IN (SELECT message_id FROM message_mentions WHERE conversation_id=:conversationId LIMIT :limit)")
-    suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
+    suspend fun deleteMessageByConversationId(
+        conversationId: String,
+        limit: Int,
+    )
 
     @Query("DELETE FROM message_mentions WHERE message_id IN (SELECT message_id FROM message_mentions WHERE conversation_id=:conversationId LIMIT :limit)")
-    fun deleteMessageByConversationIdSync(conversationId: String, limit: Int)
+    fun deleteMessageByConversationIdSync(
+        conversationId: String,
+        limit: Int,
+    )
 
     @Query("SELECT * FROM message_mentions WHERE message_id = :id")
     fun findMessageMentionById(id: String): MessageMention?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT mm.* FROM message_mentions mm WHERE mm.rowid > :rowId ORDER BY mm.rowid ASC LIMIT :limit")
-    fun getMessageMentionByLimitAndRowId(limit: Int, rowId: Long): List<TransferMessageMention>
+    fun getMessageMentionByLimitAndRowId(
+        limit: Int,
+        rowId: Long,
+    ): List<TransferMessageMention>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT mm.* FROM message_mentions mm WHERE mm.rowid > :rowId AND conversation_id IN (:conversationIds) ORDER BY mm.rowid ASC LIMIT :limit")
-    fun getMessageMentionByLimitAndRowId(limit: Int, rowId: Long, conversationIds: Collection<String>): List<TransferMessageMention>
+    fun getMessageMentionByLimitAndRowId(
+        limit: Int,
+        rowId: Long,
+        conversationIds: Collection<String>,
+    ): List<TransferMessageMention>
 
     @Query("SELECT rowid FROM message_mentions WHERE message_id = :messageId")
     fun getMessageMentionRowId(messageId: String): Long?
@@ -65,5 +78,8 @@ interface MessageMentionDao : BaseDao<MessageMention> {
     fun countMessageMention(rowId: Long): Long
 
     @Query("SELECT count(1) FROM message_mentions WHERE rowid > :rowId AND conversation_id IN (:conversationIds)")
-    fun countMessageMention(rowId: Long, conversationIds: Collection<String>): Long
+    fun countMessageMention(
+        rowId: Long,
+        conversationIds: Collection<String>,
+    ): Long
 }

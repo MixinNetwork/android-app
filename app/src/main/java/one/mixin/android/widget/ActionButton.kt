@@ -13,10 +13,11 @@ import one.mixin.android.extension.round
 
 class ActionButton(context: Context) : AppCompatTextView(context) {
     init {
-        layoutParams = ViewGroup.MarginLayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-        )
+        layoutParams =
+            ViewGroup.MarginLayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            )
         setBackgroundResource(R.drawable.bg_action_button)
         val outValue = TypedValue()
         context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)

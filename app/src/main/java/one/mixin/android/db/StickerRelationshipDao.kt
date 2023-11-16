@@ -9,7 +9,6 @@ import one.mixin.android.vo.StickerRelationship
 
 @Dao
 interface StickerRelationshipDao : BaseDao<StickerRelationship> {
-
     @Query("SELECT s.* FROM sticker_relationships sr INNER JOIN stickers s ON s.sticker_id = sr.sticker_id WHERE sr.album_id = :id ORDER BY s.created_at DESC")
     fun observeStickersByAlbumId(id: String): LiveData<List<Sticker>>
 
@@ -33,7 +32,10 @@ interface StickerRelationshipDao : BaseDao<StickerRelationship> {
     fun observePersonalStickers(): LiveData<List<Sticker>>
 
     @Query("DELETE FROM sticker_relationships  WHERE sticker_id = :stickerId AND album_id = :albumId")
-    fun deleteByStickerId(stickerId: String, albumId: String)
+    fun deleteByStickerId(
+        stickerId: String,
+        albumId: String,
+    )
 
     @Query("SELECT album_id FROM sticker_albums WHERE category = 'PERSONAL'")
     fun getPersonalAlbumId(): String?

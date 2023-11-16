@@ -10,14 +10,18 @@ import one.mixin.android.ui.common.BaseActivity
 
 @AndroidEntryPoint
 class StickerActivity : BaseActivity() {
-
     companion object {
         const val TAG = "StickerActivity"
         const val ARGS_SHOW_ADD = "args_show_add"
         const val ARGS_PERSONAL_ALBUM_ID = "args_personal_album_id"
         const val ARGS_URL = "args_url"
 
-        fun show(context: Context, personalAlbumId: String? = null, url: String? = null, showAdd: Boolean = false) {
+        fun show(
+            context: Context,
+            personalAlbumId: String? = null,
+            url: String? = null,
+            showAdd: Boolean = false,
+        ) {
             Intent(context, StickerActivity::class.java).apply {
                 putExtra(ARGS_PERSONAL_ALBUM_ID, personalAlbumId)
                 putExtra(ARGS_URL, url)

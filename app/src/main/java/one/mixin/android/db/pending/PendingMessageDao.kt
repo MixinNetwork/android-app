@@ -11,7 +11,6 @@ import one.mixin.android.vo.MessageMedia
 
 @Dao
 interface PendingMessageDao : BaseDao<PendingMessage> {
-
     @Query("SELECT * FROM pending_messages ORDER BY created_at ASC limit 100")
     suspend fun getMessages(): List<Message>
 
@@ -25,10 +24,16 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
     fun findMessageIdById(messageId: String): String?
 
     @Query("SELECT id FROM pending_messages WHERE conversation_id = :conversationId AND user_id = :userId AND status = 'FAILED' ORDER BY created_at DESC LIMIT 1000")
-    fun findFailedMessages(conversationId: String, userId: String): List<String>
+    fun findFailedMessages(
+        conversationId: String,
+        userId: String,
+    ): List<String>
 
     @Query("SELECT count(id) FROM pending_messages WHERE conversation_id = :conversationId AND quote_message_id = :messageId AND quote_content IS NULL")
-    fun countMessageByQuoteId(conversationId: String, messageId: String): Int
+    fun countMessageByQuoteId(
+        conversationId: String,
+        messageId: String,
+    ): Int
 
     @Query(
         """
@@ -36,17 +41,28 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
         WHERE m.conversation_id = :conversationId AND m.id = :messageId AND m.status != 'FAILED'
         """,
     )
-    fun findMessageItemById(conversationId: String, messageId: String): String?
+    fun findMessageItemById(
+        conversationId: String,
+        messageId: String,
+    ): String?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT category, id, conversation_id, media_url FROM pending_messages WHERE id = :messageId")
     fun findMessageMediaById(messageId: String): MessageMedia?
 
     @Query("UPDATE pending_messages SET quote_content = :content WHERE conversation_id = :conversationId AND quote_message_id = :messageId")
-    fun updateQuoteContentByQuoteId(conversationId: String, messageId: String, content: String)
+    fun updateQuoteContentByQuoteId(
+        conversationId: String,
+        messageId: String,
+        content: String,
+    )
 
     @Query("UPDATE pending_messages SET content = :content, status = :status WHERE id = :id AND category != 'MESSAGE_RECALL'")
-    fun updateMessageContentAndStatus(content: String, status: String, id: String)
+    fun updateMessageContentAndStatus(
+        content: String,
+        status: String,
+        id: String,
+    )
 
     @Query(
         """
@@ -57,13 +73,36 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
         AND category != 'MESSAGE_RECALL'
         """,
     )
-    fun updateAttachmentMessage(messageId: String, content: String, mediaMimeType: String, mediaSize: Long, mediaWidth: Int?, mediaHeight: Int?, thumbImage: String?, name: String?, mediaWaveform: ByteArray?, mediaDuration: String?, mediaKey: ByteArray?, mediaDigest: ByteArray?, mediaStatus: String, status: String)
+    fun updateAttachmentMessage(
+        messageId: String,
+        content: String,
+        mediaMimeType: String,
+        mediaSize: Long,
+        mediaWidth: Int?,
+        mediaHeight: Int?,
+        thumbImage: String?,
+        name: String?,
+        mediaWaveform: ByteArray?,
+        mediaDuration: String?,
+        mediaKey: ByteArray?,
+        mediaDigest: ByteArray?,
+        mediaStatus: String,
+        status: String,
+    )
 
     @Query("UPDATE pending_messages SET sticker_id = :stickerId, status = :status WHERE id = :messageId AND category != 'MESSAGE_RECALL'")
-    fun updateStickerMessage(stickerId: String, status: String, messageId: String)
+    fun updateStickerMessage(
+        stickerId: String,
+        status: String,
+        messageId: String,
+    )
 
     @Query("UPDATE pending_messages SET shared_user_id = :sharedUserId, status = :status WHERE id = :messageId AND category != 'MESSAGE_RECALL'")
-    fun updateContactMessage(sharedUserId: String, status: String, messageId: String)
+    fun updateContactMessage(
+        sharedUserId: String,
+        status: String,
+        messageId: String,
+    )
 
     @Query(
         """
@@ -71,7 +110,14 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
         WHERE id = :messageId AND category != 'MESSAGE_RECALL'
     """,
     )
-    fun updateLiveMessage(width: Int, height: Int, url: String, thumbUrl: String, status: String, messageId: String)
+    fun updateLiveMessage(
+        width: Int,
+        height: Int,
+        url: String,
+        thumbUrl: String,
+        status: String,
+        messageId: String,
+    )
 
     @Query(
         """
@@ -79,7 +125,13 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
         WHERE id = :messageId AND category != 'MESSAGE_RECALL'
         """,
     )
-    fun updateTranscriptMessage(content: String?, mediaSize: Long?, mediaStatus: String?, status: String, messageId: String)
+    fun updateTranscriptMessage(
+        content: String?,
+        mediaSize: Long?,
+        mediaStatus: String?,
+        status: String,
+        messageId: String,
+    )
 
     @Query("UPDATE pending_messages SET status = 'SENT' WHERE id = :id AND status = 'FAILED'")
     fun recallFailedMessage(id: String)
@@ -95,7 +147,10 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
     fun recallMessage(id: String)
 
     @Query("UPDATE pending_messages SET content = NULL WHERE category = 'MESSAGE_PIN' AND quote_message_id = :id AND conversation_id = :conversationId")
-    fun recallPinMessage(id: String, conversationId: String)
+    fun recallPinMessage(
+        id: String,
+        conversationId: String,
+    )
 
     @Query("DELETE FROM pending_messages WHERE id = :id")
     fun deleteById(id: String)
@@ -107,7 +162,10 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
     fun markReadIds(ids: List<String>): Int
 
     @Query("UPDATE pending_messages SET status = :status WHERE id = :id")
-    fun updateMessageStatus(status: String, id: String)
+    fun updateMessageStatus(
+        status: String,
+        id: String,
+    )
 
     @Query("SELECT conversation_id, user_id, status FROM pending_messages WHERE id = :messageId")
     fun findMessageStatusById(messageId: String): ConversationWithStatus?

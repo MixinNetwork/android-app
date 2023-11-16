@@ -5,7 +5,11 @@ import timber.log.Timber
 
 class MonitorData(private var createdTime: Long, private var isDeferred: Boolean = false) {
     private val statements = mutableListOf<String>()
-    fun append(sql: String, args: List<Any?>) {
+
+    fun append(
+        sql: String,
+        args: List<Any?>,
+    ) {
         if (isDeferred && !sql.startsWith("BEGIN") && !sql.startsWith("END")) {
             createdTime = System.currentTimeMillis()
             isDeferred = isDeferred.not()
@@ -22,7 +26,10 @@ class MonitorData(private var createdTime: Long, private var isDeferred: Boolean
         return "$content\n**** $timeDiff milliseconds****\n\n"
     }
 
-    fun log(currentThreadName: String, diff: Long = 200) {
+    fun log(
+        currentThreadName: String,
+        diff: Long = 200,
+    ) {
         val timeDiff = System.currentTimeMillis() - createdTime
         if (timeDiff >= diff) {
             Timber.e("******$currentThreadName******\n $this")

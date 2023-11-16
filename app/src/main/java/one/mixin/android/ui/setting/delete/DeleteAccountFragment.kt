@@ -48,7 +48,10 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
 
     private var captchaView: CaptchaView? = null
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
@@ -109,7 +112,10 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
         }
     }
 
-    private fun showDialog(phone: String, callback: () -> Unit) {
+    private fun showDialog(
+        phone: String,
+        callback: () -> Unit,
+    ) {
         alertDialogBuilder()
             .setMessage(
                 getString(
@@ -135,10 +141,11 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
         phone: String = requireNotNull(Session.getAccount()).phone,
         captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null,
     ) {
-        val verificationRequest = VerificationRequest(
-            phone,
-            VerificationPurpose.DEACTIVATED.name,
-        )
+        val verificationRequest =
+            VerificationRequest(
+                phone,
+                VerificationPurpose.DEACTIVATED.name,
+            )
         if (captchaResponse != null) {
             if (captchaResponse.first.isG()) {
                 verificationRequest.gRecaptchaResponse = captchaResponse.second
@@ -184,32 +191,34 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
         )
     }
 
-    private fun initAndLoadCaptcha() = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
+    private fun initAndLoadCaptcha() =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
 
-        if (captchaView == null) {
-            captchaView = CaptchaView(
-                requireContext(),
-                object : CaptchaView.Callback {
-                    override fun onStop() {
-                        binding.deleteCover.isVisible = false
-                    }
+            if (captchaView == null) {
+                captchaView =
+                    CaptchaView(
+                        requireContext(),
+                        object : CaptchaView.Callback {
+                            override fun onStop() {
+                                binding.deleteCover.isVisible = false
+                            }
 
-                    override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
-                        lifecycleScope.launch {
-                            verify(captchaResponse = value)
-                        }
-                    }
-                },
-            )
-            (view as ViewGroup).addView(
-                captchaView?.webView,
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
-            )
+                            override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
+                                lifecycleScope.launch {
+                                    verify(captchaResponse = value)
+                                }
+                            }
+                        },
+                    )
+                (view as ViewGroup).addView(
+                    captchaView?.webView,
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                )
+            }
+            captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
         }
-        captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
-    }
 
     private fun changeNumber() {
         alert(getString(R.string.profile_modify_number))

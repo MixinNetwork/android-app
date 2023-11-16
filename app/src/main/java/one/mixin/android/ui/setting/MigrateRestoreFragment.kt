@@ -22,7 +22,10 @@ class MigrateRestoreFragment : BaseFragment(R.layout.fragment_migrate_restore) {
 
     private val binding by viewBinding(FragmentMigrateRestoreBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {

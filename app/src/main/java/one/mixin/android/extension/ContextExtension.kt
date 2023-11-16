@@ -79,10 +79,10 @@ import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.gallery.Gallery
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
@@ -102,7 +102,10 @@ fun mainThread(runnable: () -> Unit) {
     uiHandler.post(runnable)
 }
 
-fun mainThreadDelayed(runnable: () -> Unit, delayMillis: Long) {
+fun mainThreadDelayed(
+    runnable: () -> Unit,
+    delayMillis: Long,
+) {
     uiHandler.postDelayed(runnable, delayMillis)
 }
 
@@ -123,7 +126,10 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
 inline val Context.layoutInflater: android.view.LayoutInflater
     get() = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as android.view.LayoutInflater
 
-fun Context.runOnUiThread(f: Context.() -> Unit, delay: Long = 0L) {
+fun Context.runOnUiThread(
+    f: Context.() -> Unit,
+    delay: Long = 0L,
+) {
     if (delay == 0L) {
         uiHandler.post { f() }
     } else {
@@ -149,7 +155,10 @@ fun Context.runOnUiThread(f: Context.() -> Unit) {
     runOnUiThread(f, 0L)
 }
 
-fun runOnUiThread(runnable: Runnable, delay: Long = 0L) {
+fun runOnUiThread(
+    runnable: Runnable,
+    delay: Long = 0L,
+) {
     if (delay == 0L) {
         uiHandler.post(runnable)
     } else {
@@ -165,7 +174,10 @@ fun async(runnable: () -> Unit) {
     Thread(runnable).start()
 }
 
-fun async(runnable: () -> Unit, executor: ExecutorService): Future<out Any?> =
+fun async(
+    runnable: () -> Unit,
+    executor: ExecutorService,
+): Future<out Any?> =
     executor.submit(runnable)
 
 fun Context.statusBarHeight(): Int {
@@ -215,14 +227,18 @@ fun Context.isActivityNotDestroyed(): Boolean {
     return true
 }
 
-fun Context.vibrate(effect: VibrationEffect?, pattern: LongArray = longArrayOf(0, 20L)) {
-    val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-        vibratorManager.defaultVibrator
-    } else {
-        @Suppress("DEPRECATION")
-        getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-    }
+fun Context.vibrate(
+    effect: VibrationEffect?,
+    pattern: LongArray = longArrayOf(0, 20L),
+) {
+    val vibrator =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
     if (effect != null && Build.VERSION.SDK_INT >= 26) {
         vibrator.vibrate(effect)
     } else if (Build.VERSION.SDK_INT >= 26) {
@@ -232,6 +248,7 @@ fun Context.vibrate(effect: VibrationEffect?, pattern: LongArray = longArrayOf(0
         vibrator.vibrate(pattern, -1)
     }
 }
+
 fun Context.tickVibrate() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         vibrate(VibrationEffect.createPredefined(EFFECT_TICK))
@@ -290,12 +307,18 @@ var Context.displayMetrics: DisplayMetrics
     get() = resources.displayMetrics
 
     @Deprecated("Property does not have a setter")
-    private set(@Suppress("UNUSED_PARAMETER") value) = error("Property does not have a setter")
+    private set(
+    @Suppress("UNUSED_PARAMETER") value
+    ) = error("Property does not have a setter")
 
 @ColorInt
-fun Context.colorAttr(@AttrRes attribute: Int): Int = theme.color(attribute)
+fun Context.colorAttr(
+    @AttrRes attribute: Int,
+): Int = theme.color(attribute)
 
-fun Resources.Theme.attr(@AttrRes attribute: Int): TypedValue {
+fun Resources.Theme.attr(
+    @AttrRes attribute: Int,
+): TypedValue {
     val typedValue = TypedValue()
     if (!resolveAttribute(attribute, typedValue, true)) {
         throw IllegalArgumentException("Failed to resolve attribute: $attribute")
@@ -305,7 +328,9 @@ fun Resources.Theme.attr(@AttrRes attribute: Int): TypedValue {
 }
 
 @ColorInt
-fun Resources.Theme.color(@AttrRes attribute: Int): Int {
+fun Resources.Theme.color(
+    @AttrRes attribute: Int,
+): Int {
     val attr = attr(attribute)
     if (attr.type < TypedValue.TYPE_FIRST_COLOR_INT || attr.type > TypedValue.TYPE_LAST_COLOR_INT) {
         throw IllegalArgumentException("Attribute value type is not color: $attribute")
@@ -314,7 +339,10 @@ fun Resources.Theme.color(@AttrRes attribute: Int): Int {
     return attr.data
 }
 
-fun Context.getPixelsInCM(cm: Float, isX: Boolean): Float =
+fun Context.getPixelsInCM(
+    cm: Float,
+    isX: Boolean,
+): Float =
     cm / 2.54f * if (isX) displayMetrics.xdpi else displayMetrics.ydpi
 
 fun Context.isTablet(): Boolean = resources.getBoolean(R.bool.isTablet)
@@ -369,11 +397,18 @@ fun Context.maxItemWidth(): Int {
 }
 
 // fragment
-fun FragmentActivity.replaceFragment(fragment: Fragment, frameId: Int) {
+fun FragmentActivity.replaceFragment(
+    fragment: Fragment,
+    frameId: Int,
+) {
     supportFragmentManager.inTransaction { replace(frameId, fragment) }
 }
 
-fun FragmentActivity.replaceFragment(fragment: Fragment, frameId: Int, tag: String) {
+fun FragmentActivity.replaceFragment(
+    fragment: Fragment,
+    frameId: Int,
+    tag: String,
+) {
     supportFragmentManager.inTransaction { replace(frameId, fragment, tag) }
 }
 
@@ -383,8 +418,9 @@ fun FragmentActivity.addFragment(
     tag: String,
     id: Int = R.id.container,
 ) {
-    val ft = supportFragmentManager.beginTransaction()
-        .setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
+    val ft =
+        supportFragmentManager.beginTransaction()
+            .setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
     if (to.isAdded) {
         ft.show(to)
     } else {
@@ -394,7 +430,10 @@ fun FragmentActivity.addFragment(
     ft.commitAllowingStateLoss()
 }
 
-fun Fragment.navTo(fragment: Fragment, tag: String) {
+fun Fragment.navTo(
+    fragment: Fragment,
+    tag: String,
+) {
     activity?.addFragment(this, fragment, tag)
 }
 
@@ -446,11 +485,12 @@ fun Fragment.openCamera(output: Uri) {
     } else {
         val path = output.path ?: return
         val file = File(path)
-        val photoUri = FileProvider.getUriForFile(
-            requireContext().applicationContext,
-            BuildConfig.APPLICATION_ID + ".provider",
-            file,
-        )
+        val photoUri =
+            FileProvider.getUriForFile(
+                requireContext().applicationContext,
+                BuildConfig.APPLICATION_ID + ".provider",
+                file,
+            )
         intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
     }
     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -482,11 +522,12 @@ fun Context.openMedia(messageItem: MessageItem) {
                 intent.setDataAndType(uri, messageItem.mediaMimeType)
                 startActivity(intent)
             } else {
-                val path = if (uri.scheme == ContentResolver.SCHEME_FILE) {
-                    uri.path
-                } else {
-                    messageItem.absolutePath()
-                }
+                val path =
+                    if (uri.scheme == ContentResolver.SCHEME_FILE) {
+                        uri.path
+                    } else {
+                        messageItem.absolutePath()
+                    }
                 if (path == null) {
                     toast(R.string.File_does_not_exist)
                     return@let
@@ -519,11 +560,12 @@ fun Context.openMedia(messageItem: ChatHistoryMessageItem) {
                 intent.setDataAndType(uri, messageItem.mediaMimeType)
                 startActivity(intent)
             } else {
-                val path = if (uri.scheme == ContentResolver.SCHEME_FILE) {
-                    uri.path
-                } else {
-                    messageItem.absolutePath()
-                }
+                val path =
+                    if (uri.scheme == ContentResolver.SCHEME_FILE) {
+                        uri.path
+                    } else {
+                        messageItem.absolutePath()
+                    }
                 if (path == null) {
                     toast(R.string.File_does_not_exist)
                     return@let
@@ -544,7 +586,11 @@ fun Context.openMedia(messageItem: ChatHistoryMessageItem) {
     }
 }
 
-fun Fragment.selectMediaType(type: String, extraMimeType: Array<String>?, requestCode: Int) {
+fun Fragment.selectMediaType(
+    type: String,
+    extraMimeType: Array<String>?,
+    requestCode: Int,
+) {
     val intent = Intent()
     intent.type = type
     intent.putExtra(Intent.EXTRA_MIME_TYPES, extraMimeType)
@@ -600,24 +646,29 @@ fun Fragment.selectAudio() {
     selectMediaType("audio/*", null, REQUEST_AUDIO)
 }
 
-fun Context.getAttachment(local: Uri, mimeType: String? = null): Attachment? {
+fun Context.getAttachment(
+    local: Uri,
+    mimeType: String? = null,
+): Attachment? {
     var cursor: Cursor? = null
     try {
-        val uri = if (local.authority == null) {
-            val path = local.path ?: return null
-            getUriForFile(File(path))
-        } else {
-            local
-        }
+        val uri =
+            if (local.authority == null) {
+                val path = local.path ?: return null
+                getUriForFile(File(path))
+            } else {
+                local
+            }
         cursor = contentResolver.query(uri, null, null, null, null)
         if (cursor != null && cursor.moveToFirst()) {
             val fileName = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME)) ?: "File"
             val copyPath = uri.copyFileUrlWithAuthority(this, fileName)
-            val resultUri = if (copyPath == null) {
-                return null
-            } else {
-                getUriForFile(File(copyPath))
-            }
+            val resultUri =
+                if (copyPath == null) {
+                    return null
+                } else {
+                    getUriForFile(File(copyPath))
+                }
             val fileSize = File(copyPath).length()
             return Attachment(resultUri, fileName, mimeType ?: contentResolver.getType(uri) ?: "", fileSize)
         }
@@ -637,9 +688,10 @@ fun getVideoModel(uri: Uri): VideoEditedInfo? {
     try {
         @Suppress("DEPRECATION")
         val path = uri.getFilePath() ?: return null
-        val m = MediaMetadataRetriever().apply {
-            setDataSource(path)
-        }
+        val m =
+            MediaMetadataRetriever().apply {
+                setDataSource(path)
+            }
         val fileName = File(path).name
         val rotation = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION) ?: "0"
         val image = m.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST) ?: return null
@@ -701,19 +753,20 @@ fun Context.openUrl(url: String) {
     try {
         val actionIntent = Intent(this, ShareBroadcastReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(this, 0, actionIntent, PendingIntent.FLAG_IMMUTABLE)
-        val customTabsIntent = CustomTabsIntent.Builder()
-            .setDefaultColorSchemeParams(
-                CustomTabColorSchemeParams.Builder()
-                    .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
-                    .build(),
-            )
-            .setShowTitle(true)
-            .setActionButton(
-                BitmapFactory.decodeResource(this.resources, R.drawable.ic_share),
-                this.getString(R.string.Share),
-                pendingIntent,
-            )
-            .build()
+        val customTabsIntent =
+            CustomTabsIntent.Builder()
+                .setDefaultColorSchemeParams(
+                    CustomTabColorSchemeParams.Builder()
+                        .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
+                        .build(),
+                )
+                .setShowTitle(true)
+                .setActionButton(
+                    BitmapFactory.decodeResource(this.resources, R.drawable.ic_share),
+                    this.getString(R.string.Share),
+                    pendingIntent,
+                )
+                .build()
         customTabsIntent.launchUrl(this, uri)
         return
     } catch (e: Exception) {
@@ -758,7 +811,10 @@ fun Window.isNotchScreen(): Boolean {
     }
 }
 
-inline fun <T, R> T?.notNullWithElse(normalAction: (T) -> R, default: R): R {
+inline fun <T, R> T?.notNullWithElse(
+    normalAction: (T) -> R,
+    default: R,
+): R {
     return if (this == null) {
         default
     } else {
@@ -766,7 +822,10 @@ inline fun <T, R> T?.notNullWithElse(normalAction: (T) -> R, default: R): R {
     }
 }
 
-inline fun <T, R> T?.notNullWithElse(normalAction: (T) -> R, elseAction: () -> R): R {
+inline fun <T, R> T?.notNullWithElse(
+    normalAction: (T) -> R,
+    elseAction: () -> R,
+): R {
     return if (this != null) {
         normalAction(this)
     } else {
@@ -774,7 +833,10 @@ inline fun <T, R> T?.notNullWithElse(normalAction: (T) -> R, elseAction: () -> R
     }
 }
 
-inline fun CharSequence?.notEmptyWithElse(normalAction: (CharSequence) -> Unit, elseAction: () -> Unit) {
+inline fun CharSequence?.notEmptyWithElse(
+    normalAction: (CharSequence) -> Unit,
+    elseAction: () -> Unit,
+) {
     return if (!this.isNullOrEmpty()) {
         normalAction(this)
     } else {
@@ -782,7 +844,10 @@ inline fun CharSequence?.notEmptyWithElse(normalAction: (CharSequence) -> Unit, 
     }
 }
 
-inline fun <T, R> Collection<T>?.notEmptyWithElse(normalAction: (Collection<T>) -> R, default: R): R {
+inline fun <T, R> Collection<T>?.notEmptyWithElse(
+    normalAction: (Collection<T>) -> R,
+    default: R,
+): R {
     return if (!this.isNullOrEmpty()) {
         normalAction(this)
     } else {
@@ -790,7 +855,10 @@ inline fun <T, R> Collection<T>?.notEmptyWithElse(normalAction: (Collection<T>) 
     }
 }
 
-inline fun <T, R> Collection<T>?.notEmptyWithElse(normalAction: (Collection<T>) -> R, elseAction: () -> R): R {
+inline fun <T, R> Collection<T>?.notEmptyWithElse(
+    normalAction: (Collection<T>) -> R,
+    elseAction: () -> R,
+): R {
     return if (!this.isNullOrEmpty()) {
         normalAction(this)
     } else {
@@ -798,7 +866,10 @@ inline fun <T, R> Collection<T>?.notEmptyWithElse(normalAction: (Collection<T>) 
     }
 }
 
-inline fun <T : Number, R> T?.notEmptyWithElse(normalAction: (T) -> R, elseAction: () -> R): R {
+inline fun <T : Number, R> T?.notEmptyWithElse(
+    normalAction: (T) -> R,
+    elseAction: () -> R,
+): R {
     return if (this != null && this != 0) {
         normalAction(this)
     } else {
@@ -806,7 +877,10 @@ inline fun <T : Number, R> T?.notEmptyWithElse(normalAction: (T) -> R, elseActio
     }
 }
 
-fun supportsS(code: () -> Unit, elseAction: (() -> Unit)? = null) {
+fun supportsS(
+    code: () -> Unit,
+    elseAction: (() -> Unit)? = null,
+) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         code()
     } else {
@@ -814,7 +888,10 @@ fun supportsS(code: () -> Unit, elseAction: (() -> Unit)? = null) {
     }
 }
 
-fun supportsR(code: () -> Unit, elseAction: (() -> Unit)? = null) {
+fun supportsR(
+    code: () -> Unit,
+    elseAction: (() -> Unit)? = null,
+) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         code()
     } else {
@@ -840,7 +917,10 @@ inline fun supportsOreo(code: () -> Unit) {
     }
 }
 
-fun supportsOreo(code: () -> Unit, elseAction: (() -> Unit)) {
+fun supportsOreo(
+    code: () -> Unit,
+    elseAction: (() -> Unit),
+) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         code()
     } else {
@@ -918,10 +998,11 @@ fun Context.showConfirmDialog(
 
 fun Context.isNightMode(): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        val currentId = defaultSharedPreferences.getInt(
-            Constants.Theme.THEME_CURRENT_ID,
-            Constants.Theme.THEME_AUTO_ID,
-        )
+        val currentId =
+            defaultSharedPreferences.getInt(
+                Constants.Theme.THEME_CURRENT_ID,
+                Constants.Theme.THEME_AUTO_ID,
+            )
         return if (currentId == Constants.Theme.THEME_AUTO_ID) {
             resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
         } else {
@@ -941,16 +1022,18 @@ fun Context.isAutoRotate() = Settings.System.getInt(contentResolver, Settings.Sy
 
 fun toastShort(textResource: Int) = toast(textResource, ToastDuration.Short)
 
-fun Context.getCurrentThemeId() = defaultSharedPreferences.getInt(
-    Constants.Theme.THEME_CURRENT_ID,
-    defaultThemeId,
-)
+fun Context.getCurrentThemeId() =
+    defaultSharedPreferences.getInt(
+        Constants.Theme.THEME_CURRENT_ID,
+        defaultThemeId,
+    )
 
-val defaultThemeId = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-    Constants.Theme.THEME_DEFAULT_ID
-} else {
-    Constants.Theme.THEME_AUTO_ID
-}
+val defaultThemeId =
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+        Constants.Theme.THEME_DEFAULT_ID
+    } else {
+        Constants.Theme.THEME_AUTO_ID
+    }
 
 fun Context.checkInlinePermissions(): Boolean {
     if (RomUtil.isMiui && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
@@ -999,7 +1082,10 @@ fun Context.isPlayStoreInstalled(): Boolean {
     }
 }
 
-fun PackageManager.getPackageInfoCompat(packageName: String, flags: Int = 0): PackageInfo =
+fun PackageManager.getPackageInfoCompat(
+    packageName: String,
+    flags: Int = 0,
+): PackageInfo =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(flags.toLong()))
     } else {
@@ -1028,25 +1114,31 @@ fun <T> Context.isServiceRunning(service: Class<T>) =
         .getRunningServices(Integer.MAX_VALUE)
         .any { it.service.className == service.name }
 
-fun Activity.showPipPermissionNotification(targetActivity: Class<*>, title: String) {
-    val pendingIntent = PendingIntent.getActivity(
-        this,
-        0,
-        Intent(this, targetActivity),
-        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-    )
-    val builder = NotificationCompat.Builder(this, CallActivity.CHANNEL_PIP_PERMISSION)
-        .setSmallIcon(R.drawable.ic_msg_default)
-        .setContentIntent(pendingIntent)
-        .setContentTitle(title)
-        .setPriority(NotificationCompat.PRIORITY_HIGH)
-        .setAutoCancel(true)
-    supportsOreo {
-        val channel = NotificationChannel(
-            CallActivity.CHANNEL_PIP_PERMISSION,
-            getString(R.string.OTHER),
-            NotificationManager.IMPORTANCE_HIGH,
+fun Activity.showPipPermissionNotification(
+    targetActivity: Class<*>,
+    title: String,
+) {
+    val pendingIntent =
+        PendingIntent.getActivity(
+            this,
+            0,
+            Intent(this, targetActivity),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
+    val builder =
+        NotificationCompat.Builder(this, CallActivity.CHANNEL_PIP_PERMISSION)
+            .setSmallIcon(R.drawable.ic_msg_default)
+            .setContentIntent(pendingIntent)
+            .setContentTitle(title)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+    supportsOreo {
+        val channel =
+            NotificationChannel(
+                CallActivity.CHANNEL_PIP_PERMISSION,
+                getString(R.string.OTHER),
+                NotificationManager.IMPORTANCE_HIGH,
+            )
         notificationManager.createNotificationChannel(channel)
     }
     notificationManager.notify(CallActivity.ID_PIP_PERMISSION, builder.build())
@@ -1106,12 +1198,13 @@ fun Context.getDisplayPath(uri: Uri): String {
     val lastPathSegment = requireNotNull(uri.lastPathSegment)
     val backupVolume = lastPathSegment.replaceFirst(":.*".toRegex(), "")
     val backupName = lastPathSegment.replaceFirst(".*:".toRegex(), "")
-    val storageManager: StorageManager = requireNotNull(
-        ContextCompat.getSystemService(
-            this,
-            StorageManager::class.java,
-        ),
-    )
+    val storageManager: StorageManager =
+        requireNotNull(
+            ContextCompat.getSystemService(
+                this,
+                StorageManager::class.java,
+            ),
+        )
     val storageVolumes = storageManager.storageVolumes
     var storageVolume: StorageVolume? = null
     for (volume in storageVolumes) {
@@ -1174,25 +1267,29 @@ fun Context.shareFile(file: File) {
     }
 }
 
-fun Context.shareMedia(isVideo: Boolean, url: String) {
+fun Context.shareMedia(
+    isVideo: Boolean,
+    url: String,
+) {
     var uri: Uri
-    val sendIntent = Intent().apply {
-        action = Intent.ACTION_SEND
-        uri = Uri.parse(url)
-        if (ContentResolver.SCHEME_FILE == uri.scheme) {
-            @Suppress("DEPRECATION")
-            val path = uri.getFilePath(this@shareMedia)
-            if (path == null) {
-                toast(R.string.File_does_not_exist)
-                return
+    val sendIntent =
+        Intent().apply {
+            action = Intent.ACTION_SEND
+            uri = Uri.parse(url)
+            if (ContentResolver.SCHEME_FILE == uri.scheme) {
+                @Suppress("DEPRECATION")
+                val path = uri.getFilePath(this@shareMedia)
+                if (path == null) {
+                    toast(R.string.File_does_not_exist)
+                    return
+                }
+                uri = getUriForFile(File(path))
+                putExtra(Intent.EXTRA_STREAM, uri)
+            } else {
+                putExtra(Intent.EXTRA_STREAM, uri)
             }
-            uri = getUriForFile(File(path))
-            putExtra(Intent.EXTRA_STREAM, uri)
-        } else {
-            putExtra(Intent.EXTRA_STREAM, uri)
+            type = if (isVideo) "video/*" else "image/*"
         }
-        type = if (isVideo) "video/*" else "image/*"
-    }
     val name = getString(if (isVideo) R.string.Video else R.string.Photo)
     val chooser = Intent.createChooser(sendIntent, getString(R.string.share_to, name))
     val resInfoList = packageManager.queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY)

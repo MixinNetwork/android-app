@@ -13,7 +13,6 @@ class RefreshConversationJob(val conversationId: String, private val skipRefresh
             .requireNetwork().persist(),
         conversationId,
     ) {
-
     override fun cancel() {
     }
 

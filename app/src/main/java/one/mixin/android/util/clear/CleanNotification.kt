@@ -16,23 +16,29 @@ class CleanNotification {
     companion object {
         private const val CLEAR_ID = 313388
         private const val CHANNEL_NODE = "channel_node"
-        private fun getBackupNotification(context: Context, content: String?): Notification {
+
+        private fun getBackupNotification(
+            context: Context,
+            content: String?,
+        ): Notification {
             val callIntent = Intent(context, SettingActivity::class.java)
             callIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
             callIntent.putExtra(FROM_NOTIFICATION, true)
-            val pendingCallIntent = PendingIntent.getActivity(
-                context,
-                0,
-                callIntent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-            )
+            val pendingCallIntent =
+                PendingIntent.getActivity(
+                    context,
+                    0,
+                    callIntent,
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+                )
 
-            val builder = NotificationCompat.Builder(context, CHANNEL_NODE)
-                .setSmallIcon(R.drawable.ic_msg_default)
-                .setContentIntent(pendingCallIntent)
-                .setOngoing(true)
-                .setContentText(content ?: context.getString(R.string.deep_cleaning))
-                .setContentTitle(context.getString(R.string.deep_clean))
+            val builder =
+                NotificationCompat.Builder(context, CHANNEL_NODE)
+                    .setSmallIcon(R.drawable.ic_msg_default)
+                    .setContentIntent(pendingCallIntent)
+                    .setOngoing(true)
+                    .setContentText(content ?: context.getString(R.string.deep_cleaning))
+                    .setContentTitle(context.getString(R.string.deep_clean))
             return builder.build()
         }
 

@@ -12,15 +12,18 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
 
 open class ShareContactRenderer(val context: Context) {
-
     private val binding = ItemChatContactCardBinding.inflate(LayoutInflater.from(context), null, false)
     val contentView get() = binding.root
+
     init {
         (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0.5f
         binding.chatName.isVisible = false
     }
 
-    fun render(user: User, isNightMode: Boolean) {
+    fun render(
+        user: User,
+        isNightMode: Boolean,
+    ) {
         binding.avatarIv.setInfo(
             user.fullName,
             user.avatarUrl,

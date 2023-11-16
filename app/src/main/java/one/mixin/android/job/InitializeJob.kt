@@ -14,14 +14,18 @@ class InitializeJob(private val botId: String, private val botName: String) :
         private const val GROUP_ID = "InitializeJob"
     }
 
-    override fun onRun(): Unit = runBlocking {
-        if (botId.isEmpty()) {
-            return@runBlocking
+    override fun onRun(): Unit =
+        runBlocking {
+            if (botId.isEmpty()) {
+                return@runBlocking
+            }
+            updateRelationship(botId, botName)
         }
-        updateRelationship(botId, botName)
-    }
 
-    private suspend fun updateRelationship(botId: String, botName: String) {
+    private suspend fun updateRelationship(
+        botId: String,
+        botName: String,
+    ) {
         handleMixinResponse(
             invokeNetwork = {
                 userService.relationship(RelationshipRequest(botId, RelationshipAction.ADD.name, botName))

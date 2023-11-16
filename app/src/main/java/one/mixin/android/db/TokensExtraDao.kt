@@ -13,8 +13,15 @@ interface TokensExtraDao : BaseDao<TokensExtra> {
     suspend fun findByAsset(asset: String): TokensExtra?
 
     @Query("UPDATE tokens_extra SET hidden = :hidden WHERE asset_id = :assetId")
-    suspend fun updateHiddenByAssetId(assetId: String, hidden: Boolean)
+    suspend fun updateHiddenByAssetId(
+        assetId: String,
+        hidden: Boolean,
+    )
 
     @Query("UPDATE tokens_extra SET balance = :balance, updated_at = :updatedAt WHERE asset_id = :assetId")
-    suspend fun updateBalanceByAssetId(assetId: String, balance: String, updatedAt: String)
+    suspend fun updateBalanceByAssetId(
+        assetId: String,
+        balance: String,
+        updatedAt: String,
+    )
 }

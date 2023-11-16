@@ -42,8 +42,8 @@ import one.mixin.android.util.ErrorHandler.Companion.PIN_INCORRECT
 import one.mixin.android.util.ErrorHandler.Companion.TOO_SMALL
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
-import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.Trace
+import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
@@ -66,7 +66,10 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
     private val binding by viewBinding(FragmentTransferBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -90,11 +93,12 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
                 }
                 is WithdrawBiometricItem -> {
                     (t as WithdrawBiometricItem).let {
-                        title.text = if (it.hasAddress()) {
-                            getString(R.string.withdrawal_to, it.label)
-                        } else {
-                            getString(R.string.Withdrawal)
-                        }
+                        title.text =
+                            if (it.hasAddress()) {
+                                getString(R.string.withdrawal_to, it.label)
+                            } else {
+                                getString(R.string.Withdrawal)
+                            }
                         subTitle.text = it.displayAddress()
                     }
                     biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
@@ -156,27 +160,31 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
         val trace: Trace
-        val response = when (val t = this.t) {
-            is TransferBiometricItem -> {
-                trace = Trace(t.traceId!!, t.asset.assetId, t.amount, t.user.userId, null, null, null, nowInUtc())
-                bottomViewModel.kernelTransaction(t.asset.assetId, t.user.userId, t.amount, pin, t.traceId, t.memo)
+        val response =
+            when (val t = this.t) {
+                is TransferBiometricItem -> {
+                    trace = Trace(t.traceId!!, t.asset.assetId, t.amount, t.user.userId, null, null, null, nowInUtc())
+                    bottomViewModel.kernelTransaction(t.asset.assetId, t.user.userId, t.amount, pin, t.traceId, t.memo)
+                }
+                is AddressTransferBiometricItem -> {
+                    trace = Trace(t.traceId!!, t.asset.assetId, t.amount, null, t.address, null, null, nowInUtc())
+                    bottomViewModel.kernelAddressTransaction(t.asset.assetId, t.address, t.amount, pin, t.traceId, t.memo)
+                }
+                else -> {
+                    t as WithdrawBiometricItem
+                    trace = Trace(t.traceId!!, t.asset.assetId, t.amount, null, t.destination, t.tag, null, nowInUtc())
+                    bottomViewModel.kernelWithdrawalTransaction(MIXIN_FEE_USER_ID, t.traceId!!, t.asset.assetId, t.feeAssetId, t.amount, t.fee, t.destination, t.tag, t.memo, pin)
+                }
             }
-            is AddressTransferBiometricItem -> {
-                trace = Trace(t.traceId!!, t.asset.assetId, t.amount, null, t.address, null, null, nowInUtc())
-                bottomViewModel.kernelAddressTransaction(t.asset.assetId, t.address, t.amount, pin, t.traceId, t.memo)
-            }
-            else -> {
-                t as WithdrawBiometricItem
-                trace = Trace(t.traceId!!, t.asset.assetId, t.amount, null, t.destination, t.tag, null, nowInUtc())
-                bottomViewModel.kernelWithdrawalTransaction(MIXIN_FEE_USER_ID, t.traceId!!, t.asset.assetId, t.feeAssetId, t.amount, t.fee, t.destination, t.tag, t.memo, pin)
-            }
-        }
         bottomViewModel.insertTrace(trace)
         bottomViewModel.deletePreviousTraces()
         return response
     }
 
-    override suspend fun handleWithErrorCodeAndDesc(pin: String, error: ResponseError) {
+    override suspend fun handleWithErrorCodeAndDesc(
+        pin: String,
+        error: ResponseError,
+    ) {
         if (error.code == ErrorHandler.WITHDRAWAL_SUSPEND) {
             WithdrawalSuspendedBottomSheet.newInstance(t.asset).show(parentFragmentManager, WithdrawalSuspendedBottomSheet.TAG)
             dismissNow()
@@ -185,7 +193,10 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
         }
     }
 
-    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
+    override fun doWhenInvokeNetworkSuccess(
+        response: MixinResponse<*>,
+        pin: String,
+    ): Boolean {
         var returnTo: String? = null
         when (val t = this@OutputBottomSheetDialogFragment.t) {
             is TransferBiometricItem -> {
@@ -220,8 +231,12 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
         return false
     }
 
-    override suspend fun doWithMixinErrorCode(errorCode: Int, pin: String): String? {
-        if (errorCode in arrayOf(
+    override suspend fun doWithMixinErrorCode(
+        errorCode: Int,
+        pin: String,
+    ): String? {
+        if (errorCode in
+            arrayOf(
                 INSUFFICIENT_BALANCE,
                 INVALID_PIN_FORMAT,
                 PIN_INCORRECT,
@@ -245,9 +260,10 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             if (t is WithdrawBiometricItem) {
                 val item = t as WithdrawBiometricItem
                 val oldFee = item.fee
-                val newFee = withContext(Dispatchers.IO) {
-                    refreshAddressAndGetFee(item, pin)
-                }
+                val newFee =
+                    withContext(Dispatchers.IO) {
+                        refreshAddressAndGetFee(item, pin)
+                    }
                 return if (newFee != null) {
                     (t as WithdrawBiometricItem).fee = newFee
                     setBiometricItem()
@@ -278,7 +294,10 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
         defaultSharedPreferences.putStringSet(Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET, firsSet)
     }
 
-    private suspend fun refreshAddressAndGetFee(item: WithdrawBiometricItem, pin: String): String? {
+    private suspend fun refreshAddressAndGetFee(
+        item: WithdrawBiometricItem,
+        pin: String,
+    ): String? {
         return try {
             val response = bottomViewModel.syncAddr(item.asset.assetId, item.destination, item.label, item.tag, pin)
             if (response.isSuccess) {

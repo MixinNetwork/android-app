@@ -64,7 +64,10 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         keyboard.initPinKeys(context)
         keyboard.setOnClickKeyboardListener(
             object : Keyboard.OnClickKeyboardListener {
-                override fun onKeyClick(position: Int, value: String) {
+                override fun onKeyClick(
+                    position: Int,
+                    value: String,
+                ) {
                     context?.tickVibrate()
                     if (position == 11) {
                         binding.pin.delete()
@@ -73,7 +76,10 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
                     }
                 }
 
-                override fun onLongClick(position: Int, value: String) {
+                override fun onLongClick(
+                    position: Int,
+                    value: String,
+                ) {
                     context?.clickVibrate()
                     if (position == 11) {
                         binding.pin.clear()
@@ -223,19 +229,19 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
             countDownTimer?.cancel()
             errorBtn.isEnabled = false
             errorBtn.textColor = context.getColor(R.color.wallet_text_gray)
-            countDownTimer = object : CountDownTimer(tickMillis, 1000) {
+            countDownTimer =
+                object : CountDownTimer(tickMillis, 1000) {
+                    override fun onTick(l: Long) {
+                        errorBtn.text =
+                            context.getString(R.string.wallet_transaction_continue_count_down, l / 1000)
+                    }
 
-                override fun onTick(l: Long) {
-                    errorBtn.text =
-                        context.getString(R.string.wallet_transaction_continue_count_down, l / 1000)
+                    override fun onFinish() {
+                        errorBtn.text = getString(R.string.Continue)
+                        errorBtn.isEnabled = true
+                        errorBtn.textColor = context.getColor(R.color.white)
+                    }
                 }
-
-                override fun onFinish() {
-                    errorBtn.text = getString(R.string.Continue)
-                    errorBtn.isEnabled = true
-                    errorBtn.textColor = context.getColor(R.color.white)
-                }
-            }
             countDownTimer?.start()
         }
     }
@@ -243,7 +249,9 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
     private fun getString(resId: Int) = context.getString(resId)
 
     enum class ErrorAction {
-        RetryPin, Close, Continue
+        RetryPin,
+        Close,
+        Continue,
     }
 
     interface Callback {

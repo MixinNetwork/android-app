@@ -6,7 +6,6 @@ import one.mixin.android.vo.safe.RawTransaction
 
 @Dao
 interface RawTransactionDao : BaseDao<RawTransaction> {
-
     @Query("SELECT * FROM raw_transactions WHERE state = 'unspent' AND (type = 0 OR type = 1) ORDER BY rowid ASC LIMIT 1")
     fun findUnspentTransaction(): RawTransaction?
 
@@ -14,8 +13,14 @@ interface RawTransactionDao : BaseDao<RawTransaction> {
     fun findRawTransaction(requestId: String): RawTransaction?
 
     @Query("SELECT * FROM raw_transactions WHERE request_id = :requestId AND type = :type")
-    fun findRawTransaction(requestId: String, type: Int): RawTransaction?
+    fun findRawTransaction(
+        requestId: String,
+        type: Int,
+    ): RawTransaction?
 
     @Query("UPDATE raw_transactions SET state = :state WHERE request_id = :requestId")
-    fun updateRawTransaction(requestId: String, state: String)
+    fun updateRawTransaction(
+        requestId: String,
+        state: String,
+    )
 }

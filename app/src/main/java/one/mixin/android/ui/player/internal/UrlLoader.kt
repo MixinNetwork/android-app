@@ -34,9 +34,10 @@ class UrlLoader : MusicMetaLoader() {
         val mediaMetadataCompatList = mutableListOf<MediaMetadataCompat>()
         chunk.forEach { url ->
             val musicMeta = retrieveMetadata(url, url, 1000) ?: return@forEach
-            val item = MediaMetadataCompat.Builder()
-                .from(url, musicMeta)
-                .build()
+            val item =
+                MediaMetadataCompat.Builder()
+                    .from(url, musicMeta)
+                    .build()
             item.description.extras?.putAll(item.bundle)
             mediaMetadataCompatList.add(item)
         }
@@ -59,15 +60,19 @@ class UrlLoader : MusicMetaLoader() {
         mediaList.clear()
     }
 
-    private fun MediaMetadataCompat.Builder.from(url: String, musicMeta: MusicMeta): MediaMetadataCompat.Builder {
+    private fun MediaMetadataCompat.Builder.from(
+        url: String,
+        musicMeta: MusicMeta,
+    ): MediaMetadataCompat.Builder {
         id = url
         var titleString = musicMeta.title
         if (titleString == null) {
-            titleString = try {
-                url.substring(url.lastIndexOf('/') + 1)
-            } catch (e: IndexOutOfBoundsException) {
-                unknownString
-            }
+            titleString =
+                try {
+                    url.substring(url.lastIndexOf('/') + 1)
+                } catch (e: IndexOutOfBoundsException) {
+                    unknownString
+                }
         }
         title = titleString
         artist = musicMeta.artist ?: unknownString

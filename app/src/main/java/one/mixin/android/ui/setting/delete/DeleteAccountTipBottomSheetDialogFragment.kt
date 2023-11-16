@@ -36,7 +36,10 @@ class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment
     private val adapter = TypeAdapter()
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).run {
@@ -79,13 +82,19 @@ class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment
     class TypeAdapter : ListAdapter<TokenItem, ItemHolder>(TokenItem.DIFF_CALLBACK) {
         private var typeListener: TransferFragment.OnTypeClickListener? = null
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): ItemHolder =
             ItemHolder(
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_asset, parent, false),
             )
 
-        override fun onBindViewHolder(holder: ItemHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: ItemHolder,
+            position: Int,
+        ) {
             val itemAssert = getItem(position)
             val binding = ItemAssetBinding.bind(holder.itemView)
             binding.typeAvatar.bg.loadImage(itemAssert.iconUrl, R.drawable.ic_avatar_place_holder)

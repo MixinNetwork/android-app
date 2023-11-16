@@ -66,6 +66,7 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
     private val fromShortcut by lazy { requireArguments().getBoolean(ARGS_SHORTCUT) }
 
     override fun getLayoutId() = R.layout.fragment_scan
+
     override fun getPreviewViewId() = R.id.previewView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,6 +93,7 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
     }
 
     private val binding by viewBinding(FragmentScanBinding::bind)
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -100,7 +102,10 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             close.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
@@ -156,24 +161,27 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
                 val points = mutableListOf<Point>()
                 for (barcode in results) {
                     barcode.boundingBox?.let { box ->
-                        val point = PointUtils.transform(
-                            box.centerX(),
-                            box.centerY(),
-                            width,
-                            height,
-                            binding.viewfinderView.width,
-                            binding.viewfinderView.height,
-                        )
+                        val point =
+                            PointUtils.transform(
+                                box.centerX(),
+                                box.centerY(),
+                                width,
+                                height,
+                                binding.viewfinderView.width,
+                                binding.viewfinderView.height,
+                            )
                         points.add(point)
                     }
                 }
                 Timber.e("$width - $height $points")
                 binding.viewfinderView.showResultPoints(points)
-                binding.viewfinderView.setOnItemClickListener(object : ViewfinderView.OnItemClickListener {
-                    override fun onItemClick(position: Int) {
-                        handleAnalysis(results[position].displayValue!!)
-                    }
-                })
+                binding.viewfinderView.setOnItemClickListener(
+                    object : ViewfinderView.OnItemClickListener {
+                        override fun onItemClick(position: Int) {
+                            handleAnalysis(results[position].displayValue!!)
+                        }
+                    },
+                )
                 if (points.size == 1) {
                     handleAnalysis(results[0].displayValue!!)
                 }
@@ -181,7 +189,11 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             data?.data?.let {
                 @Suppress("DEPRECATION")
@@ -199,7 +211,11 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
         }
     }
 
-    private fun openEdit(path: String, isVideo: Boolean, fromGallery: Boolean = false) {
+    private fun openEdit(
+        path: String,
+        isVideo: Boolean,
+        fromGallery: Boolean = false,
+    ) {
         activity?.supportFragmentManager?.inTransaction {
             add(R.id.container, EditFragment.newInstance(path, isVideo, fromGallery, true), EditFragment.TAG)
                 .addToBackStack(null)
@@ -212,19 +228,21 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
         requireContext().heavyClickVibrate()
         requireContext().defaultSharedPreferences.putBoolean(CaptureActivity.SHOW_QR_CODE, false)
         if (forScanResult) {
-            val scanResult = if (analysisResult.isDonateUrl()) {
-                val index = analysisResult.indexOf("?")
-                if (index != -1) {
-                    analysisResult.take(index)
+            val scanResult =
+                if (analysisResult.isDonateUrl()) {
+                    val index = analysisResult.indexOf("?")
+                    if (index != -1) {
+                        analysisResult.take(index)
+                    } else {
+                        analysisResult
+                    }
                 } else {
                     analysisResult
                 }
-            } else {
-                analysisResult
-            }
-            val result = Intent().apply {
-                putExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT, scanResult)
-            }
+            val result =
+                Intent().apply {
+                    putExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT, scanResult)
+                }
             activity?.setResult(Activity.RESULT_OK, result)
             activity?.finish()
             return
@@ -247,10 +265,11 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
             //         handleResult(requireActivity(), fromShortcut, analysisResult)
             //     }
         } else {
-            val externalSchemes = requireContext().defaultSharedPreferences.getStringSet(
-                RefreshExternalSchemeJob.PREF_EXTERNAL_SCHEMES,
-                emptySet(),
-            )
+            val externalSchemes =
+                requireContext().defaultSharedPreferences.getStringSet(
+                    RefreshExternalSchemeJob.PREF_EXTERNAL_SCHEMES,
+                    emptySet(),
+                )
             if (!externalSchemes.isNullOrEmpty() && analysisResult.matchResourcePattern(externalSchemes)) {
                 WebActivity.show(requireContext(), analysisResult, null)
                 activity?.finish()

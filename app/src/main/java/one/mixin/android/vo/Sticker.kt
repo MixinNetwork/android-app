@@ -52,13 +52,20 @@ data class Sticker(
     companion object {
         const val STICKER_TYPE_JSON = "JSON"
 
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Sticker>() {
-            override fun areItemsTheSame(oldItem: Sticker, newItem: Sticker) =
-                oldItem.albumId == newItem.albumId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<Sticker>() {
+                override fun areItemsTheSame(
+                    oldItem: Sticker,
+                    newItem: Sticker,
+                ) =
+                    oldItem.albumId == newItem.albumId
 
-            override fun areContentsTheSame(oldItem: Sticker, newItem: Sticker) =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: Sticker,
+                    newItem: Sticker,
+                ) =
+                    oldItem == newItem
+            }
     }
 }
 

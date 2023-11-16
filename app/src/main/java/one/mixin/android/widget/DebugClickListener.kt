@@ -5,7 +5,6 @@ import android.os.SystemClock
 import android.view.View
 
 abstract class DebugClickHandler {
-
     private var isSingleEvent = false
     private var timestampLastClick: Long
     private var clickCount: Int = 0
@@ -13,6 +12,7 @@ abstract class DebugClickHandler {
     private val runnable: Runnable
 
     protected abstract fun onDebugClick()
+
     protected abstract fun onSingleClick()
 
     fun onClick() {
@@ -40,16 +40,16 @@ abstract class DebugClickHandler {
     init {
         timestampLastClick = 0
         handler = Handler()
-        runnable = Runnable {
-            if (isSingleEvent) {
-                onSingleClick()
+        runnable =
+            Runnable {
+                if (isSingleEvent) {
+                    onSingleClick()
+                }
             }
-        }
     }
 }
 
 abstract class DebugClickListener : DebugClickHandler(), View.OnClickListener {
-
     override fun onClick(v: View) {
         onClick()
     }

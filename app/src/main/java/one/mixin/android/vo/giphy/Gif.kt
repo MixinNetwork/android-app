@@ -12,14 +12,21 @@ data class Gif(
     val images: ImageSet,
 ) {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Gif>() {
-            override fun areItemsTheSame(p0: Gif, p1: Gif): Boolean {
-                return p0.id == p1.id
-            }
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<Gif>() {
+                override fun areItemsTheSame(
+                    p0: Gif,
+                    p1: Gif,
+                ): Boolean {
+                    return p0.id == p1.id
+                }
 
-            override fun areContentsTheSame(p0: Gif, p1: Gif): Boolean {
-                return p0 == p1
+                override fun areContentsTheSame(
+                    p0: Gif,
+                    p1: Gif,
+                ): Boolean {
+                    return p0 == p1
+                }
             }
-        }
     }
 }

@@ -51,7 +51,11 @@ data class Job(
     var runCount: Int = 0,
 )
 
-fun createAckJob(action: String, ackMessage: BlazeAckMessage, conversationId: String? = null) =
+fun createAckJob(
+    action: String,
+    ackMessage: BlazeAckMessage,
+    conversationId: String? = null,
+) =
     Job(
         UUID.nameUUIDFromBytes("${ackMessage.messageId}${ackMessage.status}$action".toByteArray()).toString(),
         action,

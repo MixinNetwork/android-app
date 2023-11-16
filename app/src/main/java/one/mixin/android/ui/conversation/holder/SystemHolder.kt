@@ -14,8 +14,8 @@ import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.picker.toTimeInterval
 
 class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHolder(binding.root) {
-
     var context: Context = itemView.context
+
     private fun getText(id: Int) = context.getText(id).toString()
 
     fun bind(
@@ -115,11 +115,12 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
             }
             SystemConversationAction.EXPIRE.name -> {
                 val timeInterval = messageItem.content?.toLongOrNull()
-                val name = if (id == messageItem.userId) {
-                    getText(R.string.You)
-                } else {
-                    messageItem.userFullName
-                }
+                val name =
+                    if (id == messageItem.userId) {
+                        getText(R.string.You)
+                    } else {
+                        messageItem.userFullName
+                    }
                 binding.chatInfo.text =
                     when {
                         timeInterval == null -> { // Messages received in the old version

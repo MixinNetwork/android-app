@@ -16,13 +16,20 @@ class CallUser(
     val role: String,
 ) {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<CallUser>() {
-            override fun areItemsTheSame(oldItem: CallUser, newItem: CallUser) =
-                oldItem.userId == newItem.userId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<CallUser>() {
+                override fun areItemsTheSame(
+                    oldItem: CallUser,
+                    newItem: CallUser,
+                ) =
+                    oldItem.userId == newItem.userId
 
-            override fun areContentsTheSame(oldItem: CallUser, newItem: CallUser) =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: CallUser,
+                    newItem: CallUser,
+                ) =
+                    oldItem == newItem
+            }
     }
 
     override fun equals(other: Any?): Boolean =

@@ -53,9 +53,10 @@ fun AuthenticationsPage() {
     ) {
         val viewModel = hiltViewModel<AuthenticationsViewModel>()
 
-        val text = rememberSaveable {
-            mutableStateOf("")
-        }
+        val text =
+            rememberSaveable {
+                mutableStateOf("")
+            }
         SearchTextField(text, stringResource(id = R.string.setting_auth_search_hint))
 
         val response by viewModel.authentications.collectAsState()
@@ -80,17 +81,18 @@ private fun AuthorizationsList(
     data: List<AuthorizationResponse>,
     keyword: String,
 ) {
-    val filteredData = remember(data, keyword) {
-        if (keyword.isEmpty()) {
-            data
-        } else {
-            data.filter {
-                it.app.name.containsIgnoreCase(keyword) || it.app.appNumber.containsIgnoreCase(keyword)
-            }.sortedByDescending {
-                it.app.name.equalsIgnoreCase(keyword) || it.app.appNumber.equalsIgnoreCase(keyword)
+    val filteredData =
+        remember(data, keyword) {
+            if (keyword.isEmpty()) {
+                data
+            } else {
+                data.filter {
+                    it.app.name.containsIgnoreCase(keyword) || it.app.appNumber.containsIgnoreCase(keyword)
+                }.sortedByDescending {
+                    it.app.name.equalsIgnoreCase(keyword) || it.app.appNumber.equalsIgnoreCase(keyword)
+                }
             }
         }
-    }
     LazyColumn {
         items(filteredData, key = {
             listOf(it.app.appId, keyword)
@@ -106,9 +108,10 @@ private fun AuthorizationsList(
 @Composable
 private fun Loading() {
     Box(
-        modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth(),
+        modifier =
+            Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(),
         contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator(
@@ -121,9 +124,10 @@ private fun Loading() {
 @Composable
 private fun EmptyLayout() {
     Box(
-        modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth(),
+        modifier =
+            Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(),
         contentAlignment = Alignment.Center,
     ) {
         Column(
@@ -153,11 +157,12 @@ private fun AuthenticationItem(
     onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp)
-            .background(MixinAppTheme.colors.background)
-            .clickable(onClick = onClick),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(80.dp)
+                .background(MixinAppTheme.colors.background)
+                .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.width(30.dp))
@@ -169,20 +174,22 @@ private fun AuthenticationItem(
         ) {
             HighlightText(
                 text = app.name,
-                textStyle = TextStyle(
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textPrimary,
-                ),
+                textStyle =
+                    TextStyle(
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.textPrimary,
+                    ),
                 overflow = TextOverflow.Ellipsis,
                 target = highlight,
             )
             Box(modifier = Modifier.height(4.dp))
             HighlightText(
                 text = app.appNumber,
-                textStyle = TextStyle(
-                    fontSize = 12.sp,
-                    color = MixinAppTheme.colors.textSubtitle,
-                ),
+                textStyle =
+                    TextStyle(
+                        fontSize = 12.sp,
+                        color = MixinAppTheme.colors.textSubtitle,
+                    ),
                 overflow = TextOverflow.Ellipsis,
                 target = highlight,
             )

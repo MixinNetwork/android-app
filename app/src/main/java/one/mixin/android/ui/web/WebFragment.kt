@@ -203,6 +203,7 @@ class WebFragment : BaseFragment() {
     private val processor = QRCodeProcessor()
     private var webAppInterface: WebAppInterface? = null
     private var index: Int = -1
+
     fun resetIndex(index: Int) {
         if (this.index == index) {
             this.index = -1
@@ -253,13 +254,14 @@ class WebFragment : BaseFragment() {
             if (item.itemId == CONTEXT_MENU_ID_SCAN_IMAGE) {
                 lifecycleScope.launch {
                     try {
-                        val bitmap = withContext(Dispatchers.IO) {
-                            Glide.with(requireContext())
-                                .asBitmap()
-                                .load(url)
-                                .submit()
-                                .get(10, TimeUnit.SECONDS)
-                        }
+                        val bitmap =
+                            withContext(Dispatchers.IO) {
+                                Glide.with(requireContext())
+                                    .asBitmap()
+                                    .load(url)
+                                    .submit()
+                                    .get(10, TimeUnit.SECONDS)
+                            }
                         if (isDetached) return@launch
 
                         processor.detect(
@@ -297,6 +299,7 @@ class WebFragment : BaseFragment() {
     }
 
     var uploadMessage: ValueCallback<Array<Uri>>? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         index = requireArguments().getInt(ARGS_INDEX, -1)
@@ -304,6 +307,7 @@ class WebFragment : BaseFragment() {
 
     private var _binding: FragmentWebBinding? = null
     private val binding get() = requireNotNull(_binding)
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -315,22 +319,27 @@ class WebFragment : BaseFragment() {
 
     private lateinit var contentView: ViewGroup
     private lateinit var webView: MixinWebView
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         contentView = binding.container
-        webView = if (index >= 0 && index < clips.size) {
-            clips[index].let { clip ->
-                binding.titleTv.text = clip.name
-                clip.icon?.let { icon ->
-                    this.icon = icon
-                    binding.iconIv.isVisible = true
-                    binding.iconIv.setImageBitmap(icon)
+        webView =
+            if (index >= 0 && index < clips.size) {
+                clips[index].let { clip ->
+                    binding.titleTv.text = clip.name
+                    clip.icon?.let { icon ->
+                        this.icon = icon
+                        binding.iconIv.isVisible = true
+                        binding.iconIv.setImageBitmap(icon)
+                    }
+                    isFinished = clip.isFinished
+                    clip.webView ?: MixinWebView(MixinApplication.get().contextWrapper)
                 }
-                isFinished = clip.isFinished
-                clip.webView ?: MixinWebView(MixinApplication.get().contextWrapper)
+            } else {
+                MixinWebView(MixinApplication.get().contextWrapper)
             }
-        } else {
-            MixinWebView(MixinApplication.get().contextWrapper)
-        }
         if (webView.parent != null) {
             (webView.parent as? ViewGroup)?.removeView(webView)
         }
@@ -359,21 +368,22 @@ class WebFragment : BaseFragment() {
         }
     }
 
-    private fun checkAppCard(appCard: AppCardData) = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
+    private fun checkAppCard(appCard: AppCardData) =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
 
-        if (appCard.appId != null) {
-            app = bottomViewModel.getAppAndCheckUser(appCard.appId, appCard.updatedAt)
-            if (url.matchResourcePattern(app?.resourcePatterns)) {
-                controlSuspiciousView(false)
-                loadWebView()
+            if (appCard.appId != null) {
+                app = bottomViewModel.getAppAndCheckUser(appCard.appId, appCard.updatedAt)
+                if (url.matchResourcePattern(app?.resourcePatterns)) {
+                    controlSuspiciousView(false)
+                    loadWebView()
+                } else {
+                    controlSuspiciousView(true)
+                }
             } else {
-                controlSuspiciousView(true)
+                loadWebView()
             }
-        } else {
-            loadWebView()
         }
-    }
 
     private fun controlSuspiciousView(show: Boolean) {
         _binding?.apply {
@@ -390,50 +400,53 @@ class WebFragment : BaseFragment() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initView() {
-        binding.suspiciousLinkView.listener = object : SuspiciousLinkView.SuspiciousListener {
-            override fun onBackClick() {
-                requireActivity().finish()
-            }
+        binding.suspiciousLinkView.listener =
+            object : SuspiciousLinkView.SuspiciousListener {
+                override fun onBackClick() {
+                    requireActivity().finish()
+                }
 
-            override fun onContinueClick() {
-                loadWebView()
-                controlSuspiciousView(false)
+                override fun onContinueClick() {
+                    loadWebView()
+                    controlSuspiciousView(false)
+                }
             }
-        }
         binding.failLoadView.contactTv.isInvisible = app == null
-        binding.failLoadView.listener = object : FailLoadView.FailLoadListener {
-            override fun onReloadClick() {
-                refresh()
-            }
+        binding.failLoadView.listener =
+            object : FailLoadView.FailLoadListener {
+                override fun onReloadClick() {
+                    refresh()
+                }
 
-            override fun onContactClick() {
-                app?.let { app ->
-                    lifecycleScope.launch {
-                        val user = bottomViewModel.refreshUser(app.creatorId)
-                        if (user != null) {
-                            if (app.creatorId == Session.getAccountId()) {
-                                ProfileBottomSheetDialogFragment.newInstance()
-                                    .showNow(parentFragmentManager, ProfileBottomSheetDialogFragment.TAG)
-                                return@launch
+                override fun onContactClick() {
+                    app?.let { app ->
+                        lifecycleScope.launch {
+                            val user = bottomViewModel.refreshUser(app.creatorId)
+                            if (user != null) {
+                                if (app.creatorId == Session.getAccountId()) {
+                                    ProfileBottomSheetDialogFragment.newInstance()
+                                        .showNow(parentFragmentManager, ProfileBottomSheetDialogFragment.TAG)
+                                    return@launch
+                                }
+
+                                ConversationActivity.show(requireContext(), recipientId = app.creatorId)
+                                this@WebFragment.requireActivity().finish()
                             }
-
-                            ConversationActivity.show(requireContext(), recipientId = app.creatorId)
-                            this@WebFragment.requireActivity().finish()
                         }
                     }
                 }
             }
-        }
 
-        binding.webControl.callback = object : WebControlView.Callback {
-            override fun onMoreClick() {
-                showBottomSheet()
-            }
+        binding.webControl.callback =
+            object : WebControlView.Callback {
+                override fun onMoreClick() {
+                    showBottomSheet()
+                }
 
-            override fun onCloseClick() {
-                requireActivity().finish()
+                override fun onCloseClick() {
+                    requireActivity().finish()
+                }
             }
-        }
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
         webView.settings.useWideViewPort = true
@@ -477,247 +490,258 @@ class WebFragment : BaseFragment() {
                 },
             )
 
-        webView.webChromeClient = object : WebChromeClient() {
-            override fun onShowCustomView(
-                view: View,
-                requestedOrientation: Int,
-                callback: CustomViewCallback?,
-            ) {
-                onShowCustomView(view, callback)
-            }
+        webView.webChromeClient =
+            object : WebChromeClient() {
+                override fun onShowCustomView(
+                    view: View,
+                    requestedOrientation: Int,
+                    callback: CustomViewCallback?,
+                ) {
+                    onShowCustomView(view, callback)
+                }
 
-            override fun onShowCustomView(view: View, callback: CustomViewCallback?) {
-                if (customView != null || !isAdded) {
+                override fun onShowCustomView(
+                    view: View,
+                    callback: CustomViewCallback?,
+                ) {
+                    if (customView != null || !isAdded) {
+                        customViewCallback?.onCustomViewHidden()
+                        return
+                    }
+                    customView = view
+                    customViewCallback = callback
+                    originalSystemUiVisibility = requireActivity().window.decorView.systemUiVisibility
+
+                    binding.customViewContainer.addView(view)
+                    binding.customViewContainer.isVisible = true
+                    binding.webLl.isVisible = false
+                    binding.webControl.isVisible = false
+
+                    requireActivity().window.decorView.systemUiVisibility =
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_IMMERSIVE
+                    requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                }
+
+                @SuppressLint("SourceLockedOrientationActivity")
+                override fun onHideCustomView() {
+                    if (customView == null) {
+                        return
+                    }
+                    _binding?.apply {
+                        customViewContainer.isVisible = false
+                        webLl.isVisible = true
+                        webControl.isVisible = true
+                        customViewContainer.removeView(customView)
+                    }
+
+                    customView = null
+
+                    requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
+                    requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
                     customViewCallback?.onCustomViewHidden()
-                    return
-                }
-                customView = view
-                customViewCallback = callback
-                originalSystemUiVisibility = requireActivity().window.decorView.systemUiVisibility
-
-                binding.customViewContainer.addView(view)
-                binding.customViewContainer.isVisible = true
-                binding.webLl.isVisible = false
-                binding.webControl.isVisible = false
-
-                requireActivity().window.decorView.systemUiVisibility =
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                    View.SYSTEM_UI_FLAG_FULLSCREEN or
-                    View.SYSTEM_UI_FLAG_IMMERSIVE
-                requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-            }
-
-            @SuppressLint("SourceLockedOrientationActivity")
-            override fun onHideCustomView() {
-                if (customView == null) {
-                    return
-                }
-                _binding?.apply {
-                    customViewContainer.isVisible = false
-                    webLl.isVisible = true
-                    webControl.isVisible = true
-                    customViewContainer.removeView(customView)
+                    customViewCallback = null
                 }
 
-                customView = null
-
-                requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
-                requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-
-                customViewCallback?.onCustomViewHidden()
-                customViewCallback = null
-            }
-
-            override fun onReceivedTitle(view: WebView?, title: String?) {
-                super.onReceivedTitle(view, title)
-                if (!isBot()) {
-                    _binding?.titleTv?.text = title
-                }
-            }
-
-            override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
-                super.onReceivedIcon(view, icon)
-                if (!isBot()) {
-                    icon?.let {
-                        _binding?.apply {
-                            iconIv.isVisible = true
-                            iconIv.setImageBitmap(it)
-                        }
-                        this@WebFragment.icon = it
+                override fun onReceivedTitle(
+                    view: WebView?,
+                    title: String?,
+                ) {
+                    super.onReceivedTitle(view, title)
+                    if (!isBot()) {
+                        _binding?.titleTv?.text = title
                     }
                 }
-            }
 
-            private var lastGrantedUri: String? = null
-            override fun onPermissionRequest(request: PermissionRequest?) {
-                request?.let {
-                    val permission = mutableListOf<String>()
-                    for (code in request.resources) {
-                        if (code == PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
-                            permission.add(Manifest.permission.RECORD_AUDIO)
-                        } else if (code == PermissionRequest.RESOURCE_VIDEO_CAPTURE) {
-                            permission.add(Manifest.permission.CAMERA)
+                override fun onReceivedIcon(
+                    view: WebView?,
+                    icon: Bitmap?,
+                ) {
+                    super.onReceivedIcon(view, icon)
+                    if (!isBot()) {
+                        icon?.let {
+                            _binding?.apply {
+                                iconIv.isVisible = true
+                                iconIv.setImageBitmap(it)
+                            }
+                            this@WebFragment.icon = it
                         }
-                        if (code != PermissionRequest.RESOURCE_VIDEO_CAPTURE && code != PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
-                            request.deny()
-                            lastGrantedUri = null
+                    }
+                }
+
+                private var lastGrantedUri: String? = null
+
+                override fun onPermissionRequest(request: PermissionRequest?) {
+                    request?.let {
+                        val permission = mutableListOf<String>()
+                        for (code in request.resources) {
+                            if (code == PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
+                                permission.add(Manifest.permission.RECORD_AUDIO)
+                            } else if (code == PermissionRequest.RESOURCE_VIDEO_CAPTURE) {
+                                permission.add(Manifest.permission.CAMERA)
+                            }
+                            if (code != PermissionRequest.RESOURCE_VIDEO_CAPTURE && code != PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
+                                request.deny()
+                                lastGrantedUri = null
+                                return@let
+                            }
+                        }
+                        if (lastGrantedUri == request.origin.toString()) {
+                            request.grant(request.resources)
                             return@let
                         }
-                    }
-                    if (lastGrantedUri == request.origin.toString()) {
-                        request.grant(request.resources)
-                        return@let
-                    }
 
-                    PermissionBottomSheetDialogFragment.request(
-                        binding.titleTv.text.toString(),
-                        app?.name,
-                        app?.appNumber,
-                        *permission.map {
-                            if (it == Manifest.permission.RECORD_AUDIO) {
-                                PERMISSION_AUDIO
-                            } else {
-                                PERMISSION_VIDEO
-                            }
-                        }.toIntArray(),
-                    )
-                        .setCancelAction {
-                            lastGrantedUri = null
-                            request.deny()
-                        }.setGrantedAction {
-                            RxPermissions(requireActivity())
-                                .request(*permission.toTypedArray())
-                                .autoDispose(stopScope)
-                                .subscribe(
-                                    { granted ->
-                                        if (granted) {
-                                            lastGrantedUri = request.origin.toString()
-                                            request.grant(request.resources)
-                                        } else {
-                                            lastGrantedUri = null
-                                            context?.openPermissionSetting()
-                                        }
-                                    },
-                                    {
-                                        lastGrantedUri = null
-                                    },
-                                )
-                        }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
-                }
-            }
-
-            override fun onShowFileChooser(
-                webView: WebView?,
-                filePathCallback: ValueCallback<Array<Uri>>?,
-                fileChooserParams: FileChooserParams?,
-            ): Boolean {
-                if (viewDestroyed()) return false
-                uploadMessage?.onReceiveValue(null)
-                uploadMessage = filePathCallback
-                val intent: Intent? = fileChooserParams?.createIntent()
-                if (fileChooserParams?.isCaptureEnabled == true) {
-                    if (intent?.type == "video/*") {
-                        PermissionBottomSheetDialogFragment.requestVideo(
+                        PermissionBottomSheetDialogFragment.request(
                             binding.titleTv.text.toString(),
                             app?.name,
                             app?.appNumber,
+                            *permission.map {
+                                if (it == Manifest.permission.RECORD_AUDIO) {
+                                    PERMISSION_AUDIO
+                                } else {
+                                    PERMISSION_VIDEO
+                                }
+                            }.toIntArray(),
                         )
                             .setCancelAction {
-                                uploadMessage?.onReceiveValue(null)
-                                uploadMessage = null
-                            }
-                            .setGrantedAction {
-                                RxPermissions(requireActivity())
-                                    .request(Manifest.permission.CAMERA)
-                                    .autoDispose(stopScope)
-                                    .subscribe(
-                                        { granted ->
-                                            if (granted) {
-                                                startActivityForResult(
-                                                    Intent(MediaStore.ACTION_VIDEO_CAPTURE),
-                                                    FILE_CHOOSER,
-                                                )
-                                            } else {
-                                                context?.openPermissionSetting()
-                                            }
-                                        },
-                                        {
-                                        },
-                                    )
-                            }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
-                        return true
-                    } else if (intent?.type == "image/*") {
-                        PermissionBottomSheetDialogFragment.requestCamera(
-                            binding.titleTv.text.toString(),
-                            app?.appNumber,
-                            app?.iconUrl,
-                        )
-                            .setCancelAction {
-                                uploadMessage?.onReceiveValue(null)
-                                uploadMessage = null
+                                lastGrantedUri = null
+                                request.deny()
                             }.setGrantedAction {
                                 RxPermissions(requireActivity())
-                                    .request(Manifest.permission.CAMERA)
+                                    .request(*permission.toTypedArray())
                                     .autoDispose(stopScope)
                                     .subscribe(
                                         { granted ->
                                             if (granted) {
-                                                openCamera(getImageUri())
+                                                lastGrantedUri = request.origin.toString()
+                                                request.grant(request.resources)
                                             } else {
+                                                lastGrantedUri = null
                                                 context?.openPermissionSetting()
                                             }
                                         },
                                         {
+                                            lastGrantedUri = null
                                         },
                                     )
                             }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
-                        return true
                     }
                 }
-                pickMedia.launch(
-                    when (intent?.type) {
-                        "image/*" -> {
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        }
-                        "video/*" -> {
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly)
-                        }
-                        else -> {
-                            PickVisualMediaRequest()
-                        }
-                    },
-                )
-                return true
-            }
 
-            override fun onGeolocationPermissionsShowPrompt(
-                origin: String?,
-                callback: GeolocationPermissions.Callback?,
-            ) {
-                PermissionBottomSheetDialogFragment.requestLocation(
-                    binding.titleTv.text.toString(),
-                    app?.appNumber,
-                    app?.iconUrl,
-                )
-                    .setCancelAction {
-                        callback?.invoke(origin, false, false)
-                    }.setGrantedAction {
-                        RxPermissions(requireActivity())
-                            .request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
-                            .autoDispose(stopScope)
-                            .subscribe { granted ->
-                                if (granted) {
-                                    callback?.invoke(origin, true, false)
-                                } else {
-                                    requireContext().openPermissionSetting()
+                override fun onShowFileChooser(
+                    webView: WebView?,
+                    filePathCallback: ValueCallback<Array<Uri>>?,
+                    fileChooserParams: FileChooserParams?,
+                ): Boolean {
+                    if (viewDestroyed()) return false
+                    uploadMessage?.onReceiveValue(null)
+                    uploadMessage = filePathCallback
+                    val intent: Intent? = fileChooserParams?.createIntent()
+                    if (fileChooserParams?.isCaptureEnabled == true) {
+                        if (intent?.type == "video/*") {
+                            PermissionBottomSheetDialogFragment.requestVideo(
+                                binding.titleTv.text.toString(),
+                                app?.name,
+                                app?.appNumber,
+                            )
+                                .setCancelAction {
+                                    uploadMessage?.onReceiveValue(null)
+                                    uploadMessage = null
                                 }
+                                .setGrantedAction {
+                                    RxPermissions(requireActivity())
+                                        .request(Manifest.permission.CAMERA)
+                                        .autoDispose(stopScope)
+                                        .subscribe(
+                                            { granted ->
+                                                if (granted) {
+                                                    startActivityForResult(
+                                                        Intent(MediaStore.ACTION_VIDEO_CAPTURE),
+                                                        FILE_CHOOSER,
+                                                    )
+                                                } else {
+                                                    context?.openPermissionSetting()
+                                                }
+                                            },
+                                            {
+                                            },
+                                        )
+                                }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
+                            return true
+                        } else if (intent?.type == "image/*") {
+                            PermissionBottomSheetDialogFragment.requestCamera(
+                                binding.titleTv.text.toString(),
+                                app?.appNumber,
+                                app?.iconUrl,
+                            )
+                                .setCancelAction {
+                                    uploadMessage?.onReceiveValue(null)
+                                    uploadMessage = null
+                                }.setGrantedAction {
+                                    RxPermissions(requireActivity())
+                                        .request(Manifest.permission.CAMERA)
+                                        .autoDispose(stopScope)
+                                        .subscribe(
+                                            { granted ->
+                                                if (granted) {
+                                                    openCamera(getImageUri())
+                                                } else {
+                                                    context?.openPermissionSetting()
+                                                }
+                                            },
+                                            {
+                                            },
+                                        )
+                                }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
+                            return true
+                        }
+                    }
+                    pickMedia.launch(
+                        when (intent?.type) {
+                            "image/*" -> {
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                             }
-                    }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
+                            "video/*" -> {
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly)
+                            }
+                            else -> {
+                                PickVisualMediaRequest()
+                            }
+                        },
+                    )
+                    return true
+                }
+
+                override fun onGeolocationPermissionsShowPrompt(
+                    origin: String?,
+                    callback: GeolocationPermissions.Callback?,
+                ) {
+                    PermissionBottomSheetDialogFragment.requestLocation(
+                        binding.titleTv.text.toString(),
+                        app?.appNumber,
+                        app?.iconUrl,
+                    )
+                        .setCancelAction {
+                            callback?.invoke(origin, false, false)
+                        }.setGrantedAction {
+                            RxPermissions(requireActivity())
+                                .request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+                                .autoDispose(stopScope)
+                                .subscribe { granted ->
+                                    if (granted) {
+                                        callback?.invoke(origin, true, false)
+                                    } else {
+                                        requireContext().openPermissionSetting()
+                                    }
+                                }
+                        }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
+                }
             }
-        }
 
         webView.setDownloadListener { url, _, _, _, _ ->
             try {
@@ -732,7 +756,11 @@ class WebFragment : BaseFragment() {
     }
 
     @Override
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CAMERA) {
             imageUri?.let {
                 uploadMessage?.onReceiveValue(arrayOf(it))
@@ -771,24 +799,25 @@ class WebFragment : BaseFragment() {
             }
             binding.titleLl.isGone = immersive
 
-            webAppInterface = WebAppInterface(
-                MixinApplication.appContext,
-                conversationId,
-                immersive,
-                reloadThemeAction = { reloadTheme() },
-                playlistAction = { showPlaylist(it) },
-                closeAction = {
-                    lifecycleScope.launch {
-                        closeSelf()
-                    }
-                },
-                getTipAddressAction = { chainId, callback ->
-                    getTipAddress(chainId, callback)
-                },
-                tipSignAction = { chainId, message, callback ->
-                    tipSign(chainId, message, callback)
-                },
-            )
+            webAppInterface =
+                WebAppInterface(
+                    MixinApplication.appContext,
+                    conversationId,
+                    immersive,
+                    reloadThemeAction = { reloadTheme() },
+                    playlistAction = { showPlaylist(it) },
+                    closeAction = {
+                        lifecycleScope.launch {
+                            closeSelf()
+                        }
+                    },
+                    getTipAddressAction = { chainId, callback ->
+                        getTipAddress(chainId, callback)
+                    },
+                    tipSignAction = { chainId, message, callback ->
+                        tipSign(chainId, message, callback)
+                    },
+                )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
             conversationId?.let {
@@ -840,7 +869,10 @@ class WebFragment : BaseFragment() {
         }
     }
 
-    private fun getTipAddress(chainId: String, callbackFunction: String) {
+    private fun getTipAddress(
+        chainId: String,
+        callbackFunction: String,
+    ) {
         if (viewDestroyed()) return
         if (!WalletConnect.isEnabled(requireContext())) return
 
@@ -858,12 +890,13 @@ class WebFragment : BaseFragment() {
                     }
                 },
                 callback = {
-                    val address = try {
-                        tipPrivToAddress(it, chainId)
-                    } catch (e: IllegalArgumentException) {
-                        Timber.d("${WalletConnectTIP.TAG} ${e.stackTraceToString()}")
-                        ""
-                    }
+                    val address =
+                        try {
+                            tipPrivToAddress(it, chainId)
+                        } catch (e: IllegalArgumentException) {
+                            Timber.d("${WalletConnectTIP.TAG} ${e.stackTraceToString()}")
+                            ""
+                        }
                     lifecycleScope.launch {
                         webView.evaluateJavascript("$callbackFunction('$address')") {}
                     }
@@ -872,7 +905,11 @@ class WebFragment : BaseFragment() {
         }
     }
 
-    private fun tipSign(chainId: String, message: String, callbackFunction: String) {
+    private fun tipSign(
+        chainId: String,
+        message: String,
+        callbackFunction: String,
+    ) {
         if (viewDestroyed()) return
         if (!WalletConnect.isEnabled(requireContext())) return
 
@@ -920,6 +957,7 @@ class WebFragment : BaseFragment() {
     }
 
     private var imageUri: Uri? = null
+
     private fun getImageUri(): Uri {
         if (imageUri == null) {
             imageUri = Uri.fromFile(requireContext().getOtherPath().createImageTemp())
@@ -928,8 +966,10 @@ class WebFragment : BaseFragment() {
     }
 
     private fun isBot() = app != null
+
     private var hold = false
     private var icon: Bitmap? = null
+
     private fun generateWebClip(): WebClip? {
         val currentUrl = webView.url ?: url
         val v = webView
@@ -998,11 +1038,12 @@ class WebFragment : BaseFragment() {
     private fun showBottomSheet() {
         if (viewDestroyed()) return
         val builder = BottomSheet.Builder(requireActivity())
-        val view = View.inflate(
-            ContextThemeWrapper(requireActivity(), R.style.Custom),
-            R.layout.view_web_bottom_menu,
-            null,
-        )
+        val view =
+            View.inflate(
+                ContextThemeWrapper(requireActivity(), R.style.Custom),
+                R.layout.view_web_bottom_menu,
+                null,
+            )
         val viewBinding = ViewWebBottomMenuBinding.bind(view)
         if (isBot()) {
             app?.let {
@@ -1019,188 +1060,201 @@ class WebFragment : BaseFragment() {
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         viewBinding.closeIv.setOnClickListener { bottomSheet.dismiss() }
-        val shareMenu = menu {
-            title = getString(if (isBot()) R.string.About else R.string.Share)
-            icon = if (isBot()) R.drawable.ic_setting_about else R.drawable.ic_web_share
-            action = {
-                if (isBot()) {
-                    openBot()
-                } else {
-                    activity?.let {
-                        ShareCompat.IntentBuilder
-                            .from(it)
-                            .setType("text/plain")
-                            .setChooserTitle(webView.title)
-                            .setText(webView.url)
-                            .startChooser()
-                        bottomSheet.dismiss()
-                    }
-                }
-                bottomSheet.dismiss()
-            }
-        }
-        val forwardMenu = menu {
-            title = getString(R.string.Forward)
-            icon = R.drawable.ic_web_forward
-            action = {
-                if (appCard?.shareable == false || !shareable) {
-                    toast(R.string.app_card_shareable_false)
-                } else {
-                    val currentUrl = webView.url ?: url
+        val shareMenu =
+            menu {
+                title = getString(if (isBot()) R.string.About else R.string.Share)
+                icon = if (isBot()) R.drawable.ic_setting_about else R.drawable.ic_web_share
+                action = {
                     if (isBot()) {
-                        app?.appId?.let { id ->
-                            lifecycleScope.launch {
-                                val app = bottomViewModel.getAppAndCheckUser(id, app?.updatedAt)
-                                if (app !== null && currentUrl.matchResourcePattern(app.resourcePatterns)) {
-                                    var webTitle = webView.title
-                                    if (webTitle.isNullOrBlank()) {
-                                        webTitle = app.name
-                                    }
-                                    val appCardData = AppCardData(
-                                        app.appId,
-                                        app.iconUrl,
-                                        webTitle,
-                                        app.name,
-                                        currentUrl,
-                                        app.updatedAt,
-                                        null,
-                                    )
-                                    ForwardActivity.show(
-                                        requireContext(),
-                                        arrayListOf(
-                                            ForwardMessage(
-                                                ShareCategory.AppCard,
-                                                GsonHelper.customGson.toJson(appCardData),
+                        openBot()
+                    } else {
+                        activity?.let {
+                            ShareCompat.IntentBuilder
+                                .from(it)
+                                .setType("text/plain")
+                                .setChooserTitle(webView.title)
+                                .setText(webView.url)
+                                .startChooser()
+                            bottomSheet.dismiss()
+                        }
+                    }
+                    bottomSheet.dismiss()
+                }
+            }
+        val forwardMenu =
+            menu {
+                title = getString(R.string.Forward)
+                icon = R.drawable.ic_web_forward
+                action = {
+                    if (appCard?.shareable == false || !shareable) {
+                        toast(R.string.app_card_shareable_false)
+                    } else {
+                        val currentUrl = webView.url ?: url
+                        if (isBot()) {
+                            app?.appId?.let { id ->
+                                lifecycleScope.launch {
+                                    val app = bottomViewModel.getAppAndCheckUser(id, app?.updatedAt)
+                                    if (app !== null && currentUrl.matchResourcePattern(app.resourcePatterns)) {
+                                        var webTitle = webView.title
+                                        if (webTitle.isNullOrBlank()) {
+                                            webTitle = app.name
+                                        }
+                                        val appCardData =
+                                            AppCardData(
+                                                app.appId,
+                                                app.iconUrl,
+                                                webTitle,
+                                                app.name,
+                                                currentUrl,
+                                                app.updatedAt,
+                                                null,
+                                            )
+                                        ForwardActivity.show(
+                                            requireContext(),
+                                            arrayListOf(
+                                                ForwardMessage(
+                                                    ShareCategory.AppCard,
+                                                    GsonHelper.customGson.toJson(appCardData),
+                                                ),
                                             ),
-                                        ),
-                                        ForwardAction.App.Resultless(),
-                                    )
-                                } else {
-                                    ForwardActivity.show(requireContext(), currentUrl)
+                                            ForwardAction.App.Resultless(),
+                                        )
+                                    } else {
+                                        ForwardActivity.show(requireContext(), currentUrl)
+                                    }
                                 }
                             }
+                        } else {
+                            ForwardActivity.show(requireContext(), currentUrl)
                         }
-                    } else {
-                        ForwardActivity.show(requireContext(), currentUrl)
-                    }
-                    bottomSheet.dismiss()
-                }
-            }
-        }
-        val refreshMenu = menu {
-            title = getString(R.string.Refresh)
-            icon = R.drawable.ic_web_refresh
-            action = {
-                refresh()
-                bottomSheet.dismiss()
-            }
-        }
-        val openMenu = menu {
-            title = getString(R.string.Open_in_browser)
-            icon = R.drawable.ic_web_browser
-            action = {
-                (webView.url ?: currentUrl)?.let {
-                    context?.openUrl(it)
-                }
-                bottomSheet.dismiss()
-            }
-        }
-        val scanMenu = menu {
-            title = getString(R.string.Scan_QR_Code)
-            icon = R.drawable.ic_bot_category_scan
-            action = {
-                tryScanQRCode()
-                bottomSheet.dismiss()
-            }
-        }
-        val copyMenu = menu {
-            title = getString(R.string.Copy_link)
-            icon = R.drawable.ic_content_copy
-            action = {
-                requireContext().getClipboardManager()
-                    .setPrimaryClip(ClipData.newPlainText(null, url))
-                toast(R.string.copied_to_clipboard)
-                bottomSheet.dismiss()
-            }
-        }
-        val isHold = isHold()
-        val floatingMenu = menu {
-            title = if (isHold) {
-                getString(R.string.Cancel_Floating)
-            } else {
-                getString(R.string.Floating)
-            }
-            icon = if (isHold) {
-                R.drawable.ic_web_floating_cancel
-            } else {
-                R.drawable.ic_web_floating
-            }
-            action = {
-                if (isHold) {
-                    releaseClip(index)
-                    index = -1
-                    bottomSheet.dismiss()
-                } else {
-                    if (clips.size >= 6) {
-                        toast(R.string.web_full)
                         bottomSheet.dismiss()
-                    } else if (checkFloatingPermission()) {
-                        hold = true
-                        bottomSheet.fakeDismiss(false) {
-                            requireActivity().finish()
+                    }
+                }
+            }
+        val refreshMenu =
+            menu {
+                title = getString(R.string.Refresh)
+                icon = R.drawable.ic_web_refresh
+                action = {
+                    refresh()
+                    bottomSheet.dismiss()
+                }
+            }
+        val openMenu =
+            menu {
+                title = getString(R.string.Open_in_browser)
+                icon = R.drawable.ic_web_browser
+                action = {
+                    (webView.url ?: currentUrl)?.let {
+                        context?.openUrl(it)
+                    }
+                    bottomSheet.dismiss()
+                }
+            }
+        val scanMenu =
+            menu {
+                title = getString(R.string.Scan_QR_Code)
+                icon = R.drawable.ic_bot_category_scan
+                action = {
+                    tryScanQRCode()
+                    bottomSheet.dismiss()
+                }
+            }
+        val copyMenu =
+            menu {
+                title = getString(R.string.Copy_link)
+                icon = R.drawable.ic_content_copy
+                action = {
+                    requireContext().getClipboardManager()
+                        .setPrimaryClip(ClipData.newPlainText(null, url))
+                    toast(R.string.copied_to_clipboard)
+                    bottomSheet.dismiss()
+                }
+            }
+        val isHold = isHold()
+        val floatingMenu =
+            menu {
+                title =
+                    if (isHold) {
+                        getString(R.string.Cancel_Floating)
+                    } else {
+                        getString(R.string.Floating)
+                    }
+                icon =
+                    if (isHold) {
+                        R.drawable.ic_web_floating_cancel
+                    } else {
+                        R.drawable.ic_web_floating
+                    }
+                action = {
+                    if (isHold) {
+                        releaseClip(index)
+                        index = -1
+                        bottomSheet.dismiss()
+                    } else {
+                        if (clips.size >= 6) {
+                            toast(R.string.web_full)
+                            bottomSheet.dismiss()
+                        } else if (checkFloatingPermission()) {
+                            hold = true
+                            bottomSheet.fakeDismiss(false) {
+                                requireActivity().finish()
+                            }
                         }
                     }
                 }
             }
-        }
-        val viewAuthMenu = menu {
-            title = getString(R.string.View_Authorization)
-            icon = R.drawable.ic_web_floating
-            action = {
-                val app = requireNotNull(app)
-                lifecycleScope.launch {
-                    bottomSheet.dismiss()
-                    val pb = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                        setCancelable(false)
-                    }
-                    val auth = bottomViewModel.getAuthorizationByAppId(app.appId)
-                    if (auth == null) {
-                        toast(R.string.bot_not_auth_yet)
+        val viewAuthMenu =
+            menu {
+                title = getString(R.string.View_Authorization)
+                icon = R.drawable.ic_web_floating
+                action = {
+                    val app = requireNotNull(app)
+                    lifecycleScope.launch {
+                        bottomSheet.dismiss()
+                        val pb =
+                            indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                setCancelable(false)
+                            }
+                        val auth = bottomViewModel.getAuthorizationByAppId(app.appId)
+                        if (auth == null) {
+                            toast(R.string.bot_not_auth_yet)
+                            pb.dismiss()
+                            return@launch
+                        }
                         pb.dismiss()
-                        return@launch
+                        getPermissionResult.launch(Pair(app, auth))
                     }
-                    pb.dismiss()
-                    getPermissionResult.launch(Pair(app, auth))
                 }
             }
-        }
-        val list = if (isBot()) {
-            menuList {
-                menuGroup {
-                    menu(forwardMenu)
-                    menu(floatingMenu)
-                    menu(refreshMenu)
+        val list =
+            if (isBot()) {
+                menuList {
+                    menuGroup {
+                        menu(forwardMenu)
+                        menu(floatingMenu)
+                        menu(refreshMenu)
+                    }
+                    menuGroup {
+                        menu(shareMenu)
+                        menu(viewAuthMenu)
+                    }
                 }
-                menuGroup {
-                    menu(shareMenu)
-                    menu(viewAuthMenu)
+            } else {
+                menuList {
+                    menuGroup {
+                        menu(forwardMenu)
+                        menu(shareMenu)
+                        menu(floatingMenu)
+                        menu(refreshMenu)
+                    }
+                    menuGroup {
+                        menu(scanMenu)
+                        menu(copyMenu)
+                        menu(openMenu)
+                    }
                 }
             }
-        } else {
-            menuList {
-                menuGroup {
-                    menu(forwardMenu)
-                    menu(shareMenu)
-                    menu(floatingMenu)
-                    menu(refreshMenu)
-                }
-                menuGroup {
-                    menu(scanMenu)
-                    menu(copyMenu)
-                    menu(openMenu)
-                }
-            }
-        }
         list.createMenuLayout(requireContext()).let { layout ->
             viewBinding.root.addView(layout)
             layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
@@ -1228,26 +1282,28 @@ class WebFragment : BaseFragment() {
     }
 
     private var permissionAlert: AlertDialog? = null
+
     private fun checkFloatingPermission() =
         requireContext().checkInlinePermissions {
             if (permissionAlert != null && permissionAlert!!.isShowing) return@checkInlinePermissions
 
-            permissionAlert = AlertDialog.Builder(requireContext())
-                .setTitle(R.string.app_name)
-                .setMessage(R.string.web_floating_permission)
-                .setPositiveButton(R.string.Settings) { dialog, _ ->
-                    try {
-                        startActivity(
-                            Intent(
-                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:${requireContext().packageName}"),
-                            ),
-                        )
-                    } catch (e: Exception) {
-                        Timber.e(e)
-                    }
-                    dialog.dismiss()
-                }.show()
+            permissionAlert =
+                AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.app_name)
+                    .setMessage(R.string.web_floating_permission)
+                    .setPositiveButton(R.string.Settings) { dialog, _ ->
+                        try {
+                            startActivity(
+                                Intent(
+                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                    Uri.parse("package:${requireContext().packageName}"),
+                                ),
+                            )
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+                        dialog.dismiss()
+                    }.show()
         }
 
     private fun isHold(): Boolean {
@@ -1260,23 +1316,25 @@ class WebFragment : BaseFragment() {
         _binding?.failLoadView?.isVisible = false
     }
 
-    private fun openBot() = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
+    private fun openBot() =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
 
-        if (app?.appId != null) {
-            val u = bottomViewModel.suspendFindUserById(app?.appId!!)
-            if (u != null) {
-                showUserBottom(parentFragmentManager, u, conversationId)
+            if (app?.appId != null) {
+                val u = bottomViewModel.suspendFindUserById(app?.appId!!)
+                if (u != null) {
+                    showUserBottom(parentFragmentManager, u, conversationId)
+                }
             }
         }
-    }
 
     private var progressDialog: Dialog? = null
 
     private fun tryScanQRCode() {
-        progressDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-            show()
-        }
+        progressDialog =
+            indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                show()
+            }
         val bitmap = webView.drawToBitmap()
         processor.detect(
             lifecycleScope,
@@ -1318,8 +1376,9 @@ class WebFragment : BaseFragment() {
         fun afterGranted() {
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    val outFile = requireContext().getPublicPicturePath()
-                        .createImageTemp(noMedia = false)
+                    val outFile =
+                        requireContext().getPublicPicturePath()
+                            .createImageTemp(noMedia = false)
                     val encodingPrefix = "base64,"
                     val prefixIndex = url?.indexOf(encodingPrefix)
                     if (url != null && prefixIndex != null && prefixIndex != -1) {
@@ -1328,11 +1387,12 @@ class WebFragment : BaseFragment() {
                             Base64.decode(url.substring(dataStartIndex), Base64.DEFAULT)
                         outFile.copyFromInputStream(ByteArrayInputStream(imageData))
                     } else {
-                        val file = Glide.with(MixinApplication.appContext)
-                            .asFile()
-                            .load(url)
-                            .submit()
-                            .get(10, TimeUnit.SECONDS)
+                        val file =
+                            Glide.with(MixinApplication.appContext)
+                                .asFile()
+                                .load(url)
+                                .submit()
+                                .get(10, TimeUnit.SECONDS)
                         outFile.copyFromInputStream(FileInputStream(file))
                     }
                     MediaScannerConnection.scanFile(
@@ -1412,7 +1472,10 @@ class WebFragment : BaseFragment() {
         private val onFinished: (url: String?) -> Unit,
         private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit,
     ) : WebViewClient() {
-        override fun onPageFinished(view: WebView?, url: String?) {
+        override fun onPageFinished(
+            view: WebView?,
+            url: String?,
+        ) {
             super.onPageFinished(view, url)
             onPageFinishedListener.onPageFinished()
             onFinished(url)
@@ -1428,12 +1491,16 @@ class WebFragment : BaseFragment() {
             onReceivedError(errorCode, description, failingUrl)
         }
 
-        override fun onPageCommitVisible(view: WebView?, url: String?) {
+        override fun onPageCommitVisible(
+            view: WebView?,
+            url: String?,
+        ) {
             super.onPageCommitVisible(view, url)
             onPageFinishedListener.onPageFinished()
         }
 
         private var lastHandleUrl: Pair<String, Long>? = null
+
         override fun shouldOverrideUrlLoading(
             view: WebView?,
             request: WebResourceRequest?,
@@ -1468,13 +1535,14 @@ class WebFragment : BaseFragment() {
                 try {
                     val context = view.context
                     // https://developer.android.com/training/package-visibility/use-cases#let-non-browser-apps-handle-urls
-                    val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME).apply {
-                        action = ACTION_VIEW
-                        addCategory(CATEGORY_BROWSABLE)
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                            flags = FLAG_ACTIVITY_REQUIRE_NON_BROWSER
+                    val intent =
+                        Intent.parseUri(url, Intent.URI_INTENT_SCHEME).apply {
+                            action = ACTION_VIEW
+                            addCategory(CATEGORY_BROWSABLE)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                flags = FLAG_ACTIVITY_REQUIRE_NON_BROWSER
+                            }
                         }
-                    }
                     if (context !is Activity) {
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
@@ -1520,17 +1588,19 @@ class WebFragment : BaseFragment() {
         }
 
         @JavascriptInterface
-        fun getContext(): String? = Gson().toJson(
-            MixinContext(
-                conversationId,
-                immersive,
-                appearance = if (context.isNightMode()) {
-                    "dark"
-                } else {
-                    "light"
-                },
-            ),
-        )
+        fun getContext(): String? =
+            Gson().toJson(
+                MixinContext(
+                    conversationId,
+                    immersive,
+                    appearance =
+                        if (context.isNightMode()) {
+                            "dark"
+                        } else {
+                            "light"
+                        },
+                ),
+            )
 
         @JavascriptInterface
         fun reloadTheme() {
@@ -1548,12 +1618,19 @@ class WebFragment : BaseFragment() {
         }
 
         @JavascriptInterface
-        fun getTipAddress(chainId: String, callbackFunction: String) {
+        fun getTipAddress(
+            chainId: String,
+            callbackFunction: String,
+        ) {
             getTipAddressAction?.invoke(chainId, callbackFunction)
         }
 
         @JavascriptInterface
-        fun tipSign(chainId: String, message: String, callbackFunction: String) {
+        fun tipSign(
+            chainId: String,
+            message: String,
+            callbackFunction: String,
+        ) {
             tipSignAction?.invoke(chainId, message, callbackFunction)
         }
     }

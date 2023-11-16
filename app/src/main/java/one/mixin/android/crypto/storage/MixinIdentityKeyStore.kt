@@ -13,7 +13,6 @@ import org.whispersystems.libsignal.state.IdentityKeyStore
 import timber.log.Timber
 
 class MixinIdentityKeyStore(private val context: Context) : IdentityKeyStore {
-
     private val dao: IdentityDao = SignalDatabase.getDatabase(context).identityDao()
 
     override fun getIdentity(address: SignalProtocolAddress): IdentityKey? {
@@ -29,7 +28,10 @@ class MixinIdentityKeyStore(private val context: Context) : IdentityKeyStore {
         return dao.getLocalIdentity().registrationId!!
     }
 
-    override fun saveIdentity(address: SignalProtocolAddress, identityKey: IdentityKey): Boolean {
+    override fun saveIdentity(
+        address: SignalProtocolAddress,
+        identityKey: IdentityKey,
+    ): Boolean {
         return saveIdentityKey(address, identityKey)
     }
 
@@ -57,7 +59,10 @@ class MixinIdentityKeyStore(private val context: Context) : IdentityKeyStore {
         }
     }
 
-    private fun saveIdentityKey(address: SignalProtocolAddress, identityKey: IdentityKey): Boolean {
+    private fun saveIdentityKey(
+        address: SignalProtocolAddress,
+        identityKey: IdentityKey,
+    ): Boolean {
         synchronized(LOCK) {
             val signalAddress = address.name
             val identity = dao.getIdentity(signalAddress)
@@ -77,7 +82,10 @@ class MixinIdentityKeyStore(private val context: Context) : IdentityKeyStore {
         }
     }
 
-    private fun isTrustedForSending(identityKey: IdentityKey, identity: Identity?): Boolean {
+    private fun isTrustedForSending(
+        identityKey: IdentityKey,
+        identity: Identity?,
+    ): Boolean {
         if (identity == null) {
             Timber.tag(TAG).w("Nothing here, returning true...")
             return true
@@ -97,7 +105,6 @@ class MixinIdentityKeyStore(private val context: Context) : IdentityKeyStore {
     }
 
     companion object {
-
         private val TAG = MixinIdentityKeyStore::class.java.simpleName
         private val LOCK = Any()
     }

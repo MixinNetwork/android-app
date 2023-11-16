@@ -45,7 +45,10 @@ internal fun buildAmountSymbol(
     }
 }
 
-internal fun buildBulletLines(context: Context, vararg lines: SpannableStringBuilder): CharSequence {
+internal fun buildBulletLines(
+    context: Context,
+    vararg lines: SpannableStringBuilder,
+): CharSequence {
     val builder = SpannableStringBuilder()
     lines.filter { l -> l.isNotBlank() }.let { nonBlankLines ->
         nonBlankLines.forEachIndexed { i, l ->

@@ -12,7 +12,6 @@ import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.util.concurrent.TimeUnit
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
@@ -27,6 +26,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
+import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -34,12 +34,16 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val TAG = "QrScanBottomSheetDialogFragment"
         const val ARGS_TEXT = "args_text"
 
-        fun newInstance(text: String, conversationId: String? = null) =
+        fun newInstance(
+            text: String,
+            conversationId: String? = null,
+        ) =
             QrScanBottomSheetDialogFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARGS_TEXT, text)
-                    putString(ARGS_CONVERSATION_ID, conversationId)
-                }
+                arguments =
+                    Bundle().apply {
+                        putString(ARGS_TEXT, text)
+                        putString(ARGS_CONVERSATION_ID, conversationId)
+                    }
             }
     }
 
@@ -49,7 +53,10 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(BottomQrScanBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)

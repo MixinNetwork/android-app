@@ -20,6 +20,7 @@ class DeleteAccountPinBottomSheetDialogFragment : BiometricBottomSheetDialogFrag
     companion object {
         const val TAG = "DeleteAccountPinBottomSheetDialogFragment"
         private const val VERIFICATION_ID = "verification_id"
+
         fun newInstance(verificationId: String) =
             DeleteAccountPinBottomSheetDialogFragment().withArgs {
                 putString(VERIFICATION_ID, verificationId)
@@ -33,7 +34,10 @@ class DeleteAccountPinBottomSheetDialogFragment : BiometricBottomSheetDialogFrag
     }
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -51,14 +55,18 @@ class DeleteAccountPinBottomSheetDialogFragment : BiometricBottomSheetDialogFrag
         return bottomViewModel.deactivate(pin, verificationId)
     }
 
-    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
+    override fun doWhenInvokeNetworkSuccess(
+        response: MixinResponse<*>,
+        pin: String,
+    ): Boolean {
         MixinApplication.get().closeAndClear()
         return true
     }
 
-    override fun getBiometricInfo() = BiometricInfo(
-        getString(R.string.Verify_by_Biometric),
-        "",
-        "",
-    )
+    override fun getBiometricInfo() =
+        BiometricInfo(
+            getString(R.string.Verify_by_Biometric),
+            "",
+            "",
+        )
 }

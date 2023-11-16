@@ -22,6 +22,7 @@ import one.mixin.android.widget.viewpager2.ScaleTransformer
 class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
     companion object {
         const val TAG = "StickerStoreFragment"
+
         fun newInstance() = StickerStoreFragment()
     }
 
@@ -38,7 +39,10 @@ class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.apply {
@@ -55,22 +59,24 @@ class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
                 setPageMargin(30.dp, 10.dp)
                     .addPageTransformer(ScaleTransformer())
             }
-            bannerAdapter.bannerListener = object : BannerListener {
-                override fun onBannerClick(banner: Banner) {
-                    StickerAlbumBottomSheetFragment.newInstance(banner.albumId)
-                        .showNow(parentFragmentManager, StickerAlbumBottomSheetFragment.TAG)
+            bannerAdapter.bannerListener =
+                object : BannerListener {
+                    override fun onBannerClick(banner: Banner) {
+                        StickerAlbumBottomSheetFragment.newInstance(banner.albumId)
+                            .showNow(parentFragmentManager, StickerAlbumBottomSheetFragment.TAG)
+                    }
                 }
-            }
             albumRv.apply {
                 setHasFixedSize(true)
                 layoutManager = LinearLayoutManager(requireContext())
                 adapter = albumAdapter
             }
             viewModel.observeSystemAlbumsAndStickers().observe(viewLifecycleOwner) { albums ->
-                val banners = albums
-                    .filter { !it.album.banner.isNullOrEmpty() }
-                    .take(3)
-                    .map { Banner(it.album.albumId, requireNotNull(it.album.banner)) }
+                val banners =
+                    albums
+                        .filter { !it.album.banner.isNullOrEmpty() }
+                        .take(3)
+                        .map { Banner(it.album.albumId, requireNotNull(it.album.banner)) }
                 bannerAdapter.data = banners
 
                 albumAdapter.submitList(albums)

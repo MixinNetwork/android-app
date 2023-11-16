@@ -34,25 +34,28 @@ class RefreshOneTimePreKeysJob : MixinJob(
         }
     }
 
-    private fun refresh() = runBlocking {
-        val signalKeysRequest = generateKeys()
-        Timber.tag(TAG).w("Registering new pre keys...")
-        val response = signalKeyService.pushSignalKeys(signalKeysRequest).await()
-        if (response.isSuccess) {
+    private fun refresh() =
+        runBlocking {
+            val signalKeysRequest = generateKeys()
+            Timber.tag(TAG).w("Registering new pre keys...")
+            val response = signalKeyService.pushSignalKeys(signalKeysRequest).await()
+            if (response.isSuccess) {
+            }
         }
-    }
 
     companion object {
         private const val serialVersionUID = 1L
         const val PREKEY_MINI_NUM = 500
+
         fun generateKeys(): SignalKeyRequest {
             val identityKeyPair = IdentityKeyUtil.getIdentityKeyPair(MixinApplication.appContext)
             val oneTimePreKeys = PreKeyUtil.generatePreKeys(MixinApplication.appContext)
-            val signedPreKeyRecord = PreKeyUtil.generateSignedPreKey(
-                MixinApplication.appContext,
-                identityKeyPair,
-                false,
-            )
+            val signedPreKeyRecord =
+                PreKeyUtil.generateSignedPreKey(
+                    MixinApplication.appContext,
+                    identityKeyPair,
+                    false,
+                )
             return SignalKeyRequest(identityKeyPair.publicKey, signedPreKeyRecord, oneTimePreKeys)
         }
     }

@@ -7,5 +7,6 @@ data class PaymentResponse(
 )
 
 enum class PaymentStatus {
-    pending, paid
+    pending,
+    paid,
 }

@@ -14,12 +14,13 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
     @StyleRes themeResId: Int,
     crossinline action: T.() -> Unit = {},
 ) {
-    val startActivityIntent = Intent.makeMainActivity(
-        ComponentName(
-            ApplicationProvider.getApplicationContext(),
-            HiltTestActivity::class.java,
-        ),
-    ).putExtra("androidx.fragment.app.testing.FragmentScenario.EmptyFragmentActivity.THEME_EXTRAS_BUNDLE_KEY", themeResId)
+    val startActivityIntent =
+        Intent.makeMainActivity(
+            ComponentName(
+                ApplicationProvider.getApplicationContext(),
+                HiltTestActivity::class.java,
+            ),
+        ).putExtra("androidx.fragment.app.testing.FragmentScenario.EmptyFragmentActivity.THEME_EXTRAS_BUNDLE_KEY", themeResId)
 
     ActivityScenario.launch<HiltTestActivity>(startActivityIntent).onActivity { activity ->
         if (fragment is DialogFragment) {
@@ -39,12 +40,13 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
     crossinline initFragmentAction: () -> T,
     crossinline action: T.() -> Unit = {},
 ) {
-    val startActivityIntent = Intent.makeMainActivity(
-        ComponentName(
-            ApplicationProvider.getApplicationContext(),
-            HiltTestActivity::class.java,
-        ),
-    ).putExtra("androidx.fragment.app.testing.FragmentScenario.EmptyFragmentActivity.THEME_EXTRAS_BUNDLE_KEY", themeResId)
+    val startActivityIntent =
+        Intent.makeMainActivity(
+            ComponentName(
+                ApplicationProvider.getApplicationContext(),
+                HiltTestActivity::class.java,
+            ),
+        ).putExtra("androidx.fragment.app.testing.FragmentScenario.EmptyFragmentActivity.THEME_EXTRAS_BUNDLE_KEY", themeResId)
 
     ActivityScenario.launch<HiltTestActivity>(startActivityIntent).onActivity { activity ->
         val fragment = initFragmentAction.invoke()

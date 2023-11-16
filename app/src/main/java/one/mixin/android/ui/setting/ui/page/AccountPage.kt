@@ -74,9 +74,10 @@ fun AccountPage() {
 
 @Composable
 private fun ChangeNumberButton() {
-    val openDialog = remember {
-        mutableStateOf(false)
-    }
+    val openDialog =
+        remember {
+            mutableStateOf(false)
+        }
     if (openDialog.value) {
         val context = LocalContext.current
 
@@ -125,11 +126,12 @@ private fun AccountTile(
     onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .height(60.dp)
-            .background(MixinAppTheme.colors.background)
-            .clickable { onClick() }
-            .padding(start = 16.dp, end = 16.dp),
+        modifier =
+            Modifier
+                .height(60.dp)
+                .background(MixinAppTheme.colors.background)
+                .clickable { onClick() }
+                .padding(start = 16.dp, end = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(

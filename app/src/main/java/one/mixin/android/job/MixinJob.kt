@@ -67,7 +67,11 @@ abstract class MixinJob(
         }
     }
 
-    protected fun sendSenderKey(conversationId: String, recipientId: String, sessionId: String): Boolean {
+    protected fun sendSenderKey(
+        conversationId: String,
+        recipientId: String,
+        sessionId: String,
+    ): Boolean {
         val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId))))
         val data = jobSenderKey.signalKeysChannel(blazeMessage) ?: return false
         val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
@@ -94,11 +98,15 @@ abstract class MixinJob(
         return result.success
     }
 
-    protected fun checkSignalSession(recipientId: String, sessionId: String? = null): Boolean {
+    protected fun checkSignalSession(
+        recipientId: String,
+        sessionId: String? = null,
+    ): Boolean {
         if (!signalProtocol.containsSession(recipientId, sessionId.getDeviceId())) {
-            val blazeMessage = createConsumeSessionSignalKeys(
-                createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId))),
-            )
+            val blazeMessage =
+                createConsumeSessionSignalKeys(
+                    createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId))),
+                )
 
             val data = jobSenderKey.signalKeysChannel(blazeMessage) ?: return false
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
@@ -145,17 +153,21 @@ abstract class MixinJob(
         return true
     }
 
-    protected fun sendNoKeyMessage(conversationId: String, recipientId: String) {
+    protected fun sendNoKeyMessage(
+        conversationId: String,
+        recipientId: String,
+    ) {
         val plainText = Gson().toJson(PlainJsonMessagePayload(PlainDataAction.NO_KEY.name))
         val encoded = plainText.base64Encode()
-        val params = BlazeMessageParam(
-            conversationId,
-            recipientId,
-            UUID.randomUUID().toString(),
-            MessageCategory.PLAIN_JSON.name,
-            encoded,
-            MessageStatus.SENDING.name,
-        )
+        val params =
+            BlazeMessageParam(
+                conversationId,
+                recipientId,
+                UUID.randomUUID().toString(),
+                MessageCategory.PLAIN_JSON.name,
+                encoded,
+                MessageStatus.SENDING.name,
+            )
         val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, params)
         jobSenderKey.deliverNoThrow(bm)
     }
@@ -170,21 +182,23 @@ abstract class MixinJob(
     }
 
     private fun createConversation(conversation: Conversation): Long? {
-        val request = ConversationRequest(
-            conversationId = conversation.conversationId,
-            category = conversation.category,
-            participants = arrayListOf(ParticipantRequest(conversation.ownerId!!, "")),
-        )
+        val request =
+            ConversationRequest(
+                conversationId = conversation.conversationId,
+                category = conversation.category,
+                participants = arrayListOf(ParticipantRequest(conversation.ownerId!!, "")),
+            )
         val response = conversationApi.create(request).execute().body()
         if (response != null && response.isSuccess && response.data != null && !isCancelled) {
             conversationDao.updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
             conversationDao.updateConversationExpireInById(conversation.conversationId, response.data?.expireIn)
 
-            val sessionParticipants = response.data!!.participantSessions.let { resp ->
-                resp?.map {
-                    ParticipantSession(conversation.conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
+            val sessionParticipants =
+                response.data!!.participantSessions.let { resp ->
+                    resp?.map {
+                        ParticipantSession(conversation.conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
+                    }
                 }
-            }
             sessionParticipants?.let {
                 participantSessionDao.replaceAll(conversation.conversationId, it)
             }

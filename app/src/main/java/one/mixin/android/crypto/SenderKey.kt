@@ -112,10 +112,11 @@ open class SenderKey(
     private val chatWebSocket: ChatWebSocket,
 ) {
     fun checkSessionSenderKey(conversationId: String) {
-        val participants = participantSessionDao.getNotSendSessionParticipants(
-            conversationId,
-            Session.getSessionId()!!,
-        )
+        val participants =
+            participantSessionDao.getNotSendSessionParticipants(
+                conversationId,
+                Session.getSessionId()!!,
+            )
         if (participants.isEmpty()) return
         val requestSignalKeyUsers = arrayListOf<BlazeMessageParamSession>()
         val signalKeyMessages = arrayListOf<BlazeSignalKeyMessage>()
@@ -123,11 +124,12 @@ open class SenderKey(
             if (!signalProtocol.containsSession(p.userId, p.sessionId.getDeviceId())) {
                 requestSignalKeyUsers.add(BlazeMessageParamSession(p.userId, p.sessionId))
             } else {
-                val (cipherText, err) = signalProtocol.encryptSenderKey(
-                    conversationId,
-                    p.userId,
-                    p.sessionId.getDeviceId(),
-                )
+                val (cipherText, err) =
+                    signalProtocol.encryptSenderKey(
+                        conversationId,
+                        p.userId,
+                        p.sessionId.getDeviceId(),
+                    )
                 if (err) {
                     requestSignalKeyUsers.add(BlazeMessageParamSession(p.userId, p.sessionId))
                 } else {
@@ -153,11 +155,12 @@ open class SenderKey(
                     for (key in signalKeys) {
                         val preKeyBundle = createPreKeyBundle(key)
                         signalProtocol.processSession(key.userId!!, preKeyBundle)
-                        val (cipherText, _) = signalProtocol.encryptSenderKey(
-                            conversationId,
-                            key.userId,
-                            preKeyBundle.deviceId,
-                        )
+                        val (cipherText, _) =
+                            signalProtocol.encryptSenderKey(
+                                conversationId,
+                                key.userId,
+                                preKeyBundle.deviceId,
+                            )
                         signalKeyMessages.add(
                             createBlazeSignalKeyMessage(
                                 key.userId,
@@ -176,14 +179,15 @@ open class SenderKey(
 
                 val noKeyList = requestSignalKeyUsers.filter { !keys.contains(it) }
                 if (noKeyList.isNotEmpty()) {
-                    val sentSenderKeys = noKeyList.map {
-                        ParticipantSessionSent(
-                            conversationId,
-                            it.user_id,
-                            it.session_id!!,
-                            SenderKeyStatus.UNKNOWN.ordinal,
-                        )
-                    }
+                    val sentSenderKeys =
+                        noKeyList.map {
+                            ParticipantSessionSent(
+                                conversationId,
+                                it.user_id,
+                                it.session_id!!,
+                                SenderKeyStatus.UNKNOWN.ordinal,
+                            )
+                        }
                     participantSessionDao.updateParticipantSessionSent(sentSenderKeys)
                 }
             }
@@ -192,27 +196,29 @@ open class SenderKey(
             return
         }
         val checksum = getCheckSum(conversationId)
-        val bm = createSignalKeyMessage(
-            createSignalKeyMessageParam(
-                conversationId,
-                signalKeyMessages,
-                checksum,
-            ),
-        )
+        val bm =
+            createSignalKeyMessage(
+                createSignalKeyMessageParam(
+                    conversationId,
+                    signalKeyMessages,
+                    checksum,
+                ),
+            )
         val result = deliverNoThrow(bm)
         if (result.retry) {
             return checkSessionSenderKey(conversationId)
         }
         if (result.success) {
             onCheckSessionSenderKeySuccess(signalKeyMessages)
-            val sentSenderKeys = signalKeyMessages.map {
-                ParticipantSessionSent(
-                    conversationId,
-                    it.recipient_id,
-                    it.sessionId!!,
-                    SenderKeyStatus.SENT.ordinal,
-                )
-            }
+            val sentSenderKeys =
+                signalKeyMessages.map {
+                    ParticipantSessionSent(
+                        conversationId,
+                        it.recipient_id,
+                        it.sessionId!!,
+                        SenderKeyStatus.SENT.ordinal,
+                    )
+                }
             participantSessionDao.updateParticipantSessionSent(sentSenderKeys)
         }
     }
@@ -258,9 +264,10 @@ open class SenderKey(
         val response = conversationApi.getConversation(conversationId).execute().body()
         if (response != null && response.isSuccess) {
             response.data?.let { data ->
-                val remote = data.participants.map {
-                    Participant(conversationId, it.userId, it.role, it.createdAt!!)
-                }
+                val remote =
+                    data.participants.map {
+                        Participant(conversationId, it.userId, it.role, it.createdAt!!)
+                    }
                 participantDao.replaceAll(conversationId, remote)
 
                 data.participantSessions?.let {
@@ -270,11 +277,15 @@ open class SenderKey(
         }
     }
 
-    fun syncParticipantSession(conversationId: String, data: List<UserSession>) {
+    fun syncParticipantSession(
+        conversationId: String,
+        data: List<UserSession>,
+    ) {
         participantSessionDao.deleteByStatus(conversationId)
-        val remote = data.map {
-            ParticipantSession(conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
-        }
+        val remote =
+            data.map {
+                ParticipantSession(conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
+            }
         if (remote.isEmpty()) {
             participantSessionDao.deleteByConversationId(conversationId)
             return
@@ -313,12 +324,13 @@ internal fun requestResendKey(
     messageId: String?,
     sessionId: String?,
 ) {
-    val plainText = gson.toJson(
-        PlainJsonMessagePayload(
-            action = PlainDataAction.RESEND_KEY.name,
-            messageId = messageId,
-        ),
-    )
+    val plainText =
+        gson.toJson(
+            PlainJsonMessagePayload(
+                action = PlainDataAction.RESEND_KEY.name,
+                messageId = messageId,
+            ),
+        )
     val encoded = plainText.toByteArray().base64Encode()
     val bm = createParamBlazeMessage(createPlainJsonParam(conversationId, recipientId, encoded, sessionId))
     jobManager.addJobInBackground(SendPlaintextJob(bm))

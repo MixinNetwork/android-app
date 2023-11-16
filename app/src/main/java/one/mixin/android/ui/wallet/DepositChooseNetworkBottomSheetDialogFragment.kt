@@ -26,9 +26,11 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
     companion object {
         const val TAG = "DepositChooseNetworkBottomSheetDialogFragment"
         private const val ASSET = "asset"
-        fun newInstance(asset: TokenItem) = DepositChooseNetworkBottomSheetDialogFragment().withArgs {
-            putParcelable(ASSET, asset)
-        }
+
+        fun newInstance(asset: TokenItem) =
+            DepositChooseNetworkBottomSheetDialogFragment().withArgs {
+                putParcelable(ASSET, asset)
+            }
     }
 
     private val asset by lazy {
@@ -40,7 +42,10 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
     private val adapter = AssetAdapter()
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         dialog.setCancelable(false)
@@ -63,7 +68,10 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
     class AssetAdapter : ListAdapter<TokenItem, ItemHolder>(TokenItem.DIFF_CALLBACK) {
         var callback: (() -> Unit)? = null
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder {
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): ItemHolder {
             return ItemHolder(
                 ItemChooseNetworkBinding.inflate(
                     LayoutInflater.from(parent.context),
@@ -77,7 +85,10 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
             return super.getItemCount() + 1
         }
 
-        override fun onBindViewHolder(holder: ItemHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: ItemHolder,
+            position: Int,
+        ) {
             if (position != 0) {
                 getItem(position - 1)?.let { holder.bind(it, callback) }
             } else {
@@ -87,7 +98,10 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
     }
 
     class ItemHolder(val binding: ItemChooseNetworkBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(tokenItem: TokenItem?, callback: (() -> Unit)? = null) {
+        fun bind(
+            tokenItem: TokenItem?,
+            callback: (() -> Unit)? = null,
+        ) {
             if (tokenItem == null) {
                 binding.icon.isVisible = true
                 binding.assetIcon.isVisible = false

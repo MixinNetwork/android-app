@@ -4,13 +4,13 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import one.mixin.android.extension.dp
 import java.util.ArrayList
 import java.util.Random
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
-import one.mixin.android.extension.dp
 
 class FireworksEffect {
     private val particlePaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -29,6 +29,7 @@ class FireworksEffect {
         var scale = 0f
         var color = 0
         var type = 0
+
         fun draw(canvas: Canvas) {
             when (type) {
                 0 -> {
@@ -44,6 +45,7 @@ class FireworksEffect {
 
     private val particles = ArrayList<Particle>()
     private val freeParticles = ArrayList<Particle>()
+
     private fun updateParticles(dt: Long) {
         var count = particles.size
         var a = 0
@@ -69,7 +71,10 @@ class FireworksEffect {
         }
     }
 
-    fun onDraw(parent: View?, canvas: Canvas?) {
+    fun onDraw(
+        parent: View?,
+        canvas: Canvas?,
+    ) {
         if (parent == null || canvas == null) {
             return
         }
@@ -81,26 +86,27 @@ class FireworksEffect {
         if (Random().nextBoolean() && particles.size + 8 < 150) {
             val cx = random.nextFloat() * parent.measuredWidth
             val cy = random.nextFloat() * (parent.measuredHeight - 16f.dp)
-            val color: Int = when (random.nextInt(4)) {
-                0 -> {
-                    0XFD141D
+            val color: Int =
+                when (random.nextInt(4)) {
+                    0 -> {
+                        0XFD141D
+                    }
+                    1 -> {
+                        0XFF8729
+                    }
+                    2 -> {
+                        0X0096DF
+                    }
+                    3 -> {
+                        0XC530F6
+                    }
+                    4 -> {
+                        0X29F336
+                    }
+                    else -> {
+                        0XF2CA36
+                    }
                 }
-                1 -> {
-                    0XFF8729
-                }
-                2 -> {
-                    0X0096DF
-                }
-                3 -> {
-                    0XC530F6
-                }
-                4 -> {
-                    0X29F336
-                }
-                else -> {
-                    0XF2CA36
-                }
-            }
             for (a in 0..7) {
                 val angle = random.nextInt(270) - 225
                 val vx = cos(PI / 180.0 * angle).toFloat()

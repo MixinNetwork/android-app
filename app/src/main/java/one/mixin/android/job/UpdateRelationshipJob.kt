@@ -22,7 +22,6 @@ class UpdateRelationshipJob(
     private val report: Boolean = false,
 ) :
     BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).groupBy("relationship").requireNetwork()) {
-
     companion object {
         private const val serialVersionUID = 1L
         const val GROUP = "UpdateRelationshipJob"

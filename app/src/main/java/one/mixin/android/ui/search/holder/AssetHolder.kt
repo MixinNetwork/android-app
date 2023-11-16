@@ -3,7 +3,6 @@ package one.mixin.android.ui.search.holder
 import android.annotation.SuppressLint
 import android.view.View
 import androidx.core.view.isVisible
-import java.math.BigDecimal
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemSearchAssetBinding
 import one.mixin.android.extension.highLight
@@ -17,10 +16,15 @@ import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
 
 class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolder(binding.root) {
     @SuppressLint("SetTextI18n")
-    fun bind(asset: TokenItem, target: String, onItemClickListener: SearchFragment.OnSearchClickListener?) {
+    fun bind(
+        asset: TokenItem,
+        target: String,
+        onItemClickListener: SearchFragment.OnSearchClickListener?,
+    ) {
         binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         binding.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         binding.root.setOnClickListener { onItemClickListener?.onAsset(asset) }

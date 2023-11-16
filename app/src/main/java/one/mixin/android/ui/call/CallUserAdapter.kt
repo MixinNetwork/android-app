@@ -24,7 +24,10 @@ class CallUserAdapter(private val self: CallUser, private val callClicker: (Stri
     ListAdapter<CallUser, RecyclerView.ViewHolder>(CallUser.DIFF_CALLBACK) {
     var guestsNotConnected: List<String>? = null
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         if (viewType == 1) {
             CallUserHolder(
                 ItemCallUserBinding.inflate(
@@ -43,7 +46,10 @@ class CallUserAdapter(private val self: CallUser, private val callClicker: (Stri
             )
         }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+    ) {
         if (getItemViewType(position) == 1) {
             getItem(position - 1)?.let {
                 (holder as CallUserHolder).bind(it, self, guestsNotConnected, callClicker)
@@ -99,7 +105,6 @@ class AddUserHolder(val binding: ItemCallAddBinding) : RecyclerView.ViewHolder(b
 }
 
 class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder(binding.root) {
-
     init {
         binding.loading.round(64.dp)
     }
@@ -131,32 +136,37 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
     private var blinkDisposable: Disposable? = null
     private var disposable: Disposable? = null
 
-    fun listen(view: View, userId: String) {
+    fun listen(
+        view: View,
+        userId: String,
+    ) {
         if (blinkDisposable == null) {
-            blinkDisposable = RxBus.listen(VoiceEvent::class.java)
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(view)
-                .subscribe {
-                    if (it.userId == userId) {
-                        binding.blinkRing.updateAudioLevel(it.audioLevel)
-                        if (it.audioLevel != 0f) {
-                            binding.ring.isVisible = false
+            blinkDisposable =
+                RxBus.listen(VoiceEvent::class.java)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDispose(view)
+                    .subscribe {
+                        if (it.userId == userId) {
+                            binding.blinkRing.updateAudioLevel(it.audioLevel)
+                            if (it.audioLevel != 0f) {
+                                binding.ring.isVisible = false
+                            }
                         }
                     }
-                }
         }
         if (disposable == null) {
-            disposable = RxBus.listen(FrameKeyEvent::class.java)
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(view)
-                .subscribe {
-                    if (it.userId == userId) {
-                        binding.ring.isVisible = !it.hasKey
-                        if (!it.hasKey) {
-                            binding.blinkRing.isVisible = false
+            disposable =
+                RxBus.listen(FrameKeyEvent::class.java)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDispose(view)
+                    .subscribe {
+                        if (it.userId == userId) {
+                            binding.ring.isVisible = !it.hasKey
+                            if (!it.hasKey) {
+                                binding.blinkRing.isVisible = false
+                            }
                         }
                     }
-                }
         }
     }
 

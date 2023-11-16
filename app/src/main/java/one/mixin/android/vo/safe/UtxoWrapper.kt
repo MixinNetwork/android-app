@@ -28,7 +28,7 @@ data class UtxoWrapper(val outputs: List<Output>) {
             Utxo(
                 hash = output.transactionHash,
                 amount = output.amount,
-                index = output.outputIndex
+                index = output.outputIndex,
             )
         }
     }

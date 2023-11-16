@@ -66,11 +66,17 @@ fun newKeyPairFromSeed(seed: ByteArray): EdKeyPair {
     }
 }
 
-fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
+fun calculateAgreement(
+    publicKey: ByteArray,
+    privateKey: ByteArray,
+): ByteArray {
     return Curve25519.getInstance(BEST).calculateAgreement(publicKey, privateKey)
 }
 
-fun initFromSeedAndSign(seed: ByteArray, signTarget: ByteArray): ByteArray {
+fun initFromSeedAndSign(
+    seed: ByteArray,
+    signTarget: ByteArray,
+): ByteArray {
     return if (useGoEd()) {
         Ed25519.sign(signTarget, seed)
     } else {
@@ -99,13 +105,18 @@ fun publicKeyToCurve25519(publicKey: ByteArray): ByteArray {
     }
 }
 
-fun verifyCurve25519Signature(message:ByteArray, sig:ByteArray, pub:ByteArray): Boolean {
+fun verifyCurve25519Signature(
+    message: ByteArray,
+    sig: ByteArray,
+    pub: ByteArray,
+): Boolean {
     return if (useGoEd()) {
         Ed25519.verify(message, sig, pub)
     } else {
         Ed25519Verify(pub.toByteString()).verify(sig.toByteString(), message.toByteString())
     }
 }
+
 private fun edwardsToMontgomeryX(y: LongArray): LongArray {
     val oneMinusY = LongArray(Field25519.LIMB_CNT)
     oneMinusY[0] = 1
@@ -128,13 +139,22 @@ fun ByteArray.sha3Sum256(): ByteArray {
     return digestKeccak(KeccakParameter.SHA3_256)
 }
 
-fun Argon2Kt.argon2IHash(pin: String, seed: String): Argon2KtResult =
+fun Argon2Kt.argon2IHash(
+    pin: String,
+    seed: String,
+): Argon2KtResult =
     argon2IHash(pin, seed.toByteArray())
 
-fun Argon2Kt.argon2IHash(pin: String, seed: ByteArray): Argon2KtResult =
+fun Argon2Kt.argon2IHash(
+    pin: String,
+    seed: ByteArray,
+): Argon2KtResult =
     argon2IHash(pin.toByteArray(), seed)
 
-fun Argon2Kt.argon2IHash(pin: ByteArray, seed: ByteArray): Argon2KtResult {
+fun Argon2Kt.argon2IHash(
+    pin: ByteArray,
+    seed: ByteArray,
+): Argon2KtResult {
     return hash(
         mode = Argon2Mode.ARGON2_I,
         password = pin,
@@ -153,7 +173,10 @@ fun generateRandomBytes(len: Int = 16): ByteArray {
     return key
 }
 
-fun aesGcmEncrypt(plain: ByteArray, key: ByteArray): ByteArray {
+fun aesGcmEncrypt(
+    plain: ByteArray,
+    key: ByteArray,
+): ByteArray {
     val iv = ByteArray(GCM_IV_LENGTH)
     secureRandom.nextBytes(iv)
     val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -164,7 +187,10 @@ fun aesGcmEncrypt(plain: ByteArray, key: ByteArray): ByteArray {
     return iv.plus(result)
 }
 
-fun aesGcmDecrypt(cipherMessage: ByteArray, key: ByteArray): ByteArray {
+fun aesGcmDecrypt(
+    cipherMessage: ByteArray,
+    key: ByteArray,
+): ByteArray {
     val secretKey = SecretKeySpec(key, "AES")
     val cipher = Cipher.getInstance("AES/GCM/NoPadding")
     val gcmIv = GCMParameterSpec(128, cipherMessage, 0, GCM_IV_LENGTH)
@@ -172,7 +198,10 @@ fun aesGcmDecrypt(cipherMessage: ByteArray, key: ByteArray): ByteArray {
     return cipher.doFinal(cipherMessage, GCM_IV_LENGTH, cipherMessage.size - GCM_IV_LENGTH)
 }
 
-fun aesEncrypt(key: ByteArray, plain: ByteArray): ByteArray {
+fun aesEncrypt(
+    key: ByteArray,
+    plain: ByteArray,
+): ByteArray {
     val keySpec = SecretKeySpec(key, "AES")
     val iv = ByteArray(16)
     secureRandom.nextBytes(iv)
@@ -182,14 +211,21 @@ fun aesEncrypt(key: ByteArray, plain: ByteArray): ByteArray {
     return iv.plus(result)
 }
 
-fun aesDecrypt(key: ByteArray, iv: ByteArray, ciphertext: ByteArray): ByteArray {
+fun aesDecrypt(
+    key: ByteArray,
+    iv: ByteArray,
+    ciphertext: ByteArray,
+): ByteArray {
     val keySpec = SecretKeySpec(key, "AES")
     val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
     cipher.init(Cipher.DECRYPT_MODE, keySpec, IvParameterSpec(iv))
     return cipher.doFinal(ciphertext)
 }
 
-fun aesDecrypt(key: ByteArray, ciphertext: ByteArray): ByteArray {
+fun aesDecrypt(
+    key: ByteArray,
+    ciphertext: ByteArray,
+): ByteArray {
     val iv = ciphertext.slice(0..15).toByteArray()
     val cipherContent = ciphertext.slice(16 until ciphertext.size).toByteArray()
     return aesDecrypt(key, iv, cipherContent)
@@ -204,7 +240,11 @@ inline fun KeyPair.getPrivateKeyPem(): String {
     return heldCertificate.privateKeyPkcs1Pem()
 }
 
-fun rsaDecrypt(privateKey: PrivateKey, iv: String, pinToken: String): String {
+fun rsaDecrypt(
+    privateKey: PrivateKey,
+    iv: String,
+    pinToken: String,
+): String {
     val deCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
     deCipher.init(
         Cipher.DECRYPT_MODE,
@@ -222,11 +262,12 @@ fun rsaDecrypt(privateKey: PrivateKey, iv: String, pinToken: String): String {
 fun getRSAPrivateKeyFromString(privateKeyPEM: String): PrivateKey {
     val striped = stripRsaPrivateKeyHeaders(privateKeyPEM)
     val keySpec = PKCS8EncodedKeySpec(Base64.decode(striped))
-    val kf = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        KeyFactory.getInstance("RSA")
-    } else {
-        KeyFactory.getInstance("RSA", "BC")
-    }
+    val kf =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            KeyFactory.getInstance("RSA")
+        } else {
+            KeyFactory.getInstance("RSA", "BC")
+        }
     return kf.generatePrivate(keySpec)
 }
 

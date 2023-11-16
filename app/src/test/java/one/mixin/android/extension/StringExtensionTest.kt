@@ -4,7 +4,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class StringExtensionTest {
-
     @Test
     fun getPattern() {
         val s1 = "12345678901"

@@ -24,7 +24,6 @@ import one.mixin.android.extension.supportsOreo
 import one.mixin.android.widget.gallery.MimeType
 
 open class ContentEditText : AppCompatEditText {
-
     constructor(context: Context) : super(context)
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
@@ -39,15 +38,17 @@ open class ContentEditText : AppCompatEditText {
 
     init {
         supportsOreo {
-            val incognitoKeyboardEnabled = context.defaultSharedPreferences.getBoolean(
-                Constants.Account.PREF_INCOGNITO_KEYBOARD,
-                false,
-            )
-            imeOptions = if (incognitoKeyboardEnabled) {
-                imeOptions or IME_FLAG_NO_PERSONALIZED_LEARNING
-            } else {
-                imeOptions and IME_FLAG_NO_PERSONALIZED_LEARNING.inv()
-            }
+            val incognitoKeyboardEnabled =
+                context.defaultSharedPreferences.getBoolean(
+                    Constants.Account.PREF_INCOGNITO_KEYBOARD,
+                    false,
+                )
+            imeOptions =
+                if (incognitoKeyboardEnabled) {
+                    imeOptions or IME_FLAG_NO_PERSONALIZED_LEARNING
+                } else {
+                    imeOptions and IME_FLAG_NO_PERSONALIZED_LEARNING.inv()
+                }
         }
         super.setKeyListener(emojiEditTextHelper.getKeyListener(keyListener))
     }
@@ -58,14 +59,15 @@ open class ContentEditText : AppCompatEditText {
 
     var listener: OnCommitContentListener? = null
 
-    private val mimeTypes = arrayOf(
-        MimeType.PNG.toString(),
-        MimeType.GIF.toString(),
-        MimeType.JPEG.toString(),
-        MimeType.JPG.toString(),
-        MimeType.WEBP.toString(),
-        MimeType.HEIC.toString(),
-    )
+    private val mimeTypes =
+        arrayOf(
+            MimeType.PNG.toString(),
+            MimeType.GIF.toString(),
+            MimeType.JPEG.toString(),
+            MimeType.JPG.toString(),
+            MimeType.WEBP.toString(),
+            MimeType.HEIC.toString(),
+        )
 
     @SuppressLint("ObsoleteSdkInt")
     override fun onTextContextMenuItem(id: Int): Boolean {
@@ -95,10 +97,11 @@ open class ContentEditText : AppCompatEditText {
     }
 
     override fun onCreateInputConnection(editorInfo: EditorInfo): InputConnection? {
-        val ic = emojiEditTextHelper.onCreateInputConnection(
-            super.onCreateInputConnection(editorInfo),
-            editorInfo,
-        )
+        val ic =
+            emojiEditTextHelper.onCreateInputConnection(
+                super.onCreateInputConnection(editorInfo),
+                editorInfo,
+            )
         if (listener == null || ic == null) {
             return ic
         }

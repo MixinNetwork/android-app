@@ -9,14 +9,18 @@ import androidx.core.database.getIntOrNull
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getShortOrNull
 import androidx.core.database.getStringOrNull
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 import one.mixin.android.BuildConfig
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.util.reportEvent
 import timber.log.Timber
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
-fun debugLongClick(view: View, debugAction: () -> Unit, releaseAction: (() -> Unit)? = null) {
+fun debugLongClick(
+    view: View,
+    debugAction: () -> Unit,
+    releaseAction: (() -> Unit)? = null,
+) {
     if (BuildConfig.DEBUG) {
         view.setOnLongClickListener {
             view.context.heavyClickVibrate()
@@ -32,7 +36,10 @@ fun debugLongClick(view: View, debugAction: () -> Unit, releaseAction: (() -> Un
     }
 }
 
-inline fun <T> measureTimeMillis(tag: String, block: () -> T): T {
+inline fun <T> measureTimeMillis(
+    tag: String,
+    block: () -> T,
+): T {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
@@ -42,7 +49,10 @@ inline fun <T> measureTimeMillis(tag: String, block: () -> T): T {
     return result
 }
 
-inline fun <T> timeoutEarlyWarning(block: () -> T, timeout: Long = 50L): T {
+inline fun <T> timeoutEarlyWarning(
+    block: () -> T,
+    timeout: Long = 50L,
+): T {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
@@ -67,7 +77,7 @@ fun Cursor.getContent(columnIndex: Int): String {
                 ?: getDoubleOrNull(columnIndex)
                 ?: getShortOrNull(columnIndex)
                 ?: getLongOrNull(columnIndex) ?: ""
-            ).toString()
+        ).toString()
     } catch (e: Exception) {
         ""
     }

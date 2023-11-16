@@ -7,7 +7,6 @@ import androidx.appcompat.widget.LinearLayoutCompat
 import one.mixin.android.databinding.ViewShadowCircleBinding
 
 class ShadowCircleView : LinearLayoutCompat {
-
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(

@@ -9,13 +9,13 @@ import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.core.text.bold
 import androidx.core.view.isVisible
-import java.math.BigDecimal
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutAssetBalanceBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.Fiats
+import java.math.BigDecimal
 
 class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearLayout(context, attributeSet) {
     private val binding = LayoutAssetBalanceBinding.inflate(LayoutInflater.from(context), this)
@@ -37,17 +37,18 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
             val balanceText = amount.numberFormat() + " " + asset.symbol
             balance.text = balanceText
             if (t is WithdrawBiometricItem) {
-                val subText = SpannableStringBuilder()
-                    .append(context.getString(R.string.Amount))
-                    .append(" ")
-                    .bold { append(balanceText) }
-                    .append(" ")
-                    .append(getValueText(amount, asset.priceFiat()))
-                    .append("\n")
-                    .append(context.getString(R.string.Fee))
-                    .append(" ")
-                    .bold { append(t.fee.numberFormat()).append(" ").append(t.feeSymbol).append(" ") }
-                    .append(getValueText(t.fee, t.feePriceFiat))
+                val subText =
+                    SpannableStringBuilder()
+                        .append(context.getString(R.string.Amount))
+                        .append(" ")
+                        .bold { append(balanceText) }
+                        .append(" ")
+                        .append(getValueText(amount, asset.priceFiat()))
+                        .append("\n")
+                        .append(context.getString(R.string.Fee))
+                        .append(" ")
+                        .bold { append(t.fee.numberFormat()).append(" ").append(t.feeSymbol).append(" ") }
+                        .append(getValueText(t.fee, t.feePriceFiat))
                 balanceAs.text = subText
             } else {
                 balanceAs.text = getValueText(amount, asset.priceFiat())
@@ -66,9 +67,12 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
         }
     }
 
-    private fun getValueText(value: String, assetPrice: BigDecimal) =
+    private fun getValueText(
+        value: String,
+        assetPrice: BigDecimal,
+    ) =
         "≈ ${Fiats.getSymbol()}${(
             BigDecimal(value) *
                 assetPrice
-            ).numberFormat2()}"
+        ).numberFormat2()}"
 }

@@ -39,7 +39,6 @@ import one.mixin.android.widget.lottie.RLottieImageView
 
 @AndroidEntryPoint
 class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
-
     companion object {
         const val TAG = "StickerFragment"
         const val ARGS_ALBUM_ID = "args_album_id"
@@ -47,7 +46,10 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
         const val PADDING = 10
         var COLUMN = 3
 
-        fun newInstance(id: String? = null, type: Int): StickerFragment {
+        fun newInstance(
+            id: String? = null,
+            type: Int,
+        ): StickerFragment {
             val f = StickerFragment()
             val b = Bundle()
             b.putString(ARGS_ALBUM_ID, id)
@@ -82,13 +84,17 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
     private var callback: StickerAlbumAdapter.Callback? = null
     private var personalAlbumId: String? = null
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        COLUMN = if (requireContext().isWideScreen()) {
-            5
-        } else {
-            3
-        }
+        COLUMN =
+            if (requireContext().isWideScreen()) {
+                5
+            } else {
+                3
+            }
         if (type == TYPE_NORMAL && albumId != null) {
             stickerViewModel.observeStickers(albumId!!).observe(
                 viewLifecycleOwner,
@@ -133,7 +139,10 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
             stickerRv.adapter = stickerAdapter
             stickerAdapter.setOnStickerListener(
                 object : StickerListener {
-                    override fun onItemClick(pos: Int, sticker: Sticker) {
+                    override fun onItemClick(
+                        pos: Int,
+                        sticker: Sticker,
+                    ) {
                         if (type != TYPE_RECENT) {
                             stickerViewModel.updateStickerUsedAt(sticker.stickerId)
                         }
@@ -145,15 +154,16 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
                     }
                 },
             )
-            stickerRv.callback = object : DraggableRecyclerView.Callback {
-                override fun onScroll(dis: Float) {
-                    rvCallback?.onScroll(dis)
-                }
+            stickerRv.callback =
+                object : DraggableRecyclerView.Callback {
+                    override fun onScroll(dis: Float) {
+                        rvCallback?.onScroll(dis)
+                    }
 
-                override fun onRelease(fling: Int) {
-                    rvCallback?.onRelease(fling)
+                    override fun onRelease(fling: Int) {
+                        rvCallback?.onRelease(fling)
+                    }
                 }
-            }
 
             RxBus.listen(DragReleaseEvent::class.java)
                 .autoDispose(stopScope)
@@ -184,7 +194,10 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
         private var listener: StickerListener? = null
         var size: Int = 0
 
-        override fun onBindViewHolder(holder: StickerViewHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: StickerViewHolder,
+            position: Int,
+        ) {
             val params = holder.itemView.layoutParams
             params.width = size
             params.height = size
@@ -212,7 +225,10 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
 
         override fun getItemCount(): Int = if (needAdd) stickers.size + 1 else stickers.size
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StickerViewHolder {
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): StickerViewHolder {
             val view =
                 LayoutInflater.from(parent.context).inflate(R.layout.item_sticker, parent, false)
             return StickerViewHolder(view)
@@ -226,7 +242,11 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
     private class StickerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     interface StickerListener {
-        fun onItemClick(pos: Int, sticker: Sticker)
+        fun onItemClick(
+            pos: Int,
+            sticker: Sticker,
+        )
+
         fun onAddClick()
     }
 }

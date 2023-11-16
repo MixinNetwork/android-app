@@ -30,6 +30,7 @@ import one.mixin.android.vo.MessageMedia
 )
 abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
     abstract override fun floodMessageDao(): FloodMessageDao
+
     abstract override fun pendingMessageDao(): PendingMessageDao
 
     abstract override fun jobDao(): JobDao
@@ -39,59 +40,64 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
 
         private val lock = Any()
 
-        fun getDatabase(context: Context, floodMessageDao: FloodMessageDao, jobDao: JobDao): PendingDatabaseImp {
+        fun getDatabase(
+            context: Context,
+            floodMessageDao: FloodMessageDao,
+            jobDao: JobDao,
+        ): PendingDatabaseImp {
             synchronized(lock) {
                 if (INSTANCE == null) {
-                    val builder = Room.databaseBuilder(
-                        context,
-                        PendingDatabaseImp::class.java,
-                        PENDING_DB_NAME,
-                    ).enableMultiInstanceInvalidation().addCallback(
-                        object : Callback() {
-                            override fun onOpen(db: SupportSQLiteDatabase) {
-                                super.onOpen(db)
-                                supportSQLiteDatabase = db
-                            }
+                    val builder =
+                        Room.databaseBuilder(
+                            context,
+                            PendingDatabaseImp::class.java,
+                            PENDING_DB_NAME,
+                        ).enableMultiInstanceInvalidation().addCallback(
+                            object : Callback() {
+                                override fun onOpen(db: SupportSQLiteDatabase) {
+                                    super.onOpen(db)
+                                    supportSQLiteDatabase = db
+                                }
 
-                            override fun onCreate(db: SupportSQLiteDatabase) {
-                                while (true) {
-                                    val list = floodMessageDao.limit100()
-                                    list.forEach { msg ->
-                                        val values = ContentValues()
-                                        values.put("message_id", msg.messageId)
-                                        values.put("data", msg.data)
-                                        values.put("created_at", msg.createdAt)
-                                        db.insert("flood_messages", SQLiteDatabase.CONFLICT_REPLACE, values)
+                                override fun onCreate(db: SupportSQLiteDatabase) {
+                                    while (true) {
+                                        val list = floodMessageDao.limit100()
+                                        list.forEach { msg ->
+                                            val values = ContentValues()
+                                            values.put("message_id", msg.messageId)
+                                            values.put("data", msg.data)
+                                            values.put("created_at", msg.createdAt)
+                                            db.insert("flood_messages", SQLiteDatabase.CONFLICT_REPLACE, values)
+                                        }
+                                        floodMessageDao.deleteList(list)
+                                        if (list.size < 100) {
+                                            break
+                                        }
                                     }
-                                    floodMessageDao.deleteList(list)
-                                    if (list.size < 100) {
-                                        break
+                                    while (true) {
+                                        val list = jobDao.limit100()
+                                        list.forEach { job ->
+                                            val values = ContentValues()
+                                            values.put("job_id", job.jobId)
+                                            values.put("action", job.action)
+                                            values.put("created_at", job.createdAt)
+                                            values.put("order_id", job.orderId)
+                                            values.put("user_id", job.userId)
+                                            values.put("priority", job.priority)
+                                            values.put("blaze_message", job.blazeMessage)
+                                            values.put("conversation_id", job.conversationId)
+                                            values.put("resend_message_id", job.resendMessageId)
+                                            values.put("run_count", job.runCount)
+                                            db.insert("jobs", SQLiteDatabase.CONFLICT_REPLACE, values)
+                                        }
+                                        jobDao.deleteList(list)
+                                        if (list.size < 100) {
+                                            break
+                                        }
                                     }
                                 }
-                                while (true) {
-                                    val list = jobDao.limit100()
-                                    list.forEach { job ->
-                                        val values = ContentValues()
-                                        values.put("job_id", job.jobId)
-                                        values.put("action", job.action)
-                                        values.put("created_at", job.createdAt)
-                                        values.put("order_id", job.orderId)
-                                        values.put("user_id", job.userId)
-                                        values.put("priority", job.priority)
-                                        values.put("blaze_message", job.blazeMessage)
-                                        values.put("conversation_id", job.conversationId)
-                                        values.put("resend_message_id", job.resendMessageId)
-                                        values.put("run_count", job.runCount)
-                                        db.insert("jobs", SQLiteDatabase.CONFLICT_REPLACE, values)
-                                    }
-                                    jobDao.deleteList(list)
-                                    if (list.size < 100) {
-                                        break
-                                    }
-                                }
-                            }
-                        },
-                    )
+                            },
+                        )
                     INSTANCE = builder.build()
                 }
             }
@@ -99,6 +105,7 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
         }
 
         private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
+
         fun query(query: String): String? {
             val start = System.currentTimeMillis()
             var cursor: Cursor? = null
@@ -122,6 +129,7 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
             }
         }
     }
+
     override suspend fun getPendingMessages() = pendingMessageDao().getMessages()
 
     override fun deletePendingMessageByIds(ids: List<String>) {
@@ -137,6 +145,7 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
     override suspend fun findMessageIdsLimit10() = floodMessageDao().findMessageIdsLimit10()
 
     override suspend fun findMaxLengthMessageId(ids: List<String>) = floodMessageDao().findMaxLengthMessageId(ids)
+
     override suspend fun deleteFloodMessageById(id: String) = floodMessageDao().deleteFloodMessageById(id)
 
     override suspend fun deleteEmptyMessages() = floodMessageDao().deleteEmptyMessages()

@@ -8,10 +8,12 @@ import one.mixin.android.db.BaseDao
 
 @Dao
 interface SessionDao : BaseDao<Session> {
-
     @Transaction
     @Query("SELECT * FROM sessions WHERE address = :address AND device = :device")
-    fun getSession(address: String, device: Int): Session?
+    fun getSession(
+        address: String,
+        device: Int,
+    ): Session?
 
     @Transaction
     @Query("SELECT device from sessions WHERE address = :address AND device != 1")

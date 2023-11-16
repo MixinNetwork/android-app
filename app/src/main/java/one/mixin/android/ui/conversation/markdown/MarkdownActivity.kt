@@ -67,53 +67,56 @@ class MarkdownActivity : BaseActivity() {
         binding = ActivityMarkdownBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.control.mode = this.isNightMode()
-        binding.control.callback = object : WebControlView.Callback {
-            override fun onMoreClick() {
-                showBottomSheet()
-            }
+        binding.control.callback =
+            object : WebControlView.Callback {
+                override fun onMoreClick() {
+                    showBottomSheet()
+                }
 
-            override fun onCloseClick() {
-                finish()
+                override fun onCloseClick() {
+                    finish()
+                }
             }
-        }
-        val adapter = MarkwonAdapter.builder(
-            DefaultEntry(),
-        ).include(
-            FencedCodeBlock::class.java,
-            SimpleEntry.create(
-                R.layout.item_markdown_code_block,
-                R.id.text,
-            ),
-        ).include(
-            TableBlock::class.java,
-            TableEntry.create { builder: TableEntry.Builder ->
-                builder
-                    .tableLayout(R.layout.item_markdown_table_block, R.id.table_layout)
-                    .textLayoutIsRoot(R.layout.item_markdown_cell)
-            },
-        ).build()
+        val adapter =
+            MarkwonAdapter.builder(
+                DefaultEntry(),
+            ).include(
+                FencedCodeBlock::class.java,
+                SimpleEntry.create(
+                    R.layout.item_markdown_code_block,
+                    R.id.text,
+                ),
+            ).include(
+                TableBlock::class.java,
+                TableEntry.create { builder: TableEntry.Builder ->
+                    builder
+                        .tableLayout(R.layout.item_markdown_table_block, R.id.table_layout)
+                        .textLayoutIsRoot(R.layout.item_markdown_cell)
+                },
+            ).build()
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.adapter = adapter
-        val markwon = MarkwonUtil.getMarkwon(
-            this,
-            { link ->
-                if (link.isMixinUrl()) {
-                    link.openAsUrl(
-                        this@MarkdownActivity,
-                        supportFragmentManager,
-                        lifecycleScope,
-                        currentConversation = intent.getStringExtra(CONVERSATION_ID),
-                    ) {}
-                } else {
-                    LinkBottomSheetDialogFragment.newInstance(link)
-                        .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
-                }
-            },
-            { link ->
-                WebActivity.show(this, link, intent.getStringExtra(CONVERSATION_ID))
-            },
-        )
+        val markwon =
+            MarkwonUtil.getMarkwon(
+                this,
+                { link ->
+                    if (link.isMixinUrl()) {
+                        link.openAsUrl(
+                            this@MarkdownActivity,
+                            supportFragmentManager,
+                            lifecycleScope,
+                            currentConversation = intent.getStringExtra(CONVERSATION_ID),
+                        ) {}
+                    } else {
+                        LinkBottomSheetDialogFragment.newInstance(link)
+                            .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+                    }
+                },
+                { link ->
+                    WebActivity.show(this, link, intent.getStringExtra(CONVERSATION_ID))
+                },
+            )
         val markdown = intent.getStringExtra(CONTENT) ?: return
         adapter.setMarkdown(markwon, markdown)
         adapter.notifyDataSetChanged()
@@ -122,11 +125,12 @@ class MarkdownActivity : BaseActivity() {
     @SuppressLint("AutoDispose", "CheckResult")
     private fun showBottomSheet() {
         val builder = BottomSheet.Builder(this)
-        val view = View.inflate(
-            ContextThemeWrapper(this, R.style.Custom),
-            R.layout.view_markdown,
-            null,
-        )
+        val view =
+            View.inflate(
+                ContextThemeWrapper(this, R.style.Custom),
+                R.layout.view_markdown,
+                null,
+            )
         val viewBinding = ViewMarkdownBinding.bind(view)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
@@ -213,54 +217,59 @@ class MarkdownActivity : BaseActivity() {
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    private fun savePdf(dismissAction: () -> Unit) = lifecycleScope.launch {
-        val src = intent.getStringExtra(CONTENT) ?: return@launch
+    private fun savePdf(dismissAction: () -> Unit) =
+        lifecycleScope.launch {
+            val src = intent.getStringExtra(CONTENT) ?: return@launch
 
-        val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-            setCancelable(false)
-        }
-        dialog.show()
-        binding.recyclerView.layoutManager?.smoothScrollToPosition(
-            binding.recyclerView,
-            null,
-            binding.recyclerView.adapter?.itemCount ?: 0,
-        )
-
-        val pdfFile = this@MarkdownActivity.getOtherPath()
-            .createPdfTemp()
-        val flavour = GFMFlavourDescriptor()
-        val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(src)
-        val body = HtmlGenerator(src, parsedTree, flavour, true)
-            .generateHtml(HtmlTagRenderer(DUMMY_ATTRIBUTES_CUSTOMIZER, true))
-
-        var pdfHtml = assets.open("pdf.html")
-            .source()
-            .buffer()
-            .readByteString()
-            .string(Charset.forName("utf-8"))
-            .replace("#body-placeholder", body)
-        if (isNightMode()) {
-            pdfHtml = pdfHtml.replace("pdf-light.css", "pdf-dark.css")
-        }
-
-        printPdf(
-            this@MarkdownActivity,
-            pdfHtml,
-            pdfFile,
-            object : PrintPdfCallback {
-                override fun onSuccess() {
-                    this@MarkdownActivity.shareFile(pdfFile)
-                    dismissAction.invoke()
-                    dialog.dismiss()
+            val dialog =
+                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                    setCancelable(false)
                 }
+            dialog.show()
+            binding.recyclerView.layoutManager?.smoothScrollToPosition(
+                binding.recyclerView,
+                null,
+                binding.recyclerView.adapter?.itemCount ?: 0,
+            )
 
-                override fun onFailure(error: CharSequence?) {
-                    dialog.dismiss()
-                    toast(R.string.Export_failed)
-                }
-            },
-        )
-    }
+            val pdfFile =
+                this@MarkdownActivity.getOtherPath()
+                    .createPdfTemp()
+            val flavour = GFMFlavourDescriptor()
+            val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(src)
+            val body =
+                HtmlGenerator(src, parsedTree, flavour, true)
+                    .generateHtml(HtmlTagRenderer(DUMMY_ATTRIBUTES_CUSTOMIZER, true))
+
+            var pdfHtml =
+                assets.open("pdf.html")
+                    .source()
+                    .buffer()
+                    .readByteString()
+                    .string(Charset.forName("utf-8"))
+                    .replace("#body-placeholder", body)
+            if (isNightMode()) {
+                pdfHtml = pdfHtml.replace("pdf-light.css", "pdf-dark.css")
+            }
+
+            printPdf(
+                this@MarkdownActivity,
+                pdfHtml,
+                pdfFile,
+                object : PrintPdfCallback {
+                    override fun onSuccess() {
+                        this@MarkdownActivity.shareFile(pdfFile)
+                        dismissAction.invoke()
+                        dialog.dismiss()
+                    }
+
+                    override fun onFailure(error: CharSequence?) {
+                        dialog.dismiss()
+                        toast(R.string.Export_failed)
+                    }
+                },
+            )
+        }
 
     inner class HtmlTagRenderer(
         private val customizer: AttributesCustomizer,
@@ -305,7 +314,12 @@ class MarkdownActivity : BaseActivity() {
     companion object {
         private const val CONTENT = "content"
         private const val CONVERSATION_ID = "conversation_id"
-        fun show(context: Context, content: String, conversationId: String? = null) {
+
+        fun show(
+            context: Context,
+            content: String,
+            conversationId: String? = null,
+        ) {
             context.startActivity(
                 Intent(context, MarkdownActivity::class.java).apply {
                     putExtra(CONTENT, content)

@@ -15,7 +15,6 @@ import one.mixin.android.widget.ConversationSelectView
 
 class SelectAdapter(private val allListener: (Boolean) -> Unit, private val sizeChangeListener: (Int) -> Unit) :
     RecyclerView.Adapter<SelectAdapter.ConversationViewHolder>() {
-
     var selectItem = ArraySet<String>()
 
     var conversations: List<ConversationMinimal>? = null
@@ -33,7 +32,10 @@ class SelectAdapter(private val allListener: (Boolean) -> Unit, private val size
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun check(check: Boolean, conversationId: String) {
+    fun check(
+        check: Boolean,
+        conversationId: String,
+    ) {
         if (check) {
             selectItem.add(conversationId)
         } else {
@@ -46,23 +48,24 @@ class SelectAdapter(private val allListener: (Boolean) -> Unit, private val size
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
-            displayConversations = if (value.isNullOrBlank()) {
-                conversations
-            } else {
-                conversations?.filter {
+            displayConversations =
+                if (value.isNullOrBlank()) {
+                    conversations
+                } else {
+                    conversations?.filter {
+                        if (it.isGroupConversation()) {
+                            it.groupName.containsIgnoreCase(value)
+                        } else {
+                            it.name.containsIgnoreCase(value)
+                        }
+                    }
+                }?.sortedByDescending {
                     if (it.isGroupConversation()) {
-                        it.groupName.containsIgnoreCase(value)
+                        it.groupName.equalsIgnoreCase(keyword)
                     } else {
-                        it.name.containsIgnoreCase(value)
+                        it.name.equalsIgnoreCase(keyword)
                     }
                 }
-            }?.sortedByDescending {
-                if (it.isGroupConversation()) {
-                    it.groupName.equalsIgnoreCase(keyword)
-                } else {
-                    it.name.equalsIgnoreCase(keyword)
-                }
-            }
             notifyDataSetChanged()
         }
 
@@ -102,7 +105,10 @@ class SelectAdapter(private val allListener: (Boolean) -> Unit, private val size
         return displayConversations?.size ?: 0
     }
 
-    override fun onBindViewHolder(holder: ConversationViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ConversationViewHolder,
+        position: Int,
+    ) {
         if (displayConversations.isNullOrEmpty()) {
             return
         }
@@ -122,7 +128,10 @@ class SelectAdapter(private val allListener: (Boolean) -> Unit, private val size
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ConversationViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ConversationViewHolder {
         return ConversationViewHolder(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_select_conversation,
@@ -133,8 +142,11 @@ class SelectAdapter(private val allListener: (Boolean) -> Unit, private val size
     }
 
     class ConversationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
-        fun bind(item: ConversationMinimal, isCheck: Boolean, listener: (Boolean) -> Unit) {
+        fun bind(
+            item: ConversationMinimal,
+            isCheck: Boolean,
+            listener: (Boolean) -> Unit,
+        ) {
             (itemView as ConversationSelectView).let {
                 it.isChecked = isCheck
                 it.bind(item, listener)

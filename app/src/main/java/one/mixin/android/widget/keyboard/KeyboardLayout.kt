@@ -55,13 +55,17 @@ class KeyboardLayout : LinearLayout {
     private var systemTop = 0
 
     private enum class STATUS {
-        EXPANDED, OPENED, KEYBOARD_OPENED, CLOSED
+        EXPANDED,
+        OPENED,
+        KEYBOARD_OPENED,
+        CLOSED,
     }
 
     private var status = STATUS.CLOSED
 
-    var keyboardHeight: Int = PreferenceManager.getDefaultSharedPreferences(context)
-        .getInt("keyboard_height_portrait", defaultCustomKeyboardSize)
+    var keyboardHeight: Int =
+        PreferenceManager.getDefaultSharedPreferences(context)
+            .getInt("keyboard_height_portrait", defaultCustomKeyboardSize)
         private set(value) {
             if (field != value && value > 0) {
                 field = value
@@ -172,10 +176,11 @@ class KeyboardLayout : LinearLayout {
                     runningAnimations: MutableList<WindowInsetsAnimationCompat>,
                 ): WindowInsetsCompat {
                     if (status == STATUS.CLOSED || status == STATUS.KEYBOARD_OPENED) {
-                        _inputArea.layoutParams.height = max(
-                            0,
-                            insets.getInsets(WindowInsetsCompat.Type.ime()).bottom - systemBottom,
-                        )
+                        _inputArea.layoutParams.height =
+                            max(
+                                0,
+                                insets.getInsets(WindowInsetsCompat.Type.ime()).bottom - systemBottom,
+                            )
                         requestLayout()
                     } else if (status == STATUS.EXPANDED) {
                         val percent =
@@ -188,6 +193,7 @@ class KeyboardLayout : LinearLayout {
                 }
 
                 private var gap = 0
+
                 override fun onPrepare(animation: WindowInsetsAnimationCompat) {
                     super.onPrepare(animation)
                     if (status == STATUS.EXPANDED) {
@@ -240,11 +246,13 @@ class KeyboardLayout : LinearLayout {
     }
 
     private var onKeyboardHiddenListener: OnKeyboardHiddenListener? = null
+
     fun setOnKeyBoardHiddenListener(onKeyboardHiddenListener: OnKeyboardHiddenListener?) {
         this.onKeyboardHiddenListener = onKeyboardHiddenListener
     }
 
     private var onKeyboardShownListener: OnKeyboardShownListener? = null
+
     fun setOnKeyboardShownListener(onKeyboardShownListener: OnKeyboardShownListener?) {
         this.onKeyboardShownListener = onKeyboardShownListener
     }
@@ -260,49 +268,53 @@ class KeyboardLayout : LinearLayout {
         _inputArea.layoutParams = params
     }
 
-    fun releaseDrag(fling: Int, resetCallback: () -> Unit) {
+    fun releaseDrag(
+        fling: Int,
+        resetCallback: () -> Unit,
+    ) {
         if (status == STATUS.KEYBOARD_OPENED) return
         val curH = _inputArea.height
         val max = (context.screenHeight() * 2) / 3
         val maxMid = keyboardHeight + (max - keyboardHeight) / 2
         val minMid = keyboardHeight / 2
-        val targetH = if (curH > keyboardHeight) {
-            if (fling == FLING_UP) {
-                max
-            } else if (fling == FLING_DOWN) {
-                keyboardHeight - systemBottom
-            } else {
-                if (curH <= maxMid) {
+        val targetH =
+            if (curH > keyboardHeight) {
+                if (fling == FLING_UP) {
+                    max
+                } else if (fling == FLING_DOWN) {
                     keyboardHeight - systemBottom
                 } else {
-                    max
+                    if (curH <= maxMid) {
+                        keyboardHeight - systemBottom
+                    } else {
+                        max
+                    }
                 }
-            }
-        } else if (curH < keyboardHeight) {
-            if (fling == FLING_UP) {
-                keyboardHeight
-            } else if (fling == FLING_DOWN) {
-                0
-            } else {
-                if (curH > minMid) {
-                    keyboardHeight - systemBottom
-                } else {
-                    0
-                }
-            }
-        } else {
-            when (fling) {
-                FLING_UP -> {
-                    max
-                }
-                FLING_DOWN -> {
-                    0
-                }
-                else -> {
+            } else if (curH < keyboardHeight) {
+                if (fling == FLING_UP) {
                     keyboardHeight
+                } else if (fling == FLING_DOWN) {
+                    0
+                } else {
+                    if (curH > minMid) {
+                        keyboardHeight - systemBottom
+                    } else {
+                        0
+                    }
+                }
+            } else {
+                when (fling) {
+                    FLING_UP -> {
+                        max
+                    }
+                    FLING_DOWN -> {
+                        0
+                    }
+                    else -> {
+                        keyboardHeight
+                    }
                 }
             }
-        }
         when (targetH) {
             0 -> {
                 status = STATUS.CLOSED
@@ -330,6 +342,7 @@ class KeyboardLayout : LinearLayout {
     }
 
     private var lastKeyboardHeight = 0
+
     private fun calculateInsertBottom(imeInserts: Insets) {
         max(imeInserts.bottom - systemBottom, 0).let { value ->
             if (lastKeyboardHeight == value) return@let
@@ -352,6 +365,7 @@ class KeyboardLayout : LinearLayout {
     }
 
     private var inMultiWindowMode = false
+
     fun onMultiWindowModeChanged(inMultiWindowMode: Boolean) {
         this.inMultiWindowMode = inMultiWindowMode
     }

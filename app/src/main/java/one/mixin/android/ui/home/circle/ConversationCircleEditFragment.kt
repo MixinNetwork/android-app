@@ -50,9 +50,10 @@ class ConversationCircleEditFragment : BaseFragment() {
         fun newInstance(
             circle: ConversationCircleItem,
         ) = ConversationCircleEditFragment().apply {
-            arguments = bundleOf(
-                ARGS_CIRCLE to circle,
-            )
+            arguments =
+                bundleOf(
+                    ARGS_CIRCLE to circle,
+                )
         }
     }
 
@@ -75,12 +76,19 @@ class ConversationCircleEditFragment : BaseFragment() {
 
     private var oldCircleConversationPayloadSet = mutableSetOf<CircleConversationPayload>()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View? =
         layoutInflater.inflate(R.layout.fragment_conversation_circle_edit, container, false)
 
     private val binding by viewBinding(FragmentConversationCircleEditBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener {
             parentFragmentManager.popBackStackImmediate()
@@ -103,12 +111,13 @@ class ConversationCircleEditFragment : BaseFragment() {
                             adapter.selectItem.remove(user)
                             selectAdapter.checkedItems.remove(user)
                         } else {
-                            val count = chatViewModel.getCircleConversationCount(
-                                generateConversationId(
-                                    Session.getAccountId()!!,
-                                    user.userId,
-                                ),
-                            )
+                            val count =
+                                chatViewModel.getCircleConversationCount(
+                                    generateConversationId(
+                                        Session.getAccountId()!!,
+                                        user.userId,
+                                    ),
+                                )
                             if (count >= CIRCLE_CONVERSATION_LIMIT) {
                                 toast(R.string.number_reached_limit)
                                 return@launch
@@ -179,131 +188,146 @@ class ConversationCircleEditFragment : BaseFragment() {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun loadData() = lifecycleScope.launch {
-        val conversations = chatViewModel.successConversationList()
-        adapter.sourceConversations = conversations
-        val conversationItems = chatViewModel.findConversationItemByCircleId(circle.circleId)
-        val circleConversations = chatViewModel.findCircleConversationByCircleId(circle.circleId)
-        val inCircleContactId = mutableListOf<String>()
-        circleConversations.forEach { cc ->
-            oldCircleConversationPayloadSet.add(
-                CircleConversationPayload(
-                    cc.conversationId,
-                    if (cc.userId.isNullOrEmpty()) {
-                        null
-                    } else {
-                        cc.userId
-                    },
-                ),
-            )
-            if (cc.userId != null) {
-                inCircleContactId.add(cc.userId)
-            }
-        }
-        adapter.selectItem.clear()
-        adapter.selectItem.addAll(conversationItems)
-        selectAdapter.checkedItems.clear()
-        selectAdapter.checkedItems.addAll(conversationItems)
-        val set = ArraySet<String>()
-        conversations.forEach { item ->
-            if (item.isContactConversation()) {
-                set.add(item.ownerId)
-            }
-        }
-
-        val friends = mutableListOf<User>()
-        val bots = mutableListOf<User>()
-        val inCircleUsers = mutableListOf<User>()
-        chatViewModel.getFriends().filter { item ->
-            !set.contains(item.userId)
-        }.forEach {
-            if (inCircleContactId.contains(it.userId)) {
-                inCircleUsers.add(it)
-            }
-            if (it.isBot()) {
-                bots.add(it)
-            } else {
-                friends.add(it)
-            }
-        }
-        adapter.sourceFriends = friends
-        adapter.sourceBots = bots
-        adapter.selectItem.addAll(inCircleUsers)
-        selectAdapter.checkedItems.addAll(inCircleUsers)
-        selectAdapter.notifyDataSetChanged()
-        adapter.changeData()
-        updateTitleText(adapter.selectItem.size)
-    }
-
-    private fun save() = lifecycleScope.launch {
-        val dialog = indeterminateProgressDialog(
-            message = R.string.Please_wait_a_bit,
-            title = R.string.Saving,
-        ).apply {
-            setCancelable(false)
-        }
-        dialog.show()
-        binding.searchEt.hideKeyboard()
-
-        val conversationRequests = mutableSetOf<CircleConversationPayload>()
-        adapter.selectItem.forEach { item ->
-            if (item is User) {
-                conversationRequests.add(
+    private fun loadData() =
+        lifecycleScope.launch {
+            val conversations = chatViewModel.successConversationList()
+            adapter.sourceConversations = conversations
+            val conversationItems = chatViewModel.findConversationItemByCircleId(circle.circleId)
+            val circleConversations = chatViewModel.findCircleConversationByCircleId(circle.circleId)
+            val inCircleContactId = mutableListOf<String>()
+            circleConversations.forEach { cc ->
+                oldCircleConversationPayloadSet.add(
                     CircleConversationPayload(
-                        generateConversationId(Session.getAccountId()!!, item.userId),
-                        item.userId,
+                        cc.conversationId,
+                        if (cc.userId.isNullOrEmpty()) {
+                            null
+                        } else {
+                            cc.userId
+                        },
                     ),
                 )
-            } else if (item is ConversationMinimal) {
-                conversationRequests.add(
-                    CircleConversationPayload(
-                        item.conversationId,
-                        if (item.isContactConversation()) item.ownerId else null,
-                    ),
-                )
-            }
-        }
-        val safeSet = oldCircleConversationPayloadSet.intersect(conversationRequests)
-        val removeSet = oldCircleConversationPayloadSet.subtract(safeSet)
-        val addSet = conversationRequests.subtract(safeSet)
-        if (addSet.isEmpty() && removeSet.isEmpty()) parentFragmentManager.popBackStackImmediate()
-        val request = mutableListOf<CircleConversationRequest>().apply {
-            addAll(addSet.map { CircleConversationRequest(it.conversationId, it.userId, CircleConversationAction.ADD.name) })
-            addAll(removeSet.map { CircleConversationRequest(it.conversationId, it.userId, CircleConversationAction.REMOVE.name) })
-        }
-
-        handleMixinResponse(
-            invokeNetwork = {
-                chatViewModel.updateCircleConversations(circle.circleId, request)
-            },
-            successBlock = {
-                if (it.isSuccess) {
-                    chatViewModel.saveCircle(circle.circleId, it.data, removeSet)
+                if (cc.userId != null) {
+                    inCircleContactId.add(cc.userId)
                 }
-                dialog.dismiss()
-                parentFragmentManager.popBackStackImmediate()
-            },
-            exceptionBlock = {
-                dialog.dismiss()
-                return@handleMixinResponse false
-            },
-            failureBlock = {
-                dialog.dismiss()
-                return@handleMixinResponse false
-            },
-        )
-    }
+            }
+            adapter.selectItem.clear()
+            adapter.selectItem.addAll(conversationItems)
+            selectAdapter.checkedItems.clear()
+            selectAdapter.checkedItems.addAll(conversationItems)
+            val set = ArraySet<String>()
+            conversations.forEach { item ->
+                if (item.isContactConversation()) {
+                    set.add(item.ownerId)
+                }
+            }
 
-    private val mWatcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
-
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        }
-
-        override fun afterTextChanged(s: Editable?) {
-            adapter.keyword = s
+            val friends = mutableListOf<User>()
+            val bots = mutableListOf<User>()
+            val inCircleUsers = mutableListOf<User>()
+            chatViewModel.getFriends().filter { item ->
+                !set.contains(item.userId)
+            }.forEach {
+                if (inCircleContactId.contains(it.userId)) {
+                    inCircleUsers.add(it)
+                }
+                if (it.isBot()) {
+                    bots.add(it)
+                } else {
+                    friends.add(it)
+                }
+            }
+            adapter.sourceFriends = friends
+            adapter.sourceBots = bots
+            adapter.selectItem.addAll(inCircleUsers)
+            selectAdapter.checkedItems.addAll(inCircleUsers)
+            selectAdapter.notifyDataSetChanged()
             adapter.changeData()
+            updateTitleText(adapter.selectItem.size)
         }
-    }
+
+    private fun save() =
+        lifecycleScope.launch {
+            val dialog =
+                indeterminateProgressDialog(
+                    message = R.string.Please_wait_a_bit,
+                    title = R.string.Saving,
+                ).apply {
+                    setCancelable(false)
+                }
+            dialog.show()
+            binding.searchEt.hideKeyboard()
+
+            val conversationRequests = mutableSetOf<CircleConversationPayload>()
+            adapter.selectItem.forEach { item ->
+                if (item is User) {
+                    conversationRequests.add(
+                        CircleConversationPayload(
+                            generateConversationId(Session.getAccountId()!!, item.userId),
+                            item.userId,
+                        ),
+                    )
+                } else if (item is ConversationMinimal) {
+                    conversationRequests.add(
+                        CircleConversationPayload(
+                            item.conversationId,
+                            if (item.isContactConversation()) item.ownerId else null,
+                        ),
+                    )
+                }
+            }
+            val safeSet = oldCircleConversationPayloadSet.intersect(conversationRequests)
+            val removeSet = oldCircleConversationPayloadSet.subtract(safeSet)
+            val addSet = conversationRequests.subtract(safeSet)
+            if (addSet.isEmpty() && removeSet.isEmpty()) parentFragmentManager.popBackStackImmediate()
+            val request =
+                mutableListOf<CircleConversationRequest>().apply {
+                    addAll(addSet.map { CircleConversationRequest(it.conversationId, it.userId, CircleConversationAction.ADD.name) })
+                    addAll(removeSet.map { CircleConversationRequest(it.conversationId, it.userId, CircleConversationAction.REMOVE.name) })
+                }
+
+            handleMixinResponse(
+                invokeNetwork = {
+                    chatViewModel.updateCircleConversations(circle.circleId, request)
+                },
+                successBlock = {
+                    if (it.isSuccess) {
+                        chatViewModel.saveCircle(circle.circleId, it.data, removeSet)
+                    }
+                    dialog.dismiss()
+                    parentFragmentManager.popBackStackImmediate()
+                },
+                exceptionBlock = {
+                    dialog.dismiss()
+                    return@handleMixinResponse false
+                },
+                failureBlock = {
+                    dialog.dismiss()
+                    return@handleMixinResponse false
+                },
+            )
+        }
+
+    private val mWatcher: TextWatcher =
+        object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {
+            }
+
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                adapter.keyword = s
+                adapter.changeData()
+            }
+        }
 }

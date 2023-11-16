@@ -75,7 +75,11 @@ class BeepManager(private val context: Context) : MediaPlayer.OnErrorListener, C
     }
 
     @Synchronized
-    override fun onError(mp: MediaPlayer, what: Int, extra: Int): Boolean {
+    override fun onError(
+        mp: MediaPlayer,
+        what: Int,
+        extra: Int,
+    ): Boolean {
         close()
         updatePrefs()
         return true

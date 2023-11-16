@@ -37,33 +37,37 @@ data class AssetItem(
         return BigDecimal(balance).multiply(priceFiat())
     }
 
-    fun priceFiat(): BigDecimal = if (priceUsd == "0") {
-        BigDecimal.ZERO
-    } else {
-        BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
-    }
+    fun priceFiat(): BigDecimal =
+        if (priceUsd == "0") {
+            BigDecimal.ZERO
+        } else {
+            BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
+        }
 
-    fun chainPriceFiat(): BigDecimal = if (chainPriceUsd == null || chainPriceUsd == "0") {
-        BigDecimal.ZERO
-    } else {
-        BigDecimal(chainPriceUsd).multiply(BigDecimal(Fiats.getRate()))
-    }
+    fun chainPriceFiat(): BigDecimal =
+        if (chainPriceUsd == null || chainPriceUsd == "0") {
+            BigDecimal.ZERO
+        } else {
+            BigDecimal(chainPriceUsd).multiply(BigDecimal(Fiats.getRate()))
+        }
 
-    fun btc(): BigDecimal = if (priceBtc == "0") {
-        BigDecimal.ZERO
-    } else {
-        BigDecimal(balance).multiply(BigDecimal(priceBtc))
-    }
+    fun btc(): BigDecimal =
+        if (priceBtc == "0") {
+            BigDecimal.ZERO
+        } else {
+            BigDecimal(balance).multiply(BigDecimal(priceBtc))
+        }
 
     fun getDestination(): String {
         return if (assetId == BITCOIN_CHAIN_ID) {
             depositEntries?.firstOrNull { depositEntry ->
-                depositEntry.properties != null && depositEntry.destination.isNotBlank() && depositEntry.properties.any { property ->
-                    property.equals(
-                        "SegWit",
-                        false,
-                    )
-                }
+                depositEntry.properties != null && depositEntry.destination.isNotBlank() &&
+                    depositEntry.properties.any { property ->
+                        property.equals(
+                            "SegWit",
+                            false,
+                        )
+                    }
             }?.destination ?: destination
         } else if (!depositEntries.isNullOrEmpty()) {
             depositEntries.first().destination
@@ -75,12 +79,13 @@ data class AssetItem(
     fun getTag(): String? {
         return if (assetId == BITCOIN_CHAIN_ID) {
             depositEntries?.firstOrNull { depositEntry ->
-                depositEntry.properties != null && depositEntry.destination.isNotBlank() && depositEntry.properties.any { property ->
-                    property.equals(
-                        "SegWit",
-                        false,
-                    )
-                }
+                depositEntry.properties != null && depositEntry.destination.isNotBlank() &&
+                    depositEntry.properties.any { property ->
+                        property.equals(
+                            "SegWit",
+                            false,
+                        )
+                    }
             }?.tag
         } else if (!depositEntries.isNullOrEmpty()) {
             depositEntries.first().tag
@@ -90,13 +95,20 @@ data class AssetItem(
     }
 
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<AssetItem>() {
-            override fun areItemsTheSame(oldItem: AssetItem, newItem: AssetItem) =
-                oldItem.assetId == newItem.assetId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<AssetItem>() {
+                override fun areItemsTheSame(
+                    oldItem: AssetItem,
+                    newItem: AssetItem,
+                ) =
+                    oldItem.assetId == newItem.assetId
 
-            override fun areContentsTheSame(oldItem: AssetItem, newItem: AssetItem) =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: AssetItem,
+                    newItem: AssetItem,
+                ) =
+                    oldItem == newItem
+            }
     }
 }
 

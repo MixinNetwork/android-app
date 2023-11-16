@@ -28,7 +28,6 @@ class ConversationJob(
     private val type: Int,
     private val recipientId: String? = null,
 ) : MixinJob(Params(PRIORITY_UI_HIGH).groupBy(GROUP), UUID.randomUUID().toString()) {
-
     companion object {
         const val GROUP = "ConversationJob"
         private const val serialVersionUID = 1L
@@ -55,10 +54,11 @@ class ConversationJob(
                 updateConversationStatusFailure()
                 return
             }
-            createCheckRunJob = applicationScope.launch(Dispatchers.IO) {
-                delay(CREATE_TIMEOUT_MILLIS)
-                updateConversationStatusFailure()
-            }
+            createCheckRunJob =
+                applicationScope.launch(Dispatchers.IO) {
+                    delay(CREATE_TIMEOUT_MILLIS)
+                    updateConversationStatusFailure()
+                }
         }
     }
 
@@ -75,45 +75,46 @@ class ConversationJob(
 
     private fun createGroup() {
         try {
-            val response = when (type) {
-                TYPE_CREATE ->
-                    conversationApi.create(request!!).execute().body()
-                TYPE_ADD ->
-                    conversationApi.participants(
-                        conversationId!!,
-                        ParticipantAction.ADD.name,
-                        participantRequests!!,
-                    )
-                        .execute().body()
-                TYPE_REMOVE ->
-                    conversationApi.participants(
-                        conversationId!!,
-                        ParticipantAction.REMOVE.name,
-                        participantRequests!!,
-                    )
-                        .execute().body()
-                TYPE_UPDATE ->
-                    conversationApi.update(conversationId!!, request!!).execute().body()
-                TYPE_MAKE_ADMIN ->
-                    conversationApi.participants(
-                        conversationId!!,
-                        ParticipantAction.ROLE.name,
-                        participantRequests!!,
-                    )
-                        .execute().body()
-                TYPE_EXIT ->
-                    conversationApi.exit(conversationId!!).execute().body()
-                TYPE_MUTE ->
-                    conversationApi.mute(request!!.conversationId, request).execute().body()
-                TYPE_DISMISS_ADMIN ->
-                    conversationApi.participants(
-                        conversationId!!,
-                        ParticipantAction.ROLE.name,
-                        participantRequests!!,
-                    )
-                        .execute().body()
-                else -> null
-            }
+            val response =
+                when (type) {
+                    TYPE_CREATE ->
+                        conversationApi.create(request!!).execute().body()
+                    TYPE_ADD ->
+                        conversationApi.participants(
+                            conversationId!!,
+                            ParticipantAction.ADD.name,
+                            participantRequests!!,
+                        )
+                            .execute().body()
+                    TYPE_REMOVE ->
+                        conversationApi.participants(
+                            conversationId!!,
+                            ParticipantAction.REMOVE.name,
+                            participantRequests!!,
+                        )
+                            .execute().body()
+                    TYPE_UPDATE ->
+                        conversationApi.update(conversationId!!, request!!).execute().body()
+                    TYPE_MAKE_ADMIN ->
+                        conversationApi.participants(
+                            conversationId!!,
+                            ParticipantAction.ROLE.name,
+                            participantRequests!!,
+                        )
+                            .execute().body()
+                    TYPE_EXIT ->
+                        conversationApi.exit(conversationId!!).execute().body()
+                    TYPE_MUTE ->
+                        conversationApi.mute(request!!.conversationId, request).execute().body()
+                    TYPE_DISMISS_ADMIN ->
+                        conversationApi.participants(
+                            conversationId!!,
+                            ParticipantAction.ROLE.name,
+                            participantRequests!!,
+                        )
+                            .execute().body()
+                    else -> null
+                }
             handleResult(response)
         } catch (e: Exception) {
             if (type == TYPE_CREATE) {

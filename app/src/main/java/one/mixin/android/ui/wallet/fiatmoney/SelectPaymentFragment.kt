@@ -26,8 +26,8 @@ import one.mixin.android.ui.wallet.PaymentFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Card
+import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
 class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
@@ -61,20 +61,25 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
     }
 
     @SuppressLint("SetTextI18n")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        asset = requireNotNull(
-            requireArguments().getParcelableCompat(
-                TransactionsFragment.ARGS_ASSET,
-                TokenItem::class.java,
-            ),
-        )
-        currency = requireNotNull(
-            requireArguments().getParcelableCompat(
-                OrderConfirmFragment.ARGS_CURRENCY,
-                Currency::class.java,
-            ),
-        )
+        asset =
+            requireNotNull(
+                requireArguments().getParcelableCompat(
+                    TransactionsFragment.ARGS_ASSET,
+                    TokenItem::class.java,
+                ),
+            )
+        currency =
+            requireNotNull(
+                requireArguments().getParcelableCompat(
+                    OrderConfirmFragment.ARGS_CURRENCY,
+                    Currency::class.java,
+                ),
+            )
         binding.apply {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()

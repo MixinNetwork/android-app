@@ -21,13 +21,14 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class MemoBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "ShareMessageBottomSheetDialogFragment"
         private const val MEMO = "memo"
-        fun newInstance(memo: FormatMemo) = MemoBottomSheetDialogFragment().withArgs {
-            putParcelable(MEMO, memo)
-        }
+
+        fun newInstance(memo: FormatMemo) =
+            MemoBottomSheetDialogFragment().withArgs {
+                putParcelable(MEMO, memo)
+            }
     }
 
     override fun getTheme() = R.style.AppTheme_Dialog
@@ -39,7 +40,10 @@ class MemoBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentMemoBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi", "StringFormatInvalid")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)

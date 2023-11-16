@@ -33,47 +33,53 @@ class SixLayout : ConstraintLayout {
     private var titlesLayouts: List<RelativeLayout>
     private var avatars: List<CircleImageView>
     private val binding = ViewSixBinding.inflate(LayoutInflater.from(context), this)
+
     init {
-        layouts = listOf(
-            binding.thumbnailLayout1,
-            binding.thumbnailLayout2,
-            binding.thumbnailLayout3,
-            binding.thumbnailLayout4,
-            binding.thumbnailLayout5,
-            binding.thumbnailLayout6,
-        )
-        thumbs = listOf(
-            binding.thumbnailIv1,
-            binding.thumbnailIv2,
-            binding.thumbnailIv3,
-            binding.thumbnailIv4,
-            binding.thumbnailIv5,
-            binding.thumbnailIv6,
-        )
-        avatars = listOf(
-            binding.avatar1,
-            binding.avatar2,
-            binding.avatar3,
-            binding.avatar4,
-            binding.avatar5,
-            binding.avatar6,
-        )
-        titles = listOf(
-            binding.title1,
-            binding.title2,
-            binding.title3,
-            binding.title4,
-            binding.title5,
-            binding.title6,
-        )
-        titlesLayouts = listOf(
-            binding.titleLayout1,
-            binding.titleLayout2,
-            binding.titleLayout3,
-            binding.titleLayout4,
-            binding.titleLayout5,
-            binding.titleLayout6,
-        )
+        layouts =
+            listOf(
+                binding.thumbnailLayout1,
+                binding.thumbnailLayout2,
+                binding.thumbnailLayout3,
+                binding.thumbnailLayout4,
+                binding.thumbnailLayout5,
+                binding.thumbnailLayout6,
+            )
+        thumbs =
+            listOf(
+                binding.thumbnailIv1,
+                binding.thumbnailIv2,
+                binding.thumbnailIv3,
+                binding.thumbnailIv4,
+                binding.thumbnailIv5,
+                binding.thumbnailIv6,
+            )
+        avatars =
+            listOf(
+                binding.avatar1,
+                binding.avatar2,
+                binding.avatar3,
+                binding.avatar4,
+                binding.avatar5,
+                binding.avatar6,
+            )
+        titles =
+            listOf(
+                binding.title1,
+                binding.title2,
+                binding.title3,
+                binding.title4,
+                binding.title5,
+                binding.title6,
+            )
+        titlesLayouts =
+            listOf(
+                binding.titleLayout1,
+                binding.titleLayout2,
+                binding.titleLayout3,
+                binding.titleLayout4,
+                binding.titleLayout5,
+                binding.titleLayout6,
+            )
         binding.thumbnailLayout1.round(8.dp)
         binding.thumbnailLayout2.round(8.dp)
         binding.thumbnailLayout3.round(8.dp)
@@ -100,7 +106,10 @@ class SixLayout : ConstraintLayout {
         }
     }
 
-    fun loadData(clips: List<WebClip>, expandAction: (Int) -> Unit) {
+    fun loadData(
+        clips: List<WebClip>,
+        expandAction: (Int) -> Unit,
+    ) {
         repeat(6) { index ->
             if (index < clips.size) {
                 val app = clips[index].app

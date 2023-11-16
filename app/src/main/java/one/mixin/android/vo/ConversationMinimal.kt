@@ -23,13 +23,20 @@ data class ConversationMinimal(
     val messageStatus: String?,
 ) : IConversationCategory, ICategory, Parcelable {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ConversationMinimal>() {
-            override fun areItemsTheSame(oldItem: ConversationMinimal, newItem: ConversationMinimal) =
-                oldItem.conversationId == newItem.conversationId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<ConversationMinimal>() {
+                override fun areItemsTheSame(
+                    oldItem: ConversationMinimal,
+                    newItem: ConversationMinimal,
+                ) =
+                    oldItem.conversationId == newItem.conversationId
 
-            override fun areContentsTheSame(oldItem: ConversationMinimal, newItem: ConversationMinimal) =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: ConversationMinimal,
+                    newItem: ConversationMinimal,
+                ) =
+                    oldItem == newItem
+            }
     }
 
     override val type: String?
@@ -59,7 +66,10 @@ data class ConversationMinimal(
     }
 }
 
-fun ConversationMinimal.showVerifiedOrBot(verifiedView: View, botView: View) {
+fun ConversationMinimal.showVerifiedOrBot(
+    verifiedView: View,
+    botView: View,
+) {
     when {
         ownerVerified == true -> {
             verifiedView.isVisible = true

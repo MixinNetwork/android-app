@@ -7,10 +7,8 @@ import androidx.room.TypeConverters
 class ParticipantSessionMinimal(
     @ColumnInfo(name = "conversation_id")
     val conversationId: String,
-
     @ColumnInfo(name = "app_id")
     val appId: String?,
-
     @ColumnInfo(name = "capabilities")
     val capabilities: List<String>?,
 )

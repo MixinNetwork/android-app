@@ -19,62 +19,74 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
-import one.mixin.android.vo.sumsub.ProfileResponse
 import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel
-@Inject
-internal constructor(
-    private val userRepository: UserRepository,
-    private val accountRepository: AccountRepository,
-    private val assetRepository: AssetRepository,
-    private val jobManager: MixinJobManager,
-) : ViewModel() {
+    @Inject
+    internal constructor(
+        private val userRepository: UserRepository,
+        private val accountRepository: AccountRepository,
+        private val assetRepository: AssetRepository,
+        private val jobManager: MixinJobManager,
+    ) : ViewModel() {
+        fun insertUser(user: User) =
+            viewModelScope.launch(Dispatchers.IO) {
+                userRepository.upsert(user)
+            }
 
-    fun insertUser(user: User) = viewModelScope.launch(Dispatchers.IO) {
-        userRepository.upsert(user)
-    }
+        suspend fun snapshotLocal(
+            assetId: String,
+            snapshotId: String,
+        ) = assetRepository.snapshotLocal(assetId, snapshotId)
 
-    suspend fun snapshotLocal(assetId: String, snapshotId: String) = assetRepository.snapshotLocal(assetId, snapshotId)
+        fun assetItem(id: String): LiveData<AssetItem> = assetRepository.assetItem(id)
 
-    fun assetItem(id: String): LiveData<AssetItem> = assetRepository.assetItem(id)
+        suspend fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
 
-    suspend fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
+        suspend fun verifyPin(code: String) =
+            withContext(Dispatchers.IO) {
+                accountRepository.verifyPin(code)
+            }
 
-    suspend fun verifyPin(code: String) = withContext(Dispatchers.IO) {
-        accountRepository.verifyPin(code)
-    }
+        fun addresses(id: String) = assetRepository.addresses(id)
 
-    fun addresses(id: String) = assetRepository.addresses(id)
-
-    fun refreshAsset(assetId: String? = null) {
-        jobManager.addJobInBackground(RefreshAssetsJob(assetId))
-    }
-
-    suspend fun refreshAsset(assetId: String): Asset? = assetRepository.refreshAsset(assetId)
-
-    suspend fun errorCount() = accountRepository.errorCount()
-
-    suspend fun ticker(assetId: String, offset: String?) = assetRepository.ticker(assetId, offset)
-
-    suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> =
-        assetRepository.ticker(tickerRequest)
-
-    suspend fun refreshSnapshot(snapshotId: String): SnapshotItem? {
-        return withContext(Dispatchers.IO) {
-            assetRepository.refreshAndGetSnapshot(snapshotId)
+        fun refreshAsset(assetId: String? = null) {
+            jobManager.addJobInBackground(RefreshAssetsJob(assetId))
         }
+
+        suspend fun refreshAsset(assetId: String): Asset? = assetRepository.refreshAsset(assetId)
+
+        suspend fun errorCount() = accountRepository.errorCount()
+
+        suspend fun ticker(
+            assetId: String,
+            offset: String?,
+        ) = assetRepository.ticker(assetId, offset)
+
+        suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> =
+            assetRepository.ticker(tickerRequest)
+
+        suspend fun refreshSnapshot(snapshotId: String): SnapshotItem? {
+            return withContext(Dispatchers.IO) {
+                assetRepository.refreshAndGetSnapshot(snapshotId)
+            }
+        }
+
+        suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
+
+        fun observeAddress(addressId: String) = assetRepository.observeAddress(addressId)
+
+        fun findUserById(conversationId: String): LiveData<User> = userRepository.findUserById(conversationId)
+
+        fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
+
+        suspend fun findLatestTrace(
+            opponentId: String?,
+            destination: String?,
+            tag: String?,
+            amount: String,
+            assetId: String,
+        ) =
+            assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
     }
-
-    suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
-
-    fun observeAddress(addressId: String) = assetRepository.observeAddress(addressId)
-
-    fun findUserById(conversationId: String): LiveData<User> = userRepository.findUserById(conversationId)
-
-    fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
-
-    suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
-        assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
-}

@@ -34,13 +34,17 @@ import one.mixin.android.vo.MessageStatus
 class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
     companion object {
         const val TAG = "SettingSizeFragment"
+
         fun newInstance() = SettingSizeFragment()
     }
 
     private val binding by viewBinding(FragmentSizeBinding::bind)
 
     @SuppressLint("NotifyDataSetChanged")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         textSize = initTextSize.toFloat()
         binding.container.backgroundImage = WallpaperManager.getWallpaper(requireContext())
@@ -55,99 +59,106 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
             binding.chatRv.adapter?.notifyDataSetChanged()
         }
         binding.slider.value = initTextSize.toFloat()
-        binding.chatRv.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-            override fun onCreateViewHolder(
-                parent: ViewGroup,
-                viewType: Int,
-            ): RecyclerView.ViewHolder {
-                return when (viewType) {
-                    0 -> {
-                        TimeHolder(
-                            ItemChatTimeBinding.inflate(
-                                LayoutInflater.from(parent.context),
-                                parent,
-                                false,
-                            ),
-                        )
-                    }
+        binding.chatRv.adapter =
+            object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+                override fun onCreateViewHolder(
+                    parent: ViewGroup,
+                    viewType: Int,
+                ): RecyclerView.ViewHolder {
+                    return when (viewType) {
+                        0 -> {
+                            TimeHolder(
+                                ItemChatTimeBinding.inflate(
+                                    LayoutInflater.from(parent.context),
+                                    parent,
+                                    false,
+                                ),
+                            )
+                        }
 
-                    1 -> {
-                        TextHolder(
-                            ItemChatTextBinding.inflate(
-                                LayoutInflater.from(parent.context),
-                                parent,
-                                false,
-                            ),
-                        )
-                    }
+                        1 -> {
+                            TextHolder(
+                                ItemChatTextBinding.inflate(
+                                    LayoutInflater.from(parent.context),
+                                    parent,
+                                    false,
+                                ),
+                            )
+                        }
 
-                    else -> {
-                        TextHolder(
-                            ItemChatTextBinding.inflate(
-                                LayoutInflater.from(parent.context),
-                                parent,
-                                false,
-                            ),
-                        )
+                        else -> {
+                            TextHolder(
+                                ItemChatTextBinding.inflate(
+                                    LayoutInflater.from(parent.context),
+                                    parent,
+                                    false,
+                                ),
+                            )
+                        }
                     }
                 }
-            }
 
-            override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-                when (position) {
-                    1 -> (holder as TextHolder).apply {
-                        val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
-                        lp.horizontalBias = 0f
-                        binding.chatName.isVisible = false
-                        binding.chatTv.text = requireContext().getString(R.string.how_are_you)
-                        binding.chatTime.load(
-                            false,
-                            nowInUtc(),
-                            MessageStatus.DELIVERED.name,
-                            isPin = false,
-                            isRepresentative = false,
-                            isSecret = false,
-                        )
-                        binding.chatTime.changeSize(textSize - 4f)
-                        binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
-                        setItemBackgroundResource(
-                            binding.chatLayout,
-                            R.drawable.chat_bubble_other_last,
-                            R.drawable.chat_bubble_other_last_night,
-                        )
+                override fun onBindViewHolder(
+                    holder: RecyclerView.ViewHolder,
+                    position: Int,
+                ) {
+                    when (position) {
+                        1 ->
+                            (holder as TextHolder).apply {
+                                val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
+                                lp.horizontalBias = 0f
+                                binding.chatName.isVisible = false
+                                binding.chatTv.text = requireContext().getString(R.string.how_are_you)
+                                binding.chatTime.load(
+                                    false,
+                                    nowInUtc(),
+                                    MessageStatus.DELIVERED.name,
+                                    isPin = false,
+                                    isRepresentative = false,
+                                    isSecret = false,
+                                )
+                                binding.chatTime.changeSize(textSize - 4f)
+                                binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
+                                setItemBackgroundResource(
+                                    binding.chatLayout,
+                                    R.drawable.chat_bubble_other_last,
+                                    R.drawable.chat_bubble_other_last_night,
+                                )
+                            }
+
+                        2 ->
+                            (holder as TextHolder).apply {
+                                val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
+                                lp.horizontalBias = 1f
+                                binding.chatName.isVisible = false
+                                binding.chatTime.load(
+                                    true,
+                                    nowInUtc(),
+                                    MessageStatus.READ.name,
+                                    isPin = false,
+                                    isRepresentative = false,
+                                    isSecret = false,
+                                )
+                                binding.chatTime.changeSize(textSize - 4f)
+                                binding.chatTv.text = requireContext().getString(R.string.i_am_good)
+                                binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
+                                setItemBackgroundResource(
+                                    binding.chatLayout,
+                                    R.drawable.chat_bubble_me_last,
+                                    R.drawable.chat_bubble_me_last_night,
+                                )
+                            }
+
+                        else ->
+                            (holder as TimeHolder).binding.chatTime.text =
+                                requireContext().getString(R.string.Today)
                     }
-
-                    2 -> (holder as TextHolder).apply {
-                        val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
-                        lp.horizontalBias = 1f
-                        binding.chatName.isVisible = false
-                        binding.chatTime.load(
-                            true,
-                            nowInUtc(),
-                            MessageStatus.READ.name,
-                            isPin = false,
-                            isRepresentative = false,
-                            isSecret = false,
-                        )
-                        binding.chatTime.changeSize(textSize - 4f)
-                        binding.chatTv.text = requireContext().getString(R.string.i_am_good)
-                        binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
-                        setItemBackgroundResource(
-                            binding.chatLayout,
-                            R.drawable.chat_bubble_me_last,
-                            R.drawable.chat_bubble_me_last_night,
-                        )
-                    }
-
-                    else -> (holder as TimeHolder).binding.chatTime.text =
-                        requireContext().getString(R.string.Today)
                 }
+
+                override fun getItemViewType(position: Int) = position
+
+                override fun getItemCount(): Int = 3
             }
-
-            override fun getItemViewType(position: Int) = position
-
-            override fun getItemCount(): Int = 3
-        }
 
         lifecycleScope.launch {
             callbackFlow {

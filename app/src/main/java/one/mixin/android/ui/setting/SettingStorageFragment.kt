@@ -64,11 +64,15 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
     private val viewModel by viewModels<SettingStorageViewModel>()
     private val binding by viewBinding(FragmentStorageBinding::bind)
 
-    private val adapter = StorageAdapter {
-        showMenu(it)
-    }
+    private val adapter =
+        StorageAdapter {
+            showMenu(it)
+        }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
@@ -107,6 +111,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
     }
 
     private val selectSet: ArraySet<StorageUsage> = ArraySet()
+
     private fun showMenu(conversationId: String) {
         lifecycleScope.launch {
             val list = viewModel.getStorageUsage(requireContext(), conversationId)
@@ -137,10 +142,11 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
                 dialog.dismiss()
             }.create().apply {
                 setOnShowListener {
-                    val states = arrayOf(
-                        intArrayOf(android.R.attr.state_enabled),
-                        intArrayOf(-android.R.attr.state_enabled),
-                    )
+                    val states =
+                        arrayOf(
+                            intArrayOf(android.R.attr.state_enabled),
+                            intArrayOf(-android.R.attr.state_enabled),
+                        )
                     val colors = intArrayOf(Color.RED, Color.GRAY)
                     getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(ColorStateList(states, colors))
                 }
@@ -200,7 +206,10 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
     private val menuAdapter: MenuAdapter by lazy {
         MenuAdapter(
             object : (Boolean, StorageUsage) -> Unit {
-                override fun invoke(checked: Boolean, storageUsage: StorageUsage) {
+                override fun invoke(
+                    checked: Boolean,
+                    storageUsage: StorageUsage,
+                ) {
                     if (checked) {
                         selectSet.add(storageUsage)
                     } else {
@@ -221,13 +230,19 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
             notifyDataSetChanged()
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CheckHolder {
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): CheckHolder {
             return CheckHolder(ItemStorageCheckBinding.inflate(LayoutInflater.from(parent.context), parent, false), checkAction)
         }
 
         override fun getItemCount(): Int = storageUsageList?.size ?: 0
 
-        override fun onBindViewHolder(holder: CheckHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: CheckHolder,
+            position: Int,
+        ) {
             storageUsageList?.let {
                 holder.bind(it[position])
             }
@@ -235,7 +250,6 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
     }
 
     class StorageAdapter(val action: ((String) -> Unit)) : RecyclerView.Adapter<ItemHolder>() {
-
         private var conversationStorageUsageList: MutableList<ConversationStorageUsage>? = null
 
         @SuppressLint("NotifyDataSetChanged")
@@ -245,7 +259,10 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
         }
 
         @SuppressLint("NotifyDataSetChanged")
-        fun clearData(conversationId: String, size: Long) {
+        fun clearData(
+            conversationId: String,
+            size: Long,
+        ) {
             conversationStorageUsageList?.find { it.conversationId == conversationId }?.let {
                 if (it.mediaSize <= size) {
                     conversationStorageUsageList?.remove(it)
@@ -256,11 +273,17 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
             notifyDataSetChanged()
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder {
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): ItemHolder {
             return ItemHolder(ItemContactStorageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
 
-        override fun onBindViewHolder(holder: ItemHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: ItemHolder,
+            position: Int,
+        ) {
             if (conversationStorageUsageList == null || conversationStorageUsageList!!.isEmpty()) {
                 return
             }
@@ -293,7 +316,10 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
     }
 
     class ItemHolder(private val itemBinding: ItemContactStorageBinding) : RecyclerView.ViewHolder(itemBinding.root) {
-        fun bind(conversationStorageUsage: ConversationStorageUsage, action: ((String) -> Unit)) {
+        fun bind(
+            conversationStorageUsage: ConversationStorageUsage,
+            action: ((String) -> Unit),
+        ) {
             itemBinding.apply {
                 if (conversationStorageUsage.category == ConversationCategory.GROUP.name) {
                     avatar.setGroup(conversationStorageUsage.groupIconUrl)

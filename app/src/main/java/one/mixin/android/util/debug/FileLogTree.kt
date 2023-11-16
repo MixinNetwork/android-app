@@ -1,27 +1,32 @@
 package one.mixin.android.util.debug
 
 import android.util.Log
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.ZipUtil
 import timber.log.Timber
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 class FileLogTree : Timber.Tree() {
-
-    override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+    override fun log(
+        priority: Int,
+        tag: String?,
+        message: String,
+        t: Throwable?,
+    ) {
         if (priority == Log.ERROR || priority == Log.ASSERT) {
             try {
                 val directory = MixinApplication.appContext.cacheDir
 
-                val file = if (priority == Log.ERROR) {
-                    File("${directory.absolutePath}${File.separator}$LOG_LOCAL_FILE_NAME")
-                } else {
-                    File("${directory.absolutePath}${File.separator}$LOG_FILE_NAME")
-                }
+                val file =
+                    if (priority == Log.ERROR) {
+                        File("${directory.absolutePath}${File.separator}$LOG_LOCAL_FILE_NAME")
+                    } else {
+                        File("${directory.absolutePath}${File.separator}$LOG_FILE_NAME")
+                    }
                 file.createNewFile()
                 if (file.exists()) {
                     if (file.length() >= MAX_SIZE) {
@@ -44,6 +49,7 @@ class FileLogTree : Timber.Tree() {
         private const val LOG_ZIP_FILE_NAME = "mixin.zip"
         private const val LOG_ZIP_FOLDER_NAME = "zip"
         private const val MAX_SIZE = 512 * 1024 * 1024
+
         fun getLogFile(): File {
             val directory = MixinApplication.appContext.cacheDir
             val zipFile = File("${directory.absolutePath}${File.separator}$LOG_ZIP_FILE_NAME")

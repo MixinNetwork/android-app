@@ -23,9 +23,9 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
+
 @AndroidEntryPoint
 class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "PriceExpiredBottomSheetDialogFragment"
         private const val ARGS_AMOUNT = "args_amount"
@@ -35,14 +35,22 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val ARGS_ASSET_AMOUNT = "args_asset_amount"
         private const val ARGS_ASSET_PRICE = "args_asset_price"
 
-        fun newInstance(amount: Long, currencyName: String, asset: TokenItem, total: String, assetAmount: String, assetPrice: String) = PriceExpiredBottomSheetDialogFragment().withArgs {
-            putLong(ARGS_AMOUNT, amount)
-            putString(ARGS_CURRENCY_NAME, currencyName)
-            putParcelable(ARGS_ASSET, asset)
-            putString(ARGS_TOTAL, total)
-            putString(ARGS_ASSET_AMOUNT, assetAmount)
-            putString(ARGS_ASSET_PRICE, assetPrice)
-        }
+        fun newInstance(
+            amount: Long,
+            currencyName: String,
+            asset: TokenItem,
+            total: String,
+            assetAmount: String,
+            assetPrice: String,
+        ) =
+            PriceExpiredBottomSheetDialogFragment().withArgs {
+                putLong(ARGS_AMOUNT, amount)
+                putString(ARGS_CURRENCY_NAME, currencyName)
+                putParcelable(ARGS_ASSET, asset)
+                putString(ARGS_TOTAL, total)
+                putString(ARGS_ASSET_AMOUNT, assetAmount)
+                putString(ARGS_ASSET_PRICE, assetPrice)
+            }
     }
 
     private var amount: Long = 0L
@@ -70,17 +78,21 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
         amount = requireArguments().getLong(ARGS_AMOUNT)
-        asset = requireNotNull(
-            requireArguments().getParcelableCompat(
-                ARGS_ASSET,
-                TokenItem::class.java,
-            ),
-        )
+        asset =
+            requireNotNull(
+                requireArguments().getParcelableCompat(
+                    ARGS_ASSET,
+                    TokenItem::class.java,
+                ),
+            )
         total = requireNotNull(requireArguments().getString(ARGS_TOTAL))
         assetAmount = requireNotNull(requireArguments().getString(ARGS_ASSET_AMOUNT))
         currencyName = requireNotNull(requireArguments().getString(ARGS_CURRENCY_NAME))
@@ -111,12 +123,13 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             var time = 0
             while (isActive) {
                 if (time == 10) {
-                    val response = try {
-                        fiatMoneyViewModel.ticker(RouteTickerRequest(amount, currencyName, asset.assetId))
-                    } catch (e: Exception) {
-                        Timber.e(e)
-                        continue
-                    }
+                    val response =
+                        try {
+                            fiatMoneyViewModel.ticker(RouteTickerRequest(amount, currencyName, asset.assetId))
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                            continue
+                        }
                     if (response.isSuccess) {
                         val ticker = response.data ?: continue
                         binding.apply {
@@ -135,17 +148,24 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private val mBottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
-        override fun onStateChanged(bottomSheet: View, newState: Int) {
-            if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                try {
-                    dismissAllowingStateLoss()
-                } catch (e: IllegalStateException) {
-                    Timber.w(e)
+    private val mBottomSheetBehaviorCallback =
+        object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(
+                bottomSheet: View,
+                newState: Int,
+            ) {
+                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                    try {
+                        dismissAllowingStateLoss()
+                    } catch (e: IllegalStateException) {
+                        Timber.w(e)
+                    }
                 }
             }
-        }
 
-        override fun onSlide(bottomSheet: View, slideOffset: Float) {}
-    }
+            override fun onSlide(
+                bottomSheet: View,
+                slideOffset: Float,
+            ) {}
+        }
 }

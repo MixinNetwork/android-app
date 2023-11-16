@@ -9,18 +9,20 @@ import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.PriceAndChange
+
 @Dao
 interface AssetDao : BaseDao<Asset> {
     companion object {
-        const val PREFIX_ASSET_ITEM = "SELECT a1.asset_id AS assetId, a1.symbol, a1.name, a1.icon_url AS iconUrl, " +
-            "a1.balance, a1.destination AS destination, a1.deposit_entries as depositEntries ,a1.tag AS tag, a1.price_btc AS priceBtc, a1.price_usd AS priceUsd, " +
-            "a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden, a2.price_usd as chainPriceUsd," +
-            "a1.confirmations, a1.reserve as reserve, c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName, " +
-            "a1.asset_key AS assetKey, a1.withdrawal_memo_possibility AS withdrawalMemoPossibility " +
-            "FROM assets a1 " +
-            "LEFT JOIN assets a2 ON a1.chain_id = a2.asset_id " +
-            "LEFT JOIN chains c ON a1.chain_id = c.chain_id " +
-            "LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id "
+        const val PREFIX_ASSET_ITEM =
+            "SELECT a1.asset_id AS assetId, a1.symbol, a1.name, a1.icon_url AS iconUrl, " +
+                "a1.balance, a1.destination AS destination, a1.deposit_entries as depositEntries ,a1.tag AS tag, a1.price_btc AS priceBtc, a1.price_usd AS priceUsd, " +
+                "a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden, a2.price_usd as chainPriceUsd," +
+                "a1.confirmations, a1.reserve as reserve, c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName, " +
+                "a1.asset_key AS assetKey, a1.withdrawal_memo_possibility AS withdrawalMemoPossibility " +
+                "FROM assets a1 " +
+                "LEFT JOIN assets a2 ON a1.chain_id = a2.asset_id " +
+                "LEFT JOIN chains c ON a1.chain_id = c.chain_id " +
+                "LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id "
         const val POSTFIX = " ORDER BY balance * price_usd DESC, cast(balance AS REAL) DESC, cast(price_usd AS REAL) DESC, name ASC, rowid DESC"
         const val POSTFIX_ASSET_ITEM = " ORDER BY a1.balance * a1.price_usd DESC, cast(a1.balance AS REAL) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
         const val POSTFIX_ASSET_ITEM_NOT_HIDDEN = " WHERE ae.hidden IS NULL OR NOT ae.hidden$POSTFIX_ASSET_ITEM"
@@ -70,7 +72,10 @@ interface AssetDao : BaseDao<Asset> {
             a1.price_usd*a1.balance DESC
         """,
     )
-    suspend fun fuzzySearchAsset(name: String, symbol: String): List<AssetItem>
+    suspend fun fuzzySearchAsset(
+        name: String,
+        symbol: String,
+    ): List<AssetItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
@@ -81,7 +86,10 @@ interface AssetDao : BaseDao<Asset> {
             a1.price_usd*a1.balance DESC
         """,
     )
-    suspend fun fuzzySearchAssetIgnoreAmount(name: String, symbol: String): List<AssetItem>
+    suspend fun fuzzySearchAssetIgnoreAmount(
+        name: String,
+        symbol: String,
+    ): List<AssetItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :id")
@@ -123,7 +131,10 @@ interface AssetDao : BaseDao<Asset> {
     suspend fun findAssetIdByAssetKey(assetKey: String): String?
 
     @Query("SELECT a.* FROM assets a WHERE a.rowid > :rowId ORDER BY a.rowid ASC LIMIT :limit")
-    fun getAssetByLimitAndRowId(limit: Int, rowId: Long): List<Asset>
+    fun getAssetByLimitAndRowId(
+        limit: Int,
+        rowId: Long,
+    ): List<Asset>
 
     @Query("SELECT rowid FROM assets WHERE asset_id = :assetId")
     fun getAssetRowId(assetId: String): Long?

@@ -11,7 +11,6 @@ import one.mixin.android.widget.ConversationSelectView
 
 class SelectedAdapter(private val selectListener: ((Boolean, String) -> Unit)?) :
     RecyclerView.Adapter<SelectedAdapter.ConversationViewHolder>() {
-
     private var selectItem = ArraySet<String>()
 
     var conversations: List<ConversationMinimal>? = null
@@ -30,7 +29,10 @@ class SelectedAdapter(private val selectListener: ((Boolean, String) -> Unit)?) 
         return conversations?.size ?: 0
     }
 
-    override fun onBindViewHolder(holder: ConversationViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ConversationViewHolder,
+        position: Int,
+    ) {
         if (conversations.isNullOrEmpty()) {
             return
         }
@@ -49,7 +51,10 @@ class SelectedAdapter(private val selectListener: ((Boolean, String) -> Unit)?) 
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ConversationViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ConversationViewHolder {
         return ConversationViewHolder(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_select_conversation,
@@ -60,7 +65,11 @@ class SelectedAdapter(private val selectListener: ((Boolean, String) -> Unit)?) 
     }
 
     class ConversationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(item: ConversationMinimal, isCheck: Boolean, listener: (Boolean) -> Unit) {
+        fun bind(
+            item: ConversationMinimal,
+            isCheck: Boolean,
+            listener: (Boolean) -> Unit,
+        ) {
             (itemView as ConversationSelectView).let {
                 it.isChecked = isCheck
                 it.bind(item, listener)

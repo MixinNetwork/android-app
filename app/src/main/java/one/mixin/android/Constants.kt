@@ -9,7 +9,6 @@ import one.mixin.android.net.CustomDns
 import one.mixin.android.net.SequentialDns
 
 object Constants {
-
     object API {
         const val DOMAIN = "https://mixin.one"
         const val URL = "https://api.mixin.one/"
@@ -21,7 +20,6 @@ object Constants {
         const val FOURSQUARE_URL = "https://api.foursquare.com/v2/"
 
         const val DEFAULT_TIP_SIGN_ENDPOINT = "https://api.mixin.one/tip/notify"
-
     }
 
     object HelpLink {
@@ -302,7 +300,6 @@ object Constants {
     const val MIXIN_BOND_USER_ID = "84c9dfb1-bfcf-4cb4-8404-cc5a1354005b"
     const val MIXIN_FEE_USER_ID = "674d6776-d600-4346-af46-58e77d8df185"
 
-
     const val TEAM_MIXIN_USER_NAME = "Team Mixin"
     const val MIXIN_BOND_USER_NAME = "Bond Bot"
     const val MIXIN_BOTS_USER_NAME = "Mixin Bots"
@@ -318,17 +315,19 @@ object Constants {
         const val PAN_ONLY = "pan_only"
         const val CRYPTOGRAM_3DS = "cryptogram_3ds"
 
-        val SUPPORTED_METHODS = listOf(
-            "PAN_ONLY",
-            "CRYPTOGRAM_3DS",
-        )
+        val SUPPORTED_METHODS =
+            listOf(
+                "PAN_ONLY",
+                "CRYPTOGRAM_3DS",
+            )
 
-        val SUPPORTED_NETWORKS = listOf(
-            "VISA",
-            "MASTERCARD",
-            "AMEX",
-            "JCB",
-        )
+        val SUPPORTED_NETWORKS =
+            listOf(
+                "VISA",
+                "MASTERCARD",
+                "AMEX",
+                "JCB",
+            )
 
         val SUPPORTED_CARD_SCHEME = listOf(CardScheme.VISA, CardScheme.MASTERCARD, CardScheme.AMERICAN_EXPRESS, CardScheme.JCB)
 

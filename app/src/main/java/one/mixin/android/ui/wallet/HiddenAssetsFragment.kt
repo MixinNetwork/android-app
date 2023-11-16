@@ -27,9 +27,9 @@ import kotlin.math.abs
 
 @AndroidEntryPoint
 class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), HeaderAdapter.OnItemListener {
-
     companion object {
         val TAG = HiddenAssetsFragment::class.java.simpleName
+
         fun newInstance() = HiddenAssetsFragment()
 
         const val POS_ASSET = 0
@@ -45,7 +45,10 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
     private var distance = 0
     private var snackbar: Snackbar? = null
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         assetsAdapter.onItemListener = this
         binding.apply {
@@ -61,18 +64,19 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
                                 walletViewModel.updateAssetHidden(asset.assetId, false)
                                 val anchorView = assetsRv
 
-                                snackbar = Snackbar.make(anchorView, getString(R.string.wallet_already_shown, asset.symbol), 3500)
-                                    .setAction(R.string.UNDO) {
-                                        assetsAdapter.restoreItem(deleteItem, hiddenPos)
-                                        lifecycleScope.launch(Dispatchers.IO) {
-                                            walletViewModel.updateAssetHidden(asset.assetId, true)
+                                snackbar =
+                                    Snackbar.make(anchorView, getString(R.string.wallet_already_shown, asset.symbol), 3500)
+                                        .setAction(R.string.UNDO) {
+                                            assetsAdapter.restoreItem(deleteItem, hiddenPos)
+                                            lifecycleScope.launch(Dispatchers.IO) {
+                                                walletViewModel.updateAssetHidden(asset.assetId, true)
+                                            }
+                                        }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
+                                            (this.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text))
+                                                .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                                        }.apply {
+                                            snackbar?.config(anchorView.context)
                                         }
-                                    }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                                        (this.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text))
-                                            .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                                    }.apply {
-                                        snackbar?.config(anchorView.context)
-                                    }
                                 snackbar?.show()
                                 distance = 0
                             }
@@ -81,15 +85,21 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
                 ),
             ).apply { attachToRecyclerView(assetsRv) }
             assetsRv.adapter = assetsAdapter
-            assetsRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    if (abs(distance) > 50.dp && snackbar?.isShown == true) {
-                        snackbar?.dismiss()
-                        distance = 0
+            assetsRv.addOnScrollListener(
+                object : RecyclerView.OnScrollListener() {
+                    override fun onScrolled(
+                        recyclerView: RecyclerView,
+                        dx: Int,
+                        dy: Int,
+                    ) {
+                        if (abs(distance) > 50.dp && snackbar?.isShown == true) {
+                            snackbar?.dismiss()
+                            distance = 0
+                        }
+                        distance += dy
                     }
-                    distance += dy
-                }
-            })
+                },
+            )
 
             walletViewModel.hiddenAssets().observe(
                 viewLifecycleOwner,

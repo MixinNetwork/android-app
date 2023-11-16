@@ -14,7 +14,6 @@ import java.io.FileOutputStream
 import java.io.IOException
 
 internal object ImageUtil {
-
     @Throws(IOException::class)
     fun compressImage(
         imageUri: Uri,
@@ -44,7 +43,11 @@ internal object ImageUtil {
     }
 
     @Throws(IOException::class)
-    fun decodeSampledBitmapFromFile(imageUri: Uri, reqWidth: Int, reqHeight: Int): Bitmap {
+    fun decodeSampledBitmapFromFile(
+        imageUri: Uri,
+        reqWidth: Int,
+        reqHeight: Int,
+    ): Bitmap {
         val imageInputStream = MixinApplication.get().contentResolver.openInputStream(imageUri)!!
         val options = BitmapFactory.Options()
         var bitmap = requireNotNull(BitmapFactory.decodeStream(imageInputStream, null, options))
@@ -62,7 +65,12 @@ internal object ImageUtil {
         return bitmap
     }
 
-    private fun calculateInScale(width: Int, height: Int, reqWidth: Int, reqHeight: Int): Float {
+    private fun calculateInScale(
+        width: Int,
+        height: Int,
+        reqWidth: Int,
+        reqHeight: Int,
+    ): Float {
         if (width == 0 || height == 0 || height / width >= 3 || width / height >= 3) {
             return 1f
         }

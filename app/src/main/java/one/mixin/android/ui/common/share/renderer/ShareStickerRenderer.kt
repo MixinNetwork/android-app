@@ -14,7 +14,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Sticker
 
 class ShareStickerRenderer(val context: Context) {
-
     private val binding = ItemChatStickerBinding.inflate(LayoutInflater.from(context), null, false)
     val contentView get() = binding.root
 

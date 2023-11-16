@@ -65,9 +65,10 @@ private fun SettingGroup(
 ) {
     val scope = rememberCoroutineScope()
 
-    val preferences = remember {
-        initMessageSourcePreferences()
-    }
+    val preferences =
+        remember {
+            initMessageSourcePreferences()
+        }
 
     val selected by preferences.observeAsState()
 
@@ -151,9 +152,10 @@ fun MessageSettingItem(
                     )
                 } else {
                     CircularProgressIndicator(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .padding(4.dp),
+                        modifier =
+                            Modifier
+                                .size(24.dp)
+                                .padding(4.dp),
                         color = MixinAppTheme.colors.accent,
                         strokeWidth = 2.dp,
                     )
@@ -174,12 +176,13 @@ fun MessageSettingTips(title: String) {
         text = title,
         fontSize = 12.sp,
         color = MixinAppTheme.colors.textSubtitle,
-        modifier = Modifier.padding(
-            start = 16.dp,
-            top = 16.dp,
-            end = 16.dp,
-            bottom = 8.dp,
-        ),
+        modifier =
+            Modifier.padding(
+                start = 16.dp,
+                top = 16.dp,
+                end = 16.dp,
+                bottom = 8.dp,
+            ),
     )
 }
 

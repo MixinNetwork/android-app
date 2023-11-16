@@ -79,13 +79,14 @@ fun SettingTile(
 ) {
     Column {
         Row(
-            modifier = Modifier
-                .clickable {
-                    onClick()
-                }
-                .height(60.dp)
-                .background(color = MixinAppTheme.colors.background)
-                .padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .clickable {
+                        onClick()
+                    }
+                    .height(60.dp)
+                    .background(color = MixinAppTheme.colors.background)
+                    .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (icon != null) {
@@ -106,20 +107,22 @@ fun SettingTile(
             )
             Spacer(Modifier.weight(1f))
             ProvideTextStyle(
-                value = TextStyle(
-                    color = MixinAppTheme.colors.textSubtitle,
-                    fontSize = 13.sp,
-                ),
+                value =
+                    TextStyle(
+                        color = MixinAppTheme.colors.textSubtitle,
+                        fontSize = 13.sp,
+                    ),
             ) {
                 trailing()
             }
         }
         if (description != null) {
             Text(
-                modifier = Modifier
-                    .background(color = MixinAppTheme.colors.backgroundWindow)
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, top = 8.dp, bottom = 16.dp, end = 16.dp),
+                modifier =
+                    Modifier
+                        .background(color = MixinAppTheme.colors.backgroundWindow)
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, top = 8.dp, bottom = 16.dp, end = 16.dp),
                 text = description,
                 fontSize = 13.sp,
                 color = MixinAppTheme.colors.textSubtitle,

@@ -28,24 +28,31 @@ interface UtxoService {
 
     @POST("safe/deposit/entries")
     suspend fun createDeposit(
-        @Body depositEntryRequest: DepositEntryRequest
+        @Body depositEntryRequest: DepositEntryRequest,
     ): MixinResponse<List<DepositEntry>>
 
     @POST("safe/users")
     suspend fun registerPublicKey(
-        @Body registerRequest: RegisterRequest
+        @Body registerRequest: RegisterRequest,
     ): MixinResponse<Account>
 
     @POST("safe/keys")
-    suspend fun ghostKey(@Body ghostKeyRequest: List<GhostKeyRequest>): MixinResponse<List<GhostKey>>
+    suspend fun ghostKey(
+        @Body ghostKeyRequest: List<GhostKeyRequest>,
+    ): MixinResponse<List<GhostKey>>
 
     @POST("safe/transaction/requests")
-    suspend fun transactionRequest(@Body transactionRequests: List<TransactionRequest>): MixinResponse<List<TransactionResponse>>
+    suspend fun transactionRequest(
+        @Body transactionRequests: List<TransactionRequest>,
+    ): MixinResponse<List<TransactionResponse>>
 
     @POST("safe/transactions")
-    suspend fun transactions(@Body transactionRequests: List<TransactionRequest>): MixinResponse<List<TransactionResponse>>
+    suspend fun transactions(
+        @Body transactionRequests: List<TransactionRequest>,
+    ): MixinResponse<List<TransactionResponse>>
 
     @GET("safe/transactions/{id}")
-    suspend fun getTransactionsById(@Path("id") id: String): MixinResponse<TransactionResponse>
+    suspend fun getTransactionsById(
+        @Path("id") id: String,
+    ): MixinResponse<TransactionResponse>
 }
-

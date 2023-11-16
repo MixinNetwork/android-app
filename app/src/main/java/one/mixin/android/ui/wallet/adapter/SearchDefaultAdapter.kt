@@ -15,9 +15,9 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.util.getChainNetwork
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.TopAssetItem
+import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 
 class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyclerHeadersAdapter<SearchDefaultAdapter.HeaderViewHolder> {
@@ -52,11 +52,17 @@ class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyc
         return HeaderViewHolder(ItemContactHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
-    override fun onBindHeaderViewHolder(holder: HeaderViewHolder, position: Int) {
+    override fun onBindHeaderViewHolder(
+        holder: HeaderViewHolder,
+        position: Int,
+    ) {
         holder.bind(getItemViewType(position) == TYPE_RECENT)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ItemViewHolder {
         return if (viewType == TYPE_RECENT) {
             AssetHolder(ItemWalletSearchBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         } else {
@@ -64,7 +70,10 @@ class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyc
         }
     }
 
-    override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ItemViewHolder,
+        position: Int,
+    ) {
         if (holder is AssetHolder) {
             recentAssets?.get(position)?.let { holder.bind(it, callback) }
         } else {
@@ -86,9 +95,10 @@ class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyc
 
     class HeaderViewHolder(val binding: ItemContactHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(isRecent: Boolean) {
-            binding.header.text = itemView.context.getString(
-                if (isRecent) R.string.Recent_searches else R.string.Trending,
-            )
+            binding.header.text =
+                itemView.context.getString(
+                    if (isRecent) R.string.Recent_searches else R.string.Trending,
+                )
         }
     }
 }
@@ -133,7 +143,10 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
 }
 
 class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
-    fun bind(asset: TokenItem, callback: WalletSearchCallback? = null) {
+    fun bind(
+        asset: TokenItem,
+        callback: WalletSearchCallback? = null,
+    ) {
         bindView(
             asset.assetId,
             asset.iconUrl,
@@ -153,7 +166,10 @@ class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
 }
 
 class TopAssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
-    fun bind(asset: TopAssetItem, callback: WalletSearchCallback? = null) {
+    fun bind(
+        asset: TopAssetItem,
+        callback: WalletSearchCallback? = null,
+    ) {
         bindView(
             asset.assetId,
             asset.iconUrl,
@@ -173,5 +189,8 @@ class TopAssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding)
 }
 
 interface WalletSearchCallback {
-    fun onAssetClick(assetId: String, tokenItem: TokenItem? = null)
+    fun onAssetClick(
+        assetId: String,
+        tokenItem: TokenItem? = null,
+    )
 }

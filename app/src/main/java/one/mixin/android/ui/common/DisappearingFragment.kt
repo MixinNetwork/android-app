@@ -25,10 +25,15 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
         const val TAG = "DisappearingFragment"
         private const val CONVERSATION_ID = "conversation_id"
         private const val USER_ID = "user_id"
-        fun newInstance(conversationId: String, userId: String? = null) = DisappearingFragment().withArgs {
-            putString(CONVERSATION_ID, conversationId)
-            putString(USER_ID, userId)
-        }
+
+        fun newInstance(
+            conversationId: String,
+            userId: String? = null,
+        ) =
+            DisappearingFragment().withArgs {
+                putString(CONVERSATION_ID, conversationId)
+                putString(USER_ID, userId)
+            }
     }
 
     private val conversationId by lazy {
@@ -84,7 +89,10 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         val info = getString(R.string.disappearing_message_hint)
         val learnUrl = getString(R.string.disappearing_message_url)
         binding.tipTv.highlightStarTag(info, arrayOf(learnUrl))
@@ -142,7 +150,10 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
     private var timeInterval: Long? = null
     private var updating = false
 
-    private fun updateUI(index: Int, interval: Long) {
+    private fun updateUI(
+        index: Int,
+        interval: Long,
+    ) {
         if (timeInterval == interval || updating) {
             return
         }

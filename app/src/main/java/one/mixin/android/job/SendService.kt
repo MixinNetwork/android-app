@@ -23,7 +23,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class SendService : IntentService("SendService") {
-
     @Inject
     lateinit var jobManager: MixinJobManager
 
@@ -47,21 +46,23 @@ class SendService : IntentService("SendService") {
         if (bundle != null) {
             val content = bundle.getCharSequence(KEY_REPLY) ?: return
             val encryptCategory = EncryptCategory.values()[intent.getIntExtra(ENCRYPTED_CATEGORY, EncryptCategory.PLAIN.ordinal)]
-            val category = encryptCategory.toCategory(
-                MessageCategory.PLAIN_TEXT,
-                MessageCategory.SIGNAL_TEXT,
-                MessageCategory.ENCRYPTED_TEXT,
-            )
+            val category =
+                encryptCategory.toCategory(
+                    MessageCategory.PLAIN_TEXT,
+                    MessageCategory.SIGNAL_TEXT,
+                    MessageCategory.ENCRYPTED_TEXT,
+                )
 
-            val message = createMessage(
-                UUID.randomUUID().toString(),
-                conversationId,
-                Session.getAccountId().toString(),
-                category,
-                content.toString().trim(),
-                nowInUtc(),
-                MessageStatus.SENDING.name,
-            )
+            val message =
+                createMessage(
+                    UUID.randomUUID().toString(),
+                    conversationId,
+                    Session.getAccountId().toString(),
+                    category,
+                    content.toString().trim(),
+                    nowInUtc(),
+                    MessageStatus.SENDING.name,
+                )
             jobManager.addJobInBackground(SendMessageJob(message))
         }
         val manager = getSystemService<NotificationManager>()

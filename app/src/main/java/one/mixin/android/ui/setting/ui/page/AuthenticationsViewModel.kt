@@ -18,47 +18,49 @@ import javax.inject.Inject
 
 @SuppressLint("CheckResult")
 @HiltViewModel
-class AuthenticationsViewModel @Inject constructor(
-    authorizationService: AuthorizationService,
-) : ViewModel() {
+class AuthenticationsViewModel
+    @Inject
+    constructor(
+        authorizationService: AuthorizationService,
+    ) : ViewModel() {
+        private val authenticationsState = MutableStateFlow<Result<List<AuthorizationResponse>>?>(null)
 
-    private val authenticationsState = MutableStateFlow<Result<List<AuthorizationResponse>>?>(null)
+        val authentications
+            get() =
+                authenticationsState.stateIn(
+                    viewModelScope,
+                    SharingStarted.Eagerly,
+                    initialValue = authenticationsState.value,
+                )
 
-    val authentications
-        get() = authenticationsState.stateIn(
-            viewModelScope,
-            SharingStarted.Eagerly,
-            initialValue = authenticationsState.value,
-        )
+        init {
+            authorizationService
+                .authorizations().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    {
+                        viewModelScope.launch {
+                            authenticationsState.emit(it.toResult())
+                        }
+                    },
+                    {
+                        viewModelScope.launch {
+                            authenticationsState.emit(Result.failure(it))
+                        }
+                        ErrorHandler.handleError(it)
+                    },
+                )
+        }
 
-    init {
-        authorizationService
-            .authorizations().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                {
-                    viewModelScope.launch {
-                        authenticationsState.emit(it.toResult())
-                    }
-                },
-                {
-                    viewModelScope.launch {
-                        authenticationsState.emit(Result.failure(it))
-                    }
-                    ErrorHandler.handleError(it)
-                },
-            )
-    }
-
-    fun onDeAuthorize(appId: String) {
-        viewModelScope.launch {
-            authenticationsState.emit(
-                authentications.value?.map { list ->
-                    list.filter { it.app.appId != appId }
-                },
-            )
+        fun onDeAuthorize(appId: String) {
+            viewModelScope.launch {
+                authenticationsState.emit(
+                    authentications.value?.map { list ->
+                        list.filter { it.app.appId != appId }
+                    },
+                )
+            }
         }
     }
-}
 
 private fun <T : Any> MixinResponse<T>.toResult(): Result<T> {
     return if (isSuccess) {

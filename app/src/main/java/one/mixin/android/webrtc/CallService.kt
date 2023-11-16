@@ -50,7 +50,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvents {
-
     protected val callExecutor: ThreadPoolExecutor = Executors.newFixedThreadPool(1) as ThreadPoolExecutor
     protected val timeoutExecutor: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
     private val observeStatsDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
@@ -112,7 +111,11 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         }
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         super.onStartCommand(intent, flags, startId)
         val action = intent?.action
         if (intent == null || action == null) {
@@ -182,23 +185,30 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         callExecutor.execute {
             peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
         }
-        audioManager = CallAudioManager(
-            this,
-            audioSwitch,
-            object : CallAudioManager.Callback {
-                override fun customAudioDeviceAvailable(available: Boolean) {
-                    callState.customAudioDeviceAvailable = available
-                }
-            },
-        )
+        audioManager =
+            CallAudioManager(
+                this,
+                audioSwitch,
+                object : CallAudioManager.Callback {
+                    override fun customAudioDeviceAvailable(available: Boolean) {
+                        callState.customAudioDeviceAvailable = available
+                    }
+                },
+            )
     }
 
     abstract fun needInitWebRtc(action: String): Boolean
+
     abstract fun handleIntent(intent: Intent): Boolean
+
     abstract fun onCallDisconnected()
+
     abstract fun onDestroyed()
+
     abstract fun onTimeout()
+
     abstract fun onTurnServerError()
+
     abstract fun handleLocalEnd()
 
     override fun onIceCandidatesRemoved(candidates: Array<IceCandidate>) {
@@ -301,11 +311,12 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         if (isDisconnected.get() || isDestroyed.get()) return
 
         supportsOreo {
-            val channel = NotificationChannel(
-                CHANNEL_CALL,
-                MixinApplication.get().getString(R.string.Call),
-                NotificationManager.IMPORTANCE_HIGH,
-            )
+            val channel =
+                NotificationChannel(
+                    CHANNEL_CALL,
+                    MixinApplication.get().getString(R.string.Call),
+                    NotificationManager.IMPORTANCE_HIGH,
+                )
             channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             channel.setSound(null, null)
             channel.setShowBadge(false)
@@ -320,25 +331,26 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         }
     }
 
-    protected fun getTurnServer(action: (List<PeerConnection.IceServer>) -> Unit) = runBlocking {
-        handleMixinResponse(
-            invokeNetwork = {
-                accountService.getTurn()
-            },
-            successBlock = {
-                val array = it.data as Array<TurnServer>
-                action.invoke(genIceServerList(array))
-            },
-            exceptionBlock = {
-                handleFetchTurnError(it.message)
-                return@handleMixinResponse false
-            },
-            failureBlock = {
-                handleFetchTurnError(it.error?.toString())
-                return@handleMixinResponse true
-            },
-        )
-    }
+    protected fun getTurnServer(action: (List<PeerConnection.IceServer>) -> Unit) =
+        runBlocking {
+            handleMixinResponse(
+                invokeNetwork = {
+                    accountService.getTurn()
+                },
+                successBlock = {
+                    val array = it.data as Array<TurnServer>
+                    action.invoke(genIceServerList(array))
+                },
+                exceptionBlock = {
+                    handleFetchTurnError(it.message)
+                    return@handleMixinResponse false
+                },
+                failureBlock = {
+                    handleFetchTurnError(it.error?.toString())
+                    return@handleMixinResponse true
+                },
+            )
+        }
 
     private fun handleFetchTurnError(message: String?) {
         val error = "$TAG_CALL handleFetchTurnError $message"
@@ -368,7 +380,12 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     enum class CallState {
-        STATE_IDLE, STATE_DIALING, STATE_RINGING, STATE_ANSWERING, STATE_CONNECTED, STATE_BUSY
+        STATE_IDLE,
+        STATE_DIALING,
+        STATE_RINGING,
+        STATE_ANSWERING,
+        STATE_CONNECTED,
+        STATE_BUSY,
     }
 
     inner class TimeoutRunnable : Runnable {
@@ -402,13 +419,21 @@ const val EXTRA_MUTE = "mute"
 const val EXTRA_SPEAKERPHONE = "speakerphone"
 const val EXTRA_PENDING_CANDIDATES = "pending_candidates"
 
-inline fun <reified T : CallService> muteAudio(ctx: Context, checked: Boolean) = startService<T>(ctx, ACTION_MUTE_AUDIO) {
-    it.putExtra(EXTRA_MUTE, checked)
-}
+inline fun <reified T : CallService> muteAudio(
+    ctx: Context,
+    checked: Boolean,
+) =
+    startService<T>(ctx, ACTION_MUTE_AUDIO) {
+        it.putExtra(EXTRA_MUTE, checked)
+    }
 
-inline fun <reified T : CallService> speakerPhone(ctx: Context, checked: Boolean) = startService<T>(ctx, ACTION_SPEAKERPHONE) {
-    it.putExtra(EXTRA_SPEAKERPHONE, checked)
-}
+inline fun <reified T : CallService> speakerPhone(
+    ctx: Context,
+    checked: Boolean,
+) =
+    startService<T>(ctx, ACTION_SPEAKERPHONE) {
+        it.putExtra(EXTRA_SPEAKERPHONE, checked)
+    }
 
 inline fun <reified T : CallService> disconnect(ctx: Context) {
     startService<T>(ctx, ACTION_CALL_DISCONNECT) {}
@@ -419,10 +444,11 @@ inline fun <reified T : CallService> startService(
     action: String? = null,
     putExtra: ((intent: Intent) -> Unit),
 ) {
-    val intent = Intent(ctx, T::class.java).apply {
-        this.action = action
-        putExtra.invoke(this)
-    }
+    val intent =
+        Intent(ctx, T::class.java).apply {
+            this.action = action
+            putExtra.invoke(this)
+        }
     ctx.startService(intent)
 }
 

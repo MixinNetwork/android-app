@@ -58,9 +58,10 @@ data class ParticipantSessionKey(
 )
 
 fun generateConversationChecksum(devices: List<ParticipantSession>): String {
-    val sorted = devices.sortedWith { a, b ->
-        a.sessionId.compareTo(b.sessionId)
-    }
+    val sorted =
+        devices.sortedWith { a, b ->
+            a.sessionId.compareTo(b.sessionId)
+        }
     val d = sorted.joinToString("") { it.sessionId }
     return d.md5()
 }

@@ -101,15 +101,16 @@ class BaseCameraScan<T> : CameraScan<T> {
                 mOnScanResultCallback?.onScanResultFailure()
             }
         }
-        mOnAnalyzeListener = object : OnAnalyzeListener<AnalyzeResult<T>> {
-            override fun onSuccess(result: AnalyzeResult<T>) {
-                mResultLiveData?.postValue(result)
-            }
+        mOnAnalyzeListener =
+            object : OnAnalyzeListener<AnalyzeResult<T>> {
+                override fun onSuccess(result: AnalyzeResult<T>) {
+                    mResultLiveData?.postValue(result)
+                }
 
-            override fun onFailure() {
-                mResultLiveData?.postValue(null)
+                override fun onFailure() {
+                    mResultLiveData?.postValue(null)
+                }
             }
-        }
         val scaleGestureDetector = ScaleGestureDetector(context, mOnScaleGestureListener)
         previewView.setOnTouchListener { v: View?, event: MotionEvent ->
             handlePreviewViewClickTap(event)
@@ -121,21 +122,26 @@ class BaseCameraScan<T> : CameraScan<T> {
         mBeepManager = BeepManager(context)
         mAmbientLightManager = AmbientLightManager(context)
         mAmbientLightManager?.register()
-        mAmbientLightManager?.setOnLightSensorEventListener(object : OnLightSensorEventListener {
-            override fun onSensorChanged(dark: Boolean, lightLux: Float) {
-                if (flashlightView != null) {
-                    if (dark) {
-                        if (flashlightView?.visibility != View.VISIBLE) {
-                            flashlightView?.visibility = View.VISIBLE
-                            flashlightView?.isSelected = isTorchEnabled()
+        mAmbientLightManager?.setOnLightSensorEventListener(
+            object : OnLightSensorEventListener {
+                override fun onSensorChanged(
+                    dark: Boolean,
+                    lightLux: Float,
+                ) {
+                    if (flashlightView != null) {
+                        if (dark) {
+                            if (flashlightView?.visibility != View.VISIBLE) {
+                                flashlightView?.visibility = View.VISIBLE
+                                flashlightView?.isSelected = isTorchEnabled()
+                            }
+                        } else if (flashlightView?.visibility == View.VISIBLE && !isTorchEnabled()) {
+                            flashlightView?.visibility = View.INVISIBLE
+                            flashlightView?.isSelected = false
                         }
-                    } else if (flashlightView?.visibility == View.VISIBLE && !isTorchEnabled()) {
-                        flashlightView?.visibility = View.INVISIBLE
-                        flashlightView?.isSelected = false
                     }
                 }
-            }
-        })
+            },
+        )
     }
 
     private fun handlePreviewViewClickTap(event: MotionEvent) {
@@ -152,20 +158,29 @@ class BaseCameraScan<T> : CameraScan<T> {
                     isClickTap =
                         distance(mDownX, mDownY, event.x, event.y) < HOVER_TAP_SLOP
 
-                MotionEvent.ACTION_UP -> if (isClickTap && mLastHoveTapTime + HOVER_TAP_TIMEOUT > System.currentTimeMillis()) {
-                    startFocusAndMetering(event.x, event.y)
-                }
+                MotionEvent.ACTION_UP ->
+                    if (isClickTap && mLastHoveTapTime + HOVER_TAP_TIMEOUT > System.currentTimeMillis()) {
+                        startFocusAndMetering(event.x, event.y)
+                    }
             }
         }
     }
 
-    private fun distance(aX: Float, aY: Float, bX: Float, bY: Float): Float {
+    private fun distance(
+        aX: Float,
+        aY: Float,
+        bX: Float,
+        bY: Float,
+    ): Float {
         val xDiff = aX - bX
         val yDiff = aY - bY
         return Math.sqrt((xDiff * xDiff + yDiff * yDiff).toDouble()).toFloat()
     }
 
-    private fun startFocusAndMetering(x: Float, y: Float) {
+    private fun startFocusAndMetering(
+        x: Float,
+        y: Float,
+    ) {
         if (mCamera != null) {
             val point = previewView.meteringPointFactory.createPoint(x, y)
             val focusMeteringAction = FocusMeteringAction.Builder(point).build()
@@ -200,11 +215,12 @@ class BaseCameraScan<T> : CameraScan<T> {
                 val cameraSelector = cameraConfig.options(CameraSelector.Builder())
                 preview.setSurfaceProvider(previewView.surfaceProvider)
 
-                val imageAnalysis = cameraConfig.options(
-                    ImageAnalysis.Builder()
-                        .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST),
-                )
+                val imageAnalysis =
+                    cameraConfig.options(
+                        ImageAnalysis.Builder()
+                            .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
+                            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST),
+                    )
                 imageAnalysis.setAnalyzer(Executors.newSingleThreadExecutor()) { image: ImageProxy ->
                     if (isAnalyze && !isAnalyzeResult && mAnalyzer != null) {
                         isAnalyzeResult = true
@@ -216,8 +232,9 @@ class BaseCameraScan<T> : CameraScan<T> {
                     mCameraProviderFuture!!.get().unbindAll()
                 }
                 // bind to the lifecycle
-                mCamera = mCameraProviderFuture!!.get()
-                    .bindToLifecycle(lifecycleOwner, cameraSelector, preview, imageAnalysis)
+                mCamera =
+                    mCameraProviderFuture!!.get()
+                        .bindToLifecycle(lifecycleOwner, cameraSelector, preview, imageAnalysis)
             } catch (e: Exception) {
                 reportException(e)
             }
@@ -301,7 +318,9 @@ class BaseCameraScan<T> : CameraScan<T> {
         }
     }
 
-    override fun lineZoomTo(@FloatRange(from = 0.0, to = 1.0) linearZoom: Float) {
+    override fun lineZoomTo(
+        @FloatRange(from = 0.0, to = 1.0) linearZoom: Float,
+    ) {
         if (mCamera != null) {
             mCamera!!.cameraControl.setLinearZoom(linearZoom)
         }
@@ -387,7 +406,6 @@ class BaseCameraScan<T> : CameraScan<T> {
     }
 
     companion object {
-
         private const val HOVER_TAP_TIMEOUT = 150
 
         private const val HOVER_TAP_SLOP = 20

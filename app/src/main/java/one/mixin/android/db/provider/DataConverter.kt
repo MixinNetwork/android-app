@@ -9,7 +9,6 @@ import androidx.room.util.query
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
@@ -18,6 +17,7 @@ import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.WithdrawalMemoPossibility
+import one.mixin.android.vo.safe.TokenItem
 import java.util.concurrent.Callable
 
 @SuppressLint("RestrictedApi")
@@ -62,22 +62,24 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
         val tmpGroupName = cursor.getString(cursorIndexOfGroupName)
         val tmpStatus = cursor.getInt(cursorIndexOfStatus)
         val tmpLastReadMessageId = cursor.getString(cursorIndexOfLastReadMessageId)
-        val tmpUnseenMessageCount = if (cursor.isNull(cursorIndexOfUnseenMessageCount)) {
-            null
-        } else {
-            cursor.getInt(cursorIndexOfUnseenMessageCount)
-        }
+        val tmpUnseenMessageCount =
+            if (cursor.isNull(cursorIndexOfUnseenMessageCount)) {
+                null
+            } else {
+                cursor.getInt(cursorIndexOfUnseenMessageCount)
+            }
         val tmpOwnerId = cursor.getString(cursorIndexOfOwnerId)
         val tmpPinTime = cursor.getString(cursorIndexOfPinTime)
         val tmpMuteUntil = cursor.getString(cursorIndexOfMuteUntil)
         val tmpAvatarUrl = cursor.getString(cursorIndexOfAvatarUrl)
         val tmpName = cursor.getString(cursorIndexOfName)
         val tmpOwnerVerified: Boolean?
-        val tmp = if (cursor.isNull(cursorIndexOfOwnerVerified)) {
-            null
-        } else {
-            cursor.getInt(cursorIndexOfOwnerVerified)
-        }
+        val tmp =
+            if (cursor.isNull(cursorIndexOfOwnerVerified)) {
+                null
+            } else {
+                cursor.getInt(cursorIndexOfOwnerVerified)
+            }
         tmpOwnerVerified = if (tmp == null) null else tmp != 0
         val tmpOwnerMuteUntil = cursor.getString(cursorIndexOfOwnerMuteUntil)
         val tmpAppId = cursor.getString(cursorIndexOfAppId)
@@ -90,40 +92,42 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
         val tmpSenderFullName = cursor.getString(cursorIndexOfSenderFullName)
         val tmpParticipantFullName = cursor.getString(cursorIndexOfParticipantFullName)
         val tmpParticipantUserId = cursor.getString(cursorIndexOfParticipantUserId)
-        val tmpMentionCount = if (cursor.isNull(cursorIndexOfMentionCount)) {
-            null
-        } else {
-            cursor.getInt(cursorIndexOfMentionCount)
-        }
+        val tmpMentionCount =
+            if (cursor.isNull(cursorIndexOfMentionCount)) {
+                null
+            } else {
+                cursor.getInt(cursorIndexOfMentionCount)
+            }
         val tmpMentions = cursor.getString(cursorIndexOfMentions)
-        item = ConversationItem(
-            tmpConversationId,
-            tmpAvatarUrl,
-            tmpGroupIconUrl,
-            tmpCategory,
-            tmpGroupName,
-            tmpName,
-            tmpOwnerId,
-            tmpStatus,
-            tmpLastReadMessageId,
-            tmpUnseenMessageCount,
-            tmpContent,
-            tmpContentType,
-            tmpCreatedAt,
-            tmpPinTime,
-            tmpSenderId,
-            tmpSenderFullName,
-            tmpMessageStatus,
-            tmpActionName,
-            tmpParticipantFullName,
-            tmpParticipantUserId,
-            tmpOwnerMuteUntil,
-            tmpOwnerVerified,
-            tmpMuteUntil,
-            tmpAppId,
-            tmpMentions,
-            tmpMentionCount,
-        )
+        item =
+            ConversationItem(
+                tmpConversationId,
+                tmpAvatarUrl,
+                tmpGroupIconUrl,
+                tmpCategory,
+                tmpGroupName,
+                tmpName,
+                tmpOwnerId,
+                tmpStatus,
+                tmpLastReadMessageId,
+                tmpUnseenMessageCount,
+                tmpContent,
+                tmpContentType,
+                tmpCreatedAt,
+                tmpPinTime,
+                tmpSenderId,
+                tmpSenderFullName,
+                tmpMessageStatus,
+                tmpActionName,
+                tmpParticipantFullName,
+                tmpParticipantUserId,
+                tmpOwnerMuteUntil,
+                tmpOwnerVerified,
+                tmpMuteUntil,
+                tmpAppId,
+                tmpMentions,
+                tmpMentionCount,
+            )
         res.add(item)
     }
     return res
@@ -193,16 +197,18 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
         val tmpMessageId: String = cursor.getString(cursorIndexOfMessageId)
         val tmpConversationId: String = cursor.getString(cursorIndexOfConversationId)
         val tmpUserId: String = cursor.getString(cursorIndexOfUserId)
-        val tmpUserFullName: String = if (cursor.isNull(cursorIndexOfUserFullName)) {
-            ""
-        } else {
-            cursor.getString(cursorIndexOfUserFullName)
-        }
-        val tmpUserIdentityNumber: String = if (cursor.isNull(cursorIndexOfUserIdentityNumber)) {
-            ""
-        } else {
-            cursor.getString(cursorIndexOfUserIdentityNumber)
-        }
+        val tmpUserFullName: String =
+            if (cursor.isNull(cursorIndexOfUserFullName)) {
+                ""
+            } else {
+                cursor.getString(cursorIndexOfUserFullName)
+            }
+        val tmpUserIdentityNumber: String =
+            if (cursor.isNull(cursorIndexOfUserIdentityNumber)) {
+                ""
+            } else {
+                cursor.getString(cursorIndexOfUserIdentityNumber)
+            }
         val tmpAppId: String? = cursor.getString(cursorIndexOfAppId)
         val tmpType: String = cursor.getString(cursorIndexOfType)
         val tmpContent: String? = cursor.getString(cursorIndexOfContent)
@@ -212,21 +218,24 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
         val tmpMediaWaveform: ByteArray? = cursor.getBlob(cursorIndexOfMediaWaveform)
         val tmpMediaName: String? = cursor.getString(cursorIndexOfMediaName)
         val tmpMediaMimeType: String? = cursor.getString(cursorIndexOfMediaMimeType)
-        val tmpMediaSize: Long? = if (cursor.isNull(cursorIndexOfMediaSize)) {
-            null
-        } else {
-            cursor.getLong(cursorIndexOfMediaSize)
-        }
-        val tmpMediaWidth: Int? = if (cursor.isNull(cursorIndexOfMediaWidth)) {
-            null
-        } else {
-            cursor.getInt(cursorIndexOfMediaWidth)
-        }
-        val tmpMediaHeight: Int? = if (cursor.isNull(cursorIndexOfMediaHeight)) {
-            null
-        } else {
-            cursor.getInt(cursorIndexOfMediaHeight)
-        }
+        val tmpMediaSize: Long? =
+            if (cursor.isNull(cursorIndexOfMediaSize)) {
+                null
+            } else {
+                cursor.getLong(cursorIndexOfMediaSize)
+            }
+        val tmpMediaWidth: Int? =
+            if (cursor.isNull(cursorIndexOfMediaWidth)) {
+                null
+            } else {
+                cursor.getInt(cursorIndexOfMediaWidth)
+            }
+        val tmpMediaHeight: Int? =
+            if (cursor.isNull(cursorIndexOfMediaHeight)) {
+                null
+            } else {
+                cursor.getInt(cursorIndexOfMediaHeight)
+            }
         val tmpThumbImage: String? = cursor.getString(cursorIndexOfThumbImage)
         val tmpThumbUrl: String? = cursor.getString(cursorIndexOfThumbUrl)
         val tmpMediaUrl: String? = cursor.getString(cursorIndexOfMediaUrl)
@@ -244,16 +253,18 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
         val tmpAssetId: String? = cursor.getString(cursorIndexOfAssetId)
         val tmpAssetIcon: String? = cursor.getString(cursorIndexOfAssetIcon)
         val tmpAssetUrl: String? = cursor.getString(cursorIndexOfAssetUrl)
-        val tmpAssetWidth: Int? = if (cursor.isNull(cursorIndexOfAssetWidth)) {
-            null
-        } else {
-            cursor.getInt(cursorIndexOfAssetWidth)
-        }
-        val tmpAssetHeight: Int? = if (cursor.isNull(cursorIndexOfAssetHeight)) {
-            null
-        } else {
-            cursor.getInt(cursorIndexOfAssetHeight)
-        }
+        val tmpAssetWidth: Int? =
+            if (cursor.isNull(cursorIndexOfAssetWidth)) {
+                null
+            } else {
+                cursor.getInt(cursorIndexOfAssetWidth)
+            }
+        val tmpAssetHeight: Int? =
+            if (cursor.isNull(cursorIndexOfAssetHeight)) {
+                null
+            } else {
+                cursor.getInt(cursorIndexOfAssetHeight)
+            }
         val tmpStickerId: String? = cursor.getString(cursorIndexOfStickerId)
         val tmpAssetName: String? = cursor.getString(cursorIndexOfAssetName)
         val tmpAssetType: String? = cursor.getString(cursorIndexOfAssetType)
@@ -267,96 +278,102 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
             cursor.getString(cursorIndexOfSharedUserIdentityNumber)
         val tmpSharedUserAvatarUrl: String? = cursor.getString(cursorIndexOfSharedUserAvatarUrl)
         val tmpSharedUserIsVerified: Boolean?
-        val tmp: Int? = if (cursor.isNull(cursorIndexOfSharedUserIsVerified)) {
-            null
-        } else {
-            cursor.getInt(cursorIndexOfSharedUserIsVerified)
-        }
+        val tmp: Int? =
+            if (cursor.isNull(cursorIndexOfSharedUserIsVerified)) {
+                null
+            } else {
+                cursor.getInt(cursorIndexOfSharedUserIsVerified)
+            }
         tmpSharedUserIsVerified = if (tmp == null) null else tmp != 0
         val tmpSharedUserAppId: String? = cursor.getString(cursorIndexOfSharedUserAppId)
         val tmpGroupName: String? = cursor.getString(cursorIndexOfGroupName)
         val tmpMentions: String? = cursor.getString(cursorIndexOfMentions)
-        val tmp1 = if (cursor.isNull(cursorIndexOfMentionRead)) {
-            null
-        } else {
-            cursor.getInt(cursorIndexOfMentionRead)
-        }
+        val tmp1 =
+            if (cursor.isNull(cursorIndexOfMentionRead)) {
+                null
+            } else {
+                cursor.getInt(cursorIndexOfMentionRead)
+            }
         val tmpMentionRead = if (tmp1 == null) null else tmp1 != 0
-        val tmp2: Int? = if (cursor.isNull(cursorIndexOfPinTop)) {
-            null
-        } else {
-            cursor.getInt(cursorIndexOfPinTop)
-        }
+        val tmp2: Int? =
+            if (cursor.isNull(cursorIndexOfPinTop)) {
+                null
+            } else {
+                cursor.getInt(cursorIndexOfPinTop)
+            }
         val tmpPinTop = if (tmp2 == null) null else tmp2 != 0
-        val tempExpireIn: Long? = if (cursor.isNull(cursorIndexOfExpireIn)) {
-            null
-        } else {
-            cursor.getLong(cursorIndexOfExpireIn)
-        }
-        val tempExpireAt: Long? = if (cursor.isNull(cursorIndexOfExpireAt)) {
-            null
-        } else {
-            cursor.getLong(cursorIndexOfExpireAt)
-        }
-        item = MessageItem(
-            tmpMessageId,
-            tmpConversationId,
-            tmpUserId,
-            tmpUserFullName,
-            tmpUserIdentityNumber,
-            tmpType,
-            tmpContent,
-            tmpCreatedAt,
-            tmpStatus,
-            tmpMediaStatus,
-            null,
-            tmpMediaName,
-            tmpMediaMimeType,
-            tmpMediaSize,
-            tmpThumbUrl,
-            tmpMediaWidth,
-            tmpMediaHeight,
-            tmpThumbImage,
-            tmpMediaUrl,
-            tmpMediaDuration,
-            tmpParticipantFullName,
-            tmpParticipantUserId,
-            tmpActionName,
-            tmpSnapshotId,
-            tmpSnapshotType,
-            tmpSnapshotMemo,
-            tmpSnapshotAmount,
-            tmpAssetId,
-            tmpAssetType,
-            tmpAssetSymbol,
-            tmpAssetIcon,
-            tmpAssetUrl,
-            tmpAssetHeight,
-            tmpAssetWidth,
-            null,
-            tmpStickerId,
-            tmpAssetName,
-            tmpAppId,
-            tmpSiteName,
-            tmpSiteTitle,
-            tmpSiteDescription,
-            tmpSiteImage,
-            tmpSharedUserId,
-            tmpSharedUserFullName,
-            tmpSharedUserIdentityNumber,
-            tmpSharedUserAvatarUrl,
-            tmpSharedUserIsVerified,
-            tmpSharedUserAppId,
-            tmpMediaWaveform,
-            tmpQuoteId,
-            tmpQuoteContent,
-            tmpGroupName,
-            tmpMentions,
-            tmpMentionRead,
-            tmpPinTop,
-            tempExpireIn,
-            tempExpireAt,
-        )
+        val tempExpireIn: Long? =
+            if (cursor.isNull(cursorIndexOfExpireIn)) {
+                null
+            } else {
+                cursor.getLong(cursorIndexOfExpireIn)
+            }
+        val tempExpireAt: Long? =
+            if (cursor.isNull(cursorIndexOfExpireAt)) {
+                null
+            } else {
+                cursor.getLong(cursorIndexOfExpireAt)
+            }
+        item =
+            MessageItem(
+                tmpMessageId,
+                tmpConversationId,
+                tmpUserId,
+                tmpUserFullName,
+                tmpUserIdentityNumber,
+                tmpType,
+                tmpContent,
+                tmpCreatedAt,
+                tmpStatus,
+                tmpMediaStatus,
+                null,
+                tmpMediaName,
+                tmpMediaMimeType,
+                tmpMediaSize,
+                tmpThumbUrl,
+                tmpMediaWidth,
+                tmpMediaHeight,
+                tmpThumbImage,
+                tmpMediaUrl,
+                tmpMediaDuration,
+                tmpParticipantFullName,
+                tmpParticipantUserId,
+                tmpActionName,
+                tmpSnapshotId,
+                tmpSnapshotType,
+                tmpSnapshotMemo,
+                tmpSnapshotAmount,
+                tmpAssetId,
+                tmpAssetType,
+                tmpAssetSymbol,
+                tmpAssetIcon,
+                tmpAssetUrl,
+                tmpAssetHeight,
+                tmpAssetWidth,
+                null,
+                tmpStickerId,
+                tmpAssetName,
+                tmpAppId,
+                tmpSiteName,
+                tmpSiteTitle,
+                tmpSiteDescription,
+                tmpSiteImage,
+                tmpSharedUserId,
+                tmpSharedUserFullName,
+                tmpSharedUserIdentityNumber,
+                tmpSharedUserAvatarUrl,
+                tmpSharedUserIsVerified,
+                tmpSharedUserAppId,
+                tmpMediaWaveform,
+                tmpQuoteId,
+                tmpQuoteContent,
+                tmpGroupName,
+                tmpMentions,
+                tmpMentionRead,
+                tmpPinTop,
+                tempExpireIn,
+                tempExpireAt,
+            )
         res.add(item)
     }
     return res
@@ -383,16 +400,17 @@ fun convertToSearchMessageDetailItem(cursor: Cursor?): ArrayList<SearchMessageDe
         val tmpContent = cursor.getString(cursorIndexOfContent)
         val tmpCreatedAt = cursor.getString(cursorIndexOfCreatedAt)
         val tmpMediaName = cursor.getString(cursorIndexOfMediaName)
-        item = SearchMessageDetailItem(
-            tmpMessageId,
-            tmpType,
-            tmpContent,
-            tmpCreatedAt,
-            tmpMediaName,
-            tmpUserId,
-            tmpUserFullName,
-            tmpUserAvatarUrl,
-        )
+        item =
+            SearchMessageDetailItem(
+                tmpMessageId,
+                tmpType,
+                tmpContent,
+                tmpCreatedAt,
+                tmpMediaName,
+                tmpUserId,
+                tmpUserFullName,
+                tmpUserAvatarUrl,
+            )
         res.add(item)
     }
     return res
@@ -435,92 +453,106 @@ fun callableUser(
             val result: MutableList<User> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
                 val item: User
-                val tmpUserId: String? = if (cursor.isNull(cursorIndexOfUserId)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfUserId)
-                }
-                val tmpIdentityNumber: String? = if (cursor.isNull(cursorIndexOfIdentityNumber)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfIdentityNumber)
-                }
-                val tmpRelationship: String? = if (cursor.isNull(cursorIndexOfRelationship)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfRelationship)
-                }
-                val tmpBiography: String? = if (cursor.isNull(cursorIndexOfBiography)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfBiography)
-                }
-                val tmpFullName: String? = if (cursor.isNull(cursorIndexOfFullName)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfFullName)
-                }
-                val tmpAvatarUrl: String? = if (cursor.isNull(cursorIndexOfAvatarUrl)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfAvatarUrl)
-                }
-                val tmpPhone: String? = if (cursor.isNull(cursorIndexOfPhone)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfPhone)
-                }
+                val tmpUserId: String? =
+                    if (cursor.isNull(cursorIndexOfUserId)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfUserId)
+                    }
+                val tmpIdentityNumber: String? =
+                    if (cursor.isNull(cursorIndexOfIdentityNumber)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfIdentityNumber)
+                    }
+                val tmpRelationship: String? =
+                    if (cursor.isNull(cursorIndexOfRelationship)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfRelationship)
+                    }
+                val tmpBiography: String? =
+                    if (cursor.isNull(cursorIndexOfBiography)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfBiography)
+                    }
+                val tmpFullName: String? =
+                    if (cursor.isNull(cursorIndexOfFullName)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfFullName)
+                    }
+                val tmpAvatarUrl: String? =
+                    if (cursor.isNull(cursorIndexOfAvatarUrl)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfAvatarUrl)
+                    }
+                val tmpPhone: String? =
+                    if (cursor.isNull(cursorIndexOfPhone)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfPhone)
+                    }
                 val tmpIsVerified: Boolean?
-                val tmp: Int? = if (cursor.isNull(cursorIndexOfIsVerified)) {
-                    null
-                } else {
-                    cursor.getInt(cursorIndexOfIsVerified)
-                }
+                val tmp: Int? =
+                    if (cursor.isNull(cursorIndexOfIsVerified)) {
+                        null
+                    } else {
+                        cursor.getInt(cursorIndexOfIsVerified)
+                    }
                 tmpIsVerified = if (tmp == null) null else tmp != 0
-                val tmpCreatedAt: String? = if (cursor.isNull(cursorIndexOfCreatedAt)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfCreatedAt)
-                }
-                val tmpMuteUntil: String? = if (cursor.isNull(cursorIndexOfMuteUntil)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfMuteUntil)
-                }
+                val tmpCreatedAt: String? =
+                    if (cursor.isNull(cursorIndexOfCreatedAt)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfCreatedAt)
+                    }
+                val tmpMuteUntil: String? =
+                    if (cursor.isNull(cursorIndexOfMuteUntil)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfMuteUntil)
+                    }
                 val tmpHasPin: Boolean?
-                val tmp1: Int? = if (cursor.isNull(cursorIndexOfHasPin)) {
-                    null
-                } else {
-                    cursor.getInt(cursorIndexOfHasPin)
-                }
+                val tmp1: Int? =
+                    if (cursor.isNull(cursorIndexOfHasPin)) {
+                        null
+                    } else {
+                        cursor.getInt(cursorIndexOfHasPin)
+                    }
                 tmpHasPin = if (tmp1 == null) null else tmp1 != 0
-                val tmpAppId: String? = if (cursor.isNull(cursorIndexOfAppId)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfAppId)
-                }
+                val tmpAppId: String? =
+                    if (cursor.isNull(cursorIndexOfAppId)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfAppId)
+                    }
                 val tmpIsScam: Boolean?
-                val tmp2: Int? = if (cursor.isNull(cursorIndexOfIsScam)) {
-                    null
-                } else {
-                    cursor.getInt(cursorIndexOfIsScam)
-                }
+                val tmp2: Int? =
+                    if (cursor.isNull(cursorIndexOfIsScam)) {
+                        null
+                    } else {
+                        cursor.getInt(cursorIndexOfIsScam)
+                    }
                 tmpIsScam = if (tmp2 == null) null else tmp2 != 0
-                item = User(
-                    tmpUserId!!,
-                    tmpIdentityNumber!!,
-                    tmpRelationship!!,
-                    tmpBiography!!,
-                    tmpFullName,
-                    tmpAvatarUrl,
-                    tmpPhone,
-                    tmpIsVerified,
-                    tmpCreatedAt,
-                    tmpMuteUntil,
-                    tmpHasPin,
-                    tmpAppId,
-                    tmpIsScam,
-                )
+                item =
+                    User(
+                        tmpUserId!!,
+                        tmpIdentityNumber!!,
+                        tmpRelationship!!,
+                        tmpBiography!!,
+                        tmpFullName,
+                        tmpAvatarUrl,
+                        tmpPhone,
+                        tmpIsVerified,
+                        tmpCreatedAt,
+                        tmpMuteUntil,
+                        tmpHasPin,
+                        tmpAppId,
+                        tmpIsScam,
+                    )
                 result.add(item)
             }
             return@Callable result
@@ -569,133 +601,154 @@ fun callableTokenItem(
             val result: MutableList<TokenItem> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
                 val item: TokenItem
-                val tmpAssetId: String? = if (cursor.isNull(cursorIndexOfAssetId)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfAssetId)
-                }
-                val tmpSymbol: String? = if (cursor.isNull(cursorIndexOfSymbol)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfSymbol)
-                }
-                val tmpName: String? = if (cursor.isNull(cursorIndexOfName)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfName)
-                }
-                val tmpIconUrl: String? = if (cursor.isNull(cursorIndexOfIconUrl)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfIconUrl)
-                }
-                val tmpBalance: String? = if (cursor.isNull(cursorIndexOfBalance)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfBalance)
-                }
-                val tmpDestination: String? = if (cursor.isNull(cursorIndexOfDestination)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfDestination)
-                }
-                val tmpTag: String? = if (cursor.isNull(cursorIndexOfTag)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfTag)
-                }
-                val tmpPriceBtc: String? = if (cursor.isNull(cursorIndexOfPriceBtc)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfPriceBtc)
-                }
-                val tmpPriceUsd: String? = if (cursor.isNull(cursorIndexOfPriceUsd)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfPriceUsd)
-                }
-                val tmpChainId: String? = if (cursor.isNull(cursorIndexOfChainId)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfChainId)
-                }
-                val tmpChangeUsd: String? = if (cursor.isNull(cursorIndexOfChangeUsd)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfChangeUsd)
-                }
-                val tmpChangeBtc: String? = if (cursor.isNull(cursorIndexOfChangeBtc)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfChangeBtc)
-                }
+                val tmpAssetId: String? =
+                    if (cursor.isNull(cursorIndexOfAssetId)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfAssetId)
+                    }
+                val tmpSymbol: String? =
+                    if (cursor.isNull(cursorIndexOfSymbol)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfSymbol)
+                    }
+                val tmpName: String? =
+                    if (cursor.isNull(cursorIndexOfName)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfName)
+                    }
+                val tmpIconUrl: String? =
+                    if (cursor.isNull(cursorIndexOfIconUrl)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfIconUrl)
+                    }
+                val tmpBalance: String? =
+                    if (cursor.isNull(cursorIndexOfBalance)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfBalance)
+                    }
+                val tmpDestination: String? =
+                    if (cursor.isNull(cursorIndexOfDestination)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfDestination)
+                    }
+                val tmpTag: String? =
+                    if (cursor.isNull(cursorIndexOfTag)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfTag)
+                    }
+                val tmpPriceBtc: String? =
+                    if (cursor.isNull(cursorIndexOfPriceBtc)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfPriceBtc)
+                    }
+                val tmpPriceUsd: String? =
+                    if (cursor.isNull(cursorIndexOfPriceUsd)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfPriceUsd)
+                    }
+                val tmpChainId: String? =
+                    if (cursor.isNull(cursorIndexOfChainId)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfChainId)
+                    }
+                val tmpChangeUsd: String? =
+                    if (cursor.isNull(cursorIndexOfChangeUsd)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfChangeUsd)
+                    }
+                val tmpChangeBtc: String? =
+                    if (cursor.isNull(cursorIndexOfChangeBtc)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfChangeBtc)
+                    }
                 val tmpHidden: Boolean?
-                val tmp: Int? = if (cursor.isNull(cursorIndexOfHidden)) {
-                    null
-                } else {
-                    cursor.getInt(cursorIndexOfHidden)
-                }
+                val tmp: Int? =
+                    if (cursor.isNull(cursorIndexOfHidden)) {
+                        null
+                    } else {
+                        cursor.getInt(cursorIndexOfHidden)
+                    }
                 tmpHidden = if (tmp == null) null else tmp != 0
-                val tmpChainPriceUsd: String? = if (cursor.isNull(cursorIndexOfChainPriceUsd)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfChainPriceUsd)
-                }
+                val tmpChainPriceUsd: String? =
+                    if (cursor.isNull(cursorIndexOfChainPriceUsd)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfChainPriceUsd)
+                    }
                 val tmpConfirmations: Int = cursor.getInt(cursorIndexOfConfirmations)
-                val tmpChainIconUrl: String? = if (cursor.isNull(cursorIndexOfChainIconUrl)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfChainIconUrl)
-                }
-                val tmpChainSymbol: String? = if (cursor.isNull(cursorIndexOfChainSymbol)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfChainSymbol)
-                }
-                val tmpChainName: String? = if (cursor.isNull(cursorIndexOfChainName)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfChainName)
-                }
-                val tmpAssetKey: String? = if (cursor.isNull(cursorIndexOfAssetKey)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfAssetKey)
-                }
-                val tmpDepositWithdrawalMemoPossibility: WithdrawalMemoPossibility? = if (cursor.isNull(cursorIndexOfWithdrawalMemoPossibility)) {
-                    null
-                } else {
-                    WithdrawalMemoPossibilityConverter().revertDate(cursor.getString(cursorIndexOfWithdrawalMemoPossibility))
-                }
-                val tmpSignature: String? = if (cursor.isNull(cursorIndexOfSignature)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfSignature)
-                }
+                val tmpChainIconUrl: String? =
+                    if (cursor.isNull(cursorIndexOfChainIconUrl)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfChainIconUrl)
+                    }
+                val tmpChainSymbol: String? =
+                    if (cursor.isNull(cursorIndexOfChainSymbol)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfChainSymbol)
+                    }
+                val tmpChainName: String? =
+                    if (cursor.isNull(cursorIndexOfChainName)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfChainName)
+                    }
+                val tmpAssetKey: String? =
+                    if (cursor.isNull(cursorIndexOfAssetKey)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfAssetKey)
+                    }
+                val tmpDepositWithdrawalMemoPossibility: WithdrawalMemoPossibility? =
+                    if (cursor.isNull(cursorIndexOfWithdrawalMemoPossibility)) {
+                        null
+                    } else {
+                        WithdrawalMemoPossibilityConverter().revertDate(cursor.getString(cursorIndexOfWithdrawalMemoPossibility))
+                    }
+                val tmpSignature: String? =
+                    if (cursor.isNull(cursorIndexOfSignature)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfSignature)
+                    }
 
-                item = TokenItem(
-                    tmpAssetId!!,
-                    tmpSymbol!!,
-                    tmpName!!,
-                    tmpIconUrl!!,
-                    tmpBalance!!,
-                    tmpDestination,
-                    tmpTag,
-                    tmpPriceBtc!!,
-                    tmpPriceUsd!!,
-                    tmpChainId!!,
-                    tmpChangeUsd!!,
-                    tmpChangeBtc!!,
-                    tmpHidden,
-                    tmpConfirmations,
-                    tmpChainIconUrl,
-                    tmpChainSymbol,
-                    tmpChainName,
-                    tmpChainPriceUsd,
-                    tmpAssetKey,
-                    tmpDepositWithdrawalMemoPossibility,
-                    tmpSignature
-                )
+                item =
+                    TokenItem(
+                        tmpAssetId!!,
+                        tmpSymbol!!,
+                        tmpName!!,
+                        tmpIconUrl!!,
+                        tmpBalance!!,
+                        tmpDestination,
+                        tmpTag,
+                        tmpPriceBtc!!,
+                        tmpPriceUsd!!,
+                        tmpChainId!!,
+                        tmpChangeUsd!!,
+                        tmpChangeBtc!!,
+                        tmpHidden,
+                        tmpConfirmations,
+                        tmpChainIconUrl,
+                        tmpChainSymbol,
+                        tmpChainName,
+                        tmpChainPriceUsd,
+                        tmpAssetKey,
+                        tmpDepositWithdrawalMemoPossibility,
+                        tmpSignature,
+                    )
                 result.add(item)
             }
             return@Callable result
@@ -727,11 +780,12 @@ fun callableSearchMessageItem(
                 java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
                 val item: SearchMessageItem
-                val tmpConversationId: String? = if (cursor.isNull(cursorIndexOfConversationId)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfConversationId)
-                }
+                val tmpConversationId: String? =
+                    if (cursor.isNull(cursorIndexOfConversationId)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfConversationId)
+                    }
                 val tmpConversationAvatarUrl: String? =
                     if (cursor.isNull(cursorIndexOfConversationAvatarUrl)) {
                         null
@@ -751,31 +805,35 @@ fun callableSearchMessageItem(
                         cursor.getString(cursorIndexOfConversationCategory)
                     }
                 val tmpMessageCount: Int = cursor.getInt(cursorIndexOfMessageCount)
-                val tmpUserId: String? = if (cursor.isNull(cursorIndexOfUserId)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfUserId)
-                }
-                val tmpUserAvatarUrl: String? = if (cursor.isNull(cursorIndexOfUserAvatarUrl)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfUserAvatarUrl)
-                }
-                val tmpUserFullName: String? = if (cursor.isNull(cursorIndexOfUserFullName)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfUserFullName)
-                }
-                item = SearchMessageItem(
-                    tmpConversationId!!,
-                    tmpConversationCategory,
-                    tmpConversationName,
-                    tmpMessageCount,
-                    tmpUserId!!,
-                    tmpUserFullName,
-                    tmpUserAvatarUrl,
-                    tmpConversationAvatarUrl,
-                )
+                val tmpUserId: String? =
+                    if (cursor.isNull(cursorIndexOfUserId)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfUserId)
+                    }
+                val tmpUserAvatarUrl: String? =
+                    if (cursor.isNull(cursorIndexOfUserAvatarUrl)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfUserAvatarUrl)
+                    }
+                val tmpUserFullName: String? =
+                    if (cursor.isNull(cursorIndexOfUserFullName)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfUserFullName)
+                    }
+                item =
+                    SearchMessageItem(
+                        tmpConversationId!!,
+                        tmpConversationCategory,
+                        tmpConversationName,
+                        tmpMessageCount,
+                        tmpUserId!!,
+                        tmpUserFullName,
+                        tmpUserAvatarUrl,
+                        tmpConversationAvatarUrl,
+                    )
                 result.add(item)
             }
             return@Callable result
@@ -811,89 +869,102 @@ fun callableChatMinimal(
             val result: MutableList<ChatMinimal> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
                 val item: ChatMinimal
-                val tmpConversationId: String? = if (cursor.isNull(cursorIndexOfConversationId)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfConversationId)
-                }
-                val tmpGroupIconUrl: String? = if (cursor.isNull(cursorIndexOfGroupIconUrl)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfGroupIconUrl)
-                }
-                val tmpCategory: String? = if (cursor.isNull(cursorIndexOfCategory)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfCategory)
-                }
-                val tmpGroupName: String? = if (cursor.isNull(cursorIndexOfGroupName)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfGroupName)
-                }
+                val tmpConversationId: String? =
+                    if (cursor.isNull(cursorIndexOfConversationId)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfConversationId)
+                    }
+                val tmpGroupIconUrl: String? =
+                    if (cursor.isNull(cursorIndexOfGroupIconUrl)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfGroupIconUrl)
+                    }
+                val tmpCategory: String? =
+                    if (cursor.isNull(cursorIndexOfCategory)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfCategory)
+                    }
+                val tmpGroupName: String? =
+                    if (cursor.isNull(cursorIndexOfGroupName)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfGroupName)
+                    }
                 val tmpOwnerIdentityNumber: String? =
                     if (cursor.isNull(cursorIndexOfOwnerIdentityNumber)) {
                         null
                     } else {
                         cursor.getString(cursorIndexOfOwnerIdentityNumber)
                     }
-                val tmpUserId: String? = if (cursor.isNull(cursorIndexOfUserId)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfUserId)
-                }
-                val tmpFullName: String? = if (cursor.isNull(cursorIndexOfFullName)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfFullName)
-                }
-                val tmpAvatarUrl: String? = if (cursor.isNull(cursorIndexOfAvatarUrl)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfAvatarUrl)
-                }
+                val tmpUserId: String? =
+                    if (cursor.isNull(cursorIndexOfUserId)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfUserId)
+                    }
+                val tmpFullName: String? =
+                    if (cursor.isNull(cursorIndexOfFullName)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfFullName)
+                    }
+                val tmpAvatarUrl: String? =
+                    if (cursor.isNull(cursorIndexOfAvatarUrl)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfAvatarUrl)
+                    }
                 val tmpIsVerified: Boolean?
-                val tmp: Int? = if (cursor.isNull(cursorIndexOfIsVerified)) {
-                    null
-                } else {
-                    cursor.getInt(cursorIndexOfIsVerified)
-                }
+                val tmp: Int? =
+                    if (cursor.isNull(cursorIndexOfIsVerified)) {
+                        null
+                    } else {
+                        cursor.getInt(cursorIndexOfIsVerified)
+                    }
                 tmpIsVerified = if (tmp == null) null else tmp != 0
-                val tmpAppId: String? = if (cursor.isNull(cursorIndexOfAppId)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfAppId)
-                }
-                val tmpOwnerMuteUntil: String? = if (cursor.isNull(cursorIndexOfOwnerMuteUntil)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfOwnerMuteUntil)
-                }
-                val tmpMuteUntil: String? = if (cursor.isNull(cursorIndexOfMuteUntil)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfMuteUntil)
-                }
-                val tmpPinTime: String? = if (cursor.isNull(cursorIndexOfPinTime)) {
-                    null
-                } else {
-                    cursor.getString(cursorIndexOfPinTime)
-                }
-                item = ChatMinimal(
-                    tmpCategory!!,
-                    tmpConversationId!!,
-                    tmpGroupIconUrl,
-                    tmpGroupName,
-                    tmpOwnerIdentityNumber!!,
-                    tmpUserId!!,
-                    tmpFullName,
-                    tmpAvatarUrl,
-                    tmpIsVerified,
-                    tmpAppId,
-                    tmpOwnerMuteUntil,
-                    tmpMuteUntil,
-                    tmpPinTime,
-                )
+                val tmpAppId: String? =
+                    if (cursor.isNull(cursorIndexOfAppId)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfAppId)
+                    }
+                val tmpOwnerMuteUntil: String? =
+                    if (cursor.isNull(cursorIndexOfOwnerMuteUntil)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfOwnerMuteUntil)
+                    }
+                val tmpMuteUntil: String? =
+                    if (cursor.isNull(cursorIndexOfMuteUntil)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfMuteUntil)
+                    }
+                val tmpPinTime: String? =
+                    if (cursor.isNull(cursorIndexOfPinTime)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfPinTime)
+                    }
+                item =
+                    ChatMinimal(
+                        tmpCategory!!,
+                        tmpConversationId!!,
+                        tmpGroupIconUrl,
+                        tmpGroupName,
+                        tmpOwnerIdentityNumber!!,
+                        tmpUserId!!,
+                        tmpFullName,
+                        tmpAvatarUrl,
+                        tmpIsVerified,
+                        tmpAppId,
+                        tmpOwnerMuteUntil,
+                        tmpMuteUntil,
+                        tmpPinTime,
+                    )
                 result.add(item)
             }
             return@Callable result
@@ -942,27 +1013,30 @@ fun convertChatHistoryMessageItem(
     val cursorIndexOfSharedUserIsVerified = 47
     val cursorIndexOfSharedUserAppId = 48
     val cursorIndexOfMentions = 49
-    val list: MutableList<ChatHistoryMessageItem> = ArrayList(
-        cursor.count,
-    )
+    val list: MutableList<ChatHistoryMessageItem> =
+        ArrayList(
+            cursor.count,
+        )
     while (cursor.moveToNext()) {
         val _item: ChatHistoryMessageItem
-        val tmpMessageId: String? = if (cursor.isNull(cursorIndexOfMessageId)) {
-            null
-        } else {
-            cursor.getString(cursorIndexOfMessageId)
-        }
+        val tmpMessageId: String? =
+            if (cursor.isNull(cursorIndexOfMessageId)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfMessageId)
+            }
         val tmpConversationId: String? =
             if (cursor.isNull(cursorIndexOfConversationId)) {
                 null
             } else {
                 cursor.getString(cursorIndexOfConversationId)
             }
-        val tmpUserId: String? = if (cursor.isNull(cursorIndexOfUserId)) {
-            null
-        } else {
-            cursor.getString(cursorIndexOfUserId)
-        }
+        val tmpUserId: String? =
+            if (cursor.isNull(cursorIndexOfUserId)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfUserId)
+            }
         val tmpUserFullName: String? =
             if (cursor.isNull(cursorIndexOfUserFullName)) {
                 null
@@ -975,21 +1049,24 @@ fun convertChatHistoryMessageItem(
             } else {
                 cursor.getString(cursorIndexOfUserIdentityNumber)
             }
-        val tmpAppId: String? = if (cursor.isNull(cursorIndexOfAppId)) {
-            null
-        } else {
-            cursor.getString(cursorIndexOfAppId)
-        }
-        val tmpType: String? = if (cursor.isNull(cursorIndexOfType)) {
-            null
-        } else {
-            cursor.getString(cursorIndexOfType)
-        }
-        val tmpContent: String? = if (cursor.isNull(cursorIndexOfContent)) {
-            null
-        } else {
-            cursor.getString(cursorIndexOfContent)
-        }
+        val tmpAppId: String? =
+            if (cursor.isNull(cursorIndexOfAppId)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfAppId)
+            }
+        val tmpType: String? =
+            if (cursor.isNull(cursorIndexOfType)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfType)
+            }
+        val tmpContent: String? =
+            if (cursor.isNull(cursorIndexOfContent)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfContent)
+            }
         val tmpCreatedAt: String? =
             if (cursor.isNull(cursorIndexOfCreatedAt)) {
                 null
@@ -1020,11 +1097,12 @@ fun convertChatHistoryMessageItem(
             } else {
                 cursor.getString(cursorIndexOfMediaMimeType)
             }
-        val tmpMediaSize: Long? = if (cursor.isNull(cursorIndexOfMediaSize)) {
-            null
-        } else {
-            cursor.getLong(cursorIndexOfMediaSize)
-        }
+        val tmpMediaSize: Long? =
+            if (cursor.isNull(cursorIndexOfMediaSize)) {
+                null
+            } else {
+                cursor.getLong(cursorIndexOfMediaSize)
+            }
         val tmpMediaWidth: Int? =
             if (cursor.isNull(cursorIndexOfMediaWidth)) {
                 null
@@ -1043,38 +1121,42 @@ fun convertChatHistoryMessageItem(
             } else {
                 cursor.getString(cursorIndexOfThumbImage)
             }
-        val tmpThumbUrl: String? = if (cursor.isNull(cursorIndexOfThumbUrl)) {
-            null
-        } else {
-            cursor.getString(cursorIndexOfThumbUrl)
-        }
-        val tmpMediaUrl: String? = if (cursor.isNull(cursorIndexOfMediaUrl)) {
-            null
-        } else {
-            cursor.getString(cursorIndexOfMediaUrl)
-        }
+        val tmpThumbUrl: String? =
+            if (cursor.isNull(cursorIndexOfThumbUrl)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfThumbUrl)
+            }
+        val tmpMediaUrl: String? =
+            if (cursor.isNull(cursorIndexOfMediaUrl)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfMediaUrl)
+            }
         val tmpMediaDuration: String? =
             if (cursor.isNull(cursorIndexOfMediaDuration)) {
                 null
             } else {
                 cursor.getString(cursorIndexOfMediaDuration)
             }
-        val tmpQuoteId: String? = if (cursor.isNull(cursorIndexOfQuoteId)) {
-            null
-        } else {
-            cursor.getString(cursorIndexOfQuoteId)
-        }
+        val tmpQuoteId: String? =
+            if (cursor.isNull(cursorIndexOfQuoteId)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfQuoteId)
+            }
         val tmpQuoteContent: String? =
             if (cursor.isNull(cursorIndexOfQuoteContent)) {
                 null
             } else {
                 cursor.getString(cursorIndexOfQuoteContent)
             }
-        val tmpAssetUrl: String? = if (cursor.isNull(cursorIndexOfAssetUrl)) {
-            null
-        } else {
-            cursor.getString(cursorIndexOfAssetUrl)
-        }
+        val tmpAssetUrl: String? =
+            if (cursor.isNull(cursorIndexOfAssetUrl)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfAssetUrl)
+            }
         val tmpAssetWidth: Int? =
             if (cursor.isNull(cursorIndexOfAssetWidth)) {
                 null
@@ -1131,47 +1213,49 @@ fun convertChatHistoryMessageItem(
             } else {
                 cursor.getString(cursorIndexOfSharedUserAppId)
             }
-        val tmpMentions: String? = if (cursor.isNull(cursorIndexOfMentions)) {
-            null
-        } else {
-            cursor.getString(cursorIndexOfMentions)
-        }
-        _item = ChatHistoryMessageItem(
-            null,
-            tmpConversationId,
-            tmpMessageId!!,
-            tmpUserId,
-            tmpUserFullName,
-            tmpUserIdentityNumber,
-            tmpType!!,
-            tmpAppId,
-            tmpContent,
-            tmpCreatedAt!!,
-            tmpMediaStatus,
-            tmpMediaName,
-            tmpMediaMimeType,
-            tmpMediaSize,
-            tmpThumbUrl,
-            tmpMediaWidth,
-            tmpMediaHeight,
-            tmpThumbImage,
-            tmpMediaUrl,
-            tmpMediaDuration,
-            tmpMediaWaveform,
-            tmpAssetWidth,
-            tmpAssetHeight,
-            tmpAssetUrl,
-            tmpAssetType,
-            tmpSharedUserId,
-            tmpSharedUserFullName,
-            tmpSharedUserAvatarUrl,
-            tmpSharedUserIdentityNumber,
-            tmpSharedUserIsVerified,
-            tmpSharedUserAppId,
-            tmpQuoteId,
-            tmpQuoteContent,
-            tmpMentions,
-        )
+        val tmpMentions: String? =
+            if (cursor.isNull(cursorIndexOfMentions)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfMentions)
+            }
+        _item =
+            ChatHistoryMessageItem(
+                null,
+                tmpConversationId,
+                tmpMessageId!!,
+                tmpUserId,
+                tmpUserFullName,
+                tmpUserIdentityNumber,
+                tmpType!!,
+                tmpAppId,
+                tmpContent,
+                tmpCreatedAt!!,
+                tmpMediaStatus,
+                tmpMediaName,
+                tmpMediaMimeType,
+                tmpMediaSize,
+                tmpThumbUrl,
+                tmpMediaWidth,
+                tmpMediaHeight,
+                tmpThumbImage,
+                tmpMediaUrl,
+                tmpMediaDuration,
+                tmpMediaWaveform,
+                tmpAssetWidth,
+                tmpAssetHeight,
+                tmpAssetUrl,
+                tmpAssetType,
+                tmpSharedUserId,
+                tmpSharedUserFullName,
+                tmpSharedUserAvatarUrl,
+                tmpSharedUserIdentityNumber,
+                tmpSharedUserIsVerified,
+                tmpSharedUserAppId,
+                tmpQuoteId,
+                tmpQuoteContent,
+                tmpMentions,
+            )
         list.add(_item)
     }
     return list

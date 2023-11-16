@@ -11,12 +11,18 @@ import one.mixin.android.R
 
 class ItemCallback(private val listener: ItemCallbackListener, private val movementFlags: ((viewHolder: RecyclerView.ViewHolder) -> Int)? = null) :
     ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.START or ItemTouchHelper.END) {
-
-    override fun onMove(p0: RecyclerView, p1: RecyclerView.ViewHolder, p2: RecyclerView.ViewHolder): Boolean {
+    override fun onMove(
+        p0: RecyclerView,
+        p1: RecyclerView.ViewHolder,
+        p2: RecyclerView.ViewHolder,
+    ): Boolean {
         return false
     }
 
-    override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
+    override fun onSelectedChanged(
+        viewHolder: RecyclerView.ViewHolder?,
+        actionState: Int,
+    ) {
         viewHolder?.let {
             ItemTouchHelper.Callback.getDefaultUIUtil().onSelected(findView(viewHolder.itemView, R.id.foreground_rl))
         }
@@ -37,13 +43,19 @@ class ItemCallback(private val listener: ItemCallbackListener, private val movem
         }
     }
 
-    override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+    override fun clearView(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder,
+    ) {
         direction = 0
         ItemTouchHelper.Callback.getDefaultUIUtil()
             .clearView(findView(viewHolder.itemView, R.id.foreground_rl))
     }
 
-    private fun findView(view: View, @IdRes id: Int): View = view.findViewById(id)
+    private fun findView(
+        view: View,
+        @IdRes id: Int,
+    ): View = view.findViewById(id)
 
     override fun getMovementFlags(
         recyclerView: RecyclerView,
@@ -55,6 +67,7 @@ class ItemCallback(private val listener: ItemCallbackListener, private val movem
             super.getMovementFlags(recyclerView, viewHolder)
         }
     }
+
     override fun onChildDraw(
         c: Canvas,
         recyclerView: RecyclerView,
@@ -85,11 +98,17 @@ class ItemCallback(private val listener: ItemCallbackListener, private val movem
 
     private var direction: Int = 0
 
-    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+    override fun onSwiped(
+        viewHolder: RecyclerView.ViewHolder,
+        direction: Int,
+    ) {
         listener.onSwiped(viewHolder, direction)
     }
 
     interface ItemCallbackListener {
-        fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int)
+        fun onSwiped(
+            viewHolder: RecyclerView.ViewHolder,
+            direction: Int,
+        )
     }
 }

@@ -44,7 +44,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
-
     @Inject
     lateinit var jobManager: MixinJobManager
 
@@ -63,7 +62,10 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
     private val binding by viewBinding(FragmentContactsBinding::bind)
 
     @SuppressLint("NotifyDataSetChanged")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             contactRecyclerView.adapter = contactAdapter
@@ -104,10 +106,11 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                     contactAdapter.friendSize = users.size
                     contactAdapter.users = users
                 } else {
-                    val newList = arrayListOf<User>().apply {
-                        addAll(users)
-                        addAll(contactAdapter.users.filter { it.relationship != UserRelationship.FRIEND.name })
-                    }
+                    val newList =
+                        arrayListOf<User>().apply {
+                            addAll(users)
+                            addAll(contactAdapter.users.filter { it.relationship != UserRelationship.FRIEND.name })
+                        }
                     contactAdapter.friendSize = users.size
                     contactAdapter.users = newList
                 }
@@ -159,59 +162,59 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
         jobManager.addJobInBackground(UploadContactsJob())
     }
 
-    private val mContactListener: ContactsAdapter.ContactListener = object : ContactsAdapter.ContactListener {
+    private val mContactListener: ContactsAdapter.ContactListener =
+        object : ContactsAdapter.ContactListener {
+            override fun onHeaderRl() {
+                ProfileBottomSheetDialogFragment.newInstance().showNow(
+                    parentFragmentManager,
+                    UserBottomSheetDialogFragment.TAG,
+                )
+            }
 
-        override fun onHeaderRl() {
-            ProfileBottomSheetDialogFragment.newInstance().showNow(
-                parentFragmentManager,
-                UserBottomSheetDialogFragment.TAG,
-            )
-        }
+            override fun onNewGroup() {
+                GroupActivity.show(requireContext())
+            }
 
-        override fun onNewGroup() {
-            GroupActivity.show(requireContext())
-        }
+            override fun onAddContact() {
+                activity?.addFragment(this@ContactsFragment, AddPeopleFragment.newInstance(), AddPeopleFragment.TAG)
+            }
 
-        override fun onAddContact() {
-            activity?.addFragment(this@ContactsFragment, AddPeopleFragment.newInstance(), AddPeopleFragment.TAG)
-        }
-
-        override fun onEmptyRl() {
-            RxPermissions(requireActivity())
-                .request(Manifest.permission.READ_CONTACTS)
-                .autoDispose(stopScope)
-                .subscribe { granted ->
-                    if (granted) {
-                        contactAdapter.hideEmptyFooter()
-                        jobManager.addJobInBackground(UploadContactsJob())
-                        fetchContacts()
-                        jobManager.addJobInBackground(RefreshContactJob())
-                    } else {
-                        context?.openPermissionSetting()
+            override fun onEmptyRl() {
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.READ_CONTACTS)
+                    .autoDispose(stopScope)
+                    .subscribe { granted ->
+                        if (granted) {
+                            contactAdapter.hideEmptyFooter()
+                            jobManager.addJobInBackground(UploadContactsJob())
+                            fetchContacts()
+                            jobManager.addJobInBackground(RefreshContactJob())
+                        } else {
+                            context?.openPermissionSetting()
+                        }
                     }
+            }
+
+            override fun onFriendItem(user: User) {
+                context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
+            }
+
+            override fun onContactItem(user: User) {
+                ContactBottomSheetDialog.newInstance(user).showNow(parentFragmentManager, ContactBottomSheetDialog.TAG)
+            }
+
+            override fun onMyQr(self: User?) {
+                self?.let {
+                    QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_MY_QR)
+                        .showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
                 }
-        }
+            }
 
-        override fun onFriendItem(user: User) {
-            context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
-        }
-
-        override fun onContactItem(user: User) {
-            ContactBottomSheetDialog.newInstance(user).showNow(parentFragmentManager, ContactBottomSheetDialog.TAG)
-        }
-
-        override fun onMyQr(self: User?) {
-            self?.let {
-                QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_MY_QR)
-                    .showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
+            override fun onReceiveQr(self: User?) {
+                self?.let {
+                    QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_RECEIVE_QR)
+                        .showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
+                }
             }
         }
-
-        override fun onReceiveQr(self: User?) {
-            self?.let {
-                QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_RECEIVE_QR)
-                    .showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
-            }
-        }
-    }
 }

@@ -78,13 +78,13 @@ import kotlin.properties.Delegates
 
 @AndroidEntryPoint
 class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "CallBottomSheetDialogFragment"
         const val EXTRA_JOIN = "extra_join"
 
         @SuppressLint("StaticFieldLeak")
         private var instant: CallBottomSheetDialogFragment? = null
+
         fun newInstance(
             join: Boolean,
         ): CallBottomSheetDialogFragment {
@@ -94,9 +94,10 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
             instant = null
             return CallBottomSheetDialogFragment().apply {
-                arguments = Bundle().apply {
-                    putBoolean(CallActivity.EXTRA_JOIN, join)
-                }
+                arguments =
+                    Bundle().apply {
+                        putBoolean(CallActivity.EXTRA_JOIN, join)
+                    }
                 instant = this
             }
         }
@@ -135,7 +136,10 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var groupName: String? = null
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         _binding = FragmentCallBottomSheetBinding.inflate(LayoutInflater.from(context), null, false)
         contentView = binding.root
@@ -149,24 +153,32 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             binding.bottomLayout.translationY = translationOffset
         }
         (binding.avatarLl.layoutParams as ViewGroup.MarginLayoutParams).topMargin = 132.dp
-        behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                    safeDismiss()
-                }
-            }
-
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                userAdapter?.let {
-                    if (it.itemCount > 8) {
-                        binding.participants.translationY = 0f
-                    } else {
-                        binding.participants.translationY = translationOffset * (1 - slideOffset)
+        behavior.addBottomSheetCallback(
+            object : BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(
+                    bottomSheet: View,
+                    newState: Int,
+                ) {
+                    if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                        safeDismiss()
                     }
                 }
-                binding.bottomLayout.translationY = translationOffset * (1 - slideOffset)
-            }
-        })
+
+                override fun onSlide(
+                    bottomSheet: View,
+                    slideOffset: Float,
+                ) {
+                    userAdapter?.let {
+                        if (it.itemCount > 8) {
+                            binding.participants.translationY = 0f
+                        } else {
+                            binding.participants.translationY = translationOffset * (1 - slideOffset)
+                        }
+                    }
+                    binding.bottomLayout.translationY = translationOffset * (1 - slideOffset)
+                }
+            },
+        )
         dialog.window?.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -177,28 +189,30 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 val cid = callState.conversationId
                 val account = Session.getAccount()!!
-                self = if (cid == null) {
-                    CallUser(
-                        account.userId,
-                        account.identityNumber,
-                        account.fullName,
-                        account.avatarUrl,
-                        "",
-                    )
-                } else {
-                    var callUser = viewModel.findSelfCallUser(cid, account.userId)
-                    if (callUser == null) {
-                        callUser = CallUser(
+                self =
+                    if (cid == null) {
+                        CallUser(
                             account.userId,
                             account.identityNumber,
                             account.fullName,
                             account.avatarUrl,
                             "",
                         )
-                        viewModel.refreshConversation(cid)
+                    } else {
+                        var callUser = viewModel.findSelfCallUser(cid, account.userId)
+                        if (callUser == null) {
+                            callUser =
+                                CallUser(
+                                    account.userId,
+                                    account.identityNumber,
+                                    account.fullName,
+                                    account.avatarUrl,
+                                    "",
+                                )
+                            viewModel.refreshConversation(cid)
+                        }
+                        callUser
                     }
-                    callUser
-                }
                 if (callState.isGroupCall()) {
                     withContext(Dispatchers.IO) {
                         groupName = viewModel.getConversationNameById(requireNotNull(cid))
@@ -269,7 +283,10 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
                 binding.muteCb.setOnCheckedChangeListener(
                     object : CallButton.OnCheckedChangeListener {
-                        override fun onCheckedChanged(id: Int, checked: Boolean) {
+                        override fun onCheckedChanged(
+                            id: Int,
+                            checked: Boolean,
+                        ) {
                             if (callState.isGroupCall()) {
                                 muteAudio<GroupCallService>(requireContext(), checked)
                             } else if (callState.isVoiceCall()) {
@@ -280,7 +297,10 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 )
                 binding.voiceCb.setOnCheckedChangeListener(
                     object : CallButton.OnCheckedChangeListener {
-                        override fun onCheckedChanged(id: Int, checked: Boolean) {
+                        override fun onCheckedChanged(
+                            id: Int,
+                            checked: Boolean,
+                        ) {
                             if (callState.isGroupCall()) {
                                 speakerPhone<GroupCallService>(requireContext(), checked)
                             } else if (callState.isVoiceCall()) {
@@ -313,7 +333,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             if ((
                                     state == CallService.CallState.STATE_IDLE ||
                                         state == CallService.CallState.STATE_RINGING
-                                    ) &&
+                                ) &&
                                 callState.needMuteWhenJoin(requireNotNull(cid))
                             ) {
                                 updateTitle(getString(R.string.chat_group_call_mute))
@@ -390,20 +410,21 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun setAdapter() {
         if (userAdapter == null) {
-            userAdapter = CallUserAdapter(self) { userId ->
-                if (userId != null) {
-                    lifecycleScope.launch {
-                        val user = viewModel.suspendFindUserById(userId) ?: return@launch
-                        showUserBottom(parentFragmentManager, user)
+            userAdapter =
+                CallUserAdapter(self) { userId ->
+                    if (userId != null) {
+                        lifecycleScope.launch {
+                            val user = viewModel.suspendFindUserById(userId) ?: return@launch
+                            showUserBottom(parentFragmentManager, user)
+                        }
+                    } else if (callState.isGroupCall() && callState.conversationId != null) {
+                        GroupUsersBottomSheetDialogFragment.newInstance(callState.conversationId!!)
+                            .showNow(
+                                parentFragmentManager,
+                                GroupUsersBottomSheetDialogFragment.TAG,
+                            )
                     }
-                } else if (callState.isGroupCall() && callState.conversationId != null) {
-                    GroupUsersBottomSheetDialogFragment.newInstance(callState.conversationId!!)
-                        .showNow(
-                            parentFragmentManager,
-                            GroupUsersBottomSheetDialogFragment.TAG,
-                        )
                 }
-            }
         }
         binding.usersRv.adapter = userAdapter
     }
@@ -414,16 +435,17 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private fun startTimer() {
         timer = Timer(true)
         timerTask?.cancel()
-        timerTask = object : TimerTask() {
-            override fun run() {
-                lifecycleScope.launch {
-                    if (callState.connectedTime != null) {
-                        val duration = System.currentTimeMillis() - callState.connectedTime!!
-                        updateTitle(duration.formatMillis())
+        timerTask =
+            object : TimerTask() {
+                override fun run() {
+                    lifecycleScope.launch {
+                        if (callState.connectedTime != null) {
+                            val duration = System.currentTimeMillis() - callState.connectedTime!!
+                            updateTitle(duration.formatMillis())
+                        }
                     }
                 }
             }
-        }
         timer?.schedule(timerTask, 0, 1000)
     }
 
@@ -542,78 +564,82 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun updateTitle(content: String) {
-        binding.title.text = if (callState.isGroupCall()) {
-            "$groupName"
-        } else {
-            getString(
-                R.string.Call,
-            )
-        }
+        binding.title.text =
+            if (callState.isGroupCall()) {
+                "$groupName"
+            } else {
+                getString(
+                    R.string.Call,
+                )
+            }
         binding.callStatus.text = content
     }
 
     private var userAdapter: CallUserAdapter? = null
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun refreshUsers() = lifecycleScope.launch {
-        val cid = callState.conversationId ?: return@launch
-        val us = callState.getUsers(cid)
-        val calls = mutableListOf<String>().apply { us?.let { addAll(it) } }
-        if (binding.usersRv.layoutManager == null) {
-            binding.usersRv.layoutManager = GridLayoutManager(requireContext(), 4)
-        }
-        if (calls.isEmpty()) {
-            userAdapter?.submitList(null)
-            binding.participants.text = requireContext().resources.getQuantityString(R.plurals.title_participants, 0, 0)
-        } else {
-            val last = calls.lastOrNull()
-            if (calls.size == 1 && last == self.userId) {
-                userAdapter?.submitList(listOf(self))
-                binding.participants.text = requireContext().resources.getQuantityString(R.plurals.title_participants, 1, 1)
-                binding.participants.translationY = binding.bottomLayout.translationY
-                return@launch
+    private fun refreshUsers() =
+        lifecycleScope.launch {
+            val cid = callState.conversationId ?: return@launch
+            val us = callState.getUsers(cid)
+            val calls = mutableListOf<String>().apply { us?.let { addAll(it) } }
+            if (binding.usersRv.layoutManager == null) {
+                binding.usersRv.layoutManager = GridLayoutManager(requireContext(), 4)
             }
-            val users = viewModel.findMultiCallUsersByIds(cid, calls.toSet())
-                .sortedWith { u1, u2 ->
-                    when {
-                        u1.role == u2.role -> {
-                            return@sortedWith 0
+            if (calls.isEmpty()) {
+                userAdapter?.submitList(null)
+                binding.participants.text = requireContext().resources.getQuantityString(R.plurals.title_participants, 0, 0)
+            } else {
+                val last = calls.lastOrNull()
+                if (calls.size == 1 && last == self.userId) {
+                    userAdapter?.submitList(listOf(self))
+                    binding.participants.text = requireContext().resources.getQuantityString(R.plurals.title_participants, 1, 1)
+                    binding.participants.translationY = binding.bottomLayout.translationY
+                    return@launch
+                }
+                val users =
+                    viewModel.findMultiCallUsersByIds(cid, calls.toSet())
+                        .sortedWith { u1, u2 ->
+                            when {
+                                u1.role == u2.role -> {
+                                    return@sortedWith 0
+                                }
+                                u1.role == ParticipantRole.OWNER.name -> {
+                                    return@sortedWith -1
+                                }
+                                u2.role == ParticipantRole.OWNER.name -> {
+                                    return@sortedWith 1
+                                }
+                                u1.role == ParticipantRole.ADMIN.name -> {
+                                    return@sortedWith -1
+                                }
+                                else -> {
+                                    return@sortedWith 1
+                                }
+                            }
                         }
-                        u1.role == ParticipantRole.OWNER.name -> {
-                            return@sortedWith -1
-                        }
-                        u2.role == ParticipantRole.OWNER.name -> {
-                            return@sortedWith 1
-                        }
-                        u1.role == ParticipantRole.ADMIN.name -> {
-                            return@sortedWith -1
-                        }
-                        else -> {
-                            return@sortedWith 1
-                        }
+                userAdapter?.apply {
+                    submitList(users)
+                    if (itemCount > 8) {
+                        binding.participants.translationY = 0f
+                    } else {
+                        binding.participants.translationY = binding.bottomLayout.translationY
                     }
                 }
-            userAdapter?.apply {
-                submitList(users)
-                if (itemCount > 8) {
-                    binding.participants.translationY = 0f
-                } else {
-                    binding.participants.translationY = binding.bottomLayout.translationY
-                }
+                binding.participants.text =
+                    requireContext().resources.getQuantityString(
+                        R.plurals.title_participants,
+                        users.size,
+                        users.size,
+                    )
             }
-            binding.participants.text = requireContext().resources.getQuantityString(
-                R.plurals.title_participants,
-                users.size,
-                users.size,
-            )
+            val currentGuestsNotConnected = userAdapter?.guestsNotConnected
+            val newGuestsNotConnected = callState.getPendingUsers(cid)
+            if (currentGuestsNotConnected != newGuestsNotConnected) {
+                userAdapter?.guestsNotConnected = newGuestsNotConnected
+                userAdapter?.notifyDataSetChanged()
+            }
         }
-        val currentGuestsNotConnected = userAdapter?.guestsNotConnected
-        val newGuestsNotConnected = callState.getPendingUsers(cid)
-        if (currentGuestsNotConnected != newGuestsNotConnected) {
-            userAdapter?.guestsNotConnected = newGuestsNotConnected
-            userAdapter?.notifyDataSetChanged()
-        }
-    }
 
     private fun showE2EETip() {
         alertDialogBuilder()
@@ -728,23 +754,24 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
             if (permissionAlert != null && permissionAlert!!.isShowing) return@checkInlinePermissions
 
-            permissionAlert = AlertDialog.Builder(requireContext())
-                .setTitle(R.string.app_name)
-                .setMessage(R.string.call_pip_permission)
-                .setPositiveButton(R.string.Settings) { dialog, _ ->
-                    try {
-                        startActivity(
-                            Intent(
-                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:${requireContext().packageName}"),
-                            ),
-                        )
-                    } catch (e: Exception) {
-                        Timber.e(e)
-                    }
-                    dialog.dismiss()
-                    setClicked = true
-                }.show()
+            permissionAlert =
+                AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.app_name)
+                    .setMessage(R.string.call_pip_permission)
+                    .setPositiveButton(R.string.Settings) { dialog, _ ->
+                        try {
+                            startActivity(
+                                Intent(
+                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                    Uri.parse("package:${requireContext().packageName}"),
+                                ),
+                            )
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+                        dialog.dismiss()
+                        setClicked = true
+                    }.show()
         }
 
     private fun checkBlueToothConnectPermissions(callback: () -> Unit) {

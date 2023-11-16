@@ -12,31 +12,32 @@ class RefreshUserJob(
     private val conversationId: String? = null,
     private val forceRefresh: Boolean = false,
 ) : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requireNetwork().persist()) {
-
     companion object {
         private const val serialVersionUID = 1L
         private const val GROUP = "RefreshUserJob"
     }
 
-    override fun onRun() = runBlocking {
-        val ids = userIds.filter { it.isNotBlank() }
-        if (ids.isEmpty()) {
-            return@runBlocking
+    override fun onRun() =
+        runBlocking {
+            val ids = userIds.filter { it.isNotBlank() }
+            if (ids.isEmpty()) {
+                return@runBlocking
+            }
+            if (forceRefresh) {
+                refreshUsers(ids)
+                return@runBlocking
+            }
+            val existUsers = userDao.findUserExist(ids)
+            val queryUsers =
+                ids.filter {
+                    !existUsers.contains(it)
+                }
+            if (queryUsers.isEmpty()) {
+                refreshConversationAvatar()
+                return@runBlocking
+            }
+            refreshUsers(queryUsers)
         }
-        if (forceRefresh) {
-            refreshUsers(ids)
-            return@runBlocking
-        }
-        val existUsers = userDao.findUserExist(ids)
-        val queryUsers = ids.filter {
-            !existUsers.contains(it)
-        }
-        if (queryUsers.isEmpty()) {
-            refreshConversationAvatar()
-            return@runBlocking
-        }
-        refreshUsers(queryUsers)
-    }
 
     private suspend fun refreshUsers(userIds: List<String>) {
         if (userIds.size == 1) {

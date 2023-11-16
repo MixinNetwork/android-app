@@ -116,9 +116,10 @@ private fun LogsList(
 ) {
     val state = rememberLazyListState()
 
-    val isLastItemVisible = with(state.layoutInfo) {
-        visibleItemsInfo.lastOrNull()?.index == totalItemsCount - 1
-    }
+    val isLastItemVisible =
+        with(state.layoutInfo) {
+            visibleItemsInfo.lastOrNull()?.index == totalItemsCount - 1
+        }
 
     if (isLastItemVisible) {
         loadMore()
@@ -135,15 +136,17 @@ private fun LogsList(
 private fun LogItem(log: LogResponse) {
     val context = LocalContext.current
 
-    val description = remember(log.code) {
-        PinLogsFragment.getLogDescription(context, log.code)
-    }
+    val description =
+        remember(log.code) {
+            PinLogsFragment.getLogDescription(context, log.code)
+        }
 
     Column(
-        modifier = Modifier
-            .background(MixinAppTheme.colors.background)
-            .fillMaxWidth()
-            .padding(16.dp),
+        modifier =
+            Modifier
+                .background(MixinAppTheme.colors.background)
+                .fillMaxWidth()
+                .padding(16.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -186,9 +189,10 @@ private fun LogItem(log: LogResponse) {
 @Composable
 private fun Loading() {
     Box(
-        modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth(),
+        modifier =
+            Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(),
         contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator(

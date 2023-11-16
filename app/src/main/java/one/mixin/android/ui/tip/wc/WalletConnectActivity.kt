@@ -136,7 +136,10 @@ class WalletConnectActivity : BaseActivity() {
         const val ARGS_WC_EVENT = "args_wc_event"
         const val ARGS_WC_ERROR = "args_wc_error"
 
-        fun show(context: Context, event: WCEvent) {
+        fun show(
+            context: Context,
+            event: WCEvent,
+        ) {
             context.startActivity(
                 Intent(context, WalletConnectActivity::class.java).apply {
                     putExtra(ARGS_WC_EVENT, event)
@@ -144,7 +147,10 @@ class WalletConnectActivity : BaseActivity() {
             )
         }
 
-        fun show(context: Context, error: WCError) {
+        fun show(
+            context: Context,
+            error: WCError,
+        ) {
             context.startActivity(
                 Intent(context, WalletConnectActivity::class.java).apply {
                     putExtra(ARGS_WC_ERROR, error)

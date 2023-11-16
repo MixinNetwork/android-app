@@ -31,7 +31,11 @@ fun String.isUUID(): Boolean {
 }
 
 enum class FileSizeUnit(val value: Int) {
-    BYTE(3), KB(2), MB(1), GB(0);
+    BYTE(3),
+    KB(2),
+    MB(1),
+    GB(0),
+    ;
 
     companion object {
         fun fromValue(value: Int): FileSizeUnit = FileSizeUnit.values().first { value == it.value }

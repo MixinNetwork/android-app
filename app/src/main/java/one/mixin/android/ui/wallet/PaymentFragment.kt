@@ -19,42 +19,45 @@ import one.mixin.android.ui.common.BaseFragment
 import timber.log.Timber
 
 class PaymentFragment : BaseFragment() {
+    private val paymentFlowHandler =
+        object : PaymentFlowHandler {
+            override fun onSubmit() {
+                onLoading?.invoke()
+            }
 
-    private val paymentFlowHandler = object : PaymentFlowHandler {
-        override fun onSubmit() {
-            onLoading?.invoke()
+            override fun onSuccess(tokenDetails: TokenDetails) {
+                onSuccess?.invoke(tokenDetails.token, tokenDetails.scheme?.lowercase())
+            }
+
+            override fun onFailure(errorMessage: String) {
+                // token request error
+                onFailure?.invoke(errorMessage)
+            }
+
+            override fun onBackPressed() {
+                // the user decided to leave the payment page
+                onBack?.invoke()
+                Timber.e("onBackPressed")
+                parentFragmentManager.beginTransaction()
+                    .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
+                    .remove(this@PaymentFragment).commitNow()
+            }
         }
 
-        override fun onSuccess(tokenDetails: TokenDetails) {
-            onSuccess?.invoke(tokenDetails.token, tokenDetails.scheme?.lowercase())
-        }
-
-        override fun onFailure(errorMessage: String) {
-            // token request error
-            onFailure?.invoke(errorMessage)
-        }
-
-        override fun onBackPressed() {
-            // the user decided to leave the payment page
-            onBack?.invoke()
-            Timber.e("onBackPressed")
-            parentFragmentManager.beginTransaction()
-                .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
-                .remove(this@PaymentFragment).commitNow()
-        }
-    }
-
-    private val paymentFormConfig = PaymentFormConfig(
-        publicKey = BuildConfig.CHCEKOUT_ID,
-        context = MixinApplication.appContext,
-        environment = CHECKOUT_ENVIRONMENT,
-        paymentFlowHandler = paymentFlowHandler,
-        style = PaymentFormStyleProvider.provide(
-            CustomPaymentFormTheme.providePaymentFormTheme(MixinApplication.appContext.isNightMode()),
-        ),
-        supportedCardSchemeList = SUPPORTED_CARD_SCHEME,
-    )
+    private val paymentFormConfig =
+        PaymentFormConfig(
+            publicKey = BuildConfig.CHCEKOUT_ID,
+            context = MixinApplication.appContext,
+            environment = CHECKOUT_ENVIRONMENT,
+            paymentFlowHandler = paymentFlowHandler,
+            style =
+                PaymentFormStyleProvider.provide(
+                    CustomPaymentFormTheme.providePaymentFormTheme(MixinApplication.appContext.isNightMode()),
+                ),
+            supportedCardSchemeList = SUPPORTED_CARD_SCHEME,
+        )
     private val paymentFormMediator = PaymentFormMediator(paymentFormConfig)
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

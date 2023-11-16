@@ -25,7 +25,6 @@ import one.mixin.android.widget.SixLayout
 
 @AndroidEntryPoint
 class WebActivity : BaseActivity() {
-
     companion object {
         fun show(context: Context) {
             context.startActivity(
@@ -74,6 +73,7 @@ class WebActivity : BaseActivity() {
     override fun getDefaultThemeId(): Int = R.style.AppTheme_Blur
 
     private lateinit var binding: ActivityWebBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         if (intent.extras != null) {
             overridePendingTransition(R.anim.slide_in_bottom, R.anim.stay)
@@ -95,16 +95,18 @@ class WebActivity : BaseActivity() {
             onBackPressed()
         }
 
-        binding.six.setOnCloseListener(object : SixLayout.OnCloseListener {
-            override fun onClose(index: Int) {
-                releaseClip(index)
-                supportFragmentManager.findFragmentByTag(WebFragment.TAG)?.run {
-                    val fragment = (this as WebFragment)
-                    fragment.resetIndex(index)
+        binding.six.setOnCloseListener(
+            object : SixLayout.OnCloseListener {
+                override fun onClose(index: Int) {
+                    releaseClip(index)
+                    supportFragmentManager.findFragmentByTag(WebFragment.TAG)?.run {
+                        val fragment = (this as WebFragment)
+                        fragment.resetIndex(index)
+                    }
+                    binding.six.loadData(clips, loadViewAction)
                 }
-                binding.six.loadData(clips, loadViewAction)
-            }
-        })
+            },
+        )
 
         binding.clear.setOnClickListener {
             alertDialogBuilder()
@@ -172,10 +174,11 @@ class WebActivity : BaseActivity() {
         clip.shareable?.let { extras.putBoolean(WebFragment.ARGS_SHAREABLE, it) }
         isExpand = true
 
-        window.statusBarColor = clip.titleColor.apply {
-            val dark = isDarkColor(this)
-            SystemUIManager.lightUI(window, !dark)
-        }
+        window.statusBarColor =
+            clip.titleColor.apply {
+                val dark = isDarkColor(this)
+                SystemUIManager.lightUI(window, !dark)
+            }
         releaseWeb()
         supportFragmentManager.beginTransaction().add(
             R.id.container,

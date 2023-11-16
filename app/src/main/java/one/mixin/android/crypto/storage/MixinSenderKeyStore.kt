@@ -1,7 +1,6 @@
 package one.mixin.android.crypto.storage
 
 import android.content.Context
-import java.io.IOException
 import one.mixin.android.crypto.db.SenderKeyDao
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.vo.SenderKey
@@ -9,12 +8,15 @@ import one.mixin.android.util.reportException
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.groups.state.SenderKeyRecord
 import org.whispersystems.libsignal.groups.state.SenderKeyStore
+import java.io.IOException
 
 class MixinSenderKeyStore(ctx: Context) : SenderKeyStore {
-
     private val dao: SenderKeyDao = SignalDatabase.getDatabase(ctx).senderKeyDao()
 
-    override fun storeSenderKey(senderKeyName: SenderKeyName, record: SenderKeyRecord) {
+    override fun storeSenderKey(
+        senderKeyName: SenderKeyName,
+        record: SenderKeyRecord,
+    ) {
         synchronized(LOCK) {
             dao.insert(SenderKey(senderKeyName.groupId, senderKeyName.sender.toString(), record.serialize()))
         }

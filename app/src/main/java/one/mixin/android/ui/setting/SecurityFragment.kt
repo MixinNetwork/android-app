@@ -22,7 +22,10 @@ class SecurityFragment : BaseFragment(R.layout.fragment_security) {
 
     private val binding by viewBinding(FragmentSecurityBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {

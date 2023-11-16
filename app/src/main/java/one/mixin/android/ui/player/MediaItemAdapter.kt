@@ -25,14 +25,19 @@ import one.mixin.android.util.MusicPlayer
 import one.mixin.android.widget.CircleProgress
 
 @UnstableApi class MediaItemAdapter : SafePagedListAdapter<MediaMetadataCompat, MediaViewHolder>(diffCallback) {
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): MediaViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val binding = ItemFragmentMediaBinding.inflate(inflater, parent, false)
         return MediaViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: MediaViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: MediaViewHolder,
+        position: Int,
+    ) {
         val mediaItem = getItem(position) ?: return
 
         holder.titleView.text = mediaItem.displayTitle
@@ -78,7 +83,6 @@ import one.mixin.android.widget.CircleProgress
 class MediaViewHolder(
     binding: ItemFragmentMediaBinding,
 ) : RecyclerView.ViewHolder(binding.root) {
-
     val titleView: TextView = binding.title
     val subtitleView: TextView = binding.subtitle
     val albumArt: ImageView = binding.albumArt
@@ -88,6 +92,8 @@ class MediaViewHolder(
 
 interface MediaItemListener {
     fun onItemClick(mediaItem: MediaMetadataCompat)
+
     fun onDownload(mediaItem: MediaMetadataCompat)
+
     fun onCancel(mediaItem: MediaMetadataCompat)
 }

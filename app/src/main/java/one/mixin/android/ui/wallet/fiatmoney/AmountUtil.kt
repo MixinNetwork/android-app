@@ -1,17 +1,21 @@
 package one.mixin.android.ui.wallet.fiatmoney
 
 object AmountUtil {
-    private val full_currency = listOf(
-        "JPY", "KRW", "VND",
-        // The following are not supported for now
-        "BIF", "CLF", "DJF", "GNF", "ISK", "KMF", "PYG", "RWF", "UGX", "VUV", "XAF", "XOF", "XPF",
-    )
+    private val full_currency =
+        listOf(
+            "JPY", "KRW", "VND",
+            // The following are not supported for now
+            "BIF", "CLF", "DJF", "GNF", "ISK", "KMF", "PYG", "RWF", "UGX", "VUV", "XAF", "XOF", "XPF",
+        )
 
     fun fullCurrency(currency: String): Boolean {
         return full_currency.contains(currency)
     }
 
-    fun toAmount(value: String, currency: String): Long? {
+    fun toAmount(
+        value: String,
+        currency: String,
+    ): Long? {
         val v = value.toFloatOrNull() ?: return null
         if (currency in full_currency) {
             return v.toLong()
@@ -20,7 +24,10 @@ object AmountUtil {
         }
     }
 
-    fun toAmount(value: Float, currency: String): Long? {
+    fun toAmount(
+        value: Float,
+        currency: String,
+    ): Long? {
         if (currency in full_currency) {
             return value.toLong()
         } else {
@@ -28,7 +35,10 @@ object AmountUtil {
         }
     }
 
-    fun realAmount(value: Long, currency: String): String {
+    fun realAmount(
+        value: Long,
+        currency: String,
+    ): String {
         return if (currency in full_currency) {
             value.toString()
         } else {
@@ -36,7 +46,10 @@ object AmountUtil {
         }
     }
 
-    fun illegal(text: String, currency: String): Boolean {
+    fun illegal(
+        text: String,
+        currency: String,
+    ): Boolean {
         return if (full_currency.contains(currency)) {
             !text.matches(Regex("^\\d{1,9}\$"))
         } else {

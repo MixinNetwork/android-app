@@ -7,7 +7,6 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface GiphyService {
-
     @GET("gifs/trending")
     fun trendingGifs(
         @Query("limit") limit: Int,

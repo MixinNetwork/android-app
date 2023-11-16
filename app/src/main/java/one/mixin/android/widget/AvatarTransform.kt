@@ -14,7 +14,9 @@ import android.view.ViewGroup
 import androidx.core.transition.doOnEnd
 
 class AvatarTransform(private val bitmap: Bitmap) : Transition() {
-    init { duration = DURATION }
+    init {
+        duration = DURATION
+    }
 
     companion object {
         const val BOUNDS = "avatar_transform_bounds"
@@ -22,9 +24,14 @@ class AvatarTransform(private val bitmap: Bitmap) : Transition() {
     }
 
     override fun captureStartValues(transitionValues: TransitionValues) = captureValues(transitionValues)
+
     override fun captureEndValues(transitionValues: TransitionValues) = captureValues(transitionValues)
 
-    override fun createAnimator(sceneRoot: ViewGroup, startValues: TransitionValues?, endValues: TransitionValues?): Animator? {
+    override fun createAnimator(
+        sceneRoot: ViewGroup,
+        startValues: TransitionValues?,
+        endValues: TransitionValues?,
+    ): Animator? {
         if (startValues == null || endValues == null) return null
 
         val startBounds = startValues.values[BOUNDS] as Rect
@@ -39,24 +46,26 @@ class AvatarTransform(private val bitmap: Bitmap) : Transition() {
         startDrawable.setBounds(0, 0, endBounds.width(), endBounds.height())
         v.overlay.add(startDrawable)
 
-        val circularReveal = ViewAnimationUtils.createCircularReveal(
-            v,
-            v.width / 2,
-            v.height / 2,
-            startBounds.width() / 2f,
-            Math.hypot(endBounds.width() / 2.0, endBounds.height() / 2.0).toFloat(),
-        ).apply {
-            duration = DURATION
-        }
+        val circularReveal =
+            ViewAnimationUtils.createCircularReveal(
+                v,
+                v.width / 2,
+                v.height / 2,
+                startBounds.width() / 2f,
+                Math.hypot(endBounds.width() / 2.0, endBounds.height() / 2.0).toFloat(),
+            ).apply {
+                duration = DURATION
+            }
 
-        val translate = ObjectAnimator.ofFloat(
-            v,
-            View.TRANSLATION_X,
-            View.TRANSLATION_Y,
-            pathMotion.getPath(translationX, translationY, 0f, 0f),
-        ).apply {
-            duration = DURATION
-        }
+        val translate =
+            ObjectAnimator.ofFloat(
+                v,
+                View.TRANSLATION_X,
+                View.TRANSLATION_Y,
+                pathMotion.getPath(translationX, translationY, 0f, 0f),
+            ).apply {
+                duration = DURATION
+            }
 
         return AnimatorSet().apply {
             playTogether(circularReveal, translate)

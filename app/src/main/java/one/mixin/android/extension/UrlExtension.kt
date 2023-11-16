@@ -184,11 +184,12 @@ fun String.checkUserOrApp(
     val segments = uri.pathSegments
     if (segments.isEmpty()) return
 
-    val userId = if (segments.size >= 2) {
-        segments[1]
-    } else {
-        segments[0]
-    }
+    val userId =
+        if (segments.size >= 2) {
+            segments[1]
+        } else {
+            segments[0]
+        }
     if (!userId.isUUID()) {
         toast(getUserOrAppNotFoundTip(isAppScheme))
         return
@@ -207,11 +208,12 @@ fun String.checkUserOrApp(
             if (isOpenApp && user.appId != null) {
                 val app = appDao.findAppById(user.appId!!)
                 if (app != null) {
-                    val url = try {
-                        app.homeUri.appendQueryParamsFromOtherUri(uri)
-                    } catch (e: Exception) {
-                        app.homeUri
-                    }
+                    val url =
+                        try {
+                            app.homeUri.appendQueryParamsFromOtherUri(uri)
+                        } catch (e: Exception) {
+                            app.homeUri
+                        }
                     WebActivity.show(context, url, null, app)
                     if (context is UrlInterpreterActivity) {
                         context.finish()
@@ -228,11 +230,13 @@ fun String.isDonateUrl() = donateSupported.any { startsWith(it) }
 
 fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith("$it:") }
 
-private fun String.isUserScheme() = startsWith(Constants.Scheme.USERS, true) ||
-    startsWith(Constants.Scheme.HTTPS_USERS, true)
+private fun String.isUserScheme() =
+    startsWith(Constants.Scheme.USERS, true) ||
+        startsWith(Constants.Scheme.HTTPS_USERS, true)
 
-private fun String.isAppScheme() = startsWith(Constants.Scheme.APPS, true) ||
-    startsWith(Constants.Scheme.HTTPS_APPS, true)
+private fun String.isAppScheme() =
+    startsWith(Constants.Scheme.APPS, true) ||
+        startsWith(Constants.Scheme.HTTPS_APPS, true)
 
 private fun getUserOrAppNotFoundTip(isApp: Boolean) =
     if (isApp) R.string.Bot_not_found else R.string.User_not_found
@@ -267,24 +271,26 @@ fun Uri.handleSchemeSend(
         afterShareText?.invoke()
     } else {
         val category = this.getQueryParameter("category")
-        val conversationId = this.getQueryParameter("conversation").let {
-            if (it == currentConversation) {
-                it
-            } else {
-                null
+        val conversationId =
+            this.getQueryParameter("conversation").let {
+                if (it == currentConversation) {
+                    it
+                } else {
+                    null
+                }
             }
-        }
         val data = this.getRawQueryParameter("data")
         val shareCategory = category?.getShareCategory()
         if (shareCategory != null && data != null) {
             try {
                 afterShareData?.invoke()
-                val fragment = ShareMessageBottomSheetDialogFragment.newInstance(
-                    ForwardMessage(shareCategory, String(Base64.decode(data))),
-                    conversationId,
-                    app,
-                    host,
-                )
+                val fragment =
+                    ShareMessageBottomSheetDialogFragment.newInstance(
+                        ForwardMessage(shareCategory, String(Base64.decode(data))),
+                        conversationId,
+                        app,
+                        host,
+                    )
                 if (showNow) {
                     fragment.showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
                 } else {
@@ -299,13 +305,14 @@ fun Uri.handleSchemeSend(
     }
 }
 
-fun Uri.getCapturedImage(contentResolver: ContentResolver): Bitmap = when {
-    Build.VERSION.SDK_INT < 28 -> {
-        @Suppress("DEPRECATION")
-        MediaStore.Images.Media.getBitmap(contentResolver, this)
+fun Uri.getCapturedImage(contentResolver: ContentResolver): Bitmap =
+    when {
+        Build.VERSION.SDK_INT < 28 -> {
+            @Suppress("DEPRECATION")
+            MediaStore.Images.Media.getBitmap(contentResolver, this)
+        }
+        else -> {
+            val source = ImageDecoder.createSource(contentResolver, this)
+            ImageDecoder.decodeBitmap(source)
+        }
     }
-    else -> {
-        val source = ImageDecoder.createSource(contentResolver, this)
-        ImageDecoder.decodeBitmap(source)
-    }
-}

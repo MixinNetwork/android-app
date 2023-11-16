@@ -7,7 +7,6 @@ import retrofit2.Response
 import kotlin.coroutines.CoroutineContext
 
 class MixinResponse<T>() {
-
     constructor(response: Response<T>) : this() {
         if (response.isSuccessful) {
             data = response.body()
@@ -49,17 +48,18 @@ suspend fun <T, R> handleMixinResponse(
     },
     endBlock: (() -> Unit)? = null,
 ): R? {
-    val response = try {
-        withContext(switchContext) {
-            invokeNetwork()
+    val response =
+        try {
+            withContext(switchContext) {
+                invokeNetwork()
+            }
+        } catch (t: Throwable) {
+            if (exceptionBlock?.invoke(t) != true) {
+                defaultExceptionHandle.invoke(t)
+            }
+            endBlock?.invoke()
+            return null
         }
-    } catch (t: Throwable) {
-        if (exceptionBlock?.invoke(t) != true) {
-            defaultExceptionHandle.invoke(t)
-        }
-        endBlock?.invoke()
-        return null
-    }
 
     doAfterNetworkSuccess?.invoke()
 

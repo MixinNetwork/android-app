@@ -24,7 +24,6 @@ abstract class MixinCountLimitOffsetDataSource<Value : Any>(
     private val querySqlGenerator: (ids: String) -> RoomSQLiteQuery,
     private val db: RoomDatabase,
 ) : PagingSource<Int, Value>() {
-
     internal val itemCount: AtomicInteger = AtomicInteger(INITIAL_ITEM_COUNT)
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Value> {

@@ -17,9 +17,10 @@ class SyncOutputJob() : BaseJob(
         private const val syncOutputLimit = 200
     }
 
-    override fun onRun() = runBlocking {
-        syncOutputs()
-    }
+    override fun onRun() =
+        runBlocking {
+            syncOutputs()
+        }
 
     private tailrec suspend fun syncOutputs() {
         val latestOutputSequence = outputDao.findLatestOutputSequence()
@@ -34,9 +35,10 @@ class SyncOutputJob() : BaseJob(
         val outputs = (requireNotNull(resp.data) { "outputs can not be null or empty at this step" })
         if (outputs.isNotEmpty()) {
             outputDao.insertUnspentOutputs(outputs)
-            val list = arrayListOf<String>().apply {
-                addAll(outputs.groupBy { it.asset }.keys)
-            }
+            val list =
+                arrayListOf<String>().apply {
+                    addAll(outputs.groupBy { it.asset }.keys)
+                }
             jobManager.addJobInBackground(CheckBalanceJob(list))
         }
         Timber.d("$TAG insertOutputs ${outputs.size}")

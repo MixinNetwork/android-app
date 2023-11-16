@@ -8,15 +8,19 @@ import one.mixin.android.widget.lottie.BitmapsCache
 import one.mixin.android.widget.lottie.RLottieDrawable
 
 class LottieDrawableTranscoder : ResourceTranscoder<RLottie, RLottieDrawable> {
-    override fun transcode(toTranscode: Resource<RLottie>, options: Options): Resource<RLottieDrawable> {
+    override fun transcode(
+        toTranscode: Resource<RLottie>,
+        options: Options,
+    ): Resource<RLottieDrawable> {
         val rLottie = toTranscode.get()
-        val lottieDrawable = RLottieDrawable(
-            rLottie.file,
-            rLottie.w,
-            rLottie.h,
-            BitmapsCache.CacheOptions(),
-            true,
-        )
+        val lottieDrawable =
+            RLottieDrawable(
+                rLottie.file,
+                rLottie.w,
+                rLottie.h,
+                BitmapsCache.CacheOptions(),
+                true,
+            )
         return SimpleResource(lottieDrawable)
     }
 }

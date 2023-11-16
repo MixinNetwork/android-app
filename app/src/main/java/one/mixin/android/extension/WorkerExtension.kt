@@ -15,7 +15,10 @@ inline fun <reified W : ListenableWorker> WorkManager.enqueueOneTimeNetworkWorkR
     enqueue(buildNetworkRequest<W>(inputData).build())
 }
 
-inline fun <reified W : ListenableWorker> WorkManager.enqueueUniqueOneTimeNetworkWorkRequest(name: String, inputData: Data? = null) {
+inline fun <reified W : ListenableWorker> WorkManager.enqueueUniqueOneTimeNetworkWorkRequest(
+    name: String,
+    inputData: Data? = null,
+) {
     enqueueUniqueWork(name, ExistingWorkPolicy.REPLACE, buildNetworkRequest<W>(inputData).build())
 }
 

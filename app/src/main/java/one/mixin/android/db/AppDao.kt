@@ -39,7 +39,10 @@ interface AppDao : BaseDao<App> {
         AND u.user_id IS NOT NULL ORDER BY CASE  WHEN fa.user_id= :guestId THEN 2 WHEN fa.user_id= :masterId THEN 1 END;
         """,
     )
-    fun getGroupAppsByConversationId(guestId: String, masterId: String): LiveData<List<AppItem>>
+    fun getGroupAppsByConversationId(
+        guestId: String,
+        masterId: String,
+    ): LiveData<List<AppItem>>
 
     @Query("SELECT * FROM apps WHERE app_id = :id")
     suspend fun findAppById(id: String): App?
@@ -77,10 +80,16 @@ interface AppDao : BaseDao<App> {
         WHERE p.conversation_id = :conversationId AND a.app_number = :appNumber
         """,
     )
-    suspend fun findAppByAppNumber(conversationId: String, appNumber: String): App?
+    suspend fun findAppByAppNumber(
+        conversationId: String,
+        appNumber: String,
+    ): App?
 
     @Query("SELECT a.* FROM apps a WHERE a.rowid > :rowId ORDER BY a.rowid ASC LIMIT :limit")
-    fun getAppsByLimitAndRowId(limit: Int, rowId: Long): List<App>
+    fun getAppsByLimitAndRowId(
+        limit: Int,
+        rowId: Long,
+    ): List<App>
 
     @Query("SELECT rowid FROM apps WHERE app_id = :appId")
     fun getAppRowId(appId: String): Long?

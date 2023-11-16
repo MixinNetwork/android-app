@@ -22,16 +22,16 @@ import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
 class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
-
     companion object {
         const val TAG: String = "UpgradeFragment"
 
         const val ARGS_TYPE = "args_type"
         const val TYPE_DB = 0
 
-        fun newInstance(type: Int) = UpgradeFragment().withArgs {
-            putInt(ARGS_TYPE, type)
-        }
+        fun newInstance(type: Int) =
+            UpgradeFragment().withArgs {
+                putInt(ARGS_TYPE, type)
+            }
     }
 
     private val viewModel by viewModels<MobileViewModel>()
@@ -40,7 +40,10 @@ class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
 
     @SuppressLint("SetTextI18n")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         MixinApplication.get().isOnline.set(true)

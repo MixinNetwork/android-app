@@ -77,7 +77,6 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 class ChatControlView : LinearLayout, ActionMode.Callback {
-
     companion object {
         const val REPLY = -1
         const val SEND = 0
@@ -121,11 +120,12 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     private val binding get() = _binding
     val chatEt get() = binding.chatEt
     val replyView get() = binding.replyView
-    val anchorView get() = if (replyView.isVisible) {
-        replyView
-    } else {
-        binding.chatSendIb
-    }
+    val anchorView get() =
+        if (replyView.isVisible) {
+            replyView
+        } else {
+            binding.chatSendIb
+        }
 
     private var controlState: STATUS = STATUS.COLLAPSED
         set(value) {
@@ -331,32 +331,36 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     }
 
     fun hintEncrypt(category: EncryptCategory) {
-        binding.chatEt.hint = if (category.isEncrypt()) {
-            getEncryptedHint()
-        } else if (category.isSignal()) {
-            getSignalHint()
+        binding.chatEt.hint =
+            if (category.isEncrypt()) {
+                getEncryptedHint()
+            } else if (category.isSignal()) {
+                getSignalHint()
+            } else {
+                getHint()
+            }
+    }
+
+    private fun getEncryptedHint(): String =
+        if (getLanguage() == Locale.JAPANESE.language) {
+            "Encrypted"
         } else {
-            getHint()
+            context.getString(R.string.Encrypted)
         }
-    }
 
-    private fun getEncryptedHint(): String = if (getLanguage() == Locale.JAPANESE.language) {
-        "Encrypted"
-    } else {
-        context.getString(R.string.Encrypted)
-    }
+    private fun getSignalHint(): String =
+        if (getLanguage() == Locale.JAPANESE.language) {
+            "End-to-end Encrypted"
+        } else {
+            context.getString(R.string.End_to_End_Encryption)
+        }
 
-    private fun getSignalHint(): String = if (getLanguage() == Locale.JAPANESE.language) {
-        "End-to-end Encrypted"
-    } else {
-        context.getString(R.string.End_to_End_Encryption)
-    }
-
-    private fun getHint(): String = if (getLanguage() == Locale.JAPANESE.language) {
-        "Type message"
-    } else {
-        context.getString(R.string.Type_message)
-    }
+    private fun getHint(): String =
+        if (getLanguage() == Locale.JAPANESE.language) {
+            "Type message"
+        } else {
+            context.getString(R.string.Type_message)
+        }
 
     fun toggleKeyboard(shown: Boolean) {
         if (shown) {
@@ -381,18 +385,20 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         setSend()
     }
 
-    fun getDraggableContainer() = when {
-        stickerContainer.isVisible -> stickerContainer
-        galleryContainer.isVisible -> galleryContainer
-        else -> null
-    }
+    fun getDraggableContainer() =
+        when {
+            stickerContainer.isVisible -> stickerContainer
+            galleryContainer.isVisible -> galleryContainer
+            else -> null
+        }
 
-    fun getVisibleContainer() = when {
-        stickerContainer.isVisible -> stickerContainer
-        galleryContainer.isVisible -> galleryContainer
-        menuContainer.isVisible -> menuContainer
-        else -> null
-    }
+    fun getVisibleContainer() =
+        when {
+            stickerContainer.isVisible -> stickerContainer
+            galleryContainer.isVisible -> galleryContainer
+            menuContainer.isVisible -> menuContainer
+            else -> null
+        }
 
     // remove focus but remain focusable
     private fun remainFocusable() {
@@ -412,11 +418,12 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     }
 
     private fun checkSend(anim: Boolean = true) {
-        val d = when (sendStatus) {
-            REPLY, SEND -> sendDrawable
-            AUDIO -> audioDrawable
-            else -> throw IllegalArgumentException("error send status")
-        }
+        val d =
+            when (sendStatus) {
+                REPLY, SEND -> sendDrawable
+                AUDIO -> audioDrawable
+                else -> throw IllegalArgumentException("error send status")
+            }
         d.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
         if (anim) {
             startScaleAnim(binding.chatSendIb, d)
@@ -426,29 +433,35 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     }
 
     private fun checkSticker() {
-        val d = when (stickerStatus) {
-            StickerStatus.STICKER -> stickerDrawable
-            StickerStatus.KEYBOARD -> keyboardDrawable
-        }
+        val d =
+            when (stickerStatus) {
+                StickerStatus.STICKER -> stickerDrawable
+                StickerStatus.KEYBOARD -> keyboardDrawable
+            }
         d.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
         startScaleAnim(binding.chatStickerIb, d)
     }
 
-    private fun startScaleAnim(v: ImageView, d: Drawable?) {
-        val scaleUp = ObjectAnimator.ofPropertyValuesHolder(
-            v,
-            PropertyValuesHolder.ofFloat("scaleX", 0.6f, 1f),
-            PropertyValuesHolder.ofFloat("scaleY", 0.6f, 1f),
-        ).apply {
-            duration = 100
-        }
-        val scaleDown = ObjectAnimator.ofPropertyValuesHolder(
-            v,
-            PropertyValuesHolder.ofFloat("scaleX", 1f, 0.6f),
-            PropertyValuesHolder.ofFloat("scaleY", 1f, 0.6f),
-        ).apply {
-            duration = 100
-        }
+    private fun startScaleAnim(
+        v: ImageView,
+        d: Drawable?,
+    ) {
+        val scaleUp =
+            ObjectAnimator.ofPropertyValuesHolder(
+                v,
+                PropertyValuesHolder.ofFloat("scaleX", 0.6f, 1f),
+                PropertyValuesHolder.ofFloat("scaleY", 0.6f, 1f),
+            ).apply {
+                duration = 100
+            }
+        val scaleDown =
+            ObjectAnimator.ofPropertyValuesHolder(
+                v,
+                PropertyValuesHolder.ofFloat("scaleX", 1f, 0.6f),
+                PropertyValuesHolder.ofFloat("scaleY", 1f, 0.6f),
+            ).apply {
+                duration = 100
+            }
         scaleDown.doOnEnd {
             v.setImageDrawable(d)
             scaleUp.start()
@@ -483,7 +496,14 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     }
 
     private var audioFile: File? = null
-    fun previewAudio(conversationId: String, audioFile: File, waveForm: ByteArray, duration: Long, sendCallback: () -> Unit) {
+
+    fun previewAudio(
+        conversationId: String,
+        audioFile: File,
+        waveForm: ByteArray,
+        duration: Long,
+        sendCallback: () -> Unit,
+    ) {
         AudioPlayer.clear()
         binding.chatAudioWaveform.setWaveform(waveForm, true)
         binding.chatAudioWaveform.setBind(PREVIEW)
@@ -564,27 +584,29 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     @SuppressLint("ObjectAnimatorBinding")
     private fun createTransitions(): LayoutTransition {
         val scaleDownTransX = binding.chatSendIb.width
-        val scaleDown = ObjectAnimator.ofPropertyValuesHolder(
-            null as Any?,
-            PropertyValuesHolder.ofFloat("scaleX", 1f, 0.3f),
-            PropertyValuesHolder.ofFloat("scaleY", 1f, 0.3f),
-            PropertyValuesHolder.ofFloat("alpha", 1f, 0f),
-            PropertyValuesHolder.ofFloat("translationX", scaleDownTransX.toFloat()),
-        ).apply {
-            duration = 50
-            interpolator = DecelerateInterpolator()
-        }
+        val scaleDown =
+            ObjectAnimator.ofPropertyValuesHolder(
+                null as Any?,
+                PropertyValuesHolder.ofFloat("scaleX", 1f, 0.3f),
+                PropertyValuesHolder.ofFloat("scaleY", 1f, 0.3f),
+                PropertyValuesHolder.ofFloat("alpha", 1f, 0f),
+                PropertyValuesHolder.ofFloat("translationX", scaleDownTransX.toFloat()),
+            ).apply {
+                duration = 50
+                interpolator = DecelerateInterpolator()
+            }
 
-        val scaleUp = ObjectAnimator.ofPropertyValuesHolder(
-            null as Any?,
-            PropertyValuesHolder.ofFloat("scaleX", 0.3f, 1f),
-            PropertyValuesHolder.ofFloat("scaleY", 0.3f, 1f),
-            PropertyValuesHolder.ofFloat("alpha", 0f, 1f),
-            PropertyValuesHolder.ofFloat("translationX", 0f),
-        ).apply {
-            duration = 50
-            interpolator = DecelerateInterpolator()
-        }
+        val scaleUp =
+            ObjectAnimator.ofPropertyValuesHolder(
+                null as Any?,
+                PropertyValuesHolder.ofFloat("scaleX", 0.3f, 1f),
+                PropertyValuesHolder.ofFloat("scaleY", 0.3f, 1f),
+                PropertyValuesHolder.ofFloat("alpha", 0f, 1f),
+                PropertyValuesHolder.ofFloat("translationX", 0f),
+            ).apply {
+                duration = 50
+                interpolator = DecelerateInterpolator()
+            }
 
         return getLayoutTransition(scaleUp, scaleDown)
     }
@@ -593,27 +615,29 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     private fun createEditTransitions(): LayoutTransition {
         val scaleDownTransX =
             right - binding.chatMenuIv.width - binding.chatSendIb.width - binding.editLl.width
-        val scaleDown = ObjectAnimator.ofPropertyValuesHolder(
-            null as Any?,
-            PropertyValuesHolder.ofFloat("scaleX", 1f, 0.3f),
-            PropertyValuesHolder.ofFloat("scaleY", 1f, 0.3f),
-            PropertyValuesHolder.ofFloat("alpha", 1f, 0f),
-            PropertyValuesHolder.ofFloat("translationX", scaleDownTransX.toFloat()),
-        ).apply {
-            duration = 50
-            interpolator = DecelerateInterpolator()
-        }
+        val scaleDown =
+            ObjectAnimator.ofPropertyValuesHolder(
+                null as Any?,
+                PropertyValuesHolder.ofFloat("scaleX", 1f, 0.3f),
+                PropertyValuesHolder.ofFloat("scaleY", 1f, 0.3f),
+                PropertyValuesHolder.ofFloat("alpha", 1f, 0f),
+                PropertyValuesHolder.ofFloat("translationX", scaleDownTransX.toFloat()),
+            ).apply {
+                duration = 50
+                interpolator = DecelerateInterpolator()
+            }
 
-        val scaleUp = ObjectAnimator.ofPropertyValuesHolder(
-            null as Any?,
-            PropertyValuesHolder.ofFloat("scaleX", 0.3f, 1f),
-            PropertyValuesHolder.ofFloat("scaleY", 0.3f, 1f),
-            PropertyValuesHolder.ofFloat("alpha", 0f, 1f),
-            PropertyValuesHolder.ofFloat("translationX", 0f),
-        ).apply {
-            duration = 50
-            interpolator = DecelerateInterpolator()
-        }
+        val scaleUp =
+            ObjectAnimator.ofPropertyValuesHolder(
+                null as Any?,
+                PropertyValuesHolder.ofFloat("scaleX", 0.3f, 1f),
+                PropertyValuesHolder.ofFloat("scaleY", 0.3f, 1f),
+                PropertyValuesHolder.ofFloat("alpha", 0f, 1f),
+                PropertyValuesHolder.ofFloat("translationX", 0f),
+            ).apply {
+                duration = 50
+                interpolator = DecelerateInterpolator()
+            }
 
         return getLayoutTransition(scaleUp, scaleDown)
     }
@@ -638,14 +662,15 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         when (sendStatus) {
             SEND, REPLY -> {
                 binding.chatEt.text?.let {
-                    disposable = Observable.just(it.trim().toString()).debounce(100L, TimeUnit.MILLISECONDS)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                            {
-                                callback.onSendClick(it)
-                            },
-                            {},
-                        )
+                    disposable =
+                        Observable.just(it.trim().toString()).debounce(100L, TimeUnit.MILLISECONDS)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                {
+                                    callback.onSendClick(it)
+                                },
+                                {},
+                            )
                 }
             }
             AUDIO -> {
@@ -661,6 +686,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     }
 
     private var disposable: Disposable? = null
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         disposable?.dispose()
@@ -669,84 +695,88 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     private fun isEditEmpty() = binding.chatEt.text.toString().trim().isEmpty()
 
     private fun realSetSend() {
-        sendStatus = if (!isEditEmpty()) {
-            if (!binding.chatStickerIb.isGone) {
-                binding.chatStickerIb.isGone = true
-            }
-            if (!botHide) {
-                if (!binding.chatBotIv.isGone) {
-                    binding.chatBotIv.isGone = true
+        sendStatus =
+            if (!isEditEmpty()) {
+                if (!binding.chatStickerIb.isGone) {
+                    binding.chatStickerIb.isGone = true
                 }
-            }
-            if (!binding.chatImgIv.isGone) {
-                binding.chatImgIv.isGone = true
-            }
-            SEND
-        } else {
-            if (!binding.chatStickerIb.isVisible) {
-                binding.chatStickerIb.isVisible = true
-            }
-            if (!botHide) {
-                if (!binding.chatBotIv.isVisible) {
-                    binding.chatBotIv.isVisible = true
+                if (!botHide) {
+                    if (!binding.chatBotIv.isGone) {
+                        binding.chatBotIv.isGone = true
+                    }
                 }
+                if (!binding.chatImgIv.isGone) {
+                    binding.chatImgIv.isGone = true
+                }
+                SEND
+            } else {
+                if (!binding.chatStickerIb.isVisible) {
+                    binding.chatStickerIb.isVisible = true
+                }
+                if (!botHide) {
+                    if (!binding.chatBotIv.isVisible) {
+                        binding.chatBotIv.isVisible = true
+                    }
+                }
+                if (!binding.chatImgIv.isVisible) {
+                    binding.chatImgIv.isVisible = true
+                }
+                lastSendStatus
             }
-            if (!binding.chatImgIv.isVisible) {
-                binding.chatImgIv.isVisible = true
-            }
-            lastSendStatus
-        }
     }
 
-    private val onChatMenuClickListener = OnClickListener {
-        if (controlState == STATUS.EXPANDED_MENU) {
-            controlState = STATUS.EXPANDED_KEYBOARD
-            inputLayout.showSoftKey(binding.chatEt)
-        } else {
-            controlState = STATUS.EXPANDED_MENU
-            inputLayout.openInputArea(binding.chatEt)
-            callback.onMenuClick()
+    private val onChatMenuClickListener =
+        OnClickListener {
+            if (controlState == STATUS.EXPANDED_MENU) {
+                controlState = STATUS.EXPANDED_KEYBOARD
+                inputLayout.showSoftKey(binding.chatEt)
+            } else {
+                controlState = STATUS.EXPANDED_MENU
+                inputLayout.openInputArea(binding.chatEt)
+                callback.onMenuClick()
+            }
+            remainFocusable()
         }
-        remainFocusable()
-    }
 
-    private val onStickerClickListener = OnClickListener {
-        if (controlState == STATUS.EXPANDED_KEYBOARD || controlState == STATUS.COLLAPSED) {
-            controlState = STATUS.EXPANDED_STICKER
-            inputLayout.openInputArea(binding.chatEt)
-            callback.onStickerClick()
-        } else if (controlState == STATUS.EXPANDED_STICKER) {
-            controlState = STATUS.EXPANDED_KEYBOARD
-            inputLayout.showSoftKey(binding.chatEt)
-        } else {
-            controlState = STATUS.EXPANDED_STICKER
-            inputLayout.openInputArea(binding.chatEt)
-            callback.onStickerClick()
+    private val onStickerClickListener =
+        OnClickListener {
+            if (controlState == STATUS.EXPANDED_KEYBOARD || controlState == STATUS.COLLAPSED) {
+                controlState = STATUS.EXPANDED_STICKER
+                inputLayout.openInputArea(binding.chatEt)
+                callback.onStickerClick()
+            } else if (controlState == STATUS.EXPANDED_STICKER) {
+                controlState = STATUS.EXPANDED_KEYBOARD
+                inputLayout.showSoftKey(binding.chatEt)
+            } else {
+                controlState = STATUS.EXPANDED_STICKER
+                inputLayout.openInputArea(binding.chatEt)
+                callback.onStickerClick()
+            }
+            remainFocusable()
         }
-        remainFocusable()
-    }
 
     @SuppressLint("CheckResult")
-    private val onChatImgClickListener = OnClickListener {
-        RxPermissions(activity!! as FragmentActivity)
-            .request(
-                *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
-                } else {
-                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-                },
-            )
-            .subscribe(
-                { granted ->
-                    if (granted) {
-                        clickGallery()
+    private val onChatImgClickListener =
+        OnClickListener {
+            RxPermissions(activity!! as FragmentActivity)
+                .request(
+                    *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
                     } else {
-                        context?.openPermissionSetting()
-                    }
-                },
-                {},
-            )
-    }
+                        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    },
+                )
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            clickGallery()
+                        } else {
+                            context?.openPermissionSetting()
+                        }
+                    },
+                    {},
+                )
+        }
 
     private fun clickGallery() {
         if (controlState == STATUS.EXPANDED_GALLERY) {
@@ -782,24 +812,36 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         }
     }
 
-    private val keyListener = OnKeyListener { _, keyCode, _ ->
-        if (keyCode == KeyEvent.KEYCODE_DEL) {
-            callback.onDelete()
-        }
-        false
-    }
-
-    private val editTextWatcher = object : TextWatcher {
-        override fun afterTextChanged(s: Editable?) {
-            setSend()
+    private val keyListener =
+        OnKeyListener { _, keyCode, _ ->
+            if (keyCode == KeyEvent.KEYCODE_DEL) {
+                callback.onDelete()
+            }
+            false
         }
 
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+    private val editTextWatcher =
+        object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                setSend()
+            }
 
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            callback.onTextChanged(s, start, before, count)
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {}
+
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {
+                callback.onTextChanged(s, start, before, count)
+            }
         }
-    }
 
     private var velocityTracker: VelocityTracker? = null
     private val minVelocity = ViewConfiguration.get(context).scaledMinimumFlingVelocity
@@ -822,11 +864,12 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                 val moveY = event.rawY
                 if (downY != 0f && getDraggableContainer() != null && !isRecording) {
                     val dif = moveY - downY
-                    dragging = if (!dragging) {
-                        abs(moveY - startY) > touchSlop
-                    } else {
-                        dragging
-                    }
+                    dragging =
+                        if (!dragging) {
+                            abs(moveY - startY) > touchSlop
+                        } else {
+                            dragging
+                        }
                     if (dif != 0f) {
                         triggeredCancel = true
                         removeRecordRunnable()
@@ -872,11 +915,12 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                 val moveY = event.rawY
                 if (downY != 0f) {
                     val dif = moveY - downY
-                    dragging = if (!dragging) {
-                        abs(dif) > touchSlop
-                    } else {
-                        dragging
-                    }
+                    dragging =
+                        if (!dragging) {
+                            abs(dif) > touchSlop
+                        } else {
+                            dragging
+                        }
                     if (dif != 0f) {
                         triggeredCancel = true
                         removeRecordRunnable()
@@ -915,115 +959,117 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     var calling = false
 
     @SuppressLint("ClickableViewAccessibility")
-    private val sendOnTouchListener = OnTouchListener { _, event ->
-        if (calling && sendStatus == AUDIO) {
-            callback.onCalling()
-            return@OnTouchListener false
-        }
-
-        binding.chatSendIb.onTouchEvent(event)
-        when (event.action) {
-            ACTION_DOWN -> {
-                if (recordCircle.locked) {
-                    return@OnTouchListener false
-                }
-
-                originX = event.rawX
-                startX = event.rawX
-                val w = binding.chatSlide.slideWidth
-                if (w > 0) {
-                    maxScrollX = w
-                }
-                startTime = System.currentTimeMillis()
-                hasStartRecord = false
-                if (currentAudio()) {
-                    postDelayed(recordRunnable, RECORD_DELAY)
-                }
-                return@OnTouchListener true
+    private val sendOnTouchListener =
+        OnTouchListener { _, event ->
+            if (calling && sendStatus == AUDIO) {
+                callback.onCalling()
+                return@OnTouchListener false
             }
-            ACTION_MOVE -> {
-                if (sendStatus == SEND && !triggeredCancel) {
-                    if (System.currentTimeMillis() - startTime > LONG_CLICK_DELAY) {
-                        val text = binding.chatEt.text?.trim()?.toString()
-                        if (!text.isNullOrBlank()) {
-                            callback.onSendLongClick(text)
-                            triggeredCancel = true
-                            cleanUp()
-                        }
+
+            binding.chatSendIb.onTouchEvent(event)
+            when (event.action) {
+                ACTION_DOWN -> {
+                    if (recordCircle.locked) {
+                        return@OnTouchListener false
+                    }
+
+                    originX = event.rawX
+                    startX = event.rawX
+                    val w = binding.chatSlide.slideWidth
+                    if (w > 0) {
+                        maxScrollX = w
+                    }
+                    startTime = System.currentTimeMillis()
+                    hasStartRecord = false
+                    if (currentAudio()) {
+                        postDelayed(recordRunnable, RECORD_DELAY)
                     }
                     return@OnTouchListener true
                 }
-                if (!currentAudio() || recordCircle.locked || !hasStartRecord) return@OnTouchListener false
-                val x = recordCircle.setLockTranslation(event.y)
-                if (x == 2) {
-                    ObjectAnimator.ofFloat(
-                        recordCircle,
-                        "lockAnimatedTranslation",
-                        recordCircle.startTranslation,
-                    ).apply {
-                        duration = 150
-                        interpolator = DecelerateInterpolator()
-                    }.start()
-                    binding.chatSlide.toCancel()
-                    callback.onRecordLocked()
-                    return@OnTouchListener false
-                }
-
-                val moveX = event.rawX
-                if (moveX != 0f) {
-                    binding.chatSlide.slideText(startX - moveX)
-                    if (originX - moveX > maxScrollX) {
-                        removeRecordRunnable()
-                        handleCancelOrEnd(AudioEndStatus.CANCEL)
-                        binding.chatSlide.parent.requestDisallowInterceptTouchEvent(false)
-                        triggeredCancel = true
+                ACTION_MOVE -> {
+                    if (sendStatus == SEND && !triggeredCancel) {
+                        if (System.currentTimeMillis() - startTime > LONG_CLICK_DELAY) {
+                            val text = binding.chatEt.text?.trim()?.toString()
+                            if (!text.isNullOrBlank()) {
+                                callback.onSendLongClick(text)
+                                triggeredCancel = true
+                                cleanUp()
+                            }
+                        }
+                        return@OnTouchListener true
+                    }
+                    if (!currentAudio() || recordCircle.locked || !hasStartRecord) return@OnTouchListener false
+                    val x = recordCircle.setLockTranslation(event.y)
+                    if (x == 2) {
+                        ObjectAnimator.ofFloat(
+                            recordCircle,
+                            "lockAnimatedTranslation",
+                            recordCircle.startTranslation,
+                        ).apply {
+                            duration = 150
+                            interpolator = DecelerateInterpolator()
+                        }.start()
+                        binding.chatSlide.toCancel()
+                        callback.onRecordLocked()
                         return@OnTouchListener false
                     }
-                }
-                startX = moveX
-            }
-            ACTION_UP, ACTION_CANCEL -> {
-                if (triggeredCancel) {
-                    cleanUp()
-                    triggeredCancel = false
-                    return@OnTouchListener false
-                }
 
-                if (!hasStartRecord) {
-                    removeRecordRunnable()
-                    cleanUp()
-                    if (event.action != ACTION_CANCEL) {
-                        if (!post(sendClickRunnable)) {
-                            clickSend()
+                    val moveX = event.rawX
+                    if (moveX != 0f) {
+                        binding.chatSlide.slideText(startX - moveX)
+                        if (originX - moveX > maxScrollX) {
+                            removeRecordRunnable()
+                            handleCancelOrEnd(AudioEndStatus.CANCEL)
+                            binding.chatSlide.parent.requestDisallowInterceptTouchEvent(false)
+                            triggeredCancel = true
+                            return@OnTouchListener false
                         }
                     }
-                } else if (!isRecording) {
-                    removeRecordRunnable()
-                    handleCancelOrEnd(AudioEndStatus.CANCEL)
-                } else if (!recordCircle.locked) {
-                    removeRecordRunnable()
-                    handleCancelOrEnd(AudioEndStatus.SEND)
-                } else {
-                    cleanUp(true)
+                    startX = moveX
                 }
+                ACTION_UP, ACTION_CANCEL -> {
+                    if (triggeredCancel) {
+                        cleanUp()
+                        triggeredCancel = false
+                        return@OnTouchListener false
+                    }
 
-                if (!callback.isReady()) {
-                    upBeforeGrant = true
+                    if (!hasStartRecord) {
+                        removeRecordRunnable()
+                        cleanUp()
+                        if (event.action != ACTION_CANCEL) {
+                            if (!post(sendClickRunnable)) {
+                                clickSend()
+                            }
+                        }
+                    } else if (!isRecording) {
+                        removeRecordRunnable()
+                        handleCancelOrEnd(AudioEndStatus.CANCEL)
+                    } else if (!recordCircle.locked) {
+                        removeRecordRunnable()
+                        handleCancelOrEnd(AudioEndStatus.SEND)
+                    } else {
+                        cleanUp(true)
+                    }
+
+                    if (!callback.isReady()) {
+                        upBeforeGrant = true
+                    }
                 }
             }
+            return@OnTouchListener true
         }
-        return@OnTouchListener true
-    }
 
     private val safeSetSendRunnable = Runnable { realSetSend() }
 
     private val sendClickRunnable = Runnable { clickSend() }
 
-    private val hideRecordTipRunnable = Runnable {
-        if (recordTipView.visibility == View.VISIBLE) {
-            recordTipView.fadeOut()
+    private val hideRecordTipRunnable =
+        Runnable {
+            if (recordTipView.visibility == View.VISIBLE) {
+                recordTipView.fadeOut()
+            }
         }
-    }
 
     private val recordRunnable: Runnable by lazy {
         Runnable {
@@ -1072,79 +1118,112 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         }
     }
 
-    private val chatSlideCallback = object : SlidePanelView.Callback {
-        override fun onTimeout() {
-            handleCancelOrEnd(AudioEndStatus.SEND)
+    private val chatSlideCallback =
+        object : SlidePanelView.Callback {
+            override fun onTimeout() {
+                handleCancelOrEnd(AudioEndStatus.SEND)
+            }
+
+            override fun onCancel() {
+                handleCancelOrEnd(AudioEndStatus.CANCEL)
+            }
         }
 
-        override fun onCancel() {
-            handleCancelOrEnd(AudioEndStatus.CANCEL)
-        }
-    }
+    private val recordCircleCallback =
+        object : RecordCircleView.Callback {
+            override fun onSend() {
+                handleCancelOrEnd(AudioEndStatus.SEND)
+            }
 
-    private val recordCircleCallback = object : RecordCircleView.Callback {
-        override fun onSend() {
-            handleCancelOrEnd(AudioEndStatus.SEND)
-        }
+            override fun onCancel() {
+                handleCancelOrEnd(AudioEndStatus.CANCEL)
+            }
 
-        override fun onCancel() {
-            handleCancelOrEnd(AudioEndStatus.CANCEL)
+            override fun onPreview() {
+                handleCancelOrEnd(AudioEndStatus.PREVIEW)
+            }
         }
-
-        override fun onPreview() {
-            handleCancelOrEnd(AudioEndStatus.PREVIEW)
-        }
-    }
 
     interface Callback {
         fun onStickerClick()
+
         fun onSendClick(text: String)
+
         fun onSendLongClick(text: String)
+
         fun onRecordStart(audio: Boolean)
+
         fun isReady(): Boolean
+
         fun onRecordSend()
+
         fun onRecordCancel()
+
         fun onRecordPreview()
+
         fun onCalling()
+
         fun onMenuClick()
+
         fun onBotClick()
+
         fun onGalleryClick()
+
         fun onDragChatControl(dis: Float)
+
         fun onReleaseChatControl(fling: Int)
+
         fun onRecordLocked()
-        fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int)
+
+        fun onTextChanged(
+            s: CharSequence?,
+            start: Int,
+            before: Int,
+            count: Int,
+        )
+
         fun onDelete()
     }
 
-    override fun onCreateActionMode(actionMode: ActionMode, menu: Menu): Boolean {
+    override fun onCreateActionMode(
+        actionMode: ActionMode,
+        menu: Menu,
+    ): Boolean {
         val menuInflater: MenuInflater = actionMode.menuInflater
         menuInflater.inflate(R.menu.selection_action_menu, menu)
         return true
     }
 
-    override fun onPrepareActionMode(actionMode: ActionMode, menu: Menu): Boolean {
+    override fun onPrepareActionMode(
+        actionMode: ActionMode,
+        menu: Menu,
+    ): Boolean {
         return false
     }
 
-    override fun onActionItemClicked(actionMode: ActionMode, item: MenuItem): Boolean {
+    override fun onActionItemClicked(
+        actionMode: ActionMode,
+        item: MenuItem,
+    ): Boolean {
         val start = binding.chatEt.selectionStart
         val end = binding.chatEt.selectionEnd
         binding.chatEt.text?.let { editable ->
-            val symbol = when (item.itemId) {
-                R.id.bold -> {
-                    "**"
+            val symbol =
+                when (item.itemId) {
+                    R.id.bold -> {
+                        "**"
+                    }
+                    R.id.italic -> {
+                        "_"
+                    }
+                    R.id.strikethrough -> {
+                        "~~"
+                    }
+                    R.id.code -> {
+                        "`"
+                    }
+                    else -> ""
                 }
-                R.id.italic -> {
-                    "_"
-                }
-                R.id.strikethrough -> {
-                    "~~"
-                }
-                R.id.code -> {
-                    "`"
-                }
-                else -> ""
-            }
 
             editable.insert(end, symbol)
             editable.insert(start, symbol)

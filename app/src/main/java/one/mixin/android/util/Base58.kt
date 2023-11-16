@@ -16,7 +16,6 @@ private val alphabetIndices by lazy {
  * @return the base58-encoded string
  */
 fun ByteArray.encodeToBase58String(): String {
-
     val input = copyOf(size) // since we modify it in-place
     if (input.isEmpty()) {
         return ""
@@ -103,7 +102,12 @@ fun String.decodeBase58(): ByteArray {
  * @param divisor    the number to divide by (up to 256)
  * @return the remainder of the division operation
  */
-private fun divmod(number: ByteArray, firstDigit: UInt, base: UInt, divisor: UInt): UInt {
+private fun divmod(
+    number: ByteArray,
+    firstDigit: UInt,
+    base: UInt,
+    divisor: UInt,
+): UInt {
     // this is just long division which accounts for the base of the input digits
     var remainder = 0.toUInt()
     for (i in firstDigit until number.size.toUInt()) {
@@ -120,12 +124,12 @@ private fun divmod(number: ByteArray, firstDigit: UInt, base: UInt, divisor: UIn
  *
  * @return the base58-encoded string
  */
-fun ByteArray.encodeToBase58WithChecksum() = ByteArray(size + CHECKSUM_SIZE).apply {
-    System.arraycopy(this@encodeToBase58WithChecksum, 0, this, 0, this@encodeToBase58WithChecksum.size)
-    val checksum = this@encodeToBase58WithChecksum.sha256().sha256()
-    System.arraycopy(checksum, 0, this, this@encodeToBase58WithChecksum.size, CHECKSUM_SIZE)
-
-}.encodeToBase58String()
+fun ByteArray.encodeToBase58WithChecksum() =
+    ByteArray(size + CHECKSUM_SIZE).apply {
+        System.arraycopy(this@encodeToBase58WithChecksum, 0, this, 0, this@encodeToBase58WithChecksum.size)
+        val checksum = this@encodeToBase58WithChecksum.sha256().sha256()
+        System.arraycopy(checksum, 0, this, this@encodeToBase58WithChecksum.size, CHECKSUM_SIZE)
+    }.encodeToBase58String()
 
 fun String.decodeBase58WithChecksum(): ByteArray {
     val rawBytes = decodeBase58()

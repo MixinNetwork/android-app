@@ -25,25 +25,44 @@ interface SnapshotDao : BaseDao<Snapshot> {
     fun snapshotsOrderByAmount(assetId: String): DataSource.Factory<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.type IN (:type, :otherType) ORDER BY s.created_at DESC, s.snapshot_id DESC")
-    fun snapshotsByType(assetId: String, type: String, otherType: String? = null): DataSource.Factory<Int, SnapshotItem>
+    fun snapshotsByType(
+        assetId: String,
+        type: String,
+        otherType: String? = null,
+    ): DataSource.Factory<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.type IN (:type, :otherType) ORDER BY abs(s.amount) DESC, s.snapshot_id DESC")
-    fun snapshotsByTypeOrderByAmount(assetId: String, type: String, otherType: String? = null): DataSource.Factory<Int, SnapshotItem>
+    fun snapshotsByTypeOrderByAmount(
+        assetId: String,
+        type: String,
+        otherType: String? = null,
+    ): DataSource.Factory<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC")
     fun snapshotsPaging(assetId: String): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.type IN (:type, :otherType) ORDER BY s.created_at DESC, s.snapshot_id DESC")
-    fun snapshotsByTypePaging(assetId: String, type: String, otherType: String? = null): PagingSource<Int, SnapshotItem>
+    fun snapshotsByTypePaging(
+        assetId: String,
+        type: String,
+        otherType: String? = null,
+    ): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY abs(s.amount) DESC, s.snapshot_id DESC")
     fun snapshotsOrderByAmountPaging(assetId: String): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.type IN (:type, :otherType) ORDER BY abs(s.amount) DESC, s.snapshot_id DESC")
-    fun snapshotsByTypeOrderByAmountPaging(assetId: String, type: String, otherType: String? = null): PagingSource<Int, SnapshotItem>
+    fun snapshotsByTypeOrderByAmountPaging(
+        assetId: String,
+        type: String,
+        otherType: String? = null,
+    ): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId and snapshot_id = :snapshotId")
-    suspend fun snapshotLocal(assetId: String, snapshotId: String): SnapshotItem?
+    suspend fun snapshotLocal(
+        assetId: String,
+        snapshotId: String,
+    ): SnapshotItem?
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE snapshot_id = :snapshotId")
     suspend fun findSnapshotById(snapshotId: String): SnapshotItem?
@@ -58,10 +77,16 @@ interface SnapshotDao : BaseDao<Snapshot> {
     fun allSnapshotsOrderByAmount(): DataSource.Factory<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.type IN (:type, :otherType) ORDER BY s.created_at DESC")
-    fun allSnapshotsByType(type: String, otherType: String? = null): DataSource.Factory<Int, SnapshotItem>
+    fun allSnapshotsByType(
+        type: String,
+        otherType: String? = null,
+    ): DataSource.Factory<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.type IN (:type, :otherType) ORDER BY abs(s.amount * a.price_usd) DESC")
-    fun allSnapshotsByTypeOrderByAmount(type: String, otherType: String? = null): DataSource.Factory<Int, SnapshotItem>
+    fun allSnapshotsByTypeOrderByAmount(
+        type: String,
+        otherType: String? = null,
+    ): DataSource.Factory<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.opponent_id = :opponentId AND s.type != 'pending' ORDER BY s.created_at DESC, s.snapshot_id DESC")
     fun snapshotsByUserId(opponentId: String): DataSource.Factory<Int, SnapshotItem>
@@ -73,10 +98,16 @@ interface SnapshotDao : BaseDao<Snapshot> {
     fun deletePendingSnapshotByHash(transactionHash: String)
 
     @Query("SELECT transaction_hash FROM snapshots WHERE asset_id = :assetId AND type = 'deposit' AND transaction_hash IN (:hashList)")
-    suspend fun findSnapshotIdsByTransactionHashList(assetId: String, hashList: List<String>): List<String>
+    suspend fun findSnapshotIdsByTransactionHashList(
+        assetId: String,
+        hashList: List<String>,
+    ): List<String>
 
     @Query("SELECT sn.* FROM snapshots sn WHERE sn.rowid > :rowId ORDER BY sn.rowid ASC LIMIT :limit")
-    fun getSnapshotByLimitAndRowId(limit: Int, rowId: Long): List<Snapshot>
+    fun getSnapshotByLimitAndRowId(
+        limit: Int,
+        rowId: Long,
+    ): List<Snapshot>
 
     @Query("SELECT rowid FROM snapshots WHERE snapshot_id = :snapshotId")
     fun getSnapshotRowId(snapshotId: String): Long?

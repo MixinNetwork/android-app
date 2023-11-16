@@ -26,17 +26,19 @@ import one.mixin.android.vo.User
 @AndroidEntryPoint
 class FriendsNoBotFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListener {
     init {
-        adapter = FriendsAdapter(userCallback).apply {
-            listener = this@FriendsNoBotFragment
-        }
+        adapter =
+            FriendsAdapter(userCallback).apply {
+                listener = this@FriendsNoBotFragment
+            }
     }
 
     companion object {
         const val TAG = "FriendsNoBotFragment"
 
-        fun newInstance(pin: String) = FriendsNoBotFragment().withArgs {
-            putString(LandingActivity.ARGS_PIN, pin)
-        }
+        fun newInstance(pin: String) =
+            FriendsNoBotFragment().withArgs {
+                putString(LandingActivity.ARGS_PIN, pin)
+            }
     }
 
     private val pin: String by lazy { requireArguments().getString(LandingActivity.ARGS_PIN)!! }
@@ -62,36 +64,39 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsLi
             .show()
     }
 
-    private fun requestCreateEmergency(user: User) = lifecycleScope.launch {
-        val dialog = indeterminateProgressDialog(
-            message = getString(R.string.Please_wait_a_bit),
-            title = getString(if (Session.hasEmergencyContact()) R.string.Changing else R.string.Creating),
-        )
-        dialog.setCancelable(false)
-        dialog.show()
-        handleMixinResponse(
-            invokeNetwork = { viewModel.createEmergency(buildEmergencyRequest(user)) },
-            successBlock = { response ->
-                navTo(
-                    VerificationEmergencyFragment.newInstance(
-                        user,
-                        pin,
-                        (response.data as VerificationResponse).id,
-                        FROM_CONTACT,
-                    ),
-                    VerificationEmergencyFragment.TAG,
+    private fun requestCreateEmergency(user: User) =
+        lifecycleScope.launch {
+            val dialog =
+                indeterminateProgressDialog(
+                    message = getString(R.string.Please_wait_a_bit),
+                    title = getString(if (Session.hasEmergencyContact()) R.string.Changing else R.string.Creating),
                 )
-            },
-            exceptionBlock = {
-                dialog.dismiss()
-                return@handleMixinResponse false
-            },
-            doAfterNetworkSuccess = { dialog.dismiss() },
-        )
-    }
+            dialog.setCancelable(false)
+            dialog.show()
+            handleMixinResponse(
+                invokeNetwork = { viewModel.createEmergency(buildEmergencyRequest(user)) },
+                successBlock = { response ->
+                    navTo(
+                        VerificationEmergencyFragment.newInstance(
+                            user,
+                            pin,
+                            (response.data as VerificationResponse).id,
+                            FROM_CONTACT,
+                        ),
+                        VerificationEmergencyFragment.TAG,
+                    )
+                },
+                exceptionBlock = {
+                    dialog.dismiss()
+                    return@handleMixinResponse false
+                },
+                doAfterNetworkSuccess = { dialog.dismiss() },
+            )
+        }
 
-    private fun buildEmergencyRequest(user: User) = EmergencyRequest(
-        identityNumber = user.identityNumber,
-        purpose = EmergencyPurpose.CONTACT.name,
-    )
+    private fun buildEmergencyRequest(user: User) =
+        EmergencyRequest(
+            identityNumber = user.identityNumber,
+            purpose = EmergencyPurpose.CONTACT.name,
+        )
 }

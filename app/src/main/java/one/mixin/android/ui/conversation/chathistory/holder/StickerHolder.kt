@@ -16,7 +16,6 @@ import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 
 class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewHolder(binding.root) {
-
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
         binding.chatSticker.round(radius)
@@ -116,7 +115,11 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
         }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f

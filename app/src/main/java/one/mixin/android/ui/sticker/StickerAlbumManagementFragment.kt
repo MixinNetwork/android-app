@@ -23,6 +23,7 @@ import one.mixin.android.widget.recyclerview.SimpleItemTouchHelperCallback
 class StickerAlbumManagementFragment : BaseFragment(R.layout.fragment_sticker_album_management) {
     companion object {
         const val TAG = "StickerAlbumManagementFragment"
+
         fun newInstance() = StickerAlbumManagementFragment()
     }
 
@@ -33,7 +34,10 @@ class StickerAlbumManagementFragment : BaseFragment(R.layout.fragment_sticker_al
 
     private lateinit var itemTouchHelper: ItemTouchHelper
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
@@ -45,26 +49,28 @@ class StickerAlbumManagementFragment : BaseFragment(R.layout.fragment_sticker_al
                 layoutManager = LinearLayoutManager(requireContext())
                 adapter = albumAdapter
             }
-            albumAdapter.albumListener = object : AlbumListener {
-                override fun onDelete(album: StickerAlbum) {
-                    lifecycleScope.launch {
-                        viewModel.updateAlbumAdded(StickerAlbumAdded(album.albumId, false, 0))
+            albumAdapter.albumListener =
+                object : AlbumListener {
+                    override fun onDelete(album: StickerAlbum) {
+                        lifecycleScope.launch {
+                            viewModel.updateAlbumAdded(StickerAlbumAdded(album.albumId, false, 0))
+                        }
+                    }
+
+                    override fun startDrag(viewHolder: RecyclerView.ViewHolder) {
+                        itemTouchHelper.startDrag(viewHolder)
+                    }
+
+                    override fun endDrag() {
+                        lifecycleScope.launch {
+                            val orders =
+                                albumAdapter.data?.reversed()?.mapIndexed { index, item ->
+                                    StickerAlbumOrder(item.albumId, index + 1)
+                                } ?: return@launch
+                            viewModel.updateAlbumOrders(orders)
+                        }
                     }
                 }
-
-                override fun startDrag(viewHolder: RecyclerView.ViewHolder) {
-                    itemTouchHelper.startDrag(viewHolder)
-                }
-
-                override fun endDrag() {
-                    lifecycleScope.launch {
-                        val orders = albumAdapter.data?.reversed()?.mapIndexed { index, item ->
-                            StickerAlbumOrder(item.albumId, index + 1)
-                        } ?: return@launch
-                        viewModel.updateAlbumOrders(orders)
-                    }
-                }
-            }
             viewModel.observeSystemAddedAlbums().observe(viewLifecycleOwner) { albums ->
                 mutableListOf<StickerAlbum>().apply {
                     addAll(albums)

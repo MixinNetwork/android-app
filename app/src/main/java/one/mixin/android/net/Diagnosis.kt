@@ -25,7 +25,10 @@ import java.net.SocketException
 import java.net.UnknownHostException
 import java.util.Enumeration
 
-fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
+fun diagnosis(
+    context: Context,
+    diagnosisCallback: (String) -> Unit,
+) {
     val result = StringBuilder()
 
     result.append("${context.getString(R.string.App_version)}: ${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})").appendLine()
@@ -52,12 +55,13 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
     result.clear()
 
     val hosts = arrayOf(CURRENT_URL.toUri().host, (if (CURRENT_URL == URL) Mixin_URL.toUri() else URL.toUri()).host)
-    val dnsList = arrayListOf(
-        CustomDns("8.8.8.8"),
-        CustomDns("1.1.1.1"),
-        CustomDns("2001:4860:4860::8888"),
-        Dns.SYSTEM,
-    )
+    val dnsList =
+        arrayListOf(
+            CustomDns("8.8.8.8"),
+            CustomDns("1.1.1.1"),
+            CustomDns("2001:4860:4860::8888"),
+            Dns.SYSTEM,
+        )
     val prefix = context.getString(R.string.parse_dns_result)
     hosts.forEach host@{ host ->
         requireNotNull(host)
@@ -65,11 +69,12 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
         dnsList.forEach { dns ->
             val dnsHost = if (dns is CustomDns) "dns ${dns.dnsHostname}" else "System DNS"
             result.append("Use $dnsHost").appendLine()
-            val addresses = try {
-                dns.lookup(host)
-            } catch (e: UnknownHostException) {
-                null
-            }
+            val addresses =
+                try {
+                    dns.lookup(host)
+                } catch (e: UnknownHostException) {
+                    null
+                }
             if (addresses.isNullOrEmpty()) {
                 result.append("Nslookup for $host use dns $dns failed").appendLine()
                 return@forEach
@@ -92,7 +97,11 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
     diagnosisCallback(context.getString(R.string.Diagnosis_Complete))
 }
 
-fun ping(domain: String, count: Int = 2, timeout: Int = 5): String? {
+fun ping(
+    domain: String,
+    count: Int = 2,
+    timeout: Int = 5,
+): String? {
     val command = "/system/bin/ping -c $count -w $timeout $domain"
     var process: Process? = null
     try {
@@ -117,12 +126,16 @@ fun ping(domain: String, count: Int = 2, timeout: Int = 5): String? {
 private const val EXPORT_IP_PRIMARY = "https://nstool.netease.com/"
 private const val EXPORT_IP_SECONDARY = "http://api.ipify.org/"
 
-private fun getExportIp(result: StringBuilder, context: Context) {
+private fun getExportIp(
+    result: StringBuilder,
+    context: Context,
+) {
     val client = OkHttpClient()
     var ipRequest = Request.Builder().url(EXPORT_IP_PRIMARY).build()
     try {
-        var data = client.newCall(ipRequest).execute().body?.string()
-            ?: throw IOException("EXPORT_IP_PRIMARY no data")
+        var data =
+            client.newCall(ipRequest).execute().body?.string()
+                ?: throw IOException("EXPORT_IP_PRIMARY no data")
         val url = data.substringIgnoreError(data.indexOf("src=") + 4, data.lastIndexOf("frameborder")).replace("'".toRegex(), "").replace(" ".toRegex(), "")
         ipRequest = Request.Builder().url(url).build()
         data = client.newCall(ipRequest).execute().body?.string()
@@ -172,7 +185,10 @@ private fun String.substringIgnoreError(startIndex: Int): String {
     }
 }
 
-private fun String.substringIgnoreError(startIndex: Int, endIndex: Int): String {
+private fun String.substringIgnoreError(
+    startIndex: Int,
+    endIndex: Int,
+): String {
     return try {
         substring(startIndex, endIndex)
     } catch (ignored: IndexOutOfBoundsException) {

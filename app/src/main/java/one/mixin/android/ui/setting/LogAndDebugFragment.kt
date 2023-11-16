@@ -37,7 +37,10 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
 
     private val binding by viewBinding(FragmentLogDebugBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         lifecycleScope.launch {
             binding.apply {
@@ -87,9 +90,10 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
     }
 
     private fun shareLogsFile() {
-        val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-            setCancelable(false)
-        }
+        val dialog =
+            indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                setCancelable(false)
+            }
         dialog.show()
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -109,10 +113,11 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                     putExtra(Intent.EXTRA_MIME_TYPES, extraMimeTypes)
                     type = "application/*"
 
-                    val resInfoList = requireContext().packageManager.queryIntentActivities(
-                        this,
-                        PackageManager.MATCH_DEFAULT_ONLY,
-                    )
+                    val resInfoList =
+                        requireContext().packageManager.queryIntentActivities(
+                            this,
+                            PackageManager.MATCH_DEFAULT_ONLY,
+                        )
                     for (resolveInfo in resInfoList) {
                         val packageName = resolveInfo.activityInfo.packageName
                         requireContext().grantUriPermission(

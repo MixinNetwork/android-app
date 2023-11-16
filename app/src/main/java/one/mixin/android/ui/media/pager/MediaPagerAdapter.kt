@@ -29,15 +29,18 @@ class MediaPagerAdapter(
     private val onDismissListener: DismissFrameLayout.OnDismissListener,
     private val onMediaPagerAdapterListener: MediaPagerAdapterListener,
 ) : SafePagedListAdapter<MessageItem, MediaPagerHolder>(MessageItem.DIFF_CALLBACK) {
-
     var initialPos: Int = 0
 
     private val videoStatusCache = LruCache<String, String>(100)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaPagerHolder {
-        val layout = DismissFrameLayout(context).apply {
-            layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-        }
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): MediaPagerHolder {
+        val layout =
+            DismissFrameLayout(context).apply {
+                layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            }
         layout.setDismissListener(onDismissListener)
         val circleProgress = layout.inflate(R.layout.view_circle_progress) as CircleProgress
         circleProgress.updateLayoutParams<FrameLayout.LayoutParams> {
@@ -63,7 +66,10 @@ class MediaPagerAdapter(
         }
     }
 
-    override fun onBindViewHolder(holder: MediaPagerHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: MediaPagerHolder,
+        position: Int,
+    ) {
         getItem(position)?.let { messageItem ->
             when (holder) {
                 is PhotoHolder -> {
@@ -95,7 +101,7 @@ class MediaPagerAdapter(
                         messageItem.mediaHeight > context.screenHeight() * 3 ||
                         messageItem.mediaWidth > context.screenWidth() * 3 ||
                         (messageItem.mediaSize != null && messageItem.mediaSize >= BIG_IMAGE_SIZE)
-                    )
+                )
             ) {
                 MediaItemType.LargeImage.ordinal
             } else {
@@ -114,10 +120,11 @@ class MediaPagerAdapter(
         val imageView = PhotoView(parent.context)
         val photoViewAttacher = PhotoViewAttacher(imageView)
         photoViewAttacher.isZoomable = false
-        imageView.layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT,
-        )
+        imageView.layoutParams =
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+            )
         return imageView
     }
 }
@@ -125,13 +132,19 @@ class MediaPagerAdapter(
 interface MediaPagerAdapterListener {
     fun onClick(messageItem: MessageItem)
 
-    fun onLongClick(messageItem: MessageItem, view: View)
+    fun onLongClick(
+        messageItem: MessageItem,
+        view: View,
+    )
 
     fun onCircleProgressClick(messageItem: MessageItem)
 
     fun onReadyPostTransition(view: View)
 
-    fun switchToPin(messageItem: MessageItem, view: View)
+    fun switchToPin(
+        messageItem: MessageItem,
+        view: View,
+    )
 
     fun finishAfterTransition()
 
@@ -141,5 +154,8 @@ interface MediaPagerAdapterListener {
 abstract class MediaPagerHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
 enum class MediaItemType {
-    Image, LargeImage, Video, Invalid
+    Image,
+    LargeImage,
+    Video,
+    Invalid,
 }

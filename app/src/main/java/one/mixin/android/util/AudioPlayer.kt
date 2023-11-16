@@ -91,7 +91,10 @@ import java.util.concurrent.TimeUnit
 
         fun isLoaded(id: String): Boolean = instance.notNullWithElse({ it.isLoaded(id) }, false)
 
-        fun seekTo(progress: Int, max: Float = 100f) = instance?.seekTo(progress, max)
+        fun seekTo(
+            progress: Int,
+            max: Float = 100f,
+        ) = instance?.seekTo(progress, max)
 
         fun getProgress(): Float = instance?.progress ?: 0f
 
@@ -109,9 +112,11 @@ import java.util.concurrent.TimeUnit
         ) {
             get().play(messageItem, autoPlayNext, continuePlayOnlyToday, whenPlayNewAudioMessage)
         }
+
         fun play(filePath: String) {
             get().play(filePath)
         }
+
         fun clear() {
             get().clear()
         }
@@ -120,14 +125,15 @@ import java.util.concurrent.TimeUnit
     private var recallDisposable: Disposable? = null
 
     init {
-        recallDisposable = RxBus.listen(RecallEvent::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                Timber.d("recall:" + it.messageId)
-                if (id == it.messageId) {
-                    pause()
+        recallDisposable =
+            RxBus.listen(RecallEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    Timber.d("recall:" + it.messageId)
+                    if (id == it.messageId) {
+                        pause()
+                    }
                 }
-            }
     }
 
     fun switchAudioStreamType(useFrontSpeaker: Boolean) {
@@ -138,45 +144,49 @@ import java.util.concurrent.TimeUnit
         }
     }
 
-    private val player: MixinPlayer = MixinPlayer(true).also {
-        it.setCycle(false)
-        it.setOnVideoPlayerListener(
-            object : MixinPlayer.VideoPlayerListenerWrapper() {
-                override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-                    if (playbackState == Player.STATE_ENDED) {
-                        id?.let { id -> RxBus.publish(pauseEvent(id)) }
+    private val player: MixinPlayer =
+        MixinPlayer(true).also {
+            it.setCycle(false)
+            it.setOnVideoPlayerListener(
+                object : MixinPlayer.VideoPlayerListenerWrapper() {
+                    override fun onPlayerStateChanged(
+                        playWhenReady: Boolean,
+                        playbackState: Int,
+                    ) {
+                        if (playbackState == Player.STATE_ENDED) {
+                            id?.let { id -> RxBus.publish(pauseEvent(id)) }
+                            stopTimber()
+                            status = STATUS_DONE
+
+                            if (autoPlayNext) {
+                                checkNext()
+                            }
+                        }
+                        if (playWhenReady) {
+                            MusicPlayer.pause()
+                        }
+                    }
+
+                    override fun onPlayerError(error: ExoPlaybackException) {
+                        if (error.cause is UnrecognizedInputFormatException) {
+                            status = STATUS_ERROR
+                            id?.let { id -> RxBus.publish(errorEvent(id)) }
+                            toast(R.string.error_not_supported_audio_format)
+                            messageItem?.let {
+                                MixinApplication.appContext.openMedia(it)
+                            }
+                        } else {
+                            status = STATUS_PAUSE
+                            id?.let { id -> RxBus.publish(pauseEvent(id)) }
+                        }
                         stopTimber()
-                        status = STATUS_DONE
+                        it.stop()
 
-                        if (autoPlayNext) {
-                            checkNext()
-                        }
+                        reportExoPlayerException("AudioPlayer", error)
                     }
-                    if (playWhenReady) {
-                        MusicPlayer.pause()
-                    }
-                }
-
-                override fun onPlayerError(error: ExoPlaybackException) {
-                    if (error.cause is UnrecognizedInputFormatException) {
-                        status = STATUS_ERROR
-                        id?.let { id -> RxBus.publish(errorEvent(id)) }
-                        toast(R.string.error_not_supported_audio_format)
-                        messageItem?.let {
-                            MixinApplication.appContext.openMedia(it)
-                        }
-                    } else {
-                        status = STATUS_PAUSE
-                        id?.let { id -> RxBus.publish(pauseEvent(id)) }
-                    }
-                    stopTimber()
-                    it.stop()
-
-                    reportExoPlayerException("AudioPlayer", error)
-                }
-            },
-        )
-    }
+                },
+            )
+        }
 
     private var id: String? = null
     private var messageItem: MessageItem? = null
@@ -268,7 +278,10 @@ import java.util.concurrent.TimeUnit
         return this.id == id && status != STATUS_ERROR && status != STATUS_DONE
     }
 
-    private fun seekTo(progress: Int, max: Float = 100f) {
+    private fun seekTo(
+        progress: Int,
+        max: Float = 100f,
+    ) {
         val p = progress * player.duration() / max
         player.seekTo(p.toInt())
         id?.let { id -> RxBus.publish(playEvent(id, p)) }
@@ -276,18 +289,20 @@ import java.util.concurrent.TimeUnit
 
     private var timerDisposable: Disposable? = null
     var progress = 0f
+
     private fun startTimer() {
         if (timerDisposable == null) {
-            timerDisposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread()).subscribe {
-                    if (player.duration() == 0) {
-                        return@subscribe
+            timerDisposable =
+                Observable.interval(0, 100, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread()).subscribe {
+                        if (player.duration() == 0) {
+                            return@subscribe
+                        }
+                        progress = player.getCurrentPos().toFloat() / player.duration()
+                        id?.let { id ->
+                            RxBus.publish(playEvent(id, progress))
+                        }
                     }
-                    progress = player.getCurrentPos().toFloat() / player.duration()
-                    id?.let { id ->
-                        RxBus.publish(playEvent(id, progress))
-                    }
-                }
         }
     }
 
@@ -304,10 +319,11 @@ import java.util.concurrent.TimeUnit
         messageItem?.let { item ->
             if (!item.isAudio()) return
             MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
-                val nextMessage = MixinDatabase.getDatabase(MixinApplication.appContext)
-                    .messageDao()
-                    .findNextAudioMessageItem(item.conversationId, item.createdAt, item.messageId)
-                    ?: return@launch
+                val nextMessage =
+                    MixinDatabase.getDatabase(MixinApplication.appContext)
+                        .messageDao()
+                        .findNextAudioMessageItem(item.conversationId, item.createdAt, item.messageId)
+                        ?: return@launch
                 if (!nextMessage.mediaDownloaded() || !nextMessage.isAudio() || nextMessage.mediaUrl == null) return@launch
 
                 if (continuePlayOnlyToday) {
@@ -333,12 +349,13 @@ import java.util.concurrent.TimeUnit
             messageDao.updateMediaStatus(MediaStatus.READ.name, currentMessage.messageId)
             MessageFlow.update(currentMessage.conversationId, currentMessage.messageId)
         }
-        val message = messageDao.findNextAudioMessage(
-            currentMessage.conversationId,
-            currentMessage.createdAt,
-            currentMessage.messageId,
-        )
-            ?: return@launch
+        val message =
+            messageDao.findNextAudioMessage(
+                currentMessage.conversationId,
+                currentMessage.createdAt,
+                currentMessage.messageId,
+            )
+                ?: return@launch
         if (message.userId == Session.getAccountId()) return@launch
         if (!mediaDownloaded(message.mediaStatus)) {
             whenPlayNewAction?.invoke(message)

@@ -5,7 +5,6 @@ import org.junit.Test
 import kotlin.test.assertEquals
 
 class CurrencyTest {
-
     @Test
     fun testCurrencyFromPhone() {
         assertEquals(getCurrencyFromPhoneNumber("+971-4-8005111"), "AED")

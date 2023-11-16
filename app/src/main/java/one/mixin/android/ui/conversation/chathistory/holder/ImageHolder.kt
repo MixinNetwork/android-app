@@ -23,7 +23,6 @@ import one.mixin.android.widget.gallery.MimeType
 import kotlin.math.min
 
 class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(binding.root) {
-
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
         binding.chatImage.round(radius)
@@ -141,7 +140,11 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
     private var dataHeight: Int? = null
     private var dataSize: Long? = null
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
@@ -181,32 +184,35 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
             binding.chatImage.layoutParams.height =
                 min(width * dataHeight!! / dataWidth!!, mediaHeight)
         }
-        val mark = when {
-            isMe && isLast -> R.drawable.chat_mark_image_me
-            isMe -> R.drawable.chat_mark_image
-            !isMe && isLast -> R.drawable.chat_mark_image_other
-            else -> R.drawable.chat_mark_image
-        }
+        val mark =
+            when {
+                isMe && isLast -> R.drawable.chat_mark_image_me
+                isMe -> R.drawable.chat_mark_image
+                !isMe && isLast -> R.drawable.chat_mark_image_other
+                else -> R.drawable.chat_mark_image
+            }
 
         binding.chatImage.setShape(mark)
         binding.largeImageIv.isVisible = binding.chatImage.layoutParams.height == mediaHeight
         if (isBlink) {
             when {
                 isGif -> handleGif(mark)
-                binding.chatImage.layoutParams.height == mediaHeight -> binding.chatImage.loadLongImageMark(
-                    dataUrl,
-                    mark,
-                )
+                binding.chatImage.layoutParams.height == mediaHeight ->
+                    binding.chatImage.loadLongImageMark(
+                        dataUrl,
+                        mark,
+                    )
                 else -> binding.chatImage.loadImageMark(dataUrl, mark)
             }
         } else {
             when {
                 isGif -> handleGif(mark)
-                binding.chatImage.layoutParams.height == mediaHeight -> binding.chatImage.loadLongImageMark(
-                    dataUrl,
-                    dataThumbImage,
-                    mark,
-                )
+                binding.chatImage.layoutParams.height == mediaHeight ->
+                    binding.chatImage.loadLongImageMark(
+                        dataUrl,
+                        dataThumbImage,
+                        mark,
+                    )
                 else -> binding.chatImage.loadImageMark(dataUrl, dataThumbImage, mark)
             }
         }

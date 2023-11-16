@@ -61,7 +61,6 @@ import javax.inject.Inject
 @OptIn(ExperimentalPagingApi::class)
 @AndroidEntryPoint
 class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(), OnSnapshotListener {
-
     companion object {
         const val TAG = "TransactionsFragment"
         const val ARGS_ASSET = "args_asset"
@@ -71,11 +70,12 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
     private val binding get() = requireNotNull(_binding) { "required _binding is null" }
     private var _bottomBinding: ViewWalletTransactionsBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding) { "required _bottomBinding is null" }
-    private val sendBottomSheet = SendBottomSheet(this, R.id.action_transactions_to_single_friend_select, R.id.action_transactions_to_address_management) {
-        VerifyBottomSheetDialogFragment.newInstance().setOnPinSuccess { pin ->
-            showTipWithdrawal(pin)
-        }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
-    }
+    private val sendBottomSheet =
+        SendBottomSheet(this, R.id.action_transactions_to_single_friend_select, R.id.action_transactions_to_address_management) {
+            VerifyBottomSheetDialogFragment.newInstance().setOnPinSuccess { pin ->
+                showTipWithdrawal(pin)
+            }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+        }
 
     @Inject
     lateinit var tip: Tip
@@ -84,7 +84,11 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
     private val headerAdapter = HeaderAdapter()
     lateinit var asset: TokenItem
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
         _binding = FragmentTransactionsBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
@@ -94,7 +98,10 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         asset = requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)!!
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
         binding.titleView.apply {
@@ -125,11 +132,12 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         val concatAdapter = ConcatAdapter(headerAdapter, adapter)
         binding.transactionsRv.adapter = concatAdapter
 
-        dataObserver = Observer { pagedList ->
-            lifecycleScope.launch {
-                adapter.submitData(pagedList)
+        dataObserver =
+            Observer { pagedList ->
+                lifecycleScope.launch {
+                    adapter.submitData(pagedList)
+                }
             }
-        }
         bindLiveData()
         walletViewModel.assetItem(asset.assetId).observe(
             viewLifecycleOwner,
@@ -219,9 +227,10 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
 
     override fun onUserClick(userId: String) {
         lifecycleScope.launch {
-            val user = withContext(Dispatchers.IO) {
-                walletViewModel.getUser(userId)
-            } ?: return@launch
+            val user =
+                withContext(Dispatchers.IO) {
+                    walletViewModel.getUser(userId)
+                } ?: return@launch
 
             if (user.notMessengerUser()) {
                 NonMessengerUserBottomSheetDialogFragment.newInstance(user)
@@ -248,72 +257,75 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         filtersSheet.dismiss()
     }
 
-    private fun bindLiveData() = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
+    private fun bindLiveData() =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
 
-        val orderByAmount = currentOrder == R.id.sort_amount
-        when (currentType) {
-            R.id.filters_radio_all -> {
-                bindLiveData(walletViewModel.snapshots(asset.assetId, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+            val orderByAmount = currentOrder == R.id.sort_amount
+            when (currentType) {
+                R.id.filters_radio_all -> {
+                    bindLiveData(walletViewModel.snapshots(asset.assetId, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+                }
+
+                R.id.filters_radio_transfer -> {
+                    bindLiveData(
+                        walletViewModel.snapshots(
+                            asset.assetId,
+                            SafeSnapshotType.transfer.name,
+                            SafeSnapshotType.pending.name,
+                            initialLoadKey = initialLoadKey,
+                            orderByAmount = orderByAmount,
+                        ),
+                    )
+                }
+
+                R.id.filters_radio_deposit -> {
+                    bindLiveData(
+                        walletViewModel.snapshots(
+                            asset.assetId,
+                            SafeSnapshotType.deposit.name,
+                            initialLoadKey = initialLoadKey,
+                            orderByAmount = orderByAmount,
+                        ),
+                    )
+                }
+
+                R.id.filters_radio_withdrawal -> {
+                    bindLiveData(
+                        walletViewModel.snapshots(
+                            asset.assetId,
+                            SafeSnapshotType.withdrawal.name,
+                            initialLoadKey = initialLoadKey,
+                            orderByAmount = orderByAmount,
+                        ),
+                    )
+                }
             }
+            headerAdapter.currentType = currentType
+        }
 
-            R.id.filters_radio_transfer -> {
-                bindLiveData(
-                    walletViewModel.snapshots(
-                        asset.assetId,
-                        SafeSnapshotType.transfer.name,
-                        SafeSnapshotType.pending.name,
-                        initialLoadKey = initialLoadKey,
-                        orderByAmount = orderByAmount,
-                    ),
-                )
-            }
+    private fun showTipWithdrawal(pin: String) =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
 
-            R.id.filters_radio_deposit -> {
-                bindLiveData(
-                    walletViewModel.snapshots(
-                        asset.assetId,
-                        SafeSnapshotType.deposit.name,
-                        initialLoadKey = initialLoadKey,
-                        orderByAmount = orderByAmount,
-                    ),
-                )
-            }
+            val result = tip.getOrRecoverTipPriv(requireContext(), pin)
+            if (result.isSuccess) {
+                val destination = tipPrivToAddress(result.getOrThrow(), Constants.ChainId.ETHEREUM_CHAIN_ID)
+                val addressFeeResponse =
+                    handleMixinResponse(
+                        invokeNetwork = {
+                            walletViewModel.getExternalAddressFee(asset.assetId, destination, null)
+                        },
+                        successBlock = {
+                            it.data
+                        },
+                    ) ?: return@launch
 
-            R.id.filters_radio_withdrawal -> {
-                bindLiveData(
-                    walletViewModel.snapshots(
-                        asset.assetId,
-                        SafeSnapshotType.withdrawal.name,
-                        initialLoadKey = initialLoadKey,
-                        orderByAmount = orderByAmount,
-                    ),
-                )
+                val mockAddress = Address("", "address", asset.assetId, addressFeeResponse.destination, "TIP Wallet", nowInUtc(), "0", addressFeeResponse.fee, null, null, asset.chainId)
+                val transferFragment = TransferFragment.newInstance(asset = asset, address = mockAddress)
+                transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)
             }
         }
-        headerAdapter.currentType = currentType
-    }
-
-    private fun showTipWithdrawal(pin: String) = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
-
-        val result = tip.getOrRecoverTipPriv(requireContext(), pin)
-        if (result.isSuccess) {
-            val destination = tipPrivToAddress(result.getOrThrow(), Constants.ChainId.ETHEREUM_CHAIN_ID)
-            val addressFeeResponse = handleMixinResponse(
-                invokeNetwork = {
-                    walletViewModel.getExternalAddressFee(asset.assetId, destination, null)
-                },
-                successBlock = {
-                    it.data
-                },
-            ) ?: return@launch
-
-            val mockAddress = Address("", "address", asset.assetId, addressFeeResponse.destination, "TIP Wallet", nowInUtc(), "0", addressFeeResponse.fee, null, null, asset.chainId)
-            val transferFragment = TransferFragment.newInstance(asset = asset, address = mockAddress)
-            transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)
-        }
-    }
 
     inner class HeaderAdapter : RecyclerView.Adapter<HeaderAdapter.ViewHolder>() {
         var asset: TokenItem? = null
@@ -343,7 +355,11 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             private val headerBinding = ViewTransactionsFragmentHeaderBinding.bind(itemView)
 
-            fun bind(asset: TokenItem, show: Boolean, currentType: Int) {
+            fun bind(
+                asset: TokenItem,
+                show: Boolean,
+                currentType: Int,
+            ) {
                 headerBinding.apply {
                     groupInfoMemberTitleSort.setOnClickListener {
                         showFiltersSheet()
@@ -364,7 +380,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                     }
                     root.post {
                         if (viewDestroyed()) return@post
-                        
+
                         bottomRl.updateLayoutParams<ViewGroup.LayoutParams> {
                             height = requireContext().screenHeight() - this@TransactionsFragment.binding.titleView.height - topLl.height - groupInfoMemberTitleLayout.height
                         }
@@ -412,26 +428,28 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
             @SuppressLint("SetTextI18n")
             fun updateHeader(asset: TokenItem) {
                 headerBinding.apply {
-                    val amountText = try {
-                        if (asset.balance.toFloat() == 0f) {
-                            "0.00"
-                        } else {
+                    val amountText =
+                        try {
+                            if (asset.balance.toFloat() == 0f) {
+                                "0.00"
+                            } else {
+                                asset.balance.numberFormat()
+                            }
+                        } catch (ignored: NumberFormatException) {
                             asset.balance.numberFormat()
                         }
-                    } catch (ignored: NumberFormatException) {
-                        asset.balance.numberFormat()
-                    }
                     val color = requireContext().colorFromAttribute(R.attr.text_primary)
                     balance.text = buildAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
-                    balanceAs.text = try {
-                        if (asset.fiat().toFloat() == 0f) {
-                            "≈ ${Fiats.getSymbol()}0.00"
-                        } else {
+                    balanceAs.text =
+                        try {
+                            if (asset.fiat().toFloat() == 0f) {
+                                "≈ ${Fiats.getSymbol()}0.00"
+                            } else {
+                                "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                            }
+                        } catch (ignored: NumberFormatException) {
                             "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
                         }
-                    } catch (ignored: NumberFormatException) {
-                        "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
-                    }
                     ViewBadgeCircleImageBinding.bind(avatar).apply {
                         bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
                         badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
@@ -440,11 +458,17 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
             }
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): ViewHolder {
             return ViewHolder(parent.inflate(R.layout.view_transactions_fragment_header))
         }
 
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: ViewHolder,
+            position: Int,
+        ) {
             asset?.let { holder.bind(it, show, currentType) }
         }
 

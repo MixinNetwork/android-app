@@ -6,7 +6,6 @@ import android.widget.LinearLayout
 import one.mixin.android.extension.statusBarHeight
 
 class BottomSheetLinearLayout(context: Context, attributeSet: AttributeSet) : LinearLayout(context, attributeSet) {
-
     private val statusBarHeight = context.statusBarHeight()
 
     var heightOffset: Int = statusBarHeight
@@ -17,11 +16,15 @@ class BottomSheetLinearLayout(context: Context, attributeSet: AttributeSet) : Li
             }
         }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val parentHeightSpec = MeasureSpec.makeMeasureSpec(
-            MeasureSpec.getSize(heightMeasureSpec) - heightOffset,
-            MeasureSpec.getMode(heightMeasureSpec),
-        )
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
+        val parentHeightSpec =
+            MeasureSpec.makeMeasureSpec(
+                MeasureSpec.getSize(heightMeasureSpec) - heightOffset,
+                MeasureSpec.getMode(heightMeasureSpec),
+            )
         super.onMeasure(widthMeasureSpec, parentHeightSpec)
     }
 }

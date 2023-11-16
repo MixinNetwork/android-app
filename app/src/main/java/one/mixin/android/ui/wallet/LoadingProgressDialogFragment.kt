@@ -10,6 +10,7 @@ class LoadingProgressDialogFragment : AppCompatDialogFragment() {
     companion object {
         const val TAG = "LoadingProgressDialogFragment"
     }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = Dialog(requireContext(), R.style.LoadingProgressDialog)
         dialog.setContentView(R.layout.fragment_loading_progress_dialog)

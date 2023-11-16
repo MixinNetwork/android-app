@@ -45,118 +45,121 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
         private const val EACH = 10
     }
 
-    override fun onRun() = runBlocking {
-        val startTime = System.currentTimeMillis()
-        var migrationLast = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT_LAST)?.toLongOrNull() ?: -1
+    override fun onRun() =
+        runBlocking {
+            val startTime = System.currentTimeMillis()
+            var migrationLast = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT_LAST)?.toLongOrNull() ?: -1
 
-        if (migrationLast == -1L) {
-            migrationLast = messageDao.getLastMessageRowid()
-            propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT_LAST, migrationLast.toString(), nowInUtc()))
-        }
-
-        if (!hasWritePermission()) return@runBlocking
-        val offset = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT_OFFSET)?.toLongOrNull() ?: 0
-        val list = messageDao.findAttachmentMigration(migrationLast, EACH, offset)
-        list.forEach { attachment ->
-            val fromFile = attachment.getFile(MixinApplication.appContext) ?: return@forEach
-            if (!fromFile.exists()) {
-                Timber.d("Attachment migration no exists ${fromFile.absoluteFile}")
-                return@forEach
+            if (migrationLast == -1L) {
+                migrationLast = messageDao.getLastMessageRowid()
+                propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT_LAST, migrationLast.toString(), nowInUtc()))
             }
-            val toFile = when {
-                attachment.isImage() -> {
+
+            if (!hasWritePermission()) return@runBlocking
+            val offset = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT_OFFSET)?.toLongOrNull() ?: 0
+            val list = messageDao.findAttachmentMigration(migrationLast, EACH, offset)
+            list.forEach { attachment ->
+                val fromFile = attachment.getFile(MixinApplication.appContext) ?: return@forEach
+                if (!fromFile.exists()) {
+                    Timber.d("Attachment migration no exists ${fromFile.absoluteFile}")
+                    return@forEach
+                }
+                val toFile =
                     when {
-                        attachment.mediaMimeType?.isImageSupport() == false -> {
-                            MixinApplication.get().getImagePath()
-                                .createEmptyTemp(attachment.conversationId, attachment.messageId)
+                        attachment.isImage() -> {
+                            when {
+                                attachment.mediaMimeType?.isImageSupport() == false -> {
+                                    MixinApplication.get().getImagePath()
+                                        .createEmptyTemp(attachment.conversationId, attachment.messageId)
+                                }
+                                attachment.mediaMimeType.equals(MimeType.PNG.toString(), true) -> {
+                                    MixinApplication.get().getImagePath().createImageTemp(
+                                        attachment.conversationId,
+                                        attachment.messageId,
+                                        ".png",
+                                    )
+                                }
+                                attachment.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
+                                    MixinApplication.get().getImagePath()
+                                        .createGifTemp(attachment.conversationId, attachment.messageId)
+                                }
+                                attachment.mediaMimeType.equals(MimeType.WEBP.toString(), true) -> {
+                                    MixinApplication.get().getImagePath()
+                                        .createWebpTemp(attachment.conversationId, attachment.messageId)
+                                }
+                                else -> {
+                                    MixinApplication.get().getImagePath().createImageTemp(
+                                        attachment.conversationId,
+                                        attachment.messageId,
+                                        ".jpg",
+                                    )
+                                }
+                            }
                         }
-                        attachment.mediaMimeType.equals(MimeType.PNG.toString(), true) -> {
-                            MixinApplication.get().getImagePath().createImageTemp(
-                                attachment.conversationId,
-                                attachment.messageId,
-                                ".png",
-                            )
+                        attachment.isData() -> {
+                            val extensionName = attachment.name?.getExtensionName()
+                            MixinApplication.get().getDocumentPath()
+                                .createDocumentTemp(
+                                    attachment.conversationId,
+                                    attachment.messageId,
+                                    extensionName,
+                                )
                         }
-                        attachment.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
-                            MixinApplication.get().getImagePath()
-                                .createGifTemp(attachment.conversationId, attachment.messageId)
+                        attachment.isVideo() -> {
+                            val extensionName =
+                                attachment.name?.getExtensionName().let {
+                                    it ?: "mp4"
+                                }
+                            MixinApplication.get().getVideoPath()
+                                .createVideoTemp(
+                                    attachment.conversationId,
+                                    attachment.messageId,
+                                    extensionName,
+                                )
                         }
-                        attachment.mediaMimeType.equals(MimeType.WEBP.toString(), true) -> {
-                            MixinApplication.get().getImagePath()
-                                .createWebpTemp(attachment.conversationId, attachment.messageId)
+                        attachment.isAudio() -> {
+                            MixinApplication.get().getAudioPath()
+                                .createAudioTemp(attachment.conversationId, attachment.messageId, "ogg")
                         }
-                        else -> {
-                            MixinApplication.get().getImagePath().createImageTemp(
-                                attachment.conversationId,
-                                attachment.messageId,
-                                ".jpg",
-                            )
+                        else -> null
+                    }
+                toFile ?: return@forEach
+                try {
+                    if (fromFile.absolutePath != toFile.absolutePath) {
+                        if (toFile.parentFile?.exists() != true) {
+                            toFile.parentFile?.mkdirs()
+                        }
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            Files.move(fromFile.toPath(), toFile.toPath())
+                        } else {
+                            fromFile.renameTo(toFile)
                         }
                     }
+                } catch (e: IOException) {
+                    Timber.e("Attachment migration ${e.message}")
+                    reportException(e)
                 }
-                attachment.isData() -> {
-                    val extensionName = attachment.name?.getExtensionName()
-                    MixinApplication.get().getDocumentPath()
-                        .createDocumentTemp(
-                            attachment.conversationId,
-                            attachment.messageId,
-                            extensionName,
-                        )
+                Timber.d("Attachment migration ${fromFile.absolutePath} ${toFile.absolutePath}")
+                if (attachment.mediaUrl != toFile.name) {
+                    messageDao.updateMediaMessageUrl(toFile.name, attachment.messageId)
+                    MessageFlow.update(attachment.conversationId, attachment.messageId)
                 }
-                attachment.isVideo() -> {
-                    val extensionName = attachment.name?.getExtensionName().let {
-                        it ?: "mp4"
-                    }
-                    MixinApplication.get().getVideoPath()
-                        .createVideoTemp(
-                            attachment.conversationId,
-                            attachment.messageId,
-                            extensionName,
-                        )
-                }
-                attachment.isAudio() -> {
-                    MixinApplication.get().getAudioPath()
-                        .createAudioTemp(attachment.conversationId, attachment.messageId, "ogg")
-                }
-                else -> null
             }
-            toFile ?: return@forEach
-            try {
-                if (fromFile.absolutePath != toFile.absolutePath) {
-                    if (toFile.parentFile?.exists() != true) {
-                        toFile.parentFile?.mkdirs()
-                    }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        Files.move(fromFile.toPath(), toFile.toPath())
-                    } else {
-                        fromFile.renameTo(toFile)
-                    }
+            propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT_OFFSET, (offset + list.size).toString(), nowInUtc()))
+            Timber.d("Attachment migration handle ${offset + list.size} file cost: ${System.currentTimeMillis() - startTime} ms")
+            if (list.size < EACH) {
+                Timber.d("Attachment start delete ancient media path")
+                MixinApplication.appContext.getAncientMediaPath()?.deleteRecursively()
+                Timber.d("Attachment delete ancient media path completed!!!")
+                if (propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT)?.toBoolean() != true) {
+                    Timber.d("Attachment start delete media path")
+                    MixinApplication.appContext.getMediaPath(true)?.deleteRecursively()
+                    Timber.d("Attachment delete media path completed!!!")
                 }
-            } catch (e: IOException) {
-                Timber.e("Attachment migration ${e.message}")
-                reportException(e)
-            }
-            Timber.d("Attachment migration ${fromFile.absolutePath} ${toFile.absolutePath}")
-            if (attachment.mediaUrl != toFile.name) {
-                messageDao.updateMediaMessageUrl(toFile.name, attachment.messageId)
-                MessageFlow.update(attachment.conversationId, attachment.messageId)
+                propertyDao.updateValueByKey(PREF_MIGRATION_ATTACHMENT, false.toString())
+                Timber.d("Attachment migration completed!!!")
+            } else {
+                jobManager.addJobInBackground(AttachmentMigrationJob())
             }
         }
-        propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT_OFFSET, (offset + list.size).toString(), nowInUtc()))
-        Timber.d("Attachment migration handle ${offset + list.size} file cost: ${System.currentTimeMillis() - startTime} ms")
-        if (list.size < EACH) {
-            Timber.d("Attachment start delete ancient media path")
-            MixinApplication.appContext.getAncientMediaPath()?.deleteRecursively()
-            Timber.d("Attachment delete ancient media path completed!!!")
-            if (propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT)?.toBoolean() != true) {
-                Timber.d("Attachment start delete media path")
-                MixinApplication.appContext.getMediaPath(true)?.deleteRecursively()
-                Timber.d("Attachment delete media path completed!!!")
-            }
-            propertyDao.updateValueByKey(PREF_MIGRATION_ATTACHMENT, false.toString())
-            Timber.d("Attachment migration completed!!!")
-        } else {
-            jobManager.addJobInBackground(AttachmentMigrationJob())
-        }
-    }
 }

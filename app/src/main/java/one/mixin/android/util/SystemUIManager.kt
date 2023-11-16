@@ -10,7 +10,10 @@ import one.mixin.android.extension.supportsPie
 
 @SuppressLint("InlinedApi")
 object SystemUIManager {
-    fun fitsSystem(window: Window, @ColorInt color: Int = 0x33000000) {
+    fun fitsSystem(
+        window: Window,
+        @ColorInt color: Int = 0x33000000,
+    ) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         window.statusBarColor = color
@@ -33,7 +36,10 @@ object SystemUIManager {
         }
     }
 
-    fun lightUI(window: Window, light: Boolean) {
+    fun lightUI(
+        window: Window,
+        light: Boolean,
+    ) {
         val controller = WindowCompat.getInsetsController(window, window.decorView)
         controller.apply {
             isAppearanceLightStatusBars = light
@@ -56,7 +62,10 @@ object SystemUIManager {
         }
     }
 
-    fun setSystemUiColor(window: Window, color: Int) {
+    fun setSystemUiColor(
+        window: Window,
+        color: Int,
+    ) {
         window.navigationBarColor = color
         window.statusBarColor = color
     }
@@ -68,7 +77,10 @@ object SystemUIManager {
         return false
     }
 
-    fun setAppearanceLightStatusBars(window: Window, isLight: Boolean) {
+    fun setAppearanceLightStatusBars(
+        window: Window,
+        isLight: Boolean,
+    ) {
         WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = isLight
     }
 }

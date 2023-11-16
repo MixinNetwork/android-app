@@ -9,6 +9,7 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+
 @Serializable(with = WithdrawalMemoPossibilitySerializer::class)
 enum class WithdrawalMemoPossibility(val value: String) {
     @SerialName("negative")
@@ -26,7 +27,10 @@ object WithdrawalMemoPossibilitySerializer : KSerializer<WithdrawalMemoPossibili
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("WithdrawalMemoPossibility", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: WithdrawalMemoPossibility) {
+    override fun serialize(
+        encoder: Encoder,
+        value: WithdrawalMemoPossibility,
+    ) {
         encoder.encodeString(value.value)
     }
 

@@ -43,7 +43,10 @@ class OldTransactionFragment : BaseFragment(R.layout.fragment_old_transaction), 
     private val assetId: String? by lazy { requireArguments().getString(ARGS_ASSET_ID) }
     private val snapshotId: String? by lazy { requireArguments().getString(ARGS_SNAPSHOT_ID) }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.root.isClickable = true

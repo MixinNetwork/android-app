@@ -5,12 +5,6 @@ import android.net.Uri
 import androidx.collection.ArrayMap
 import androidx.collection.ArraySet
 import androidx.collection.arrayMapOf
-import java.io.BufferedReader
-import java.io.File
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.util.UUID
-import java.util.regex.Pattern
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.getFileName
@@ -20,9 +14,14 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.TranscriptMessage
 import timber.log.Timber
+import java.io.BufferedReader
+import java.io.File
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.util.UUID
+import java.util.regex.Pattern
 
 class ImportChatUtil {
-
     companion object {
         private val exportUri = ArraySet<String>()
 
@@ -44,17 +43,22 @@ class ImportChatUtil {
         private var instance: ImportChatUtil? = null
     }
 
-    fun generateTranscriptMessage(context: Context, importUri: String, documents: List<String>): String? {
+    fun generateTranscriptMessage(
+        context: Context,
+        importUri: String,
+        documents: List<String>,
+    ): String? {
         var inputStream: InputStream? = null
         try {
             val documentsMap: ArrayMap<String, Uri> = arrayMapOf()
             documents.forEach {
                 val uri = Uri.parse(it)
-                val name = try {
-                    fixFileName(uri.getFileName())
-                } catch (e: Exception) {
-                    null
-                } ?: return@forEach
+                val name =
+                    try {
+                        fixFileName(uri.getFileName())
+                    } catch (e: Exception) {
+                        null
+                    } ?: return@forEach
                 documentsMap[name] = uri
             }
             inputStream = requireNotNull(context.contentResolver.openInputStream(Uri.parse(importUri)))
@@ -80,7 +84,10 @@ class ImportChatUtil {
 
     // Todo
     @Suppress("UNUSED_PARAMETER")
-    private fun generateTranscriptMessage(s: String, documentsMap: ArrayMap<String, Uri>): TranscriptMessage? {
+    private fun generateTranscriptMessage(
+        s: String,
+        documentsMap: ArrayMap<String, Uri>,
+    ): TranscriptMessage? {
         val dateEnd = s.indexOf(" - ")
         val nameEnd = s.indexOf(": ")
         return if (dateEnd > 0 && nameEnd > 0) {
@@ -113,7 +120,10 @@ class ImportChatUtil {
         return exportingChatUri?.notNullWithElse({ Pair(it, documentsUrisArray) }, null)
     }
 
-    fun copyFileToCache(uri: Uri, context: Context = MixinApplication.appContext) {
+    fun copyFileToCache(
+        uri: Uri,
+        context: Context = MixinApplication.appContext,
+    ) {
         val name = fixFileName(uri.getFileName())
         val backupFile = File("${context.getOtherPath().absolutePath}${File.separator}$name")
         Timber.d(backupFile.absolutePath)

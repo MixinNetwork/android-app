@@ -55,9 +55,10 @@ fun SettingPage() {
         ) {
             val settingNavController = LocalSettingNav.current
             Column(
-                modifier = Modifier
-                    .padding(it)
-                    .verticalScroll(rememberScrollState()),
+                modifier =
+                    Modifier
+                        .padding(it)
+                        .verticalScroll(rememberScrollState()),
             ) {
                 val context = LocalContext.current
                 SettingTile(

@@ -19,9 +19,11 @@ import one.mixin.android.widget.PinView
 class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "PinInputBottomSheetDialogFragment"
-        fun newInstance(title: String? = null) = PinInputBottomSheetDialogFragment().withArgs {
-            title?.let { putString(ARGS_TITLE, it) }
-        }
+
+        fun newInstance(title: String? = null) =
+            PinInputBottomSheetDialogFragment().withArgs {
+                title?.let { putString(ARGS_TITLE, it) }
+            }
     }
 
     private val binding by viewBinding(FragmentPinInputBottomSheetBinding::inflate)
@@ -38,7 +40,10 @@ class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -49,42 +54,51 @@ class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 title.text = titleString
             }
             titleView.rightIv.setOnClickListener { dismiss() }
-            pin.setListener(object : PinView.OnPinListener {
-                override fun onUpdate(index: Int) {
-                    if (index == pin.getCount()) {
-                        if (onComplete != null) {
-                            onComplete?.invoke(pin.code(), this@PinInputBottomSheetDialogFragment)
-                            return
+            pin.setListener(
+                object : PinView.OnPinListener {
+                    override fun onUpdate(index: Int) {
+                        if (index == pin.getCount()) {
+                            if (onComplete != null) {
+                                onComplete?.invoke(pin.code(), this@PinInputBottomSheetDialogFragment)
+                                return
+                            }
+                            onPinComplete?.invoke(pin.code())
+                            dismiss()
                         }
-                        onPinComplete?.invoke(pin.code())
-                        dismiss()
                     }
-                }
-            })
+                },
+            )
             keyboard.initPinKeys(requireContext())
             keyboard.setOnClickKeyboardListener(keyboardListener)
         }
     }
 
-    private val keyboardListener = object : Keyboard.OnClickKeyboardListener {
-        override fun onKeyClick(position: Int, value: String) {
-            context?.tickVibrate()
-            if (position == 11) {
-                binding.pin.delete()
-            } else {
-                binding.pin.append(value)
+    private val keyboardListener =
+        object : Keyboard.OnClickKeyboardListener {
+            override fun onKeyClick(
+                position: Int,
+                value: String,
+            ) {
+                context?.tickVibrate()
+                if (position == 11) {
+                    binding.pin.delete()
+                } else {
+                    binding.pin.append(value)
+                }
             }
-        }
 
-        override fun onLongClick(position: Int, value: String) {
-            context?.clickVibrate()
-            if (position == 11) {
-                binding.pin.clear()
-            } else {
-                binding.pin.append(value)
+            override fun onLongClick(
+                position: Int,
+                value: String,
+            ) {
+                context?.clickVibrate()
+                if (position == 11) {
+                    binding.pin.clear()
+                } else {
+                    binding.pin.append(value)
+                }
             }
         }
-    }
 
     fun setOnPinComplete(callback: (String) -> Unit): PinInputBottomSheetDialogFragment {
         onPinComplete = callback

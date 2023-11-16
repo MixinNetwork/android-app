@@ -30,9 +30,10 @@ fun PhoneNumberSettingPage() {
 
         val viewModel = hiltViewModel<SettingConversationViewModel>()
 
-        val preferences = remember {
-            viewModel.initSearchPreference(context)
-        }
+        val preferences =
+            remember {
+                viewModel.initSearchPreference(context)
+            }
 
         val selected by preferences.observeAsState()
 

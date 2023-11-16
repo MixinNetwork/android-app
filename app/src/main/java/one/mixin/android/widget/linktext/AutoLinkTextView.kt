@@ -32,7 +32,6 @@ import java.util.regex.Pattern
 
 open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
     EmojiTextView(context, attrs) {
-
     private var coroutineScope: CoroutineScope? = null
     private var autoLinkOnClickListener: ((AutoLinkMode, String) -> Unit)? = null
     private var autoLinkOnLongClickListener: ((AutoLinkMode, String) -> Unit)? = null
@@ -60,7 +59,10 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
             }
         }
 
-    override fun setText(text: CharSequence, type: TextView.BufferType) {
+    override fun setText(
+        text: CharSequence,
+        type: TextView.BufferType,
+    ) {
         if (TextUtils.isEmpty(text)) {
             super.setText(text, type)
             return
@@ -77,7 +79,10 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
         super.setText(makeSpannableString(sp, autoLinkItems), type)
     }
 
-    private fun renderMarkdown(sp: SpannableStringBuilder, node: Node) {
+    private fun renderMarkdown(
+        sp: SpannableStringBuilder,
+        node: Node,
+    ) {
         sp.append(simpleMarkwon.render(node))
         if (node.next != null) {
             renderMarkdown(sp, node.next)
@@ -146,77 +151,81 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
         text: CharSequence,
         autoLinkItems: List<AutoLinkItem>,
     ): SpannableString {
-        val spannableString = if (text is SpannableString) {
-            text
-        } else {
-            SpannableString(text)
-        }
+        val spannableString =
+            if (text is SpannableString) {
+                text
+            } else {
+                SpannableString(text)
+            }
 
         for (autoLinkItem in autoLinkItems) {
             val currentColor = getColorByMode(autoLinkItem.autoLinkMode)
 
-            val clickableSpan = if (autoLinkItem.autoLinkMode == AutoLinkMode.MODE_URL) {
-                object : LongTouchableSpan(currentColor, defaultSelectedColor, isUnderLineEnabled) {
-                    var job: Job? = null
-                    override fun onClick(widget: View) {
-                        if (isLongPressed) return
-                        autoLinkOnClickListener?.let {
-                            it(autoLinkItem.autoLinkMode, autoLinkItem.matchedText)
-                        }
-                    }
+            val clickableSpan =
+                if (autoLinkItem.autoLinkMode == AutoLinkMode.MODE_URL) {
+                    object : LongTouchableSpan(currentColor, defaultSelectedColor, isUnderLineEnabled) {
+                        var job: Job? = null
 
-                    override fun startLongClick() {
-                        job = coroutineScope?.launch {
-                            setLongPressed(false)
-                            handleLongClick = false
-                            delay(LONG_CLICK_TIME)
-                            autoLinkOnLongClickListener?.let {
-                                context.clickVibrate()
+                        override fun onClick(widget: View) {
+                            if (isLongPressed) return
+                            autoLinkOnClickListener?.let {
                                 it(autoLinkItem.autoLinkMode, autoLinkItem.matchedText)
                             }
-                            setLongPressed(true)
-                            handleLongClick = true
                         }
-                    }
 
-                    override fun cancelLongClick(): Boolean {
-                        return if (isLongPressed) {
-                            false
-                        } else {
-                            if (job?.isActive == true) {
-                                job?.cancel()
-                                setLongPressed(false)
-                                handleLongClick = false
+                        override fun startLongClick() {
+                            job =
+                                coroutineScope?.launch {
+                                    setLongPressed(false)
+                                    handleLongClick = false
+                                    delay(LONG_CLICK_TIME)
+                                    autoLinkOnLongClickListener?.let {
+                                        context.clickVibrate()
+                                        it(autoLinkItem.autoLinkMode, autoLinkItem.matchedText)
+                                    }
+                                    setLongPressed(true)
+                                    handleLongClick = true
+                                }
+                        }
+
+                        override fun cancelLongClick(): Boolean {
+                            return if (isLongPressed) {
+                                false
+                            } else {
+                                if (job?.isActive == true) {
+                                    job?.cancel()
+                                    setLongPressed(false)
+                                    handleLongClick = false
+                                }
+                                true
                             }
-                            true
+                        }
+
+                        override fun updateDrawState(textPaint: TextPaint) {
+                            super.updateDrawState(textPaint)
+                            val textColor = normalTextColor
+                            textPaint.color = textColor
+                            textPaint.bgColor = if (isPressed) pressedTextColor else Color.TRANSPARENT
+                            textPaint.isUnderlineText = isUnderLineEnabled
                         }
                     }
+                } else {
+                    object : TouchableSpan(currentColor, defaultSelectedColor, isUnderLineEnabled) {
+                        override fun onClick(widget: View) {
+                            autoLinkOnClickListener?.let {
+                                it(autoLinkItem.autoLinkMode, autoLinkItem.matchedText)
+                            }
+                        }
 
-                    override fun updateDrawState(textPaint: TextPaint) {
-                        super.updateDrawState(textPaint)
-                        val textColor = normalTextColor
-                        textPaint.color = textColor
-                        textPaint.bgColor = if (isPressed) pressedTextColor else Color.TRANSPARENT
-                        textPaint.isUnderlineText = isUnderLineEnabled
-                    }
-                }
-            } else {
-                object : TouchableSpan(currentColor, defaultSelectedColor, isUnderLineEnabled) {
-                    override fun onClick(widget: View) {
-                        autoLinkOnClickListener?.let {
-                            it(autoLinkItem.autoLinkMode, autoLinkItem.matchedText)
+                        override fun updateDrawState(textPaint: TextPaint) {
+                            super.updateDrawState(textPaint)
+                            val textColor = normalTextColor
+                            textPaint.color = textColor
+                            textPaint.bgColor = if (isPressed) pressedTextColor else Color.TRANSPARENT
+                            textPaint.isUnderlineText = isUnderLineEnabled
                         }
                     }
-
-                    override fun updateDrawState(textPaint: TextPaint) {
-                        super.updateDrawState(textPaint)
-                        val textColor = normalTextColor
-                        textPaint.color = textColor
-                        textPaint.bgColor = if (isPressed) pressedTextColor else Color.TRANSPARENT
-                        textPaint.isUnderlineText = isUnderLineEnabled
-                    }
                 }
-            }
 
             spannableString.setSpan(
                 clickableSpan,
@@ -272,7 +281,10 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
         return autoLinkItems
     }
 
-    private fun addLinkItems(autoLinkItems: MutableList<AutoLinkItem>, item: AutoLinkItem) {
+    private fun addLinkItems(
+        autoLinkItems: MutableList<AutoLinkItem>,
+        item: AutoLinkItem,
+    ) {
         // Skip if the current link is contain
         if (!autoLinkItems.any { item.startPoint >= it.startPoint && item.endPoint <= it.endPoint }) {
             autoLinkItems.add(item)
@@ -291,35 +303,51 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
         }
     }
 
-    fun setMentionModeColor(@ColorInt mentionModeColor: Int) {
+    fun setMentionModeColor(
+        @ColorInt mentionModeColor: Int,
+    ) {
         this.mentionModeColor = mentionModeColor
     }
 
-    fun setHashtagModeColor(@ColorInt hashtagModeColor: Int) {
+    fun setHashtagModeColor(
+        @ColorInt hashtagModeColor: Int,
+    ) {
         this.hashtagModeColor = hashtagModeColor
     }
 
-    fun setUrlModeColor(@ColorInt urlModeColor: Int) {
+    fun setUrlModeColor(
+        @ColorInt urlModeColor: Int,
+    ) {
         this.urlModeColor = urlModeColor
     }
 
-    fun setPhoneModeColor(@ColorInt phoneModeColor: Int) {
+    fun setPhoneModeColor(
+        @ColorInt phoneModeColor: Int,
+    ) {
         this.phoneModeColor = phoneModeColor
     }
 
-    fun setEmailModeColor(@ColorInt emailModeColor: Int) {
+    fun setEmailModeColor(
+        @ColorInt emailModeColor: Int,
+    ) {
         this.emailModeColor = emailModeColor
     }
 
-    fun setBotModeColor(@ColorInt botModeColor: Int) {
+    fun setBotModeColor(
+        @ColorInt botModeColor: Int,
+    ) {
         this.botModeColor = botModeColor
     }
 
-    fun setCustomModeColor(@ColorInt customModeColor: Int) {
+    fun setCustomModeColor(
+        @ColorInt customModeColor: Int,
+    ) {
         this.customModeColor = customModeColor
     }
 
-    fun setSelectedStateColor(@ColorInt defaultSelectedColor: Int) {
+    fun setSelectedStateColor(
+        @ColorInt defaultSelectedColor: Int,
+    ) {
         this.defaultSelectedColor = defaultSelectedColor
     }
 
@@ -344,7 +372,6 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
     }
 
     companion object {
-
         internal val TAG = AutoLinkTextView::class.java.simpleName
 
         private const val MIN_PHONE_NUMBER_LENGTH = 6

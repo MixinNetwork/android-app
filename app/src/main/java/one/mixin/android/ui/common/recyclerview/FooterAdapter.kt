@@ -23,14 +23,18 @@ abstract class FooterAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>(
         }
     }
 
-    override fun getItemCount(): Int = data.notNullWithElse(
-        {
-            if (footerView != null) it.size + 1 else it.size
-        },
-        0,
-    )
+    override fun getItemCount(): Int =
+        data.notNullWithElse(
+            {
+                if (footerView != null) it.size + 1 else it.size
+            },
+            0,
+        )
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): RecyclerView.ViewHolder {
         return if (viewType == TYPE_FOOTER) {
             getFootViewHolder()
         } else {
@@ -39,8 +43,13 @@ abstract class FooterAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>(
     }
 
     open fun getFootViewHolder() = FootHolder(footerView!!)
-    abstract fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder
+
+    abstract fun getNormalViewHolder(
+        context: Context,
+        parent: ViewGroup,
+    ): NormalHolder
 
     open class NormalHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
     open class FootHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 }

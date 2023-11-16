@@ -49,7 +49,6 @@ class HedwigImp(
     private val callState: CallStateLiveData,
     private val lifecycleScope: CoroutineScope,
 ) : Hedwig {
-
     override fun takeOff() {
         startObserveFlood()
         startObservePending()
@@ -95,11 +94,12 @@ class HedwigImp(
     }
 
     private var floodJob: Job? = null
-    private val floodObserver = object : InvalidationTracker.Observer("flood_messages") {
-        override fun onInvalidated(tables: Set<String>) {
-            runFloodJob()
+    private val floodObserver =
+        object : InvalidationTracker.Observer("flood_messages") {
+            override fun onInvalidated(tables: Set<String>) {
+                runFloodJob()
+            }
         }
-    }
 
     private fun startObserveFlood() {
         runFloodJob()
@@ -115,20 +115,21 @@ class HedwigImp(
         if (floodJob?.isActive == true) {
             return
         }
-        floodJob = lifecycleScope.launch(FLOOD_THREAD) {
-            try {
-                processFloodMessage()
-            } catch (e: NullPointerException) {
-                // Hackfix: Samsung mobile phone throws NullPointerException equals SQLiteBlobTooBigException
-                handleBlobTooBigError(e)
-            } catch (e: SQLiteBlobTooBigException) {
-                handleBlobTooBigError(e)
-            } catch (e: Exception) {
-                Timber.e(e)
-                reportException(e)
-                runFloodJob()
+        floodJob =
+            lifecycleScope.launch(FLOOD_THREAD) {
+                try {
+                    processFloodMessage()
+                } catch (e: NullPointerException) {
+                    // Hackfix: Samsung mobile phone throws NullPointerException equals SQLiteBlobTooBigException
+                    handleBlobTooBigError(e)
+                } catch (e: SQLiteBlobTooBigException) {
+                    handleBlobTooBigError(e)
+                } catch (e: Exception) {
+                    Timber.e(e)
+                    reportException(e)
+                    runFloodJob()
+                }
             }
-        }
     }
 
     private suspend fun handleBlobTooBigError(e: Exception) {
@@ -169,11 +170,12 @@ class HedwigImp(
     }
 
     private var pendingJob: Job? = null
-    private val pendingObserver = object : InvalidationTracker.Observer("pending_messages") {
-        override fun onInvalidated(tables: Set<String>) {
-            runPendingJob()
+    private val pendingObserver =
+        object : InvalidationTracker.Observer("pending_messages") {
+            override fun onInvalidated(tables: Set<String>) {
+                runPendingJob()
+            }
         }
-    }
 
     private fun startObservePending() {
         runPendingJob()
@@ -189,36 +191,37 @@ class HedwigImp(
         if (pendingJob?.isActive == true) {
             return
         }
-        pendingJob = lifecycleScope.launch(PENDING_DB_THREAD) {
-            try {
-                val list = pendingDatabase.getPendingMessages()
-                list.groupBy { it.conversationId }.filter { (conversationId, _) ->
-                    conversationId != SYSTEM_USER && conversationId != Session.getAccountId() && checkConversation(conversationId) != null
-                }.forEach { (conversationId, messages) ->
-                    messageDao.insertList(messages)
-                    pendingDatabase.deletePendingMessageByIds(messages.map { it.messageId })
-                    conversationExtDao.increment(conversationId, messages.size)
-                    messages.filter { message ->
-                        !message.isMine() && message.status != MessageStatus.READ.name && (pendingMessageStatusLruCache[message.messageId] != MessageStatus.READ.name)
-                    }.map { message ->
-                        RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name)
-                    }.let { remoteMessageStatus ->
-                        remoteMessageStatusDao.insertList(remoteMessageStatus)
+        pendingJob =
+            lifecycleScope.launch(PENDING_DB_THREAD) {
+                try {
+                    val list = pendingDatabase.getPendingMessages()
+                    list.groupBy { it.conversationId }.filter { (conversationId, _) ->
+                        conversationId != SYSTEM_USER && conversationId != Session.getAccountId() && checkConversation(conversationId) != null
+                    }.forEach { (conversationId, messages) ->
+                        messageDao.insertList(messages)
+                        pendingDatabase.deletePendingMessageByIds(messages.map { it.messageId })
+                        conversationExtDao.increment(conversationId, messages.size)
+                        messages.filter { message ->
+                            !message.isMine() && message.status != MessageStatus.READ.name && (pendingMessageStatusLruCache[message.messageId] != MessageStatus.READ.name)
+                        }.map { message ->
+                            RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name)
+                        }.let { remoteMessageStatus ->
+                            remoteMessageStatusDao.insertList(remoteMessageStatus)
+                        }
+                        messages.last().let { message ->
+                            conversationDao.updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
+                        }
+                        remoteMessageStatusDao.updateConversationUnseen(conversationId)
+                        MessageFlow.insert(conversationId, messages.map { it.messageId })
                     }
-                    messages.last().let { message ->
-                        conversationDao.updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
+                    if (list.size == 100) {
+                        runPendingJob()
                     }
-                    remoteMessageStatusDao.updateConversationUnseen(conversationId)
-                    MessageFlow.insert(conversationId, messages.map { it.messageId })
-                }
-                if (list.size == 100) {
+                } catch (e: Exception) {
+                    Timber.e(e)
                     runPendingJob()
                 }
-            } catch (e: Exception) {
-                Timber.e(e)
-                runPendingJob()
             }
-        }
     }
 
     private fun checkConversation(conversationId: String): Conversation? {
@@ -233,11 +236,12 @@ class HedwigImp(
             val response = call.body()
             if (response != null && response.isSuccess) {
                 response.data?.let { conversationData ->
-                    val status = if (conversationData.participants.find { Session.getAccountId() == it.userId } != null) {
-                        ConversationStatus.SUCCESS.ordinal
-                    } else {
-                        ConversationStatus.QUIT.ordinal
-                    }
+                    val status =
+                        if (conversationData.participants.find { Session.getAccountId() == it.userId } != null) {
+                            ConversationStatus.SUCCESS.ordinal
+                        } else {
+                            ConversationStatus.QUIT.ordinal
+                        }
                     var ownerId: String = conversationData.creatorId
                     if (conversationData.category == ConversationCategory.CONTACT.name) {
                         ownerId = conversationData.participants.find { it.userId != Session.getAccountId() }!!.userId
@@ -265,9 +269,10 @@ class HedwigImp(
                         jobManager.addJobInBackground(RefreshUserJob(conversationUserIds, conversationId))
                     }
 
-                    val sessionParticipants = conversationData.participantSessions?.map {
-                        ParticipantSession(conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
-                    }
+                    val sessionParticipants =
+                        conversationData.participantSessions?.map {
+                            ParticipantSession(conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
+                        }
                     sessionParticipants?.let {
                         participantSessionDao.replaceAll(conversationId, it)
                     }

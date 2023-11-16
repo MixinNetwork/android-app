@@ -29,7 +29,10 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
             notifyDataSetChanged()
         }
 
-    fun setMark(latitude: Double? = null, longitude: Double? = null) {
+    fun setMark(
+        latitude: Double? = null,
+        longitude: Double? = null,
+    ) {
         if (latitude == null || longitude == null) {
             currentVenues = null
             return
@@ -44,26 +47,31 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
             notifyDataSetChanged()
         }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VenueHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): VenueHolder {
         return LayoutInflater.from(parent.context).inflate(R.layout.item_location, parent, false).run {
             VenueHolder(this)
         }
     }
 
-    override fun getItemCount(): Int = venues.notNullWithElse(
-        {
-            it.size + if (currentVenues == null) {
+    override fun getItemCount(): Int =
+        venues.notNullWithElse(
+            {
+                it.size +
+                    if (currentVenues == null) {
+                        0
+                    } else {
+                        1
+                    }
+            },
+            if (currentVenues == null) {
                 0
             } else {
                 1
-            }
-        },
-        if (currentVenues == null) {
-            0
-        } else {
-            1
-        },
-    )
+            },
+        )
 
     override fun getItemViewType(position: Int): Int {
         if (currentVenues == null) {
@@ -89,7 +97,10 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
         }
     }
 
-    override fun onBindViewHolder(holder: VenueHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: VenueHolder,
+        position: Int,
+    ) {
         val venue = getItem(position)
         val binding = ItemLocationBinding.bind(holder.itemView)
         if (getItemViewType(position) == 1) {

@@ -10,7 +10,6 @@ import one.mixin.android.databinding.ViewWebControlBinding
 import one.mixin.android.extension.dp
 
 class WebControlView(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) {
-
     var mode = false
         set(value) {
             if (value != field) {
@@ -53,6 +52,7 @@ class WebControlView(context: Context, attrs: AttributeSet) : LinearLayout(conte
 
     interface Callback {
         fun onMoreClick()
+
         fun onCloseClick()
     }
 }

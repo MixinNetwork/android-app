@@ -9,27 +9,28 @@ import one.mixin.android.api.service.AddressService
 import one.mixin.android.db.AddressDao
 
 @HiltWorker
-class RefreshAddressWorker @AssistedInject constructor(
-    @Assisted context: Context,
-    @Assisted parameters: WorkerParameters,
-    private val addressService: AddressService,
-    private val addressDao: AddressDao,
-) : BaseWork(context, parameters) {
+class RefreshAddressWorker
+    @AssistedInject
+    constructor(
+        @Assisted context: Context,
+        @Assisted parameters: WorkerParameters,
+        private val addressService: AddressService,
+        private val addressDao: AddressDao,
+    ) : BaseWork(context, parameters) {
+        companion object {
+            const val ASSET_ID = "asset_id"
+        }
 
-    companion object {
-        const val ASSET_ID = "asset_id"
-    }
-
-    override suspend fun onRun(): Result {
-        val assetId = inputData.getString(ASSET_ID) ?: return Result.failure()
-        val response = addressService.addresses(assetId).execute().body()
-        return if (response != null && response.isSuccess && response.data != null) {
-            response.data?.let {
-                addressDao.insertList(it)
+        override suspend fun onRun(): Result {
+            val assetId = inputData.getString(ASSET_ID) ?: return Result.failure()
+            val response = addressService.addresses(assetId).execute().body()
+            return if (response != null && response.isSuccess && response.data != null) {
+                response.data?.let {
+                    addressDao.insertList(it)
+                }
+                Result.success()
+            } else {
+                Result.failure()
             }
-            Result.success()
-        } else {
-            Result.failure()
         }
     }
-}

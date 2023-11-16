@@ -65,9 +65,10 @@ private fun Content(
         Box(modifier = Modifier.height(28.dp))
         GlideImage(
             data = connectionUI.icon ?: "",
-            modifier = Modifier
-                .size(90.dp)
-                .clip(CircleShape),
+            modifier =
+                Modifier
+                    .size(90.dp)
+                    .clip(CircleShape),
             placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
         )
         Box(modifier = Modifier.height(10.dp))
@@ -93,18 +94,20 @@ private fun Content(
         )
         Box(modifier = Modifier.height(24.dp))
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .clip(RoundedCornerShape(13.dp))
-                .background(MixinAppTheme.colors.backgroundWindow)
-                .clickable(onClick = onDisconnectClick),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .clip(RoundedCornerShape(13.dp))
+                    .background(MixinAppTheme.colors.backgroundWindow)
+                    .clickable(onClick = onDisconnectClick),
         ) {
             Text(
                 text = stringResource(id = R.string.disconnect),
-                modifier = Modifier
-                    .padding(horizontal = 20.dp, vertical = 22.dp)
-                    .align(Alignment.CenterStart),
+                modifier =
+                    Modifier
+                        .padding(horizontal = 20.dp, vertical = 22.dp)
+                        .align(Alignment.CenterStart),
                 fontSize = 16.sp,
                 color = MixinAppTheme.colors.textBlue,
             )
@@ -116,9 +119,10 @@ private fun Content(
 fun Loading() {
     MixinAppTheme {
         Box(
-            modifier = Modifier
-                .height(200.dp)
-                .fillMaxWidth(),
+            modifier =
+                Modifier
+                    .height(200.dp)
+                    .fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
             CircularProgressIndicator(

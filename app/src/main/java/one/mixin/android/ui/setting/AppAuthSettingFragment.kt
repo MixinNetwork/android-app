@@ -27,7 +27,10 @@ class AppAuthSettingFragment : BaseFragment(R.layout.fragment_app_auth_setting) 
 
     private val binding by viewBinding(FragmentAppAuthSettingBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
@@ -104,24 +107,28 @@ class AppAuthSettingFragment : BaseFragment(R.layout.fragment_app_auth_setting) 
         }
     }
 
-    private val authCallback = object : BiometricPrompt.AuthenticationCallback() {
-        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-            if (errorCode == BiometricPrompt.ERROR_CANCELED ||
-                errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
-                errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON ||
-                errorCode == BiometricPrompt.ERROR_LOCKOUT ||
-                errorCode == BiometricPrompt.ERROR_LOCKOUT_PERMANENT
+    private val authCallback =
+        object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationError(
+                errorCode: Int,
+                errString: CharSequence,
             ) {
+                if (errorCode == BiometricPrompt.ERROR_CANCELED ||
+                    errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
+                    errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON ||
+                    errorCode == BiometricPrompt.ERROR_LOCKOUT ||
+                    errorCode == BiometricPrompt.ERROR_LOCKOUT_PERMANENT
+                ) {
+                    refresh(-1)
+                }
+            }
+
+            override fun onAuthenticationFailed() {
                 refresh(-1)
             }
-        }
 
-        override fun onAuthenticationFailed() {
-            refresh(-1)
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                refresh(0)
+            }
         }
-
-        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-            refresh(0)
-        }
-    }
 }

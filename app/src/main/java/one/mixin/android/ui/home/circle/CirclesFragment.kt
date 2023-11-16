@@ -56,10 +56,17 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
 
     private val binding by viewBinding(FragmentConversationCircleBinding::bind)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View? =
         layoutInflater.inflate(R.layout.fragment_conversation_circle, container, false)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.circleRv.layoutManager = LinearLayoutManager(requireContext())
         conversationAdapter.currentCircleId = defaultSharedPreferences.getString(CIRCLE_ID, null)
@@ -140,11 +147,12 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
         fun cancelSort() {
             if (sorting) {
                 val now = System.currentTimeMillis()
-                val data = conversationCircles?.let { list ->
-                    list.mapIndexed { index, item ->
-                        CircleOrder(item.circleId, Instant.ofEpochMilli(now + index).toString())
+                val data =
+                    conversationCircles?.let { list ->
+                        list.mapIndexed { index, item ->
+                            CircleOrder(item.circleId, Instant.ofEpochMilli(now + index).toString())
+                        }
                     }
-                }
                 sorting = false
                 updateAction(data)
             }
@@ -162,7 +170,10 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
                 }
             }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ConversationCircleHolder =
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): ConversationCircleHolder =
             if (viewType == 1) {
                 ConversationCircleHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_conversation_circle, parent, false))
             } else {
@@ -187,7 +198,10 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
         }
 
         @SuppressLint("ClickableViewAccessibility", "NotifyDataSetChanged")
-        override fun onBindViewHolder(holder: ConversationCircleHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: ConversationCircleHolder,
+            position: Int,
+        ) {
             if (getItemViewType(position) == 1) {
                 val conversationCircleItem = getItem(position)
                 holder.bind(sorting, currentCircleId, conversationCircleItem, allUnread)
@@ -223,7 +237,10 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
             notifyItemRemoved(position)
         }
 
-        override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
+        override fun onItemMove(
+            fromPosition: Int,
+            toPosition: Int,
+        ): Boolean {
             if (fromPosition == 0 || toPosition == 0) return false
             conversationCircles?.let { conversationCircles ->
                 Collections.swap(conversationCircles, fromPosition - 1, toPosition - 1)
@@ -233,7 +250,10 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
         }
     }
 
-    private fun showMenu(view: View, conversationCircleItem: ConversationCircleItem) {
+    private fun showMenu(
+        view: View,
+        conversationCircleItem: ConversationCircleItem,
+    ) {
         val popMenu = PopupMenu(requireContext(), view)
         popMenu.menuInflater.inflate(R.menu.circle_menu, popMenu.menu)
         popMenu.setOnMenuItemClickListener {
@@ -273,7 +293,10 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
         }
     }
 
-    private fun rename(circleId: String, name: String) {
+    private fun rename(
+        circleId: String,
+        name: String,
+    ) {
         lifecycleScope.launch(errorHandler) {
             val response = conversationViewModel.circleRename(circleId, name)
             if (response.isSuccess) {
@@ -326,7 +349,12 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
         val binding get() = ItemConversationCircleBinding.bind(itemView)
         val circleTitle get() = binding.circleTitle
 
-        fun bind(sorting: Boolean, currentCircleId: String?, conversationCircleItem: ConversationCircleItem?, allUnread: Int?) {
+        fun bind(
+            sorting: Boolean,
+            currentCircleId: String?,
+            conversationCircleItem: ConversationCircleItem?,
+            allUnread: Int?,
+        ) {
             if (sorting) {
                 shakeAnimator.start()
             } else {
@@ -355,6 +383,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
     }
 
     private lateinit var itemTouchHelper: ItemTouchHelper
+
     override fun onStartDrag(viewHolder: RecyclerView.ViewHolder) {
         if (conversationAdapter.sorting) {
             itemTouchHelper.startDrag(viewHolder)

@@ -8,7 +8,6 @@ import com.birbit.android.jobqueue.config.Configuration
 import java.util.concurrent.ConcurrentHashMap
 
 class MixinJobManager(configuration: Configuration) : JobManager(configuration) {
-
     companion object {
         val attachmentProcess = ArrayMap<String, Int>()
 
@@ -29,7 +28,10 @@ class MixinJobManager(configuration: Configuration) : JobManager(configuration) 
         map.remove(mixinJobId)
     }
 
-    fun cancelJobByMixinJobId(mixinJobId: String, notFoundAction: (() -> Unit)? = null) {
+    fun cancelJobByMixinJobId(
+        mixinJobId: String,
+        notFoundAction: (() -> Unit)? = null,
+    ) {
         val mixinJob = findJobByMixinJobId(mixinJobId)
         if (mixinJob == null) {
             notFoundAction?.invoke()

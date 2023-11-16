@@ -18,7 +18,6 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class ShowConversationBottomSheetFragment : MixinBottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "ShowConversationFragment"
 
@@ -26,6 +25,7 @@ class ShowConversationBottomSheetFragment : MixinBottomSheetDialogFragment() {
         private var instant: ShowConversationBottomSheetFragment? = null
 
         const val ARGS_CONVERSATIONS = "args_conversations"
+
         fun newInstance(conversations: List<ConversationMinimal>): ShowConversationBottomSheetFragment? {
             try {
                 instant?.dismiss()
@@ -33,12 +33,13 @@ class ShowConversationBottomSheetFragment : MixinBottomSheetDialogFragment() {
             }
             instant = null
             return ShowConversationBottomSheetFragment().apply {
-                arguments = Bundle().apply {
-                    putParcelableArrayList(
-                        ARGS_CONVERSATIONS,
-                        arrayListOf<ConversationMinimal>().apply { addAll(conversations) },
-                    )
-                }
+                arguments =
+                    Bundle().apply {
+                        putParcelableArrayList(
+                            ARGS_CONVERSATIONS,
+                            arrayListOf<ConversationMinimal>().apply { addAll(conversations) },
+                        )
+                    }
             }.apply {
                 instant = this
             }
@@ -48,6 +49,7 @@ class ShowConversationBottomSheetFragment : MixinBottomSheetDialogFragment() {
     private val conversations by lazy {
         arguments?.getParcelableArrayListCompat(ARGS_CONVERSATIONS, ConversationMinimal::class.java)
     }
+
     override fun getTheme() = R.style.AppTheme_Dialog
 
     override fun onDetach() {
@@ -71,7 +73,10 @@ class ShowConversationBottomSheetFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentShowConversationBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         dialog.window?.let { window ->
             SystemUIManager.lightUI(window, requireContext().isNightMode())
@@ -84,6 +89,7 @@ class ShowConversationBottomSheetFragment : MixinBottomSheetDialogFragment() {
         }
         adapter.conversations = conversations
     }
+
     var selectListener: ((Boolean, String) -> Unit)? = null
     private val adapter by lazy {
         SelectedAdapter(selectListener)

@@ -37,13 +37,20 @@ data class ConversationItem(
     val mentionCount: Int?,
 ) : ICategory, IConversationCategory {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ConversationItem>() {
-            override fun areItemsTheSame(oldItem: ConversationItem, newItem: ConversationItem) =
-                oldItem.conversationId == newItem.conversationId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<ConversationItem>() {
+                override fun areItemsTheSame(
+                    oldItem: ConversationItem,
+                    newItem: ConversationItem,
+                ) =
+                    oldItem.conversationId == newItem.conversationId
 
-            override fun areContentsTheSame(oldItem: ConversationItem, newItem: ConversationItem) =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: ConversationItem,
+                    newItem: ConversationItem,
+                ) =
+                    oldItem == newItem
+            }
     }
 
     override val type: String?
@@ -85,7 +92,10 @@ data class ConversationItem(
     }
 }
 
-fun ConversationItem.showVerifiedOrBot(verifiedView: View, botView: View) {
+fun ConversationItem.showVerifiedOrBot(
+    verifiedView: View,
+    botView: View,
+) {
     when {
         ownerVerified == true -> {
             verifiedView.isVisible = true

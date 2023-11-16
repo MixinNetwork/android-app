@@ -85,15 +85,27 @@ fun Context.alertDialogBuilder(overrideThemeResId: Int = R.style.MixinAlertDialo
     return MaterialAlertDialogBuilder(this, overrideThemeResId)
 }
 
-fun Fragment.indeterminateProgressDialog(message: String? = null, title: String? = null, init: (ProgressDialog.() -> Unit)? = null): ProgressDialog {
+fun Fragment.indeterminateProgressDialog(
+    message: String? = null,
+    title: String? = null,
+    init: (ProgressDialog.() -> Unit)? = null,
+): ProgressDialog {
     return requireActivity().indeterminateProgressDialog(message, title, init)
 }
 
-fun Fragment.indeterminateProgressDialog(message: Int? = null, title: Int? = null, init: (ProgressDialog.() -> Unit)? = null): ProgressDialog {
+fun Fragment.indeterminateProgressDialog(
+    message: Int? = null,
+    title: Int? = null,
+    init: (ProgressDialog.() -> Unit)? = null,
+): ProgressDialog {
     return requireActivity().indeterminateProgressDialog(message?.let { requireActivity().getString(it) }, title?.let { requireActivity().getString(it) }, init)
 }
 
-fun Activity.indeterminateProgressDialog(message: Int? = null, title: Int? = null, init: (ProgressDialog.() -> Unit)? = null): ProgressDialog {
+fun Activity.indeterminateProgressDialog(
+    message: Int? = null,
+    title: Int? = null,
+    init: (ProgressDialog.() -> Unit)? = null,
+): ProgressDialog {
     return indeterminateProgressDialog(message?.let { getString(it) }, title?.let { getString(it) }, init)
 }
 

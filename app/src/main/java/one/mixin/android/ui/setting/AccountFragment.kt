@@ -28,7 +28,10 @@ class AccountFragment : BaseFragment(R.layout.fragment_account) {
     private val viewModel by viewModels<SettingViewModel>()
     private val binding by viewBinding(FragmentAccountBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {

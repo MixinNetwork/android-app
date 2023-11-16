@@ -43,17 +43,18 @@ private fun Modifier.debugClickable(
     onDebugClick: (() -> Unit)? = null,
 ) = composed(
     factory = {
-        val clickListener = remember {
-            object : DebugClickHandler() {
-                override fun onDebugClick() {
-                    onDebugClick?.invoke()
-                }
+        val clickListener =
+            remember {
+                object : DebugClickHandler() {
+                    override fun onDebugClick() {
+                        onDebugClick?.invoke()
+                    }
 
-                override fun onSingleClick() {
-                    onClick?.invoke()
+                    override fun onSingleClick() {
+                        onClick?.invoke()
+                    }
                 }
             }
-        }
         clickable(
             interactionSource = remember { MutableInteractionSource() },
             indication = null,
@@ -90,24 +91,26 @@ fun AboutPage() {
         },
     ) {
         Column(
-            modifier = Modifier
-                .padding(it)
-                .verticalScroll(rememberScrollState()),
+            modifier =
+                Modifier
+                    .padding(it)
+                    .verticalScroll(rememberScrollState()),
         ) {
             val navController = LocalSettingNav.current
             val context = LocalContext.current
             Image(
-                modifier = Modifier
-                    .debugClickable {
-                        if (preferences.getBoolean(Constants.Debug.LOG_AND_DEBUG, false)) {
-                            preferences.putBoolean(Constants.Debug.LOG_AND_DEBUG, false)
-                            showLogDebug.value = false
-                        } else {
-                            preferences.putBoolean(Constants.Debug.LOG_AND_DEBUG, true)
-                            showLogDebug.value = true
+                modifier =
+                    Modifier
+                        .debugClickable {
+                            if (preferences.getBoolean(Constants.Debug.LOG_AND_DEBUG, false)) {
+                                preferences.putBoolean(Constants.Debug.LOG_AND_DEBUG, false)
+                                showLogDebug.value = false
+                            } else {
+                                preferences.putBoolean(Constants.Debug.LOG_AND_DEBUG, true)
+                                showLogDebug.value = true
+                            }
                         }
-                    }
-                    .align(Alignment.CenterHorizontally),
+                        .align(Alignment.CenterHorizontally),
                 painter = painterResource(id = R.drawable.ic_logo),
                 contentDescription = null,
             )
@@ -165,11 +168,12 @@ private fun AboutTile(
     onClick: () -> Unit,
 ) {
     Box(
-        modifier = Modifier
-            .height(56.dp)
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp)
-            .fillMaxWidth(),
+        modifier =
+            Modifier
+                .height(56.dp)
+                .clickable { onClick() }
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth(),
         contentAlignment = Alignment.CenterStart,
     ) {
         Text(text = text, color = MixinAppTheme.colors.accent)
@@ -179,12 +183,13 @@ private fun AboutTile(
 @Composable
 private fun VersionName() {
     val context = LocalContext.current
-    val versionName = remember {
-        context.packageManager?.getPackageInfo(
-            context.packageName,
-            0,
-        )?.versionName ?: "Unknown"
-    }
+    val versionName =
+        remember {
+            context.packageManager?.getPackageInfo(
+                context.packageName,
+                0,
+            )?.versionName ?: "Unknown"
+        }
     Text(
         text = "${BuildConfig.VERSION_NAME}-${BuildConfig.VERSION_CODE}",
         color = MixinAppTheme.colors.textSubtitle,

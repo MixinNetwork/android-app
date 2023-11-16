@@ -6,7 +6,10 @@ import android.content.Intent
 import one.mixin.android.util.TimeCache
 
 class TimezoneChangedReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent?) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent?,
+    ) {
         if (intent == null) return
 
         if (intent.action == Intent.ACTION_TIMEZONE_CHANGED) {

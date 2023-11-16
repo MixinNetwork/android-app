@@ -17,7 +17,6 @@ import one.mixin.android.vo.isSecret
 import one.mixin.android.vo.showVerifiedOrBot
 
 class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolder(binding.root), Terminable {
-
     fun bind(
         messageItem: MessageItem,
         isFirst: Boolean,
@@ -102,7 +101,11 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
         chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_layout)
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             if (isLast) {

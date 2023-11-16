@@ -16,71 +16,72 @@ import one.mixin.android.vo.explain
 
 class PinMessageHolder constructor(val binding: ItemChatSystemBinding) :
     BaseViewHolder(binding.root) {
+        var context: Context = itemView.context
 
-    var context: Context = itemView.context
-    private fun getText(id: Int) = context.getText(id).toString()
+        private fun getText(id: Int) = context.getText(id).toString()
 
-    fun bind(
-        messageItem: MessageItem,
-        hasSelect: Boolean,
-        isSelect: Boolean,
-        onItemListener: MessageAdapter.OnItemListener,
-    ) {
-        val id = meId
-        if (hasSelect && isSelect) {
-            itemView.setBackgroundColor(SELECT_COLOR)
-        } else {
-            itemView.setBackgroundColor(Color.TRANSPARENT)
-        }
-        val pinMessage = try {
-            GsonHelper.customGson.fromJson(messageItem.content, PinMessageMinimal::class.java)
-        } catch (e: Exception) {
-            null
-        }
-        itemView.setOnLongClickListener {
-            if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
+        fun bind(
+            messageItem: MessageItem,
+            hasSelect: Boolean,
+            isSelect: Boolean,
+            onItemListener: MessageAdapter.OnItemListener,
+        ) {
+            val id = meId
+            if (hasSelect && isSelect) {
+                itemView.setBackgroundColor(SELECT_COLOR)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
-                true
+                itemView.setBackgroundColor(Color.TRANSPARENT)
             }
-        }
-        itemView.setOnClickListener {
-            if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
-            } else {
-                onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
+            val pinMessage =
+                try {
+                    GsonHelper.customGson.fromJson(messageItem.content, PinMessageMinimal::class.java)
+                } catch (e: Exception) {
+                    null
+                }
+            itemView.setOnLongClickListener {
+                if (!hasSelect) {
+                    onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
+                } else {
+                    onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+                    true
+                }
             }
-        }
+            itemView.setOnClickListener {
+                if (hasSelect) {
+                    onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+                } else {
+                    onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
+                }
+            }
 
-        if (messageItem.mentions != null) {
-            binding.chatInfo.renderMessage(
-                String.format(
-                    getText(R.string.chat_pin_message),
-                    if (id == messageItem.userId) {
-                        getText(R.string.You)
-                    } else {
-                        messageItem.userFullName
-                    },
-                    pinMessage?.let { msg ->
-                        " \"${msg.content}\""
-                    } ?: getText(R.string.a_message),
-                ),
-                MentionRenderCache.singleton.getMentionRenderContext(
-                    messageItem.mentions,
-                ),
-            )
-        } else {
-            binding.chatInfo.text =
-                String.format(
-                    getText(R.string.chat_pin_message),
-                    if (id == messageItem.userId) {
-                        getText(R.string.You)
-                    } else {
-                        messageItem.userFullName
-                    },
-                    pinMessage.explain(binding.root.context),
+            if (messageItem.mentions != null) {
+                binding.chatInfo.renderMessage(
+                    String.format(
+                        getText(R.string.chat_pin_message),
+                        if (id == messageItem.userId) {
+                            getText(R.string.You)
+                        } else {
+                            messageItem.userFullName
+                        },
+                        pinMessage?.let { msg ->
+                            " \"${msg.content}\""
+                        } ?: getText(R.string.a_message),
+                    ),
+                    MentionRenderCache.singleton.getMentionRenderContext(
+                        messageItem.mentions,
+                    ),
                 )
+            } else {
+                binding.chatInfo.text =
+                    String.format(
+                        getText(R.string.chat_pin_message),
+                        if (id == messageItem.userId) {
+                            getText(R.string.You)
+                        } else {
+                            messageItem.userFullName
+                        },
+                        pinMessage.explain(binding.root.context),
+                    )
+            }
         }
     }
-}

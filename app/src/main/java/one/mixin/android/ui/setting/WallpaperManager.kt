@@ -10,53 +10,67 @@ import one.mixin.android.extension.getWallpaperFile
 import one.mixin.android.extension.putInt
 
 object WallpaperManager {
-
     const val INDEX_KEY = "WALLPAPER_INDEX"
 
     fun getWallpaper(context: Context): Drawable? {
         return getWallpaper(context, getIndex(context))
     }
 
-    fun getWallpaperByPosition(context: Context, position: Int): Drawable? {
-        val index = if (wallpaperExists(context)) {
-            position - 2
-        } else {
-            position - 1
-        }
+    fun getWallpaperByPosition(
+        context: Context,
+        position: Int,
+    ): Drawable? {
+        val index =
+            if (wallpaperExists(context)) {
+                position - 2
+            } else {
+                position - 1
+            }
         return getWallpaper(context, index)
     }
 
-    private fun getWallpaper(context: Context, index: Int): Drawable? {
+    private fun getWallpaper(
+        context: Context,
+        index: Int,
+    ): Drawable? {
         val isNight = context.booleanFromAttribute(R.attr.flag_night)
         return when (index) {
-            -1 -> context.getWallpaperFile().run {
-                if (exists()) {
-                    Drawable.createFromPath(context.getWallpaperFile().path)
-                } else {
-                    null
+            -1 ->
+                context.getWallpaperFile().run {
+                    if (exists()) {
+                        Drawable.createFromPath(context.getWallpaperFile().path)
+                    } else {
+                        null
+                    }
                 }
-            }
-            0 -> ContextCompat.getDrawable(
-                context,
-                if (isNight) R.drawable.bg_chat_symbol_night else R.drawable.bg_chat_symbol,
-            )
-            1 -> ContextCompat.getDrawable(
-                context,
-                if (isNight) R.drawable.bg_chat_star_night else R.drawable.bg_chat_star,
-            )
-            2 -> ContextCompat.getDrawable(
-                context,
-                if (isNight) R.drawable.bg_chat_animal_night else R.drawable.bg_chat_animal,
-            )
-            3 -> ContextCompat.getDrawable(
-                context,
-                if (isNight) R.drawable.bg_chat_plant_night else R.drawable.bg_chat_plant,
-            )
+            0 ->
+                ContextCompat.getDrawable(
+                    context,
+                    if (isNight) R.drawable.bg_chat_symbol_night else R.drawable.bg_chat_symbol,
+                )
+            1 ->
+                ContextCompat.getDrawable(
+                    context,
+                    if (isNight) R.drawable.bg_chat_star_night else R.drawable.bg_chat_star,
+                )
+            2 ->
+                ContextCompat.getDrawable(
+                    context,
+                    if (isNight) R.drawable.bg_chat_animal_night else R.drawable.bg_chat_animal,
+                )
+            3 ->
+                ContextCompat.getDrawable(
+                    context,
+                    if (isNight) R.drawable.bg_chat_plant_night else R.drawable.bg_chat_plant,
+                )
             else -> null
         }
     }
 
-    fun save(context: Context, position: Int) {
+    fun save(
+        context: Context,
+        position: Int,
+    ) {
         if (position == 0) {
             return
         }

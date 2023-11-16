@@ -74,14 +74,16 @@ interface TransactionInterface {
                 toast(R.string.Data_error)
             }
         } else {
-            contentBinding.transactionIdTitleTv.setOnClickListener(object : DebugClickListener() {
-                override fun onDebugClick() {
-                    contentBinding.traceLl.visibility = View.VISIBLE
-                }
+            contentBinding.transactionIdTitleTv.setOnClickListener(
+                object : DebugClickListener() {
+                    override fun onDebugClick() {
+                        contentBinding.traceLl.visibility = View.VISIBLE
+                    }
 
-                override fun onSingleClick() {
-                }
-            })
+                    override fun onSingleClick() {
+                    }
+                },
+            )
             updateUI(fragment, contentBinding, assetItem, snapshotItem)
             fetchThatTimePrice(
                 fragment,
@@ -167,42 +169,45 @@ interface TransactionInterface {
 
         contentBinding.thatVa.displayedChild = POS_TEXT
         contentBinding.thatTv.apply {
-            text = if (ticker.priceUsd == "0") {
-                fragment.getString(R.string.value_then, fragment.getString(R.string.NA))
-            } else {
-                val amount =
-                    (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).numberFormat2()
-                val pricePerUnit = if (BuildConfig.DEBUG) {
-                    "(${Fiats.getSymbol()}${
-                        ticker.priceFiat().priceFormat2()
-                    }/${snapshot.assetSymbol})"
+            text =
+                if (ticker.priceUsd == "0") {
+                    fragment.getString(R.string.value_then, fragment.getString(R.string.NA))
                 } else {
-                    ""
+                    val amount =
+                        (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).numberFormat2()
+                    val pricePerUnit =
+                        if (BuildConfig.DEBUG) {
+                            "(${Fiats.getSymbol()}${
+                                ticker.priceFiat().priceFormat2()
+                            }/${snapshot.assetSymbol})"
+                        } else {
+                            ""
+                        }
+                    fragment.getString(
+                        R.string.value_then,
+                        "${Fiats.getSymbol()}$amount $pricePerUnit",
+                    )
                 }
-                fragment.getString(
-                    R.string.value_then,
-                    "${Fiats.getSymbol()}$amount $pricePerUnit",
-                )
-            }
             fragment.context?.let { c ->
                 setTextColor(c.colorFromAttribute(R.attr.text_minor))
                 setOnClickListener {
                     if (checkDestroyed(fragment)) return@setOnClickListener
 
-                    val balloon = createBalloon(c) {
-                        setArrowSize(10)
-                        setHeight(45)
-                        setCornerRadius(4f)
-                        setAlpha(0.9f)
-                        setAutoDismissDuration(3000L)
-                        setBalloonAnimation(BalloonAnimation.FADE)
-                        setText(fragment.getString(R.string.wallet_transaction_that_time_value_tip))
-                        setTextColorResource(R.color.white)
-                        setPaddingLeft(10)
-                        setPaddingRight(10)
-                        setBackgroundColorResource(R.color.colorLightBlue)
-                        setLifecycleOwner(fragment.viewLifecycleOwner)
-                    }
+                    val balloon =
+                        createBalloon(c) {
+                            setArrowSize(10)
+                            setHeight(45)
+                            setCornerRadius(4f)
+                            setAlpha(0.9f)
+                            setAutoDismissDuration(3000L)
+                            setBalloonAnimation(BalloonAnimation.FADE)
+                            setText(fragment.getString(R.string.wallet_transaction_that_time_value_tip))
+                            setTextColorResource(R.color.white)
+                            setPaddingLeft(10)
+                            setPaddingRight(10)
+                            setBackgroundColorResource(R.color.colorLightBlue)
+                            setLifecycleOwner(fragment.viewLifecycleOwner)
+                        }
                     balloon.showAlignTop(this)
                 }
             }
@@ -255,35 +260,38 @@ interface TransactionInterface {
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             }
 
-            val amountText = if (isPositive) {
-                "+${snapshot.amount.numberFormat()}"
-            } else {
-                snapshot.amount.numberFormat()
-            }
-            val amountColor = fragment.resources.getColor(
-                when {
-                    snapshot.type == SnapshotType.pending.name -> {
-                        R.color.wallet_text_gray
-                    }
-                    isPositive -> {
-                        R.color.wallet_green
-                    }
-                    else -> {
-                        R.color.wallet_pink
-                    }
-                },
-                null,
-            )
+            val amountText =
+                if (isPositive) {
+                    "+${snapshot.amount.numberFormat()}"
+                } else {
+                    snapshot.amount.numberFormat()
+                }
+            val amountColor =
+                fragment.resources.getColor(
+                    when {
+                        snapshot.type == SnapshotType.pending.name -> {
+                            R.color.wallet_text_gray
+                        }
+                        isPositive -> {
+                            R.color.wallet_green
+                        }
+                        else -> {
+                            R.color.wallet_pink
+                        }
+                    },
+                    null,
+                )
             val symbolColor = fragment.requireContext().colorFromAttribute(R.attr.text_primary)
             valueTv.text = buildAmountSymbol(fragment.requireContext(), amountText, asset.symbol, amountColor, symbolColor)
             val amount = (BigDecimal(snapshot.amount).abs() * asset.priceFiat()).numberFormat2()
             val pricePerUnit =
                 "(${Fiats.getSymbol()}${asset.priceFiat().priceFormat2()}/${snapshot.assetSymbol})"
 
-            valueAsTv.text = fragment.getString(
-                R.string.value_now,
-                "${Fiats.getSymbol()}$amount $pricePerUnit",
-            )
+            valueAsTv.text =
+                fragment.getString(
+                    R.string.value_now,
+                    "${Fiats.getSymbol()}$amount $pricePerUnit",
+                )
             transactionIdTv.text = snapshot.snapshotId
             transactionTypeTv.text = getSnapshotType(fragment, snapshot.type)
             memoTv.text = snapshot.memo
@@ -358,24 +366,29 @@ interface TransactionInterface {
         }
     }
 
-    fun getSnapshotType(fragment: Fragment, type: String): String {
-        val s = when (type) {
-            SnapshotType.transfer.name -> R.string.Transfer
-            SnapshotType.deposit.name, SnapshotType.pending.name -> R.string.Deposit
-            SnapshotType.withdrawal.name -> R.string.Withdrawal
-            SnapshotType.fee.name -> R.string.Fee
-            SnapshotType.rebate.name -> R.string.Rebate
-            SnapshotType.raw.name -> R.string.Raw
-            else -> R.string.NA
-        }
+    fun getSnapshotType(
+        fragment: Fragment,
+        type: String,
+    ): String {
+        val s =
+            when (type) {
+                SnapshotType.transfer.name -> R.string.Transfer
+                SnapshotType.deposit.name, SnapshotType.pending.name -> R.string.Deposit
+                SnapshotType.withdrawal.name -> R.string.Withdrawal
+                SnapshotType.fee.name -> R.string.Fee
+                SnapshotType.rebate.name -> R.string.Rebate
+                SnapshotType.raw.name -> R.string.Raw
+                else -> R.string.NA
+            }
         return fragment.requireContext().getString(s)
     }
 
-    private fun checkDestroyed(fragment: Fragment) = if (fragment is DialogFragment) {
-        !fragment.isAdded
-    } else {
-        fragment.viewDestroyed()
-    }
+    private fun checkDestroyed(fragment: Fragment) =
+        if (fragment is DialogFragment) {
+            !fragment.isAdded
+        } else {
+            fragment.viewDestroyed()
+        }
 
     companion object {
         const val POS_PB = 0

@@ -1,9 +1,6 @@
 package one.mixin.android.util
 
 import android.content.Context
-import java.io.IOException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import one.mixin.android.MixinApplication
@@ -17,11 +14,12 @@ import one.mixin.android.extension.toast
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
 import retrofit2.HttpException
+import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
 open class ErrorHandler {
-
     companion object {
-
         fun handleError(throwable: Throwable) {
             val ctx = MixinApplication.appContext
             ctx.runOnUiThread {
@@ -29,17 +27,18 @@ open class ErrorHandler {
                     is HttpException -> {
                         handleErrorCode(throwable.code(), ctx)
                     }
-                    is IOException -> when (throwable) {
-                        is SocketTimeoutException -> toast(R.string.error_connection_timeout)
-                        is UnknownHostException -> toast(R.string.No_network_connection)
-                        is ServerErrorException -> toast(getString(R.string.error_server_5xx_code, throwable.code))
-                        is ClientErrorException -> {
-                            handleErrorCode(throwable.code, ctx)
+                    is IOException ->
+                        when (throwable) {
+                            is SocketTimeoutException -> toast(R.string.error_connection_timeout)
+                            is UnknownHostException -> toast(R.string.No_network_connection)
+                            is ServerErrorException -> toast(getString(R.string.error_server_5xx_code, throwable.code))
+                            is ClientErrorException -> {
+                                handleErrorCode(throwable.code, ctx)
+                            }
+                            is NetworkException -> toast(R.string.No_network_connection)
+                            is DataErrorException -> toast(R.string.Data_error)
+                            else -> toast(getString(R.string.error_unknown_with_message, throwable.message))
                         }
-                        is NetworkException -> toast(R.string.No_network_connection)
-                        is DataErrorException -> toast(R.string.Data_error)
-                        else -> toast(getString(R.string.error_unknown_with_message, throwable.message))
-                    }
                     is CancellationException -> {
                         // ignore kotlin coroutine job cancellation exception
                     }
@@ -51,19 +50,27 @@ open class ErrorHandler {
             }
         }
 
-        fun handleMixinError(code: Int, message: String, extraMgs: String? = null) {
+        fun handleMixinError(
+            code: Int,
+            message: String,
+            extraMgs: String? = null,
+        ) {
             val ctx = MixinApplication.appContext
             ctx.runOnUiThread {
-                val extra = if (!extraMgs.isNullOrBlank()) {
-                    "$extraMgs\n"
-                } else {
-                    ""
-                }
+                val extra =
+                    if (!extraMgs.isNullOrBlank()) {
+                        "$extraMgs\n"
+                    } else {
+                        ""
+                    }
                 toast("$extra${getMixinErrorStringByCode(code, message)}")
             }
         }
 
-        private fun handleErrorCode(code: Int, ctx: Context) {
+        private fun handleErrorCode(
+            code: Int,
+            ctx: Context,
+        ) {
             ctx.runOnUiThread {
                 when (code) {
                     BAD_REQUEST -> {
@@ -92,9 +99,10 @@ open class ErrorHandler {
             }
         }
 
-        val errorHandler = CoroutineExceptionHandler { _, error ->
-            handleError(error)
-        }
+        val errorHandler =
+            CoroutineExceptionHandler { _, error ->
+                handleError(error)
+            }
 
         private const val BAD_REQUEST = 400
         const val AUTHENTICATION = 401
@@ -147,7 +155,10 @@ open class ErrorHandler {
     }
 }
 
-fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
+fun Context.getMixinErrorStringByCode(
+    code: Int,
+    message: String,
+): String {
     return when (code) {
         ErrorHandler.TRANSACTION -> "${ErrorHandler.TRANSACTION} TRANSACTION"
         ErrorHandler.BAD_DATA -> {

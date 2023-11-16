@@ -103,13 +103,23 @@ interface ConversationDao : BaseDao<Conversation> {
     fun getConversationById(conversationId: String): LiveData<Conversation>
 
     @Query("SELECT COUNT(p.user_id) as count, c.name, c.icon_url, EXISTS(SELECT 1 FROM participants WHERE conversation_id = :conversationId AND user_id = :userId) AS is_exist FROM participants p INNER JOIN conversations c ON p.conversation_id = c.conversation_id WHERE c.conversation_id = :conversationId")
-    fun getConversationInfoById(conversationId: String, userId: String): LiveData<GroupInfo?>
+    fun getConversationInfoById(
+        conversationId: String,
+        userId: String,
+    ): LiveData<GroupInfo?>
 
     @Query("SELECT c.* FROM conversations c WHERE c.rowid > :rowId AND conversation_id IN (:conversationIds) ORDER BY c.rowid ASC LIMIT :limit")
-    fun getConversationsByLimitAndRowId(limit: Int, rowId: Long, conversationIds: Collection<String>): List<Conversation>
+    fun getConversationsByLimitAndRowId(
+        limit: Int,
+        rowId: Long,
+        conversationIds: Collection<String>,
+    ): List<Conversation>
 
     @Query("SELECT c.* FROM conversations c WHERE c.rowid > :rowId ORDER BY c.rowid ASC LIMIT :limit")
-    fun getConversationsByLimitAndRowId(limit: Int, rowId: Long): List<Conversation>
+    fun getConversationsByLimitAndRowId(
+        limit: Int,
+        rowId: Long,
+    ): List<Conversation>
 
     @Query("SELECT rowid FROM conversations WHERE conversation_id = :conversationId")
     fun getConversationRowId(conversationId: String): Long?
@@ -189,16 +199,28 @@ interface ConversationDao : BaseDao<Conversation> {
 
     // Update SQL
     @Query("UPDATE conversations SET code_url = :codeUrl WHERE conversation_id = :conversationId")
-    suspend fun updateCodeUrl(conversationId: String, codeUrl: String)
+    suspend fun updateCodeUrl(
+        conversationId: String,
+        codeUrl: String,
+    )
 
     @Query("UPDATE conversations SET status = :status WHERE conversation_id = :conversationId")
-    fun updateConversationStatusById(conversationId: String, status: Int)
+    fun updateConversationStatusById(
+        conversationId: String,
+        status: Int,
+    )
 
     @Query("UPDATE conversations SET expire_in = :expireIn WHERE conversation_id = :conversationId")
-    fun updateConversationExpireInById(conversationId: String, expireIn: Long?)
+    fun updateConversationExpireInById(
+        conversationId: String,
+        expireIn: Long?,
+    )
 
     @Query("UPDATE conversations SET pin_time = :pinTime WHERE conversation_id = :conversationId")
-    fun updateConversationPinTimeById(conversationId: String, pinTime: String?)
+    fun updateConversationPinTimeById(
+        conversationId: String,
+        pinTime: String?,
+    )
 
     @Query(
         "UPDATE conversations SET owner_id = :ownerId, category = :category, name = :name, announcement = :announcement, " +
@@ -217,32 +239,57 @@ interface ConversationDao : BaseDao<Conversation> {
     )
 
     @Query("UPDATE conversations SET announcement = :announcement WHERE conversation_id = :conversationId")
-    suspend fun updateConversationAnnouncement(conversationId: String, announcement: String)
+    suspend fun updateConversationAnnouncement(
+        conversationId: String,
+        announcement: String,
+    )
 
     @Query("UPDATE conversations SET expire_in = :expireIn WHERE conversation_id = :conversationId")
-    suspend fun updateConversationExpireIn(conversationId: String, expireIn: Long?)
+    suspend fun updateConversationExpireIn(
+        conversationId: String,
+        expireIn: Long?,
+    )
 
     @Query("UPDATE conversations SET mute_until = :muteUntil WHERE conversation_id = :conversationId")
-    fun updateGroupMuteUntil(conversationId: String, muteUntil: String)
+    fun updateGroupMuteUntil(
+        conversationId: String,
+        muteUntil: String,
+    )
 
     @Query("UPDATE conversations SET icon_url = :iconUrl WHERE conversation_id = :conversationId")
-    fun updateGroupIconUrl(conversationId: String, iconUrl: String)
+    fun updateGroupIconUrl(
+        conversationId: String,
+        iconUrl: String,
+    )
 
     @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId AND draft != :text")
-    suspend fun saveDraft(conversationId: String, text: String)
+    suspend fun saveDraft(
+        conversationId: String,
+        text: String,
+    )
 
     // Force refresh of conversation table without changing the data
     @Query("UPDATE conversations SET last_message_id = :lastMessageId WHERE conversation_id = :conversationId AND last_message_id = :lastMessageId")
-    fun forceRefreshConversationsByLastMessageId(conversationId: String, lastMessageId: String)
+    fun forceRefreshConversationsByLastMessageId(
+        conversationId: String,
+        lastMessageId: String,
+    )
 
     @Query("UPDATE conversations SET last_message_id = (select id from messages where conversation_id = :conversationId ORDER BY created_at DESC limit 1) WHERE conversation_id =:conversationId")
     fun refreshLastMessageId(conversationId: String)
 
     @Query("UPDATE conversations SET last_message_id = (select id from messages where conversation_id = :conversationId ORDER BY created_at DESC limit 1) WHERE conversation_id =:conversationId AND last_message_id =:messageId")
-    fun refreshLastMessageId(conversationId: String, messageId: String)
+    fun refreshLastMessageId(
+        conversationId: String,
+        messageId: String,
+    )
 
     @Query("UPDATE conversations SET last_message_id = :id, last_message_created_at = :createdAt  WHERE conversation_id = :conversationId AND (last_message_created_at ISNULL OR :createdAt >= last_message_created_at)")
-    fun updateLastMessageId(id: String, createdAt: String, conversationId: String)
+    fun updateLastMessageId(
+        id: String,
+        createdAt: String,
+        conversationId: String,
+    )
 
     // Delete SQL
     @Query("DELETE FROM conversations WHERE conversation_id = :conversationId")
@@ -261,7 +308,10 @@ interface ConversationDao : BaseDao<Conversation> {
         ORDER BY c.last_message_created_at DESC
         """,
     )
-    suspend fun findSameConversations(selfId: String, userId: String): List<GroupMinimal>
+    suspend fun findSameConversations(
+        selfId: String,
+        userId: String,
+    ): List<GroupMinimal>
 
     @Query("SELECT count(1) FROM conversations")
     fun countConversations(): Long

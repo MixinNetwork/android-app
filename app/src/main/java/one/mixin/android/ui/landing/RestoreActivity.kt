@@ -16,7 +16,6 @@ import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
 class RestoreActivity : BaseActivity() {
-
     private val binding by viewBinding(ActivityContactBinding::inflate)
 
     @SuppressLint("MissingPermission")

@@ -25,8 +25,11 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
 
 class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : MediaHolder(binding.root), Terminable {
-
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
@@ -130,7 +133,11 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
 
         binding.bottomLayout.seekBar.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                override fun onProgressChanged(
+                    seekBar: SeekBar?,
+                    progress: Int,
+                    fromUser: Boolean,
+                ) {
                 }
 
                 override fun onStartTrackingTouch(seekBar: SeekBar) {

@@ -6,7 +6,6 @@ import one.mixin.android.db.BaseDao
 
 @Dao
 interface MessageFtsDao : BaseDao<MessageFts> {
-
     @Query("DELETE FROM messages_fts WHERE docid = (SELECT doc_id FROM messages_metas WHERE message_id = :messageId)")
     fun deleteMessageFtsByMessageId(messageId: String)
 

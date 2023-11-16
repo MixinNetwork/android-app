@@ -50,7 +50,6 @@ import one.mixin.android.extension.clearCharacterStyle
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
@@ -91,10 +90,10 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.displayAddress
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
@@ -231,7 +230,10 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentTransferBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
@@ -268,14 +270,15 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                     }
                 }
         }
-        assetsViewBinding.searchEt.listener = object : SearchView.OnSearchViewListener {
-            override fun afterTextChanged(s: Editable?) {
-                filter(s.toString())
-            }
+        assetsViewBinding.searchEt.listener =
+            object : SearchView.OnSearchViewListener {
+                override fun afterTextChanged(s: Editable?) {
+                    filter(s.toString())
+                }
 
-            override fun onSearch() {
+                override fun onSearch() {
+                }
             }
-        }
 
         binding.titleView.rightAnimator.isVisible = true
         binding.titleView.rightIb.setImageResource(R.drawable.ic_transaction)
@@ -344,49 +347,53 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun updateFeeUI(token: TokenItem, address: Address) = lifecycleScope.launch {
-        if (address.feeAssetId.isBlank()) {
-            binding.apply {
-                memoRl.isVisible = false
-                networkHtv.isVisible = false
-                dustHtv.isVisible = false
-                reserveHtv.isVisible = false
-                feeHtv.isVisible = false
-                continueVa.displayedChild = POST_PB
-                continueVa.setBackgroundResource(R.drawable.selector_round_bn_gray)
-            }
-        } else {
-            binding.continueVa.displayedChild = POST_PB
-            val feeAsset = chatViewModel.refreshAsset(address.feeAssetId)
-            if (feeAsset == null) {
-                jobManager.addJobInBackground(RefreshTokensJob(address.feeAssetId))
-                return@launch
-            }
-            val reserveDouble = address.reserve.toBigDecimalOrNull()
-            val dustDouble = address.dust?.toBigDecimalOrNull()
-            binding.apply {
-                memoRl.isVisible = isInnerTransfer()
-                networkHtv.isVisible = true
-                feeHtv.isVisible = true
-                continueVa.setBackgroundResource(R.drawable.bg_round_blue_btn)
-                networkHtv.tail.text = getChainName(token.chainId, token.chainName, token.assetKey)
-                if (dustDouble != null && dustDouble != BigDecimal.ZERO) {
-                    dustHtv.isVisible = true
-                    dustHtv.tail.text = "${address.dust} ${token.symbol}"
+    private fun updateFeeUI(
+        token: TokenItem,
+        address: Address,
+    ) =
+        lifecycleScope.launch {
+            if (address.feeAssetId.isBlank()) {
+                binding.apply {
+                    memoRl.isVisible = false
+                    networkHtv.isVisible = false
+                    dustHtv.isVisible = false
+                    reserveHtv.isVisible = false
+                    feeHtv.isVisible = false
+                    continueVa.displayedChild = POST_PB
+                    continueVa.setBackgroundResource(R.drawable.selector_round_bn_gray)
                 }
-                if (reserveDouble != null && reserveDouble != BigDecimal.ZERO) {
-                    reserveHtv.isVisible = true
-                    reserveHtv.tail.text = "${address.reserve} ${token.symbol}"
+            } else {
+                binding.continueVa.displayedChild = POST_PB
+                val feeAsset = chatViewModel.refreshAsset(address.feeAssetId)
+                if (feeAsset == null) {
+                    jobManager.addJobInBackground(RefreshTokensJob(address.feeAssetId))
+                    return@launch
                 }
+                val reserveDouble = address.reserve.toBigDecimalOrNull()
+                val dustDouble = address.dust?.toBigDecimalOrNull()
+                binding.apply {
+                    memoRl.isVisible = isInnerTransfer()
+                    networkHtv.isVisible = true
+                    feeHtv.isVisible = true
+                    continueVa.setBackgroundResource(R.drawable.bg_round_blue_btn)
+                    networkHtv.tail.text = getChainName(token.chainId, token.chainName, token.assetKey)
+                    if (dustDouble != null && dustDouble != BigDecimal.ZERO) {
+                        dustHtv.isVisible = true
+                        dustHtv.tail.text = "${address.dust} ${token.symbol}"
+                    }
+                    if (reserveDouble != null && reserveDouble != BigDecimal.ZERO) {
+                        reserveHtv.isVisible = true
+                        reserveHtv.tail.text = "${address.reserve} ${token.symbol}"
+                    }
+                }
+                var success = refreshFees(token, address)
+                while (!success) {
+                    success = refreshFees(token, address)
+                    delay(500)
+                }
+                updateFeeUI()
             }
-            var success = refreshFees(token, address)
-            while (!success) {
-                success = refreshFees(token, address)
-                delay(500)
-            }
-            updateFeeUI()
         }
-    }
 
     @SuppressLint("SetTextI18n")
     private fun updateFeeUI() {
@@ -397,12 +404,13 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 } else {
                     feeHtv.tail.text = "${fee.fee} ${fee.token.symbol}"
                     if (fees.size > 1) {
-                        val drawable = AppCompatResources.getDrawable(
-                            requireContext(),
-                            R.drawable.ic_keyboard_arrow_down
-                        )?.apply {
-                            setBounds(0, 0, 12.dp, 12.dp)
-                        }
+                        val drawable =
+                            AppCompatResources.getDrawable(
+                                requireContext(),
+                                R.drawable.ic_keyboard_arrow_down,
+                            )?.apply {
+                                setBounds(0, 0, 12.dp, 12.dp)
+                            }
                         feeHtv.tail.setCompoundDrawables(null, null, drawable, null)
                         feeHtv.tail.compoundDrawablePadding = 4.dp
                         feeHtv.tail.setOnClickListener {
@@ -410,7 +418,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
                             NetworkFeeBottomSheetDialogFragment.newInstance(
                                 fees,
-                                currentFee?.token?.assetId
+                                currentFee?.token?.assetId,
                             ).apply {
                                 callback = { networkFee ->
                                     currentFee = networkFee
@@ -419,7 +427,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                                 }
                             }.showNow(
                                 parentFragmentManager,
-                                NetworkFeeBottomSheetDialogFragment.TAG
+                                NetworkFeeBottomSheetDialogFragment.TAG,
                             )
                         }
                     }
@@ -504,14 +512,15 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                     r.find {
                         it.assetId == activity?.defaultSharedPreferences!!.getString(ASSET_PREFERENCE, "")
                     }.let { asset ->
-                        currentAsset = if (asset != null) {
-                            updateAssetUI(asset)
-                            asset
-                        } else {
-                            val a = assets[0]
-                            updateAssetUI(a)
-                            a
-                        }
+                        currentAsset =
+                            if (asset != null) {
+                                updateAssetUI(asset)
+                                asset
+                            } else {
+                                val a = assets[0]
+                                updateAssetUI(a)
+                                a
+                            }
                     }
                 }
             },
@@ -519,9 +528,10 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     }
 
     private fun filter(s: String) {
-        val assetList = assets.filter {
-            it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
-        }.sortedByDescending { it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) }
+        val assetList =
+            assets.filter {
+                it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
+            }.sortedByDescending { it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) }
         adapter.submitList(assetList)
     }
 
@@ -569,6 +579,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     }
 
     private fun isInnerTransfer() = address == null
+
     private val autoCompleteAdapter by lazy {
         ArrayAdapter(
             requireContext(),
@@ -584,6 +595,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     }
 
     private fun getAmountView() = binding.amountEt
+
     private val paint by lazy {
         TextPaint().apply {
             typeface = ResourcesCompat.getFont(requireContext(), R.font.roboto_regular)
@@ -617,19 +629,20 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     private fun getBottomText(): String {
         val amount = binding.amountEt.text.toString().toDoubleOrNull() ?: 0.0
         val rightSymbol = if (swapped) currentAsset!!.symbol else Fiats.getAccountCurrencyAppearance()
-        val value = try {
-            if (currentAsset == null || currentAsset!!.priceFiat().toDouble() == 0.0) {
+        val value =
+            try {
+                if (currentAsset == null || currentAsset!!.priceFiat().toDouble() == 0.0) {
+                    BigDecimal.ZERO
+                } else if (swapped) {
+                    BigDecimal(amount).divide(currentAsset!!.priceFiat(), 8, RoundingMode.HALF_UP)
+                } else {
+                    BigDecimal(amount) * currentAsset!!.priceFiat()
+                }
+            } catch (e: ArithmeticException) {
                 BigDecimal.ZERO
-            } else if (swapped) {
-                BigDecimal(amount).divide(currentAsset!!.priceFiat(), 8, RoundingMode.HALF_UP)
-            } else {
-                BigDecimal(amount) * currentAsset!!.priceFiat()
+            } catch (e: NumberFormatException) {
+                BigDecimal.ZERO
             }
-        } catch (e: ArithmeticException) {
-            BigDecimal.ZERO
-        } catch (e: NumberFormatException) {
-            BigDecimal.ZERO
-        }
         bottomValue = value
         return "${if (swapped) {
             value.numberFormat8()
@@ -650,66 +663,72 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     }
 
     @OptIn(UnstableApi::class)
-    private fun prepareTransferBottom() = lifecycleScope.launch {
-        if (currentAsset == null || (user == null && (address == null || currentFee == null) && mainnetAddress == null)) {
-            return@launch
-        }
-        var amount = getAmount()
-        try {
-            amount = amount.stripAmountZero()
-        } catch (e: NumberFormatException) {
-            return@launch
-        }
-
-        if (!isInnerTransfer()) {
-            val dust = address!!.dust?.toBigDecimalOrNull()
-            val amountDouble = amount.toBigDecimalOrNull()
-            if (dust != null && amountDouble != null && amountDouble < dust) {
-                toast(getString(R.string.withdrawal_minimum_amount, address!!.dust, currentAsset!!.symbol))
+    private fun prepareTransferBottom() =
+        lifecycleScope.launch {
+            if (currentAsset == null || (user == null && (address == null || currentFee == null) && mainnetAddress == null)) {
                 return@launch
             }
-        }
+            var amount = getAmount()
+            try {
+                amount = amount.stripAmountZero()
+            } catch (e: NumberFormatException) {
+                return@launch
+            }
 
-        val memo = binding.transferMemo.text.toString()
-        if (memo.toByteArray().size > 140) {
-            toast("${binding.transferMemo.hint} ${getString(R.string.Content_too_long)}")
-            return@launch
-        }
-        binding.continueVa.displayedChild = POST_PB
-        val traceId = requireArguments().getString(ARGS_TRACE) ?: UUID.randomUUID().toString()
-        val pair = chatViewModel.findLatestTrace(user?.userId, address?.destination, address?.tag, amount, currentAsset!!.assetId)
-        if (pair.second) {
+            if (!isInnerTransfer()) {
+                val dust = address!!.dust?.toBigDecimalOrNull()
+                val amountDouble = amount.toBigDecimalOrNull()
+                if (dust != null && amountDouble != null && amountDouble < dust) {
+                    toast(getString(R.string.withdrawal_minimum_amount, address!!.dust, currentAsset!!.symbol))
+                    return@launch
+                }
+            }
+
+            val memo = binding.transferMemo.text.toString()
+            if (memo.toByteArray().size > 140) {
+                toast("${binding.transferMemo.hint} ${getString(R.string.Content_too_long)}")
+                return@launch
+            }
+            binding.continueVa.displayedChild = POST_PB
+            val traceId = requireArguments().getString(ARGS_TRACE) ?: UUID.randomUUID().toString()
+            val pair = chatViewModel.findLatestTrace(user?.userId, address?.destination, address?.tag, amount, currentAsset!!.assetId)
+            if (pair.second) {
+                binding.continueVa.displayedChild = POST_TEXT
+                return@launch
+            }
+
+            val trace = pair.first
+            val biometricItem =
+                if (user != null) {
+                    TransferBiometricItem(user!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace, null)
+                } else if (mainnetAddress != null) {
+                    AddressTransferBiometricItem(mainnetAddress!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name)
+                } else {
+                    val fee = requireNotNull(currentFee) { "withdrawal currentFee can not be null" }
+                    WithdrawBiometricItem(
+                        address!!.destination, address!!.tag, address!!.addressId, address!!.label, fee.fee, fee.token.assetId, fee.token.symbol, fee.token.priceFiat(),
+                        currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace,
+                    )
+                }
             binding.continueVa.displayedChild = POST_TEXT
-            return@launch
+
+            val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, FROM_TRANSFER)
+            preconditionBottom.callback =
+                object : PreconditionBottomSheetDialogFragment.Callback {
+                    override fun onSuccess() {
+                        showTransferBottom(biometricItem)
+                    }
+
+                    override fun onCancel() {
+                    }
+                }
+            preconditionBottom.showNow(parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
         }
 
-        val trace = pair.first
-        val biometricItem = if (user != null) {
-            TransferBiometricItem(user!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace, null)
-        } else if (mainnetAddress != null) {
-            AddressTransferBiometricItem(mainnetAddress!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name)
-        } else {
-            val fee = requireNotNull(currentFee) { "withdrawal currentFee can not be null" }
-            WithdrawBiometricItem(
-                address!!.destination, address!!.tag, address!!.addressId, address!!.label, fee.fee, fee.token.assetId, fee.token.symbol, fee.token.priceFiat(),
-                currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace,
-            )
-        }
-        binding.continueVa.displayedChild = POST_TEXT
-
-        val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, FROM_TRANSFER)
-        preconditionBottom.callback = object : PreconditionBottomSheetDialogFragment.Callback {
-            override fun onSuccess() {
-                showTransferBottom(biometricItem)
-            }
-
-            override fun onCancel() {
-            }
-        }
-        preconditionBottom.showNow(parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
-    }
-
-    private suspend fun refreshFees(token: TokenItem, address: Address): Boolean {
+    private suspend fun refreshFees(
+        token: TokenItem,
+        address: Address,
+    ): Boolean {
         return handleMixinResponse(
             invokeNetwork = { bottomViewModel.getFees(token.assetId, address.destination) },
             failureBlock = {
@@ -726,108 +745,133 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 val ids = data.mapNotNull { it.assetId }
                 val tokens = bottomViewModel.findTokenItems(ids)
                 fees.clear()
-                fees.addAll(ArrayList(tokens.map { t ->
-                    data.find { it.assetId == t.assetId }?.amount?.let { amount ->
-                        NetworkFee(t, amount)
-                    }
-                }))
+                fees.addAll(
+                    ArrayList(
+                        tokens.map { t ->
+                            data.find { it.assetId == t.assetId }?.amount?.let { amount ->
+                                NetworkFee(t, amount)
+                            }
+                        },
+                    ),
+                )
                 if (currentFee == null) {
                     currentFee = fees.firstOrNull()
                 }
                 return@handleMixinResponse true
-            }
+            },
         ) ?: false
     }
 
     private fun showTransferBottom(biometricItem: BiometricItem) {
         val bottom = OutputBottomSheetDialogFragment.newInstance(biometricItem)
-        bottom.setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
-            override fun onDismiss(success: Boolean) {
-                if (success) {
-                    dialog?.dismiss()
-                    callback?.onSuccess()
+        bottom.setCallback(
+            object : BiometricBottomSheetDialogFragment.Callback() {
+                override fun onDismiss(success: Boolean) {
+                    if (success) {
+                        dialog?.dismiss()
+                        callback?.onSuccess()
+                    }
+                }
+            },
+        )
+        bottom.onDestroyListener =
+            object : OutputBottomSheetDialogFragment.OnDestroyListener {
+                override fun onDestroy() {
+                    transferBottomOpened = false
                 }
             }
-        })
-        bottom.onDestroyListener = object : OutputBottomSheetDialogFragment.OnDestroyListener {
-            override fun onDestroy() {
-                transferBottomOpened = false
-            }
-        }
         bottom.show(parentFragmentManager, OutputBottomSheetDialogFragment.TAG)
         transferBottomOpened = true
     }
 
-    private val inputFilter = InputFilter { source, _, _, _, dstart, _ ->
-        val dotIndex = binding.amountEt.text.indexOf('.')
-        val modifyDecimal = dotIndex != -1 && dstart > dotIndex
-        val s = if (forbiddenInput and !ignoreFilter and modifyDecimal) "" else source
-        ignoreFilter = false
-        return@InputFilter s
-    }
+    private val inputFilter =
+        InputFilter { source, _, _, _, dstart, _ ->
+            val dotIndex = binding.amountEt.text.indexOf('.')
+            val modifyDecimal = dotIndex != -1 && dstart > dotIndex
+            val s = if (forbiddenInput and !ignoreFilter and modifyDecimal) "" else source
+            ignoreFilter = false
+            return@InputFilter s
+        }
 
     private var forbiddenInput = false
     private var ignoreFilter = false
 
     private fun checkInputForbidden(s: CharSequence) {
         val index = s.indexOf('.')
-        forbiddenInput = if (index == -1) {
-            false
-        } else {
-            val num = s.split('.')
-            val tail = num[1]
-            if (swapped) {
-                val tailLen = tail.length
-                if (tailLen > 2) {
-                    ignoreFilter = true
-                    binding.amountEt.setText(s.subSequence(0, num[0].length + 3))
-                }
-                tailLen >= 2
+        forbiddenInput =
+            if (index == -1) {
+                false
             } else {
-                tail.length >= 8
-            }
-        }
-    }
-
-    private val mWatcher: TextWatcher = object : TextWatcher {
-
-        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
-        }
-
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        }
-
-        @SuppressLint("SetTextI18n")
-        override fun afterTextChanged(s: Editable) {
-            binding.amountEt.clearCharacterStyle()
-            checkInputForbidden(s)
-            if (s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber()) {
-                binding.continueTv.isEnabled = true
-                binding.continueTv.textColor = requireContext().getColor(R.color.white)
-                if (binding.amountRl.isVisible && currentAsset != null) {
-                    binding.amountEt.hint = ""
-                    binding.symbolTv.text = getTopSymbol()
-                    binding.amountAsTv.text = getBottomText()
-                }
-            } else {
-                binding.continueTv.isEnabled = false
-                binding.continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-                if (binding.amountRl.isVisible) {
-                    binding.amountEt.hint = "0.00 ${if (swapped) Fiats.getAccountCurrencyAppearance() else currentAsset?.symbol}"
-                    binding.symbolTv.text = ""
-                    binding.amountAsTv.text = "0.00 ${if (swapped) currentAsset?.symbol else Fiats.getAccountCurrencyAppearance()}"
+                val num = s.split('.')
+                val tail = num[1]
+                if (swapped) {
+                    val tailLen = tail.length
+                    if (tailLen > 2) {
+                        ignoreFilter = true
+                        binding.amountEt.setText(s.subSequence(0, num[0].length + 3))
+                    }
+                    tailLen >= 2
+                } else {
+                    tail.length >= 8
                 }
             }
-        }
     }
+
+    private val mWatcher: TextWatcher =
+        object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {
+            }
+
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {
+            }
+
+            @SuppressLint("SetTextI18n")
+            override fun afterTextChanged(s: Editable) {
+                binding.amountEt.clearCharacterStyle()
+                checkInputForbidden(s)
+                if (s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber()) {
+                    binding.continueTv.isEnabled = true
+                    binding.continueTv.textColor = requireContext().getColor(R.color.white)
+                    if (binding.amountRl.isVisible && currentAsset != null) {
+                        binding.amountEt.hint = ""
+                        binding.symbolTv.text = getTopSymbol()
+                        binding.amountAsTv.text = getBottomText()
+                    }
+                } else {
+                    binding.continueTv.isEnabled = false
+                    binding.continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+                    if (binding.amountRl.isVisible) {
+                        binding.amountEt.hint = "0.00 ${if (swapped) Fiats.getAccountCurrencyAppearance() else currentAsset?.symbol}"
+                        binding.symbolTv.text = ""
+                        binding.amountAsTv.text = "0.00 ${if (swapped) currentAsset?.symbol else Fiats.getAccountCurrencyAppearance()}"
+                    }
+                }
+            }
+        }
 
     class TypeAdapter : ListAdapter<TokenItem, ItemHolder>(TokenItem.DIFF_CALLBACK) {
         private var typeListener: OnTypeClickListener? = null
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): ItemHolder =
             ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_transfer_type, parent, false))
 
-        override fun onBindViewHolder(holder: ItemHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: ItemHolder,
+            position: Int,
+        ) {
             val itemAssert = getItem(position)
             val binding = ItemTransferTypeBinding.bind(holder.itemView)
             binding.typeAvatar.bg.loadImage(itemAssert.iconUrl, R.drawable.ic_avatar_place_holder)

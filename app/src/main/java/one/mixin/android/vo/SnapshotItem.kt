@@ -77,44 +77,58 @@ data class SnapshotItem(
     @SerializedName("withdrawal")
     @SerialName("withdrawal")
     @ColumnInfo(name = "withdrawal")
-    val withdrawal: SafeWithdrawal?
+    val withdrawal: SafeWithdrawal?,
 ) : Parcelable {
-
     val formatMemo: FormatMemo?
         get() {
-            return if (memo.isNullOrBlank()) null
-            else FormatMemo(memo)
+            return if (memo.isNullOrBlank()) {
+                null
+            } else {
+                FormatMemo(memo)
+            }
         }
 
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SnapshotItem>() {
-            override fun areItemsTheSame(oldItem: SnapshotItem, newItem: SnapshotItem) =
-                oldItem.snapshotId == newItem.snapshotId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<SnapshotItem>() {
+                override fun areItemsTheSame(
+                    oldItem: SnapshotItem,
+                    newItem: SnapshotItem,
+                ) =
+                    oldItem.snapshotId == newItem.snapshotId
 
-            override fun areContentsTheSame(oldItem: SnapshotItem, newItem: SnapshotItem) =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: SnapshotItem,
+                    newItem: SnapshotItem,
+                ) =
+                    oldItem == newItem
+            }
 
-        fun fromSnapshot(snapshot: SafeSnapshot, avatarUrl: String? = null, symbol: String? = null) = SnapshotItem(
-            snapshotId = snapshot.snapshotId,
-            type = snapshot.type,
-            assetId = snapshot.assetId,
-            amount = snapshot.amount,
-            createdAt = snapshot.createdAt,
-            opponentId = snapshot.opponentId,
-            opponentFullName = null,
-            transactionHash = snapshot.transactionHash,
-            memo = snapshot.memo,
-            assetSymbol = symbol,
-            confirmations = snapshot.confirmations,
-            avatarUrl = avatarUrl,
-            assetConfirmations = 0,
-            traceId = snapshot.traceId,
-            openingBalance = snapshot.openingBalance,
-            closingBalance = snapshot.closingBalance,
-            deposit = snapshot.deposit,
-            withdrawal = snapshot.withdrawal
-        )
+        fun fromSnapshot(
+            snapshot: SafeSnapshot,
+            avatarUrl: String? = null,
+            symbol: String? = null,
+        ) =
+            SnapshotItem(
+                snapshotId = snapshot.snapshotId,
+                type = snapshot.type,
+                assetId = snapshot.assetId,
+                amount = snapshot.amount,
+                createdAt = snapshot.createdAt,
+                opponentId = snapshot.opponentId,
+                opponentFullName = null,
+                transactionHash = snapshot.transactionHash,
+                memo = snapshot.memo,
+                assetSymbol = symbol,
+                confirmations = snapshot.confirmations,
+                avatarUrl = avatarUrl,
+                assetConfirmations = 0,
+                traceId = snapshot.traceId,
+                openingBalance = snapshot.openingBalance,
+                closingBalance = snapshot.closingBalance,
+                deposit = snapshot.deposit,
+                withdrawal = snapshot.withdrawal,
+            )
     }
 
     fun simulateType(): SafeSnapshotType =

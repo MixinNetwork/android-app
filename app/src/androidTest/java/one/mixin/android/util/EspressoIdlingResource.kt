@@ -5,7 +5,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 
 object EspressoIdlingResource {
-
     private const val RESOURCE = "GLOBAL"
 
     @JvmField
@@ -35,9 +34,10 @@ inline fun <T> wrapEspressoIdlingResource(function: () -> T): T {
 
 fun waitMillis(millis: Long) {
     EspressoIdlingResource.increment()
-    val job = MixinApplication.get().applicationScope.launch {
-        delay(millis)
-    }
+    val job =
+        MixinApplication.get().applicationScope.launch {
+            delay(millis)
+        }
     job.invokeOnCompletion {
         EspressoIdlingResource.decrement()
     }

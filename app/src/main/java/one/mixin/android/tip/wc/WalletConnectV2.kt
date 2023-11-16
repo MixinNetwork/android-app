@@ -39,22 +39,24 @@ import java.util.concurrent.TimeUnit
 object WalletConnectV2 : WalletConnect() {
     const val TAG = "WalletConnectV2"
 
-    private val gson = GsonBuilder()
-        .serializeNulls()
-        .registerTypeAdapter(ethTransactionSerializer)
-        .create()
+    private val gson =
+        GsonBuilder()
+            .serializeNulls()
+            .registerTypeAdapter(ethTransactionSerializer)
+            .create()
 
     init {
         val projectId = BuildConfig.WC_PROJECT_ID
         val relayUrl = "relay.walletconnect.com"
         val serverUrl = "wss://$relayUrl?projectId=$projectId"
-        val appMetaData = Core.Model.AppMetaData(
-            name = "Mixin Messenger",
-            url = "https://messenger.mixin.one",
-            description = "An open source cryptocurrency wallet with Signal messaging. Fully non-custodial and recoverable with phone number and TIP.",
-            icons = emptyList(),
-            redirect = null,
-        )
+        val appMetaData =
+            Core.Model.AppMetaData(
+                name = "Mixin Messenger",
+                url = "https://messenger.mixin.one",
+                description = "An open source cryptocurrency wallet with Signal messaging. Fully non-custodial and recoverable with phone number and TIP.",
+                icons = emptyList(),
+                redirect = null,
+            )
         CoreClient.initialize(
             relayServerUrl = serverUrl,
             connectionType = ConnectionType.AUTOMATIC,
@@ -76,73 +78,87 @@ object WalletConnectV2 : WalletConnect() {
             RxBus.publish(WCErrorEvent(WCError(error.throwable)))
         }
 
-        val coreDelegate = object : CoreClient.CoreDelegate {
-            override fun onPairingDelete(deletedPairing: Core.Model.DeletedPairing) {
-                Timber.d("$TAG onPairingDelete $deletedPairing")
-            }
-        }
-
-        val walletDelegate = object : Web3Wallet.WalletDelegate {
-            override fun onAuthRequest(authRequest: Wallet.Model.AuthRequest, verifyContext: Wallet.Model.VerifyContext) {
-                Timber.d("$TAG onAuthRequest $authRequest")
-            }
-
-            override fun onConnectionStateChange(state: Wallet.Model.ConnectionState) {
-                Timber.d("$TAG onConnectionStateChange $state")
-            }
-
-            override fun onError(error: Wallet.Model.Error) {
-                Timber.d("$TAG onError $error")
-                RxBus.publish(WCErrorEvent(WCError(error.throwable)))
-            }
-
-            override fun onSessionDelete(sessionDelete: Wallet.Model.SessionDelete) {
-                Timber.d("$TAG onSessionDelete $sessionDelete")
-            }
-
-            override fun onSessionProposal(sessionProposal: Wallet.Model.SessionProposal, verifyContext: Wallet.Model.VerifyContext) {
-                Timber.d("$TAG onSessionProposal $sessionProposal")
-                val chains = supportChainList.map { c -> c.chainId }
-                val namespaces = (sessionProposal.requiredNamespaces.values + sessionProposal.optionalNamespaces.values)
-                    .filter { proposal -> proposal.chains != null }
-                val hasSupportChain = namespaces.any { proposal ->
-                    proposal.chains!!.any { chain ->
-                        chains.contains(chain)
-                    }
+        val coreDelegate =
+            object : CoreClient.CoreDelegate {
+                override fun onPairingDelete(deletedPairing: Core.Model.DeletedPairing) {
+                    Timber.d("$TAG onPairingDelete $deletedPairing")
                 }
-                if (hasSupportChain) {
-                    RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionProposal, sessionProposal.pairingTopic))
-                } else {
-                    val notSupportChainIds = namespaces.flatMap { proposal ->
-                        proposal.chains!!.filter { chain ->
-                            !chains.contains(chain)
+            }
+
+        val walletDelegate =
+            object : Web3Wallet.WalletDelegate {
+                override fun onAuthRequest(
+                    authRequest: Wallet.Model.AuthRequest,
+                    verifyContext: Wallet.Model.VerifyContext,
+                ) {
+                    Timber.d("$TAG onAuthRequest $authRequest")
+                }
+
+                override fun onConnectionStateChange(state: Wallet.Model.ConnectionState) {
+                    Timber.d("$TAG onConnectionStateChange $state")
+                }
+
+                override fun onError(error: Wallet.Model.Error) {
+                    Timber.d("$TAG onError $error")
+                    RxBus.publish(WCErrorEvent(WCError(error.throwable)))
+                }
+
+                override fun onSessionDelete(sessionDelete: Wallet.Model.SessionDelete) {
+                    Timber.d("$TAG onSessionDelete $sessionDelete")
+                }
+
+                override fun onSessionProposal(
+                    sessionProposal: Wallet.Model.SessionProposal,
+                    verifyContext: Wallet.Model.VerifyContext,
+                ) {
+                    Timber.d("$TAG onSessionProposal $sessionProposal")
+                    val chains = supportChainList.map { c -> c.chainId }
+                    val namespaces =
+                        (sessionProposal.requiredNamespaces.values + sessionProposal.optionalNamespaces.values)
+                            .filter { proposal -> proposal.chains != null }
+                    val hasSupportChain =
+                        namespaces.any { proposal ->
+                            proposal.chains!!.any { chain ->
+                                chains.contains(chain)
+                            }
                         }
-                    }.toSet().joinToString()
-                    RxBus.publish(
-                        WCErrorEvent(
-                            WCError(
-                                IllegalArgumentException(
-                                    MixinApplication.appContext.getString(R.string.not_support_network, notSupportChainIds),
+                    if (hasSupportChain) {
+                        RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionProposal, sessionProposal.pairingTopic))
+                    } else {
+                        val notSupportChainIds =
+                            namespaces.flatMap { proposal ->
+                                proposal.chains!!.filter { chain ->
+                                    !chains.contains(chain)
+                                }
+                            }.toSet().joinToString()
+                        RxBus.publish(
+                            WCErrorEvent(
+                                WCError(
+                                    IllegalArgumentException(
+                                        MixinApplication.appContext.getString(R.string.not_support_network, notSupportChainIds),
+                                    ),
                                 ),
                             ),
-                        ),
-                    )
+                        )
+                    }
+                }
+
+                override fun onSessionRequest(
+                    sessionRequest: Wallet.Model.SessionRequest,
+                    verifyContext: Wallet.Model.VerifyContext,
+                ) {
+                    Timber.d("$TAG onSessionRequest $sessionRequest")
+                    RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionRequest, sessionRequest.topic))
+                }
+
+                override fun onSessionSettleResponse(settleSessionResponse: Wallet.Model.SettledSessionResponse) {
+                    Timber.d("$TAG onSessionSettleResponse $settleSessionResponse")
+                }
+
+                override fun onSessionUpdateResponse(sessionUpdateResponse: Wallet.Model.SessionUpdateResponse) {
+                    Timber.d("$TAG onSessionUpdateResponse $sessionUpdateResponse")
                 }
             }
-
-            override fun onSessionRequest(sessionRequest: Wallet.Model.SessionRequest, verifyContext: Wallet.Model.VerifyContext) {
-                Timber.d("$TAG onSessionRequest $sessionRequest")
-                RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionRequest, sessionRequest.topic))
-            }
-
-            override fun onSessionSettleResponse(settleSessionResponse: Wallet.Model.SettledSessionResponse) {
-                Timber.d("$TAG onSessionSettleResponse $settleSessionResponse")
-            }
-
-            override fun onSessionUpdateResponse(sessionUpdateResponse: Wallet.Model.SessionUpdateResponse) {
-                Timber.d("$TAG onSessionUpdateResponse $sessionUpdateResponse")
-            }
-        }
 
         CoreClient.setDelegate(coreDelegate)
         Web3Wallet.setWalletDelegate(walletDelegate)
@@ -160,7 +176,10 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    fun approveSession(priv: ByteArray, topic: String) {
+    fun approveSession(
+        priv: ByteArray,
+        topic: String,
+    ) {
         val sessionProposal = getSessionProposal(topic)
         if (sessionProposal == null) {
             Timber.e("$TAG approveSession sessionProposal is null")
@@ -171,10 +190,11 @@ object WalletConnectV2 : WalletConnect() {
         val address = Keys.toChecksumAddress(Keys.getAddress(pub))
         val sessionNamespaces = Web3Wallet.generateApprovedNamespaces(sessionProposal, getSupportedNamespaces(address))
         Timber.d("$TAG approveSession $sessionNamespaces")
-        val approveParams: Wallet.Params.SessionApprove = Wallet.Params.SessionApprove(
-            sessionProposal.proposerPublicKey,
-            sessionNamespaces,
-        )
+        val approveParams: Wallet.Params.SessionApprove =
+            Wallet.Params.SessionApprove(
+                sessionProposal.proposerPublicKey,
+                sessionNamespaces,
+            )
 
         waitActionCheckError { latch ->
             var errMsg: String? = null
@@ -199,10 +219,11 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun rejectSession(sessionProposal: Wallet.Model.SessionProposal) {
-        val rejectParams: Wallet.Params.SessionReject = Wallet.Params.SessionReject(
-            sessionProposal.proposerPublicKey,
-            "Reject session",
-        )
+        val rejectParams: Wallet.Params.SessionReject =
+            Wallet.Params.SessionReject(
+                sessionProposal.proposerPublicKey,
+                "Reject session",
+            )
         Web3Wallet.rejectSession(rejectParams) { error ->
             Timber.d("$TAG rejectSession error: $error")
             RxBus.publish(WCErrorEvent(WCError(error.throwable)))
@@ -210,53 +231,59 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun parseSessionRequest(request: Wallet.Model.SessionRequest): WCSignData.V2SignData<*>? {
-        val signData = when (request.request.method) {
-            Method.ETHSign.name -> {
-                val array = JsonParser.parseString(request.request.params).asJsonArray
-                val address = array[0].toString().trim('"')
-                val data = array[1].toString().trim('"')
-                Timber.d("$TAG eth sign: $data")
-                WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(address, data), WCEthereumSignMessage.WCSignType.MESSAGE), request)
-            }
-            Method.ETHPersonalSign.name -> {
-                val array = JsonParser.parseString(request.request.params).asJsonArray
-                val data = array[0].toString().trim('"')
-                val address = array[1].toString().trim('"')
-                Timber.d("$TAG personal sign: $data")
-                WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(data, address), WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE), request)
-            }
-            Method.ETHSignTypedData.name, Method.ETHSignTypedDataV4.name -> {
-                val array = JsonParser.parseString(request.request.params).asJsonArray
-                val address = array[0].toString().trim('"')
-                val data = array[1].toString().trim('"')
-                Timber.d("$TAG sign typed data: $data")
-                WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(address, data), WCEthereumSignMessage.WCSignType.TYPED_MESSAGE), request)
-            }
-            Method.ETHSignTransaction.name -> {
-                val transaction = gson.fromJson<List<WCEthereumTransaction>>(request.request.params).firstOrNull()
-                if (transaction == null) {
-                    Timber.e("$TAG parseSessionRequest ETHSignTransaction transaction is null")
-                    return null
+        val signData =
+            when (request.request.method) {
+                Method.ETHSign.name -> {
+                    val array = JsonParser.parseString(request.request.params).asJsonArray
+                    val address = array[0].toString().trim('"')
+                    val data = array[1].toString().trim('"')
+                    Timber.d("$TAG eth sign: $data")
+                    WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(address, data), WCEthereumSignMessage.WCSignType.MESSAGE), request)
                 }
-                WCSignData.V2SignData(request.request.id, transaction, request)
-            }
-            Method.ETHSendTransaction.name -> {
-                val transaction = gson.fromJson<List<WCEthereumTransaction>>(request.request.params).firstOrNull()
-                if (transaction == null) {
-                    Timber.e("$TAG parseSessionRequest ETHSendTransaction transaction is null")
-                    return null
+                Method.ETHPersonalSign.name -> {
+                    val array = JsonParser.parseString(request.request.params).asJsonArray
+                    val data = array[0].toString().trim('"')
+                    val address = array[1].toString().trim('"')
+                    Timber.d("$TAG personal sign: $data")
+                    WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(data, address), WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE), request)
                 }
-                WCSignData.V2SignData(request.request.id, transaction, request)
+                Method.ETHSignTypedData.name, Method.ETHSignTypedDataV4.name -> {
+                    val array = JsonParser.parseString(request.request.params).asJsonArray
+                    val address = array[0].toString().trim('"')
+                    val data = array[1].toString().trim('"')
+                    Timber.d("$TAG sign typed data: $data")
+                    WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(address, data), WCEthereumSignMessage.WCSignType.TYPED_MESSAGE), request)
+                }
+                Method.ETHSignTransaction.name -> {
+                    val transaction = gson.fromJson<List<WCEthereumTransaction>>(request.request.params).firstOrNull()
+                    if (transaction == null) {
+                        Timber.e("$TAG parseSessionRequest ETHSignTransaction transaction is null")
+                        return null
+                    }
+                    WCSignData.V2SignData(request.request.id, transaction, request)
+                }
+                Method.ETHSendTransaction.name -> {
+                    val transaction = gson.fromJson<List<WCEthereumTransaction>>(request.request.params).firstOrNull()
+                    if (transaction == null) {
+                        Timber.e("$TAG parseSessionRequest ETHSendTransaction transaction is null")
+                        return null
+                    }
+                    WCSignData.V2SignData(request.request.id, transaction, request)
+                }
+                else -> {
+                    Timber.e("$TAG parseSessionRequest not supported method ${request.request.method}")
+                    null
+                }
             }
-            else -> {
-                Timber.e("$TAG parseSessionRequest not supported method ${request.request.method}")
-                null
-            }
-        }
         return signData
     }
 
-    fun approveRequest(priv: ByteArray, chain: Chain, topic: String, signData: WCSignData.V2SignData<*>): String? {
+    fun approveRequest(
+        priv: ByteArray,
+        chain: Chain,
+        topic: String,
+        signData: WCSignData.V2SignData<*>,
+    ): String? {
         val sessionRequest = getSessionRequest(topic)
         if (sessionRequest == null) {
             Timber.e("$TAG approveRequest sessionRequest is null")
@@ -282,7 +309,10 @@ object WalletConnectV2 : WalletConnect() {
         return null
     }
 
-    fun rejectRequest(message: String? = null, topic: String) {
+    fun rejectRequest(
+        message: String? = null,
+        topic: String,
+    ) {
         val request = getSessionRequest(topic)
         if (request == null) {
             Timber.e("$TAG rejectRequest sessionRequest is null")
@@ -291,15 +321,20 @@ object WalletConnectV2 : WalletConnect() {
         rejectRequest(message, request)
     }
 
-    fun rejectRequest(message: String? = null, request: Wallet.Model.SessionRequest) {
-        val result = Wallet.Params.SessionRequestResponse(
-            sessionTopic = request.topic,
-            jsonRpcResponse = Wallet.Model.JsonRpcResponse.JsonRpcError(
-                id = request.request.id,
-                code = 500,
-                message = message ?: "Mixin Wallet Error",
-            ),
-        )
+    fun rejectRequest(
+        message: String? = null,
+        request: Wallet.Model.SessionRequest,
+    ) {
+        val result =
+            Wallet.Params.SessionRequestResponse(
+                sessionTopic = request.topic,
+                jsonRpcResponse =
+                    Wallet.Model.JsonRpcResponse.JsonRpcError(
+                        id = request.request.id,
+                        code = 500,
+                        message = message ?: "Mixin Wallet Error",
+                    ),
+            )
         Web3Wallet.respondSessionRequest(result) { error ->
             Timber.d("$TAG rejectSessionRequest error: $error")
             RxBus.publish(WCErrorEvent(WCError(error.throwable)))
@@ -348,15 +383,20 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    private fun approveRequestInternal(result: String, sessionRequest: Wallet.Model.SessionRequest) {
+    private fun approveRequestInternal(
+        result: String,
+        sessionRequest: Wallet.Model.SessionRequest,
+    ) {
         Timber.d("$TAG approve request $result")
-        val response = Wallet.Params.SessionRequestResponse(
-            sessionTopic = sessionRequest.topic,
-            jsonRpcResponse = Wallet.Model.JsonRpcResponse.JsonRpcResult(
-                sessionRequest.request.id,
-                result,
-            ),
-        )
+        val response =
+            Wallet.Params.SessionRequestResponse(
+                sessionTopic = sessionRequest.topic,
+                jsonRpcResponse =
+                    Wallet.Model.JsonRpcResponse.JsonRpcResult(
+                        sessionRequest.request.id,
+                        result,
+                    ),
+            )
 
         waitActionCheckError { latch ->
             var errMsg: String? = null
@@ -371,7 +411,11 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    fun sendTransaction(chain: Chain, sessionRequest: Wallet.Model.SessionRequest, signedTransactionData: String) {
+    fun sendTransaction(
+        chain: Chain,
+        sessionRequest: Wallet.Model.SessionRequest,
+        signedTransactionData: String,
+    ) {
         val raw = getWeb3j(chain).ethSendRawTransaction(signedTransactionData).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
         val transactionHash = raw.transactionHash
         if (transactionHash == null) {
@@ -385,20 +429,31 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    private fun ethSignMessage(priv: ByteArray, sessionRequest: Wallet.Model.SessionRequest, signData: WCSignData.V2SignData<WCEthereumSignMessage>) {
+    private fun ethSignMessage(
+        priv: ByteArray,
+        sessionRequest: Wallet.Model.SessionRequest,
+        signData: WCSignData.V2SignData<WCEthereumSignMessage>,
+    ) {
         approveRequestInternal(signMessage(priv, signData.signMessage), sessionRequest)
     }
 
-    private fun ethSignTransaction(priv: ByteArray, chain: Chain, sessionRequest: Wallet.Model.SessionRequest, signData: WCSignData.V2SignData<WCEthereumTransaction>, approve: Boolean): String {
+    private fun ethSignTransaction(
+        priv: ByteArray,
+        chain: Chain,
+        sessionRequest: Wallet.Model.SessionRequest,
+        signData: WCSignData.V2SignData<WCEthereumTransaction>,
+        approve: Boolean,
+    ): String {
         val transaction = signData.signMessage
         val value = transaction.value ?: "0x0"
         val maxFeePerGas = transaction.maxFeePerGas?.let { Numeric.toBigInt(it) }
         val maxPriorityFeePerGas = transaction.maxPriorityFeePerGas?.let { Numeric.toBigInt(it) }
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
-        val transactionCount = getWeb3j(chain).ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST)
-            .sendAsync()
-            .get(web3jTimeout, TimeUnit.SECONDS)
+        val transactionCount =
+            getWeb3j(chain).ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST)
+                .sendAsync()
+                .get(web3jTimeout, TimeUnit.SECONDS)
         if (transactionCount.hasError()) {
             throwError(transactionCount.error)
         }
@@ -411,29 +466,30 @@ object WalletConnectV2 : WalletConnect() {
         }
         val gasLimit = BigInteger(tipGas.gasLimit)
         Timber.d("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit")
-        val rawTransaction = if (maxFeePerGas == null && maxPriorityFeePerGas == null) {
-            val gasPrice = Convert.toWei(signData.gasPriceType.getGasPrice(tipGas), Convert.Unit.ETHER).toBigInteger()
-            Timber.d("$TAG gasPrice $gasPrice")
-            RawTransaction.createTransaction(
-                nonce,
-                gasPrice,
-                gasLimit,
-                transaction.to,
-                v,
-                transaction.data,
-            )
-        } else {
-            RawTransaction.createTransaction(
-                chain.chainReference.toLong(),
-                nonce,
-                gasLimit,
-                transaction.to,
-                v,
-                transaction.data,
-                maxPriorityFeePerGas,
-                maxFeePerGas,
-            )
-        }
+        val rawTransaction =
+            if (maxFeePerGas == null && maxPriorityFeePerGas == null) {
+                val gasPrice = Convert.toWei(signData.gasPriceType.getGasPrice(tipGas), Convert.Unit.ETHER).toBigInteger()
+                Timber.d("$TAG gasPrice $gasPrice")
+                RawTransaction.createTransaction(
+                    nonce,
+                    gasPrice,
+                    gasLimit,
+                    transaction.to,
+                    v,
+                    transaction.data,
+                )
+            } else {
+                RawTransaction.createTransaction(
+                    chain.chainReference.toLong(),
+                    nonce,
+                    gasLimit,
+                    transaction.to,
+                    v,
+                    transaction.data,
+                    maxPriorityFeePerGas,
+                    maxFeePerGas,
+                )
+            }
 
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, chain.chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
@@ -445,7 +501,13 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     @Suppress("unused")
-    private fun ethSendTransaction(web3j: Web3j, priv: ByteArray, chain: Chain, sessionRequest: Wallet.Model.SessionRequest, signData: WCSignData.V2SignData<WCEthereumTransaction>) {
+    private fun ethSendTransaction(
+        web3j: Web3j,
+        priv: ByteArray,
+        chain: Chain,
+        sessionRequest: Wallet.Model.SessionRequest,
+        signData: WCSignData.V2SignData<WCEthereumTransaction>,
+    ) {
         val hexMessage = ethSignTransaction(priv, chain, sessionRequest, signData, false)
         val raw = web3j.ethSendRawTransaction(hexMessage).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
         val transactionHash = raw.transactionHash

@@ -26,7 +26,10 @@ import one.mixin.android.vo.User
 import one.mixin.android.widget.AvatarView
 
 @Composable
-fun UserAvatarImage(user: User, size: Dp) {
+fun UserAvatarImage(
+    user: User,
+    size: Dp,
+) {
     AvatarImage(
         name = user.fullName ?: "",
         imageUrl = user.avatarUrl,
@@ -36,7 +39,10 @@ fun UserAvatarImage(user: User, size: Dp) {
 }
 
 @Composable
-fun AppAvatarImage(app: App, size: Dp) {
+fun AppAvatarImage(
+    app: App,
+    size: Dp,
+) {
     AvatarImage(
         name = app.name,
         imageUrl = app.iconUrl,
@@ -55,9 +61,10 @@ private fun AvatarImage(
     if (imageUrl != null && imageUrl.isNotEmpty()) {
         GlideImage(
             data = imageUrl,
-            modifier = Modifier
-                .size(size)
-                .clip(CircleShape),
+            modifier =
+                Modifier
+                    .size(size)
+                    .clip(CircleShape),
             placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
         )
     } else {
@@ -65,10 +72,11 @@ private fun AvatarImage(
         val code = identityNumber.getColorCode(CodeType.Avatar(avatarArray.size))
         val color = avatarArray.getOrNull(code) ?: 0x000000
         Box(
-            modifier = Modifier
-                .size(size)
-                .clip(CircleShape)
-                .background(Color(color)),
+            modifier =
+                Modifier
+                    .size(size)
+                    .clip(CircleShape)
+                    .background(Color(color)),
             contentAlignment = Alignment.Center,
         ) {
             Text(

@@ -15,7 +15,10 @@ internal fun readEncryptedSalt(context: Context): ByteArray? {
     return cipher.doFinal(ciphertext)
 }
 
-internal fun storeEncryptedSalt(context: Context, encryptedSalt: ByteArray): Boolean {
+internal fun storeEncryptedSalt(
+    context: Context,
+    encryptedSalt: ByteArray,
+): Boolean {
     val cipher = getEncryptCipher(Constants.Tip.ALIAS_SPEND_SALT)
     val edit = context.defaultSharedPreferences.edit()
     val ciphertext = cipher.doFinal(encryptedSalt)

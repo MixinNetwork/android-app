@@ -44,7 +44,12 @@ class InviteFragment : BaseFragment() {
     private val inviteViewModel by viewModels<InviteViewModel>()
 
     private val binding by viewBinding(FragmentInviteBinding::bind)
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View? =
         layoutInflater.inflate(R.layout.fragment_invite, container, false)
 
     private fun refreshUrl() {
@@ -58,7 +63,10 @@ class InviteFragment : BaseFragment() {
         )
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
 

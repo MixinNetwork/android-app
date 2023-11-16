@@ -5,17 +5,16 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
 import one.mixin.android.fts.FtsDatabase
+import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module
 internal object BaseDbModule {
-
     @Singleton
     @Provides
     fun provideSignalDb(app: Application) = SignalDatabase.getDatabase(app)
@@ -34,7 +33,10 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun providePendingDatabase(app: Application, mixinDatabase: MixinDatabase): PendingDatabase = PendingDatabaseImp.getDatabase(app.applicationContext, mixinDatabase.floodMessageDao(), mixinDatabase.jobDao())
+    fun providePendingDatabase(
+        app: Application,
+        mixinDatabase: MixinDatabase,
+    ): PendingDatabase = PendingDatabaseImp.getDatabase(app.applicationContext, mixinDatabase.floodMessageDao(), mixinDatabase.jobDao())
 
     @Singleton
     @Provides

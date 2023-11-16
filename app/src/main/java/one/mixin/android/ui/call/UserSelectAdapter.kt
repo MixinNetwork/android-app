@@ -10,13 +10,15 @@ import one.mixin.android.vo.User
 class UserSelectAdapter(
     val removeItem: (User) -> Unit,
 ) : RecyclerView.Adapter<UserSelectAdapter.SelectViewHolder>() {
-
     var checkedUsers = mutableListOf<User>()
 
     class SelectViewHolder(val binding: ItemUserSelectBinding) :
         RecyclerView.ViewHolder(binding.root)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SelectViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): SelectViewHolder {
         val binding = ItemUserSelectBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return SelectViewHolder(binding)
     }
@@ -25,7 +27,10 @@ class UserSelectAdapter(
         return checkedUsers.notNullWithElse({ it.size }, 0)
     }
 
-    override fun onBindViewHolder(holder: SelectViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: SelectViewHolder,
+        position: Int,
+    ) {
         val item = checkedUsers[position]
         holder.binding.avatarView.setInfo(item.fullName, item.avatarUrl, item.userId)
         holder.itemView.setOnClickListener {

@@ -28,7 +28,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.GOOGLE_PAY
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.request.RouteTickerRequest
@@ -41,9 +40,6 @@ import one.mixin.android.extension.config
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.highLightClick
-import one.mixin.android.extension.highlightLinkText
-import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
@@ -68,10 +64,10 @@ import one.mixin.android.ui.wallet.fiatmoney.getDefaultCurrency
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
@@ -83,9 +79,9 @@ import kotlin.math.abs
 
 @AndroidEntryPoint
 class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnItemListener {
-
     companion object {
         const val TAG = "WalletFragment"
+
         fun newInstance(): WalletFragment = WalletFragment()
     }
 
@@ -121,13 +117,14 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             flow {
                 emit(ROUTE_BOT_USER_ID)
             }.map { botId ->
-                val key = walletViewModel.findBotPublicKey(
-                    generateConversationId(
+                val key =
+                    walletViewModel.findBotPublicKey(
+                        generateConversationId(
+                            botId,
+                            Session.getAccountId()!!,
+                        ),
                         botId,
-                        Session.getAccountId()!!,
-                    ),
-                    botId,
-                )
+                    )
                 if (!key.isNullOrEmpty()) {
                     Session.routePublicKey = key
                 } else {
@@ -184,29 +181,36 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 data
             }.map { data ->
                 val (supportCurrencies, assetIds) = data
-                val assetId = requireContext().defaultSharedPreferences.getString(
-                    CalculateFragment.CURRENT_ASSET_ID,
-                    Constants.AssetId.USDT_ASSET_ID,
-                ) ?: assetIds.first()
+                val assetId =
+                    requireContext().defaultSharedPreferences.getString(
+                        CalculateFragment.CURRENT_ASSET_ID,
+                        Constants.AssetId.USDT_ASSET_ID,
+                    ) ?: assetIds.first()
                 val currency = getDefaultCurrency(requireContext(), supportCurrencies)
-                val tickerResponse = walletViewModel.ticker(
-                    RouteTickerRequest(
-                        0,
-                        currency,
-                        assetId,
-                    ),
-                )
-                if (tickerResponse.isSuccess) {
-                    val state = FiatMoneyViewModel.CalculateState(
-                        minimum = tickerResponse.data!!.minimum.toIntOrNull()
-                            ?: 0,
-                        maximum = tickerResponse.data!!.maximum.toIntOrNull()
-                            ?: 0,
-                        assetPrice = tickerResponse.data!!.assetPrice.toFloatOrNull()
-                            ?: 0f,
-                        feePercent = tickerResponse.data!!.feePercent.toFloatOrNull()
-                            ?: 0f,
+                val tickerResponse =
+                    walletViewModel.ticker(
+                        RouteTickerRequest(
+                            0,
+                            currency,
+                            assetId,
+                        ),
                     )
+                if (tickerResponse.isSuccess) {
+                    val state =
+                        FiatMoneyViewModel.CalculateState(
+                            minimum =
+                                tickerResponse.data!!.minimum.toIntOrNull()
+                                    ?: 0,
+                            maximum =
+                                tickerResponse.data!!.maximum.toIntOrNull()
+                                    ?: 0,
+                            assetPrice =
+                                tickerResponse.data!!.assetPrice.toFloatOrNull()
+                                    ?: 0f,
+                            feePercent =
+                                tickerResponse.data!!.feePercent.toFloatOrNull()
+                                    ?: 0f,
+                        )
                     state
                 } else {
                     throw MixinResponseException(
@@ -248,7 +252,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(SyncOutputJob())
         binding.apply {
@@ -256,24 +263,25 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             searchIb.setOnClickListener { view.navigate(R.id.action_wallet_to_wallet_search) }
 
-            _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
-                sendReceiveView.enableBuy()
-                sendReceiveView.buy.setOnClickListener {
-                    toBuy()
+            _headBinding =
+                ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
+                    sendReceiveView.enableBuy()
+                    sendReceiveView.buy.setOnClickListener {
+                        toBuy()
+                    }
+                    sendReceiveView.send.setOnClickListener {
+                        AssetListBottomSheetDialogFragment.newInstance(true)
+                            .setOnAssetClick {
+                                sendBottomSheet.show(it)
+                            }.setOnDepositClick {
+                                showReceiveAssetList(view)
+                            }
+                            .showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                    }
+                    sendReceiveView.receive.setOnClickListener {
+                        showReceiveAssetList(view)
+                    }
                 }
-                sendReceiveView.send.setOnClickListener {
-                    AssetListBottomSheetDialogFragment.newInstance(true)
-                        .setOnAssetClick {
-                            sendBottomSheet.show(it)
-                        }.setOnDepositClick {
-                            showReceiveAssetList(view)
-                        }
-                        .showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
-                }
-                sendReceiveView.receive.setOnClickListener {
-                    showReceiveAssetList(view)
-                }
-            }
             assetsAdapter.headerView = _headBinding!!.root
             coinsRv.itemAnimator = null
             coinsRv.setHasFixedSize(true)
@@ -288,18 +296,19 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 walletViewModel.updateAssetHidden(asset.assetId, true)
                                 val anchorView = coinsRv
 
-                                snackBar = Snackbar.make(anchorView, getString(R.string.wallet_already_hidden, asset.symbol), 3500)
-                                    .setAction(R.string.UNDO) {
-                                        assetsAdapter.restoreItem(deleteItem, hiddenPos)
-                                        lifecycleScope.launch(Dispatchers.IO) {
-                                            walletViewModel.updateAssetHidden(asset.assetId, false)
+                                snackBar =
+                                    Snackbar.make(anchorView, getString(R.string.wallet_already_hidden, asset.symbol), 3500)
+                                        .setAction(R.string.UNDO) {
+                                            assetsAdapter.restoreItem(deleteItem, hiddenPos)
+                                            lifecycleScope.launch(Dispatchers.IO) {
+                                                walletViewModel.updateAssetHidden(asset.assetId, false)
+                                            }
+                                        }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
+                                            (this.view.findViewById(com.google.android.material.R.id.snackbar_text) as TextView)
+                                                .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                                        }.apply {
+                                            snackBar?.config(anchorView.context)
                                         }
-                                    }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                                        (this.view.findViewById(com.google.android.material.R.id.snackbar_text) as TextView)
-                                            .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                                    }.apply {
-                                        snackBar?.config(anchorView.context)
-                                    }
                                 snackBar?.show()
                                 distance = 0
                             }
@@ -310,15 +319,21 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             assetsAdapter.onItemListener = this@WalletFragment
 
             coinsRv.adapter = assetsAdapter
-            coinsRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    if (abs(distance) > 50.dp && snackBar?.isShown == true) {
-                        snackBar?.dismiss()
-                        distance = 0
+            coinsRv.addOnScrollListener(
+                object : RecyclerView.OnScrollListener() {
+                    override fun onScrolled(
+                        recyclerView: RecyclerView,
+                        dx: Int,
+                        dy: Int,
+                    ) {
+                        if (abs(distance) > 50.dp && snackBar?.isShown == true) {
+                            snackBar?.dismiss()
+                            distance = 0
+                        }
+                        distance += dy
                     }
-                    distance += dy
-                }
-            })
+                },
+            )
         }
 
         walletViewModel.assetItemsNotHidden().observe(viewLifecycleOwner) {
@@ -347,7 +362,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                         WebActivity.show(requireContext(), url = bot.homeUri, generateConversationId(bot.appId, Session.getAccountId()!!), app = bot)
                     }
                 }
-            }else{
+            } else {
                 _headBinding?.migrate?.isVisible = false
             }
         }
@@ -368,7 +383,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         super.onDestroyView()
     }
 
-    private fun renderPie(assets: List<TokenItem>, bitcoin: TokenItem?) {
+    private fun renderPie(
+        assets: List<TokenItem>,
+        bitcoin: TokenItem?,
+    ) {
         var totalBTC = BigDecimal.ZERO
         var totalFiat = BigDecimal.ZERO
         assets.map {
@@ -378,28 +396,31 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             }
         }
         if (bitcoin != null) {
-            totalBTC = totalFiat.divide(BigDecimal(Fiats.getRate()), 16, RoundingMode.HALF_UP)
-                .divide(BigDecimal(bitcoin.priceUsd), 16, RoundingMode.HALF_UP)
+            totalBTC =
+                totalFiat.divide(BigDecimal(Fiats.getRate()), 16, RoundingMode.HALF_UP)
+                    .divide(BigDecimal(bitcoin.priceUsd), 16, RoundingMode.HALF_UP)
         }
         _headBinding?.apply {
-            totalAsTv.text = try {
-                if (totalBTC.numberFormat8().toFloat() == 0f) {
-                    "0.00"
-                } else {
+            totalAsTv.text =
+                try {
+                    if (totalBTC.numberFormat8().toFloat() == 0f) {
+                        "0.00"
+                    } else {
+                        totalBTC.numberFormat8()
+                    }
+                } catch (ignored: NumberFormatException) {
                     totalBTC.numberFormat8()
                 }
-            } catch (ignored: NumberFormatException) {
-                totalBTC.numberFormat8()
-            }
-            totalTv.text = try {
-                if (totalFiat.numberFormat2().toFloat() == 0f) {
-                    "0.00"
-                } else {
+            totalTv.text =
+                try {
+                    if (totalFiat.numberFormat2().toFloat() == 0f) {
+                        "0.00"
+                    } else {
+                        totalFiat.numberFormat2()
+                    }
+                } catch (ignored: NumberFormatException) {
                     totalFiat.numberFormat2()
                 }
-            } catch (ignored: NumberFormatException) {
-                totalFiat.numberFormat2()
-            }
             symbol.text = Fiats.getSymbol()
 
             if (totalFiat.compareTo(BigDecimal.ZERO) == 0) {
@@ -431,13 +452,17 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         }
     }
 
-    private fun setPieView(r: List<TokenItem>, totalUSD: BigDecimal) {
-        val list = r.asSequence().filter {
-            BigDecimal(it.balance).compareTo(BigDecimal.ZERO) != 0
-        }.map {
-            val p = it.fiat().calcPercent(totalUSD)
-            PercentView.PercentItem(it.symbol, p)
-        }.toMutableList()
+    private fun setPieView(
+        r: List<TokenItem>,
+        totalUSD: BigDecimal,
+    ) {
+        val list =
+            r.asSequence().filter {
+                BigDecimal(it.balance).compareTo(BigDecimal.ZERO) != 0
+            }.map {
+                val p = it.fiat().calcPercent(totalUSD)
+                PercentView.PercentItem(it.symbol, p)
+            }.toMutableList()
         if (list.isNotEmpty()) {
             _headBinding?.pieItemContainer?.removeAllViews()
             list.sortWith { o1, o2 -> ((o2.percent - o1.percent) * 100).toInt() }
@@ -495,26 +520,30 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             putPrefPinInterval(requireContext(), Constants.INTERVAL_24_HOURS)
         }
         if (cur - last > interval) {
-            val pinCheckDialog = PinCheckDialogFragment.newInstance().apply {
-                supportsS({
-                    setDialogCallback { showed ->
-                        if (this@WalletFragment.viewDestroyed()) return@setDialogCallback
+            val pinCheckDialog =
+                PinCheckDialogFragment.newInstance().apply {
+                    supportsS({
+                        setDialogCallback { showed ->
+                            if (this@WalletFragment.viewDestroyed()) return@setDialogCallback
 
-                        binding.container.setRenderEffect(
-                            if (showed) {
-                                RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.MIRROR)
-                            } else {
-                                null
-                            },
-                        )
-                    }
-                })
-            }
+                            binding.container.setRenderEffect(
+                                if (showed) {
+                                    RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.MIRROR)
+                                } else {
+                                    null
+                                },
+                            )
+                        }
+                    })
+                }
             pinCheckDialog.show(parentFragmentManager, PinCheckDialogFragment.TAG)
         }
     }
 
-    private fun addItem(p: PercentView.PercentItem, index: Int) {
+    private fun addItem(
+        p: PercentView.PercentItem,
+        index: Int,
+    ) {
         val item = PercentItemView(requireContext())
         item.setPercentItem(p, index)
         _headBinding?.pieItemContainer?.addView(item)

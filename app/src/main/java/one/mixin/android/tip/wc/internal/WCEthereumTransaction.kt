@@ -15,12 +15,13 @@ data class WCEthereumTransaction(
     val data: String,
 )
 
-val ethTransactionSerializer = jsonDeserializer<List<WCEthereumTransaction>> {
-    val array = mutableListOf<WCEthereumTransaction>()
-    it.json.asJsonArray.forEach { tx ->
-        if (tx.isJsonObject) {
-            array.add(it.context.deserialize(tx))
+val ethTransactionSerializer =
+    jsonDeserializer<List<WCEthereumTransaction>> {
+        val array = mutableListOf<WCEthereumTransaction>()
+        it.json.asJsonArray.forEach { tx ->
+            if (tx.isJsonObject) {
+                array.add(it.context.deserialize(tx))
+            }
         }
+        array
     }
-    array
-}

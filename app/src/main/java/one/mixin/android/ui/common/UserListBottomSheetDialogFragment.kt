@@ -44,7 +44,10 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentUserListBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -60,10 +63,16 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 }
 
 class UserListAdapter : ListAdapter<User, UserHolder>(User.DIFF_CALLBACK) {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         UserHolder(ItemUserListBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-    override fun onBindViewHolder(holder: UserHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: UserHolder,
+        position: Int,
+    ) {
         getItem(position)?.let {
             holder.bind(it)
         }

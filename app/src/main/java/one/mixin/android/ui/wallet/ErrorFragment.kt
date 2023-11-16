@@ -19,16 +19,17 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
+
 @AndroidEntryPoint
 class ErrorFragment : BottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "ErrorFragment"
         const val MESSAGE = "message"
 
-        fun newInstance(message: String) = ErrorFragment().withArgs {
-            putString(MESSAGE, message)
-        }
+        fun newInstance(message: String) =
+            ErrorFragment().withArgs {
+                putString(MESSAGE, message)
+            }
     }
 
     override fun getTheme() = R.style.AppTheme_Dialog
@@ -53,7 +54,10 @@ class ErrorFragment : BottomSheetDialogFragment() {
     }
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         dialog.window?.let { window ->
             SystemUIManager.lightUI(window, requireContext().isNightMode())
@@ -75,18 +79,24 @@ class ErrorFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private val mBottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
-
-        override fun onStateChanged(bottomSheet: View, newState: Int) {
-            if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                try {
-                    dismissAllowingStateLoss()
-                } catch (e: IllegalStateException) {
-                    Timber.w(e)
+    private val mBottomSheetBehaviorCallback =
+        object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(
+                bottomSheet: View,
+                newState: Int,
+            ) {
+                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                    try {
+                        dismissAllowingStateLoss()
+                    } catch (e: IllegalStateException) {
+                        Timber.w(e)
+                    }
                 }
             }
-        }
 
-        override fun onSlide(bottomSheet: View, slideOffset: Float) {}
-    }
+            override fun onSlide(
+                bottomSheet: View,
+                slideOffset: Float,
+            ) {}
+        }
 }

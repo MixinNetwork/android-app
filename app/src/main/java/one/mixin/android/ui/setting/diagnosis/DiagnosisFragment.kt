@@ -22,6 +22,7 @@ import one.mixin.android.util.viewBinding
 class DiagnosisFragment : BaseFragment() {
     companion object {
         const val TAG = "DiagnosisFragment"
+
         fun newInstance(): DiagnosisFragment {
             return DiagnosisFragment()
         }
@@ -36,7 +37,10 @@ class DiagnosisFragment : BaseFragment() {
 
     private val binding by viewBinding(FragmentDiagnosisBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.titleTv.setText(R.string.Net_Diagnosis)
         binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }

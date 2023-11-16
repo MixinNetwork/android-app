@@ -79,15 +79,19 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
     private val viewModel by viewModels<SettingViewModel>()
     private val binding by viewBinding(FragmentPermissionListBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             permissionRv.layoutManager = LinearLayoutManager(requireContext())
-            val footBinding = LayoutPermissionListFootBinding.inflate(layoutInflater, permissionRv, false).apply {
-                revokeRl.setOnClickListener { showDialog(app) }
-                timeTv.text = getString(R.string.setting_auth_access, auth.createAt.fullDate(), auth.accessedAt.fullDate())
-            }
+            val footBinding =
+                LayoutPermissionListFootBinding.inflate(layoutInflater, permissionRv, false).apply {
+                    revokeRl.setOnClickListener { showDialog(app) }
+                    timeTv.text = getString(R.string.setting_auth_access, auth.createAt.fullDate(), auth.accessedAt.fullDate())
+                }
             val adapter = PermissionListAdapter()
             permissionRv.adapter = adapter
             adapter.footerView = footBinding.root
@@ -95,11 +99,12 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
         }
     }
 
-    private fun loadData(adapter: PermissionListAdapter) = lifecycleScope.launch {
-        val scopes = auth.getScopes(requireContext())
-        scopes.sortBy { Scope.SCOPES.indexOf(it.source) }
-        adapter.submitList(scopes)
-    }
+    private fun loadData(adapter: PermissionListAdapter) =
+        lifecycleScope.launch {
+            val scopes = auth.getScopes(requireContext())
+            scopes.sortBy { Scope.SCOPES.indexOf(it.source) }
+            adapter.submitList(scopes)
+        }
 
     private fun showDialog(app: App) {
         alertDialogBuilder()
@@ -108,9 +113,10 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
             }
             .setMessage(getString(R.string.setting_revoke_confirmation, app.name))
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                val pb = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                    setCancelable(false)
-                }
+                val pb =
+                    indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                        setCancelable(false)
+                    }
                 viewModel.deauthApp(app.appId).autoDispose(stopScope).subscribe(
                     {
                         clearRelatedCookies(app)
@@ -139,10 +145,16 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
     }
 
     class PermissionListAdapter : FooterListAdapter<Scope, RecyclerView.ViewHolder>(Scope.DIFF_CALLBACK) {
-        override fun getNormalViewHolder(context: Context, parent: ViewGroup) =
+        override fun getNormalViewHolder(
+            context: Context,
+            parent: ViewGroup,
+        ) =
             ItemHolder(ItemPermissionListBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, pos: Int) {
+        override fun onBindViewHolder(
+            holder: RecyclerView.ViewHolder,
+            pos: Int,
+        ) {
             (holder as? ItemHolder)?.bindTo(getItem(pos))
         }
     }

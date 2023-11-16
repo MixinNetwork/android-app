@@ -13,7 +13,6 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 
 class ConfirmationBgView : RelativeLayout {
-
     private val colorWhite by lazy { context.colorFromAttribute(R.attr.bg_white) }
     private val colorBlue by lazy { context.colorFromAttribute(R.attr.bg_confirmation) }
 
@@ -43,24 +42,31 @@ class ConfirmationBgView : RelativeLayout {
         }
     }
 
-    fun setConfirmation(all: Int, cur: Int) {
+    fun setConfirmation(
+        all: Int,
+        cur: Int,
+    ) {
         this.all = all
         this.cur = cur
     }
 
     fun roundBottom(round: Boolean) {
         if (round) {
-            outlineProvider = object : ViewOutlineProvider() {
-                override fun getOutline(view: View, outline: Outline) {
-                    outline.setRoundRect(
-                        0,
-                        0,
-                        view.width,
-                        view.height,
-                        context.dpToPx(8f).toFloat(),
-                    )
+            outlineProvider =
+                object : ViewOutlineProvider() {
+                    override fun getOutline(
+                        view: View,
+                        outline: Outline,
+                    ) {
+                        outline.setRoundRect(
+                            0,
+                            0,
+                            view.width,
+                            view.height,
+                            context.dpToPx(8f).toFloat(),
+                        )
+                    }
                 }
-            }
             clipToOutline = true
         } else {
             clipToOutline = false

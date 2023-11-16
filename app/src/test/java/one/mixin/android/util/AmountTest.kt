@@ -5,7 +5,6 @@ import org.junit.Test
 import kotlin.test.assertEquals
 
 class AmountTest {
-
     @Test
     fun testAmount() {
         assertEquals(AmountUtil.illegal("1.23", "JPY"), false)

@@ -17,8 +17,11 @@ class WaitingHolder constructor(
     val binding: ItemChatWaitingBinding,
     private val onItemListener: MessageAdapter.OnItemListener,
 ) : BaseViewHolder(binding.root) {
-
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END

@@ -57,7 +57,6 @@ class ChatWebSocket(
     private val jobManager: MixinJobManager,
     private val linkState: LinkState,
 ) : WebSocketListener() {
-
     private val offsetDao: OffsetDao = mixinDatabase.offsetDao()
 
     private val failCode = 1000
@@ -83,11 +82,12 @@ class ChatWebSocket(
     fun connect() {
         if (client == null) {
             connected = false
-            homeUrl = if (hostFlag) {
-                Mixin_WS_URL
-            } else {
-                WS_URL
-            }
+            homeUrl =
+                if (hostFlag) {
+                    Mixin_WS_URL
+                } else {
+                    WS_URL
+                }
             client = okHttpClient.newWebSocket(Request.Builder().url(homeUrl).build(), this)
         }
     }
@@ -107,21 +107,22 @@ class ChatWebSocket(
     fun sendMessage(blazeMessage: BlazeMessage): BlazeMessage? {
         var bm: BlazeMessage? = null
         val latch = CountDownLatch(1)
-        val transaction = WebSocketTransaction(
-            blazeMessage.id,
-            object : TransactionCallbackSuccess {
-                override fun success(data: BlazeMessage) {
-                    bm = data
-                    latch.countDown()
-                }
-            },
-            object : TransactionCallbackError {
-                override fun error(data: BlazeMessage?) {
-                    bm = data
-                    latch.countDown()
-                }
-            },
-        )
+        val transaction =
+            WebSocketTransaction(
+                blazeMessage.id,
+                object : TransactionCallbackSuccess {
+                    override fun success(data: BlazeMessage) {
+                        bm = data
+                        latch.countDown()
+                    }
+                },
+                object : TransactionCallbackError {
+                    override fun error(data: BlazeMessage?) {
+                        bm = data
+                        latch.countDown()
+                    }
+                },
+            )
         if (client != null && connected) {
             transactions[blazeMessage.id] = transaction
             val result = client!!.send(gson.toJson(blazeMessage).gzip())
@@ -136,24 +137,28 @@ class ChatWebSocket(
 
     private fun sendPendingMessage() {
         val blazeMessage = createListPendingMessage(pendingDatabase.getLastBlazeMessageCreatedAt())
-        val transaction = WebSocketTransaction(
-            blazeMessage.id,
-            object : TransactionCallbackSuccess {
-                override fun success(data: BlazeMessage) {
-                    listPendingOfferHandled = false
-                }
-            },
-            object : TransactionCallbackError {
-                override fun error(data: BlazeMessage?) {
-                    sendPendingMessage()
-                }
-            },
-        )
+        val transaction =
+            WebSocketTransaction(
+                blazeMessage.id,
+                object : TransactionCallbackSuccess {
+                    override fun success(data: BlazeMessage) {
+                        listPendingOfferHandled = false
+                    }
+                },
+                object : TransactionCallbackError {
+                    override fun error(data: BlazeMessage?) {
+                        sendPendingMessage()
+                    }
+                },
+            )
         transactions[blazeMessage.id] = transaction
         client?.send(gson.toJson(blazeMessage).gzip())
     }
 
-    override fun onOpen(webSocket: WebSocket, response: Response) {
+    override fun onOpen(
+        webSocket: WebSocket,
+        response: Response,
+    ) {
         if (client != null) {
             connected = true
             client = webSocket
@@ -168,7 +173,10 @@ class ChatWebSocket(
         }
     }
 
-    override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+    override fun onMessage(
+        webSocket: WebSocket,
+        bytes: ByteString,
+    ) {
         applicationScope.launch(SINGLE_DB_THREAD) {
             try {
                 val json = bytes.ungzip()
@@ -212,21 +220,26 @@ class ChatWebSocket(
 
     @SuppressLint("CheckResult")
     @Synchronized
-    override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+    override fun onClosed(
+        webSocket: WebSocket,
+        code: Int,
+        reason: String,
+    ) {
         connected = false
         if (code == failCode) {
             closeInternal(code)
             jobManager.stop()
             if (connectTimer == null || connectTimer?.isDisposed == true) {
-                connectTimer = Observable.interval(2000, TimeUnit.MILLISECONDS).subscribe(
-                    {
-                        if (MixinApplication.appContext.networkConnected() && Session.checkToken()) {
-                            connect()
-                        }
-                    },
-                    {
-                    },
-                )
+                connectTimer =
+                    Observable.interval(2000, TimeUnit.MILLISECONDS).subscribe(
+                        {
+                            if (MixinApplication.appContext.networkConnected() && Session.checkToken()) {
+                                connect()
+                            }
+                        },
+                        {
+                        },
+                    )
             }
         } else {
             webSocket.cancel()
@@ -236,7 +249,11 @@ class ChatWebSocket(
     private var connectTimer: Disposable? = null
 
     @Synchronized
-    override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+    override fun onFailure(
+        webSocket: WebSocket,
+        t: Throwable,
+        response: Response?,
+    ) {
         if (t.isNeedSwitch()) {
             hostFlag = !hostFlag
         }
@@ -297,12 +314,14 @@ class ChatWebSocket(
     }
 
     private var webSocketObserver: WebSocketObserver? = null
+
     fun setWebSocketObserver(webSocketObserver: WebSocketObserver?) {
         this.webSocketObserver = webSocketObserver
     }
 
     interface WebSocketObserver {
         fun onSocketClose()
+
         fun onSocketOpen()
     }
 }

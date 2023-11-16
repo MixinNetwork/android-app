@@ -34,7 +34,9 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.VerificationCodeView
 
-abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFragment(contentLayoutId) {
+abstract class PinCodeFragment(
+    @LayoutRes contentLayoutId: Int,
+) : FabLoadingFragment(contentLayoutId) {
     companion object {
         const val PREF_LOGIN_FROM = "pref_login_from"
 
@@ -49,7 +51,10 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         _contentView.findViewById(R.id.pin_verification_tip_tv)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         pinVerificationView.setOnCodeEnteredListener(mPinVerificationListener)
@@ -128,36 +133,44 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
 
     abstract fun insertUser(u: User)
 
-    private val mKeyboardListener = object : Keyboard.OnClickKeyboardListener {
-        override fun onKeyClick(position: Int, value: String) {
-            context?.tickVibrate()
-            if (position == 11) {
-                pinVerificationView.delete()
-            } else {
-                pinVerificationView.append(value)
-            }
-        }
-
-        override fun onLongClick(position: Int, value: String) {
-            context?.clickVibrate()
-            if (position == 11) {
-                pinVerificationView.clear()
-            } else {
-                pinVerificationView.append(value)
-            }
-        }
-    }
-
-    private val mPinVerificationListener = object : VerificationCodeView.OnCodeEnteredListener {
-        override fun onCodeEntered(code: String) {
-            pinVerificationTipTv.visibility = View.INVISIBLE
-            if (code.isEmpty() || code.length != pinVerificationView.count) {
-                if (isAdded) {
-                    hideLoading()
+    private val mKeyboardListener =
+        object : Keyboard.OnClickKeyboardListener {
+            override fun onKeyClick(
+                position: Int,
+                value: String,
+            ) {
+                context?.tickVibrate()
+                if (position == 11) {
+                    pinVerificationView.delete()
+                } else {
+                    pinVerificationView.append(value)
                 }
-                return
             }
-            clickNextFab()
+
+            override fun onLongClick(
+                position: Int,
+                value: String,
+            ) {
+                context?.clickVibrate()
+                if (position == 11) {
+                    pinVerificationView.clear()
+                } else {
+                    pinVerificationView.append(value)
+                }
+            }
         }
-    }
+
+    private val mPinVerificationListener =
+        object : VerificationCodeView.OnCodeEnteredListener {
+            override fun onCodeEntered(code: String) {
+                pinVerificationTipTv.visibility = View.INVISIBLE
+                if (code.isEmpty() || code.length != pinVerificationView.count) {
+                    if (isAdded) {
+                        hideLoading()
+                    }
+                    return
+                }
+                clickNextFab()
+            }
+        }
 }

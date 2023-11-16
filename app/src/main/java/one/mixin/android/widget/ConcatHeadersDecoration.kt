@@ -67,7 +67,12 @@ class ConcatHeadersDecoration private constructor(
         ),
     )
 
-    override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+    override fun getItemOffsets(
+        outRect: Rect,
+        view: View,
+        parent: RecyclerView,
+        state: RecyclerView.State,
+    ) {
         super.getItemOffsets(outRect, view, parent, state)
         val itemPosition = parent.getChildAdapterPosition(view)
         if (itemPosition < headerCount) {
@@ -80,7 +85,11 @@ class ConcatHeadersDecoration private constructor(
         }
     }
 
-    private fun setItemOffsetsForHeader(itemOffsets: Rect, header: View, orientation: Int) {
+    private fun setItemOffsetsForHeader(
+        itemOffsets: Rect,
+        header: View,
+        orientation: Int,
+    ) {
         mDimensionCalculator.initMargins(mTempRect, header)
         if (orientation == LinearLayoutManager.VERTICAL) {
             itemOffsets.top = header.height + mTempRect.top + mTempRect.bottom
@@ -89,7 +98,11 @@ class ConcatHeadersDecoration private constructor(
         }
     }
 
-    override fun onDraw(canvas: Canvas, parent: RecyclerView, state: RecyclerView.State) {
+    override fun onDraw(
+        canvas: Canvas,
+        parent: RecyclerView,
+        state: RecyclerView.State,
+    ) {
         super.onDraw(canvas, parent, state)
 
         val childCount = parent.childCount
@@ -104,11 +117,12 @@ class ConcatHeadersDecoration private constructor(
                 continue
             }
             val headerPos = position - headerCount
-            val hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(
-                itemView,
-                mOrientationProvider.getOrientation(parent),
-                headerPos,
-            )
+            val hasStickyHeader =
+                mHeaderPositionCalculator.hasStickyHeader(
+                    itemView,
+                    mOrientationProvider.getOrientation(parent),
+                    headerPos,
+                )
             if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(headerPos, mOrientationProvider.isReverseLayout(parent))) {
                 val header = mHeaderProvider.getHeader(parent, headerPos)
                 var headerOffset: Rect? = mHeaderRects.get(headerPos)
@@ -124,7 +138,10 @@ class ConcatHeadersDecoration private constructor(
     }
 
     @Suppress("unused")
-    fun findHeaderPositionUnder(x: Int, y: Int): Int {
+    fun findHeaderPositionUnder(
+        x: Int,
+        y: Int,
+    ): Int {
         for (i in 0 until mHeaderRects.size()) {
             val rect = mHeaderRects.get(mHeaderRects.keyAt(i))
             if (rect.contains(x, y)) {
@@ -134,7 +151,10 @@ class ConcatHeadersDecoration private constructor(
         return -1
     }
 
-    private fun getHeaderView(parent: RecyclerView, position: Int): View =
+    private fun getHeaderView(
+        parent: RecyclerView,
+        position: Int,
+    ): View =
         mHeaderProvider.getHeader(parent, position)
 
     @Suppress("unused")

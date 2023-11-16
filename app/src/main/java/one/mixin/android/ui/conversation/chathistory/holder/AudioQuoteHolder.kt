@@ -28,7 +28,11 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
         binding.chatAudioLayout.layoutParams.width = maxWidth
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f

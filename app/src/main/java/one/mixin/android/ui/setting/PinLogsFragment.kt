@@ -29,9 +29,13 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
 
     companion object {
         const val TAG = "PinLogsFragment"
+
         fun newInstance() = PinLogsFragment()
 
-        fun getLogDescription(context: Context, code: String): Pair<String, String> {
+        fun getLogDescription(
+            context: Context,
+            code: String,
+        ): Pair<String, String> {
             when (code) {
                 "VERIFICATION" ->
                     return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Verify))
@@ -80,7 +84,10 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
@@ -167,17 +174,26 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
 
     class PinAdapter : RecyclerView.Adapter<PinHolder>() {
         var data: MutableList<LogResponse> = mutableListOf()
+
         override fun getItemCount(): Int = data.size
 
         fun getItem(position: Int) = data.get(position)
-        override fun onBindViewHolder(holder: PinHolder, position: Int) {
+
+        override fun onBindViewHolder(
+            holder: PinHolder,
+            position: Int,
+        ) {
             getItem(position).let {
                 holder.bind(it)
             }
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PinHolder = PinHolder(
-            ItemPinLogsBinding.inflate(LayoutInflater.from(parent.context), parent, false),
-        )
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): PinHolder =
+            PinHolder(
+                ItemPinLogsBinding.inflate(LayoutInflater.from(parent.context), parent, false),
+            )
     }
 }

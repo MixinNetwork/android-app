@@ -5,7 +5,9 @@ data class WCEthereumSignMessage(
     val type: WCSignType,
 ) {
     enum class WCSignType {
-        MESSAGE, PERSONAL_MESSAGE, TYPED_MESSAGE
+        MESSAGE,
+        PERSONAL_MESSAGE,
+        TYPED_MESSAGE,
     }
 
     /**
@@ -18,9 +20,10 @@ data class WCEthereumSignMessage(
      *
      *  reference: https://docs.walletconnect.org/json-rpc/ethereum#eth_signtypeddata
      */
-    val data get() = when (type) {
-        WCSignType.MESSAGE -> raw[1]
-        WCSignType.TYPED_MESSAGE -> raw[1]
-        WCSignType.PERSONAL_MESSAGE -> raw[0]
-    }
+    val data get() =
+        when (type) {
+            WCSignType.MESSAGE -> raw[1]
+            WCSignType.TYPED_MESSAGE -> raw[1]
+            WCSignType.PERSONAL_MESSAGE -> raw[0]
+        }
 }

@@ -17,7 +17,6 @@ class FtsDataSource(
     val cancellationSignal: CancellationSignal,
 ) :
     ItemKeyedDataSource<Int, SearchMessageDetailItem>() {
-
     override fun loadInitial(
         params: LoadInitialParams<Int>,
         callback: LoadInitialCallback<SearchMessageDetailItem>,
@@ -80,7 +79,10 @@ class FtsDataSource(
         )
     }
 
-    private fun getNewData(size: Int, startKey: Int): List<SearchMessageDetailItem> {
+    private fun getNewData(
+        size: Int,
+        startKey: Int,
+    ): List<SearchMessageDetailItem> {
         val ids = mutableListOf<String>()
         var index = 0
         return try {
@@ -96,7 +98,10 @@ class FtsDataSource(
         }
     }
 
-    private fun getData(ids: List<String>, startKey: Int? = null): List<SearchMessageDetailItem> {
+    private fun getData(
+        ids: List<String>,
+        startKey: Int? = null,
+    ): List<SearchMessageDetailItem> {
         val result = mixinDatabase.messageDao().getSearchMessageDetailItemsByIds(ids)
         if (startKey != null) {
             result.forEachIndexed { itemIndex, item ->

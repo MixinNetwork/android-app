@@ -22,7 +22,10 @@ class PinEmergencyBottomSheetDialog : BiometricBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentPinBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -34,7 +37,10 @@ class PinEmergencyBottomSheetDialog : BiometricBottomSheetDialogFragment() {
         }
     }
 
-    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
+    override fun doWhenInvokeNetworkSuccess(
+        response: MixinResponse<*>,
+        pin: String,
+    ): Boolean {
         pinEmergencyCallback?.onSuccess(pin)
         return true
     }

@@ -17,13 +17,18 @@ import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
 
 class GroupInfoAdapter(private val self: User) : PagedHeaderAdapter<ParticipantItem>(ParticipantItem.DIFF_CALLBACK) {
-
     private var listener: GroupInfoListener? = null
 
-    override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder =
+    override fun getNormalViewHolder(
+        context: Context,
+        parent: ViewGroup,
+    ): NormalHolder =
         ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_group_info, parent, false))
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+    ) {
         if (holder is ItemHolder) {
             getItem(getPos(position))?.let {
                 holder.bind(it, listener, self)
@@ -39,6 +44,7 @@ class GroupInfoAdapter(private val self: User) : PagedHeaderAdapter<ParticipantI
         private val binding by lazy {
             ItemGroupInfoBinding.bind(itemView)
         }
+
         fun bind(
             participant: ParticipantItem,
             listener: GroupInfoListener?,
@@ -75,7 +81,14 @@ class GroupInfoAdapter(private val self: User) : PagedHeaderAdapter<ParticipantI
     }
 
     interface GroupInfoListener {
-        fun onClick(name: View, participant: ParticipantItem)
-        fun onLongClick(name: View, participant: ParticipantItem): Boolean
+        fun onClick(
+            name: View,
+            participant: ParticipantItem,
+        )
+
+        fun onLongClick(
+            name: View,
+            participant: ParticipantItem,
+        ): Boolean
     }
 }

@@ -31,7 +31,6 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "DepositQrBottomFragment"
         const val ARGS_TYPE = "args_type"
@@ -45,11 +44,12 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
             type: Int,
             selectedDestination: String?,
         ) = DepositQrBottomFragment().apply {
-            arguments = bundleOf(
-                ARGS_ASSET to asset,
-                ARGS_TYPE to type,
-                ARGS_SELECTED_DESTINATION to selectedDestination,
-            )
+            arguments =
+                bundleOf(
+                    ARGS_ASSET to asset,
+                    ARGS_TYPE to type,
+                    ARGS_SELECTED_DESTINATION to selectedDestination,
+                )
         }
     }
 
@@ -60,7 +60,10 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
     private val selectedDestination: String? by lazy { requireArguments().getString(ARGS_SELECTED_DESTINATION) }
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -116,10 +119,11 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
 
             qr.post {
                 Observable.create<Pair<Bitmap, Int>?> { e ->
-                    val code = when (type) {
-                        TYPE_TAG -> asset.tag
-                        else -> selectedDestination ?: asset.destination
-                    }
+                    val code =
+                        when (type) {
+                            TYPE_TAG -> asset.tag
+                            else -> selectedDestination ?: asset.destination
+                        }
                     val r = code?.generateQRCode(qr.width)
                     r?.let { e.onNext(it) }
                 }.subscribeOn(Schedulers.io())
@@ -127,10 +131,11 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                     .autoDispose(stopScope)
                     .subscribe(
                         { r ->
-                            badgeView.layoutParams = badgeView.layoutParams.apply {
-                                width = r.second
-                                height = r.second
-                            }
+                            badgeView.layoutParams =
+                                badgeView.layoutParams.apply {
+                                    width = r.second
+                                    height = r.second
+                                }
                             qr.setImageBitmap(r.first)
                         },
                         {

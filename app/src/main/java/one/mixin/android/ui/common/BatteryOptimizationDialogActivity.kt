@@ -19,7 +19,10 @@ class BatteryOptimizationDialogActivity : BaseActivity() {
     companion object {
         const val ARGS_NEW_TASK = "args_new_task"
 
-        fun show(context: Context, newTask: Boolean = false) {
+        fun show(
+            context: Context,
+            newTask: Boolean = false,
+        ) {
             Intent(context, BatteryOptimizationDialogActivity::class.java).apply {
                 putExtra(ARGS_NEW_TASK, newTask)
                 if (newTask) {

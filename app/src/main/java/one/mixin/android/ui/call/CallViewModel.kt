@@ -9,24 +9,30 @@ import one.mixin.android.repository.UserRepository
 import javax.inject.Inject
 
 @HiltViewModel
-class CallViewModel @Inject
-internal constructor(
-    private val userRepository: UserRepository,
-    private val conversationRepo: ConversationRepository,
-    private val jobManager: MixinJobManager,
-) : ViewModel() {
+class CallViewModel
+    @Inject
+    internal constructor(
+        private val userRepository: UserRepository,
+        private val conversationRepo: ConversationRepository,
+        private val jobManager: MixinJobManager,
+    ) : ViewModel() {
+        suspend fun findMultiCallUsersByIds(
+            conversationId: String,
+            ids: Set<String>,
+        ) =
+            userRepository.findMultiCallUsersByIds(conversationId, ids)
 
-    suspend fun findMultiCallUsersByIds(conversationId: String, ids: Set<String>) =
-        userRepository.findMultiCallUsersByIds(conversationId, ids)
+        suspend fun findSelfCallUser(
+            conversationId: String,
+            userId: String,
+        ) =
+            userRepository.findSelfCallUser(conversationId, userId)
 
-    suspend fun findSelfCallUser(conversationId: String, userId: String) =
-        userRepository.findSelfCallUser(conversationId, userId)
+        suspend fun getConversationNameById(cid: String) = conversationRepo.getConversationNameById(cid)
 
-    suspend fun getConversationNameById(cid: String) = conversationRepo.getConversationNameById(cid)
+        suspend fun suspendFindUserById(userId: String) = userRepository.suspendFindUserById(userId)
 
-    suspend fun suspendFindUserById(userId: String) = userRepository.suspendFindUserById(userId)
-
-    fun refreshConversation(conversationId: String) {
-        jobManager.addJobInBackground(RefreshConversationJob(conversationId, true))
+        fun refreshConversation(conversationId: String) {
+            jobManager.addJobInBackground(RefreshConversationJob(conversationId, true))
+        }
     }
-}

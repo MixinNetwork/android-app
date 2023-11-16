@@ -38,7 +38,10 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentCurrencyBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         context?.let { c ->
             val topOffset = c.statusBarHeight() + c.appCompatActionBarHeight()
@@ -49,19 +52,21 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         binding.apply {
             closeIv.setOnClickListener { dismiss() }
-            searchEt.listener = object : SearchView.OnSearchViewListener {
-                override fun afterTextChanged(s: Editable?) {
-                    filter(s.toString())
-                }
+            searchEt.listener =
+                object : SearchView.OnSearchViewListener {
+                    override fun afterTextChanged(s: Editable?) {
+                        filter(s.toString())
+                    }
 
-                override fun onSearch() {
+                    override fun onSearch() {
+                    }
                 }
-            }
-            currencyAdapter.currencyListener = object : OnCurrencyListener {
-                override fun onClick(currency: Currency) {
-                    savePreference(currency)
+            currencyAdapter.currencyListener =
+                object : OnCurrencyListener {
+                    override fun onClick(currency: Currency) {
+                        savePreference(currency)
+                    }
                 }
-            }
             currencyRv.adapter = currencyAdapter
         }
         currencies.clear()
@@ -69,38 +74,40 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         currencyAdapter.submitList(currencies)
     }
 
-    private fun savePreference(currency: Currency) = lifecycleScope.launch {
-        val pb = indeterminateProgressDialog(
-            message = R.string.Please_wait_a_bit,
-            title = R.string.Switching_currency,
-        ).apply {
-            setCancelable(false)
-        }
-        pb.show()
-
-        handleMixinResponse(
-            invokeNetwork = {
-                bottomViewModel.preferences(
-                    AccountUpdateRequest(fiatCurrency = currency.name),
-                )
-            },
-            successBlock = {
-                it.data?.let { account ->
-                    Session.storeAccount(account)
-                    callback?.onCurrencyClick(currency)
-                    toast(R.string.Save_success)
-                    dismiss()
+    private fun savePreference(currency: Currency) =
+        lifecycleScope.launch {
+            val pb =
+                indeterminateProgressDialog(
+                    message = R.string.Please_wait_a_bit,
+                    title = R.string.Switching_currency,
+                ).apply {
+                    setCancelable(false)
                 }
-            },
-            doAfterNetworkSuccess = {
-                pb.dismiss()
-            },
-            exceptionBlock = {
-                pb.dismiss()
-                return@handleMixinResponse false
-            },
-        )
-    }
+            pb.show()
+
+            handleMixinResponse(
+                invokeNetwork = {
+                    bottomViewModel.preferences(
+                        AccountUpdateRequest(fiatCurrency = currency.name),
+                    )
+                },
+                successBlock = {
+                    it.data?.let { account ->
+                        Session.storeAccount(account)
+                        callback?.onCurrencyClick(currency)
+                        toast(R.string.Save_success)
+                        dismiss()
+                    }
+                },
+                doAfterNetworkSuccess = {
+                    pb.dismiss()
+                },
+                exceptionBlock = {
+                    pb.dismiss()
+                    return@handleMixinResponse false
+                },
+            )
+        }
 
     private fun filter(s: String) {
         currencyAdapter.submitList(

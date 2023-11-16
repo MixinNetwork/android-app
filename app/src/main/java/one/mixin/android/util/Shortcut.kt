@@ -19,35 +19,46 @@ private const val categoryApplicationShareTarget = "one.mixin.android.directshar
 private const val dynamicShortcutCount = 4
 private const val staticShortcutCount = 2 // wallet and scan
 
-val shareCategories = setOf(
-    categoryTextShareTarget,
-    categoryImageShareTarget,
-    categoryVideoShareTarget,
-    categoryAudioShareTarget,
-    categoryApplicationShareTarget,
-)
+val shareCategories =
+    setOf(
+        categoryTextShareTarget,
+        categoryImageShareTarget,
+        categoryVideoShareTarget,
+        categoryAudioShareTarget,
+        categoryApplicationShareTarget,
+    )
 
 val maxDynamicShortcutCount by lazy {
     val systemMaxCount = ShortcutManagerCompat.getMaxShortcutCountPerActivity(MixinApplication.appContext)
     min(dynamicShortcutCount, systemMaxCount - staticShortcutCount)
 }
 
-fun addPinShortcut(context: Context, conversationId: String, name: String, icon: Bitmap, launcher: Intent) {
+fun addPinShortcut(
+    context: Context,
+    conversationId: String,
+    name: String,
+    icon: Bitmap,
+    launcher: Intent,
+) {
     ShortcutManagerCompat.getShortcuts(context, FLAG_MATCH_CACHED).forEach {
         if (it.id == conversationId) {
             ShortcutManagerCompat.removeLongLivedShortcuts(context, listOf("Pin-$conversationId", conversationId))
         }
     }
-    val shortcut = ShortcutInfoCompat.Builder(context, "Pin-$conversationId")
-        .setShortLabel(name)
-        .setIcon(IconCompat.createWithBitmap(icon))
-        .setIntent(launcher)
-        .build()
+    val shortcut =
+        ShortcutInfoCompat.Builder(context, "Pin-$conversationId")
+            .setShortLabel(name)
+            .setIcon(IconCompat.createWithBitmap(icon))
+            .setIntent(launcher)
+            .build()
     val successCallback = PendingIntent.getBroadcast(context, 0, ShortcutManagerCompat.createShortcutResultIntent(context, shortcut), PendingIntent.FLAG_IMMUTABLE)
     ShortcutManagerCompat.requestPinShortcut(context, shortcut, successCallback.intentSender)
 }
 
-fun generateDynamicShortcut(context: Context, shortcutInfo: ShortcutInfo): ShortcutInfoCompat {
+fun generateDynamicShortcut(
+    context: Context,
+    shortcutInfo: ShortcutInfo,
+): ShortcutInfoCompat {
     var shortcutName = shortcutInfo.name
     if (shortcutName.isEmpty()) {
         shortcutName = "Mixin-${shortcutInfo.conversationId}"

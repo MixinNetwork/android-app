@@ -31,10 +31,15 @@ class FiatListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "FiatListBottomSheetDialogFragment"
         const val ARGS_CURRENCIES = "args_currencies"
-        fun newInstance(currency: Currency, list: List<Currency>? = null) = FiatListBottomSheetDialogFragment().withArgs {
-            putParcelable(ARGS_CURRENCY, currency)
-            putParcelableArrayList(ARGS_CURRENCIES, list?.let { ArrayList(it) })
-        }
+
+        fun newInstance(
+            currency: Currency,
+            list: List<Currency>? = null,
+        ) =
+            FiatListBottomSheetDialogFragment().withArgs {
+                putParcelable(ARGS_CURRENCY, currency)
+                putParcelableArrayList(ARGS_CURRENCIES, list?.let { ArrayList(it) })
+            }
     }
 
     private val binding by viewBinding(FragmentFiatListBottomSheetBinding::inflate)
@@ -45,7 +50,10 @@ class FiatListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     var callback: Callback? = null
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
@@ -63,20 +71,22 @@ class FiatListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             currencyAdapter.currentCurrency = currency.name
             fiatRv.adapter = currencyAdapter
-            currencyAdapter.currencyListener = object : OnCurrencyListener {
-                override fun onClick(currency: Currency) {
-                    callback?.onCurrencyClick(currency)
-                    dismiss()
+            currencyAdapter.currencyListener =
+                object : OnCurrencyListener {
+                    override fun onClick(currency: Currency) {
+                        callback?.onCurrencyClick(currency)
+                        dismiss()
+                    }
                 }
-            }
             searchEt.setHint(getString(R.string.search_placeholder_asset))
-            searchEt.listener = object : SearchView.OnSearchViewListener {
-                override fun afterTextChanged(s: Editable?) {
-                    filter(s.toString())
-                }
+            searchEt.listener =
+                object : SearchView.OnSearchViewListener {
+                    override fun afterTextChanged(s: Editable?) {
+                        filter(s.toString())
+                    }
 
-                override fun onSearch() {}
-            }
+                    override fun onSearch() {}
+                }
         }
         currencies.clear()
         currencies.addAll(

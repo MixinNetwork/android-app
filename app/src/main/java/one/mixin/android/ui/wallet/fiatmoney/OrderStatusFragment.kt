@@ -57,9 +57,9 @@ import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.cardIcon
 import one.mixin.android.vo.route.RoutePaymentRequest
+import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.lang.IllegalArgumentException
 import java.util.Locale
@@ -77,7 +77,10 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
 
         private const val REFRESH_INTERVAL = 2000L
 
-        fun newInstance(tokenItem: TokenItem, currency: Currency) =
+        fun newInstance(
+            tokenItem: TokenItem,
+            currency: Currency,
+        ) =
             OrderStatusFragment().withArgs {
                 putParcelable(TransactionsFragment.ARGS_ASSET, tokenItem)
                 putParcelable(ARGS_CURRENCY, currency)
@@ -156,32 +159,39 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     }
 
     @SuppressLint("UseCompatLoadingForDrawables", "SetTextI18n")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        asset = requireNotNull(
-            requireArguments().getParcelableCompat(
-                TransactionsFragment.ARGS_ASSET,
-                TokenItem::class.java,
-            ),
-        )
-        currency = requireNotNull(
-            requireArguments().getParcelableCompat(
-                ARGS_CURRENCY,
-                Currency::class.java,
-            ),
-        )
-        isGooglePay = requireArguments().getBoolean(
-            ARGS_GOOGLE_PAY,
-            false,
-        )
+        asset =
+            requireNotNull(
+                requireArguments().getParcelableCompat(
+                    TransactionsFragment.ARGS_ASSET,
+                    TokenItem::class.java,
+                ),
+            )
+        currency =
+            requireNotNull(
+                requireArguments().getParcelableCompat(
+                    ARGS_CURRENCY,
+                    Currency::class.java,
+                ),
+            )
+        isGooglePay =
+            requireArguments().getBoolean(
+                ARGS_GOOGLE_PAY,
+                false,
+            )
 
         val scheme = requireArguments().getString(OrderConfirmFragment.ARGS_SCHEME)
-        info = requireNotNull(
-            requireArguments().getParcelableCompat(
-                ARGS_INFO,
-                OrderInfo::class.java,
-            ),
-        )
+        info =
+            requireNotNull(
+                requireArguments().getParcelableCompat(
+                    ARGS_INFO,
+                    OrderInfo::class.java,
+                ),
+            )
         expectancy = info.assetAmount
         binding.apply {
             bottomVa.setOnClickListener {
@@ -251,22 +261,24 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 1,
                 TypedValue.COMPLEX_UNIT_SP,
             )
-            val logo = when {
-                isGooglePay -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_google_pay_small)
-                else -> AppCompatResources.getDrawable(requireContext(), cardIcon(scheme))
-            }.also {
-                if (isGooglePay) {
-                    it?.setBounds(0, 0, 28.dp, 14.dp)
-                } else {
-                    it?.setBounds(0, 0, 26.dp, 16.dp)
+            val logo =
+                when {
+                    isGooglePay -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_google_pay_small)
+                    else -> AppCompatResources.getDrawable(requireContext(), cardIcon(scheme))
+                }.also {
+                    if (isGooglePay) {
+                        it?.setBounds(0, 0, 28.dp, 14.dp)
+                    } else {
+                        it?.setBounds(0, 0, 26.dp, 16.dp)
+                    }
                 }
-            }
             payWith.setCompoundDrawables(logo, null, null, null)
-            payWith.text = if (isGooglePay) {
-                "Google Pay"
-            } else {
-                info.number
-            }
+            payWith.text =
+                if (isGooglePay) {
+                    "Google Pay"
+                } else {
+                    info.number
+                }
             priceTv.text = info.exchangeRate
             feeTv.text = info.feeByGateway
             feeMixinTv.text = info.feeByMixin
@@ -281,31 +293,34 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     }
 
     private fun init3DS(sessionResponse: RouteSessionResponse) {
-        val checkout3DS = Checkout3DSService(
-            MixinApplication.appContext,
-            ENVIRONMENT_3DS,
-            Locale.US,
-            null,
-            Uri.parse("mixin://buy"), // May jump back to the purchase interface form uri
-        )
+        val checkout3DS =
+            Checkout3DSService(
+                MixinApplication.appContext,
+                ENVIRONMENT_3DS,
+                Locale.US,
+                null,
+                Uri.parse("mixin://buy"), // May jump back to the purchase interface form uri
+            )
 
-        val authenticationParameters = AuthenticationParameters(
-            sessionResponse.sessionId,
-            sessionResponse.sessionSecret,
-            sessionResponse.scheme,
-        )
+        val authenticationParameters =
+            AuthenticationParameters(
+                sessionResponse.sessionId,
+                sessionResponse.sessionSecret,
+                sessionResponse.scheme,
+            )
 
         checkout3DS.authenticate(authenticationParameters) { result: AuthenticationResult ->
             when (result.resultType) {
                 ResultType.Completed -> {
                     lifecycleScope.launch(defaultErrorHandler) {
                         while (isActive) {
-                            val session = try {
-                                fiatMoneyViewModel.getSession(sessionResponse.sessionId)
-                            } catch (e: Exception) {
-                                showError(e.message)
-                                return@launch
-                            }
+                            val session =
+                                try {
+                                    fiatMoneyViewModel.getSession(sessionResponse.sessionId)
+                                } catch (e: Exception) {
+                                    showError(e.message)
+                                    return@launch
+                                }
                             if (session.isSuccess) {
                                 if (session.data?.status == RouteSessionStatus.Approved.value) {
                                     payments(sessionId = sessionResponse.sessionId, instrumentId = sessionResponse.instrumentId, null)
@@ -341,32 +356,34 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         activity?.onBackPressedDispatcher?.addCallback(this, onBackPressedCallback)
     }
 
-    private val onBackPressedCallback = object : OnBackPressedCallback(true) {
-        override fun handleOnBackPressed() {
-            if (status == OrderStatus.PROCESSING) {
-                // do noting
-            } else if (status == OrderStatus.SUCCESS) {
-                view?.navigate(R.id.action_wallet_status_to_wallet)
-            } else if (status == OrderStatus.FAILED) {
-                view?.navigate(
-                    R.id.action_wallet_status_to_select,
-                    Bundle().apply {
-                        putParcelable(TransactionsFragment.ARGS_ASSET, asset)
-                        putLong(ARGS_AMOUNT, amount)
-                        putParcelable(ARGS_CURRENCY, currency)
-                    },
-                )
-            } else {
-                isEnabled = false
-                activity?.onBackPressedDispatcher?.onBackPressed()
+    private val onBackPressedCallback =
+        object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (status == OrderStatus.PROCESSING) {
+                    // do noting
+                } else if (status == OrderStatus.SUCCESS) {
+                    view?.navigate(R.id.action_wallet_status_to_wallet)
+                } else if (status == OrderStatus.FAILED) {
+                    view?.navigate(
+                        R.id.action_wallet_status_to_select,
+                        Bundle().apply {
+                            putParcelable(TransactionsFragment.ARGS_ASSET, asset)
+                            putLong(ARGS_AMOUNT, amount)
+                            putParcelable(ARGS_CURRENCY, currency)
+                        },
+                    )
+                } else {
+                    isEnabled = false
+                    activity?.onBackPressedDispatcher?.onBackPressed()
+                }
             }
         }
-    }
 
-    private fun payWithCheckout() = lifecycleScope.launch(defaultErrorHandler) {
-        status = OrderStatus.PROCESSING
-        createSession(scheme!!, null)
-    }
+    private fun payWithCheckout() =
+        lifecycleScope.launch(defaultErrorHandler) {
+            status = OrderStatus.PROCESSING
+            createSession(scheme!!, null)
+        }
 
     private fun payWithGoogle() {
         status = OrderStatus.PROCESSING
@@ -398,72 +415,87 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         }
     }
 
-    private fun retry(sessionId: String?, instrumentId: String?, token: String?, expectancyAssetAmount: String) {
+    private fun retry(
+        sessionId: String?,
+        instrumentId: String?,
+        token: String?,
+        expectancyAssetAmount: String,
+    ) {
         payments(sessionId, instrumentId, token, expectancyAssetAmount)
     }
 
     @SuppressLint("SetTextI18n")
-    private fun payments(sessionId: String?, instrumentId: String?, token: String?, expectancyAssetAmount: String? = null) = lifecycleScope.launch(defaultErrorHandler) {
-        val response = fiatMoneyViewModel.payment(
-            RoutePaymentRequest(
-                amount,
-                currency.name,
-                asset.assetId,
-                assetAmount = expectancyAssetAmount ?: expectancy,
-                token,
-                sessionId,
-                instrumentId,
-                getCountryCodeFromPhoneNumber(Session.getAccount()?.phone),
-            ),
-        )
-        if (response.isSuccess) {
-            if (response.data?.status == RoutePaymentStatus.Captured.name) {
-                assetAmount = response.data!!.assetAmount
-                status = OrderStatus.SUCCESS
-            } else if (response.data?.status == RoutePaymentStatus.Declined.name) {
-                showError(getString(R.string.buy_declined_description))
-            } else {
-                val paymentId = response.data?.paymentId
-                if (paymentId == null) {
-                    showError(response.errorDescription)
+    private fun payments(
+        sessionId: String?,
+        instrumentId: String?,
+        token: String?,
+        expectancyAssetAmount: String? = null,
+    ) =
+        lifecycleScope.launch(defaultErrorHandler) {
+            val response =
+                fiatMoneyViewModel.payment(
+                    RoutePaymentRequest(
+                        amount,
+                        currency.name,
+                        asset.assetId,
+                        assetAmount = expectancyAssetAmount ?: expectancy,
+                        token,
+                        sessionId,
+                        instrumentId,
+                        getCountryCodeFromPhoneNumber(Session.getAccount()?.phone),
+                    ),
+                )
+            if (response.isSuccess) {
+                if (response.data?.status == RoutePaymentStatus.Captured.name) {
+                    assetAmount = response.data!!.assetAmount
+                    status = OrderStatus.SUCCESS
+                } else if (response.data?.status == RoutePaymentStatus.Declined.name) {
+                    showError(getString(R.string.buy_declined_description))
                 } else {
-                    getPaymentStatus(paymentId)
+                    val paymentId = response.data?.paymentId
+                    if (paymentId == null) {
+                        showError(response.errorDescription)
+                    } else {
+                        getPaymentStatus(paymentId)
+                    }
                 }
+            } else {
+                if (response.errorCode == ErrorHandler.EXPIRED_PRICE) {
+                    val extra =
+                        response.error?.extra?.asJsonObject?.get("data")?.asJsonObject
+                            ?: throw IllegalArgumentException(getString(R.string.Data_error))
+                    val assetPrice =
+                        extra.get("asset_price").asString
+                            ?: throw IllegalArgumentException(getString(R.string.Data_error))
+                    val assetAmount =
+                        extra.get("asset_amount").asString
+                            ?: throw IllegalArgumentException(getString(R.string.Data_error))
+                    this@OrderStatusFragment.binding.priceTv.text = "1 ${asset.symbol} = $assetPrice ${currency.name}"
+                    PriceExpiredBottomSheetDialogFragment.newInstance(
+                        amount,
+                        currency.name,
+                        asset,
+                        info.purchaseTotal,
+                        assetAmount,
+                        assetPrice,
+                    ).apply {
+                        continueAction = { assetAmount ->
+                            this@OrderStatusFragment.retry(sessionId, instrumentId, token, assetAmount)
+                        }
+                        cancelAction = {
+                            this@OrderStatusFragment.view?.navigate(R.id.action_wallet_status_to_wallet)
+                        }
+                    }.showNow(parentFragmentManager, PriceExpiredBottomSheetDialogFragment.TAG)
+                    return@launch
+                }
+                showError(
+                    requireContext().getMixinErrorStringByCode(
+                        response.errorCode,
+                        response.errorDescription,
+                    ),
+                )
             }
-        } else {
-            if (response.errorCode == ErrorHandler.EXPIRED_PRICE) {
-                val extra = response.error?.extra?.asJsonObject?.get("data")?.asJsonObject
-                    ?: throw IllegalArgumentException(getString(R.string.Data_error))
-                val assetPrice = extra.get("asset_price").asString
-                    ?: throw IllegalArgumentException(getString(R.string.Data_error))
-                val assetAmount = extra.get("asset_amount").asString
-                    ?: throw IllegalArgumentException(getString(R.string.Data_error))
-                this@OrderStatusFragment.binding.priceTv.text = "1 ${asset.symbol} = $assetPrice ${currency.name}"
-                PriceExpiredBottomSheetDialogFragment.newInstance(
-                    amount,
-                    currency.name,
-                    asset,
-                    info.purchaseTotal,
-                    assetAmount,
-                    assetPrice,
-                ).apply {
-                    continueAction = { assetAmount ->
-                        this@OrderStatusFragment.retry(sessionId, instrumentId, token, assetAmount)
-                    }
-                    cancelAction = {
-                        this@OrderStatusFragment.view?.navigate(R.id.action_wallet_status_to_wallet)
-                    }
-                }.showNow(parentFragmentManager, PriceExpiredBottomSheetDialogFragment.TAG)
-                return@launch
-            }
-            showError(
-                requireContext().getMixinErrorStringByCode(
-                    response.errorCode,
-                    response.errorDescription,
-                ),
-            )
         }
-    }
 
     private suspend fun getPaymentStatus(paymentId: String) {
         lifecycleScope.launch(defaultErrorHandler) {
@@ -489,9 +521,10 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         }
     }
 
-    private val defaultErrorHandler = CoroutineExceptionHandler { _, error ->
-        showError(error.localizedMessage)
-    }
+    private val defaultErrorHandler =
+        CoroutineExceptionHandler { _, error ->
+            showError(error.localizedMessage)
+        }
 
     private suspend fun createToken(tokenJson: String) {
         val tokenResponse = fiatMoneyViewModel.token(RouteTokenRequest(tokenJson))
@@ -510,7 +543,10 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         }
     }
 
-    private suspend fun createSession(scheme: String, token: String? = null) {
+    private suspend fun createSession(
+        scheme: String,
+        token: String? = null,
+    ) {
         val sessionResponse = fiatMoneyViewModel.createSession(RouteSessionRequest(token, currency.name, scheme.lowercase(), asset.assetId, amount, instrumentId))
         if (sessionResponse.isSuccess && sessionResponse.data != null) {
             val session = requireNotNull(sessionResponse.data)
@@ -542,7 +578,10 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             }
         }
 
-    private fun handleError(statusCode: Int, message: String?) {
+    private fun handleError(
+        statusCode: Int,
+        message: String?,
+    ) {
         Timber.e("Status code: $statusCode")
         showError(message)
     }
@@ -553,7 +592,9 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         binding.content.text = message
     }
 
-    private fun showError(@StringRes errorRes: Int = R.string.Unknown) {
+    private fun showError(
+        @StringRes errorRes: Int = R.string.Unknown,
+    ) {
         showError(getString(errorRes))
     }
 

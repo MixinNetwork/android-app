@@ -13,10 +13,11 @@ data class ForwardUser(
     val capabilities: List<String>?,
 )
 
-fun ForwardUser.encryptedCategory(): EncryptCategory = if (appId != null && capabilities?.contains(AppCap.ENCRYPTED.name) == true) {
-    EncryptCategory.ENCRYPTED
-} else if (appId != null) {
-    EncryptCategory.PLAIN
-} else {
-    EncryptCategory.SIGNAL
-}
+fun ForwardUser.encryptedCategory(): EncryptCategory =
+    if (appId != null && capabilities?.contains(AppCap.ENCRYPTED.name) == true) {
+        EncryptCategory.ENCRYPTED
+    } else if (appId != null) {
+        EncryptCategory.PLAIN
+    } else {
+        EncryptCategory.SIGNAL
+    }

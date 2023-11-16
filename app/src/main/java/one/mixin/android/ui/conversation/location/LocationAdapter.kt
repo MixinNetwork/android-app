@@ -30,7 +30,10 @@ class LocationAdapter(val currentCallback: () -> Unit, val callback: (LocationPa
             notifyDataSetChanged()
         }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VenueHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): VenueHolder {
         return LayoutInflater.from(parent.context).inflate(R.layout.item_location, parent, false).run {
             VenueHolder(this)
         }
@@ -38,7 +41,10 @@ class LocationAdapter(val currentCallback: () -> Unit, val callback: (LocationPa
 
     override fun getItemCount(): Int = venues.notNullWithElse({ it.size + 1 }, 1)
 
-    override fun onBindViewHolder(holder: VenueHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: VenueHolder,
+        position: Int,
+    ) {
         val binding = ItemLocationBinding.bind(holder.itemView)
         if (position == 0) {
             binding.title.setText(R.string.Send_your_Current_Location)

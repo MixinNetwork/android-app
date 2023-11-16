@@ -20,7 +20,11 @@ private val bepChains by lazy {
     )
 }
 
-fun getChainNetwork(assetId: String, chainId: String, assetKey: String?): String? {
+fun getChainNetwork(
+    assetId: String,
+    chainId: String,
+    assetKey: String?,
+): String? {
     if (chainId == Constants.ChainId.MixinVirtualMachine) {
         return "MVM"
     }
@@ -47,7 +51,11 @@ private val chainNames by lazy {
     )
 }
 
-fun getChainName(chainId: String?, chainName: String?, assetKey: String?): String? {
+fun getChainName(
+    chainId: String?,
+    chainName: String?,
+    assetKey: String?,
+): String? {
     if (chainId == Constants.ChainId.TRON_CHAIN_ID) {
         return if (assetKey?.isDigitsOnly() == true) {
             "Tron (TRC-10)"

@@ -19,19 +19,23 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 class MusicActivity : BaseActivity() {
-
     companion object {
-        fun show(context: Context, conversationId: String) {
-            val intent = Intent(context, MusicActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                putExtra(EXTRA_CONVERSATION_ID, conversationId)
-            }
-            val pendingIntent = PendingIntent.getActivity(
-                context,
-                0,
-                intent,
-                PendingIntent.FLAG_IMMUTABLE,
-            )
+        fun show(
+            context: Context,
+            conversationId: String,
+        ) {
+            val intent =
+                Intent(context, MusicActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    putExtra(EXTRA_CONVERSATION_ID, conversationId)
+                }
+            val pendingIntent =
+                PendingIntent.getActivity(
+                    context,
+                    0,
+                    intent,
+                    PendingIntent.FLAG_IMMUTABLE,
+                )
             try {
                 pendingIntent.send()
             } catch (e: PendingIntent.CanceledException) {
@@ -97,22 +101,23 @@ class MusicActivity : BaseActivity() {
             }
             if (permissionAlert != null && permissionAlert!!.isShowing) return@checkInlinePermissions
 
-            permissionAlert = AlertDialog.Builder(this)
-                .setTitle(R.string.app_name)
-                .setMessage(R.string.web_floating_permission)
-                .setPositiveButton(R.string.Settings) { dialog, _ ->
-                    try {
-                        startActivity(
-                            Intent(
-                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:$packageName"),
-                            ),
-                        )
-                    } catch (e: Exception) {
-                        Timber.e(e)
-                    }
-                    dialog.dismiss()
-                    setClicked = true
-                }.show()
+            permissionAlert =
+                AlertDialog.Builder(this)
+                    .setTitle(R.string.app_name)
+                    .setMessage(R.string.web_floating_permission)
+                    .setPositiveButton(R.string.Settings) { dialog, _ ->
+                        try {
+                            startActivity(
+                                Intent(
+                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                    Uri.parse("package:$packageName"),
+                                ),
+                            )
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+                        dialog.dismiss()
+                        setClicked = true
+                    }.show()
         }
 }

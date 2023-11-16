@@ -30,7 +30,6 @@ import kotlin.math.min
 
 @UnstableApi class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     FrameLayout(context, attributeSet) {
-
     private val componentListener = ComponentListener()
     private val formatBuilder = StringBuilder()
     private val formatter = Formatter(formatBuilder, Locale.getDefault())
@@ -50,12 +49,14 @@ import kotlin.math.min
 
     private val statusBarHeight = context.statusBarHeight()
 
-    private val updateProgressAction = Runnable {
-        updateProgress()
-    }
-    private val hideAction = Runnable {
-        hide()
-    }
+    private val updateProgressAction =
+        Runnable {
+            updateProgress()
+        }
+    private val hideAction =
+        Runnable {
+            hide()
+        }
 
     private var useBottomLayout = false
     var inRefreshState = false
@@ -218,12 +219,19 @@ import kotlin.math.min
         }
     }
 
-    private fun seekTo(player: Player, windowIndex: Int, positionMs: Long): Boolean {
+    private fun seekTo(
+        player: Player,
+        windowIndex: Int,
+        positionMs: Long,
+    ): Boolean {
         player.seekTo(windowIndex, positionMs)
         return true
     }
 
-    private fun seekToTimeBarPosition(player: Player, positionMsParams: Long) {
+    private fun seekToTimeBarPosition(
+        player: Player,
+        positionMsParams: Long,
+    ) {
         var positionMs = positionMsParams
         var windowIndex: Int
         val timeline = player.currentTimeline
@@ -428,11 +436,12 @@ import kotlin.math.min
                 if (playbackSpeed > 0) (mediaTimeDelayMs / playbackSpeed).toLong() else MAX_UPDATE_INTERVAL_MS
 
             // Constrain the delay to avoid too frequent / infrequent updates.
-            delayMs = Util.constrainValue(
-                delayMs,
-                timeBarMinUpdateIntervalMs.toLong(),
-                MAX_UPDATE_INTERVAL_MS,
-            )
+            delayMs =
+                Util.constrainValue(
+                    delayMs,
+                    timeBarMinUpdateIntervalMs.toLong(),
+                    MAX_UPDATE_INTERVAL_MS,
+                )
             postDelayed(updateProgressAction, delayMs)
         } else if (playbackState != Player.STATE_ENDED && playbackState != Player.STATE_IDLE) {
             postDelayed(updateProgressAction, MAX_UPDATE_INTERVAL_MS)
@@ -443,23 +452,36 @@ import kotlin.math.min
         Player.Listener,
         TimeBar.OnScrubListener,
         OnClickListener {
-        override fun onScrubMove(timeBar: TimeBar, position: Long) {
+        override fun onScrubMove(
+            timeBar: TimeBar,
+            position: Long,
+        ) {
             positionView.text = Util.getStringForTime(formatBuilder, formatter, position)
         }
 
-        override fun onScrubStart(timeBar: TimeBar, position: Long) {
+        override fun onScrubStart(
+            timeBar: TimeBar,
+            position: Long,
+        ) {
             scrubbing = true
             positionView.text = Util.getStringForTime(formatBuilder, formatter, position)
         }
 
-        override fun onScrubStop(timeBar: TimeBar, position: Long, canceled: Boolean) {
+        override fun onScrubStop(
+            timeBar: TimeBar,
+            position: Long,
+            canceled: Boolean,
+        ) {
             scrubbing = false
             if (!canceled) {
                 player?.let { seekToTimeBarPosition(it, position) }
             }
         }
 
-        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+        override fun onPlayerStateChanged(
+            playWhenReady: Boolean,
+            playbackState: Int,
+        ) {
             updatePlayView()
             updateProgress()
         }
@@ -468,12 +490,17 @@ import kotlin.math.min
             updateProgress()
         }
 
-        override fun onPositionDiscontinuity(@Player.DiscontinuityReason reason: Int) {
+        override fun onPositionDiscontinuity(
+            @Player.DiscontinuityReason reason: Int,
+        ) {
             updateNavigation()
             updateTimeline()
         }
 
-        override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+        override fun onTimelineChanged(
+            timeline: Timeline,
+            reason: Int,
+        ) {
             updateNavigation()
             updateTimeline()
         }
@@ -501,13 +528,14 @@ import kotlin.math.min
     }
 
     interface VisibilityListener {
-
         fun onVisibilityChange(visibility: Int)
     }
 
     interface ProgressUpdateListener {
-
-        fun onProgressUpdate(position: Long, bufferedPosition: Long)
+        fun onProgressUpdate(
+            position: Long,
+            bufferedPosition: Long,
+        )
     }
 
     companion object {
@@ -518,7 +546,10 @@ import kotlin.math.min
 
         const val DEFAULT_SHOW_TIMEOUT_MS = 5000
 
-        fun canShowMultiWindowTimeBar(timeline: Timeline, window: Timeline.Window): Boolean {
+        fun canShowMultiWindowTimeBar(
+            timeline: Timeline,
+            window: Timeline.Window,
+        ): Boolean {
             if (timeline.windowCount > MAX_WINDOWS_FOR_MULTI_WINDOW_TIME_BAR) {
                 return false
             }

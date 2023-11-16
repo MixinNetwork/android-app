@@ -28,35 +28,38 @@ fun ScopeCheckLayout(
     val checkedState = remember { mutableStateOf(state) }
     val isProfileScope = scope.source == Scope.SCOPES[0]
     Row(
-        modifier = Modifier
-            .run {
-                if (!isProfileScope && onCheckedChange != null) {
-                    clickable {
-                        checkedState.value = !checkedState.value
-                        onCheckedChange.invoke(checkedState.value)
+        modifier =
+            Modifier
+                .run {
+                    if (!isProfileScope && onCheckedChange != null) {
+                        clickable {
+                            checkedState.value = !checkedState.value
+                            onCheckedChange.invoke(checkedState.value)
+                        }
+                    } else {
+                        this
                     }
-                } else {
-                    this
                 }
-            }
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .fillMaxWidth(),
-
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .fillMaxWidth(),
     ) {
         Image(
-            modifier = Modifier
-                .padding(vertical = 4.dp)
-                .padding(end = 8.dp),
-            painter = painterResource(
-                id = when {
-                    isProfileScope ->
-                        R.drawable.ic_selected_disable
-                    checkedState.value ->
-                        R.drawable.ic_selected
-                    else ->
-                        R.drawable.ic_not_selected
-                },
-            ),
+            modifier =
+                Modifier
+                    .padding(vertical = 4.dp)
+                    .padding(end = 8.dp),
+            painter =
+                painterResource(
+                    id =
+                        when {
+                            isProfileScope ->
+                                R.drawable.ic_selected_disable
+                            checkedState.value ->
+                                R.drawable.ic_selected
+                            else ->
+                                R.drawable.ic_not_selected
+                        },
+                ),
             contentDescription = null,
         )
         Column(

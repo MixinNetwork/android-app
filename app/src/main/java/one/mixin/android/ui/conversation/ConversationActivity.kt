@@ -117,7 +117,11 @@ class ConversationActivity : BlazeBaseActivity() {
             }
         }
 
-        fun getShortcutIntent(context: Context, conversationId: String, recipientId: String? = null): Intent {
+        fun getShortcutIntent(
+            context: Context,
+            conversationId: String,
+            recipientId: String? = null,
+        ): Intent {
             return putIntent(context, conversationId, recipientId = recipientId).apply {
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_CLEAR_TASK)
                 addCategory(Intent.CATEGORY_LAUNCHER)

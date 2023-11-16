@@ -6,12 +6,18 @@ import one.mixin.android.vo.safe.Output
 
 @Dao
 interface OutputDao : BaseDao<Output> {
-
     @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset ORDER BY sequence ASC LIMIT :limit")
-    suspend fun findUnspentOutputsByAsset(limit: Int, asset: String): List<Output>
+    suspend fun findUnspentOutputsByAsset(
+        limit: Int,
+        asset: String,
+    ): List<Output>
 
     @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset ORDER BY sequence ASC LIMIT :limit OFFSET :offset")
-    suspend fun findUnspentOutputsByAssetOffset(limit: Int, asset: String, offset: Int): List<Output>
+    suspend fun findUnspentOutputsByAssetOffset(
+        limit: Int,
+        asset: String,
+        offset: Int,
+    ): List<Output>
 
     @Query("SELECT output_id FROM outputs WHERE output_id IN (:ids) AND state = 'signed'")
     fun findSignedOutput(ids: List<String>): List<String>

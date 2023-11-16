@@ -13,12 +13,19 @@ data class SearchMessageDetailItem(
     val userAvatarUrl: String?,
 ) : ICategory {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SearchMessageDetailItem>() {
-            override fun areItemsTheSame(oldItem: SearchMessageDetailItem, newItem: SearchMessageDetailItem) =
-                oldItem.messageId == newItem.messageId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<SearchMessageDetailItem>() {
+                override fun areItemsTheSame(
+                    oldItem: SearchMessageDetailItem,
+                    newItem: SearchMessageDetailItem,
+                ) =
+                    oldItem.messageId == newItem.messageId
 
-            override fun areContentsTheSame(oldItem: SearchMessageDetailItem, newItem: SearchMessageDetailItem) =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: SearchMessageDetailItem,
+                    newItem: SearchMessageDetailItem,
+                ) =
+                    oldItem == newItem
+            }
     }
 }

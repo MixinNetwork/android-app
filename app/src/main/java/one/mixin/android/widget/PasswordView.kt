@@ -13,7 +13,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.dp
 
 class PasswordView : View {
-
     companion object {
         private const val RING_WIDTH = 2
         private const val CIRCLE_RADIUS = 6
@@ -30,16 +29,18 @@ class PasswordView : View {
     private var passwordList: CharArray
     private var pos = 0
 
-    private val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE
-        color = circleColor
-        strokeWidth = ringWidth
-    }
+    private val ringPaint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            color = circleColor
+            strokeWidth = ringWidth
+        }
 
-    private val circlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.FILL
-        color = circleColor
-    }
+    private val circlePaint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.FILL
+            color = circleColor
+        }
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)

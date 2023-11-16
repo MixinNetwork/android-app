@@ -16,23 +16,29 @@ class BackupNotification {
     companion object {
         private const val BACKUP_ID = 313389
         private const val CHANNEL_NODE = "channel_node"
-        private fun getBackupNotification(context: Context, backup: Boolean = true): Notification {
+
+        private fun getBackupNotification(
+            context: Context,
+            backup: Boolean = true,
+        ): Notification {
             val callIntent = Intent(context, SettingActivity::class.java)
             callIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
             callIntent.putExtra(FROM_NOTIFICATION, true)
-            val pendingCallIntent = PendingIntent.getActivity(
-                context,
-                0,
-                callIntent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-            )
+            val pendingCallIntent =
+                PendingIntent.getActivity(
+                    context,
+                    0,
+                    callIntent,
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+                )
 
-            val builder = NotificationCompat.Builder(context, CHANNEL_NODE)
-                .setSmallIcon(R.drawable.ic_msg_default)
-                .setContentIntent(pendingCallIntent)
-                .setOngoing(true)
-                .setContentTitle(context.getString(if (backup) R.string.backup_notification_title else R.string.restore_in_progress))
-                .setContentText(context.getString(if (backup) R.string.backup_notification_content else R.string.Restoring))
+            val builder =
+                NotificationCompat.Builder(context, CHANNEL_NODE)
+                    .setSmallIcon(R.drawable.ic_msg_default)
+                    .setContentIntent(pendingCallIntent)
+                    .setOngoing(true)
+                    .setContentTitle(context.getString(if (backup) R.string.backup_notification_title else R.string.restore_in_progress))
+                    .setContentText(context.getString(if (backup) R.string.backup_notification_content else R.string.Restoring))
 
             return builder.build()
         }

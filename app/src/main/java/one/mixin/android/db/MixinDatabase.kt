@@ -74,7 +74,6 @@ import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationExt
-import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.FloodMessage
@@ -85,7 +84,6 @@ import one.mixin.android.vo.MessageFts4
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.Offset
-import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.PinMessage
@@ -93,20 +91,21 @@ import one.mixin.android.vo.Property
 import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.ResendMessage
 import one.mixin.android.vo.ResendSessionMessage
-import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.SentSenderKey
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
-import one.mixin.android.vo.safe.Token
-import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.DepositEntry
+import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
-import one.mixin.android.vo.safe.RawTransactionType
+import one.mixin.android.vo.safe.SafeSnapshot
+import one.mixin.android.vo.safe.Token
+import one.mixin.android.vo.safe.TokensExtra
 import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
@@ -160,41 +159,77 @@ import kotlin.math.min
 @TypeConverters(MessageStatusConverter::class, DepositEntryListConverter::class, WithdrawalMemoPossibilityConverter::class, SafeDepositConverter::class, SafeWithdrawalConverter::class, RawTransactionTypeConverter::class, OutputStateConverter::class)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
+
     abstract fun conversationExtDao(): ConversationExtDao
+
     abstract fun messageDao(): MessageDao
+
     abstract fun userDao(): UserDao
+
     abstract fun participantSessionDao(): ParticipantSessionDao
+
     abstract fun participantDao(): ParticipantDao
+
     abstract fun offsetDao(): OffsetDao
+
     abstract fun assetDao(): AssetDao
+
     abstract fun tokenDao(): TokenDao
+
     abstract fun tokensExtraDao(): TokensExtraDao
+
     abstract fun snapshotDao(): SnapshotDao
+
     abstract fun safeSnapshotDao(): SafeSnapshotDao
+
     abstract fun messageHistoryDao(): MessageHistoryDao
+
     abstract fun stickerDao(): StickerDao
+
     abstract fun stickerAlbumDao(): StickerAlbumDao
+
     abstract fun appDao(): AppDao
+
     abstract fun hyperlinkDao(): HyperlinkDao
+
     abstract fun floodMessageDao(): FloodMessageDao
+
     abstract fun jobDao(): JobDao
+
     abstract fun addressDao(): AddressDao
+
     abstract fun resendSessionMessageDao(): ResendSessionMessageDao
+
     abstract fun stickerRelationshipDao(): StickerRelationshipDao
+
     abstract fun topAssetDao(): TopAssetDao
+
     abstract fun favoriteAppDao(): FavoriteAppDao
+
     abstract fun mentionMessageDao(): MessageMentionDao
+
     abstract fun circleDao(): CircleDao
+
     abstract fun circleConversationDao(): CircleConversationDao
+
     abstract fun traceDao(): TraceDao
+
     abstract fun transcriptDao(): TranscriptMessageDao
+
     abstract fun pinMessageDao(): PinMessageDao
+
     abstract fun remoteMessageStatusDao(): RemoteMessageStatusDao
+
     abstract fun propertyDao(): PropertyDao
+
     abstract fun expiredMessageDao(): ExpiredMessageDao
+
     abstract fun chainDao(): ChainDao
+
     abstract fun outputDao(): OutputDao
+
     abstract fun depositDao(): DepositDao
+
     abstract fun rawTransactionDao(): RawTransactionDao
 
     companion object {
@@ -208,41 +243,47 @@ abstract class MixinDatabase : RoomDatabase() {
         fun getDatabase(context: Context): MixinDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
-                    val builder = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
-                        .openHelperFactory(
-                            MixinOpenHelperFactory(
-                                FrameworkSQLiteOpenHelperFactory(),
-                                listOf(object : MixinCorruptionCallback {
-                                    override fun onCorruption(database: SupportSQLiteDatabase) {
-                                        val e = IllegalStateException("Mixin database is corrupted, current DB version: $CURRENT_VERSION")
-                                        reportException(e)
-                                    }
-                                }),
-                            ),
-                        )
-                        .addMigrations(
-                            MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22,
-                            MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26, MIGRATION_26_27, MIGRATION_27_28, MIGRATION_28_29,
-                            MIGRATION_29_30, MIGRATION_30_31, MIGRATION_31_32, MIGRATION_32_33, MIGRATION_33_34, MIGRATION_34_35, MIGRATION_35_36,
-                            MIGRATION_36_37, MIGRATION_37_38, MIGRATION_38_39, MIGRATION_39_40, MIGRATION_40_41, MIGRATION_41_42, MIGRATION_42_43,
-                            MIGRATION_43_44, MIGRATION_44_45, MIGRATION_45_46, MIGRATION_46_47, MIGRATION_47_48, MIGRATION_48_49, MIGRATION_49_50,
-                            MIGRATION_50_51, MIGRATION_51_52, MIGRATION_52_53
-                        )
-                        .enableMultiInstanceInvalidation()
-                        .setQueryExecutor(
-                            Executors.newFixedThreadPool(
-                                max(
-                                    2,
-                                    min(Runtime.getRuntime().availableProcessors() - 1, 4),
+                    val builder =
+                        Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
+                            .openHelperFactory(
+                                MixinOpenHelperFactory(
+                                    FrameworkSQLiteOpenHelperFactory(),
+                                    listOf(
+                                        object : MixinCorruptionCallback {
+                                            override fun onCorruption(database: SupportSQLiteDatabase) {
+                                                val e = IllegalStateException("Mixin database is corrupted, current DB version: $CURRENT_VERSION")
+                                                reportException(e)
+                                            }
+                                        },
+                                    ),
                                 ),
-                            ),
-                        )
-                        .setTransactionExecutor(SINGLE_DB_EXECUTOR)
-                        .addCallback(CALLBACK)
+                            )
+                            .addMigrations(
+                                MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22,
+                                MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26, MIGRATION_26_27, MIGRATION_27_28, MIGRATION_28_29,
+                                MIGRATION_29_30, MIGRATION_30_31, MIGRATION_31_32, MIGRATION_32_33, MIGRATION_33_34, MIGRATION_34_35, MIGRATION_35_36,
+                                MIGRATION_36_37, MIGRATION_37_38, MIGRATION_38_39, MIGRATION_39_40, MIGRATION_40_41, MIGRATION_41_42, MIGRATION_42_43,
+                                MIGRATION_43_44, MIGRATION_44_45, MIGRATION_45_46, MIGRATION_46_47, MIGRATION_47_48, MIGRATION_48_49, MIGRATION_49_50,
+                                MIGRATION_50_51, MIGRATION_51_52, MIGRATION_52_53,
+                            )
+                            .enableMultiInstanceInvalidation()
+                            .setQueryExecutor(
+                                Executors.newFixedThreadPool(
+                                    max(
+                                        2,
+                                        min(Runtime.getRuntime().availableProcessors() - 1, 4),
+                                    ),
+                                ),
+                            )
+                            .setTransactionExecutor(SINGLE_DB_EXECUTOR)
+                            .addCallback(CALLBACK)
                     if (BuildConfig.DEBUG) {
                         builder.setQueryCallback(
                             object : QueryCallback {
-                                override fun onQuery(sqlQuery: String, bindArgs: List<Any?>) {
+                                override fun onQuery(
+                                    sqlQuery: String,
+                                    bindArgs: List<Any?>,
+                                ) {
                                     DatabaseMonitor.monitor(sqlQuery, bindArgs)
                                 }
                             },
@@ -286,17 +327,18 @@ abstract class MixinDatabase : RoomDatabase() {
             return INSTANCE?.openHelper?.writableDatabase
         }
 
-        private val CALLBACK = object : RoomDatabase.Callback() {
-            override fun onOpen(db: SupportSQLiteDatabase) {
-                super.onOpen(db)
-                supportSQLiteDatabase = db
-                db.execSQL("PRAGMA synchronous = NORMAL")
-                db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_count_insert")
-                db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_insert")
-                db.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_update")
-                db.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_delete")
+        private val CALLBACK =
+            object : RoomDatabase.Callback() {
+                override fun onOpen(db: SupportSQLiteDatabase) {
+                    super.onOpen(db)
+                    supportSQLiteDatabase = db
+                    db.execSQL("PRAGMA synchronous = NORMAL")
+                    db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_count_insert")
+                    db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_insert")
+                    db.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_update")
+                    db.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_delete")
+                }
             }
-        }
     }
 }
 

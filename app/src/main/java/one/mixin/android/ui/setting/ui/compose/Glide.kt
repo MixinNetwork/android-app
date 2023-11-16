@@ -45,53 +45,61 @@ fun GlideImage(
         return
     }
     BoxWithConstraints(modifier = modifier) {
-        val state = remember(placeHolderPainter) {
-            mutableStateOf<ImageBitmap?>(null)
-        }
+        val state =
+            remember(placeHolderPainter) {
+                mutableStateOf<ImageBitmap?>(null)
+            }
         val context = LocalContext.current
         DisposableEffect(data, modifier, glideModifier, placeHolderPainter) {
             val glide = Glide.with(context)
-            var builder = when (data) {
-                is Int -> {
-                    glide.load(data)
+            var builder =
+                when (data) {
+                    is Int -> {
+                        glide.load(data)
+                    }
+                    is Uri -> {
+                        glide.load(data)
+                    }
+                    is File -> {
+                        glide.load(data)
+                    }
+                    is Drawable -> {
+                        glide.load(data)
+                    }
+                    is ByteArray -> {
+                        glide.load(data)
+                    }
+                    is Bitmap -> {
+                        glide.load(data)
+                    }
+                    is String -> {
+                        glide.load(data)
+                    }
+                    else -> {
+                        glide.load(data)
+                    }
                 }
-                is Uri -> {
-                    glide.load(data)
-                }
-                is File -> {
-                    glide.load(data)
-                }
-                is Drawable -> {
-                    glide.load(data)
-                }
-                is ByteArray -> {
-                    glide.load(data)
-                }
-                is Bitmap -> {
-                    glide.load(data)
-                }
-                is String -> {
-                    glide.load(data)
-                }
-                else -> {
-                    glide.load(data)
-                }
-            }
             builder = glideModifier(builder)
-            val request = builder.into(object : CustomTarget<Drawable>(
-                constraints.maxWidth,
-                constraints.maxHeight,
-            ) {
-                override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-                    state.value = resource.toBitmap().asImageBitmap()
-                }
+            val request =
+                builder.into(
+                    object : CustomTarget<Drawable>(
+                        constraints.maxWidth,
+                        constraints.maxHeight,
+                    ) {
+                        override fun onResourceReady(
+                            resource: Drawable,
+                            transition: Transition<in Drawable>?,
+                        ) {
+                            state.value = resource.toBitmap().asImageBitmap()
+                        }
 
-                override fun onLoadStarted(placeholder: Drawable?) {
-                }
+                        override fun onLoadStarted(placeholder: Drawable?) {
+                        }
 
-                override fun onLoadCleared(placeholder: Drawable?) {
-                }
-            }).request!!
+                        override fun onLoadCleared(placeholder: Drawable?) {
+                        }
+                    },
+                ).request!!
             onDispose {
                 request.clear()
             }

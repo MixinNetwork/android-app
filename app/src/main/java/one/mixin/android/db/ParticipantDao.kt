@@ -66,17 +66,28 @@ interface ParticipantDao : BaseDao<Participant> {
             ORDER BY p.created_at DESC
         """,
     )
-    fun fuzzySearchGroupParticipants(conversationId: String, username: String, identityNumber: String): DataSource.Factory<Int, ParticipantItem>
+    fun fuzzySearchGroupParticipants(
+        conversationId: String,
+        username: String,
+        identityNumber: String,
+    ): DataSource.Factory<Int, ParticipantItem>
 
     @Query("UPDATE participants SET role = :role where conversation_id = :conversationId AND user_id = :userId")
-    fun updateParticipantRole(conversationId: String, userId: String, role: String)
+    fun updateParticipantRole(
+        conversationId: String,
+        userId: String,
+        role: String,
+    )
 
     @Transaction
     @Query("SELECT * FROM participants WHERE conversation_id = :conversationId")
     fun getRealParticipants(conversationId: String): List<Participant>
 
     @Transaction
-    fun replaceAll(conversationId: String, participants: List<Participant>) {
+    fun replaceAll(
+        conversationId: String,
+        participants: List<Participant>,
+    ) {
         deleteByConversationId(conversationId)
         insertList(participants)
     }
@@ -85,7 +96,10 @@ interface ParticipantDao : BaseDao<Participant> {
     fun deleteByConversationId(conversationId: String)
 
     @Query("DELETE FROM participants WHERE conversation_id = :conversationId AND user_id = :userId")
-    fun deleteById(conversationId: String, userId: String)
+    fun deleteById(
+        conversationId: String,
+        userId: String,
+    )
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
@@ -99,10 +113,16 @@ interface ParticipantDao : BaseDao<Participant> {
         "SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship FROM participants p, users u " +
             "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at DESC LIMIT :limit",
     )
-    fun getLimitParticipants(conversationId: String, limit: Int): List<User>
+    fun getLimitParticipants(
+        conversationId: String,
+        limit: Int,
+    ): List<User>
 
     @Query("SELECT * FROM participants WHERE conversation_id = :conversationId AND user_id = :userId")
-    fun findParticipantById(conversationId: String, userId: String): Participant?
+    fun findParticipantById(
+        conversationId: String,
+        userId: String,
+    ): Participant?
 
     @Query("SELECT count(1) FROM participants WHERE conversation_id = :conversationId")
     suspend fun getParticipantsCount(conversationId: String): Int
@@ -119,13 +139,23 @@ interface ParticipantDao : BaseDao<Participant> {
     fun joinedConversationId(userId: String): String?
 
     @Query("SELECT p.* FROM participants p WHERE p.rowid > :rowId ORDER BY p.rowid ASC LIMIT :limit")
-    fun getParticipantsByLimitAndRowId(limit: Int, rowId: Long): List<Participant>
+    fun getParticipantsByLimitAndRowId(
+        limit: Int,
+        rowId: Long,
+    ): List<Participant>
 
     @Query("SELECT p.* FROM participants p WHERE p.rowid > :rowId AND conversation_id IN (:conversationIds) ORDER BY p.rowid ASC LIMIT :limit")
-    fun getParticipantsByLimitAndRowId(limit: Int, rowId: Long, conversationIds: Collection<String>): List<Participant>
+    fun getParticipantsByLimitAndRowId(
+        limit: Int,
+        rowId: Long,
+        conversationIds: Collection<String>,
+    ): List<Participant>
 
     @Query("SELECT rowid FROM participants WHERE conversation_id = :conversationId AND user_id = :userId")
-    fun getParticipantRowId(conversationId: String, userId: String): Long?
+    fun getParticipantRowId(
+        conversationId: String,
+        userId: String,
+    ): Long?
 
     @Query("SELECT count(1) FROM participants")
     fun countParticipants(): Long
@@ -137,5 +167,8 @@ interface ParticipantDao : BaseDao<Participant> {
     fun countParticipants(rowId: Long): Long
 
     @Query("SELECT count(1) FROM participants WHERE rowid > :rowId AND conversation_id IN (:conversationIds)")
-    fun countParticipants(rowId: Long, conversationIds: Collection<String>): Long
+    fun countParticipants(
+        rowId: Long,
+        conversationIds: Collection<String>,
+    ): Long
 }

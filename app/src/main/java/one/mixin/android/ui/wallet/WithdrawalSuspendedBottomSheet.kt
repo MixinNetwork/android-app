@@ -22,15 +22,16 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class WithdrawalSuspendedBottomSheet : MixinBottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "WithdrawalSuspendedBottomSheet"
+
         fun newInstance(
             tokenItem: TokenItem,
         ) = WithdrawalSuspendedBottomSheet().apply {
-            arguments = Bundle().apply {
-                putParcelable("token", tokenItem)
-            }
+            arguments =
+                Bundle().apply {
+                    putParcelable("token", tokenItem)
+                }
         }
     }
 
@@ -41,7 +42,10 @@ class WithdrawalSuspendedBottomSheet : MixinBottomSheetDialogFragment() {
     private val bottomSendBinding by viewBinding(WithdralBottomBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = bottomSendBinding.root
         (dialog as BottomSheet).setCustomView(contentView)

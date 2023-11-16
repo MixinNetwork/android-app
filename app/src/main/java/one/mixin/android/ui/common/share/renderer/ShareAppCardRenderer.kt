@@ -11,7 +11,6 @@ import one.mixin.android.extension.loadRoundImage
 import one.mixin.android.vo.AppCardData
 
 open class ShareAppCardRenderer(context: Context) {
-
     private val binding = ItemChatActionCardBinding.inflate(LayoutInflater.from(context), null, false)
     val contentView get() = binding.root
 
@@ -20,7 +19,10 @@ open class ShareAppCardRenderer(context: Context) {
         binding.chatName.isVisible = false
     }
 
-    fun render(actionCard: AppCardData, isNightMode: Boolean) {
+    fun render(
+        actionCard: AppCardData,
+        isNightMode: Boolean,
+    ) {
         binding.chatIcon.loadRoundImage(actionCard.iconUrl, 4.dp, R.drawable.holder_bot)
         binding.chatTitle.text = actionCard.title
         binding.chatDescription.text = actionCard.description

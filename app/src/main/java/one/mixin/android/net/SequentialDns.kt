@@ -1,10 +1,10 @@
 package one.mixin.android.net
 
+import okhttp3.Dns
+import timber.log.Timber
 import java.net.InetAddress
 import java.net.UnknownHostException
 import kotlin.jvm.Throws
-import okhttp3.Dns
-import timber.log.Timber
 
 class SequentialDns(vararg dns: Dns) : Dns {
     private val dnsList: List<Dns> = listOf(*dns)

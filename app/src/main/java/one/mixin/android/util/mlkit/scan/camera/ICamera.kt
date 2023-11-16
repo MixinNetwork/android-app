@@ -23,7 +23,9 @@ interface ICamera {
 
     fun lineZoomOut()
 
-    fun lineZoomTo(@FloatRange(from = 0.0, to = 1.0) linearZoom: Float)
+    fun lineZoomTo(
+        @FloatRange(from = 0.0, to = 1.0) linearZoom: Float,
+    )
 
     fun enableTorch(torch: Boolean)
 

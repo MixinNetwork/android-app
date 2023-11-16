@@ -29,7 +29,11 @@ fun ImageView.loadImage(uri: Uri?) {
     Glide.with(this).load(uri).into(this)
 }
 
-fun ImageView.loadImage(uri: String?, @DrawableRes holder: Int, useAppContext: Boolean = false) {
+fun ImageView.loadImage(
+    uri: String?,
+    @DrawableRes holder: Int,
+    useAppContext: Boolean = false,
+) {
     if (useAppContext) {
         Glide.with(MixinApplication.appContext).load(uri).apply(RequestOptions.placeholderOf(holder)).into(this)
     } else {
@@ -42,13 +46,20 @@ fun ImageView.clear() {
     Glide.with(this).clear(this)
 }
 
-fun ImageView.loadImage(uri: String?, width: Int, height: Int) {
+fun ImageView.loadImage(
+    uri: String?,
+    width: Int,
+    height: Int,
+) {
     if (!isActivityNotDestroyed()) return
     val multi = MultiTransformation(CropTransformation(width, height))
     Glide.with(this).load(uri).apply(RequestOptions.bitmapTransform(multi).dontAnimate()).into(this)
 }
 
-fun ImageView.loadImageCenterCrop(uri: String?, holder: String? = null) {
+fun ImageView.loadImageCenterCrop(
+    uri: String?,
+    holder: String? = null,
+) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri)
         .apply(
@@ -62,7 +73,10 @@ fun ImageView.loadImageCenterCrop(uri: String?, holder: String? = null) {
         ).into(this)
 }
 
-fun ImageView.loadImageCenterCrop(uri: String?, @DrawableRes holder: Int? = null) {
+fun ImageView.loadImageCenterCrop(
+    uri: String?,
+    @DrawableRes holder: Int? = null,
+) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri)
         .apply(
@@ -76,7 +90,10 @@ fun ImageView.loadImageCenterCrop(uri: String?, @DrawableRes holder: Int? = null
         ).into(this)
 }
 
-fun ImageView.loadImageCenterCrop(uri: Uri?, @DrawableRes holder: Int? = null) {
+fun ImageView.loadImageCenterCrop(
+    uri: Uri?,
+    @DrawableRes holder: Int? = null,
+) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri)
         .apply(
@@ -144,7 +161,12 @@ fun ImageView.loadGif(
     }
 }
 
-fun ImageView.loadGifMark(uri: String?, holder: String?, mark: Int, useSignature: Boolean) {
+fun ImageView.loadGifMark(
+    uri: String?,
+    holder: String?,
+    mark: Int,
+    useSignature: Boolean,
+) {
     if (!isActivityNotDestroyed()) return
     var options = RequestOptions().dontTransform()
     if (useSignature) {
@@ -156,7 +178,11 @@ fun ImageView.loadGifMark(uri: String?, holder: String?, mark: Int, useSignature
     Glide.with(this).load(uri).apply(options).into(this)
 }
 
-fun ImageView.loadImageMark(uri: String?, holder: String?, mark: Int) {
+fun ImageView.loadImageMark(
+    uri: String?,
+    holder: String?,
+    mark: Int,
+) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).apply(
         RequestOptions().dontAnimate()
@@ -170,7 +196,11 @@ fun ImageView.loadImageMark(uri: String?, holder: String?, mark: Int) {
     ).into(this)
 }
 
-fun ImageView.loadImageMark(uri: String?, @DrawableRes holder: Int?, mark: Int) {
+fun ImageView.loadImageMark(
+    uri: String?,
+    @DrawableRes holder: Int?,
+    mark: Int,
+) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).apply(
         RequestOptions().dontAnimate()
@@ -184,7 +214,10 @@ fun ImageView.loadImageMark(uri: String?, @DrawableRes holder: Int?, mark: Int) 
     ).into(this)
 }
 
-fun ImageView.loadImageMark(uri: String?, mark: Int) {
+fun ImageView.loadImageMark(
+    uri: String?,
+    mark: Int,
+) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).apply(
         RequestOptions().dontAnimate()
@@ -218,7 +251,11 @@ fun ImageView.loadImageMark(uri: String?, mark: Int) {
         .submit(layoutParams.width, layoutParams.height)
 }
 
-fun ImageView.loadLongImageMark(uri: String?, holder: String?, mark: Int) {
+fun ImageView.loadLongImageMark(
+    uri: String?,
+    holder: String?,
+    mark: Int,
+) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).apply(
         RequestOptions.bitmapTransform(
@@ -239,7 +276,10 @@ fun ImageView.loadLongImageMark(uri: String?, holder: String?, mark: Int) {
     ).into(this)
 }
 
-fun ImageView.loadLongImageMark(uri: String?, mark: Int?) {
+fun ImageView.loadLongImageMark(
+    uri: String?,
+    mark: Int?,
+) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).apply(
         RequestOptions.bitmapTransform(
@@ -256,7 +296,6 @@ fun ImageView.loadLongImageMark(uri: String?, mark: Int?) {
                     this
                 }
             },
-
     ).listener(
         object : RequestListener<Drawable> {
             override fun onLoadFailed(
@@ -342,21 +381,31 @@ fun ImageView.loadVideo(uri: String?) {
     ).into(this)
 }
 
-fun ImageView.loadVideo(uri: String?, holder: String?, width: Int, height: Int) {
+fun ImageView.loadVideo(
+    uri: String?,
+    holder: String?,
+    width: Int,
+    height: Int,
+) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri)
         .apply(RequestOptions().placeholder(holder?.toDrawable(width, height)).override(width, height))
         .into(this)
 }
 
-fun RLottieImageView.loadSticker(url: String?, type: String?, cacheKey: String) {
+fun RLottieImageView.loadSticker(
+    url: String?,
+    type: String?,
+    cacheKey: String,
+) {
     if (!isActivityNotDestroyed()) return
     url?.let {
-        val imgType = type?.uppercase() ?: try {
-            url.substring(url.lastIndexOf("." + 1)).uppercase()
-        } catch (e: Exception) {
-            null
-        }
+        val imgType =
+            type?.uppercase() ?: try {
+                url.substring(url.lastIndexOf("." + 1)).uppercase()
+            } catch (e: Exception) {
+                null
+            }
         when (imgType) {
             "JSON" ->
                 loadLottie(it, cacheKey)
@@ -368,7 +417,10 @@ fun RLottieImageView.loadSticker(url: String?, type: String?, cacheKey: String) 
     }
 }
 
-fun RLottieImageView.loadLottie(uri: String, cacheKey: String) {
+fun RLottieImageView.loadLottie(
+    uri: String,
+    cacheKey: String,
+) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this)
         .`as`(RLottieDrawable::class.java)
@@ -380,7 +432,12 @@ fun RLottieImageView.loadLottie(uri: String, cacheKey: String) {
 }
 
 @Suppress("unused")
-fun ImageView.loadBase64(uri: ByteArray?, width: Int, height: Int, mark: Int) {
+fun ImageView.loadBase64(
+    uri: ByteArray?,
+    width: Int,
+    height: Int,
+    mark: Int,
+) {
     if (!isActivityNotDestroyed()) return
     val multi = MultiTransformation(CropTransformation(width, height))
     Glide.with(this).load(uri)
@@ -391,7 +448,10 @@ fun ImageView.loadBase64(uri: ByteArray?, width: Int, height: Int, mark: Int) {
         ).into(this)
 }
 
-fun ImageView.loadCircleImage(uri: String?, @DrawableRes holder: Int? = null) {
+fun ImageView.loadCircleImage(
+    uri: String?,
+    @DrawableRes holder: Int? = null,
+) {
     if (!isActivityNotDestroyed()) return
     if (uri.isNullOrBlank()) {
         if (holder != null) {
@@ -405,7 +465,11 @@ fun ImageView.loadCircleImage(uri: String?, @DrawableRes holder: Int? = null) {
     }
 }
 
-fun ImageView.loadRoundImage(uri: String?, radius: Int, @DrawableRes holder: Int? = null) {
+fun ImageView.loadRoundImage(
+    uri: String?,
+    radius: Int,
+    @DrawableRes holder: Int? = null,
+) {
     if (!isActivityNotDestroyed()) return
     if (uri.isNullOrBlank() && holder != null) {
         setImageResource(holder)

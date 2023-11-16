@@ -22,7 +22,8 @@ class AppItem(
     val avatarUrl: String? = null,
 )
 
-fun AppItem.toApp() = App(
-    appId, appNumber, homeUri, redirectUri, name, iconUrl, category, description,
-    appSecret, capabilities, creatorId, resourcePatterns, updatedAt,
-)
+fun AppItem.toApp() =
+    App(
+        appId, appNumber, homeUri, redirectUri, name, iconUrl, category, description,
+        appSecret, capabilities, creatorId, resourcePatterns, updatedAt,
+    )

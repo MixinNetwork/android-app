@@ -16,11 +16,12 @@ import one.mixin.android.vo.WithdrawalMemoPossibility
 import java.lang.reflect.Type
 
 object GsonHelper {
-    val customGson: Gson = GsonBuilder()
-        .registerTypeHierarchyAdapter(ByteArray::class.java, ByteArrayToBase64TypeAdapter())
-        .registerTypeHierarchyAdapter(Bitmap::class.java, BitmapToBase64TypeAdapter())
-        .registerTypeHierarchyAdapter(WithdrawalMemoPossibility::class.java, WithdrawalMemoPossibilityAdapter())
-        .create()
+    val customGson: Gson =
+        GsonBuilder()
+            .registerTypeHierarchyAdapter(ByteArray::class.java, ByteArrayToBase64TypeAdapter())
+            .registerTypeHierarchyAdapter(Bitmap::class.java, BitmapToBase64TypeAdapter())
+            .registerTypeHierarchyAdapter(WithdrawalMemoPossibility::class.java, WithdrawalMemoPossibilityAdapter())
+            .create()
 
     private class BitmapToBase64TypeAdapter : JsonSerializer<Bitmap>, JsonDeserializer<Bitmap> {
         override fun serialize(
@@ -39,6 +40,7 @@ object GsonHelper {
             return decodeBitmapFromBase64(json.asString)
         }
     }
+
     class WithdrawalMemoPossibilityAdapter : JsonDeserializer<WithdrawalMemoPossibility?> {
         override fun deserialize(
             json: JsonElement?,

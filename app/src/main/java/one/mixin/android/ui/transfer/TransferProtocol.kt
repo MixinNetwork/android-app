@@ -1,6 +1,15 @@
 package one.mixin.android.ui.transfer
 
 import UUIDUtils
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
+import one.mixin.android.RxBus
+import one.mixin.android.api.ChecksumException
+import one.mixin.android.event.SpeedEvent
+import one.mixin.android.extension.base64Encode
+import one.mixin.android.ui.transfer.vo.TransferCommand
+import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.EOFException
 import java.io.File
@@ -15,15 +24,6 @@ import javax.crypto.Mac
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.text.Charsets.UTF_8
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
-import one.mixin.android.RxBus
-import one.mixin.android.api.ChecksumException
-import one.mixin.android.event.SpeedEvent
-import one.mixin.android.extension.base64Encode
-import one.mixin.android.ui.transfer.vo.TransferCommand
-import timber.log.Timber
 
 /*
  * Command packet format:
@@ -46,7 +46,6 @@ import timber.log.Timber
  */
 @ExperimentalSerializationApi
 class TransferProtocol(private val serializationJson: Json, private val secretBytes: ByteArray, private val server: Boolean = false) {
-
     companion object {
         const val TYPE_COMMAND = 0x01.toByte()
         const val TYPE_JSON = 0x02.toByte()
@@ -93,7 +92,11 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
         }
     }
 
-    fun write(outputStream: OutputStream, type: Byte, content: String) {
+    fun write(
+        outputStream: OutputStream,
+        type: Byte,
+        content: String,
+    ) {
         val data = content.toByteArray(UTF_8)
         if (data.size >= MAX_DATA_SIZE) {
             return
@@ -122,7 +125,11 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
         return cipher.doFinal(ciphertext.sliceArray(16 until ciphertext.size))
     }
 
-    fun write(outputStream: OutputStream, file: File, messageId: String) {
+    fun write(
+        outputStream: OutputStream,
+        file: File,
+        messageId: String,
+    ) {
         if (file.exists() && file.length() > 0) {
             // Read data from file into buffer and write to socket
             val mac = Mac.getInstance("HmacSHA256")
@@ -169,7 +176,10 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
     }
 
     @Throws(ChecksumException::class)
-    private fun readByteArray(inputStream: InputStream, expectedLength: Int): ByteArray? {
+    private fun readByteArray(
+        inputStream: InputStream,
+        expectedLength: Int,
+    ): ByteArray? {
         val data = safeRead(inputStream, expectedLength)
         val checksum = safeRead(inputStream, H_MAC_LENGTH)
         if (!checksum.contentEquals(checksum(data))) {
@@ -182,7 +192,10 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
         return data
     }
 
-    private fun safeRead(inputStream: InputStream, expectedLength: Int): ByteArray {
+    private fun safeRead(
+        inputStream: InputStream,
+        expectedLength: Int,
+    ): ByteArray {
         val data = ByteArray(expectedLength)
         var readLength = 0
         while (readLength < expectedLength) {
@@ -222,11 +235,15 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
     }
 
     private lateinit var cachePath: File
+
     fun setCachePath(cachePath: File) {
         this.cachePath = cachePath
     }
 
-    private fun readFile(inputStream: InputStream, expectedLength: Int): File {
+    private fun readFile(
+        inputStream: InputStream,
+        expectedLength: Int,
+    ): File {
         val mac = Mac.getInstance("HmacSHA256")
         mac.init(SecretKeySpec(hMacKey, "HmacSHA256"))
         val uuidByteArray = safeRead(inputStream, UUID_LENGTH)

@@ -11,6 +11,7 @@ class ReduceFts4Job :
         private const val GROUP_ID = "ReduceFts4Job"
     }
 
-    override fun onRun() = runBlocking {
-    }
+    override fun onRun() =
+        runBlocking {
+        }
 }

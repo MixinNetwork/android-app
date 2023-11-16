@@ -61,7 +61,6 @@ import kotlin.math.round
 @UnstableApi
 @SuppressLint("InvalidWakeLockTag")
 class PipVideoView {
-
     companion object {
         private val appContext by lazy {
             MixinApplication.appContext
@@ -104,12 +103,20 @@ class PipVideoView {
             )
         }
 
-        fun getSideCoord(isX: Boolean, side: Int, p: Float, sideSize: Int, realX: Int, realY: Int): Int {
-            val total = if (isX) {
-                realX - sideSize
-            } else {
-                realY - sideSize
-            }
+        fun getSideCoord(
+            isX: Boolean,
+            side: Int,
+            p: Float,
+            sideSize: Int,
+            realX: Int,
+            realY: Int,
+        ): Int {
+            val total =
+                if (isX) {
+                    realX - sideSize
+                } else {
+                    realY - sideSize
+                }
             return when (side) {
                 0 -> appContext.dpToPx(10f)
                 1 -> total - appContext.dpToPx(10f)
@@ -179,71 +186,73 @@ class PipVideoView {
         val realSize = appContext.realSize()
         val realX = if (isLandscape) realSize.y else realSize.x
         val realY = if (isLandscape) realSize.x else realSize.y
-        windowView = object : FrameLayout(appContext) {
-            private var startX: Float = 0f
-            private var startY: Float = 0f
+        windowView =
+            object : FrameLayout(appContext) {
+                private var startX: Float = 0f
+                private var startY: Float = 0f
 
-            override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
-                val x = event.rawX
-                val y = event.rawY
-                if (event.action == MotionEvent.ACTION_DOWN) {
-                    startX = x
-                    startY = y
-                } else if (event.action == MotionEvent.ACTION_MOVE) {
-                    if (abs(startX - x) >= appContext.getPixelsInCM(
-                            0.3f,
-                            true,
-                        ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
-                    ) {
+                override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+                    val x = event.rawX
+                    val y = event.rawY
+                    if (event.action == MotionEvent.ACTION_DOWN) {
                         startX = x
                         startY = y
-                        return true
+                    } else if (event.action == MotionEvent.ACTION_MOVE) {
+                        if (abs(startX - x) >=
+                            appContext.getPixelsInCM(
+                                0.3f,
+                                true,
+                            ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
+                        ) {
+                            startX = x
+                            startY = y
+                            return true
+                        }
                     }
+                    return super.onInterceptTouchEvent(event)
                 }
-                return super.onInterceptTouchEvent(event)
-            }
 
-            @SuppressLint("ClickableViewAccessibility")
-            override fun onTouchEvent(event: MotionEvent): Boolean {
-                val x = event.rawX
-                val y = event.rawY
-                if (event.action == MotionEvent.ACTION_MOVE) {
-                    val dx = x - startX
-                    val dy = y - startY
-                    windowLayoutParams.x = (windowLayoutParams.x + dx).toInt()
-                    windowLayoutParams.y = (windowLayoutParams.y + dy).toInt()
-                    var maxDiff = videoWidth * 2 / 3
-                    if (windowLayoutParams.x < -maxDiff) {
-                        windowLayoutParams.x = -maxDiff
-                    } else if (windowLayoutParams.x > realX - windowLayoutParams.width + maxDiff) {
-                        windowLayoutParams.x = realX - windowLayoutParams.width + maxDiff
+                @SuppressLint("ClickableViewAccessibility")
+                override fun onTouchEvent(event: MotionEvent): Boolean {
+                    val x = event.rawX
+                    val y = event.rawY
+                    if (event.action == MotionEvent.ACTION_MOVE) {
+                        val dx = x - startX
+                        val dy = y - startY
+                        windowLayoutParams.x = (windowLayoutParams.x + dx).toInt()
+                        windowLayoutParams.y = (windowLayoutParams.y + dy).toInt()
+                        var maxDiff = videoWidth * 2 / 3
+                        if (windowLayoutParams.x < -maxDiff) {
+                            windowLayoutParams.x = -maxDiff
+                        } else if (windowLayoutParams.x > realX - windowLayoutParams.width + maxDiff) {
+                            windowLayoutParams.x = realX - windowLayoutParams.width + maxDiff
+                        }
+                        var alpha = 1.0f
+                        if (windowLayoutParams.x < 0) {
+                            alpha = 1.0f + windowLayoutParams.x / maxDiff.toFloat() * 0.5f
+                        } else if (windowLayoutParams.x > realX - windowLayoutParams.width) {
+                            alpha =
+                                1.0f - (windowLayoutParams.x - realX + windowLayoutParams.width) / maxDiff.toFloat() * 0.5f
+                        }
+                        if (windowView?.alpha != alpha) {
+                            windowView?.alpha = alpha
+                        }
+                        maxDiff = 0
+                        if (windowLayoutParams.y < -maxDiff) {
+                            windowLayoutParams.y = -maxDiff
+                        } else if (windowLayoutParams.y > realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff) {
+                            windowLayoutParams.y =
+                                realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff
+                        }
+                        windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
+                        startX = x
+                        startY = y
+                    } else if (event.action == MotionEvent.ACTION_UP) {
+                        animateToBoundsMaybe()
                     }
-                    var alpha = 1.0f
-                    if (windowLayoutParams.x < 0) {
-                        alpha = 1.0f + windowLayoutParams.x / maxDiff.toFloat() * 0.5f
-                    } else if (windowLayoutParams.x > realX - windowLayoutParams.width) {
-                        alpha =
-                            1.0f - (windowLayoutParams.x - realX + windowLayoutParams.width) / maxDiff.toFloat() * 0.5f
-                    }
-                    if (windowView?.alpha != alpha) {
-                        windowView?.alpha = alpha
-                    }
-                    maxDiff = 0
-                    if (windowLayoutParams.y < -maxDiff) {
-                        windowLayoutParams.y = -maxDiff
-                    } else if (windowLayoutParams.y > realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff) {
-                        windowLayoutParams.y =
-                            realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff
-                    }
-                    windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
-                    startX = x
-                    startY = y
-                } else if (event.action == MotionEvent.ACTION_UP) {
-                    animateToBoundsMaybe()
+                    return true
                 }
-                return true
             }
-        }
         if (aspectRatio > 1f) {
             videoWidth = realX * 2 / 3
             videoHeight = (videoWidth / aspectRatio).toInt()
@@ -262,107 +271,118 @@ class PipVideoView {
         val textureView = TextureView(appContext)
         aspectRatioFrameLayout.addView(textureView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
 
-        inlineButton = ImageView(appContext).apply {
-            scaleType = ImageView.ScaleType.CENTER
-            visibility = GONE
-            setImageResource(R.drawable.ic_pip_maximum)
-            windowView?.addView(
-                this,
-                FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.END),
-            )
-            setOnClickListener {
-                if (RomUtil.isMiui && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
-                    toast(R.string.need_background_permission)
-                }
-                MediaPagerActivity.show(
-                    MixinApplication.appContext,
-                    conversationId,
-                    messageId,
-                    aspectRatio,
-                    mediaSource,
+        inlineButton =
+            ImageView(appContext).apply {
+                scaleType = ImageView.ScaleType.CENTER
+                visibility = GONE
+                setImageResource(R.drawable.ic_pip_maximum)
+                windowView?.addView(
+                    this,
+                    FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.END),
                 )
+                setOnClickListener {
+                    if (RomUtil.isMiui && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
+                        toast(R.string.need_background_permission)
+                    }
+                    MediaPagerActivity.show(
+                        MixinApplication.appContext,
+                        conversationId,
+                        messageId,
+                        aspectRatio,
+                        mediaSource,
+                    )
+                }
             }
-        }
 
-        closeButton = ImageView(appContext).apply {
-            scaleType = ImageView.ScaleType.CENTER
-            visibility = GONE
-            setImageResource(R.drawable.ic_close_white_24dp)
-            windowView?.addView(
-                this,
-                FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.START),
-            )
-            setOnClickListener {
-                close(true)
-                VideoPlayer.destroy()
+        closeButton =
+            ImageView(appContext).apply {
+                scaleType = ImageView.ScaleType.CENTER
+                visibility = GONE
+                setImageResource(R.drawable.ic_close_white_24dp)
+                windowView?.addView(
+                    this,
+                    FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.START),
+                )
+                setOnClickListener {
+                    close(true)
+                    VideoPlayer.destroy()
+                }
             }
-        }
 
         val dp42 = appContext.dpToPx(42f)
-        playView = PlayView(appContext).apply {
-            setBackgroundResource(R.drawable.bg_play_control)
-            windowView?.addView(this, FrameLayout.LayoutParams(dp42, dp42, Gravity.CENTER))
-            val playbackState = VideoPlayer.player().player.playbackState
-            status = when (playbackState) {
-                STATE_IDLE, STATE_ENDED -> {
-                    isVisible = true
-                    STATUS_IDLE
-                }
-                STATE_BUFFERING -> {
-                    isVisible = true
-                    STATUS_LOADING
-                }
-                else -> {
-                    if (VideoPlayer.player().isPlaying()) {
-                        isVisible = false
-                        STATUS_PLAYING
-                    } else {
-                        isVisible = true
-                        STATUS_IDLE
+        playView =
+            PlayView(appContext).apply {
+                setBackgroundResource(R.drawable.bg_play_control)
+                windowView?.addView(this, FrameLayout.LayoutParams(dp42, dp42, Gravity.CENTER))
+                val playbackState = VideoPlayer.player().player.playbackState
+                status =
+                    when (playbackState) {
+                        STATE_IDLE, STATE_ENDED -> {
+                            isVisible = true
+                            STATUS_IDLE
+                        }
+                        STATE_BUFFERING -> {
+                            isVisible = true
+                            STATUS_LOADING
+                        }
+                        else -> {
+                            if (VideoPlayer.player().isPlaying()) {
+                                isVisible = false
+                                STATUS_PLAYING
+                            } else {
+                                isVisible = true
+                                STATUS_IDLE
+                            }
+                        }
                     }
-                }
-            }
-            setOnClickListener {
-                when (status) {
-                    STATUS_IDLE -> {
-                        mediaUrl?.let {
-                            if (isPlayerIdle()) {
+                setOnClickListener {
+                    when (status) {
+                        STATUS_IDLE -> {
+                            mediaUrl?.let {
+                                if (isPlayerIdle()) {
+                                    if (isVideo) {
+                                        VideoPlayer.player().loadVideo(it, messageId, true)
+                                    } else {
+                                        VideoPlayer.player().loadHlsVideo(it, messageId, true)
+                                    }
+                                }
+                                start()
+                            }
+                        }
+                        STATUS_LOADING, STATUS_PLAYING -> {
+                            pause()
+                        }
+                        STATUS_PAUSE -> {
+                            start()
+                        }
+                        PlayView.STATUS_REFRESH -> {
+                            mediaUrl?.let {
                                 if (isVideo) {
                                     VideoPlayer.player().loadVideo(it, messageId, true)
                                 } else {
                                     VideoPlayer.player().loadHlsVideo(it, messageId, true)
                                 }
                             }
-                            start()
-                        }
-                    }
-                    STATUS_LOADING, STATUS_PLAYING -> {
-                        pause()
-                    }
-                    STATUS_PAUSE -> {
-                        start()
-                    }
-                    PlayView.STATUS_REFRESH -> {
-                        mediaUrl?.let {
-                            if (isVideo) {
-                                VideoPlayer.player().loadVideo(it, messageId, true)
-                            } else {
-                                VideoPlayer.player().loadHlsVideo(it, messageId, true)
-                            }
                         }
                     }
                 }
             }
-        }
 
         VideoPlayer.player().setOnMediaPlayerListener(
             object : MixinPlayer.MediaPlayerListenerWrapper() {
-                override fun onPlayerError(mid: String, error: ExoPlaybackException) {
+                override fun onPlayerError(
+                    mid: String,
+                    error: ExoPlaybackException,
+                ) {
                     playView?.fadeIn()
                     playView?.status = PlayView.STATUS_REFRESH
                 }
 
-                override fun onPlayerStateChanged(mid: String, playWhenReady: Boolean, playbackState: Int) {
+                override fun onPlayerStateChanged(
+                    mid: String,
+                    playWhenReady: Boolean,
+                    playbackState: Int,
+                ) {
                     when (playbackState) {
                         STATE_ENDED -> {
                             stop()
@@ -482,6 +502,7 @@ class PipVideoView {
             VideoPlayer.player().player.playbackState == STATE_ENDED
 
     private var decelerateInterpolator: DecelerateInterpolator? = null
+
     private fun animateToBoundsMaybe() {
         val realSize = appContext.realSize()
         val isLandscape = appContext.isLandscape()

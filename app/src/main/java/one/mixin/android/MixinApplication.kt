@@ -83,7 +83,6 @@ open class MixinApplication :
     Application.ActivityLifecycleCallbacks,
     Configuration.Provider,
     CameraXConfig.Provider {
-
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface MixinJobManagerEntryPoint {
@@ -177,11 +176,12 @@ open class MixinApplication :
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree(), FileLogTree())
             // ignore known leaks
-            val delegate = ReachabilityWatcher { watchedObject, description ->
-                if (watchedObject !is JobInfoSchedulerService) {
-                    AppWatcher.objectWatcher.expectWeaklyReachable(watchedObject, description)
+            val delegate =
+                ReachabilityWatcher { watchedObject, description ->
+                    if (watchedObject !is JobInfoSchedulerService) {
+                        AppWatcher.objectWatcher.expectWeaklyReachable(watchedObject, description)
+                    }
                 }
-            }
             val watchersToInstall = AppWatcher.appDefaultWatchers(this, delegate)
             AppWatcher.manualInstall(application = this, watchersToInstall = watchersToInstall)
             if (LeakCanaryProcess.isInAnalyzerProcess(this)) {
@@ -261,10 +261,11 @@ open class MixinApplication :
                 clearData(sessionId)
 
                 withContext(Dispatchers.Main) {
-                    val entryPoint = EntryPointAccessors.fromApplication(
-                        this@MixinApplication,
-                        AppEntryPoint::class.java,
-                    )
+                    val entryPoint =
+                        EntryPointAccessors.fromApplication(
+                            this@MixinApplication,
+                            AppEntryPoint::class.java,
+                        )
                     entryPoint.inject(this@MixinApplication)
                     LandingActivity.show(this@MixinApplication)
                 }
@@ -287,7 +288,11 @@ open class MixinApplication :
     val contextWrapper by lazy {
         MutableContextWrapper(this@MixinApplication)
     }
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+
+    override fun onActivityCreated(
+        activity: Activity,
+        savedInstanceState: Bundle?,
+    ) {
     }
 
     override fun onActivityStarted(activity: Activity) {
@@ -326,6 +331,7 @@ open class MixinApplication :
     }
 
     private var appAuthShown = false
+
     fun isAppAuthShown(): Boolean = appAuthShown
 
     override fun onActivityStopped(activity: Activity) {
@@ -343,7 +349,10 @@ open class MixinApplication :
         }
     }
 
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
+    override fun onActivitySaveInstanceState(
+        activity: Activity,
+        outState: Bundle,
+    ) {
     }
 
     override fun onActivityDestroyed(activity: Activity) {
@@ -351,7 +360,10 @@ open class MixinApplication :
         if (activity == topActivity) topActivity = null
     }
 
-    private fun refreshFloating(activity: Activity, recreate: Boolean) {
+    private fun refreshFloating(
+        activity: Activity,
+        recreate: Boolean,
+    ) {
         if (activity is MediaPagerActivity || activity is CallActivity || activity is MusicActivity || activity is WebActivity || activity is AppAuthActivity) {
             FloatingWebClip.getInstance(activity.isNightMode()).hide()
             FloatingPlayer.getInstance(activity.isNightMode()).hide()
@@ -381,11 +393,12 @@ open class MixinApplication :
                 val enterBackground =
                     defaultSharedPreferences.getLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
                 val now = System.currentTimeMillis()
-                val offset = if (appAuth == 1) {
-                    Constants.INTERVAL_1_MIN
-                } else {
-                    Constants.INTERVAL_30_MINS
-                }
+                val offset =
+                    if (appAuth == 1) {
+                        Constants.INTERVAL_1_MIN
+                    } else {
+                        Constants.INTERVAL_30_MINS
+                    }
                 if (now - enterBackground > offset) {
                     AppAuthActivity.show(activity)
                     return true

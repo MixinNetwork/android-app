@@ -17,7 +17,6 @@ import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.MessageStatus
 
 open class SharePostRenderer(val context: Activity) {
-
     private val binding = ItemChatPostBinding.inflate(LayoutInflater.from(context), null, false)
     val contentView get() = binding.root
 
@@ -39,7 +38,10 @@ open class SharePostRenderer(val context: Activity) {
         MarkwonUtil.getMiniMarkwon(context)
     }
 
-    fun render(content: String, isNightMode: Boolean) {
+    fun render(
+        content: String,
+        isNightMode: Boolean,
+    ) {
         miniMarkwon.setMarkdown(binding.chatTv, content.postOptimize())
         binding.chatTime.load(
             true,

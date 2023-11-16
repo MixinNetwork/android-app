@@ -14,12 +14,19 @@ data class GroupMinimal(
     val memberCount: Int,
 ) : Parcelable {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<GroupMinimal>() {
-            override fun areItemsTheSame(oldItem: GroupMinimal, newItem: GroupMinimal): Boolean =
-                oldItem.conversationId == newItem.conversationId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<GroupMinimal>() {
+                override fun areItemsTheSame(
+                    oldItem: GroupMinimal,
+                    newItem: GroupMinimal,
+                ): Boolean =
+                    oldItem.conversationId == newItem.conversationId
 
-            override fun areContentsTheSame(oldItem: GroupMinimal, newItem: GroupMinimal): Boolean =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: GroupMinimal,
+                    newItem: GroupMinimal,
+                ): Boolean =
+                    oldItem == newItem
+            }
     }
 }

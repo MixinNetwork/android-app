@@ -31,10 +31,12 @@ import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
 class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
-
     private val binding by viewBinding(FragmentRestoreBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             fromAnotherCl.setOnClickListener {
@@ -95,45 +97,48 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
         }
     }
 
-    private suspend fun getLocalDataInfo(): Pair<Int?, String?>? = withContext(Dispatchers.IO) {
-        val dbFile = requireContext().getDatabasePath(Constants.DataBase.DB_NAME)
-        if (!dbFile.exists()) {
-            return@withContext null
-        }
-        var c: Cursor? = null
-        var db: SQLiteDatabase? = null
-
-        try {
-            db = SQLiteDatabase.openDatabase(
-                dbFile.absolutePath,
-                null,
-                SQLiteDatabase.OPEN_READONLY,
-            )
-            c = db.rawQuery("SELECT count(1) FROM messages", null)
-            var count: Int? = null
-            if (c.moveToFirst()) {
-                count = c.getIntOrNull(0) ?: 0
+    private suspend fun getLocalDataInfo(): Pair<Int?, String?>? =
+        withContext(Dispatchers.IO) {
+            val dbFile = requireContext().getDatabasePath(Constants.DataBase.DB_NAME)
+            if (!dbFile.exists()) {
+                return@withContext null
             }
-            c?.close()
+            var c: Cursor? = null
+            var db: SQLiteDatabase? = null
 
-            c = db.rawQuery("SELECT created_at FROM messages ORDER BY created_at DESC LIMIT 1", null)
-            var lastCreatedAt: String? = null
-            if (c.moveToFirst()) {
-                lastCreatedAt = c.getStringOrNull(0)?.fullDate()
+            try {
+                db =
+                    SQLiteDatabase.openDatabase(
+                        dbFile.absolutePath,
+                        null,
+                        SQLiteDatabase.OPEN_READONLY,
+                    )
+                c = db.rawQuery("SELECT count(1) FROM messages", null)
+                var count: Int? = null
+                if (c.moveToFirst()) {
+                    count = c.getIntOrNull(0) ?: 0
+                }
+                c?.close()
+
+                c = db.rawQuery("SELECT created_at FROM messages ORDER BY created_at DESC LIMIT 1", null)
+                var lastCreatedAt: String? = null
+                if (c.moveToFirst()) {
+                    lastCreatedAt = c.getStringOrNull(0)?.fullDate()
+                }
+
+                return@withContext Pair(count, lastCreatedAt)
+            } catch (e: Exception) {
+                return@withContext null
+            } finally {
+                c?.close()
+                db?.close()
             }
-
-            return@withContext Pair(count, lastCreatedAt)
-        } catch (e: Exception) {
-            return@withContext null
-        } finally {
-            c?.close()
-            db?.close()
         }
-    }
 
     override fun onBackPressed(): Boolean {
         return true
     }
+
     companion object {
         const val TAG = "RestoreFragment"
 

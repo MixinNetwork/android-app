@@ -97,7 +97,10 @@ class ConversationCheckView : LinearLayout, Checkable {
 
     private var checkEnabled: Boolean = true
 
-    fun bind(item: ConversationMinimal, listener: ForwardAdapter.ForwardListener?) {
+    fun bind(
+        item: ConversationMinimal,
+        listener: ForwardAdapter.ForwardListener?,
+    ) {
         binding.apply {
             if (item.isGroupConversation()) {
                 normal.text = item.groupName
@@ -116,7 +119,10 @@ class ConversationCheckView : LinearLayout, Checkable {
         }
     }
 
-    fun bind(item: ConversationMinimal, listener: (Boolean) -> Unit) {
+    fun bind(
+        item: ConversationMinimal,
+        listener: (Boolean) -> Unit,
+    ) {
         binding.apply {
             if (item.isGroupConversation()) {
                 normal.text = item.groupName
@@ -135,7 +141,10 @@ class ConversationCheckView : LinearLayout, Checkable {
         }
     }
 
-    fun bind(item: User, listener: ForwardAdapter.ForwardListener?) {
+    fun bind(
+        item: User,
+        listener: ForwardAdapter.ForwardListener?,
+    ) {
         binding.apply {
             normal.text = item.fullName
             mixinIdTv.text = item.identityNumber

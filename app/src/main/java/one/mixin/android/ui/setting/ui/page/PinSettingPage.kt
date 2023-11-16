@@ -61,9 +61,10 @@ fun PinSettingPage() {
             Image(
                 painter = painterResource(id = MixinAppTheme.drawables.emergencyAvatar),
                 contentDescription = null,
-                modifier = Modifier
-                    .height(83.dp)
-                    .width(92.dp),
+                modifier =
+                    Modifier
+                        .height(83.dp)
+                        .width(92.dp),
             )
             Box(modifier = Modifier.height(20.dp))
 
@@ -72,11 +73,12 @@ fun PinSettingPage() {
             HighlightStarLinkText(
                 source = stringResource(R.string.wallet_pin_tops_desc),
                 links = arrayOf(Constants.HelpLink.TIP),
-                textStyle = TextStyle(
-                    fontSize = 12.sp,
-                    color = MixinAppTheme.colors.textSubtitle,
-                    textAlign = TextAlign.Center,
-                ),
+                textStyle =
+                    TextStyle(
+                        fontSize = 12.sp,
+                        color = MixinAppTheme.colors.textSubtitle,
+                        textAlign = TextAlign.Center,
+                    ),
                 onClick = {
                     context.openUrl(it)
                 },
@@ -116,12 +118,13 @@ fun PinSettingPage() {
             trailing = {
                 Switch(
                     checked = randomKeyboardEnabled,
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = MixinAppTheme.colors.accent,
-                        uncheckedThumbColor = MixinAppTheme.colors.unchecked,
-                        checkedTrackColor = MixinAppTheme.colors.accent,
-                        uncheckedTrackColor = MixinAppTheme.colors.unchecked,
-                    ),
+                    colors =
+                        SwitchDefaults.colors(
+                            checkedThumbColor = MixinAppTheme.colors.accent,
+                            uncheckedThumbColor = MixinAppTheme.colors.unchecked,
+                            checkedTrackColor = MixinAppTheme.colors.accent,
+                            uncheckedTrackColor = MixinAppTheme.colors.unchecked,
+                        ),
                     onCheckedChange = null,
                 )
             },
@@ -137,20 +140,22 @@ fun PinSettingPage() {
             trailing = {
                 Switch(
                     checked = enableBiometrics,
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = MixinAppTheme.colors.accent,
-                        uncheckedThumbColor = MixinAppTheme.colors.unchecked,
-                        checkedTrackColor = MixinAppTheme.colors.accent,
-                        uncheckedTrackColor = MixinAppTheme.colors.unchecked,
-                    ),
+                    colors =
+                        SwitchDefaults.colors(
+                            checkedThumbColor = MixinAppTheme.colors.accent,
+                            uncheckedThumbColor = MixinAppTheme.colors.unchecked,
+                            checkedTrackColor = MixinAppTheme.colors.accent,
+                            uncheckedTrackColor = MixinAppTheme.colors.unchecked,
+                        ),
                     onCheckedChange = null,
                 )
             },
         ) {
-            isSupportWithErrorInfo = BiometricUtil.isSupportWithErrorInfo(
-                context,
-                BiometricManager.Authenticators.BIOMETRIC_STRONG,
-            )
+            isSupportWithErrorInfo =
+                BiometricUtil.isSupportWithErrorInfo(
+                    context,
+                    BiometricManager.Authenticators.BIOMETRIC_STRONG,
+                )
             val isSupport = isSupportWithErrorInfo?.first == true
             if (!isSupport) {
                 enableBiometrics = false
@@ -169,19 +174,21 @@ fun PinSettingPage() {
         if (showBiometricsDialog) {
             MixinBottomSheetDialog(createDialog = {
                 PinBiometricsBottomSheetDialogFragment.newInstance(true).apply {
-                    setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
-                        override fun onDismiss(success: Boolean) {
-                            if (success) {
-                                enableBiometrics = true
-                                context.defaultSharedPreferences.putLong(
-                                    Constants.BIOMETRIC_PIN_CHECK,
-                                    System.currentTimeMillis(),
-                                )
-                            } else {
-                                showBiometricsDialog = false
+                    setCallback(
+                        object : BiometricBottomSheetDialogFragment.Callback() {
+                            override fun onDismiss(success: Boolean) {
+                                if (success) {
+                                    enableBiometrics = true
+                                    context.defaultSharedPreferences.putLong(
+                                        Constants.BIOMETRIC_PIN_CHECK,
+                                        System.currentTimeMillis(),
+                                    )
+                                } else {
+                                    showBiometricsDialog = false
+                                }
                             }
-                        }
-                    })
+                        },
+                    )
                 }
             })
         }
@@ -194,19 +201,21 @@ fun PinSettingPage() {
                     val hour = biometricInterval / BiometricTimeFragment.X_HOUR.toFloat()
                     if (hour < 1) {
                         Text(
-                            text = context.resources.getQuantityString(
-                                R.plurals.Minute,
-                                (hour * 60).toInt(),
-                                (hour * 60).toInt(),
-                            ),
+                            text =
+                                context.resources.getQuantityString(
+                                    R.plurals.Minute,
+                                    (hour * 60).toInt(),
+                                    (hour * 60).toInt(),
+                                ),
                         )
                     } else {
                         Text(
-                            text = context.resources.getQuantityString(
-                                R.plurals.Hour,
-                                hour.toInt(),
-                                hour.toInt(),
-                            ),
+                            text =
+                                context.resources.getQuantityString(
+                                    R.plurals.Hour,
+                                    hour.toInt(),
+                                    hour.toInt(),
+                                ),
                         )
                     }
                 },
@@ -219,9 +228,10 @@ fun PinSettingPage() {
 
         Text(
             text = stringResource(R.string.wallet_enable_biometric_pay_prompt),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
             fontSize = 13.sp,
             color = MixinAppTheme.colors.textSubtitle,
         )

@@ -32,21 +32,29 @@ class PorterShapeImageView : PorterImageView {
         maskMatrix = Matrix()
     }
 
-    fun setShape(@DrawableRes shape: Int) {
-        val drawable = map[shape].let {
-            if (it == null) {
-                val d = AppCompatResources.getDrawable(context, shape)
-                map[shape] = d
-                return@let d
-            } else {
-                it
+    fun setShape(
+        @DrawableRes shape: Int,
+    ) {
+        val drawable =
+            map[shape].let {
+                if (it == null) {
+                    val d = AppCompatResources.getDrawable(context, shape)
+                    map[shape] = d
+                    return@let d
+                } else {
+                    it
+                }
             }
-        }
         this.shape = drawable
         super.createMaskCanvas()
     }
 
-    override fun paintMaskCanvas(maskCanvas: Canvas, maskPaint: Paint, width: Int, height: Int) {
+    override fun paintMaskCanvas(
+        maskCanvas: Canvas,
+        maskPaint: Paint,
+        width: Int,
+        height: Int,
+    ) {
         if (shape != null) {
             if (shape is BitmapDrawable) {
                 configureBitmapBounds(width, height)
@@ -65,7 +73,10 @@ class PorterShapeImageView : PorterImageView {
         }
     }
 
-    private fun configureBitmapBounds(viewWidth: Int, viewHeight: Int) {
+    private fun configureBitmapBounds(
+        viewWidth: Int,
+        viewHeight: Int,
+    ) {
         drawMatrix = null
         val drawableWidth = shape!!.intrinsicWidth
         val drawableHeight = shape!!.intrinsicHeight

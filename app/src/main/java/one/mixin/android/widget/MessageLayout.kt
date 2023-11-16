@@ -38,7 +38,10 @@ open class MessageLayout : ViewGroup {
         }
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
         val childCount = childCount
         if (childCount < 2) {
             throw RuntimeException("CustomLayout child count must >= 2")
@@ -118,7 +121,13 @@ open class MessageLayout : ViewGroup {
         }
     }
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+    override fun onLayout(
+        changed: Boolean,
+        l: Int,
+        t: Int,
+        r: Int,
+        b: Int,
+    ) {
         val firstView = getChildAt(0) as TextView
         val secondView = getChildAt(1)
         val thirdView = getThird()

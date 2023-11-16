@@ -40,11 +40,12 @@ class ContentQRView : ViewAnimator {
         warning: String? = null,
     ) {
         binding.apply {
-            val showPb = if (isTag) {
-                asset.tag.isNullOrBlank()
-            } else {
-                asset.destination.isNullOrBlank()
-            }
+            val showPb =
+                if (isTag) {
+                    asset.tag.isNullOrBlank()
+                } else {
+                    asset.destination.isNullOrBlank()
+                }
 
             (binding.root as ViewAnimator).displayedChild = if (showPb) 1 else 0
 
@@ -75,22 +76,24 @@ class ContentQRView : ViewAnimator {
             }
             qr.post {
                 Observable.create<Pair<Bitmap, Int>> { e ->
-                    val r = if (isTag) {
-                        requireNotNull(asset.tag)
-                    } else {
-                        // Todo check
-                        destination!!
-                    }.generateQRCode(qr.width)
+                    val r =
+                        if (isTag) {
+                            requireNotNull(asset.tag)
+                        } else {
+                            // Todo check
+                            destination!!
+                        }.generateQRCode(qr.width)
                     e.onNext(r)
                 }.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .autoDispose(scopeProvider)
                     .subscribe(
                         { r ->
-                            qrAvatar.layoutParams = qrAvatar.layoutParams.apply {
-                                width = r.second
-                                height = r.second
-                            }
+                            qrAvatar.layoutParams =
+                                qrAvatar.layoutParams.apply {
+                                    width = r.second
+                                    height = r.second
+                                }
                             qr.setImageBitmap(r.first)
                         },
                         {

@@ -28,12 +28,13 @@ class SearchView : FrameLayout {
         attrs,
         defStyleAttr,
     ) {
-        val typedArray = context.obtainStyledAttributes(
-            attrs,
-            R.styleable.SearchView,
-            defStyleAttr,
-            0,
-        )
+        val typedArray =
+            context.obtainStyledAttributes(
+                attrs,
+                R.styleable.SearchView,
+                defStyleAttr,
+                0,
+            )
         val circleClearIcon = typedArray.getBoolean(R.styleable.SearchView_circle_clear_icon, false)
         val size = if (circleClearIcon) small else medium
         val clearIcon = if (circleClearIcon) R.drawable.ic_asset_add_search_clear else R.drawable.ic_close_black
@@ -61,27 +62,39 @@ class SearchView : FrameLayout {
     private val medium = 24.dp
     private val small = 16.dp
 
-    private val watcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+    private val watcher: TextWatcher =
+        object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {
+            }
+
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                binding.rightClear.isVisible = s?.isNotEmpty() == true
+                listener?.afterTextChanged(s)
+            }
         }
 
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+    private val onEditorActionListener =
+        OnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                listener?.onSearch()
+                hideKeyboard()
+                return@OnEditorActionListener true
+            }
+            false
         }
-
-        override fun afterTextChanged(s: Editable?) {
-            binding.rightClear.isVisible = s?.isNotEmpty() == true
-            listener?.afterTextChanged(s)
-        }
-    }
-
-    private val onEditorActionListener = OnEditorActionListener { _, actionId, _ ->
-        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-            listener?.onSearch()
-            hideKeyboard()
-            return@OnEditorActionListener true
-        }
-        false
-    }
 
     // remove focus but remain focusable
     fun remainFocusable() {
@@ -105,6 +118,7 @@ class SearchView : FrameLayout {
 
     interface OnSearchViewListener {
         fun afterTextChanged(s: Editable?)
+
         fun onSearch()
     }
 }

@@ -70,7 +70,6 @@ import kotlin.math.min
 
 @AndroidEntryPoint
 class LocationActivity : BaseActivity(), OnMapReadyCallback {
-
     @Inject
     lateinit var foursquareService: FoursquareService
 
@@ -115,29 +114,31 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         }
     }
 
-    private val mLocationListener: LocationListener = object : LocationListener {
-        override fun onLocationChanged(location: android.location.Location) {
-            currentPosition = MixinLatLng(location.latitude, location.longitude)
-            selfPosition = MixinLatLng(location.latitude, location.longitude)
-            if (this@LocationActivity.location == null) {
-                currentPosition?.let { currentPosition ->
-                    mixinMapView.moveCamera(currentPosition)
-                    isInit = false
+    private val mLocationListener: LocationListener =
+        object : LocationListener {
+            override fun onLocationChanged(location: android.location.Location) {
+                currentPosition = MixinLatLng(location.latitude, location.longitude)
+                selfPosition = MixinLatLng(location.latitude, location.longitude)
+                if (this@LocationActivity.location == null) {
+                    currentPosition?.let { currentPosition ->
+                        mixinMapView.moveCamera(currentPosition)
+                        isInit = false
+                    }
+                    locationAdapter.accurate = resources.getQuantityString(R.plurals.location_accurate, location.accuracy.toInt(), location.accuracy.toInt())
                 }
-                locationAdapter.accurate = resources.getQuantityString(R.plurals.location_accurate, location.accuracy.toInt(), location.accuracy.toInt())
             }
+
+            override fun onProviderEnabled(provider: String) {}
+
+            override fun onProviderDisabled(provider: String) {}
         }
-
-        override fun onProviderEnabled(provider: String) {}
-
-        override fun onProviderDisabled(provider: String) {}
-    }
 
     private lateinit var mixinMapView: MixinMapView
     private var mapboxView: MapView? = null
     private val useMapbox = useMapbox()
 
     private lateinit var binding: ActivityLocationBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLocationBinding.inflate(layoutInflater)
@@ -157,9 +158,10 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                     Timber.e(e)
                 }
             }
-            mixinMapView = MixinMapView(this@LocationActivity, mentionLocation.googleMapView, mapboxView).apply {
-                onCreate(savedInstanceState)
-            }
+            mixinMapView =
+                MixinMapView(this@LocationActivity, mentionLocation.googleMapView, mapboxView).apply {
+                    onCreate(savedInstanceState)
+                }
             if (useMapbox) {
                 initMapboxMap(mapboxView)
             } else {
@@ -200,7 +202,11 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         binding.searchEt.addTextChangedListener(textWatcher)
         binding.searchEt.setOnEditorActionListener(
             object : TextView.OnEditorActionListener {
-                override fun onEditorAction(v: TextView?, actionId: Int, event: KeyEvent?): Boolean {
+                override fun onEditorAction(
+                    v: TextView?,
+                    actionId: Int,
+                    event: KeyEvent?,
+                ): Boolean {
                     if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                         binding.searchEt.hideKeyboard()
                         return true
@@ -483,26 +489,29 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     }
 
     private var lastSearchJob: Job? = null
+
     fun search(latLng: MixinLatLng) {
         binding.mentionLocation.locationPb.isVisible = locationAdapter.venues == null
         if (lastSearchJob != null && lastSearchJob?.isActive == true) {
             lastSearchJob?.cancel()
         }
-        lastSearchJob = lifecycleScope.launch(errorHandler) {
-            val result = foursquareService.searchVenues("${latLng.latitude},${latLng.longitude}")
+        lastSearchJob =
+            lifecycleScope.launch(errorHandler) {
+                val result = foursquareService.searchVenues("${latLng.latitude},${latLng.longitude}")
 
-            result.response?.venues.let { list ->
-                list.let { data ->
-                    locationAdapter.venues = data
-                    binding.mentionLocation.locationPb.isVisible = data == null
+                result.response?.venues.let { list ->
+                    list.let { data ->
+                        locationAdapter.venues = data
+                        binding.mentionLocation.locationPb.isVisible = data == null
+                    }
                 }
             }
-        }
     }
 
-    private val errorHandler = CoroutineExceptionHandler { _, error ->
-        Timber.e(error)
-    }
+    private val errorHandler =
+        CoroutineExceptionHandler { _, error ->
+            Timber.e(error)
+        }
 
     private fun checkLocationEnable(locationManager: LocationManager): Boolean {
         var gpsEnable = false
@@ -512,16 +521,17 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             Timber.w(e)
         }
         if (!gpsEnable) {
-            locationAlert = AlertDialog.Builder(this)
-                .setMessage(R.string.location_enable_title)
-                .setPositiveButton(R.string.Settings) { dialog, _ ->
-                    try {
-                        startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-                    } catch (e: Exception) {
-                        Timber.e(e)
-                    }
-                    dialog.dismiss()
-                }.show()
+            locationAlert =
+                AlertDialog.Builder(this)
+                    .setMessage(R.string.location_enable_title)
+                    .setPositiveButton(R.string.Settings) { dialog, _ ->
+                        try {
+                            startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+                        dialog.dismiss()
+                    }.show()
             return false
         }
         return true
@@ -530,109 +540,126 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     private var locationAlert: AlertDialog? = null
 
     private var lastSearchQueryJob: Job? = null
+
     fun search(query: String) {
         binding.mentionLocation.locationPb.isVisible = locationSearchAdapter.venues == null
         val currentPosition = this.currentPosition ?: return
         if (lastSearchQueryJob != null && lastSearchQueryJob?.isActive == true) {
             lastSearchQueryJob?.cancel()
         }
-        lastSearchQueryJob = lifecycleScope.launch(errorHandler) {
-            val result = foursquareService.searchVenues("${currentPosition.latitude},${currentPosition.longitude}", query)
-            result.response?.venues.let { data ->
-                locationSearchAdapter.venues = data
-                binding.mentionLocation.apply {
-                    locationEmpty.isVisible = data.isNullOrEmpty()
-                    locationEmptyTv.text = getString(R.string.location_empty, query)
-                    locationPb.isVisible = data == null
-                }
-                mixinMapView.clear()
-                var south: Double? = null
-                var west: Double? = null
-                var north: Double? = null
-                var east: Double? = null
-                data?.forEachIndexed { index, item ->
-                    south = if (south == null) {
-                        item.location.lat
-                    } else {
-                        min(south!!, item.location.lat)
+        lastSearchQueryJob =
+            lifecycleScope.launch(errorHandler) {
+                val result = foursquareService.searchVenues("${currentPosition.latitude},${currentPosition.longitude}", query)
+                result.response?.venues.let { data ->
+                    locationSearchAdapter.venues = data
+                    binding.mentionLocation.apply {
+                        locationEmpty.isVisible = data.isNullOrEmpty()
+                        locationEmptyTv.text = getString(R.string.location_empty, query)
+                        locationPb.isVisible = data == null
                     }
-                    west = if (west == null) {
-                        item.location.lng
-                    } else {
-                        min(west!!, item.location.lng)
-                    }
-                    north = if (north == null) {
-                        item.location.lat
-                    } else {
-                        max(north!!, item.location.lat)
-                    }
-                    east = if (east == null) {
-                        item.location.lng
-                    } else {
-                        max(east!!, item.location.lng)
-                    }
-                    mixinMapView.addMarker(index, item)
+                    mixinMapView.clear()
+                    var south: Double? = null
+                    var west: Double? = null
+                    var north: Double? = null
+                    var east: Double? = null
+                    data?.forEachIndexed { index, item ->
+                        south =
+                            if (south == null) {
+                                item.location.lat
+                            } else {
+                                min(south!!, item.location.lat)
+                            }
+                        west =
+                            if (west == null) {
+                                item.location.lng
+                            } else {
+                                min(west!!, item.location.lng)
+                            }
+                        north =
+                            if (north == null) {
+                                item.location.lat
+                            } else {
+                                max(north!!, item.location.lat)
+                            }
+                        east =
+                            if (east == null) {
+                                item.location.lng
+                            } else {
+                                max(east!!, item.location.lng)
+                            }
+                        mixinMapView.addMarker(index, item)
 
-                    if (south != null && west != null && north != null && east != null) {
-                        val bound = MixinLatLngBounds(MixinLatLng(south!!, west!!), MixinLatLng(north!!, east!!))
-                        mixinMapView.moveBounds(bound)
+                        if (south != null && west != null && north != null && east != null) {
+                            val bound = MixinLatLngBounds(MixinLatLng(south!!, west!!), MixinLatLng(north!!, east!!))
+                            mixinMapView.moveBounds(bound)
+                        }
                     }
                 }
             }
-        }
     }
 
     private var markerAnimatorSet: AnimatorSet? = null
 
-    private val onMoveListener = object : OnMoveListener {
-        override fun onMoveBegin(detector: MoveGestureDetector) {
-            if (!binding.mentionLocation.icMarker.isVisible && !isInit) {
-                binding.mentionLocation.icMarker.isVisible = true
-                locationSearchAdapter.setMark()
-            }
-            markerAnimatorSet?.cancel()
-            markerAnimatorSet = AnimatorSet()
-            markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(binding.mentionLocation.icMarker, View.TRANSLATION_Y, -8.dp.toFloat()))
-            markerAnimatorSet?.duration = 200
-            markerAnimatorSet?.start()
-        }
-
-        override fun onMove(detector: MoveGestureDetector): Boolean {
-            return false
-        }
-
-        override fun onMoveEnd(detector: MoveGestureDetector) {}
-    }
-
-    private val textWatcher = object : TextWatcher {
-        override fun afterTextChanged(s: Editable?) {
-            s.notEmptyWithElse(
-                { charSequence ->
-                    binding.mentionLocation.locationRecycler.adapter = locationSearchAdapter
-                    val content = charSequence.toString()
-                    locationSearchAdapter.keyword = content
-                    search(content)
-                },
-                {
-                    binding.mentionLocation.locationRecycler.adapter = locationAdapter
-                    if (lastSearchQueryJob?.isActive == true) {
-                        lastSearchQueryJob?.cancel()
-                    }
-                    locationSearchAdapter.keyword = null
-                    locationSearchAdapter.venues = null
+    private val onMoveListener =
+        object : OnMoveListener {
+            override fun onMoveBegin(detector: MoveGestureDetector) {
+                if (!binding.mentionLocation.icMarker.isVisible && !isInit) {
+                    binding.mentionLocation.icMarker.isVisible = true
                     locationSearchAdapter.setMark()
-                    mixinMapView.clear()
-                },
-            )
+                }
+                markerAnimatorSet?.cancel()
+                markerAnimatorSet = AnimatorSet()
+                markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(binding.mentionLocation.icMarker, View.TRANSLATION_Y, -8.dp.toFloat()))
+                markerAnimatorSet?.duration = 200
+                markerAnimatorSet?.start()
+            }
+
+            override fun onMove(detector: MoveGestureDetector): Boolean {
+                return false
+            }
+
+            override fun onMoveEnd(detector: MoveGestureDetector) {}
         }
 
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+    private val textWatcher =
+        object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                s.notEmptyWithElse(
+                    { charSequence ->
+                        binding.mentionLocation.locationRecycler.adapter = locationSearchAdapter
+                        val content = charSequence.toString()
+                        locationSearchAdapter.keyword = content
+                        search(content)
+                    },
+                    {
+                        binding.mentionLocation.locationRecycler.adapter = locationAdapter
+                        if (lastSearchQueryJob?.isActive == true) {
+                            lastSearchQueryJob?.cancel()
+                        }
+                        locationSearchAdapter.keyword = null
+                        locationSearchAdapter.venues = null
+                        locationSearchAdapter.setMark()
+                        mixinMapView.clear()
+                    },
+                )
+            }
 
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-    }
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {}
+
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {}
+        }
 
     companion object {
-
         private const val LOCATION_NAME = "location_name"
         private const val LOCATION = "location"
 
@@ -647,7 +674,10 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             }
         }
 
-        fun show(context: Context, location: LocationPayload) {
+        fun show(
+            context: Context,
+            location: LocationPayload,
+        ) {
             Intent(context, LocationActivity::class.java).run {
                 putExtra(LOCATION, location)
                 context.startActivity(this)

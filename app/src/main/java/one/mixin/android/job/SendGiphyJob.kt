@@ -27,18 +27,18 @@ class SendGiphyJob(
     private val previewUrl: String,
     private val time: String,
 ) : BaseJob(Params(PRIORITY_BACKGROUND).addTags(TAG)) {
-
     companion object {
         private const val serialVersionUID = 1L
         const val TAG = "SendGiphyJob"
     }
 
     override fun onAdded() {
-        val message = createMediaMessage(
-            messageId, conversationId, senderId, category, null, url,
-            MimeType.GIF.toString(), size, width, height, previewUrl, null, null,
-            time, MediaStatus.PENDING, MessageStatus.SENDING.name,
-        )
+        val message =
+            createMediaMessage(
+                messageId, conversationId, senderId, category, null, url,
+                MimeType.GIF.toString(), size, width, height, previewUrl, null, null,
+                time, MediaStatus.PENDING, MessageStatus.SENDING.name,
+            )
         conversationDao.updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
         // Todo check
         MessageFlow.update(message.conversationId, message.messageId)
@@ -51,11 +51,12 @@ class SendGiphyJob(
         file.copyFromInputStream(FileInputStream(f))
         val thumbnail = file.encodeBlurHash()
         val mediaSize = file.length()
-        val message = createMediaMessage(
-            messageId, conversationId, senderId, category, null, file.name,
-            MimeType.GIF.toString(), mediaSize, width, height, thumbnail, null, null,
-            time, MediaStatus.PENDING, MessageStatus.SENDING.name,
-        )
+        val message =
+            createMediaMessage(
+                messageId, conversationId, senderId, category, null, file.name,
+                MimeType.GIF.toString(), mediaSize, width, height, thumbnail, null, null,
+                time, MediaStatus.PENDING, MessageStatus.SENDING.name,
+            )
         messageDao.updateGiphyMessage(messageId, file.name, mediaSize, thumbnail)
         MessageFlow.update(message.conversationId, message.messageId)
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))

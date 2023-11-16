@@ -23,6 +23,7 @@ import one.mixin.android.widget.SegmentationItemDecoration
 class MySharedAppsFragment : BaseFragment() {
     companion object {
         const val TAG = "MySharedAppsFragment"
+
         fun newInstance(): MySharedAppsFragment {
             return MySharedAppsFragment()
         }
@@ -37,7 +38,10 @@ class MySharedAppsFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View = inflater.inflate(R.layout.fragment_my_shared_apps, container, false)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             recyclerView.adapter = adapter
@@ -72,9 +76,10 @@ class MySharedAppsFragment : BaseFragment() {
 
     private val onAddSharedApp: (app: App) -> Unit = { app ->
         lifecycleScope.launch {
-            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                setCancelable(false)
-            }
+            val dialog =
+                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                    setCancelable(false)
+                }
             try {
                 if (mySharedAppsViewModel.addFavoriteApp(app.appId)) {
                     loadData()
@@ -87,9 +92,10 @@ class MySharedAppsFragment : BaseFragment() {
     }
     private val onRemoveSharedApp: (app: App) -> Unit = { app ->
         lifecycleScope.launch {
-            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                setCancelable(false)
-            }
+            val dialog =
+                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                    setCancelable(false)
+                }
             try {
                 if (mySharedAppsViewModel.removeFavoriteApp(app.appId, Session.getAccountId()!!)) {
                     loadData()

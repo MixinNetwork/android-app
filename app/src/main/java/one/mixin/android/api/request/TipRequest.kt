@@ -33,5 +33,6 @@ data class TipSecretReadRequest(
 }
 
 enum class TipSecretAction {
-    READ, UPDATE,
+    READ,
+    UPDATE,
 }

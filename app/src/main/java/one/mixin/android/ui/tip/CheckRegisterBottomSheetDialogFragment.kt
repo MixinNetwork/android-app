@@ -55,7 +55,10 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
     lateinit var tipCounterSynced: TipCounterSyncedLiveData
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).apply {
@@ -68,43 +71,44 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
         syncAccount()
     }
 
-    private fun syncAccount() = lifecycleScope.launch {
-        binding.biometricLayout.showPb()
-        handleMixinResponse(
-            invokeNetwork = { accountService.getMeSuspend() },
-            successBlock = {
-                val account = it.data
-                if (account == null) {
-                    binding.biometricLayout.showErrorInfo("account is null", true, errorAction = BiometricLayout.ErrorAction.Close)
-                    return@handleMixinResponse
-                }
-                withContext(Dispatchers.IO) {
-                    updateAccount(account)
-                }
-                if (account.hasSafe) {
-                    dismiss()
-                    return@handleMixinResponse
-                }
-                withContext(Dispatchers.IO) {
-                    checkTipCounter(account)
-                }
-            },
-            exceptionBlock = { t ->
-                Timber.e("TIP $TAG sync account ${t.stackTraceToString()}")
-                showErrorWhenRefreshAccountFailed(t.message ?: "refresh account failed")
-                return@handleMixinResponse false
-            },
-            failureBlock = {
-                val error = requireNotNull(it.error)
-                val errorCode = error.code
-                val errorDescription = error.description
-                val errStr = requireContext().getMixinErrorStringByCode(errorCode, errorDescription)
-                Timber.e("TIP $TAG sync account errorString $errStr")
-                showErrorWhenRefreshAccountFailed(errStr)
-                return@handleMixinResponse true
-            }
-        )
-    }
+    private fun syncAccount() =
+        lifecycleScope.launch {
+            binding.biometricLayout.showPb()
+            handleMixinResponse(
+                invokeNetwork = { accountService.getMeSuspend() },
+                successBlock = {
+                    val account = it.data
+                    if (account == null) {
+                        binding.biometricLayout.showErrorInfo("account is null", true, errorAction = BiometricLayout.ErrorAction.Close)
+                        return@handleMixinResponse
+                    }
+                    withContext(Dispatchers.IO) {
+                        updateAccount(account)
+                    }
+                    if (account.hasSafe) {
+                        dismiss()
+                        return@handleMixinResponse
+                    }
+                    withContext(Dispatchers.IO) {
+                        checkTipCounter(account)
+                    }
+                },
+                exceptionBlock = { t ->
+                    Timber.e("TIP $TAG sync account ${t.stackTraceToString()}")
+                    showErrorWhenRefreshAccountFailed(t.message ?: "refresh account failed")
+                    return@handleMixinResponse false
+                },
+                failureBlock = {
+                    val error = requireNotNull(it.error)
+                    val errorCode = error.code
+                    val errorDescription = error.description
+                    val errStr = requireContext().getMixinErrorStringByCode(errorCode, errorDescription)
+                    Timber.e("TIP $TAG sync account errorString $errStr")
+                    showErrorWhenRefreshAccountFailed(errStr)
+                    return@handleMixinResponse true
+                },
+            )
+        }
 
     private suspend fun checkTipCounter(account: Account) {
         try {
@@ -167,14 +171,16 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
             val keyPair = newKeyPairFromSeed(spendSeed)
             val pkHex = keyPair.publicKey.toHex()
             val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
-            val resp = bottomViewModel.registerPublicKey(
-                registerRequest = RegisterRequest(
-                    publicKey = pkHex,
-                    signature = Session.getRegisterSignature(selfId, spendSeed),
-                    pin = bottomViewModel.getEncryptedTipBody(selfId, pkHex, pin),
-                    salt = saltBase64,
+            val resp =
+                bottomViewModel.registerPublicKey(
+                    registerRequest =
+                        RegisterRequest(
+                            publicKey = pkHex,
+                            signature = Session.getRegisterSignature(selfId, spendSeed),
+                            pin = bottomViewModel.getEncryptedTipBody(selfId, pkHex, pin),
+                            salt = saltBase64,
+                        ),
                 )
-            )
             if (resp.isSuccess) {
                 resp.data?.let { account ->
                     Session.storeAccount(account)
@@ -210,7 +216,10 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
         }
     }
 
-    private fun showErrorWhenCheckCounterFailed(errorString: String, account: Account) {
+    private fun showErrorWhenCheckCounterFailed(
+        errorString: String,
+        account: Account,
+    ) {
         if (!isAdded) return
         binding.biometricLayout.apply {
             showErrorInfo(errorString, true, errorAction = BiometricLayout.ErrorAction.RetryPin)
@@ -223,7 +232,10 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
         }
     }
 
-    private fun showErrorWhenRegisterFailed(pin: String, errorString: String) {
+    private fun showErrorWhenRegisterFailed(
+        pin: String,
+        errorString: String,
+    ) {
         if (!isAdded) return
         binding.biometricLayout.apply {
             showErrorInfo(errorString, true, errorAction = BiometricLayout.ErrorAction.RetryPin)
@@ -240,16 +252,20 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
         return bottomViewModel.verifyPin(pin)
     }
 
-    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
+    override fun doWhenInvokeNetworkSuccess(
+        response: MixinResponse<*>,
+        pin: String,
+    ): Boolean {
         lifecycleScope.launch {
             registerPublicKey(pin)
         }
         return false
     }
 
-    override fun getBiometricInfo() = BiometricInfo(
-        getString(R.string.Verify_by_Biometric),
-        "",
-        "",
-    )
+    override fun getBiometricInfo() =
+        BiometricInfo(
+            getString(R.string.Verify_by_Biometric),
+            "",
+            "",
+        )
 }

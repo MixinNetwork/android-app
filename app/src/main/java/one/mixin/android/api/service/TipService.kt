@@ -21,14 +21,22 @@ interface TipService {
     suspend fun tipEphemerals(): MixinResponse<List<TipEphemeral>>
 
     @POST("tip/ephemerals")
-    suspend fun tipEphemeral(@Body request: TipRequest): MixinResponse<Unit>
+    suspend fun tipEphemeral(
+        @Body request: TipRequest,
+    ): MixinResponse<Unit>
 
     @POST("tip/secret")
-    suspend fun readTipSecret(@Body request: TipSecretReadRequest): MixinResponse<TipSecretResponse>
+    suspend fun readTipSecret(
+        @Body request: TipSecretReadRequest,
+    ): MixinResponse<TipSecretResponse>
 
     @POST("tip/secret")
-    suspend fun updateTipSecret(@Body request: TipSecretRequest): MixinResponse<Unit>
+    suspend fun updateTipSecret(
+        @Body request: TipSecretRequest,
+    ): MixinResponse<Unit>
 
     @GET("external/gastracker/{id}")
-    suspend fun getTipGas(@Path("id") assetId: String): MixinResponse<TipGas>
+    suspend fun getTipGas(
+        @Path("id") assetId: String,
+    ): MixinResponse<TipGas>
 }

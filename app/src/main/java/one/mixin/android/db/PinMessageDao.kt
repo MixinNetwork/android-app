@@ -66,7 +66,10 @@ interface PinMessageDao : BaseDao<PinMessage> {
     fun getPinMessages(conversationId: String): DataSource.Factory<Int, ChatHistoryMessageItem>
 
     @Query("SELECT count(1) FROM pin_messages pm INNER JOIN messages m ON m.id = pm.message_id WHERE m.created_at < (SELECT created_at FROM messages WHERE conversation_id = :conversationId AND id = :messageId) AND pm.conversation_id = :conversationId")
-    suspend fun findPinMessageIndex(conversationId: String, messageId: String): Int
+    suspend fun findPinMessageIndex(
+        conversationId: String,
+        messageId: String,
+    ): Int
 
     @Query(
         """
@@ -85,10 +88,17 @@ interface PinMessageDao : BaseDao<PinMessage> {
     fun countPinMessages(conversationId: String): LiveData<Int>
 
     @Query("SELECT pm.* FROM pin_messages pm WHERE pm.rowid > :rowId ORDER BY pm.rowid ASC LIMIT :limit")
-    fun getPinMessageByLimitAndRowId(limit: Int, rowId: Long): List<PinMessage>
+    fun getPinMessageByLimitAndRowId(
+        limit: Int,
+        rowId: Long,
+    ): List<PinMessage>
 
     @Query("SELECT pm.* FROM pin_messages pm WHERE pm.rowid > :rowId AND conversation_id IN (:conversationIds) ORDER BY pm.rowid ASC LIMIT :limit")
-    fun getPinMessageByLimitAndRowId(limit: Int, rowId: Long, conversationIds: Collection<String>): List<PinMessage>
+    fun getPinMessageByLimitAndRowId(
+        limit: Int,
+        rowId: Long,
+        conversationIds: Collection<String>,
+    ): List<PinMessage>
 
     @Query("SELECT rowid FROM pin_messages WHERE message_id = :messageId")
     fun getPinMessageRowId(messageId: String): Long?
@@ -106,5 +116,8 @@ interface PinMessageDao : BaseDao<PinMessage> {
     fun countPinMessages(rowId: Long): Long
 
     @Query("SELECT count(1) FROM pin_messages WHERE rowid > :rowId AND conversation_id IN (:conversationIds)")
-    fun countPinMessages(rowId: Long, conversationIds: Collection<String>): Long
+    fun countPinMessages(
+        rowId: Long,
+        conversationIds: Collection<String>,
+    ): Long
 }

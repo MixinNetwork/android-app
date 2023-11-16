@@ -19,14 +19,17 @@ import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.linktext.AutoLinkMode
 
 class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseViewHolder(binding.root) {
-
     init {
         binding.chatTv.initChatMode(LINK_COLOR)
         binding.chatTv.setSelectedStateColor(SELECT_COLOR)
         (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxWidth = itemView.context.maxItemWidth()
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
@@ -141,9 +144,10 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
         }
 
         if (messageItem.mentions?.isNotBlank() == true) {
-            val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
-                messageItem.mentions,
-            )
+            val mentionRenderContext =
+                MentionRenderCache.singleton.getMentionRenderContext(
+                    messageItem.mentions,
+                )
             binding.chatTv.renderMessage(messageItem.content, keyword, mentionRenderContext)
         } else {
             binding.chatTv.renderMessage(messageItem.content, keyword)
@@ -187,19 +191,21 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
             }
         }
 
-        binding.chatNameTv.visibility = if (messageItem.siteName.isNullOrBlank()) {
-            View.GONE
-        } else {
-            binding.chatNameTv.text = messageItem.siteName
-            View.VISIBLE
-        }
+        binding.chatNameTv.visibility =
+            if (messageItem.siteName.isNullOrBlank()) {
+                View.GONE
+            } else {
+                binding.chatNameTv.text = messageItem.siteName
+                View.VISIBLE
+            }
 
-        binding.chatDescriptionTv.visibility = if (messageItem.siteDescription.isNullOrBlank()) {
-            View.GONE
-        } else {
-            binding.chatDescriptionTv.text = messageItem.siteDescription
-            View.VISIBLE
-        }
+        binding.chatDescriptionTv.visibility =
+            if (messageItem.siteDescription.isNullOrBlank()) {
+                View.GONE
+            } else {
+                binding.chatDescriptionTv.text = messageItem.siteDescription
+                View.VISIBLE
+            }
         chatLayout(isMe, isLast)
     }
 }

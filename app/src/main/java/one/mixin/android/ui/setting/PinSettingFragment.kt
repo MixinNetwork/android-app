@@ -35,7 +35,10 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
 
     private val binding by viewBinding(FragmentPinSettingBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             title.apply {
@@ -73,41 +76,44 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
     fun setTimeDesc() {
         val biometricInterval = defaultSharedPreferences.getLong(BIOMETRIC_INTERVAL, BIOMETRIC_INTERVAL_DEFAULT)
         val hour = biometricInterval / X_HOUR.toFloat()
-        binding.timeDescTv.text = if (hour < 1) {
-            requireContext().resources.getQuantityString(R.plurals.Minute, (hour * 60).toInt(), (hour * 60).toInt())
-        } else {
-            requireContext().resources.getQuantityString(R.plurals.Hour, hour.toInt(), hour.toInt())
-        }
+        binding.timeDescTv.text =
+            if (hour < 1) {
+                requireContext().resources.getQuantityString(R.plurals.Minute, (hour * 60).toInt(), (hour * 60).toInt())
+            } else {
+                requireContext().resources.getQuantityString(R.plurals.Hour, hour.toInt(), hour.toInt())
+            }
     }
 
-    private val randomClickListener = View.OnClickListener {
-        binding.randomSc.isChecked = !binding.randomSc.isChecked
-        defaultSharedPreferences.putBoolean(Constants.Account.PREF_RANDOM, binding.randomSc.isChecked)
-    }
+    private val randomClickListener =
+        View.OnClickListener {
+            binding.randomSc.isChecked = !binding.randomSc.isChecked
+            defaultSharedPreferences.putBoolean(Constants.Account.PREF_RANDOM, binding.randomSc.isChecked)
+        }
 
-    private val biometricsClickListener = View.OnClickListener {
-        val isSupportWithErrorInfo = BiometricUtil.isSupportWithErrorInfo(requireContext(), BiometricManager.Authenticators.BIOMETRIC_STRONG)
-        val isSupport = isSupportWithErrorInfo.first
-        if (!isSupport) {
-            isSupportWithErrorInfo.second?.let {
-                binding.biometricErrorTv.text = it
-                binding.biometricErrorTv.isVisible = true
+    private val biometricsClickListener =
+        View.OnClickListener {
+            val isSupportWithErrorInfo = BiometricUtil.isSupportWithErrorInfo(requireContext(), BiometricManager.Authenticators.BIOMETRIC_STRONG)
+            val isSupport = isSupportWithErrorInfo.first
+            if (!isSupport) {
+                isSupportWithErrorInfo.second?.let {
+                    binding.biometricErrorTv.text = it
+                    binding.biometricErrorTv.isVisible = true
+                }
+                resetBiometricLayout()
+                return@OnClickListener
+            } else {
+                binding.biometricErrorTv.isVisible = false
             }
-            resetBiometricLayout()
-            return@OnClickListener
-        } else {
-            binding.biometricErrorTv.isVisible = false
-        }
-        if (binding.biometricsSc.isChecked) {
-            resetBiometricLayout()
-        } else {
-            val bottomSheet = PinBiometricsBottomSheetDialogFragment.newInstance(true)
-            bottomSheet.onSavePinSuccess = {
-                updateWhenSuccess()
+            if (binding.biometricsSc.isChecked) {
+                resetBiometricLayout()
+            } else {
+                val bottomSheet = PinBiometricsBottomSheetDialogFragment.newInstance(true)
+                bottomSheet.onSavePinSuccess = {
+                    updateWhenSuccess()
+                }
+                bottomSheet.showNow(parentFragmentManager, PinBiometricsBottomSheetDialogFragment.TAG)
             }
-            bottomSheet.showNow(parentFragmentManager, PinBiometricsBottomSheetDialogFragment.TAG)
         }
-    }
 
     private fun updateWhenSuccess() {
         binding.biometricsSc.isChecked = true

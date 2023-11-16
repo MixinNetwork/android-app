@@ -23,7 +23,10 @@ abstract class ThemeActivity : BlazeBaseActivity() {
 
     private var anim: Animator? = null
 
-    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
+    override fun onCreate(
+        savedInstanceState: Bundle?,
+        persistentState: PersistableBundle?,
+    ) {
         super.onCreate(savedInstanceState, persistentState)
         initViews()
         super.setContentView(root)
@@ -35,7 +38,9 @@ abstract class ThemeActivity : BlazeBaseActivity() {
         super.setContentView(root)
     }
 
-    override fun setContentView(@LayoutRes layoutResID: Int) {
+    override fun setContentView(
+        @LayoutRes layoutResID: Int,
+    ) {
         setContentView(LayoutInflater.from(this).inflate(layoutResID, decorView))
     }
 
@@ -44,55 +49,63 @@ abstract class ThemeActivity : BlazeBaseActivity() {
         decorView.addView(view)
     }
 
-    override fun setContentView(view: View?, params: ViewGroup.LayoutParams?) {
+    override fun setContentView(
+        view: View?,
+        params: ViewGroup.LayoutParams?,
+    ) {
         decorView.removeAllViews()
         decorView.addView(view, params)
     }
 
     private fun initViews() {
         // create roo view
-        root = FrameLayout(this).apply {
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT,
-            )
-
-            // create and add behindFakeThemeImageView
-            addView(
-                FakeThemeView(context).apply {
-                    layoutParams = FrameLayout.LayoutParams(
+        root =
+            FrameLayout(this).apply {
+                layoutParams =
+                    FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT,
                     )
-                    visibility = View.GONE
-                    behindFakeThemeView = this
-                },
-            )
 
-            // create and add decorView, ROOT_ID is generated ID
-            addView(
-                FrameLayout(context).apply {
-                    layoutParams = FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                    )
-                    decorView = this
-                    id = ROOT_ID
-                },
-            )
+                // create and add behindFakeThemeImageView
+                addView(
+                    FakeThemeView(context).apply {
+                        layoutParams =
+                            FrameLayout.LayoutParams(
+                                FrameLayout.LayoutParams.MATCH_PARENT,
+                                FrameLayout.LayoutParams.MATCH_PARENT,
+                            )
+                        visibility = View.GONE
+                        behindFakeThemeView = this
+                    },
+                )
 
-            // create and add frontFakeThemeImageView
-            addView(
-                FakeThemeView(context).apply {
-                    layoutParams = FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                    )
-                    visibility = View.GONE
-                    frontFakeThemeView = this
-                },
-            )
-        }
+                // create and add decorView, ROOT_ID is generated ID
+                addView(
+                    FrameLayout(context).apply {
+                        layoutParams =
+                            FrameLayout.LayoutParams(
+                                FrameLayout.LayoutParams.MATCH_PARENT,
+                                FrameLayout.LayoutParams.MATCH_PARENT,
+                            )
+                        decorView = this
+                        id = ROOT_ID
+                    },
+                )
+
+                // create and add frontFakeThemeImageView
+                addView(
+                    FakeThemeView(context).apply {
+                        layoutParams =
+                            FrameLayout.LayoutParams(
+                                FrameLayout.LayoutParams.MATCH_PARENT,
+                                FrameLayout.LayoutParams.MATCH_PARENT,
+                            )
+                        visibility = View.GONE
+                        frontFakeThemeView = this
+                    },
+                )
+            }
     }
 
     fun changeTheme(
@@ -122,47 +135,51 @@ abstract class ThemeActivity : BlazeBaseActivity() {
         if (isReverse) {
             frontFakeThemeView.bitmap = bitmap
             frontFakeThemeView.visibility = View.VISIBLE
-            anim = ViewAnimationUtils.createCircularReveal(
-                frontFakeThemeView,
-                sourceCoordinate.x,
-                sourceCoordinate.y,
-                finalRadius,
-                0f,
-            )
+            anim =
+                ViewAnimationUtils.createCircularReveal(
+                    frontFakeThemeView,
+                    sourceCoordinate.x,
+                    sourceCoordinate.y,
+                    finalRadius,
+                    0f,
+                )
         } else {
             behindFakeThemeView.bitmap = bitmap
             behindFakeThemeView.visibility = View.VISIBLE
-            anim = ViewAnimationUtils.createCircularReveal(
-                decorView,
-                sourceCoordinate.x,
-                sourceCoordinate.y,
-                0f,
-                finalRadius,
-            )
+            anim =
+                ViewAnimationUtils.createCircularReveal(
+                    decorView,
+                    sourceCoordinate.x,
+                    sourceCoordinate.y,
+                    0f,
+                    finalRadius,
+                )
         }
 
         // set duration
         anim?.duration = animDuration
 
         // set listener
-        anim?.addListener(object : Animator.AnimatorListener {
-            override fun onAnimationStart(animation: Animator) {
-            }
+        anim?.addListener(
+            object : Animator.AnimatorListener {
+                override fun onAnimationStart(animation: Animator) {
+                }
 
-            override fun onAnimationEnd(animation: Animator) {
-                behindFakeThemeView.bitmap = null
-                frontFakeThemeView.bitmap = null
-                frontFakeThemeView.visibility = View.GONE
-                behindFakeThemeView.visibility = View.GONE
-                callback.invoke()
-            }
+                override fun onAnimationEnd(animation: Animator) {
+                    behindFakeThemeView.bitmap = null
+                    frontFakeThemeView.bitmap = null
+                    frontFakeThemeView.visibility = View.GONE
+                    behindFakeThemeView.visibility = View.GONE
+                    callback.invoke()
+                }
 
-            override fun onAnimationCancel(animation: Animator) {
-            }
+                override fun onAnimationCancel(animation: Animator) {
+                }
 
-            override fun onAnimationRepeat(animation: Animator) {
-            }
-        })
+                override fun onAnimationRepeat(animation: Animator) {
+                }
+            },
+        )
 
         anim?.start()
     }

@@ -16,7 +16,9 @@ import one.mixin.android.vo.safe.TokenItem
 import java.util.UUID
 
 enum class PayType {
-    Uuid, XinAddress, MixAddress,
+    Uuid,
+    XinAddress,
+    MixAddress,
 }
 
 class NewSchemaParser(
@@ -28,15 +30,16 @@ class NewSchemaParser(
         val uri = text.toUri()
         val lastPath = uri.lastPathSegment ?: return false
 
-        val payType = if (lastPath.isUUID()) {
-            PayType.Uuid
-        } else if (lastPath.startsWith("XIN")) {
-            PayType.XinAddress
-        } else if (lastPath.startsWith(MixAddressPrefix)) {
-            PayType.MixAddress
-        } else {
-            return false
-        }
+        val payType =
+            if (lastPath.isUUID()) {
+                PayType.Uuid
+            } else if (lastPath.startsWith("XIN")) {
+                PayType.XinAddress
+            } else if (lastPath.startsWith(MixAddressPrefix)) {
+                PayType.MixAddress
+            } else {
+                return false
+            }
         val asset = uri.getQueryParameter("asset")
         if (asset != null && !asset.isUUID()) {
             return false
@@ -103,17 +106,18 @@ class NewSchemaParser(
             biometricItem.trace = pair.first
         }
         val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, PreconditionBottomSheetDialogFragment.FROM_LINK)
-        preconditionBottom.callback = object : PreconditionBottomSheetDialogFragment.Callback {
-            override fun onSuccess() {
-                val bottom = OutputBottomSheetDialogFragment.newInstance(biometricItem)
-                bottom.show(preconditionBottom.parentFragmentManager, OutputBottomSheetDialogFragment.TAG)
-                bottomSheet.dismiss()
-            }
+        preconditionBottom.callback =
+            object : PreconditionBottomSheetDialogFragment.Callback {
+                override fun onSuccess() {
+                    val bottom = OutputBottomSheetDialogFragment.newInstance(biometricItem)
+                    bottom.show(preconditionBottom.parentFragmentManager, OutputBottomSheetDialogFragment.TAG)
+                    bottomSheet.dismiss()
+                }
 
-            override fun onCancel() {
-                bottomSheet.dismiss()
+                override fun onCancel() {
+                    bottomSheet.dismiss()
+                }
             }
-        }
         preconditionBottom.showNow(bottomSheet.parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
     }
 

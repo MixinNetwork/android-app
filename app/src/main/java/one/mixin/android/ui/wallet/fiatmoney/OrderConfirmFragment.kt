@@ -35,8 +35,8 @@ import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment.Companion.ARGS_INFO
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.cardIcon
+import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -50,7 +50,10 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
         const val ARGS_INSTRUMENT_ID = "args_instrument_id"
         const val ARGS_AMOUNT = "args_amount"
 
-        fun newInstance(tokenItem: TokenItem, currency: Currency) =
+        fun newInstance(
+            tokenItem: TokenItem,
+            currency: Currency,
+        ) =
             OrderConfirmFragment().withArgs {
                 putParcelable(TransactionsFragment.ARGS_ASSET, tokenItem)
                 putParcelable(ARGS_CURRENCY, currency)
@@ -67,25 +70,31 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     private var isGooglePay: Boolean = false
 
     @SuppressLint("UseCompatLoadingForDrawables", "SetTextI18n")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        asset = requireNotNull(
-            requireArguments().getParcelableCompat(
-                TransactionsFragment.ARGS_ASSET,
-                TokenItem::class.java,
-            ),
-        )
+        asset =
+            requireNotNull(
+                requireArguments().getParcelableCompat(
+                    TransactionsFragment.ARGS_ASSET,
+                    TokenItem::class.java,
+                ),
+            )
         amount = requireArguments().getLong(ARGS_AMOUNT)
-        currency = requireNotNull(
-            requireArguments().getParcelableCompat(
-                ARGS_CURRENCY,
-                Currency::class.java,
-            ),
-        )
-        isGooglePay = requireArguments().getBoolean(
-            ARGS_GOOGLE_PAY,
-            false,
-        )
+        currency =
+            requireNotNull(
+                requireArguments().getParcelableCompat(
+                    ARGS_CURRENCY,
+                    Currency::class.java,
+                ),
+            )
+        isGooglePay =
+            requireArguments().getBoolean(
+                ARGS_GOOGLE_PAY,
+                false,
+            )
         scheme = requireArguments().getString(ARGS_SCHEME)
         last4 = requireArguments().getString(ARGS_LAST)
         binding.apply {
@@ -142,17 +151,18 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             )
             buyVa.isEnabled = false
             try {
-                val allowedPaymentMethods = """
-                [
-                    {
-                        "type": "CARD",
-                        "parameters": {
-                            "allowedAuthMethods": ["PAN_ONLY","CRYPTOGRAM_3DS"],
-                            "allowedCardNetworks": ["AMEX", "JCB", "MASTERCARD", "VISA"]
+                val allowedPaymentMethods =
+                    """
+                    [
+                        {
+                            "type": "CARD",
+                            "parameters": {
+                                "allowedAuthMethods": ["PAN_ONLY","CRYPTOGRAM_3DS"],
+                                "allowedCardNetworks": ["AMEX", "JCB", "MASTERCARD", "VISA"]
+                            }
                         }
-                    }
-                ]
-                """.trimIndent()
+                    ]
+                    """.trimIndent()
                 googlePayButton.initialize(
                     ButtonOptions.newBuilder()
                         .setAllowedPaymentMethods(allowedPaymentMethods)
@@ -166,21 +176,23 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                 Timber.e(e)
             }
             continueTv.setOnClickListener(::showVerify)
-            payWith.text = if (isGooglePay) {
-                "Google Pay"
-            } else {
-                "${scheme?.capitalize()}...$last4"
-            }
-            val logo = when {
-                isGooglePay -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_google_pay_small)
-                else -> AppCompatResources.getDrawable(requireContext(), cardIcon(scheme))
-            }.also {
+            payWith.text =
                 if (isGooglePay) {
-                    it?.setBounds(0, 0, 28.dp, 14.dp)
+                    "Google Pay"
                 } else {
-                    it?.setBounds(0, 0, 26.dp, 16.dp)
+                    "${scheme?.capitalize()}...$last4"
                 }
-            }
+            val logo =
+                when {
+                    isGooglePay -> AppCompatResources.getDrawable(requireContext(), R.drawable.ic_google_pay_small)
+                    else -> AppCompatResources.getDrawable(requireContext(), cardIcon(scheme))
+                }.also {
+                    if (isGooglePay) {
+                        it?.setBounds(0, 0, 28.dp, 14.dp)
+                    } else {
+                        it?.setBounds(0, 0, 26.dp, 16.dp)
+                    }
+                }
             // place, not display
             setAssetAmount("1")
             payWith.setCompoundDrawables(logo, null, null, null)
@@ -209,15 +221,16 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
 
     private val calculating = MixinApplication.appContext.getString(R.string.calculating)
 
-    private var info = OrderInfo(
-        "null",
-        calculating,
-        calculating,
-        calculating,
-        calculating,
-        calculating,
-        "",
-    )
+    private var info =
+        OrderInfo(
+            "null",
+            calculating,
+            calculating,
+            calculating,
+            calculating,
+            calculating,
+            "",
+        )
 
     @SuppressLint("SetTextI18n")
     private fun refresh() {
@@ -225,25 +238,27 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             var time = 10
             while (isActive) {
                 if (time == 10) {
-                    val response = try {
-                        fiatMoneyViewModel.ticker(RouteTickerRequest(amount, currency.name, asset.assetId))
-                    } catch (e: Exception) {
-                        Timber.e(e)
-                        continue
-                    }
+                    val response =
+                        try {
+                            fiatMoneyViewModel.ticker(RouteTickerRequest(amount, currency.name, asset.assetId))
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                            continue
+                        }
                     if (viewDestroyed()) return@launch
 
                     if (response.isSuccess) {
                         val ticker = response.data ?: continue
-                        info = OrderInfo(
-                            "$scheme...$last4",
-                            "1 ${asset.symbol} ≈ ${ticker.assetPrice} ${currency.name}",
-                            "${ticker.purchase} ${ticker.currency}",
-                            "${ticker.feeByGateway} ${ticker.currency}",
-                            "${ticker.feeByMixin} ${ticker.currency}",
-                            "${ticker.totalAmount} ${ticker.currency}",
-                            ticker.assetAmount,
-                        )
+                        info =
+                            OrderInfo(
+                                "$scheme...$last4",
+                                "1 ${asset.symbol} ≈ ${ticker.assetPrice} ${currency.name}",
+                                "${ticker.purchase} ${ticker.currency}",
+                                "${ticker.feeByGateway} ${ticker.currency}",
+                                "${ticker.feeByMixin} ${ticker.currency}",
+                                "${ticker.totalAmount} ${ticker.currency}",
+                                ticker.assetAmount,
+                            )
                         binding.apply {
                             priceTv.text = info.exchangeRate
                             feeTv.text = info.feeByGateway
@@ -254,11 +269,12 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                             assetName.isVisible = true
                             if (!buyVa.isEnabled) {
                                 buyVa.isEnabled = true
-                                buyVa.displayedChild = if (isGooglePay) {
-                                    1
-                                } else {
-                                    0
-                                }
+                                buyVa.displayedChild =
+                                    if (isGooglePay) {
+                                        1
+                                    } else {
+                                        0
+                                    }
                             }
                         }
                     }
@@ -277,22 +293,24 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
     private fun setAssetAmount(amount: String) {
         val amountVal = amount.toFloatOrNull()
         val isPositive = if (amountVal == null) false else amountVal > 0
-        val amountText = if (isPositive) {
-            "+${amount.numberFormat()}"
-        } else {
-            amount.numberFormat()
-        }
-        val amountColor = resources.getColor(
-            when {
-                isPositive -> {
-                    R.color.wallet_green
-                }
-                else -> {
-                    R.color.wallet_pink
-                }
-            },
-            null,
-        )
+        val amountText =
+            if (isPositive) {
+                "+${amount.numberFormat()}"
+            } else {
+                amount.numberFormat()
+            }
+        val amountColor =
+            resources.getColor(
+                when {
+                    isPositive -> {
+                        R.color.wallet_green
+                    }
+                    else -> {
+                        R.color.wallet_pink
+                    }
+                },
+                null,
+            )
         val symbolColor = requireContext().colorFromAttribute(R.attr.text_primary)
         binding.assetName.text = buildAmountSymbol(requireContext(), amountText, asset.symbol, amountColor, symbolColor)
     }

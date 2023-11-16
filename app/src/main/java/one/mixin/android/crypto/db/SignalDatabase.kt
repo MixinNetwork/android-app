@@ -25,7 +25,6 @@ import one.mixin.android.crypto.vo.SignedPreKey
     version = 3,
 )
 abstract class SignalDatabase : RoomDatabase() {
-
     abstract fun senderKeyDao(): SenderKeyDao
 
     abstract fun identityDao(): IdentityDao
@@ -41,28 +40,31 @@ abstract class SignalDatabase : RoomDatabase() {
     companion object {
         private var INSTANCE: SignalDatabase? = null
 
-        private val MIGRATION_2_3: Migration = object : Migration(2, 3) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("DROP INDEX IF EXISTS index_sessions_address")
-                database.execSQL("ALTER TABLE sessions ADD COLUMN device INTEGER NOT NULL DEFAULT 1")
-                database.execSQL("CREATE UNIQUE INDEX index_sessions_address_device ON sessions (address, device)")
-                database.execSQL("UPDATE sessions SET address = substr(address, 1, 36), device = 1 WHERE length(address) = 38")
-                database.execSQL("ALTER TABLE ratchet_sender_keys ADD COLUMN message_id TEXT")
-                database.execSQL("ALTER TABLE ratchet_sender_keys ADD COLUMN created_at TEXT NOT NULL DEFAULT ''")
+        private val MIGRATION_2_3: Migration =
+            object : Migration(2, 3) {
+                override fun migrate(database: SupportSQLiteDatabase) {
+                    database.execSQL("DROP INDEX IF EXISTS index_sessions_address")
+                    database.execSQL("ALTER TABLE sessions ADD COLUMN device INTEGER NOT NULL DEFAULT 1")
+                    database.execSQL("CREATE UNIQUE INDEX index_sessions_address_device ON sessions (address, device)")
+                    database.execSQL("UPDATE sessions SET address = substr(address, 1, 36), device = 1 WHERE length(address) = 38")
+                    database.execSQL("ALTER TABLE ratchet_sender_keys ADD COLUMN message_id TEXT")
+                    database.execSQL("ALTER TABLE ratchet_sender_keys ADD COLUMN created_at TEXT NOT NULL DEFAULT ''")
+                }
             }
-        }
 
         fun getDatabase(context: Context): SignalDatabase {
             if (INSTANCE == null) {
-                INSTANCE = Room.databaseBuilder(context, SignalDatabase::class.java, "signal.db")
-                    .addMigrations(MIGRATION_2_3)
-                    .addCallback(CALLBACK)
-                    .build()
+                INSTANCE =
+                    Room.databaseBuilder(context, SignalDatabase::class.java, "signal.db")
+                        .addMigrations(MIGRATION_2_3)
+                        .addCallback(CALLBACK)
+                        .build()
             }
             return INSTANCE as SignalDatabase
         }
 
-        private val CALLBACK = object : RoomDatabase.Callback() {
-        }
+        private val CALLBACK =
+            object : RoomDatabase.Callback() {
+            }
     }
 }

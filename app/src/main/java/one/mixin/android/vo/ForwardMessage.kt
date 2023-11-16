@@ -68,6 +68,7 @@ sealed class ShareCategory : ForwardCategory() {
     @Parcelize
     object Image : ShareCategory() {
         override fun toString() = "Image"
+
         fun getErrorStringOrNull(code: Int) =
             when (code) {
                 -1 -> R.string.File_error
@@ -161,23 +162,25 @@ inline fun <reified T : ForwardCategory> Uri.systemMediaToMessage(
         ),
     )
 
-val ShareCategories = arrayOf(
-    ShareCategory.Text,
-    ShareCategory.Image,
-    ShareCategory.Sticker,
-    ShareCategory.Live,
-    ShareCategory.Contact,
-    ShareCategory.Post,
-    ShareCategory.AppCard,
-    ShareCategory.Transcript,
-)
-val ForwardCategories = arrayOf(
-    ShareCategories,
-    ForwardCategory.Video,
-    ForwardCategory.Data,
-    ForwardCategory.Audio,
-    ForwardCategory.Location,
-)
+val ShareCategories =
+    arrayOf(
+        ShareCategory.Text,
+        ShareCategory.Image,
+        ShareCategory.Sticker,
+        ShareCategory.Live,
+        ShareCategory.Contact,
+        ShareCategory.Post,
+        ShareCategory.AppCard,
+        ShareCategory.Transcript,
+    )
+val ForwardCategories =
+    arrayOf(
+        ShareCategories,
+        ForwardCategory.Video,
+        ForwardCategory.Data,
+        ForwardCategory.Audio,
+        ForwardCategory.Location,
+    )
 
 fun String.getShareCategory() =
     ShareCategories.find { this.contains(it.toString(), true) }
@@ -216,13 +219,14 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
             m.name ?: return null
             m.mediaMimeType ?: return null
             m.mediaSize ?: return null
-            val dataMessagePayload = DataMessagePayload(
-                requireNotNull(m.absolutePath()),
-                m.name,
-                m.mediaMimeType,
-                m.mediaSize,
-                m.content,
-            )
+            val dataMessagePayload =
+                DataMessagePayload(
+                    requireNotNull(m.absolutePath()),
+                    m.name,
+                    m.mediaMimeType,
+                    m.mediaSize,
+                    m.content,
+                )
             ForwardMessage(
                 ForwardCategory.Data,
                 GsonHelper.customGson.toJson(dataMessagePayload),
@@ -233,12 +237,13 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
             if (m.absolutePath()?.fileExists() != true) {
                 return null
             }
-            val videoData = VideoMessagePayload(
-                requireNotNull(m.absolutePath()),
-                UUID.randomUUID().toString(),
-                nowInUtc(),
-                m.content,
-            )
+            val videoData =
+                VideoMessagePayload(
+                    requireNotNull(m.absolutePath()),
+                    UUID.randomUUID().toString(),
+                    nowInUtc(),
+                    m.content,
+                )
             ForwardMessage(ForwardCategory.Video, GsonHelper.customGson.toJson(videoData), m.messageId)
         }
         m.isContact() -> {
@@ -255,13 +260,14 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
             }
             val duration = m.mediaDuration?.toLongOrNull() ?: return null
             val waveForm = m.mediaWaveform ?: return null
-            val audioData = AudioMessagePayload(
-                UUID.randomUUID().toString(),
-                requireNotNull(m.absolutePath()),
-                duration,
-                waveForm,
-                m.content,
-            )
+            val audioData =
+                AudioMessagePayload(
+                    UUID.randomUUID().toString(),
+                    requireNotNull(m.absolutePath()),
+                    duration,
+                    waveForm,
+                    m.content,
+                )
             ForwardMessage(ForwardCategory.Audio, GsonHelper.customGson.toJson(audioData), m.messageId)
         }
         m.isLive() -> {
@@ -273,18 +279,20 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
             ) {
                 return null
             }
-            val shareable = try {
-                GsonHelper.customGson.fromJson(m.content, LiveMessagePayload::class.java).shareable
-            } catch (e: Exception) {
-                null
-            }
-            val liveData = LiveMessagePayload(
-                m.mediaWidth,
-                m.mediaHeight,
-                m.thumbUrl ?: "",
-                m.mediaUrl,
-                shareable,
-            )
+            val shareable =
+                try {
+                    GsonHelper.customGson.fromJson(m.content, LiveMessagePayload::class.java).shareable
+                } catch (e: Exception) {
+                    null
+                }
+            val liveData =
+                LiveMessagePayload(
+                    m.mediaWidth,
+                    m.mediaHeight,
+                    m.thumbUrl ?: "",
+                    m.mediaUrl,
+                    shareable,
+                )
             ForwardMessage(ShareCategory.Live, GsonHelper.customGson.toJson(liveData), m.messageId)
         }
         m.isPost() ->

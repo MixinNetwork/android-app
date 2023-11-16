@@ -5,13 +5,13 @@ import android.graphics.Paint
 import android.view.View
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import one.mixin.android.extension.dp
 import java.util.ArrayList
 import java.util.Random
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
-import one.mixin.android.extension.dp
 
 class SnowflakesEffect {
     private val particlePaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -31,6 +31,7 @@ class SnowflakesEffect {
         var currentTime = 0f
         var scale = 0f
         var type = 0
+
         fun draw(canvas: Canvas) {
             when (type) {
                 0 -> {
@@ -102,6 +103,7 @@ class SnowflakesEffect {
     private val particles = ArrayList<Particle>()
     private val freeParticles = ArrayList<Particle>()
     private var color = 0
+
     private fun updateColors() {
         val color = -0x19191a
         if (this.color != color) {
@@ -140,7 +142,10 @@ class SnowflakesEffect {
         }
     }
 
-    fun onDraw(parent: View?, canvas: Canvas?) {
+    fun onDraw(
+        parent: View?,
+        canvas: Canvas?,
+    ) {
         if (parent == null || canvas == null) {
             return
         }

@@ -43,7 +43,11 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
         binding.chatMsgContent.setMaxWidth(itemView.context.maxItemWidth() - dp16)
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
@@ -116,9 +120,10 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
         }
 
         if (messageItem.mentions?.isNotBlank() == true) {
-            val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
-                messageItem.mentions,
-            )
+            val mentionRenderContext =
+                MentionRenderCache.singleton.getMentionRenderContext(
+                    messageItem.mentions,
+                )
             binding.chatTv.renderMessage(messageItem.content, null, mentionRenderContext)
         } else {
             binding.chatTv.renderMessage(messageItem.content, null)

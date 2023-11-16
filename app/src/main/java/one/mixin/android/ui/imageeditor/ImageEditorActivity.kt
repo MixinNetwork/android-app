@@ -13,7 +13,6 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.util.viewBinding
 
 class ImageEditorActivity : BaseActivity() {
-
     private val binding by viewBinding(ActivityContactBinding::inflate)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,14 +24,20 @@ class ImageEditorActivity : BaseActivity() {
     }
 
     class ImageEditorContract : ActivityResultContract<Pair<Uri, String?>, Intent?>() {
-        override fun createIntent(context: Context, input: Pair<Uri, String?>): Intent {
+        override fun createIntent(
+            context: Context,
+            input: Pair<Uri, String?>,
+        ): Intent {
             return Intent(context, ImageEditorActivity::class.java).apply {
                 putExtra(ARGS_IMAGE_URI, input.first)
                 input.second?.let { putExtra(ARGS_NEXT_TITLE, it) }
             }
         }
 
-        override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
+        override fun parseResult(
+            resultCode: Int,
+            intent: Intent?,
+        ): Intent? {
             if (intent == null || resultCode != Activity.RESULT_OK) return null
             return intent
         }
@@ -44,7 +49,11 @@ class ImageEditorActivity : BaseActivity() {
         const val ARGS_IMAGE_URI = "args_image_uri"
         const val ARGS_NEXT_TITLE = "args_next_title"
 
-        fun show(context: Context, imageUri: Uri, nextTitle: String?) {
+        fun show(
+            context: Context,
+            imageUri: Uri,
+            nextTitle: String?,
+        ) {
             context.startActivity(
                 Intent(context, ImageEditorActivity::class.java).apply {
                     putExtra(ARGS_IMAGE_URI, imageUri)

@@ -31,7 +31,6 @@ import one.mixin.android.widget.PinView
 
 @AndroidEntryPoint
 class PinCheckDialogFragment : DialogFragment() {
-
     companion object {
         const val TAG = "PinCheckDialogFragment"
         const val POS_PIN = 0
@@ -48,12 +47,16 @@ class PinCheckDialogFragment : DialogFragment() {
     private val disposable = CompositeDisposable()
 
     private var dialogCallback: ((Boolean) -> Unit)? = null
+
     fun setDialogCallback(dialogCallback: ((Boolean) -> Unit)?) {
         this.dialogCallback = dialogCallback
     }
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         dialogCallback?.invoke(true)
@@ -83,67 +86,69 @@ class PinCheckDialogFragment : DialogFragment() {
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
-    private fun verify(pinCode: String) = lifecycleScope.launch {
-        binding.apply {
-            pinVa.displayedChild = POS_PB
+    private fun verify(pinCode: String) =
+        lifecycleScope.launch {
+            binding.apply {
+                pinVa.displayedChild = POS_PB
 
-            handleMixinResponse(
-                invokeNetwork = { pinCheckViewModel.verifyPin(pinCode) },
-                successBlock = {
-                    pin.clear()
-                    pinVa.displayedChild = POS_PIN
-                    context?.updatePinCheck()
-                    dismiss()
-                },
-                exceptionBlock = {
-                    if (it is TipNetworkException) {
-                        handleFailure(it.error)
-                    } else if (it.isTipNodeException()) {
-                        pinVa.displayedChild = POS_PIN
-                        pin.error(it.getTipExceptionMsg(requireContext(), null))
-                    } else {
+                handleMixinResponse(
+                    invokeNetwork = { pinCheckViewModel.verifyPin(pinCode) },
+                    successBlock = {
                         pin.clear()
                         pinVa.displayedChild = POS_PIN
-                    }
-                    return@handleMixinResponse false
-                },
-                failureBlock = { response ->
-                    handleFailure(requireNotNull(response.error))
-                    return@handleMixinResponse false
-                },
-            )
+                        context?.updatePinCheck()
+                        dismiss()
+                    },
+                    exceptionBlock = {
+                        if (it is TipNetworkException) {
+                            handleFailure(it.error)
+                        } else if (it.isTipNodeException()) {
+                            pinVa.displayedChild = POS_PIN
+                            pin.error(it.getTipExceptionMsg(requireContext(), null))
+                        } else {
+                            pin.clear()
+                            pinVa.displayedChild = POS_PIN
+                        }
+                        return@handleMixinResponse false
+                    },
+                    failureBlock = { response ->
+                        handleFailure(requireNotNull(response.error))
+                        return@handleMixinResponse false
+                    },
+                )
+            }
         }
-    }
 
-    private fun handleFailure(error: ResponseError) = lifecycleScope.launch {
-        binding.apply {
-            pin.clear()
-            when (error.code) {
-                ErrorHandler.PIN_INCORRECT -> {
-                    val errorCount = pinCheckViewModel.errorCount()
-                    pinVa.displayedChild = POS_PIN
-                    pin.error(
-                        requireContext().resources.getQuantityString(
-                            R.plurals.error_pin_incorrect_with_times,
-                            errorCount,
-                            errorCount,
-                        ),
-                    )
-                }
-                ErrorHandler.TOO_MANY_REQUEST -> {
-                    pinVa.displayedChild = POS_TIP
-                    tipVa.showNext()
-                    val transY = root.height / 2 - topLl.translationY * 2
-                    topLl.animate()?.translationY(transY)?.start()
-                    keyboard.animate()?.translationY(keyboard.height.toFloat())?.start()
-                }
-                else -> {
-                    pinVa.displayedChild = POS_PIN
-                    pin.error(requireContext().getMixinErrorStringByCode(error.code, error.description))
+    private fun handleFailure(error: ResponseError) =
+        lifecycleScope.launch {
+            binding.apply {
+                pin.clear()
+                when (error.code) {
+                    ErrorHandler.PIN_INCORRECT -> {
+                        val errorCount = pinCheckViewModel.errorCount()
+                        pinVa.displayedChild = POS_PIN
+                        pin.error(
+                            requireContext().resources.getQuantityString(
+                                R.plurals.error_pin_incorrect_with_times,
+                                errorCount,
+                                errorCount,
+                            ),
+                        )
+                    }
+                    ErrorHandler.TOO_MANY_REQUEST -> {
+                        pinVa.displayedChild = POS_TIP
+                        tipVa.showNext()
+                        val transY = root.height / 2 - topLl.translationY * 2
+                        topLl.animate()?.translationY(transY)?.start()
+                        keyboard.animate()?.translationY(keyboard.height.toFloat())?.start()
+                    }
+                    else -> {
+                        pinVa.displayedChild = POS_PIN
+                        pin.error(requireContext().getMixinErrorStringByCode(error.code, error.description))
+                    }
                 }
             }
         }
-    }
 
     override fun onStart() {
         super.onStart()
@@ -188,27 +193,34 @@ class PinCheckDialogFragment : DialogFragment() {
         }
     }
 
-    private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
-        override fun onKeyClick(position: Int, value: String) {
-            context?.tickVibrate()
-            binding.apply {
-                if (position == 11) {
-                    pin.delete()
-                } else {
-                    pin.append(value)
+    private val mKeyboardListener: Keyboard.OnClickKeyboardListener =
+        object : Keyboard.OnClickKeyboardListener {
+            override fun onKeyClick(
+                position: Int,
+                value: String,
+            ) {
+                context?.tickVibrate()
+                binding.apply {
+                    if (position == 11) {
+                        pin.delete()
+                    } else {
+                        pin.append(value)
+                    }
                 }
             }
-        }
 
-        override fun onLongClick(position: Int, value: String) {
-            context?.clickVibrate()
-            binding.apply {
-                if (position == 11) {
-                    pin.clear()
-                } else {
-                    pin.append(value)
+            override fun onLongClick(
+                position: Int,
+                value: String,
+            ) {
+                context?.clickVibrate()
+                binding.apply {
+                    if (position == 11) {
+                        pin.clear()
+                    } else {
+                        pin.append(value)
+                    }
                 }
             }
         }
-    }
 }

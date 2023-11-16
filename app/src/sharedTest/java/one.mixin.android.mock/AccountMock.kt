@@ -10,6 +10,6 @@ fun mockAccount(): Account {
         "user", "7000", "ME", "Mixin", "Mixin",
         "", "", "", "", // PinToken is AES key encrypted with RSA
         "", "", "2018-10-01T02:17:44.806365421Z", "", true, "", 0, "EVERYBODY",
-        "EVERYBODY", true, true, "", 0.0, 0.0, arrayListOf(), ""
+        "EVERYBODY", true, true, "", 0.0, 0.0, arrayListOf(), "",
     )
 }

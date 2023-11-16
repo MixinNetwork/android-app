@@ -49,7 +49,10 @@ class SelectConversationFragment : BaseFragment() {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
@@ -86,17 +89,28 @@ class SelectConversationFragment : BaseFragment() {
         }
     }
 
-    private val mWatcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
+    private val mWatcher: TextWatcher =
+        object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {
+            }
 
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        }
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {
+            }
 
-        override fun afterTextChanged(s: Editable?) {
-            adapter.keyword = s
+            override fun afterTextChanged(s: Editable?) {
+                adapter.keyword = s
+            }
         }
-    }
 
     var callback: ((Set<String>?) -> Unit)? = null
 }

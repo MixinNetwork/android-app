@@ -20,12 +20,19 @@ data class HyperlinkItem(
     val createdAt: String,
 ) {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<HyperlinkItem>() {
-            override fun areItemsTheSame(oldItem: HyperlinkItem, newItem: HyperlinkItem) =
-                oldItem.messageId == newItem.messageId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<HyperlinkItem>() {
+                override fun areItemsTheSame(
+                    oldItem: HyperlinkItem,
+                    newItem: HyperlinkItem,
+                ) =
+                    oldItem.messageId == newItem.messageId
 
-            override fun areContentsTheSame(oldItem: HyperlinkItem, newItem: HyperlinkItem) =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: HyperlinkItem,
+                    newItem: HyperlinkItem,
+                ) =
+                    oldItem == newItem
+            }
     }
 }

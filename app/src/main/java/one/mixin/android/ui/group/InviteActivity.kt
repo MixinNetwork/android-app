@@ -10,14 +10,17 @@ import one.mixin.android.ui.common.BlazeBaseActivity
 
 @AndroidEntryPoint
 class InviteActivity : BlazeBaseActivity() {
-
     companion object {
         var ARGS_ID = "args_id"
 
-        fun show(context: Context, conversationId: String) {
-            val intent = Intent(context, InviteActivity::class.java).apply {
-                putExtras(InviteFragment.putBundle(conversationId))
-            }
+        fun show(
+            context: Context,
+            conversationId: String,
+        ) {
+            val intent =
+                Intent(context, InviteActivity::class.java).apply {
+                    putExtras(InviteFragment.putBundle(conversationId))
+                }
             context.startActivity(intent)
         }
     }

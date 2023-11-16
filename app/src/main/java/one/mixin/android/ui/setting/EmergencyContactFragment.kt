@@ -35,7 +35,10 @@ class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contac
     private val viewModel by viewModels<EmergencyViewModel>()
     private val binding by viewBinding(FragmentEmergencyContactBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
@@ -99,59 +102,62 @@ class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contac
         }
     }
 
-    private fun fetchEmergencyContact(pinCode: String) = lifecycleScope.launch {
-        binding.apply {
-            viewPb.isVisible = true
-            handleMixinResponse(
-                invokeNetwork = { viewModel.showEmergency(pinCode) },
-                successBlock = { response ->
-                    val user = response.data as User
-                    navTo(ViewEmergencyContactFragment.newInstance(user), ViewEmergencyContactFragment.TAG)
-                },
-                exceptionBlock = {
-                    viewPb.isVisible = false
-                    setEmergencySet()
-                    return@handleMixinResponse false
-                },
-                doAfterNetworkSuccess = {
-                    viewPb.isVisible = false
-                    setEmergencySet()
-                },
-            )
-        }
-    }
-
-    private fun deleteEmergencyContact(pinCode: String) = lifecycleScope.launch {
-        binding.apply {
-            deletePb.isVisible = true
-            handleMixinResponse(
-                invokeNetwork = { viewModel.deleteEmergency(pinCode) },
-                successBlock = { response ->
-                    val a = response.data as Account
-                    Session.storeAccount(a)
-                    Session.setHasEmergencyContact(a.hasEmergencyContact)
-                    setEmergencySet()
-                },
-                exceptionBlock = {
-                    deletePb.isVisible = false
-                    setEmergencySet()
-                    return@handleMixinResponse false
-                },
-                doAfterNetworkSuccess = {
-                    deletePb.isVisible = false
-                    setEmergencySet()
-                },
-            )
-        }
-    }
-
-    private val bottomSheetCallback = object : PinEmergencyBottomSheetDialog.PinEmergencyCallback() {
-        override fun onSuccess(pinCode: String) {
-            if (showEmergency) {
-                fetchEmergencyContact(pinCode)
-            } else {
-                deleteEmergencyContact(pinCode)
+    private fun fetchEmergencyContact(pinCode: String) =
+        lifecycleScope.launch {
+            binding.apply {
+                viewPb.isVisible = true
+                handleMixinResponse(
+                    invokeNetwork = { viewModel.showEmergency(pinCode) },
+                    successBlock = { response ->
+                        val user = response.data as User
+                        navTo(ViewEmergencyContactFragment.newInstance(user), ViewEmergencyContactFragment.TAG)
+                    },
+                    exceptionBlock = {
+                        viewPb.isVisible = false
+                        setEmergencySet()
+                        return@handleMixinResponse false
+                    },
+                    doAfterNetworkSuccess = {
+                        viewPb.isVisible = false
+                        setEmergencySet()
+                    },
+                )
             }
         }
-    }
+
+    private fun deleteEmergencyContact(pinCode: String) =
+        lifecycleScope.launch {
+            binding.apply {
+                deletePb.isVisible = true
+                handleMixinResponse(
+                    invokeNetwork = { viewModel.deleteEmergency(pinCode) },
+                    successBlock = { response ->
+                        val a = response.data as Account
+                        Session.storeAccount(a)
+                        Session.setHasEmergencyContact(a.hasEmergencyContact)
+                        setEmergencySet()
+                    },
+                    exceptionBlock = {
+                        deletePb.isVisible = false
+                        setEmergencySet()
+                        return@handleMixinResponse false
+                    },
+                    doAfterNetworkSuccess = {
+                        deletePb.isVisible = false
+                        setEmergencySet()
+                    },
+                )
+            }
+        }
+
+    private val bottomSheetCallback =
+        object : PinEmergencyBottomSheetDialog.PinEmergencyCallback() {
+            override fun onSuccess(pinCode: String) {
+                if (showEmergency) {
+                    fetchEmergencyContact(pinCode)
+                } else {
+                    deleteEmergencyContact(pinCode)
+                }
+            }
+        }
 }

@@ -26,7 +26,10 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
     private val viewModel by viewModels<SettingViewModel>()
     private val binding by viewBinding(FragmentPrivacyBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
@@ -79,13 +82,14 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
     }
 
     fun setLockDesc() {
-        binding.lockDescTv.text = getString(
-            when (defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)) {
-                0 -> R.string.Enable_immediately
-                1 -> R.string.Enable_after_1_minute
-                2 -> R.string.Enable_after_30_minutes
-                else -> R.string.Disabled
-            },
-        )
+        binding.lockDescTv.text =
+            getString(
+                when (defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)) {
+                    0 -> R.string.Enable_immediately
+                    1 -> R.string.Enable_after_1_minute
+                    2 -> R.string.Enable_after_30_minutes
+                    else -> R.string.Disabled
+                },
+            )
     }
 }

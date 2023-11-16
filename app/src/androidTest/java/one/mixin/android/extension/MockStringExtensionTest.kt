@@ -11,7 +11,6 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @HiltAndroidTest
 class MockStringExtensionTest {
-
     @Test
     fun testAppendQueryParamsFromOtherUri() {
         val t1 = "http://example.com"

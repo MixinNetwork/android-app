@@ -18,9 +18,10 @@ import one.mixin.android.widget.BulletinView
 class BulletinBoard {
     private val bulletins = mutableListOf<Bulletin>()
 
-    fun addBulletin(bulletin: Bulletin) = apply {
-        bulletins += bulletin
-    }
+    fun addBulletin(bulletin: Bulletin) =
+        apply {
+            bulletins += bulletin
+        }
 
     fun post(): Boolean {
         val chain = Bulletin.Chain(bulletins, 0)
@@ -35,7 +36,6 @@ fun interface Bulletin {
         private val bulletins: List<Bulletin>,
         private val index: Int,
     ) {
-
         fun proceed(): Boolean {
             if (index >= bulletins.size) return false
 
@@ -54,6 +54,7 @@ class NewWalletBulletin(
     companion object {
         const val PREF_NEW_WALLET = "pref_new_wallet"
     }
+
     private val context = bulletinView.context
 
     override fun show(chain: Bulletin.Chain): Boolean {
@@ -67,19 +68,20 @@ class NewWalletBulletin(
         return chain.proceed()
     }
 
-    private val bulletinNewWalletCallback = object : BulletinView.Callback {
-        override fun onClose() {
-            context.defaultSharedPreferences.putLong(
-                PREF_NEW_WALLET,
-                System.currentTimeMillis(),
-            )
-            onClose(BulletinView.Type.NewWallet)
-        }
+    private val bulletinNewWalletCallback =
+        object : BulletinView.Callback {
+            override fun onClose() {
+                context.defaultSharedPreferences.putLong(
+                    PREF_NEW_WALLET,
+                    System.currentTimeMillis(),
+                )
+                onClose(BulletinView.Type.NewWallet)
+            }
 
-        override fun onSetting() {
-            activity.openWallet()
+            override fun onSetting() {
+                activity.openWallet()
+            }
         }
-    }
 }
 
 class NotificationBulletin(
@@ -89,6 +91,7 @@ class NotificationBulletin(
     companion object {
         private const val PREF_NOTIFICATION_ON = "pref_notification_on"
     }
+
     private val context = bulletinView.context
 
     override fun show(chain: Bulletin.Chain): Boolean {
@@ -102,19 +105,20 @@ class NotificationBulletin(
         return chain.proceed()
     }
 
-    private val bulletinNotificationCallback = object : BulletinView.Callback {
-        override fun onClose() {
-            context.defaultSharedPreferences.putLong(
-                PREF_NOTIFICATION_ON,
-                System.currentTimeMillis(),
-            )
-            onClose(BulletinView.Type.Notification)
-        }
+    private val bulletinNotificationCallback =
+        object : BulletinView.Callback {
+            override fun onClose() {
+                context.defaultSharedPreferences.putLong(
+                    PREF_NOTIFICATION_ON,
+                    System.currentTimeMillis(),
+                )
+                onClose(BulletinView.Type.Notification)
+            }
 
-        override fun onSetting() {
-            context.openNotificationSetting()
+            override fun onSetting() {
+                context.openNotificationSetting()
+            }
         }
-    }
 }
 
 class EmergencyContactBulletin(
@@ -125,6 +129,7 @@ class EmergencyContactBulletin(
     companion object {
         private const val PREF_EMERGENCY_CONTACT = "pref_emergency_contact"
     }
+
     private val context = bulletinView.context
 
     override fun show(chain: Bulletin.Chain): Boolean {
@@ -139,19 +144,20 @@ class EmergencyContactBulletin(
         return chain.proceed()
     }
 
-    private val bulletinEmergencyContactCallback = object : BulletinView.Callback {
-        override fun onClose() {
-            context.defaultSharedPreferences.putLong(
-                PREF_EMERGENCY_CONTACT,
-                System.currentTimeMillis(),
-            )
-            onClose(BulletinView.Type.EmergencyContact)
-        }
+    private val bulletinEmergencyContactCallback =
+        object : BulletinView.Callback {
+            override fun onClose() {
+                context.defaultSharedPreferences.putLong(
+                    PREF_EMERGENCY_CONTACT,
+                    System.currentTimeMillis(),
+                )
+                onClose(BulletinView.Type.EmergencyContact)
+            }
 
-        override fun onSetting() {
-            SettingActivity.showEmergencyContact(context)
+            override fun onSetting() {
+                SettingActivity.showEmergencyContact(context)
+            }
         }
-    }
 }
 
 class UpgradeTipBulletin(
@@ -167,10 +173,12 @@ class UpgradeTipBulletin(
         return chain.proceed()
     }
 
-    private val bulletinUpgradeTipCallback = object : BulletinView.Callback {
-        override fun onClose() {}
-        override fun onSetting() {
-            TipActivity.show(activity, TipType.Upgrade, true)
+    private val bulletinUpgradeTipCallback =
+        object : BulletinView.Callback {
+            override fun onClose() {}
+
+            override fun onSetting() {
+                TipActivity.show(activity, TipType.Upgrade, true)
+            }
         }
-    }
 }

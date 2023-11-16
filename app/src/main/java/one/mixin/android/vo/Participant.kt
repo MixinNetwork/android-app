@@ -18,7 +18,7 @@ import kotlinx.serialization.Serializable
                 parentColumns = arrayOf("conversation_id"),
                 childColumns = arrayOf("conversation_id"),
             )
-            ),
+        ),
     ],
     primaryKeys = ["conversation_id", "user_id"],
 )

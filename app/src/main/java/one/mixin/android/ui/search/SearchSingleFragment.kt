@@ -30,10 +30,10 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -81,11 +81,15 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
     private var cancellationSignal: CancellationSignal? = null
     private lateinit var searchChatPopupMenu: SearchChatPopupMenu
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        searchChatPopupMenu = SearchChatPopupMenu(requireContext(), lifecycleScope, searchViewModel) {
-            onTextChanged(binding.searchEt.text.toString())
-        }
+        searchChatPopupMenu =
+            SearchChatPopupMenu(requireContext(), lifecycleScope, searchViewModel) {
+                onTextChanged(binding.searchEt.text.toString())
+            }
         binding.backIb.setOnClickListener {
             binding.searchEt.hideKeyboard()
             requireActivity().onBackPressed()
@@ -93,48 +97,53 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
         binding.searchRv.layoutManager = LinearLayoutManager(requireContext())
         val header = LayoutInflater.from(requireContext()).inflate(R.layout.view_head_search_single, binding.searchRv, false)
         val headerBinding = ViewHeadSearchSingleBinding.bind(header)
-        val text = when (type) {
-            TypeAsset -> requireContext().getString(R.string.ASSETS)
-            TypeUser -> requireContext().getText(R.string.CONTACTS)
-            TypeChat -> requireContext().getText(R.string.CHATS)
-            TypeMessage -> requireContext().getText(R.string.SEARCH_MESSAGES)
-        }
+        val text =
+            when (type) {
+                TypeAsset -> requireContext().getString(R.string.ASSETS)
+                TypeUser -> requireContext().getText(R.string.CONTACTS)
+                TypeChat -> requireContext().getText(R.string.CHATS)
+                TypeMessage -> requireContext().getText(R.string.SEARCH_MESSAGES)
+            }
         headerBinding.titleTv.text = text
         adapter.headerView = header
         binding.searchRv.adapter = adapter
         adapter.data = data
-        adapter.onItemClickListener = object : SearchFragment.OnSearchClickListener {
-            override fun onTipClick() {
-            }
+        adapter.onItemClickListener =
+            object : SearchFragment.OnSearchClickListener {
+                override fun onTipClick() {
+                }
 
-            override fun onUrlClick(url: String) {
-            }
+                override fun onUrlClick(url: String) {
+                }
 
-            override fun onAsset(tokenItem: TokenItem) {
-                activity?.let { WalletActivity.show(it, tokenItem) }
-            }
+                override fun onAsset(tokenItem: TokenItem) {
+                    activity?.let { WalletActivity.show(it, tokenItem) }
+                }
 
-            override fun onMessageClick(message: SearchMessageItem) {
-                binding.searchRv.hideKeyboard()
-                val f = SearchMessageFragment.newInstance(message, adapter.query)
-                requireActivity().addFragment(this@SearchSingleFragment, f, SearchMessageFragment.TAG, R.id.root_view)
-            }
+                override fun onMessageClick(message: SearchMessageItem) {
+                    binding.searchRv.hideKeyboard()
+                    val f = SearchMessageFragment.newInstance(message, adapter.query)
+                    requireActivity().addFragment(this@SearchSingleFragment, f, SearchMessageFragment.TAG, R.id.root_view)
+                }
 
-            override fun onChatClick(chatMinimal: ChatMinimal) {
-                binding.searchRv.hideKeyboard()
-                context?.let { ctx -> ConversationActivity.show(ctx, chatMinimal.conversationId) }
-            }
+                override fun onChatClick(chatMinimal: ChatMinimal) {
+                    binding.searchRv.hideKeyboard()
+                    context?.let { ctx -> ConversationActivity.show(ctx, chatMinimal.conversationId) }
+                }
 
-            override fun onUserClick(user: User) {
-                binding.searchRv.hideKeyboard()
-                context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
-            }
+                override fun onUserClick(user: User) {
+                    binding.searchRv.hideKeyboard()
+                    context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
+                }
 
-            override fun onChatLongClick(chatMinimal: ChatMinimal, anchor: View): Boolean {
-                searchChatPopupMenu.showPopupMenu(chatMinimal, anchor)
-                return true
+                override fun onChatLongClick(
+                    chatMinimal: ChatMinimal,
+                    anchor: View,
+                ): Boolean {
+                    searchChatPopupMenu.showPopupMenu(chatMinimal, anchor)
+                    return true
+                }
             }
-        }
 
         binding.clearIb.setOnClickListener { binding.searchEt.setText("") }
         binding.searchEt.hint = text
@@ -165,23 +174,25 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun onTextChanged(s: String) = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
+    private fun onTextChanged(s: String) =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
 
-        binding.pb.isVisible = true
+            binding.pb.isVisible = true
 
-        val cancellationSignal = CancellationSignal()
-        this@SearchSingleFragment.cancellationSignal = cancellationSignal
-        val list: List<Parcelable>? = when (type) {
-            TypeAsset -> searchViewModel.fuzzySearch<TokenItem>(cancellationSignal, s)
-            TypeUser -> searchViewModel.fuzzySearch<User>(cancellationSignal, s)
-            TypeChat -> searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, s)
-            TypeMessage -> searchViewModel.fuzzySearch<SearchMessageItem>(cancellationSignal, s, -1)
+            val cancellationSignal = CancellationSignal()
+            this@SearchSingleFragment.cancellationSignal = cancellationSignal
+            val list: List<Parcelable>? =
+                when (type) {
+                    TypeAsset -> searchViewModel.fuzzySearch<TokenItem>(cancellationSignal, s)
+                    TypeUser -> searchViewModel.fuzzySearch<User>(cancellationSignal, s)
+                    TypeChat -> searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, s)
+                    TypeMessage -> searchViewModel.fuzzySearch<SearchMessageItem>(cancellationSignal, s, -1)
+                }
+
+            binding.pb.isInvisible = true
+
+            adapter.data = list
+            adapter.notifyDataSetChanged()
         }
-
-        binding.pb.isInvisible = true
-
-        adapter.data = list
-        adapter.notifyDataSetChanged()
-    }
 }

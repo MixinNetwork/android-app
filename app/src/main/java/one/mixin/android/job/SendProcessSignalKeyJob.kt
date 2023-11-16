@@ -15,10 +15,9 @@ class SendProcessSignalKeyJob(
     val participantId: String? = null,
     priority: Int = PRIORITY_SEND_MESSAGE,
 ) : MixinJob(
-    Params(priority).groupBy("send_message_group").requireWebSocketConnected().persist(),
-    UUID.randomUUID().toString(),
-) {
-
+        Params(priority).groupBy("send_message_group").requireWebSocketConnected().persist(),
+        UUID.randomUUID().toString(),
+    ) {
     companion object {
         private const val serialVersionUID = 1L
     }
@@ -38,9 +37,10 @@ class SendProcessSignalKeyJob(
         } else if (action == ProcessSignalKeyAction.ADD_PARTICIPANT) {
             val response = userService.fetchSessions(arrayListOf(participantId!!)).execute().body()
             if (response != null && response.isSuccess) {
-                val ps = response.data?.map { item ->
-                    ParticipantSession(data.conversationId, item.userId, item.sessionId, publicKey = item.publicKey)
-                }
+                val ps =
+                    response.data?.map { item ->
+                        ParticipantSession(data.conversationId, item.userId, item.sessionId, publicKey = item.publicKey)
+                    }
                 if (!ps.isNullOrEmpty()) {
                     participantSessionDao.insertList(ps)
                 }

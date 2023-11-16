@@ -16,7 +16,6 @@ import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.RatchetSenderKeyDao
 import one.mixin.android.db.AppDao
-import one.mixin.android.db.TokenDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
@@ -36,6 +35,7 @@ import one.mixin.android.db.ResendSessionMessageDao
 import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
+import one.mixin.android.db.TokenDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
@@ -193,7 +193,11 @@ open class Injector {
         return bm.data
     }
 
-    protected fun syncUser(userId: String, conversationId: String? = null, forceSync: Boolean = true): User? {
+    protected fun syncUser(
+        userId: String,
+        conversationId: String? = null,
+        forceSync: Boolean = true,
+    ): User? {
         var user = userDao.findUser(userId)
         if (user == null && forceSync) {
             try {
@@ -239,11 +243,12 @@ open class Injector {
             val response = call.body()
             if (response != null && response.isSuccess) {
                 response.data?.let { conversationData ->
-                    val status = if (conversationData.participants.find { Session.getAccountId() == it.userId } != null) {
-                        ConversationStatus.SUCCESS.ordinal
-                    } else {
-                        ConversationStatus.QUIT.ordinal
-                    }
+                    val status =
+                        if (conversationData.participants.find { Session.getAccountId() == it.userId } != null) {
+                            ConversationStatus.SUCCESS.ordinal
+                        } else {
+                            ConversationStatus.QUIT.ordinal
+                        }
                     var ownerId: String = conversationData.creatorId
                     if (conversationData.category == ConversationCategory.CONTACT.name) {
                         ownerId = conversationData.participants.find { it.userId != Session.getAccountId() }!!.userId
@@ -273,9 +278,10 @@ open class Injector {
                         jobManager.addJobInBackground(RefreshUserJob(conversationUserIds, conversationId))
                     }
 
-                    val sessionParticipants = conversationData.participantSessions?.map {
-                        ParticipantSession(conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
-                    }
+                    val sessionParticipants =
+                        conversationData.participantSessions?.map {
+                            ParticipantSession(conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
+                        }
                     sessionParticipants?.let {
                         participantSessionDao.replaceAll(conversationId, it)
                     }

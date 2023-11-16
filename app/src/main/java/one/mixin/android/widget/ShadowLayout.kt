@@ -15,7 +15,10 @@ class ShadowLayout : ViewGroup {
         defStyleAttr,
     )
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
         measureChildren(widthMeasureSpec, heightMeasureSpec)
         val firstView = getChildAt(0)
         val firstLp = firstView.layoutParams as MarginLayoutParams
@@ -25,7 +28,13 @@ class ShadowLayout : ViewGroup {
         )
     }
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+    override fun onLayout(
+        changed: Boolean,
+        l: Int,
+        t: Int,
+        r: Int,
+        b: Int,
+    ) {
         val firstView = getChildAt(0)
         val firstLp = firstView.layoutParams as MarginLayoutParams
         val secondView = getChildAt(1)

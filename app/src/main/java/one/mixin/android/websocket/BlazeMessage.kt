@@ -13,7 +13,6 @@ data class BlazeMessage(
     val data: JsonElement? = null,
     val error: ResponseError? = null,
 ) : Serializable {
-
     companion object {
         private const val serialVersionUID: Long = -1138873694585349395
     }
@@ -39,11 +38,12 @@ const val LIST_KRAKEN_PEERS = "LIST_KRAKEN_PEERS"
 fun createParamBlazeMessage(param: BlazeMessageParam) =
     BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, param)
 
-fun createListPendingMessage(offset: String?) = BlazeMessage(
-    UUID.randomUUID().toString(),
-    LIST_PENDING_MESSAGES,
-    offset.notNullWithElse({ BlazeMessageParam(offset = it) }, null),
-)
+fun createListPendingMessage(offset: String?) =
+    BlazeMessage(
+        UUID.randomUUID().toString(),
+        LIST_PENDING_MESSAGES,
+        offset.notNullWithElse({ BlazeMessageParam(offset = it) }, null),
+    )
 
 fun createCountSignalKeys() =
     BlazeMessage(UUID.randomUUID().toString(), COUNT_SIGNAL_KEYS, null)

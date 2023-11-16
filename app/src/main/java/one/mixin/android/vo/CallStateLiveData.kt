@@ -17,7 +17,8 @@ data class GroupCallUser(
     var type: Type,
 ) {
     enum class Type {
-        Joined, Pending
+        Joined,
+        Pending,
     }
 }
 
@@ -54,9 +55,10 @@ data class GroupCallState(
         if (users.isNullOrEmpty()) return
 
         synchronized(lock) {
-            val us = mutableListOf<GroupCallUser>().apply {
-                users?.let { addAll(it) }
-            }
+            val us =
+                mutableListOf<GroupCallUser>().apply {
+                    users?.let { addAll(it) }
+                }
             val each = us.iterator()
             while (each.hasNext()) {
                 if (inUser == each.next().id) {
@@ -69,9 +71,10 @@ data class GroupCallState(
 
     fun setJoinedUsers(joinedUsers: List<String>) {
         synchronized(lock) {
-            val us = mutableListOf<GroupCallUser>().apply {
-                users?.let { addAll(it) }
-            }
+            val us =
+                mutableListOf<GroupCallUser>().apply {
+                    users?.let { addAll(it) }
+                }
             if (us.isEmpty()) {
                 joinedUsers.forEach {
                     us.add(GroupCallUser(it, GroupCallUser.Type.Joined))
@@ -113,21 +116,29 @@ data class GroupCallState(
         }
     }
 
-    private fun addUserToList(userId: String, type: GroupCallUser.Type) {
+    private fun addUserToList(
+        userId: String,
+        type: GroupCallUser.Type,
+    ) {
         synchronized(lock) {
-            val us = mutableListOf<GroupCallUser>().apply {
-                users?.let { addAll(it) }
-            }
+            val us =
+                mutableListOf<GroupCallUser>().apply {
+                    users?.let { addAll(it) }
+                }
             changeOrAnd(us, userId, type)
             users = us
         }
     }
 
-    private fun addUsersToList(userIds: List<String>, type: GroupCallUser.Type) {
+    private fun addUsersToList(
+        userIds: List<String>,
+        type: GroupCallUser.Type,
+    ) {
         synchronized(lock) {
-            val us = mutableListOf<GroupCallUser>().apply {
-                users?.let { addAll(it) }
-            }
+            val us =
+                mutableListOf<GroupCallUser>().apply {
+                    users?.let { addAll(it) }
+                }
             userIds.forEach { id ->
                 changeOrAnd(us, id, type)
             }
@@ -135,7 +146,11 @@ data class GroupCallState(
         }
     }
 
-    private fun changeOrAnd(us: MutableList<GroupCallUser>, id: String, type: GroupCallUser.Type) {
+    private fun changeOrAnd(
+        us: MutableList<GroupCallUser>,
+        id: String,
+        type: GroupCallUser.Type,
+    ) {
         synchronized(lock) {
             val existsUser = us.find { u -> u.id == id }
             if (existsUser == null) {
@@ -150,7 +165,9 @@ data class GroupCallState(
 }
 
 enum class CallType {
-    None, Voice, Group
+    None,
+    Voice,
+    Group,
 }
 
 private const val JOIN_MUTE_MIC_COUNT = 7
@@ -219,7 +236,9 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     }
 
     fun isGroupCall() = callType == CallType.Group
+
     fun isVoiceCall() = callType == CallType.Voice
+
     fun isNoneCallType() = callType == CallType.None
 
     fun isBusy(): Boolean = isNotIdle()
@@ -231,9 +250,10 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     }
 
     fun addGroupCallState(conversationId: String): GroupCallState {
-        val exists = groupCallStates.find {
-            it.conversationId == conversationId
-        }
+        val exists =
+            groupCallStates.find {
+                it.conversationId == conversationId
+            }
         if (exists != null) return exists
 
         val groupCallState = GroupCallState(conversationId)
@@ -254,7 +274,10 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         return removed
     }
 
-    fun setInviter(conversationId: String, userId: String) {
+    fun setInviter(
+        conversationId: String,
+        userId: String,
+    ) {
         val groupCallState = addGroupCallState(conversationId)
         groupCallState.inviter = userId
     }
@@ -265,9 +288,10 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         }?.inviter
 
     fun getUsers(conversationId: String): List<String>? {
-        val groupCallState = groupCallStates.find {
-            it.conversationId == conversationId
-        } ?: return null
+        val groupCallState =
+            groupCallStates.find {
+                it.conversationId == conversationId
+            } ?: return null
         return groupCallState.userIds()
     }
 
@@ -280,14 +304,20 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     fun getUsersCount(conversationId: String): Int =
         getUsers(conversationId)?.size ?: 0
 
-    fun setPendingUsers(conversationId: String, guests: List<String>) {
+    fun setPendingUsers(
+        conversationId: String,
+        guests: List<String>,
+    ) {
         if (guests.isNullOrEmpty()) return
 
         val groupCallState = addGroupCallState(conversationId)
         groupCallState.addPendingUsers(guests)
     }
 
-    fun addPendingUsers(conversationId: String, guests: List<String>) {
+    fun addPendingUsers(
+        conversationId: String,
+        guests: List<String>,
+    ) {
         if (guests.isNullOrEmpty()) return
 
         val groupCallState = addGroupCallState(conversationId)
@@ -304,9 +334,10 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
 
     fun clearUsersKeepSelf(conversationId: String) {
         synchronized(lock) {
-            val groupCallState = groupCallStates.find {
-                it.conversationId == conversationId
-            } ?: return
+            val groupCallState =
+                groupCallStates.find {
+                    it.conversationId == conversationId
+                } ?: return
             groupCallState.users = listOf(GroupCallUser(Session.getAccountId()!!, GroupCallUser.Type.Joined))
         }
 
@@ -314,20 +345,25 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     }
 
     fun clearPendingUsers(conversationId: String) {
-        val groupCallState = groupCallStates.find {
-            it.conversationId == conversationId
-        } ?: return
+        val groupCallState =
+            groupCallStates.find {
+                it.conversationId == conversationId
+            } ?: return
         groupCallState.clearPendingUsers()
     }
 
     fun getPendingUsers(conversationId: String): List<String>? {
-        val groupCallState = groupCallStates.find {
-            it.conversationId == conversationId
-        } ?: return null
+        val groupCallState =
+            groupCallStates.find {
+                it.conversationId == conversationId
+            } ?: return null
         return groupCallState.pendingUserIds()
     }
 
-    fun setUsersByConversationId(conversationId: String, newUsers: List<String>?) {
+    fun setUsersByConversationId(
+        conversationId: String,
+        newUsers: List<String>?,
+    ) {
         if (newUsers.isNullOrEmpty()) return
 
         synchronized(lock) {
@@ -349,28 +385,41 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         postValue(state)
     }
 
-    fun addUser(conversationId: String, userId: String) {
+    fun addUser(
+        conversationId: String,
+        userId: String,
+    ) {
         val groupCallState = addGroupCallState(conversationId)
         groupCallState.addJoinedUser(userId)
 
         postValue(state)
     }
 
-    fun removeUser(conversationId: String, userId: String) {
-        val groupCallState = groupCallStates.find {
-            it.conversationId == conversationId
-        } ?: return
+    fun removeUser(
+        conversationId: String,
+        userId: String,
+    ) {
+        val groupCallState =
+            groupCallStates.find {
+                it.conversationId == conversationId
+            } ?: return
         groupCallState.removeUser(userId)
 
         postValue(state)
     }
 
     fun isIdle() = state == CallService.CallState.STATE_IDLE
+
     fun isNotIdle() = state != CallService.CallState.STATE_IDLE
+
     fun isAnswering() = state == CallService.CallState.STATE_ANSWERING
+
     fun isConnected() = state == CallService.CallState.STATE_CONNECTED
+
     fun isRinging() = state == CallService.CallState.STATE_RINGING
+
     fun isBeforeAnswering() = state < CallService.CallState.STATE_ANSWERING
+
     fun isInUse() = state == CallService.CallState.STATE_DIALING || state == CallService.CallState.STATE_RINGING || state == CallService.CallState.STATE_ANSWERING || state == CallService.CallState.STATE_CONNECTED
 
     fun inConversationAndAtLeastAnswering(conversationId: String) =
@@ -384,7 +433,10 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         return groupCallState.users?.isNullOrEmpty() != true
     }
 
-    fun handleHangup(ctx: Context, join: Boolean = false) {
+    fun handleHangup(
+        ctx: Context,
+        join: Boolean = false,
+    ) {
         when (state) {
             CallService.CallState.STATE_DIALING ->
                 if (isGroupCall()) {

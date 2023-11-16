@@ -22,33 +22,33 @@ import one.mixin.android.vo.toUser
 class RefreshAccountJob(
     private val checkTip: Boolean = false,
 ) : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requireNetwork().persist()) {
-
     companion object {
         private const val serialVersionUID = 1L
         private const val GROUP = "RefreshAccountJob"
     }
 
-    override fun onRun() = runBlocking {
-        val response = accountService.getMe().execute().body()
-        if (response != null && response.isSuccess && response.data != null) {
-            val account = response.data ?: return@runBlocking
-            updateAccount(account)
+    override fun onRun() =
+        runBlocking {
+            val response = accountService.getMe().execute().body()
+            if (response != null && response.isSuccess && response.data != null) {
+                val account = response.data ?: return@runBlocking
+                updateAccount(account)
 
-            if(checkTip && !tipCounterSynced.synced) {
-                tip.checkCounter(
-                    account.tipCounter,
-                    onNodeCounterNotEqualServer = { nodeMaxCounter, failedSigners ->
-                        RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
-                    },
-                    onNodeCounterInconsistency = { nodeMaxCounter, failedSigners ->
-                        RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
-                    },
-                ).onSuccess {
-                    tipCounterSynced.synced = true
+                if (checkTip && !tipCounterSynced.synced) {
+                    tip.checkCounter(
+                        account.tipCounter,
+                        onNodeCounterNotEqualServer = { nodeMaxCounter, failedSigners ->
+                            RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
+                        },
+                        onNodeCounterInconsistency = { nodeMaxCounter, failedSigners ->
+                            RxBus.publish(TipEvent(nodeMaxCounter, failedSigners))
+                        },
+                    ).onSuccess {
+                        tipCounterSynced.synced = true
+                    }
                 }
             }
         }
-    }
 }
 
 fun updateAccount(account: Account) {
@@ -56,8 +56,9 @@ fun updateAccount(account: Account) {
     val u = account.toUser()
     db.userDao().insertUpdate(u, db.appDao())
     Session.storeAccount(account)
-    val receive = MixinApplication.appContext.defaultSharedPreferences
-        .getInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
+    val receive =
+        MixinApplication.appContext.defaultSharedPreferences
+            .getInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
     if (account.receiveMessageSource == MessageSource.EVERYBODY.name &&
         receive != MessageSource.EVERYBODY.ordinal
     ) {
@@ -70,8 +71,9 @@ fun updateAccount(account: Account) {
             .putInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.CONTACTS.ordinal)
     }
 
-    val receiveGroup = MixinApplication.appContext.defaultSharedPreferences
-        .getInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
+    val receiveGroup =
+        MixinApplication.appContext.defaultSharedPreferences
+            .getInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
     if (account.acceptConversationSource == MessageSource.EVERYBODY.name &&
         receiveGroup != MessageSource.EVERYBODY.ordinal
     ) {
@@ -84,10 +86,11 @@ fun updateAccount(account: Account) {
             .putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.CONTACTS.ordinal)
     }
 
-    val searchSource = MixinApplication.appContext.defaultSharedPreferences.getString(
-        PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
-        SearchSource.EVERYBODY.name,
-    )
+    val searchSource =
+        MixinApplication.appContext.defaultSharedPreferences.getString(
+            PhoneNumberSettingFragment.ACCEPT_SEARCH_KEY,
+            SearchSource.EVERYBODY.name,
+        )
     if (account.acceptSearchSource != searchSource) {
         if (SearchSource.EVERYBODY.name == account.acceptSearchSource) {
             MixinApplication.appContext.defaultSharedPreferences.putString(

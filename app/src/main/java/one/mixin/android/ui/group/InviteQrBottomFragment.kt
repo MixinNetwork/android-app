@@ -27,20 +27,25 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "InviteQrBottomFragment"
         private const val ICON_URL = "icon_url"
         private const val NAME = "name"
         private const val URL = "url"
 
-        fun newInstance(name: String?, iconUrl: String?, url: String?) = InviteQrBottomFragment().apply {
-            arguments = bundleOf(
-                ICON_URL to iconUrl,
-                NAME to name,
-                URL to url,
-            )
-        }
+        fun newInstance(
+            name: String?,
+            iconUrl: String?,
+            url: String?,
+        ) =
+            InviteQrBottomFragment().apply {
+                arguments =
+                    bundleOf(
+                        ICON_URL to iconUrl,
+                        NAME to name,
+                        URL to url,
+                    )
+            }
     }
 
     private val binding by viewBinding(FragmentInviteQrBottomBinding::inflate)
@@ -58,7 +63,10 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
     }
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -109,10 +117,11 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
                     .autoDispose(stopScope)
                     .subscribe(
                         { r ->
-                            avatar.layoutParams = avatar.layoutParams.apply {
-                                width = r.second
-                                height = r.second
-                            }
+                            avatar.layoutParams =
+                                avatar.layoutParams.apply {
+                                    width = r.second
+                                    height = r.second
+                                }
                             qr.setImageBitmap(r.first)
                         },
                         {

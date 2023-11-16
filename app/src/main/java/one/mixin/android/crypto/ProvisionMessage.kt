@@ -17,7 +17,6 @@ class ProvisionMessage(
     @SerializedName("platform")
     val platform: String = "Android",
 ) {
-
     fun toByteArray(): ByteArray {
         return GsonHelper.customGson.toJson(this).toByteArray()
     }
@@ -29,7 +28,6 @@ class ProvisionEnvelope(
     @SerializedName("body")
     val body: ByteArray,
 ) {
-
     fun toByteArray(): ByteArray {
         return GsonHelper.customGson.toJson(this).toByteArray()
     }

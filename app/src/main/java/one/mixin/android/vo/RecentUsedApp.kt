@@ -12,14 +12,21 @@ data class RecentUsedApp(
     val iconUrl: String,
 ) {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<RecentUsedApp>() {
-            override fun areItemsTheSame(p0: RecentUsedApp, p1: RecentUsedApp): Boolean {
-                return p0.appId == p1.appId
-            }
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<RecentUsedApp>() {
+                override fun areItemsTheSame(
+                    p0: RecentUsedApp,
+                    p1: RecentUsedApp,
+                ): Boolean {
+                    return p0.appId == p1.appId
+                }
 
-            override fun areContentsTheSame(p0: RecentUsedApp, p1: RecentUsedApp): Boolean {
-                return p0 == p1
+                override fun areContentsTheSame(
+                    p0: RecentUsedApp,
+                    p1: RecentUsedApp,
+                ): Boolean {
+                    return p0 == p1
+                }
             }
-        }
     }
 }

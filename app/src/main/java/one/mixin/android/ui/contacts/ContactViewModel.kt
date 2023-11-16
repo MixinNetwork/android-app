@@ -25,49 +25,54 @@ import one.mixin.android.vo.generateConversationId
 import javax.inject.Inject
 
 @HiltViewModel
-class ContactViewModel @Inject
-internal constructor(
-    private val userRepository: UserRepository,
-    private val accountRepository: AccountRepository,
-    private val conversationRepository: ConversationRepository,
-    private var jobManager: MixinJobManager,
-) : ViewModel() {
+class ContactViewModel
+    @Inject
+    internal constructor(
+        private val userRepository: UserRepository,
+        private val accountRepository: AccountRepository,
+        private val conversationRepository: ConversationRepository,
+        private var jobManager: MixinJobManager,
+    ) : ViewModel() {
+        fun getFriends(): LiveData<List<User>> = userRepository.findFriends()
 
-    fun getFriends(): LiveData<List<User>> = userRepository.findFriends()
+        fun findContacts(): LiveData<List<User>> = userRepository.findContacts()
 
-    fun findContacts(): LiveData<List<User>> = userRepository.findContacts()
+        fun findSelf(): LiveData<User?> = userRepository.findSelf()
 
-    fun findSelf(): LiveData<User?> = userRepository.findSelf()
-
-    fun insertUser(user: User) = viewModelScope.launch(Dispatchers.IO) {
-        userRepository.upsert(user)
-    }
-
-    fun search(query: String): Observable<MixinResponse<User>> =
-        accountRepository.search(query).subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-
-    fun findUserById(id: String): LiveData<User> = userRepository.findUserById(id)
-
-    fun mute(senderId: String, recipientId: String, duration: Long) {
-        viewModelScope.launch(SINGLE_DB_THREAD) {
-            var conversationId = conversationRepository.getConversationIdIfExistsSync(recipientId)
-            if (conversationId == null) {
-                conversationId = generateConversationId(senderId, recipientId)
+        fun insertUser(user: User) =
+            viewModelScope.launch(Dispatchers.IO) {
+                userRepository.upsert(user)
             }
-            val participantRequest = ParticipantRequest(recipientId, "")
-            jobManager.addJobInBackground(
-                ConversationJob(
-                    ConversationRequest(
-                        conversationId,
-                        ConversationCategory.CONTACT.name,
-                        duration = duration,
-                        participants = listOf(participantRequest),
+
+        fun search(query: String): Observable<MixinResponse<User>> =
+            accountRepository.search(query).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+
+        fun findUserById(id: String): LiveData<User> = userRepository.findUserById(id)
+
+        fun mute(
+            senderId: String,
+            recipientId: String,
+            duration: Long,
+        ) {
+            viewModelScope.launch(SINGLE_DB_THREAD) {
+                var conversationId = conversationRepository.getConversationIdIfExistsSync(recipientId)
+                if (conversationId == null) {
+                    conversationId = generateConversationId(senderId, recipientId)
+                }
+                val participantRequest = ParticipantRequest(recipientId, "")
+                jobManager.addJobInBackground(
+                    ConversationJob(
+                        ConversationRequest(
+                            conversationId,
+                            ConversationCategory.CONTACT.name,
+                            duration = duration,
+                            participants = listOf(participantRequest),
+                        ),
+                        recipientId = recipientId,
+                        type = TYPE_MUTE,
                     ),
-                    recipientId = recipientId,
-                    type = TYPE_MUTE,
-                ),
-            )
+                )
+            }
         }
     }
-}

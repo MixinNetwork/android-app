@@ -15,7 +15,6 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "PermissionBottomSheetDialogFragment"
 
@@ -27,7 +26,13 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val PERMISSION_VIDEO = 1
         const val PERMISSION_AUDIO = 2
         const val PERMISSION_LOCATION = 3
-        private fun newInstance(title: String, appName: String? = null, number: String? = null, vararg permissions: Int) =
+
+        private fun newInstance(
+            title: String,
+            appName: String? = null,
+            number: String? = null,
+            vararg permissions: Int,
+        ) =
             PermissionBottomSheetDialogFragment().withArgs {
                 putIntArray(ARGS_PERMISSION, permissions)
                 putString(ARGS_TITLE, title)
@@ -35,19 +40,36 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 putString(ARGS_NUMBER, number)
             }
 
-        fun requestCamera(title: String, appName: String? = null, number: String? = null): PermissionBottomSheetDialogFragment {
+        fun requestCamera(
+            title: String,
+            appName: String? = null,
+            number: String? = null,
+        ): PermissionBottomSheetDialogFragment {
             return newInstance(title, appName, number, PERMISSION_CAMERA)
         }
 
-        fun requestVideo(title: String, appName: String? = null, number: String? = null): PermissionBottomSheetDialogFragment {
+        fun requestVideo(
+            title: String,
+            appName: String? = null,
+            number: String? = null,
+        ): PermissionBottomSheetDialogFragment {
             return newInstance(title, appName, number, PERMISSION_VIDEO)
         }
 
-        fun requestLocation(title: String, appName: String? = null, number: String? = null): PermissionBottomSheetDialogFragment {
+        fun requestLocation(
+            title: String,
+            appName: String? = null,
+            number: String? = null,
+        ): PermissionBottomSheetDialogFragment {
             return newInstance(title, appName, number, PERMISSION_LOCATION)
         }
 
-        fun request(title: String, appName: String? = null, number: String? = null, vararg permissions: Int): PermissionBottomSheetDialogFragment {
+        fun request(
+            title: String,
+            appName: String? = null,
+            number: String? = null,
+            vararg permissions: Int,
+        ): PermissionBottomSheetDialogFragment {
             return newInstance(title, appName, number, *permissions)
         }
     }
@@ -77,7 +99,10 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentPermissionBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         dialog as BottomSheet

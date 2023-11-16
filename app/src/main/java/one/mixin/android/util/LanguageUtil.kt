@@ -17,7 +17,10 @@ fun isCurrChinese(): Boolean = (getLanguage() ?: Locale.getDefault().language) =
 
 fun isFollowSystem(): Boolean = AppCompatDelegate.getApplicationLocales().isEmpty
 
-fun getLocalString(context: Context, @StringRes resId: Int): String {
+fun getLocalString(
+    context: Context,
+    @StringRes resId: Int,
+): String {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU || isFollowSystem()) return context.getString(resId)
     val locale = AppCompatDelegate.getApplicationLocales().get(0) ?: return context.getString(resId)
     val configuration = context.resources.configuration
@@ -25,7 +28,11 @@ fun getLocalString(context: Context, @StringRes resId: Int): String {
     return context.createConfigurationContext(configuration).getString(resId)
 }
 
-fun getLocalString(context: Context, @StringRes resId: Int, vararg args: Any): String {
+fun getLocalString(
+    context: Context,
+    @StringRes resId: Int,
+    vararg args: Any,
+): String {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU || isFollowSystem()) return context.getString(resId, *args)
     val locale = AppCompatDelegate.getApplicationLocales().get(0) ?: return context.getString(resId, *args)
     val configuration = context.resources.configuration

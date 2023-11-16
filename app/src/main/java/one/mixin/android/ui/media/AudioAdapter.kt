@@ -19,7 +19,10 @@ import one.mixin.android.vo.MessageItem
 class AudioAdapter(private val onClickListener: (messageItem: MessageItem) -> Unit, private val onLongClickListener: (messageId: String) -> Unit) :
     SharedMediaHeaderAdapter<AudioHolder>(
         object : DiffUtil.ItemCallback<MessageItem>() {
-            override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
+            override fun areItemsTheSame(
+                oldItem: MessageItem,
+                newItem: MessageItem,
+            ): Boolean {
                 return oldItem.messageId == newItem.messageId
             }
 
@@ -32,7 +35,10 @@ class AudioAdapter(private val onClickListener: (messageItem: MessageItem) -> Un
             }
         },
     ) {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         AudioHolder(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_audio,
@@ -41,7 +47,10 @@ class AudioAdapter(private val onClickListener: (messageItem: MessageItem) -> Un
             ),
         )
 
-    override fun onBindViewHolder(holder: AudioHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: AudioHolder,
+        position: Int,
+    ) {
         getItem(position)?.let {
             holder.bind(it, onClickListener, onLongClickListener)
         }
@@ -54,7 +63,11 @@ class AudioHolder(itemView: View) : NormalHolder(itemView) {
     private val binding = ItemAudioBinding.bind(itemView)
 
     @SuppressLint("SetTextI18n")
-    fun bind(item: MessageItem, onClickListener: (messageItem: MessageItem) -> Unit, onLongClickListener: (messageId: String) -> Unit) {
+    fun bind(
+        item: MessageItem,
+        onClickListener: (messageItem: MessageItem) -> Unit,
+        onLongClickListener: (messageId: String) -> Unit,
+    ) {
         val isMe = item.userId == Session.getAccountId()
         binding.avatar.setInfo(item.userFullName, item.userAvatarUrl, item.userIdentityNumber)
         binding.cover.round(itemView.context.dpToPx(25f))

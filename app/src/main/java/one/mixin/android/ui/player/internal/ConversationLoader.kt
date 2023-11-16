@@ -15,7 +15,6 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
 
 @UnstableApi class ConversationLoader : MusicMetaLoader() {
-
     fun conversationLiveData(
         conversationId: String,
         db: MixinDatabase,
@@ -76,7 +75,10 @@ import one.mixin.android.vo.absolutePath
         return this
     }
 
-    fun MediaMetadataCompat.Builder.from(messageItem: MessageItem, musicMeta: MusicMeta): MediaMetadataCompat.Builder {
+    fun MediaMetadataCompat.Builder.from(
+        messageItem: MessageItem,
+        musicMeta: MusicMeta,
+    ): MediaMetadataCompat.Builder {
         id = messageItem.messageId
         val titleString = musicMeta.title ?: messageItem.mediaName ?: unknownString
         val subtitle = musicMeta.artist ?: unknownString
@@ -96,11 +98,12 @@ import one.mixin.android.vo.absolutePath
         return this
     }
 
-    private fun getDownloadStatus(mediaStatus: String?) = when (mediaStatus) {
-        MediaStatus.CANCELED.name -> MediaDescriptionCompat.STATUS_NOT_DOWNLOADED
-        MediaStatus.PENDING.name -> MediaDescriptionCompat.STATUS_DOWNLOADING
-        else -> {
-            MediaDescriptionCompat.STATUS_DOWNLOADED
+    private fun getDownloadStatus(mediaStatus: String?) =
+        when (mediaStatus) {
+            MediaStatus.CANCELED.name -> MediaDescriptionCompat.STATUS_NOT_DOWNLOADED
+            MediaStatus.PENDING.name -> MediaDescriptionCompat.STATUS_DOWNLOADING
+            else -> {
+                MediaDescriptionCompat.STATUS_DOWNLOADED
+            }
         }
-    }
 }

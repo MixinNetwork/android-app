@@ -33,10 +33,11 @@ fun MixinBottomSheetDialog(
     createDialog: () -> MixinBottomSheetDialogFragment,
     tag: String? = null,
 ) {
-    val dialog = remember {
-        createDialog().apply {
+    val dialog =
+        remember {
+            createDialog().apply {
+            }
         }
-    }
 
     val context = LocalContext.current
 
@@ -61,18 +62,19 @@ fun MixinBottomSheetDialog(
 
     val currentContent by rememberUpdatedState(content)
 
-    val dialog = remember(view) {
-        MixinBottomSheetDialogWrapper(
-            view,
-            parent = composition,
-            content = {
-                Box(Modifier.semantics { dialog() }) {
-                    currentContent()
-                }
-            },
-            onDismissRequest = onDismissRequest,
-        )
-    }
+    val dialog =
+        remember(view) {
+            MixinBottomSheetDialogWrapper(
+                view,
+                parent = composition,
+                content = {
+                    Box(Modifier.semantics { dialog() }) {
+                        currentContent()
+                    }
+                },
+                onDismissRequest = onDismissRequest,
+            )
+        }
 
     DisposableEffect(dialog) {
         dialog.show()
@@ -93,7 +95,6 @@ private class MixinBottomSheetDialogWrapper(
     parent: CompositionContext,
     private var onDismissRequest: () -> Unit,
 ) {
-
     private val dialog =
         BottomSheet.Builder(
             ContextThemeWrapper(composeView.context, R.style.AppTheme_Dialog),
@@ -101,17 +102,18 @@ private class MixinBottomSheetDialogWrapper(
             softInputResize = true,
         ).create()
 
-    private val dialogContentView = ComposeView(composeView.context).apply {
-        setViewTreeLifecycleOwner(composeView.findViewTreeLifecycleOwner())
-        this.setViewTreeViewModelStoreOwner(composeView.findViewTreeViewModelStoreOwner())
-        setViewTreeSavedStateRegistryOwner(
-            composeView.findViewTreeSavedStateRegistryOwner(),
-        )
+    private val dialogContentView =
+        ComposeView(composeView.context).apply {
+            setViewTreeLifecycleOwner(composeView.findViewTreeLifecycleOwner())
+            this.setViewTreeViewModelStoreOwner(composeView.findViewTreeViewModelStoreOwner())
+            setViewTreeSavedStateRegistryOwner(
+                composeView.findViewTreeSavedStateRegistryOwner(),
+            )
 
-        setParentCompositionContext(parent)
-        setContent(content)
-        createComposition()
-    }
+            setParentCompositionContext(parent)
+            setContent(content)
+            createComposition()
+        }
 
     init {
         dialog.setCustomView(dialogContentView)

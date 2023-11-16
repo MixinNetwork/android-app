@@ -46,7 +46,10 @@ data class ChatMinimal(
     }
 }
 
-fun ChatMinimal.showVerifiedOrBot(verifiedView: View, botView: View) {
+fun ChatMinimal.showVerifiedOrBot(
+    verifiedView: View,
+    botView: View,
+) {
     when {
         isVerified == true -> {
             verifiedView.isVisible = true

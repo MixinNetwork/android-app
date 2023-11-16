@@ -12,9 +12,13 @@ sealed class Chain(
     val chainId: String = "$chainNamespace:$chainReference",
 ) {
     object Ethereum : Chain("eip155", 1, "Ethereum Mainnet", "ETH", listOf("https://cloudflare-eth.com"))
+
     object BinanceSmartChain : Chain("eip155", 56, "Binance Smart Chain Mainnet", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
+
     object Polygon : Chain("eip155", 137, "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
+
     object ArbitrumOne : Chain("eip155", 42161, "Arbitrum One", "ETH", listOf("https://arb1.arbitrum.io/rpc"))
+
     object OPMainnet : Chain("eip155", 10, "OP Mainnet", "ETH", listOf("https://mainnet.optimism.io"))
 }
 
@@ -68,23 +72,25 @@ internal fun String?.getChainSymbol(): String? {
     }
 }
 
-val walletConnectChainIdMap = mapOf(
-    Chain.Ethereum.symbol to Constants.ChainId.ETHEREUM_CHAIN_ID,
-    Chain.Polygon.symbol to Constants.ChainId.Polygon,
-    Chain.BinanceSmartChain.symbol to Constants.ChainId.BinanceSmartChain,
-    Chain.ArbitrumOne.symbol to Constants.ChainId.Arbitrum,
-    Chain.OPMainnet.symbol to Constants.ChainId.Optimism,
-)
+val walletConnectChainIdMap =
+    mapOf(
+        Chain.Ethereum.symbol to Constants.ChainId.ETHEREUM_CHAIN_ID,
+        Chain.Polygon.symbol to Constants.ChainId.Polygon,
+        Chain.BinanceSmartChain.symbol to Constants.ChainId.BinanceSmartChain,
+        Chain.ArbitrumOne.symbol to Constants.ChainId.Arbitrum,
+        Chain.OPMainnet.symbol to Constants.ChainId.Optimism,
+    )
 
 fun getSupportedNamespaces(address: String): Map<String, Wallet.Model.Namespace.Session> {
     val chainIds = supportChainList.map { chain -> chain.chainId }
     val accounts = supportChainList.map { chain -> "${chain.chainNamespace}:${chain.chainReference}:$address" }
     return mapOf(
-        "eip155" to Wallet.Model.Namespace.Session(
-            chains = chainIds,
-            methods = supportedMethods,
-            events = listOf("chainChanged", "accountsChanged"),
-            accounts = accounts,
-        ),
+        "eip155" to
+            Wallet.Model.Namespace.Session(
+                chains = chainIds,
+                methods = supportedMethods,
+                events = listOf("chainChanged", "accountsChanged"),
+                accounts = accounts,
+            ),
     )
 }

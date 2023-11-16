@@ -28,7 +28,10 @@ class SettingActivity : ThemeActivity() {
         const val EXTRA_AUTH = "extra_auth"
         const val ARGS_SUCCESS = "args_success"
 
-        fun show(context: Context, compose: Boolean = true) {
+        fun show(
+            context: Context,
+            compose: Boolean = true,
+        ) {
             context.startActivity(
                 Intent(context, SettingActivity::class.java).apply {
                     putExtra(EXTRA_SHOW_COMPOSE, compose)
@@ -87,7 +90,11 @@ class SettingActivity : ThemeActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         super.onActivityResult(requestCode, resultCode, data)
         val pinSettingFragment =
             supportFragmentManager.findFragmentByTag(PinSettingFragment.TAG) as? PinSettingFragment ?: return
@@ -95,7 +102,10 @@ class SettingActivity : ThemeActivity() {
     }
 
     class PermissionContract : ActivityResultContract<Pair<App, AuthorizationResponse>, Intent?>() {
-        override fun createIntent(context: Context, input: Pair<App, AuthorizationResponse>): Intent {
+        override fun createIntent(
+            context: Context,
+            input: Pair<App, AuthorizationResponse>,
+        ): Intent {
             return Intent(context, SettingActivity::class.java).apply {
                 putExtra(EXTRA_SHOW_PERMISSION_LIST, true)
                 putExtra(EXTRA_APP, input.first)
@@ -103,7 +113,10 @@ class SettingActivity : ThemeActivity() {
             }
         }
 
-        override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
+        override fun parseResult(
+            resultCode: Int,
+            intent: Intent?,
+        ): Intent? {
             if (intent == null || resultCode != Activity.RESULT_OK) return null
             return intent
         }

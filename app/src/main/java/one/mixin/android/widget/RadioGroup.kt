@@ -9,7 +9,6 @@ import android.widget.LinearLayout
 import androidx.annotation.IdRes
 
 class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) {
-
     private val passThroughListener = PassThroughHierarchyChangeListener()
 
     init {
@@ -19,7 +18,10 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
     inner class PassThroughHierarchyChangeListener : ViewGroup.OnHierarchyChangeListener {
         private val mOnHierarchyChangeListener: ViewGroup.OnHierarchyChangeListener? = null
 
-        override fun onChildViewAdded(parent: View, child: View) {
+        override fun onChildViewAdded(
+            parent: View,
+            child: View,
+        ) {
             if (parent === this@RadioGroup) {
                 var id = child.id
                 // generates an id if it's missing
@@ -39,7 +41,10 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
                     } else if (child is RadioButton) {
                         child.setOnCheckedChangeListener(
                             object : RadioButton.OnCheckedChangeListener {
-                                override fun onCheckedChanged(id: Int, checked: Boolean) {
+                                override fun onCheckedChanged(
+                                    id: Int,
+                                    checked: Boolean,
+                                ) {
                                     if (checked) {
                                         update(id)
                                         onCheckedListener?.onChecked(id)
@@ -54,7 +59,10 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
             mOnHierarchyChangeListener?.onChildViewAdded(parent, child)
         }
 
-        override fun onChildViewRemoved(parent: View, child: View) {
+        override fun onChildViewRemoved(
+            parent: View,
+            child: View,
+        ) {
             if (parent === this@RadioGroup) {
                 if (child is CompoundButton) {
                     child.setOnCheckedChangeListener(null)
@@ -88,7 +96,9 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
         }
     }
 
-    fun setCheckedById(@IdRes id: Int) {
+    fun setCheckedById(
+        @IdRes id: Int,
+    ) {
         this.currentId = id
         for (i in 0 until childCount) {
             getChildAt(i).let {

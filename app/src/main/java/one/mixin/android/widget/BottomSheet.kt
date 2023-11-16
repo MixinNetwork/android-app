@@ -58,7 +58,6 @@ class BottomSheet(
     private val focusable: Boolean,
     private val softInputResize: Boolean,
 ) : Dialog(context, R.style.TransparentDialog) {
-
     private var startAnimationRunnable: Runnable? = null
     private var curSheetAnimation: AnimatorSet? = null
     private var isDismissed = false
@@ -92,7 +91,6 @@ class BottomSheet(
         }
 
     private inner class ContainerView(context: Context) : FrameLayout(context) {
-
         @SuppressLint("ClickableViewAccessibility")
         override fun onTouchEvent(ev: MotionEvent?): Boolean {
             if (ev != null && (ev.action == MotionEvent.ACTION_DOWN || ev.action == MotionEvent.ACTION_MOVE)) {
@@ -108,7 +106,10 @@ class BottomSheet(
             return super.onTouchEvent(ev)
         }
 
-        override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        override fun onMeasure(
+            widthMeasureSpec: Int,
+            heightMeasureSpec: Int,
+        ) {
             var width = MeasureSpec.getSize(widthMeasureSpec)
             var height = MeasureSpec.getSize(heightMeasureSpec)
             val lastInsets = this@BottomSheet.lastInsets
@@ -118,24 +119,31 @@ class BottomSheet(
             }
             setMeasuredDimension(width, height)
             val isPortrait = width < height
-            val widthSpec = when {
-                context.isTablet() -> {
-                    MeasureSpec.makeMeasureSpec(
-                        (minOf(context.displayMetrics.widthPixels, context.displayMetrics.heightPixels) * 0.8f).toInt(),
-                        MeasureSpec.EXACTLY,
-                    )
+            val widthSpec =
+                when {
+                    context.isTablet() -> {
+                        MeasureSpec.makeMeasureSpec(
+                            (minOf(context.displayMetrics.widthPixels, context.displayMetrics.heightPixels) * 0.8f).toInt(),
+                            MeasureSpec.EXACTLY,
+                        )
+                    }
+                    else -> {
+                        MeasureSpec.makeMeasureSpec(
+                            if (isPortrait) width else max((width * 0.6f).toInt(), min(dp(480f), width)),
+                            MeasureSpec.EXACTLY,
+                        )
+                    }
                 }
-                else -> {
-                    MeasureSpec.makeMeasureSpec(
-                        if (isPortrait) width else max((width * 0.6f).toInt(), min(dp(480f), width)),
-                        MeasureSpec.EXACTLY,
-                    )
-                }
-            }
             sheetContainer.measure(widthSpec, MeasureSpec.makeMeasureSpec(height, AT_MOST))
         }
 
-        override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        override fun onLayout(
+            changed: Boolean,
+            left: Int,
+            top: Int,
+            right: Int,
+            bottom: Int,
+        ) {
             val t = (bottom - top) - sheetContainer.measuredHeight
             var l = (right - left - sheetContainer.measuredWidth) / 2
             val lastInsets = this@BottomSheet.lastInsets
@@ -239,15 +247,16 @@ class BottomSheet(
         if (isShown) return
         backDrawable.alpha = 0
         sheetContainer.translationY = sheetContainer.measuredHeight.toFloat()
-        startAnimationRunnable = object : Runnable {
-            override fun run() {
-                if (startAnimationRunnable != this || isDismissed) {
-                    return
+        startAnimationRunnable =
+            object : Runnable {
+                override fun run() {
+                    if (startAnimationRunnable != this || isDismissed) {
+                        return
+                    }
+                    startAnimationRunnable = null
+                    startOpenAnimation()
                 }
-                startAnimationRunnable = null
-                startOpenAnimation()
             }
-        }
         sheetContainer.post(startAnimationRunnable)
     }
 
@@ -347,19 +356,23 @@ class BottomSheet(
 
     fun getCustomView() = customView
 
-    fun setCustomViewHeight(height: Int, endAction: (() -> Unit)? = null) {
+    fun setCustomViewHeight(
+        height: Int,
+        endAction: (() -> Unit)? = null,
+    ) {
         customViewHeight = height
         val params = customView?.layoutParams
-        val duration = customView?.layoutParams.notNullWithElse(
-            {
-                try {
-                    min(abs(height - it.height) / speed, 200)
-                } catch (e: ArithmeticException) {
-                    200
-                }
-            },
-            200,
-        ).toLong()
+        val duration =
+            customView?.layoutParams.notNullWithElse(
+                {
+                    try {
+                        min(abs(height - it.height) / speed, 200)
+                    } catch (e: ArithmeticException) {
+                        200
+                    }
+                },
+                200,
+            ).toLong()
 
         if (duration == 0L) {
             return
@@ -434,15 +447,16 @@ class BottomSheet(
 
 fun BottomSheet.getMaxCustomViewHeight(): Int {
     val isNotchScreen = this.window?.isNotchScreen() ?: false
-    val totalHeight = if (isNotchScreen) {
-        val bottom = this.lastInsets?.getSystemWindowBottom() ?: 0
-        context.realSize().y - bottom
-    } else {
-        val size = Point()
-        val manager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        manager.defaultDisplay.getSize(size)
-        size.y
-    }
+    val totalHeight =
+        if (isNotchScreen) {
+            val bottom = this.lastInsets?.getSystemWindowBottom() ?: 0
+            context.realSize().y - bottom
+        } else {
+            val size = Point()
+            val manager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            manager.defaultDisplay.getSize(size)
+            size.y
+        }
     return totalHeight - context.statusBarHeight()
 }
 
@@ -450,9 +464,10 @@ fun buildBottomSheetView(
     context: Context,
     items: List<BottomSheetItem>,
 ): View {
-    val linearLayout = LinearLayoutCompat(context).apply {
-        orientation = LinearLayoutCompat.VERTICAL
-    }
+    val linearLayout =
+        LinearLayoutCompat(context).apply {
+            orientation = LinearLayoutCompat.VERTICAL
+        }
     val outValue = TypedValue()
     context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
     val itemHeight = context.dpToPx(56f)

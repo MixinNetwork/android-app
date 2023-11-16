@@ -33,8 +33,8 @@ abstract class CameraScan<T> : ICamera {
     abstract fun setDarkLightLux(lightLux: Float): CameraScan<T>
 
     abstract fun setBrightLightLux(lightLux: Float): CameraScan<T>
-    interface OnScanResultCallback<T> {
 
+    interface OnScanResultCallback<T> {
         fun onScanResultCallback(result: AnalyzeResult<T>)
 
         fun onScanResultFailure() {}

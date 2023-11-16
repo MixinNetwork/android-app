@@ -7,8 +7,10 @@ import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.BlazeMessageService.Companion.ACTION_TO_BACKGROUND
 
 class BootReceiver : BroadcastReceiver() {
-
-    override fun onReceive(context: Context, intent: Intent?) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent?,
+    ) {
         if (intent != null && Intent.ACTION_BOOT_COMPLETED == intent.action) {
             BlazeMessageService.startService(context, ACTION_TO_BACKGROUND)
         }

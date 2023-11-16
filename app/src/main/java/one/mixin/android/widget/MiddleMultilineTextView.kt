@@ -10,7 +10,10 @@ class MiddleMultilineTextView(context: Context, attributeSet: AttributeSet) : Ap
         private const val SYMBOL_LENGTH = SYMBOL.length
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         if (maxLines > 1) {
             val originLength = text.length
@@ -27,7 +30,10 @@ class MiddleMultilineTextView(context: Context, attributeSet: AttributeSet) : Ap
         return text.toString().substring(start, end).length
     }
 
-    private fun trimText(string: String, maxLength: Int): String {
+    private fun trimText(
+        string: String,
+        maxLength: Int,
+    ): String {
         if (maxLength < 1) {
             return string
         } else if (string.length <= maxLength) {

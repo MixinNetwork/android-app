@@ -3,12 +3,12 @@ package one.mixin.android.util
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
+import one.mixin.android.extension.equalsIgnoreCase
+import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
-import one.mixin.android.extension.equalsIgnoreCase
-import timber.log.Timber
 
 private val libNames = listOf("mixin", "argon2jni", "barhopper_v3", "rlottie")
 private val libSoNames = libNames.map { "lib$it.so" }
@@ -50,36 +50,37 @@ fun initNativeLibs(context: Context) {
                 destLocalFile.delete()
             }
 
-            var folder: String = try {
-                when {
-                    Build.CPU_ABI.equalsIgnoreCase("x86_64") -> {
-                        "x86_64"
+            var folder: String =
+                try {
+                    when {
+                        Build.CPU_ABI.equalsIgnoreCase("x86_64") -> {
+                            "x86_64"
+                        }
+                        Build.CPU_ABI.equalsIgnoreCase("arm64-v8a") -> {
+                            "arm64-v8a"
+                        }
+                        Build.CPU_ABI.equalsIgnoreCase("armeabi-v7a") -> {
+                            "armeabi-v7a"
+                        }
+                        Build.CPU_ABI.equalsIgnoreCase("armeabi") -> {
+                            "armeabi"
+                        }
+                        Build.CPU_ABI.equalsIgnoreCase("x86") -> {
+                            "x86"
+                        }
+                        Build.CPU_ABI.equalsIgnoreCase("mips") -> {
+                            "mips"
+                        }
+                        else -> {
+                            Timber.e("Unsupported arch: ${Build.CPU_ABI}")
+                            "armeabi"
+                        }
                     }
-                    Build.CPU_ABI.equalsIgnoreCase("arm64-v8a") -> {
-                        "arm64-v8a"
-                    }
-                    Build.CPU_ABI.equalsIgnoreCase("armeabi-v7a") -> {
-                        "armeabi-v7a"
-                    }
-                    Build.CPU_ABI.equalsIgnoreCase("armeabi") -> {
-                        "armeabi"
-                    }
-                    Build.CPU_ABI.equalsIgnoreCase("x86") -> {
-                        "x86"
-                    }
-                    Build.CPU_ABI.equalsIgnoreCase("mips") -> {
-                        "mips"
-                    }
-                    else -> {
-                        Timber.e("Unsupported arch: ${Build.CPU_ABI}")
-                        "armeabi"
-                    }
+                } catch (e: Exception) {
+                    Timber.e(e)
+                    reportException(e)
+                    "armeabi"
                 }
-            } catch (e: Exception) {
-                Timber.e(e)
-                reportException(e)
-                "armeabi"
-            }
             val javaArch = System.getProperty("os.arch")
             if (javaArch != null && javaArch.contains("686")) {
                 folder = "x86"
@@ -105,7 +106,13 @@ fun initNativeLibs(context: Context) {
 }
 
 @SuppressLint("SetWorldReadable", "UnsafeDynamicallyLoadedCode")
-private fun loadFromZip(context: Context, destDir: File, destLocalFile: File, folder: String, i: Int): Boolean {
+private fun loadFromZip(
+    context: Context,
+    destDir: File,
+    destLocalFile: File,
+    folder: String,
+    i: Int,
+): Boolean {
     try {
         destDir.listFiles()?.let { files ->
             for (f in files) {
@@ -118,8 +125,9 @@ private fun loadFromZip(context: Context, destDir: File, destLocalFile: File, fo
     }
 
     ZipFile(context.applicationInfo.sourceDir).use { zipFile ->
-        val entry: ZipEntry = zipFile.getEntry("lib/$folder/${libSoNames[i]}")
-            ?: throw Exception("Unable to find file in apk:lib/$folder/${libNames[i]}")
+        val entry: ZipEntry =
+            zipFile.getEntry("lib/$folder/${libSoNames[i]}")
+                ?: throw Exception("Unable to find file in apk:lib/$folder/${libNames[i]}")
         zipFile.getInputStream(entry).use { input ->
             FileOutputStream(destLocalFile).use { output ->
                 input.copyTo(output)

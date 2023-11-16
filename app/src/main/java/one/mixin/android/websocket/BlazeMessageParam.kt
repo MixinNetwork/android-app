@@ -49,10 +49,18 @@ data class BlazeMessageParamSession(
     val session_id: String? = null,
 )
 
-fun createAckParam(message_id: String, status: String) =
+fun createAckParam(
+    message_id: String,
+    status: String,
+) =
     BlazeMessageParam(message_id = message_id, status = status)
 
-fun createPlainJsonParam(conversationId: String, userId: String, encoded: String, sessionId: String? = null) =
+fun createPlainJsonParam(
+    conversationId: String,
+    userId: String,
+    encoded: String,
+    sessionId: String? = null,
+) =
     BlazeMessageParam(
         conversationId,
         userId,
@@ -69,5 +77,9 @@ fun createConsumeSignalKeysParam(recipients: ArrayList<BlazeMessageParamSession>
 fun createSyncSignalKeysParam(keys: SignalKeyRequest?) =
     BlazeMessageParam(keys = keys)
 
-fun createSignalKeyMessageParam(conversationId: String, messages: ArrayList<BlazeSignalKeyMessage>, conversation_checksum: String) =
+fun createSignalKeyMessageParam(
+    conversationId: String,
+    messages: ArrayList<BlazeSignalKeyMessage>,
+    conversation_checksum: String,
+) =
     BlazeMessageParam(conversationId, messages = messages, conversation_checksum = conversation_checksum)

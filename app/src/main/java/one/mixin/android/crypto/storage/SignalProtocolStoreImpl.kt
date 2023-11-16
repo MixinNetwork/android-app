@@ -16,7 +16,6 @@ import org.whispersystems.libsignal.state.SignedPreKeyStore
 import kotlin.jvm.Throws
 
 class SignalProtocolStoreImpl(context: Context) : SignalProtocolStore {
-
     private val preKeyStore: PreKeyStore
     private val signedPreKeyStore: SignedPreKeyStore
     private val identityKeyStore: MixinIdentityKeyStore
@@ -41,7 +40,10 @@ class SignalProtocolStoreImpl(context: Context) : SignalProtocolStore {
         return identityKeyStore.localRegistrationId
     }
 
-    override fun saveIdentity(address: SignalProtocolAddress, identityKey: IdentityKey): Boolean {
+    override fun saveIdentity(
+        address: SignalProtocolAddress,
+        identityKey: IdentityKey,
+    ): Boolean {
         return identityKeyStore.saveIdentity(address, identityKey)
     }
 
@@ -58,7 +60,10 @@ class SignalProtocolStoreImpl(context: Context) : SignalProtocolStore {
         return preKeyStore.loadPreKey(preKeyId)
     }
 
-    override fun storePreKey(preKeyId: Int, record: PreKeyRecord) {
+    override fun storePreKey(
+        preKeyId: Int,
+        record: PreKeyRecord,
+    ) {
         preKeyStore.storePreKey(preKeyId, record)
     }
 
@@ -78,7 +83,10 @@ class SignalProtocolStoreImpl(context: Context) : SignalProtocolStore {
         return sessionStore.getSubDeviceSessions(number)
     }
 
-    override fun storeSession(axolotlAddress: SignalProtocolAddress, record: SessionRecord) {
+    override fun storeSession(
+        axolotlAddress: SignalProtocolAddress,
+        record: SessionRecord,
+    ) {
         sessionStore.storeSession(axolotlAddress, record)
     }
 
@@ -103,7 +111,10 @@ class SignalProtocolStoreImpl(context: Context) : SignalProtocolStore {
         return signedPreKeyStore.loadSignedPreKeys()
     }
 
-    override fun storeSignedPreKey(signedPreKeyId: Int, record: SignedPreKeyRecord) {
+    override fun storeSignedPreKey(
+        signedPreKeyId: Int,
+        record: SignedPreKeyRecord,
+    ) {
         signedPreKeyStore.storeSignedPreKey(signedPreKeyId, record)
     }
 

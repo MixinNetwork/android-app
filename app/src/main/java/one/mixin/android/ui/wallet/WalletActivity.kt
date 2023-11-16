@@ -19,7 +19,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class WalletActivity : BlazeBaseActivity() {
-
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -33,8 +32,9 @@ class WalletActivity : BlazeBaseActivity() {
             return
         }
 
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.container) as NavHostFragment?
+        val navHostFragment =
+            supportFragmentManager
+                .findFragmentById(R.id.container) as NavHostFragment?
         val navController = navHostFragment?.navController ?: return
         val navGraph = navController.navInflater.inflate(R.navigation.nav_wallet)
         val currentAsset = asset

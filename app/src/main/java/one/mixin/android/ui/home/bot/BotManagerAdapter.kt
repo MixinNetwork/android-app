@@ -19,10 +19,14 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
 
 class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>(), View.OnLongClickListener {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder {
-        val view = LayoutInflater.from(
-            parent.context,
-        ).inflate(R.layout.item_bot_manager, parent, false)
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ListViewHolder {
+        val view =
+            LayoutInflater.from(
+                parent.context,
+            ).inflate(R.layout.item_bot_manager, parent, false)
         return ListViewHolder(view)
     }
 
@@ -33,7 +37,10 @@ class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : Recyc
             notifyDataSetChanged()
         }
 
-    override fun onBindViewHolder(holder: ListViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ListViewHolder,
+        position: Int,
+    ) {
         val binding = ItemBotManagerBinding.bind(holder.itemView)
         list[position].let { app ->
             binding.avatar.renderApp(app)

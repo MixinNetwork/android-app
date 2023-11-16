@@ -12,7 +12,6 @@ import com.bumptech.glide.util.Util
 import java.security.MessageDigest
 
 abstract class BitmapTransformation : Transformation<Bitmap> {
-
     override fun transform(
         context: Context,
         resource: Resource<Bitmap>,

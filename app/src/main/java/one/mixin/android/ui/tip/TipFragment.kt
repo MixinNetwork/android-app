@@ -55,10 +55,14 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         const val ARGS_TIP_BUNDLE = "args_tip_bundle"
         const val ARGS_SHOULD_WATCH = "args_should_watch"
 
-        fun newInstance(tipBundle: TipBundle, shouldWatch: Boolean) = TipFragment().withArgs {
-            putParcelable(ARGS_TIP_BUNDLE, tipBundle)
-            putBoolean(ARGS_SHOULD_WATCH, shouldWatch)
-        }
+        fun newInstance(
+            tipBundle: TipBundle,
+            shouldWatch: Boolean,
+        ) =
+            TipFragment().withArgs {
+                putParcelable(ARGS_TIP_BUNDLE, tipBundle)
+                putBoolean(ARGS_SHOULD_WATCH, shouldWatch)
+            }
     }
 
     private val viewModel by viewModels<TipViewModel>()
@@ -76,7 +80,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
     private var disallowClose = true
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             closeIv.setOnClickListener {
@@ -85,10 +92,11 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
             val tip1 = SpannableStringBuilder(getString(R.string.Please_use_when_network_is_connected))
             val tip2 = SpannableStringBuilder(getString(R.string.Please_keep_app_in_foreground))
-            val tip3 = SpannableStringBuilder()
-                .color(requireContext().getColor(R.color.colorRed)) {
-                    append(getString(R.string.Process_can_not_be_stop))
-                }
+            val tip3 =
+                SpannableStringBuilder()
+                    .color(requireContext().getColor(R.color.colorRed)) {
+                        append(getString(R.string.Process_can_not_be_stop))
+                    }
             tipsTv.text = buildBulletLines(requireContext(), tip1, tip2, tip3)
             bottomHintTv.movementMethod = ScrollingMovementMethod()
             bottomHintTv.setTextIsSelectable(true)
@@ -242,15 +250,19 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         }
     }
 
-    private fun updateAllowClose(tipStep: TipStep, forRecover: Boolean) {
-        disallowClose = when (tipStep) {
-            is TryConnecting, is RetryConnect, is ReadyStart -> {
-                forRecover || !tipBundle.forChange()
+    private fun updateAllowClose(
+        tipStep: TipStep,
+        forRecover: Boolean,
+    ) {
+        disallowClose =
+            when (tipStep) {
+                is TryConnecting, is RetryConnect, is ReadyStart -> {
+                    forRecover || !tipBundle.forChange()
+                }
+                is RetryProcess, is Processing, is RetryRegister -> {
+                    true
+                }
             }
-            is RetryProcess, is Processing, is RetryRegister -> {
-                true
-            }
-        }
         binding.closeIv.isVisible = !disallowClose
     }
 
@@ -341,32 +353,33 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         navTo(passwordFragment, WalletPasswordFragment.TAG)
     }
 
-    private fun processTip() = lifecycleScope.launch {
-        updateTipStep(Processing.Creating)
-        nodeFailedInfo = ""
+    private fun processTip() =
+        lifecycleScope.launch {
+            updateTipStep(Processing.Creating)
+            nodeFailedInfo = ""
 
-        val tipCounter = Session.getTipCounter()
-        val deviceId = tipBundle.deviceId
-        val nodeCounter = tipBundle.tipEvent?.nodeCounter ?: tipCounter
-        val failedSigners = tipBundle.tipEvent?.failedSigners
-        val pin = requireNotNull(tipBundle.pin) { "process tip step pin can not be null" }
-        val oldPin = tipBundle.oldPin
-        Timber.d("tip nodeCounter $nodeCounter, tipCounter $tipCounter, signers size ${failedSigners?.size}")
+            val tipCounter = Session.getTipCounter()
+            val deviceId = tipBundle.deviceId
+            val nodeCounter = tipBundle.tipEvent?.nodeCounter ?: tipCounter
+            val failedSigners = tipBundle.tipEvent?.failedSigners
+            val pin = requireNotNull(tipBundle.pin) { "process tip step pin can not be null" }
+            val oldPin = tipBundle.oldPin
+            Timber.d("tip nodeCounter $nodeCounter, tipCounter $tipCounter, signers size ${failedSigners?.size}")
 
-        tip.addObserver(tipObserver)
-        when {
-            tipCounter < 1 ->
-                tip.createTipPriv(requireContext(), pin, deviceId, failedSigners, oldPin)
-            else ->
-                tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin) { "process tip step update oldPin can not be null" }, nodeCounter == tipCounter, failedSigners)
-        }.onFailure { e ->
-            tip.removeObserver(tipObserver)
-            onTipProcessFailure(e, pin, tipCounter, nodeCounter)
-        }.onSuccess {
-            tip.removeObserver(tipObserver)
-            onTipProcessSuccess(pin, it)
+            tip.addObserver(tipObserver)
+            when {
+                tipCounter < 1 ->
+                    tip.createTipPriv(requireContext(), pin, deviceId, failedSigners, oldPin)
+                else ->
+                    tip.updateTipPriv(requireContext(), deviceId, pin, requireNotNull(oldPin) { "process tip step update oldPin can not be null" }, nodeCounter == tipCounter, failedSigners)
+            }.onFailure { e ->
+                tip.removeObserver(tipObserver)
+                onTipProcessFailure(e, pin, tipCounter, nodeCounter)
+            }.onSuccess {
+                tip.removeObserver(tipObserver)
+                onTipProcessSuccess(pin, it)
+            }
         }
-    }
 
     private suspend fun onTipProcessFailure(
         e: Throwable,
@@ -425,15 +438,19 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         updateTipStep(RetryProcess(errMsg))
     }
 
-    private suspend fun onTipProcessSuccess(pin: String, tipPriv: ByteArray?) {
+    private suspend fun onTipProcessSuccess(
+        pin: String,
+        tipPriv: ByteArray?,
+    ) {
         if (!Session.hasSafe()) {
-            val registerResult: Boolean = try {
-                registerPublicKey(pin, tipPriv).getOrThrow()
-            } catch (e: Exception) {
-                val errorInfo = e.getTipExceptionMsg(requireContext())
-                updateTipStep(RetryRegister(null, errorInfo))
-                false
-            }
+            val registerResult: Boolean =
+                try {
+                    registerPublicKey(pin, tipPriv).getOrThrow()
+                } catch (e: Exception) {
+                    val errorInfo = e.getTipExceptionMsg(requireContext())
+                    updateTipStep(RetryRegister(null, errorInfo))
+                    false
+                }
             if (!registerResult) {
                 // register public key failed, already go to RetryRegister
                 return
@@ -462,7 +479,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         activity?.finish()
     }
 
-    private suspend fun registerPublicKey(pin: String, tipPriv: ByteArray?): Result<Boolean> =
+    private suspend fun registerPublicKey(
+        pin: String,
+        tipPriv: ByteArray?,
+    ): Result<Boolean> =
         kotlin.runCatching {
             Timber.d("Tip start registerPublicKey")
             updateTipStep(Processing.Registering)
@@ -484,27 +504,30 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             }
 
             nodeFailedInfo = ""
-            val seed = try {
-                tipPriv ?: tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
-            } catch (e: Exception) {
-                tipBundle.oldPin = null
-                val errorInfo = e.getTipExceptionMsg(requireContext())
-                updateTipStep(RetryRegister(null, errorInfo))
-                return@runCatching false
-            }
+            val seed =
+                try {
+                    tipPriv ?: tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
+                } catch (e: Exception) {
+                    tipBundle.oldPin = null
+                    val errorInfo = e.getTipExceptionMsg(requireContext())
+                    updateTipStep(RetryRegister(null, errorInfo))
+                    return@runCatching false
+                }
             val (salt, saltBase64) = tip.generateSaltAndEncryptedSaltBase64(pin, seed)
             val spendSeed = tip.getSpendPriv(salt, seed)
             val keyPair = newKeyPairFromSeed(spendSeed)
             val pkHex = keyPair.publicKey.toHex()
             val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
-            val registerResp = viewModel.registerPublicKey(
-                registerRequest = RegisterRequest(
-                    publicKey = pkHex,
-                    signature = Session.getRegisterSignature(selfId, spendSeed),
-                    pin = viewModel.getEncryptedTipBody(selfId, pkHex, pin),
-                    salt = saltBase64,
+            val registerResp =
+                viewModel.registerPublicKey(
+                    registerRequest =
+                        RegisterRequest(
+                            publicKey = pkHex,
+                            signature = Session.getRegisterSignature(selfId, spendSeed),
+                            pin = viewModel.getEncryptedTipBody(selfId, pkHex, pin),
+                            salt = saltBase64,
+                        ),
                 )
-            )
             return@runCatching if (registerResp.isSuccess) {
                 Session.storeAccount(requireNotNull(registerResp.data) { "required account can not be null" })
                 true
@@ -518,7 +541,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             }
         }
 
-    private fun showVerifyPin(title: String? = null, onVerifySuccess: suspend (String) -> Unit) {
+    private fun showVerifyPin(
+        title: String? = null,
+        onVerifySuccess: suspend (String) -> Unit,
+    ) {
         VerifyBottomSheetDialogFragment.newInstance(title ?: getString(R.string.Enter_your_old_PIN), true).setOnPinSuccess { pin ->
             lifecycleScope.launch {
                 onVerifySuccess(pin)
@@ -526,7 +552,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
     }
 
-    private fun showInputPin(title: String? = null, onInputComplete: suspend (String) -> Unit) {
+    private fun showInputPin(
+        title: String? = null,
+        onInputComplete: suspend (String) -> Unit,
+    ) {
         PinInputBottomSheetDialogFragment.newInstance(title ?: getString(R.string.Enter_your_new_PIN)).setOnPinComplete { pin ->
             lifecycleScope.launch {
                 onInputComplete(pin)
@@ -537,13 +566,14 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
     private fun setTitle(forRecover: Boolean) {
         binding.apply {
             if (forRecover) {
-                descTv.text = getString(
-                    when (tipBundle.tipType) {
-                        TipType.Create -> R.string.Creating_wallet_terminated_unexpectedly
-                        TipType.Upgrade -> R.string.Upgrading_TIP_terminated_unexpectedly
-                        TipType.Change -> R.string.Changing_PIN_terminated_unexpectedly
-                    },
-                )
+                descTv.text =
+                    getString(
+                        when (tipBundle.tipType) {
+                            TipType.Create -> R.string.Creating_wallet_terminated_unexpectedly
+                            TipType.Upgrade -> R.string.Upgrading_TIP_terminated_unexpectedly
+                            TipType.Change -> R.string.Changing_PIN_terminated_unexpectedly
+                        },
+                    )
             } else {
                 if (tipBundle.forCreate()) {
                     descTv.highlightStarTag(getString(R.string.TIP_creation_introduction), arrayOf(Constants.HelpLink.TIP))
@@ -563,21 +593,25 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         )
     }
 
-    private val tipObserver = object : Tip.Observer {
-        override fun onSyncing(step: Int, total: Int) {
-            lifecycleScope.launch {
-                updateTipStep(Processing.SyncingNode(step, total))
+    private val tipObserver =
+        object : Tip.Observer {
+            override fun onSyncing(
+                step: Int,
+                total: Int,
+            ) {
+                lifecycleScope.launch {
+                    updateTipStep(Processing.SyncingNode(step, total))
+                }
+            }
+
+            override fun onSyncingComplete() {
+                lifecycleScope.launch {
+                    updateTipStep(Processing.Updating)
+                }
+            }
+
+            override fun onNodeFailed(info: String) {
+                nodeFailedInfo = info
             }
         }
-
-        override fun onSyncingComplete() {
-            lifecycleScope.launch {
-                updateTipStep(Processing.Updating)
-            }
-        }
-
-        override fun onNodeFailed(info: String) {
-            nodeFailedInfo = info
-        }
-    }
 }

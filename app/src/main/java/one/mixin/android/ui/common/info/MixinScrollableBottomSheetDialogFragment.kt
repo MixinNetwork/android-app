@@ -29,7 +29,6 @@ import one.mixin.android.widget.linktext.AutoLinkTextView
 import timber.log.Timber
 
 abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragment() {
-
     protected lateinit var contentView: View
 
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
@@ -49,7 +48,10 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
     }
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, getLayoutId(), null)
         dialog.setContentView(contentView)
@@ -57,21 +59,22 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         behavior = params?.behavior as? BottomSheetBehavior<*>
         if (behavior != null && behavior is BottomSheetBehavior<*>) {
             val defaultPeekHeight = getPeekHeight(contentView, behavior!!)
-            behavior?.peekHeight = if (defaultPeekHeight == 0) {
-                val scrollContent = contentView.findViewById<View>(R.id.scroll_content)
-                val titleView = contentView.findViewById<View>(R.id.title)
-                scrollContent.measure(
-                    View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                )
-                titleView.measure(
-                    View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                )
-                scrollContent.measuredHeight + titleView.measuredHeight
-            } else {
-                defaultPeekHeight
-            }
+            behavior?.peekHeight =
+                if (defaultPeekHeight == 0) {
+                    val scrollContent = contentView.findViewById<View>(R.id.scroll_content)
+                    val titleView = contentView.findViewById<View>(R.id.title)
+                    scrollContent.measure(
+                        View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                    )
+                    titleView.measure(
+                        View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                    )
+                    scrollContent.measuredHeight + titleView.measuredHeight
+                } else {
+                    defaultPeekHeight
+                }
             behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             dialog.window?.setGravity(Gravity.BOTTOM)
@@ -145,19 +148,35 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
 
     abstract fun getLayoutId(): Int
 
-    open fun getPeekHeight(contentView: View, behavior: BottomSheetBehavior<*>): Int = 0
+    open fun getPeekHeight(
+        contentView: View,
+        behavior: BottomSheetBehavior<*>,
+    ): Int = 0
 
-    open fun onStateChanged(bottomSheet: View, newState: Int) {}
-    open fun onSlide(bottomSheet: View, slideOffset: Float) {}
+    open fun onStateChanged(
+        bottomSheet: View,
+        newState: Int,
+    ) {}
 
-    private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
+    open fun onSlide(
+        bottomSheet: View,
+        slideOffset: Float,
+    ) {}
 
-        override fun onStateChanged(bottomSheet: View, newState: Int) {
-            this@MixinScrollableBottomSheetDialogFragment.onStateChanged(bottomSheet, newState)
+    private val bottomSheetBehaviorCallback =
+        object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(
+                bottomSheet: View,
+                newState: Int,
+            ) {
+                this@MixinScrollableBottomSheetDialogFragment.onStateChanged(bottomSheet, newState)
+            }
+
+            override fun onSlide(
+                bottomSheet: View,
+                slideOffset: Float,
+            ) {
+                this@MixinScrollableBottomSheetDialogFragment.onSlide(bottomSheet, slideOffset)
+            }
         }
-
-        override fun onSlide(bottomSheet: View, slideOffset: Float) {
-            this@MixinScrollableBottomSheetDialogFragment.onSlide(bottomSheet, slideOffset)
-        }
-    }
 }

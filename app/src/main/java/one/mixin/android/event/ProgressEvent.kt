@@ -8,17 +8,28 @@ data class ProgressEvent(val id: String, var progress: Float, val status: Int) {
             progress = 0f
         }
     }
-    companion object {
-        fun loadingEvent(id: String, progress: Float) = ProgressEvent(
-            id,
-            progress,
-            CircleProgress.STATUS_LOADING,
-        )
 
-        fun playEvent(id: String, progress: Float = 0f) =
+    companion object {
+        fun loadingEvent(
+            id: String,
+            progress: Float,
+        ) =
+            ProgressEvent(
+                id,
+                progress,
+                CircleProgress.STATUS_LOADING,
+            )
+
+        fun playEvent(
+            id: String,
+            progress: Float = 0f,
+        ) =
             ProgressEvent(id, progress, CircleProgress.STATUS_PLAY)
 
-        fun pauseEvent(id: String, progress: Float = 0f) =
+        fun pauseEvent(
+            id: String,
+            progress: Float = 0f,
+        ) =
             ProgressEvent(id, progress, CircleProgress.STATUS_PAUSE)
 
         fun errorEvent(id: String): ProgressEvent =

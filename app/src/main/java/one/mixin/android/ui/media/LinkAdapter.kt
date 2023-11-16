@@ -23,7 +23,10 @@ import kotlin.math.abs
 class LinkAdapter(private val onClickListener: (url: String) -> Unit, private val onLongClickListener: (String) -> Unit) :
     SafePagedListAdapter<HyperlinkItem, LinkHolder>(HyperlinkItem.DIFF_CALLBACK),
     StickyRecyclerHeadersAdapter<MediaHeaderViewHolder> {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         LinkHolder(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_shared_media_link,
@@ -32,7 +35,10 @@ class LinkAdapter(private val onClickListener: (url: String) -> Unit, private va
             ),
         )
 
-    override fun onBindViewHolder(holder: LinkHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: LinkHolder,
+        position: Int,
+    ) {
         getItem(position)?.let {
             holder.bind(it, onClickListener, onLongClickListener)
         }
@@ -54,7 +60,10 @@ class LinkAdapter(private val onClickListener: (url: String) -> Unit, private va
         return MediaHeaderViewHolder(view)
     }
 
-    override fun onBindHeaderViewHolder(holder: MediaHeaderViewHolder, pos: Int) {
+    override fun onBindHeaderViewHolder(
+        holder: MediaHeaderViewHolder,
+        pos: Int,
+    ) {
         val time = getItem(pos)?.createdAt ?: return
         holder.bind(time)
     }
@@ -64,7 +73,11 @@ class LinkHolder(itemView: View) : NormalHolder(itemView) {
     private val binding = ItemSharedMediaLinkBinding.bind(itemView)
 
     @SuppressLint("CheckResult")
-    fun bind(item: HyperlinkItem, onClickListener: (url: String) -> Unit, onLongClickListener: (messageId: String) -> Unit) {
+    fun bind(
+        item: HyperlinkItem,
+        onClickListener: (url: String) -> Unit,
+        onLongClickListener: (messageId: String) -> Unit,
+    ) {
         binding.linkTv.text = item.hyperlink
         itemView.clicks()
             .observeOn(AndroidSchedulers.mainThread())

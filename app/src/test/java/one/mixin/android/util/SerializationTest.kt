@@ -15,22 +15,22 @@ import org.junit.Test
 import kotlin.test.assertEquals
 
 class SerializationTest {
-
     @Test
     fun testTransferCommand() {
-        val data = TransferCommand(
-            action = "test",
-            ip = "127.0.0.1",
-            port = 8080,
-            secretKey = "test_secret_key",
-            code = 200,
-            total = 123456789L,
-            userId = "test_user_id",
-            progress = 50.0f,
-            version = 2,
-            deviceId = "test_device_id",
-            platform = "test_platform",
-        )
+        val data =
+            TransferCommand(
+                action = "test",
+                ip = "127.0.0.1",
+                port = 8080,
+                secretKey = "test_secret_key",
+                code = 200,
+                total = 123456789L,
+                userId = "test_user_id",
+                progress = 50.0f,
+                version = 2,
+                deviceId = "test_device_id",
+                platform = "test_platform",
+            )
 
         val jsonString = Json.encodeToString(data)
         println(jsonString)

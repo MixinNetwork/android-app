@@ -54,7 +54,6 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "ShareMessageBottomSheetDialogFragment"
         const val SHARE_MESSAGE = "share_message"
@@ -62,7 +61,13 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val CONVERSATION_ID = "conversation_id"
         private const val APP = "app"
         private const val HOST = "host"
-        fun newInstance(shareMessage: ForwardMessage, conversationId: String?, app: App? = null, host: String? = null) =
+
+        fun newInstance(
+            shareMessage: ForwardMessage,
+            conversationId: String?,
+            app: App? = null,
+            host: String? = null,
+        ) =
             ShareMessageBottomSheetDialogFragment().withArgs {
                 putString(CONVERSATION_ID, conversationId)
                 putParcelable(SHARE_MESSAGE, shareMessage)
@@ -96,7 +101,10 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentShareMessageBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi", "StringFormatInvalid")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -246,11 +254,12 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         lifecycleScope.launch {
             binding.progress.isVisible = true
-            val stickerId = try {
-                GsonHelper.customGson.fromJson(content, StickerMessagePayload::class.java).stickerId
-            } catch (e: JsonSyntaxException) {
-                content
-            }
+            val stickerId =
+                try {
+                    GsonHelper.customGson.fromJson(content, StickerMessagePayload::class.java).stickerId
+                } catch (e: JsonSyntaxException) {
+                    content
+                }
             val sticker = viewModel.refreshSticker(stickerId)
             if (sticker == null) {
                 toast(R.string.error_not_found)

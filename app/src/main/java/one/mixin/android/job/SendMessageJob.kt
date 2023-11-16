@@ -60,7 +60,6 @@ open class SendMessageJob(
     private val isSilent: Boolean? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE,
 ) : MixinJob(Params(messagePriority).groupBy("send_message_group").requireWebSocketConnected().persist(), message.messageId) {
-
     companion object {
         private const val serialVersionUID = 1L
     }
@@ -138,11 +137,12 @@ open class SendMessageJob(
             }
 
             messageDao.findQuoteMessageItemById(message.conversationId, msg.messageId)?.let { quoteMsg ->
-                quoteMsg.thumbImage = if ((quoteMsg.thumbImage?.length ?: 0) > MAX_THUMB_IMAGE_LENGTH) {
-                    DEFAULT_THUMB_IMAGE
-                } else {
-                    quoteMsg.thumbImage
-                }
+                quoteMsg.thumbImage =
+                    if ((quoteMsg.thumbImage?.length ?: 0) > MAX_THUMB_IMAGE_LENGTH) {
+                        DEFAULT_THUMB_IMAGE
+                    } else {
+                        quoteMsg.thumbImage
+                    }
                 messageDao.updateQuoteContentByQuoteId(
                     message.conversationId,
                     msg.messageId,
@@ -156,7 +156,10 @@ open class SendMessageJob(
         ftsDatabase.deleteByMessageId(recallMessageId)
     }
 
-    override fun onCancel(cancelReason: Int, throwable: Throwable?) {
+    override fun onCancel(
+        cancelReason: Int,
+        throwable: Throwable?,
+    ) {
         super.onCancel(cancelReason, throwable)
         removeJob()
     }
@@ -189,7 +192,10 @@ open class SendMessageJob(
         removeJob()
     }
 
-    private fun sendPlainMessage(conversation: Conversation?, callback: (Long?) -> Unit) {
+    private fun sendPlainMessage(
+        conversation: Conversation?,
+        callback: (Long?) -> Unit,
+    ) {
         conversation ?: return
         val expireIn = checkConversationExist(conversation)
         var content = message.content
@@ -205,35 +211,40 @@ open class SendMessageJob(
                 content = message.content!!.base64Encode()
             }
         }
-        val blazeParam = BlazeMessageParam(
-            message.conversationId,
-            recipientId,
-            message.messageId,
-            message.category,
-            content,
-            quote_message_id = message.quoteMessageId,
-            mentions = getMentionData(message.messageId),
-            recipient_ids = recipientIds,
-            silent = isSilent,
-            expire_in = expireIn,
-        )
-        val blazeMessage = if (message.isCall()) {
-            if (message.isKraken()) {
-                blazeParam.jsep = krakenParam?.jsep?.base64Encode()
-                blazeParam.candidate = krakenParam?.candidate?.base64Encode()
-                blazeParam.track_id = krakenParam?.track_id
-                createKrakenMessage(blazeParam)
+        val blazeParam =
+            BlazeMessageParam(
+                message.conversationId,
+                recipientId,
+                message.messageId,
+                message.category,
+                content,
+                quote_message_id = message.quoteMessageId,
+                mentions = getMentionData(message.messageId),
+                recipient_ids = recipientIds,
+                silent = isSilent,
+                expire_in = expireIn,
+            )
+        val blazeMessage =
+            if (message.isCall()) {
+                if (message.isKraken()) {
+                    blazeParam.jsep = krakenParam?.jsep?.base64Encode()
+                    blazeParam.candidate = krakenParam?.candidate?.base64Encode()
+                    blazeParam.track_id = krakenParam?.track_id
+                    createKrakenMessage(blazeParam)
+                } else {
+                    createCallMessage(blazeParam)
+                }
             } else {
-                createCallMessage(blazeParam)
+                createParamBlazeMessage(blazeParam)
             }
-        } else {
-            createParamBlazeMessage(blazeParam)
-        }
         deliver(blazeMessage)
         callback(expireIn)
     }
 
-    private fun sendEncryptedMessage(conversation: Conversation?, callback: (Long?) -> Unit) {
+    private fun sendEncryptedMessage(
+        conversation: Conversation?,
+        callback: (Long?) -> Unit,
+    ) {
         conversation ?: return
         val expireIn = checkConversationExist(conversation)
         val accountId = Session.getAccountId()!!
@@ -254,31 +265,34 @@ open class SendMessageJob(
             Session.getExtensionSessionId().notNullWithElse({ participantSessionDao.getParticipantSessionKeyBySessionId(message.conversationId, accountId, it) }, null)
 
         val keyPair = Session.getEd25519KeyPair() ?: return
-        val plaintext = if (message.isAttachment() || message.isSticker() || message.isContact()) {
-            message.content!!.decodeBase64()
-        } else {
-            message.content!!.toByteArray()
-        }
-        val encryptContent = encryptedProtocol.encryptMessage(
-            keyPair,
-            plaintext,
-            participantSessionKey.publicKey!!.base64RawURLDecode(),
-            participantSessionKey.sessionId,
-            extensionSessionKey?.publicKey?.base64RawURLDecode(),
-            extensionSessionKey?.sessionId,
-        )
+        val plaintext =
+            if (message.isAttachment() || message.isSticker() || message.isContact()) {
+                message.content!!.decodeBase64()
+            } else {
+                message.content!!.toByteArray()
+            }
+        val encryptContent =
+            encryptedProtocol.encryptMessage(
+                keyPair,
+                plaintext,
+                participantSessionKey.publicKey!!.base64RawURLDecode(),
+                participantSessionKey.sessionId,
+                extensionSessionKey?.publicKey?.base64RawURLDecode(),
+                extensionSessionKey?.sessionId,
+            )
 
-        val blazeParam = BlazeMessageParam(
-            message.conversationId,
-            recipientId,
-            message.messageId,
-            message.category,
-            encryptContent.base64Encode(),
-            quote_message_id = message.quoteMessageId,
-            mentions = getMentionData(message.messageId),
-            recipient_ids = recipientIds,
-            expire_in = expireIn,
-        )
+        val blazeParam =
+            BlazeMessageParam(
+                message.conversationId,
+                recipientId,
+                message.messageId,
+                message.category,
+                encryptContent.base64Encode(),
+                quote_message_id = message.quoteMessageId,
+                mentions = getMentionData(message.messageId),
+                recipient_ids = recipientIds,
+                expire_in = expireIn,
+            )
         val blazeMessage = createParamBlazeMessage(blazeParam)
         deliver(blazeMessage)
         callback(expireIn)
@@ -297,7 +311,10 @@ open class SendMessageJob(
             )
         }
 
-    private fun sendSignalMessage(conversation: Conversation?, callback: (Long?) -> Unit) {
+    private fun sendSignalMessage(
+        conversation: Conversation?,
+        callback: (Long?) -> Unit,
+    ) {
         conversation ?: return
         val expireIn = checkConversationExist(conversation)
         if (resendData != null) {

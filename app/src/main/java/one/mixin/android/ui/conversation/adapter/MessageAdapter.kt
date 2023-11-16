@@ -222,7 +222,10 @@ class MessageAdapter(
             }
         }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+    ) {
         getItem(position)?.let {
             when (getItemViewType(position)) {
                 MessageAdapter.TEXT_TYPE -> {
@@ -616,23 +619,25 @@ class MessageAdapter(
             null
         } else if (isSecret && hasBottomView) {
             when (position) {
-                itemCount - 1 -> create(
-                    MessageCategory.STRANGER.name,
-                    if (data.size > 0) {
-                        data.last()?.createdAt
-                    } else {
-                        null
-                    },
-                )
+                itemCount - 1 ->
+                    create(
+                        MessageCategory.STRANGER.name,
+                        if (data.size > 0) {
+                            data.last()?.createdAt
+                        } else {
+                            null
+                        },
+                    )
 
-                0 -> create(
-                    MessageCategory.SECRET.name,
-                    if (data.size > 0) {
-                        data.first()?.createdAt
-                    } else {
-                        null
-                    },
-                )
+                0 ->
+                    create(
+                        MessageCategory.SECRET.name,
+                        if (data.size > 0) {
+                            data.first()?.createdAt
+                        } else {
+                            null
+                        },
+                    )
 
                 else -> getItemInternal(position - 1)
             }
@@ -736,13 +741,14 @@ class MessageAdapter(
     }
 
     override fun getItemCount(): Int {
-        return data.size + if (hasBottomView && isSecret) {
-            2
-        } else if (hasBottomView || isSecret) {
-            1
-        } else {
-            0
-        }
+        return data.size +
+            if (hasBottomView && isSecret) {
+                2
+            } else if (hasBottomView || isSecret) {
+                1
+            } else {
+                0
+            }
     }
 
     override fun getItemViewType(position: Int): Int = getItemType(getItem(position))
@@ -811,17 +817,21 @@ class MessageAdapter(
     }
 
     // Time header
-    override fun getHeaderId(position: Int): Long = getItem(position).notNullWithElse(
-        {
-            abs(it.createdAt.hashForDate())
-        },
-        0,
-    )
+    override fun getHeaderId(position: Int): Long =
+        getItem(position).notNullWithElse(
+            {
+                abs(it.createdAt.hashForDate())
+            },
+            0,
+        )
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): TimeHolder =
         TimeHolder(ItemChatTimeBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-    override fun onBindHeaderViewHolder(holder: TimeHolder, position: Int) {
+    override fun onBindHeaderViewHolder(
+        holder: TimeHolder,
+        position: Int,
+    ) {
         getItem(position)?.let {
             holder.bind(it.createdAt)
         }
@@ -830,11 +840,13 @@ class MessageAdapter(
     override fun onCreateAttach(parent: ViewGroup): View =
         LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unread, parent, false)
 
-    override fun hasAttachView(position: Int): Boolean = if (unreadMessageId != null) {
-        getItem(position)?.messageId == unreadMessageId
-    } else {
-        false
-    }
+    override fun hasAttachView(position: Int): Boolean =
+        if (unreadMessageId != null) {
+            getItem(position)?.messageId == unreadMessageId
+        } else {
+            false
+        }
+
     override fun onBindAttachView(view: View) {
         unreadMessageId?.let {
             ItemChatUnreadBinding.bind(view).unreadTv.text = view.context.getString(R.string.Unread_messages)
@@ -885,12 +897,21 @@ class MessageAdapter(
     }
 
     open class OnItemListener {
+        open fun onSelect(
+            isSelect: Boolean,
+            messageItem: MessageItem,
+            position: Int,
+        ) {}
 
-        open fun onSelect(isSelect: Boolean, messageItem: MessageItem, position: Int) {}
+        open fun onLongClick(
+            messageItem: MessageItem,
+            position: Int,
+        ): Boolean = true
 
-        open fun onLongClick(messageItem: MessageItem, position: Int): Boolean = true
-
-        open fun onImageClick(messageItem: MessageItem, view: View) {}
+        open fun onImageClick(
+            messageItem: MessageItem,
+            view: View,
+        ) {}
 
         open fun onStickerClick(messageItem: MessageItem) {}
 
@@ -920,9 +941,15 @@ class MessageAdapter(
 
         open fun onBlockClick() {}
 
-        open fun onActionClick(action: String, userId: String) {}
+        open fun onActionClick(
+            action: String,
+            userId: String,
+        ) {}
 
-        open fun onAppCardClick(appCard: AppCardData, userId: String) {}
+        open fun onAppCardClick(
+            appCard: AppCardData,
+            userId: String,
+        ) {}
 
         open fun onAudioClick(messageItem: MessageItem) {}
 
@@ -932,11 +959,17 @@ class MessageAdapter(
 
         open fun onTransferClick(userId: String) {}
 
-        open fun onQuoteMessageClick(messageId: String, quoteMessageId: String?) {}
+        open fun onQuoteMessageClick(
+            messageId: String,
+            quoteMessageId: String?,
+        ) {}
 
         open fun onCallClick(messageItem: MessageItem) {}
 
-        open fun onPostClick(view: View, messageItem: MessageItem) {}
+        open fun onPostClick(
+            view: View,
+            messageItem: MessageItem,
+        ) {}
 
         open fun onOpenHomePage() {}
 

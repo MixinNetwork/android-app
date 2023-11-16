@@ -25,7 +25,10 @@ class TimeBubble(context: Context, attributeSet: AttributeSet) :
         gravity = Gravity.CENTER
     }
 
-    fun load(createdAt: String, isWhite: Boolean = false) {
+    fun load(
+        createdAt: String,
+        isWhite: Boolean = false,
+    ) {
         load(
             false,
             createdAt,
@@ -37,7 +40,10 @@ class TimeBubble(context: Context, attributeSet: AttributeSet) :
         )
     }
 
-    private fun changeSize(view: View, size: Float) {
+    private fun changeSize(
+        view: View,
+        size: Float,
+    ) {
         view.layoutParams.apply {
             this.width = size.dp
             this.height = size.dp
@@ -51,6 +57,7 @@ class TimeBubble(context: Context, attributeSet: AttributeSet) :
         changeSize(binding.chatRepresentative, textSize)
         changeSize(binding.chatStatus, textSize)
     }
+
     fun load(
         isMe: Boolean,
         createdAt: String,

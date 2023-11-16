@@ -14,7 +14,6 @@ import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
 class InitializeActivity : BaseActivity() {
-
     private val binding by viewBinding(ActivityLandingBinding::inflate)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,11 +28,12 @@ class InitializeActivity : BaseActivity() {
             wrongTime -> replaceFragment(TimeFragment.newInstance(), R.id.container)
             oldVersion -> replaceFragment(OldVersionFragment.newInstance(), R.id.container)
             dbUpgrade -> replaceFragment(UpgradeFragment.newInstance(TYPE_DB), R.id.container)
-            else -> replaceFragment(
-                LoadingFragment.newInstance(),
-                R.id.container,
-                LoadingFragment.TAG,
-            )
+            else ->
+                replaceFragment(
+                    LoadingFragment.newInstance(),
+                    R.id.container,
+                    LoadingFragment.TAG,
+                )
         }
     }
 
@@ -83,7 +83,11 @@ class InitializeActivity : BaseActivity() {
             )
         }
 
-        fun showLoading(context: Context, load: Boolean = true, clear: Boolean = false) {
+        fun showLoading(
+            context: Context,
+            load: Boolean = true,
+            clear: Boolean = false,
+        ) {
             if (load) {
                 putIsLoaded(context, false)
             }

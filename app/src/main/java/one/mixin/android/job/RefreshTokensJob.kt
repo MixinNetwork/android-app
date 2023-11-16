@@ -11,43 +11,44 @@ class RefreshTokensJob(
     private val conversationId: String? = null,
     private val messageId: String? = null,
 ) : MixinJob(
-    Params(PRIORITY_UI_HIGH)
-        .singleInstanceBy(assetId ?: "all-tokens").persist().requireNetwork(),
-    assetId ?: "all-tokens",
-) {
-
+        Params(PRIORITY_UI_HIGH)
+            .singleInstanceBy(assetId ?: "all-tokens").persist().requireNetwork(),
+        assetId ?: "all-tokens",
+    ) {
     companion object {
         private const val serialVersionUID = 1L
         const val GROUP = "RefreshTokensJob"
     }
 
-    override fun onRun() = runBlocking {
-        if (!assetId.isNullOrEmpty()) {
-            val response = tokenService.getAssetByIdSuspend(assetId)
-            if (response.isSuccess && response.data != null) {
-                response.data?.let {
-                    assetRepo.insert(it)
-                    refreshChainById(it.chainId)
+    override fun onRun() =
+        runBlocking {
+            if (!assetId.isNullOrEmpty()) {
+                val response = tokenService.getAssetByIdSuspend(assetId)
+                if (response.isSuccess && response.data != null) {
+                    response.data?.let {
+                        assetRepo.insert(it)
+                        refreshChainById(it.chainId)
+                    }
+                    if (conversationId != null && messageId != null) {
+                        MessageFlow.update(conversationId, messageId)
+                    }
                 }
-                if (conversationId != null && messageId != null) {
-                    MessageFlow.update(conversationId, messageId)
-                }
-            }
-        } else {
-            val tokenIds = tokenDao.findAllTokenIds()
-            val response = if (tokenIds.isEmpty()) {
-                tokenService.fetchAllTokenSuspend()
             } else {
-                tokenService.fetchTokenSuspend(tokenIds)
+                val tokenIds = tokenDao.findAllTokenIds()
+                val response =
+                    if (tokenIds.isEmpty()) {
+                        tokenService.fetchAllTokenSuspend()
+                    } else {
+                        tokenService.fetchTokenSuspend(tokenIds)
+                    }
+                if (response.isSuccess && response.data != null) {
+                    val list = response.data as List<Token>
+                    assetRepo.insertList(list)
+                }
+                refreshChains()
+                refreshFiats()
             }
-            if (response.isSuccess && response.data != null) {
-                val list = response.data as List<Token>
-                assetRepo.insertList(list)
-            }
-            refreshChains()
-            refreshFiats()
         }
-    }
 
     private suspend fun refreshFiats() {
         val resp = accountService.getFiats()

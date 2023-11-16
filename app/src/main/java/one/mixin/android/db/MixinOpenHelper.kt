@@ -12,7 +12,6 @@ class MixinOpenHelperFactory(
     private val delegate: SupportSQLiteOpenHelper.Factory,
     private val corruptions: List<MixinCorruptionCallback>,
 ) : SupportSQLiteOpenHelper.Factory {
-
     override fun create(configuration: SupportSQLiteOpenHelper.Configuration): SupportSQLiteOpenHelper {
         val decoratedConfiguration =
             SupportSQLiteOpenHelper.Configuration.builder(configuration.context)
@@ -27,8 +26,11 @@ class MixinOpenHelperCallback(
     private val delegate: SupportSQLiteOpenHelper.Callback,
     private val corruptions: List<MixinCorruptionCallback>,
 ) : SupportSQLiteOpenHelper.Callback(delegate.version) {
-
-    override fun onDowngrade(db: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) {
+    override fun onDowngrade(
+        db: SupportSQLiteDatabase,
+        oldVersion: Int,
+        newVersion: Int,
+    ) {
         delegate.onDowngrade(db, oldVersion, newVersion)
     }
 
@@ -53,7 +55,11 @@ class MixinOpenHelperCallback(
         delegate.onCorruption(db)
     }
 
-    override fun onUpgrade(db: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) {
+    override fun onUpgrade(
+        db: SupportSQLiteDatabase,
+        oldVersion: Int,
+        newVersion: Int,
+    ) {
         delegate.onUpgrade(db, oldVersion, newVersion)
     }
 }

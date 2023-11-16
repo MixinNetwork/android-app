@@ -13,7 +13,6 @@ class MessageDeleteJob(
     private val deleteConversation: Boolean,
 ) :
     BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).groupBy("message_delete").persist()) {
-
     private val TAG = MessageDeleteJob::class.java.simpleName
 
     companion object {
@@ -21,27 +20,29 @@ class MessageDeleteJob(
         private const val serialVersionUID = 2L
     }
 
-    override fun onRun() = runBlocking {
-        val deleteTimes =
-            messageDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1
-        repeat(deleteTimes) {
-            val ids = messageDao.getMessageIdsByConversationId(
-                conversationId,
-                lastRowId,
-                DB_DELETE_LIMIT,
-            )
-            ftsDatabase.deleteByMessageIds(ids)
-            appDatabase.deleteMessageByIds(ids)
-            MessageFlow.delete(conversationId, ids)
+    override fun onRun() =
+        runBlocking {
+            val deleteTimes =
+                messageDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1
+            repeat(deleteTimes) {
+                val ids =
+                    messageDao.getMessageIdsByConversationId(
+                        conversationId,
+                        lastRowId,
+                        DB_DELETE_LIMIT,
+                    )
+                ftsDatabase.deleteByMessageIds(ids)
+                appDatabase.deleteMessageByIds(ids)
+                MessageFlow.delete(conversationId, ids)
+            }
+            val currentRowId = messageDao.findLastMessageRowId(conversationId)
+            if (deleteConversation && currentRowId == null) {
+                conversationDao.deleteConversationById(conversationId)
+                conversationExtDao.deleteConversationById(conversationId)
+            } else {
+                remoteMessageStatusDao.countUnread(conversationId)
+                conversationDao.refreshLastMessageId(conversationId)
+                conversationExtDao.refreshCountByConversationId(conversationId)
+            }
         }
-        val currentRowId = messageDao.findLastMessageRowId(conversationId)
-        if (deleteConversation && currentRowId == null) {
-            conversationDao.deleteConversationById(conversationId)
-            conversationExtDao.deleteConversationById(conversationId)
-        } else {
-            remoteMessageStatusDao.countUnread(conversationId)
-            conversationDao.refreshLastMessageId(conversationId)
-            conversationExtDao.refreshCountByConversationId(conversationId)
-        }
-    }
 }

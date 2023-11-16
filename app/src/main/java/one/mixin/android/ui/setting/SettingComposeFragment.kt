@@ -86,11 +86,17 @@ enum class SettingDestination {
 }
 
 open class SettingNavigationController {
-    open fun navigation(destination: SettingDestination, args: Bundle? = null) {
+    open fun navigation(
+        destination: SettingDestination,
+        args: Bundle? = null,
+    ) {
         Timber.e("setting navigation: ${destination.name}")
     }
 
-    open fun userBottomSheet(user: User, conversationId: String? = null) {
+    open fun userBottomSheet(
+        user: User,
+        conversationId: String? = null,
+    ) {
         Timber.e("userBottomSheet: ${user.userId}")
     }
 
@@ -115,15 +121,22 @@ private class SettingNavControllerImpl(
     private val navController: NavController,
     private val closeActivity: () -> Unit,
 ) : SettingNavigationController() {
-    override fun navigation(destination: SettingDestination, args: Bundle?) {
+    override fun navigation(
+        destination: SettingDestination,
+        args: Bundle?,
+    ) {
         navigateTo(destination, args)
     }
 
-    private fun navigateTo(dest: SettingDestination, args: Bundle? = null) {
-        val routeLink = NavDeepLinkRequest
-            .Builder
-            .fromUri(NavDestination.createRoute(dest.name).toUri())
-            .build()
+    private fun navigateTo(
+        dest: SettingDestination,
+        args: Bundle? = null,
+    ) {
+        val routeLink =
+            NavDeepLinkRequest
+                .Builder
+                .fromUri(NavDestination.createRoute(dest.name).toUri())
+                .build()
         val deepLinkMatch = navController.graph.matchDeepLink(routeLink)
         if (deepLinkMatch == null) {
             Timber.e("navigateTo: no match for $dest")
@@ -133,7 +146,10 @@ private class SettingNavControllerImpl(
         navController.navigate(id, args)
     }
 
-    override fun userBottomSheet(user: User, conversationId: String?) {
+    override fun userBottomSheet(
+        user: User,
+        conversationId: String?,
+    ) {
         navigateTo(
             SettingDestination.UserBottomSheet,
             Bundle().apply {
@@ -174,9 +190,7 @@ val LocalSettingNav =
 @Suppress("OPT_IN_IS_NOT_ENABLED")
 @OptIn(ExperimentalAnimationApi::class)
 class SettingComposeFragment : BaseFragment() {
-
     companion object {
-
         const val TAG = "SettingComposeFragment"
 
         fun newInstance(): SettingComposeFragment {
@@ -186,9 +200,10 @@ class SettingComposeFragment : BaseFragment() {
 
     private val parentBackStackEntryCount = MutableLiveData(0)
 
-    private val onParentBackStackChanged = FragmentManager.OnBackStackChangedListener {
-        parentBackStackEntryCount.value = parentFragmentManager.backStackEntryCount
-    }
+    private val onParentBackStackChanged =
+        FragmentManager.OnBackStackChangedListener {
+            parentBackStackEntryCount.value = parentFragmentManager.backStackEntryCount
+        }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -211,16 +226,18 @@ class SettingComposeFragment : BaseFragment() {
                     darkTheme = context.isNightMode(),
                 ) {
                     val navController = rememberNavController()
-                    val navigationController = remember {
-                        SettingNavControllerImpl(navController, closeActivity = {
-                            activity?.onBackPressedDispatcher?.onBackPressed()
-                        })
-                    }
+                    val navigationController =
+                        remember {
+                            SettingNavControllerImpl(navController, closeActivity = {
+                                activity?.onBackPressedDispatcher?.onBackPressed()
+                            })
+                        }
 
                     DisposableEffect(navController) {
-                        val observer = Observer<Int> { value ->
-                            navController.enableOnBackPressed(value == 0)
-                        }
+                        val observer =
+                            Observer<Int> { value ->
+                                navController.enableOnBackPressed(value == 0)
+                            }
                         parentBackStackEntryCount.observeForever(observer)
                         onDispose {
                             parentBackStackEntryCount.removeObserver(observer)
@@ -350,13 +367,14 @@ class SettingComposeFragment : BaseFragment() {
                                     Timber.e("viewEmergencyContact: no auth")
                                     return@composable
                                 }
-                                val parentEntry = remember(backStackEntry) {
-                                    try {
-                                        navController.getBackStackEntry(SettingDestination.Authentications.name)
-                                    } catch (e: Exception) {
-                                        null
+                                val parentEntry =
+                                    remember(backStackEntry) {
+                                        try {
+                                            navController.getBackStackEntry(SettingDestination.Authentications.name)
+                                        } catch (e: Exception) {
+                                            null
+                                        }
                                     }
-                                }
                                 val authViewModel =
                                     parentEntry?.let { hiltViewModel<AuthenticationsViewModel>(it) }
                                 PermissionListPage(auth, authViewModel)
@@ -370,16 +388,17 @@ class SettingComposeFragment : BaseFragment() {
                                 val user = it.arguments?.getParcelableCompat(USER_KEY, User::class.java)
                                 val conversationId = it.arguments?.getString(CONVERSATION_ID_KEY)
 
-                                val fragment = remember {
-                                    if (user == null) {
-                                        null
-                                    } else {
-                                        UserBottomSheetDialogFragment.newInstance(
-                                            user,
-                                            conversationId,
-                                        )
+                                val fragment =
+                                    remember {
+                                        if (user == null) {
+                                            null
+                                        } else {
+                                            UserBottomSheetDialogFragment.newInstance(
+                                                user,
+                                                conversationId,
+                                            )
+                                        }
                                     }
-                                }
                                 if (fragment != null) {
                                     MixinSettingFragment(UserBottomSheetDialogFragment.TAG) {
                                         fragment

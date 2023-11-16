@@ -25,10 +25,14 @@ class SharedMediaFragment : BaseFragment(R.layout.fragment_shared_media) {
     companion object {
         const val TAG = "SharedMediaFragment"
 
-        fun newInstance(conversationId: String, fromChat: Boolean) = SharedMediaFragment().withArgs {
-            putString(ARGS_CONVERSATION_ID, conversationId)
-            putBoolean(FROM_CHAT, fromChat)
-        }
+        fun newInstance(
+            conversationId: String,
+            fromChat: Boolean,
+        ) =
+            SharedMediaFragment().withArgs {
+                putString(ARGS_CONVERSATION_ID, conversationId)
+                putBoolean(FROM_CHAT, fromChat)
+            }
     }
 
     private val conversationId: String by lazy {
@@ -42,11 +46,12 @@ class SharedMediaFragment : BaseFragment(R.layout.fragment_shared_media) {
     private val adapter: SharedMediaAdapter by lazy {
         SharedMediaAdapter(this, conversationId) { messageId ->
             val builder = BottomSheet.Builder(requireContext())
-            val view = View.inflate(
-                ContextThemeWrapper(requireContext(), R.style.Custom),
-                R.layout.view_shared_media,
-                null,
-            )
+            val view =
+                View.inflate(
+                    ContextThemeWrapper(requireContext(), R.style.Custom),
+                    R.layout.view_shared_media,
+                    null,
+                )
             val binding = ViewSharedMediaBinding.bind(view)
             builder.setCustomView(view)
             val bottomSheet = builder.create()
@@ -73,7 +78,10 @@ class SharedMediaFragment : BaseFragment(R.layout.fragment_shared_media) {
 
     private val binding by viewBinding(FragmentSharedMediaBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.viewPager.adapter = adapter
@@ -81,15 +89,16 @@ class SharedMediaFragment : BaseFragment(R.layout.fragment_shared_media) {
             binding.sharedTl,
             binding.viewPager,
         ) { tab, position ->
-            tab.text = getString(
-                when (position) {
-                    0 -> R.string.Media
-                    1 -> R.string.Audio
-                    2 -> R.string.Post
-                    3 -> R.string.Links
-                    else -> R.string.Files
-                },
-            )
+            tab.text =
+                getString(
+                    when (position) {
+                        0 -> R.string.Media
+                        1 -> R.string.Audio
+                        2 -> R.string.Post
+                        3 -> R.string.Links
+                        else -> R.string.Files
+                    },
+                )
             binding.viewPager.setCurrentItem(tab.position, true)
         }.attach()
         binding.sharedTl.tabMode = TabLayout.MODE_FIXED

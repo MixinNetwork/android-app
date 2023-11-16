@@ -104,14 +104,16 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "UserBottomSheetDialogFragment"
 
         @SuppressLint("StaticFieldLeak")
         private var instant: UserBottomSheetDialogFragment? = null
 
-        fun newInstance(user: User, conversationId: String? = null): UserBottomSheetDialogFragment? {
+        fun newInstance(
+            user: User,
+            conversationId: String? = null,
+        ): UserBottomSheetDialogFragment? {
             try {
                 instant?.dismiss()
             } catch (ignored: IllegalStateException) {
@@ -121,10 +123,11 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 return null
             }
             return UserBottomSheetDialogFragment().apply {
-                arguments = Bundle().apply {
-                    putParcelable(ARGS_USER, user)
-                    putString(ARGS_CONVERSATION_ID, conversationId)
-                }
+                arguments =
+                    Bundle().apply {
+                        putParcelable(ARGS_USER, user)
+                        putString(ARGS_CONVERSATION_ID, conversationId)
+                    }
             }.apply {
                 instant = this
             }
@@ -162,7 +165,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         FragmentUserBottomSheetBinding.bind(contentView)
     }
 
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         user = requireArguments().getParcelableCompat(ARGS_USER, User::class.java)!!
         botConversationId = requireArguments().getString(ARGS_CONVERSATION_ID)
@@ -273,135 +279,147 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         (
                             menuListLayout?.height
                                 ?: 0
-                            ) - if (menuListLayout != null) 38.dp else 8.dp
+                        ) - if (menuListLayout != null) 38.dp else 8.dp
                 }
             }
         }
     }
 
-    private fun initMenu(u: User, circleNames: List<String>, conversation: Conversation?) {
+    private fun initMenu(
+        u: User,
+        circleNames: List<String>,
+        conversation: Conversation?,
+    ) {
         if (!isAdded) return
 
-        val clearMenu = menu {
-            title = getString(R.string.Clear_chat)
-            style = MenuStyle.Danger
-            action = {
-                requireContext().showConfirmDialog(getString(R.string.Clear_chat)) {
-                    bottomViewModel.clearChat(conversationId)
+        val clearMenu =
+            menu {
+                title = getString(R.string.Clear_chat)
+                style = MenuStyle.Danger
+                action = {
+                    requireContext().showConfirmDialog(getString(R.string.Clear_chat)) {
+                        bottomViewModel.clearChat(conversationId)
+                        dismiss()
+                    }
+                }
+            }
+        val muteMenu =
+            if (u.muteUntil.notNullWithElse(
+                    {
+                        Instant.now().isBefore(Instant.parse(it))
+                    },
+                    false,
+                )
+            ) {
+                menu {
+                    title = getString(R.string.Unmute)
+                    subtitle = getString(R.string.Mute_until, u.muteUntil?.localTime())
+                    action = { unMute() }
+                }
+            } else {
+                menu {
+                    title = getString(R.string.Mute)
+                    action = { mute() }
+                }
+            }
+        val transactionMenu =
+            menu {
+                title = getString(R.string.Transactions)
+                action = {
+                    if (showUserTransactionAction != null) {
+                        showUserTransactionAction?.invoke()
+                    } else {
+                        RxBus.publish(BotCloseEvent())
+                        activity?.addFragment(
+                            this@UserBottomSheetDialogFragment,
+                            UserTransactionsFragment.newInstance(u.userId),
+                            UserTransactionsFragment.TAG,
+                        )
+                    }
                     dismiss()
                 }
             }
-        }
-        val muteMenu = if (u.muteUntil.notNullWithElse(
-                {
-                    Instant.now().isBefore(Instant.parse(it))
-                },
-                false,
-            )
-        ) {
+        val editNameMenu =
             menu {
-                title = getString(R.string.Unmute)
-                subtitle = getString(R.string.Mute_until, u.muteUntil?.localTime())
-                action = { unMute() }
+                title = getString(R.string.Edit_Name)
+                action = { showDialog(u.fullName) }
             }
-        } else {
+        val voiceCallMenu =
             menu {
-                title = getString(R.string.Mute)
-                action = { mute() }
-            }
-        }
-        val transactionMenu = menu {
-            title = getString(R.string.Transactions)
-            action = {
-                if (showUserTransactionAction != null) {
-                    showUserTransactionAction?.invoke()
-                } else {
-                    RxBus.publish(BotCloseEvent())
-                    activity?.addFragment(
-                        this@UserBottomSheetDialogFragment,
-                        UserTransactionsFragment.newInstance(u.userId),
-                        UserTransactionsFragment.TAG,
-                    )
-                }
-                dismiss()
-            }
-        }
-        val editNameMenu = menu {
-            title = getString(R.string.Edit_Name)
-            action = { showDialog(u.fullName) }
-        }
-        val voiceCallMenu = menu {
-            title = getString(R.string.Voice_call)
-            action = {
-                startVoiceCall()
-            }
-        }
-        val phoneNum = user.phone
-        val telephoneCallMenu = if (!phoneNum.isNullOrEmpty()) {
-            val phoneUri = Uri.parse("tel:$phoneNum")
-            menu {
-                title = getString(R.string.Phone_call)
-                subtitle = phoneNum
+                title = getString(R.string.Voice_call)
                 action = {
-                    requireContext().showConfirmDialog(getString(R.string.call_who, phoneNum)) {
-                        Intent(Intent.ACTION_DIAL).run {
-                            this.data = phoneUri
-                            startActivity(this)
+                    startVoiceCall()
+                }
+            }
+        val phoneNum = user.phone
+        val telephoneCallMenu =
+            if (!phoneNum.isNullOrEmpty()) {
+                val phoneUri = Uri.parse("tel:$phoneNum")
+                menu {
+                    title = getString(R.string.Phone_call)
+                    subtitle = phoneNum
+                    action = {
+                        requireContext().showConfirmDialog(getString(R.string.call_who, phoneNum)) {
+                            Intent(Intent.ACTION_DIAL).run {
+                                this.data = phoneUri
+                                startActivity(this)
+                            }
                         }
                     }
                 }
+            } else {
+                null
             }
-        } else {
-            null
-        }
-        val developerMenu = menu {
-            title = getString(R.string.Developer)
-            action = {
-                creator?.let {
-                    if (it.userId == Session.getAccountId()) {
-                        ProfileBottomSheetDialogFragment.newInstance()
-                            .showNow(parentFragmentManager, TAG)
-                    } else {
-                        showUserBottom(parentFragmentManager, it)
-                    }
-                }
-                dismiss()
-            }
-        }
-
-        val list = menuList {
-            menuGroup {
-                menu {
-                    title = getString(R.string.Share_Contact)
-                    action = {
-                        forwardContact(u)
-                    }
-                }
-            }
-            menuGroup {
-                menu {
-                    title = getString(R.string.Shared_Media)
-                    action = {
-                        val callback = this@UserBottomSheetDialogFragment.sharedMediaCallback
-                        if (callback != null) {
-                            callback.invoke()
+        val developerMenu =
+            menu {
+                title = getString(R.string.Developer)
+                action = {
+                    creator?.let {
+                        if (it.userId == Session.getAccountId()) {
+                            ProfileBottomSheetDialogFragment.newInstance()
+                                .showNow(parentFragmentManager, TAG)
                         } else {
-                            SharedMediaActivity.show(requireContext(), conversationId, false)
+                            showUserBottom(parentFragmentManager, it)
                         }
-                        RxBus.publish(BotCloseEvent())
-                        dismiss()
+                    }
+                    dismiss()
+                }
+            }
+
+        val list =
+            menuList {
+                menuGroup {
+                    menu {
+                        title = getString(R.string.Share_Contact)
+                        action = {
+                            forwardContact(u)
+                        }
                     }
                 }
-                menu {
-                    title = getString(R.string.Search_Conversation)
-                    action = {
-                        startSearchConversation()
-                        RxBus.publish(BotCloseEvent())
-                        dismiss()
+                menuGroup {
+                    menu {
+                        title = getString(R.string.Shared_Media)
+                        action = {
+                            val callback = this@UserBottomSheetDialogFragment.sharedMediaCallback
+                            if (callback != null) {
+                                callback.invoke()
+                            } else {
+                                SharedMediaActivity.show(requireContext(), conversationId, false)
+                            }
+                            RxBus.publish(BotCloseEvent())
+                            dismiss()
+                        }
+                    }
+                    menu {
+                        title = getString(R.string.Search_Conversation)
+                        action = {
+                            startSearchConversation()
+                            RxBus.publish(BotCloseEvent())
+                            dismiss()
+                        }
                     }
                 }
             }
-        }
 
         list.groups.add(
             menuGroup {
@@ -525,13 +543,14 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 list.groups.add(
                     menuGroup {
                         menu {
-                            title = getString(
-                                if (user.isBot()) {
-                                    R.string.Remove_Bot
-                                } else {
-                                    R.string.Remove_Contact
-                                },
-                            )
+                            title =
+                                getString(
+                                    if (user.isBot()) {
+                                        R.string.Remove_Bot
+                                    } else {
+                                        R.string.Remove_Contact
+                                    },
+                                )
 
                             style = MenuStyle.Danger
                             action = {
@@ -613,38 +632,40 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         }
     }
 
-    private fun startSearchConversation() = lifecycleScope.launch {
-        bottomViewModel.getConversation(conversationId)?.let {
-            val searchMessageItem = if (it.category == ConversationCategory.CONTACT.name) {
-                SearchMessageItem(
-                    it.conversationId,
-                    it.category,
-                    null,
-                    0,
-                    user.userId,
-                    user.fullName,
-                    user.avatarUrl,
-                    null,
-                )
-            } else {
-                SearchMessageItem(
-                    it.conversationId,
-                    it.category,
-                    it.name,
-                    0,
-                    "",
-                    null,
-                    null,
-                    it.iconUrl,
+    private fun startSearchConversation() =
+        lifecycleScope.launch {
+            bottomViewModel.getConversation(conversationId)?.let {
+                val searchMessageItem =
+                    if (it.category == ConversationCategory.CONTACT.name) {
+                        SearchMessageItem(
+                            it.conversationId,
+                            it.category,
+                            null,
+                            0,
+                            user.userId,
+                            user.fullName,
+                            user.avatarUrl,
+                            null,
+                        )
+                    } else {
+                        SearchMessageItem(
+                            it.conversationId,
+                            it.category,
+                            it.name,
+                            0,
+                            "",
+                            null,
+                            null,
+                            it.iconUrl,
+                        )
+                    }
+                activity?.addFragment(
+                    this@UserBottomSheetDialogFragment,
+                    SearchMessageFragment.newInstance(searchMessageItem, ""),
+                    SearchMessageFragment.TAG,
                 )
             }
-            activity?.addFragment(
-                this@UserBottomSheetDialogFragment,
-                SearchMessageFragment.newInstance(searchMessageItem, ""),
-                SearchMessageFragment.TAG,
-            )
         }
-    }
 
     private fun forwardContact(u: User) {
         ForwardActivity.show(
@@ -755,79 +776,80 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         )
     }
 
-    private fun updateUserInfo(user: User) = lifecycleScope.launch {
-        if (!isAdded) return@launch
+    private fun updateUserInfo(user: User) =
+        lifecycleScope.launch {
+            if (!isAdded) return@launch
 
-        binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-        binding.name.text = user.fullName
-        binding.idTv.text = getString(R.string.contact_mixin_id, user.identityNumber)
-        binding.idTv.setOnLongClickListener {
-            context?.getClipboardManager()
-                ?.setPrimaryClip(ClipData.newPlainText(null, user.identityNumber))
-            toast(R.string.copied_to_clipboard)
-            true
-        }
-        if (user.biography.isNotEmpty()) {
-            binding.detailTv.originalText = user.biography
-            binding.detailTv.visibility = VISIBLE
-            binding.detailTv.heightDifferenceCallback = { heightDifference, duration ->
-                if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
-                    behavior?.peekHeight?.let { peekHeight ->
-                        ValueAnimator.ofInt(peekHeight, peekHeight + heightDifference).apply {
-                            interpolator = FastOutSlowInInterpolator()
-                            setDuration(duration)
-                            addUpdateListener { value ->
-                                behavior?.peekHeight = value.animatedValue as Int
+            binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
+            binding.name.text = user.fullName
+            binding.idTv.text = getString(R.string.contact_mixin_id, user.identityNumber)
+            binding.idTv.setOnLongClickListener {
+                context?.getClipboardManager()
+                    ?.setPrimaryClip(ClipData.newPlainText(null, user.identityNumber))
+                toast(R.string.copied_to_clipboard)
+                true
+            }
+            if (user.biography.isNotEmpty()) {
+                binding.detailTv.originalText = user.biography
+                binding.detailTv.visibility = VISIBLE
+                binding.detailTv.heightDifferenceCallback = { heightDifference, duration ->
+                    if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
+                        behavior?.peekHeight?.let { peekHeight ->
+                            ValueAnimator.ofInt(peekHeight, peekHeight + heightDifference).apply {
+                                interpolator = FastOutSlowInInterpolator()
+                                setDuration(duration)
+                                addUpdateListener { value ->
+                                    behavior?.peekHeight = value.animatedValue as Int
+                                }
+                                start()
                             }
-                            start()
                         }
-                    }
-                } else if (behavior?.state == BottomSheetBehavior.STATE_EXPANDED) {
-                    behavior?.peekHeight?.let { peekHeight ->
-                        behavior?.peekHeight = heightDifference + peekHeight
+                    } else if (behavior?.state == BottomSheetBehavior.STATE_EXPANDED) {
+                        behavior?.peekHeight?.let { peekHeight ->
+                            behavior?.peekHeight = heightDifference + peekHeight
+                        }
                     }
                 }
+            } else {
+                binding.detailTv.visibility = GONE
             }
-        } else {
-            binding.detailTv.visibility = GONE
-        }
-        updateUserStatus(user.relationship)
-        user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
-        binding.opLl.isVisible = true
-        if (user.isBot()) {
-            binding.openFl.visibility = VISIBLE
-            binding.transferFl.visibility = GONE
-            binding.shareFl.isVisible = false
-            bottomViewModel.findAppById(user.appId!!)?.let { app ->
-                binding.openFl.clicks()
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .throttleFirst(1, TimeUnit.SECONDS)
-                    .autoDispose(stopScope).subscribe {
-                        dismiss()
-                        RxBus.publish(BotCloseEvent())
-                        WebActivity.show(requireActivity(), app.homeUri, botConversationId, app)
-                        dismiss()
-                    }
-                bottomViewModel.findUserById(app.creatorId)
-                    .observe(
-                        this@UserBottomSheetDialogFragment,
-                    ) { u ->
-                        creator = u
-                        if (u == null) {
-                            bottomViewModel.refreshUser(app.creatorId, true)
+            updateUserStatus(user.relationship)
+            user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
+            binding.opLl.isVisible = true
+            if (user.isBot()) {
+                binding.openFl.visibility = VISIBLE
+                binding.transferFl.visibility = GONE
+                binding.shareFl.isVisible = false
+                bottomViewModel.findAppById(user.appId!!)?.let { app ->
+                    binding.openFl.clicks()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .throttleFirst(1, TimeUnit.SECONDS)
+                        .autoDispose(stopScope).subscribe {
+                            dismiss()
+                            RxBus.publish(BotCloseEvent())
+                            WebActivity.show(requireActivity(), app.homeUri, botConversationId, app)
+                            dismiss()
                         }
-                    }
+                    bottomViewModel.findUserById(app.creatorId)
+                        .observe(
+                            this@UserBottomSheetDialogFragment,
+                        ) { u ->
+                            creator = u
+                            if (u == null) {
+                                bottomViewModel.refreshUser(app.creatorId, true)
+                            }
+                        }
+                }
+            } else if (user.isDeactivated == true) {
+                binding.transferFl.isVisible = false
+                binding.openFl.isVisible = false
+                binding.shareFl.isVisible = true
+            } else {
+                binding.openFl.visibility = GONE
+                binding.transferFl.visibility = VISIBLE
+                binding.shareFl.isVisible = false
             }
-        } else if (user.isDeactivated == true) {
-            binding.transferFl.isVisible = false
-            binding.openFl.isVisible = false
-            binding.shareFl.isVisible = true
-        } else {
-            binding.openFl.visibility = GONE
-            binding.transferFl.visibility = VISIBLE
-            binding.shareFl.isVisible = false
         }
-    }
 
     private val blockDrawable: Drawable by lazy {
         val d = requireNotNull(ResourcesCompat.getDrawable(resources, R.drawable.ic_bottom_block, context?.theme))
@@ -909,12 +931,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     }
 
     private fun showMuteDialog() {
-        val choices = arrayOf(
-            getString(R.string.one_hour),
-            resources.getQuantityString(R.plurals.Hour, 8, 8),
-            getString(R.string.one_week),
-            getString(R.string.one_year),
-        )
+        val choices =
+            arrayOf(
+                getString(R.string.one_hour),
+                resources.getQuantityString(R.plurals.Hour, 8, 8),
+                getString(R.string.one_week),
+                getString(R.string.one_year),
+            )
         var duration = MUTE_1_HOUR
         var whichItem = 0
         alertDialogBuilder()
@@ -976,21 +999,23 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         }
     }
 
-    private fun updateRelationship(relationship: String) = lifecycleScope.launch {
-        if (!isAdded) return@launch
+    private fun updateRelationship(relationship: String) =
+        lifecycleScope.launch {
+            if (!isAdded) return@launch
 
-        updateUserStatus(relationship)
-        val request = RelationshipRequest(
-            user.userId,
-            if (relationship == UserRelationship.FRIEND.name) {
-                RelationshipAction.ADD.name
-            } else {
-                RelationshipAction.REMOVE.name
-            },
-            user.fullName,
-        )
-        bottomViewModel.updateRelationship(request)
-    }
+            updateUserStatus(relationship)
+            val request =
+                RelationshipRequest(
+                    user.userId,
+                    if (relationship == UserRelationship.FRIEND.name) {
+                        RelationshipAction.ADD.name
+                    } else {
+                        RelationshipAction.REMOVE.name
+                    },
+                    user.fullName,
+                )
+            bottomViewModel.updateRelationship(request)
+        }
 
     private fun addShortcut() {
         RxPermissions(requireActivity())
@@ -1059,7 +1084,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         }
     }
 
-    override fun onStateChanged(bottomSheet: View, newState: Int) {
+    override fun onStateChanged(
+        bottomSheet: View,
+        newState: Int,
+    ) {
         when (newState) {
             BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
             BottomSheetBehavior.STATE_COLLAPSED -> binding.moreIv.rotationX = 0f
@@ -1068,7 +1096,12 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     }
 }
 
-fun showUserBottom(fragmentManager: FragmentManager, user: User, conversationId: String? = null, sharedMediaCallback: (() -> Unit)? = null) {
+fun showUserBottom(
+    fragmentManager: FragmentManager,
+    user: User,
+    conversationId: String? = null,
+    sharedMediaCallback: (() -> Unit)? = null,
+) {
     if (fragmentManager.isStateSaved) return
 
     if (user.notMessengerUser()) {

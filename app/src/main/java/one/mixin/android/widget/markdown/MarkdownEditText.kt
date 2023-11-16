@@ -22,12 +22,13 @@ open class MarkdownEditText : AppCompatEditText {
     )
 
     init {
-        val editor = MarkwonEditor.builder(simpleMarkwon)
-            .useEditHandler(EmphasisEditHandler())
-            .useEditHandler(StrongEmphasisEditHandler())
-            .useEditHandler(StrikethroughEditHandler())
-            .useEditHandler(CodeEditHandler())
-            .build()
+        val editor =
+            MarkwonEditor.builder(simpleMarkwon)
+                .useEditHandler(EmphasisEditHandler())
+                .useEditHandler(StrongEmphasisEditHandler())
+                .useEditHandler(StrikethroughEditHandler())
+                .useEditHandler(CodeEditHandler())
+                .build()
 
         addTextChangedListener(
             MarkwonEditorTextWatcher.withPreRender(

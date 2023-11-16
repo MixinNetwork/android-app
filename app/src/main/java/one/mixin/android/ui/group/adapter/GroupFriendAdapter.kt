@@ -16,7 +16,6 @@ import one.mixin.android.vo.showVerifiedOrBot
 class GroupFriendAdapter :
     RecyclerView.Adapter<GroupFriendAdapter.FriendViewHolder>(),
     StickyRecyclerHeadersAdapter<GroupFriendAdapter.HeaderViewHolder> {
-
     private var data: List<User>? = null
     private var mShowHeader: Boolean = false
     private var mListener: GroupFriendListener? = null
@@ -25,7 +24,10 @@ class GroupFriendAdapter :
     var isAdd: Boolean = true
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setData(data: List<User>?, showHeader: Boolean) {
+    fun setData(
+        data: List<User>?,
+        showHeader: Boolean,
+    ) {
         this.data = data
         mShowHeader = showHeader
         data?.filterNot { mCheckedMap.containsKey(it.identityNumber) }
@@ -38,6 +40,7 @@ class GroupFriendAdapter :
         mCheckedMap[user.identityNumber] = false
         notifyDataSetChanged()
     }
+
     override fun getItemCount(): Int = data?.size ?: 0
 
     override fun getHeaderId(position: Int): Long {
@@ -57,7 +60,10 @@ class GroupFriendAdapter :
         )
     }
 
-    override fun onBindHeaderViewHolder(holder: HeaderViewHolder, position: Int) {
+    override fun onBindHeaderViewHolder(
+        holder: HeaderViewHolder,
+        position: Int,
+    ) {
         if (data == null || data!!.isEmpty()) {
             return
         }
@@ -69,7 +75,10 @@ class GroupFriendAdapter :
         return HeaderViewHolder(ItemContactHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
-    override fun onBindViewHolder(holder: FriendViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: FriendViewHolder,
+        position: Int,
+    ) {
         if (data == null || data!!.isEmpty()) {
             return
         }
@@ -77,7 +86,10 @@ class GroupFriendAdapter :
         holder.bind(user, mListener, mCheckedMap, alreadyUserIds, isAdd)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FriendViewHolder =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): FriendViewHolder =
         FriendViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_group_friend, parent, false))
 
     fun setGroupFriendListener(listener: GroupFriendListener) {
@@ -86,6 +98,7 @@ class GroupFriendAdapter :
 
     class FriendViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val binding = ItemGroupFriendBinding.bind(itemView)
+
         fun bind(
             user: User,
             listener: GroupFriendListener?,
@@ -121,17 +134,22 @@ class GroupFriendAdapter :
             }
         }
     }
+
     class HeaderViewHolder(val binding: ItemContactHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(user: User) {
-            binding.header.text = if (user.fullName != null && user.fullName.isNotEmpty()) {
-                user.fullName[0].toString()
-            } else {
-                ""
-            }
+            binding.header.text =
+                if (user.fullName != null && user.fullName.isNotEmpty()) {
+                    user.fullName[0].toString()
+                } else {
+                    ""
+                }
         }
     }
 
     interface GroupFriendListener {
-        fun onItemClick(user: User, checked: Boolean)
+        fun onItemClick(
+            user: User,
+            checked: Boolean,
+        )
     }
 }

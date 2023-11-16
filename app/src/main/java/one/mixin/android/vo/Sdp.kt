@@ -5,8 +5,10 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.util.GsonHelper
 import org.webrtc.SessionDescription
 
-data class KrakenData(val jsep: String, @SerializedName("track_id") val trackId: String) {
-
+data class KrakenData(
+    val jsep: String,
+    @SerializedName("track_id") val trackId: String,
+) {
     fun getSessionDescription(): SessionDescription {
         val jsep = jsep.decodeBase64()
         return getSdp(jsep)

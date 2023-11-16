@@ -52,37 +52,46 @@ class StickerAlbumAdapter(
     }
 
     override fun createFragment(position: Int): Fragment {
-        val fragment = when (position) {
-            TYPE_STORE -> return Fragment()
-            TYPE_RECENT -> StickerFragment.newInstance(type = TYPE_RECENT)
-            TYPE_LIKE -> StickerFragment.newInstance(type = TYPE_LIKE)
-            TYPE_GIPHY -> GiphyFragment.newInstance()
-            else -> StickerFragment.newInstance(albums[position - UN_NORMAL_COUNT].albumId, TYPE_NORMAL)
-        }
-        val rvCallback = object : DraggableRecyclerView.Callback {
-            override fun onScroll(dis: Float) {
-                rvCallback?.onScroll(dis)
+        val fragment =
+            when (position) {
+                TYPE_STORE -> return Fragment()
+                TYPE_RECENT -> StickerFragment.newInstance(type = TYPE_RECENT)
+                TYPE_LIKE -> StickerFragment.newInstance(type = TYPE_LIKE)
+                TYPE_GIPHY -> GiphyFragment.newInstance()
+                else -> StickerFragment.newInstance(albums[position - UN_NORMAL_COUNT].albumId, TYPE_NORMAL)
             }
+        val rvCallback =
+            object : DraggableRecyclerView.Callback {
+                override fun onScroll(dis: Float) {
+                    rvCallback?.onScroll(dis)
+                }
 
-            override fun onRelease(fling: Int) {
-                rvCallback?.onRelease(fling)
+                override fun onRelease(fling: Int) {
+                    rvCallback?.onRelease(fling)
+                }
             }
-        }
         if (fragment is GiphyFragment) {
-            fragment.callback = object : Callback {
-                override fun onStickerClick(stickerId: String) {
-                }
+            fragment.callback =
+                object : Callback {
+                    override fun onStickerClick(stickerId: String) {
+                    }
 
-                override fun onGiphyClick(image: Image, previewUrl: String) {
-                    callback?.onGiphyClick(image, previewUrl)
+                    override fun onGiphyClick(
+                        image: Image,
+                        previewUrl: String,
+                    ) {
+                        callback?.onGiphyClick(image, previewUrl)
+                    }
                 }
-            }
             fragment.rvCallback = rvCallback
         } else {
             fragment as StickerFragment
             fragment.setCallback(
                 object : Callback {
-                    override fun onGiphyClick(image: Image, previewUrl: String) {
+                    override fun onGiphyClick(
+                        image: Image,
+                        previewUrl: String,
+                    ) {
                     }
 
                     override fun onStickerClick(stickerId: String) {
@@ -95,7 +104,10 @@ class StickerAlbumAdapter(
         return fragment
     }
 
-    fun getTabView(pos: Int, context: Context): View {
+    fun getTabView(
+        pos: Int,
+        context: Context,
+    ): View {
         val binding = LayoutStickerTabBinding.inflate(LayoutInflater.from(context))
         when (pos) {
             TYPE_STORE -> return binding.root
@@ -105,11 +117,12 @@ class StickerAlbumAdapter(
             else -> {
                 val album = albums[pos - UN_NORMAL_COUNT]
                 val url = album.iconUrl
-                val type = if (url.endsWith(".json")) {
-                    "JSON"
-                } else {
-                    null
-                }
+                val type =
+                    if (url.endsWith(".json")) {
+                        "JSON"
+                    } else {
+                        null
+                    }
                 binding.icon.loadSticker(url, type, "${url}${album.albumId}")
             }
         }
@@ -128,7 +141,11 @@ class StickerAlbumAdapter(
 
     interface Callback {
         fun onStickerClick(stickerId: String)
-        fun onGiphyClick(image: Image, previewUrl: String)
+
+        fun onGiphyClick(
+            image: Image,
+            previewUrl: String,
+        )
     }
 }
 
@@ -140,11 +157,17 @@ class StickerAlbumDiffUtil(
 
     override fun getNewListSize() = newList.size
 
-    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+    override fun areItemsTheSame(
+        oldItemPosition: Int,
+        newItemPosition: Int,
+    ): Boolean {
         return oldList[oldItemPosition].albumId == newList[newItemPosition].albumId
     }
 
-    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+    override fun areContentsTheSame(
+        oldItemPosition: Int,
+        newItemPosition: Int,
+    ): Boolean {
         return oldList[oldItemPosition] == newList[newItemPosition]
     }
 }

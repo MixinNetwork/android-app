@@ -10,7 +10,6 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @HiltAndroidTest
 class Argon2Test {
-
     @Test
     fun testArgon2() {
         val argon2Kt = Argon2Kt()
@@ -20,11 +19,12 @@ class Argon2Test {
         println("Raw hash: ${hashResult.rawHashAsHexadecimal()}")
         println("Encoded string: ${hashResult.encodedOutputAsString()}")
 
-        val verificationResult = argon2Kt.verify(
-            mode = Argon2Mode.ARGON2_I,
-            encoded = hashResult.encodedOutputAsString(),
-            password = password.toByteArray(),
-        )
+        val verificationResult =
+            argon2Kt.verify(
+                mode = Argon2Mode.ARGON2_I,
+                encoded = hashResult.encodedOutputAsString(),
+                password = password.toByteArray(),
+            )
         println(verificationResult)
         assert(verificationResult)
     }

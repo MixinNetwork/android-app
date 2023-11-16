@@ -101,14 +101,14 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "LinkBottomSheetDialogFragment"
         const val CODE = "code"
 
-        fun newInstance(code: String) = LinkBottomSheetDialogFragment().withArgs {
-            putString(CODE, code)
-        }
+        fun newInstance(code: String) =
+            LinkBottomSheetDialogFragment().withArgs {
+                putString(CODE, code)
+            }
     }
 
     @Inject
@@ -147,7 +147,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private fun getUserOrAppNotFoundTip(isApp: Boolean) = if (isApp) R.string.Bot_not_found else R.string.User_not_found
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         dialog.window?.let { window ->
             SystemUIManager.lightUI(window, requireContext().isNightMode())
@@ -169,11 +172,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val segments = uri.pathSegments
             if (segments.isEmpty()) return
 
-            val userId = if (segments.size >= 2) {
-                segments[1]
-            } else {
-                segments[0]
-            }
+            val userId =
+                if (segments.size >= 2) {
+                    segments[1]
+                } else {
+                    segments[0]
+                }
             if (!userId.isUUID()) {
                 toast(getUserOrAppNotFoundTip(isAppScheme))
                 dismiss()
@@ -190,11 +194,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         lifecycleScope.launch(errorHandler) {
                             val app = oldLinkViewModel.findAppById(user.appId!!)
                             if (app != null) {
-                                val url = try {
-                                    app.homeUri.appendQueryParamsFromOtherUri(uri)
-                                } catch (e: Exception) {
-                                    app.homeUri
-                                }
+                                val url =
+                                    try {
+                                        app.homeUri.appendQueryParamsFromOtherUri(uri)
+                                    } catch (e: Exception) {
+                                        app.homeUri
+                                    }
                                 WebActivity.show(requireActivity(), url, null, app)
                             } else {
                                 showUserBottom(parentFragmentManager, user)
@@ -213,11 +218,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val segments = uri.pathSegments
             if (segments.isEmpty()) return
 
-            val userId = if (segments.size >= 2) {
-                segments[1]
-            } else {
-                segments[0]
-            }
+            val userId =
+                if (segments.size >= 2) {
+                    segments[1]
+                } else {
+                    segments[0]
+                }
             if (!userId.isUUID()) {
                 toast(R.string.User_not_found)
                 dismiss()
@@ -263,11 +269,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val segments = Uri.parse(url).pathSegments
             if (segments.isEmpty()) return
 
-            code = if (segments.size >= 2) {
-                segments[1]
-            } else {
-                segments[0]
-            }
+            code =
+                if (segments.size >= 2) {
+                    segments[1]
+                } else {
+                    segments[0]
+                }
             lifecycleScope.launch(errorHandler) {
                 val result = oldLinkViewModel.searchCode(code)
                 when (result.first) {
@@ -293,31 +300,33 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 }
                             }
                             val avatar4List = avatarUserIds.take(4)
-                            val iconUrl = if (notExistsUserIdList.isNotEmpty()) {
-                                oldLinkViewModel.refreshUsers(
-                                    notExistsUserIdList,
-                                    response.conversationId,
-                                )
-                                null
-                            } else {
-                                val avatarUsers =
-                                    oldLinkViewModel.findMultiUsersByIds(avatar4List.toSet())
-                                oldLinkViewModel.startGenerateAvatar(
-                                    response.conversationId,
-                                    avatar4List,
-                                )
+                            val iconUrl =
+                                if (notExistsUserIdList.isNotEmpty()) {
+                                    oldLinkViewModel.refreshUsers(
+                                        notExistsUserIdList,
+                                        response.conversationId,
+                                    )
+                                    null
+                                } else {
+                                    val avatarUsers =
+                                        oldLinkViewModel.findMultiUsersByIds(avatar4List.toSet())
+                                    oldLinkViewModel.startGenerateAvatar(
+                                        response.conversationId,
+                                        avatar4List,
+                                    )
 
-                                val name = getIconUrlName(response.conversationId, avatarUsers)
-                                val f = requireContext().getGroupAvatarPath(name, false)
-                                f.absolutePath
-                            }
-                            val joinGroupConversation = JoinGroupConversation(
-                                response.conversationId,
-                                response.name,
-                                response.announcement,
-                                response.participants.size,
-                                iconUrl,
-                            )
+                                    val name = getIconUrlName(response.conversationId, avatarUsers)
+                                    val f = requireContext().getGroupAvatarPath(name, false)
+                                    f.absolutePath
+                                }
+                            val joinGroupConversation =
+                                JoinGroupConversation(
+                                    response.conversationId,
+                                    response.name,
+                                    response.announcement,
+                                    response.participants.size,
+                                    iconUrl,
+                                )
                             JoinGroupBottomSheetDialogFragment.newInstance(
                                 joinGroupConversation,
                                 code,
@@ -368,19 +377,20 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val multisigs = result.second as MultisigsResponse
                         val asset = checkAsset(multisigs.assetId)
                         if (asset != null) {
-                            val multisigsBiometricItem = Multi2MultiBiometricItem(
-                                requestId = multisigs.requestId,
-                                action = multisigs.action,
-                                senders = multisigs.senders,
-                                receivers = multisigs.receivers,
-                                threshold = multisigs.threshold,
-                                asset = asset,
-                                amount = multisigs.amount,
-                                pin = null,
-                                traceId = null,
-                                memo = multisigs.memo,
-                                state = multisigs.state,
-                            )
+                            val multisigsBiometricItem =
+                                Multi2MultiBiometricItem(
+                                    requestId = multisigs.requestId,
+                                    action = multisigs.action,
+                                    senders = multisigs.senders,
+                                    receivers = multisigs.receivers,
+                                    threshold = multisigs.threshold,
+                                    asset = asset,
+                                    amount = multisigs.amount,
+                                    pin = null,
+                                    traceId = null,
+                                    memo = multisigs.memo,
+                                    state = multisigs.state,
+                                )
                             MultisigsBottomSheetDialogFragment.newInstance(
                                 multisigsBiometricItem,
                             ).showNow(
@@ -395,20 +405,21 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     QrCodeType.non_fungible_request.name -> {
                         if (checkHasPin()) return@launch
                         val nfoResponse = result.second as NonFungibleOutputResponse
-                        val nftBiometricItem = NftBiometricItem(
-                            requestId = nfoResponse.requestId,
-                            action = nfoResponse.action,
-                            tokenId = nfoResponse.tokenId,
-                            senders = nfoResponse.senders,
-                            receivers = nfoResponse.receivers,
-                            sendersThreshold = nfoResponse.sendersThreshold,
-                            receiversThreshold = nfoResponse.receiversThreshold,
-                            rawTransaction = nfoResponse.rawTransaction,
-                            amount = nfoResponse.amount,
-                            pin = null,
-                            memo = nfoResponse.memo,
-                            state = nfoResponse.state,
-                        )
+                        val nftBiometricItem =
+                            NftBiometricItem(
+                                requestId = nfoResponse.requestId,
+                                action = nfoResponse.action,
+                                tokenId = nfoResponse.tokenId,
+                                senders = nfoResponse.senders,
+                                receivers = nfoResponse.receivers,
+                                sendersThreshold = nfoResponse.sendersThreshold,
+                                receiversThreshold = nfoResponse.receiversThreshold,
+                                rawTransaction = nfoResponse.rawTransaction,
+                                amount = nfoResponse.amount,
+                                pin = null,
+                                memo = nfoResponse.memo,
+                                state = nfoResponse.state,
+                            )
                         NftBottomSheetDialogFragment.newInstance(nftBiometricItem)
                             .showNow(parentFragmentManager, NftBottomSheetDialogFragment.TAG)
                         dismiss()
@@ -429,17 +440,18 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 }
                                 showOldTransferBottom(user, paymentCodeResponse.amount, asset, paymentCodeResponse.traceId, paymentCodeResponse.status, paymentCodeResponse.memo, null)
                             } else if (paymentCodeResponse.receivers.size > 1) {
-                                val multisigsBiometricItem = One2MultiBiometricItem(
-                                    threshold = paymentCodeResponse.threshold,
-                                    senders = arrayOf(Session.getAccountId()!!),
-                                    receivers = paymentCodeResponse.receivers,
-                                    asset = asset,
-                                    amount = paymentCodeResponse.amount,
-                                    pin = null,
-                                    traceId = paymentCodeResponse.traceId,
-                                    memo = paymentCodeResponse.memo,
-                                    state = paymentCodeResponse.status,
-                                )
+                                val multisigsBiometricItem =
+                                    One2MultiBiometricItem(
+                                        threshold = paymentCodeResponse.threshold,
+                                        senders = arrayOf(Session.getAccountId()!!),
+                                        receivers = paymentCodeResponse.receivers,
+                                        asset = asset,
+                                        amount = paymentCodeResponse.amount,
+                                        pin = null,
+                                        traceId = paymentCodeResponse.traceId,
+                                        memo = paymentCodeResponse.memo,
+                                        state = paymentCodeResponse.status,
+                                    )
                                 MultisigsBottomSheetDialogFragment.newInstance(
                                     multisigsBiometricItem,
                                 ).showNow(
@@ -501,12 +513,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             } else {
                 val assetId = uri.getQueryParameter("asset")
                 val destination = uri.getQueryParameter("destination")
-                val label = uri.getQueryParameter("label").run {
-                    Uri.decode(this)
-                }
-                val tag = uri.getQueryParameter("tag").run {
-                    Uri.decode(this)
-                }
+                val label =
+                    uri.getQueryParameter("label").run {
+                        Uri.decode(this)
+                    }
+                val tag =
+                    uri.getQueryParameter("tag").run {
+                        Uri.decode(this)
+                    }
                 if (assetId != null && assetId.isUUID() && !destination.isNullOrEmpty() && !label.isNullOrEmpty()) {
                     lifecycleScope.launch(errorHandler) {
                         val asset = checkAsset(assetId)
@@ -669,7 +683,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    override fun showNow(manager: FragmentManager, tag: String?) {
+    override fun showNow(
+        manager: FragmentManager,
+        tag: String?,
+    ) {
         try {
             super.showNow(manager, tag)
         } catch (e: IllegalStateException) {
@@ -697,31 +714,32 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private suspend fun parseExternalTransferUrl(url: String) {
         var errorMsg: String? = null
-        val result = parseExternalTransferUri(url, { assetId, destination ->
-            handleMixinResponse(
-                invokeNetwork = {
-                    oldLinkViewModel.getExternalAddressFee(assetId, destination, null)
-                },
-                successBlock = {
-                    return@handleMixinResponse it.data
-                },
-            )
-        }, { assetKey ->
-            val assetId = oldLinkViewModel.findAssetIdByAssetKey(assetKey)
-            if (assetId == null) {
-                errorMsg = getString(R.string.external_pay_no_asset_found)
-            }
-            return@parseExternalTransferUri assetId
-        }, { assetId ->
-            handleMixinResponse(
-                invokeNetwork = {
-                    oldLinkViewModel.getAssetPrecisionById(assetId)
-                },
-                successBlock = {
-                    return@handleMixinResponse it.data
-                },
-            )
-        })
+        val result =
+            parseExternalTransferUri(url, { assetId, destination ->
+                handleMixinResponse(
+                    invokeNetwork = {
+                        oldLinkViewModel.getExternalAddressFee(assetId, destination, null)
+                    },
+                    successBlock = {
+                        return@handleMixinResponse it.data
+                    },
+                )
+            }, { assetKey ->
+                val assetId = oldLinkViewModel.findAssetIdByAssetKey(assetKey)
+                if (assetId == null) {
+                    errorMsg = getString(R.string.external_pay_no_asset_found)
+                }
+                return@parseExternalTransferUri assetId
+            }, { assetId ->
+                handleMixinResponse(
+                    invokeNetwork = {
+                        oldLinkViewModel.getAssetPrecisionById(assetId)
+                    },
+                    successBlock = {
+                        return@handleMixinResponse it.data
+                    },
+                )
+            })
 
         errorMsg?.let {
             showError(it)
@@ -775,6 +793,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         dismiss()
     }
+
     private fun handleTipScheme(uri: Uri) {
         val segments = uri.pathSegments
         if (segments.isEmpty()) return
@@ -800,35 +819,37 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             showError()
             return
         }
-        val data: ByteArray? = if (signAction is TipSignAction.Signature) {
-            val d = uri.getQueryParameter("data")
-            if (d.isNullOrBlank()) {
-                showError()
-                return
+        val data: ByteArray? =
+            if (signAction is TipSignAction.Signature) {
+                val d = uri.getQueryParameter("data")
+                if (d.isNullOrBlank()) {
+                    showError()
+                    return
+                } else {
+                    d.base64RawURLDecode()
+                }
             } else {
-                d.base64RawURLDecode()
+                null
             }
-        } else {
-            null
-        }
 
         contentView.post {
             PinInputBottomSheetDialogFragment.newInstance().setOnPinComplete { pin ->
                 lifecycleScope.launch(errorHandler) {
                     tip.getOrRecoverTipPriv(requireContext(), pin)
                         .onSuccess { priv ->
-                            val res: String = when (signAction) {
-                                is TipSignAction.Public -> {
-                                    val pub = signAction(priv)
-                                    Timber.d("$TAG_TIP_SIGN pub: $pub")
-                                    pub
+                            val res: String =
+                                when (signAction) {
+                                    is TipSignAction.Public -> {
+                                        val pub = signAction(priv)
+                                        Timber.d("$TAG_TIP_SIGN pub: $pub")
+                                        pub
+                                    }
+                                    is TipSignAction.Signature -> {
+                                        val sig = signAction(priv, requireNotNull(data) { "Signature action data can not be null" })
+                                        Timber.d("$TAG_TIP_SIGN sig: $sig")
+                                        sig
+                                    }
                                 }
-                                is TipSignAction.Signature -> {
-                                    val sig = signAction(priv, requireNotNull(data) { "Signature action data can not be null" })
-                                    Timber.d("$TAG_TIP_SIGN sig: $sig")
-                                    sig
-                                }
-                            }
                             val endpoint = uri.getQueryParameter("notify") ?: Constants.API.DEFAULT_TIP_SIGN_ENDPOINT
                             val notifyUrl = "$endpoint?id=$id&res=$res"
                             Timber.d("$TAG_TIP_SIGN notify url: $notifyUrl")
@@ -854,16 +875,18 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             return false
         }
         val trace = uri.getQueryParameter("trace") ?: UUID.randomUUID().toString()
-        val memo = uri.getQueryParameter("memo")?.run {
-            Uri.decode(this)
-        }
-        val returnTo = uri.getQueryParameter("return_to")?.run {
-            try {
-                URLDecoder.decode(this, UTF_8.name())
-            } catch (e: UnsupportedEncodingException) {
-                this
+        val memo =
+            uri.getQueryParameter("memo")?.run {
+                Uri.decode(this)
             }
-        }
+        val returnTo =
+            uri.getQueryParameter("return_to")?.run {
+                try {
+                    URLDecoder.decode(this, UTF_8.name())
+                } catch (e: UnsupportedEncodingException) {
+                    this
+                }
+            }
 
         val asset: AssetItem = checkAsset(assetId) ?: return false
 
@@ -883,7 +906,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         ) ?: false
     }
 
-    private suspend fun showOldTransferBottom(user: User, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?, returnTo: String?) {
+    private suspend fun showOldTransferBottom(
+        user: User,
+        amount: String,
+        asset: AssetItem,
+        traceId: String,
+        status: String,
+        memo: String?,
+        returnTo: String?,
+    ) {
         val pair = oldLinkViewModel.findLatestTrace(user.userId, null, null, amount, asset.assetId)
         if (pair.second) {
             showError(getString(R.string.check_trace_failed))
@@ -893,32 +924,45 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         showOldPreconditionBottom(biometricItem)
     }
 
-    private suspend fun showOldWithdrawalBottom(addressId: String?, destination: String, tag: String?, label: String?, fee: String, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
+    private suspend fun showOldWithdrawalBottom(
+        addressId: String?,
+        destination: String,
+        tag: String?,
+        label: String?,
+        fee: String,
+        amount: String,
+        asset: AssetItem,
+        traceId: String,
+        status: String,
+        memo: String?,
+    ) {
         val pair = oldLinkViewModel.findLatestTrace(null, destination, tag, amount, asset.assetId)
         if (pair.second) {
             showError(getString(R.string.check_trace_failed))
             return
         }
-        val biometricItem = WithdrawBiometricItem(
-            destination, tag, addressId, label, fee,
-            asset, amount, null, traceId, memo, status, pair.first,
-        )
+        val biometricItem =
+            WithdrawBiometricItem(
+                destination, tag, addressId, label, fee,
+                asset, amount, null, traceId, memo, status, pair.first,
+            )
         showOldPreconditionBottom(biometricItem)
     }
 
     private fun showOldPreconditionBottom(biometricItem: AssetBiometricItem) {
         val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, FROM_LINK)
-        preconditionBottom.callback = object : PreconditionBottomSheetDialogFragment.Callback {
-            override fun onSuccess() {
-                val bottom = OutputBottomSheetDialogFragment.newInstance(biometricItem)
-                bottom.show(preconditionBottom.parentFragmentManager, OutputBottomSheetDialogFragment.TAG)
-                dismiss()
-            }
+        preconditionBottom.callback =
+            object : PreconditionBottomSheetDialogFragment.Callback {
+                override fun onSuccess() {
+                    val bottom = OutputBottomSheetDialogFragment.newInstance(biometricItem)
+                    bottom.show(preconditionBottom.parentFragmentManager, OutputBottomSheetDialogFragment.TAG)
+                    dismiss()
+                }
 
-            override fun onCancel() {
-                dismiss()
+                override fun onCancel() {
+                    dismiss()
+                }
             }
-        }
         preconditionBottom.showNow(parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
     }
 
@@ -934,7 +978,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun showError(@StringRes errorRes: Int = R.string.Invalid_Link) {
+    private fun showError(
+        @StringRes errorRes: Int = R.string.Invalid_Link,
+    ) {
         if (!isAdded) return
 
         binding.apply {
@@ -959,30 +1005,37 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private val mBottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
+    private val mBottomSheetBehaviorCallback =
+        object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(
+                bottomSheet: View,
+                newState: Int,
+            ) {
+                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                    try {
+                        dismissAllowingStateLoss()
+                    } catch (e: IllegalStateException) {
+                        Timber.w(e)
+                    }
+                }
+            }
 
-        override fun onStateChanged(bottomSheet: View, newState: Int) {
-            if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                try {
-                    dismissAllowingStateLoss()
-                } catch (e: IllegalStateException) {
-                    Timber.w(e)
+            override fun onSlide(
+                bottomSheet: View,
+                slideOffset: Float,
+            ) {}
+        }
+
+    private val errorHandler =
+        CoroutineExceptionHandler { _, error ->
+            when (error) {
+                is SocketTimeoutException -> showError(R.string.error_connection_timeout)
+                is UnknownHostException -> showError(R.string.No_network_connection)
+                is IOException -> showError(R.string.No_network_connection)
+                else -> {
+                    ErrorHandler.handleError(error)
+                    showError(R.string.Network_error)
                 }
             }
         }
-
-        override fun onSlide(bottomSheet: View, slideOffset: Float) {}
-    }
-
-    private val errorHandler = CoroutineExceptionHandler { _, error ->
-        when (error) {
-            is SocketTimeoutException -> showError(R.string.error_connection_timeout)
-            is UnknownHostException -> showError(R.string.No_network_connection)
-            is IOException -> showError(R.string.No_network_connection)
-            else -> {
-                ErrorHandler.handleError(error)
-                showError(R.string.Network_error)
-            }
-        }
-    }
 }

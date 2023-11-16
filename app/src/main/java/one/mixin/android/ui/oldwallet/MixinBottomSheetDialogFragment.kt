@@ -15,7 +15,6 @@ import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 
 abstract class MixinBottomSheetDialogFragment : DialogFragment() {
-
     protected lateinit var contentView: View
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
     protected val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
@@ -73,7 +72,10 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment() {
         }
     }
 
-    override fun show(manager: FragmentManager, tag: String?) {
+    override fun show(
+        manager: FragmentManager,
+        tag: String?,
+    ) {
         try {
             super.show(manager, tag)
         } catch (e: Exception) {
@@ -81,7 +83,10 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment() {
         }
     }
 
-    override fun showNow(manager: FragmentManager, tag: String?) {
+    override fun showNow(
+        manager: FragmentManager,
+        tag: String?,
+    ) {
         try {
             super.showNow(manager, tag)
         } catch (e: Exception) {

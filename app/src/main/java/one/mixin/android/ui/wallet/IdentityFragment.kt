@@ -42,7 +42,10 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
     private val binding by viewBinding(FragmentIdentityBinding::bind)
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         val token = requireNotNull(requireArguments().getString(ARGS_TOKEN)) { "required token can not be null" }
         val kycState = requireNotNull(requireArguments().getString(ARGS_KYC_STATE)) { "required kycState can no be null" }
@@ -126,15 +129,16 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
     }
 
     private fun presentSDK(accessToken: String) {
-        val tokenExpirationHandler = object : TokenExpirationHandler {
-            override fun onTokenExpired(): String? {
-                return try {
-                    fiatMoneyViewModel.callSumsubToken().execute().body()?.data?.token
-                } catch (e: Exception) {
-                    null
+        val tokenExpirationHandler =
+            object : TokenExpirationHandler {
+                override fun onTokenExpired(): String? {
+                    return try {
+                        fiatMoneyViewModel.callSumsubToken().execute().body()?.data?.token
+                    } catch (e: Exception) {
+                        null
+                    }
                 }
             }
-        }
         val onSDKStateChangedHandler: (SNSSDKState, SNSSDKState) -> Unit = { newState, prevState ->
             Timber.e("onSDKStateChangedHandler: $prevState -> $newState")
 
@@ -144,26 +148,30 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
                     when (newState) {
                         is SNSSDKState.Failed.ApplicantNotFound -> Timber.e(newState.message)
                         is SNSSDKState.Failed.ApplicantMisconfigured -> Timber.e(newState.message)
-                        is SNSSDKState.Failed.InitialLoadingFailed -> Timber.e(
-                            newState.exception,
-                            "Initial loading error",
-                        )
+                        is SNSSDKState.Failed.InitialLoadingFailed ->
+                            Timber.e(
+                                newState.exception,
+                                "Initial loading error",
+                            )
 
                         is SNSSDKState.Failed.InvalidParameters -> Timber.e(newState.message)
-                        is SNSSDKState.Failed.NetworkError -> Timber.e(
-                            newState.exception,
-                            newState.message,
-                        )
+                        is SNSSDKState.Failed.NetworkError ->
+                            Timber.e(
+                                newState.exception,
+                                newState.message,
+                            )
 
-                        is SNSSDKState.Failed.Unauthorized -> Timber.e(
-                            newState.exception,
-                            "Invalid token or a token can't be refreshed by the SDK. Please, check your token expiration handler",
-                        )
+                        is SNSSDKState.Failed.Unauthorized ->
+                            Timber.e(
+                                newState.exception,
+                                "Invalid token or a token can't be refreshed by the SDK. Please, check your token expiration handler",
+                            )
 
-                        is SNSSDKState.Failed.Unknown -> Timber.e(
-                            newState.exception,
-                            "Unknown error",
-                        )
+                        is SNSSDKState.Failed.Unknown ->
+                            Timber.e(
+                                newState.exception,
+                                "Unknown error",
+                            )
                     }
                 }
 
@@ -195,38 +203,41 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
             }
         }
 
-        val snsSdk = SNSMobileSDK.Builder(requireActivity())
-            .withHandlers(onStateChanged = onSDKStateChangedHandler, onError = onSDKErrorHandler, onCompleted = onSDKCompletedHandler)
-            .withAccessToken(accessToken, onTokenExpiration = tokenExpirationHandler)
-            .withLocale(
-                if (isFollowSystem()) {
-                    Locale.getDefault()
-                } else {
-                    val languagePos = getLanguagePos()
-                    val selectedLang = when (languagePos) {
-                        AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
-                        AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.language
-                        AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
-                        AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Language
-                        AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Language
-                        AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Language
-                        AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Language
-                        else -> Locale.US.language
-                    }
-                    val selectedCountry = when (languagePos) {
-                        AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
-                        AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.country
-                        AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
-                        AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Country
-                        AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Country
-                        AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Country
-                        AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Country
-                        else -> Locale.US.country
-                    }
-                    Locale(selectedLang, selectedCountry)
-                },
-            )
-            .build()
+        val snsSdk =
+            SNSMobileSDK.Builder(requireActivity())
+                .withHandlers(onStateChanged = onSDKStateChangedHandler, onError = onSDKErrorHandler, onCompleted = onSDKCompletedHandler)
+                .withAccessToken(accessToken, onTokenExpiration = tokenExpirationHandler)
+                .withLocale(
+                    if (isFollowSystem()) {
+                        Locale.getDefault()
+                    } else {
+                        val languagePos = getLanguagePos()
+                        val selectedLang =
+                            when (languagePos) {
+                                AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
+                                AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.language
+                                AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
+                                AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Language
+                                AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Language
+                                AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Language
+                                AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Language
+                                else -> Locale.US.language
+                            }
+                        val selectedCountry =
+                            when (languagePos) {
+                                AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
+                                AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.country
+                                AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
+                                AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Country
+                                AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Country
+                                AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Country
+                                AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Country
+                                else -> Locale.US.country
+                            }
+                        Locale(selectedLang, selectedCountry)
+                    },
+                )
+                .build()
 
         snsSdk.launch()
     }

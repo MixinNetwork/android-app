@@ -21,7 +21,10 @@ class SearchChatPopupMenu(
     private val searchViewModel: SearchViewModel,
     private val afterAction: () -> Unit,
 ) {
-    fun showPopupMenu(chatMinimal: ChatMinimal, anchor: View) {
+    fun showPopupMenu(
+        chatMinimal: ChatMinimal,
+        anchor: View,
+    ) {
         val popupMenu = PopupMenu(context, anchor)
         popupMenu.inflate(R.menu.search_chat_menu)
         val muteItem = popupMenu.menu.findItem(R.id.mute)
@@ -96,12 +99,13 @@ class SearchChatPopupMenu(
     }
 
     private fun showMuteDialog(chatMinimal: ChatMinimal) {
-        val choices = arrayOf(
-            context.getString(R.string.one_hour),
-            context.resources.getQuantityString(R.plurals.Hour, 8, 8),
-            context.getString(R.string.one_week),
-            context.getString(R.string.one_year),
-        )
+        val choices =
+            arrayOf(
+                context.getString(R.string.one_hour),
+                context.resources.getQuantityString(R.plurals.Hour, 8, 8),
+                context.getString(R.string.one_week),
+                context.getString(R.string.one_year),
+            )
         var duration = Constants.Mute.MUTE_8_HOURS
         var whichItem = 0
         context.alertDialogBuilder()

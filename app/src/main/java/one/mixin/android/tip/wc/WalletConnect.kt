@@ -30,17 +30,22 @@ abstract class WalletConnect {
 
         internal const val web3jTimeout = 3L
 
-        fun isEnabled(context: Context): Boolean = Session.getAccount()?.hasPin == true && !Session.getTipPub().isNullOrBlank() &&
-            (context.defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false) || Session.isTipFeatureEnabled())
+        fun isEnabled(context: Context): Boolean =
+            Session.getAccount()?.hasPin == true && !Session.getTipPub().isNullOrBlank() &&
+                (context.defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false) || Session.isTipFeatureEnabled())
 
-        fun connect(url: String, afterConnect: (() -> Unit)? = null) {
+        fun connect(
+            url: String,
+            afterConnect: (() -> Unit)? = null,
+        ) {
             if (!url.startsWith("wc:")) return
 
-            val uri = when {
-                url.contains("wc://") -> url
-                url.contains("wc:/") -> url.replace("wc:/", "wc://")
-                else -> url.replace("wc:", "wc://")
-            }.toUri()
+            val uri =
+                when {
+                    url.contains("wc://") -> url
+                    url.contains("wc:/") -> url.replace("wc:/", "wc://")
+                    else -> url.replace("wc:", "wc://")
+                }.toUri()
             val version = uri.host?.toIntOrNull()
             if (version == 2) {
                 val symKey = uri.getQueryParameter("symKey")
@@ -57,11 +62,14 @@ abstract class WalletConnect {
     }
 
     enum class Version {
-        V2, TIP
+        V2,
+        TIP,
     }
 
     enum class RequestType {
-        Connect, SessionProposal, SessionRequest,
+        Connect,
+        SessionProposal,
+        SessionRequest,
     }
 
     sealed class WCSignData<T>(
@@ -94,14 +102,18 @@ abstract class WalletConnect {
         }
     }
 
-    fun signMessage(priv: ByteArray, message: WCEthereumSignMessage): String {
+    fun signMessage(
+        priv: ByteArray,
+        message: WCEthereumSignMessage,
+    ): String {
         val keyPair = ECKeyPair.create(priv)
-        val signature = if (message.type == WCEthereumSignMessage.WCSignType.TYPED_MESSAGE) {
-            val encoder = StructuredDataEncoder(message.data)
-            Sign.signMessage(encoder.hashStructuredData(), keyPair, false)
-        } else {
-            Sign.signPrefixedMessage(Numeric.hexStringToByteArray(message.data), keyPair)
-        }
+        val signature =
+            if (message.type == WCEthereumSignMessage.WCSignType.TYPED_MESSAGE) {
+                val encoder = StructuredDataEncoder(message.data)
+                Sign.signMessage(encoder.hashStructuredData(), keyPair, false)
+            } else {
+                Sign.signPrefixedMessage(Numeric.hexStringToByteArray(message.data), keyPair)
+            }
         val b = ByteArray(65)
         System.arraycopy(signature.r, 0, b, 0, 32)
         System.arraycopy(signature.s, 0, b, 32, 32)
@@ -109,7 +121,10 @@ abstract class WalletConnect {
         return Numeric.toHexString(b)
     }
 
-    protected fun throwError(error: Response.Error, msgAction: ((String) -> Unit)? = null) {
+    protected fun throwError(
+        error: Response.Error,
+        msgAction: ((String) -> Unit)? = null,
+    ) {
         val msg = "error code: ${error.code}, message: ${error.message}"
         Timber.d("$TAG error $msg")
         msgAction?.invoke(msg)

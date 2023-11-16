@@ -26,39 +26,40 @@ fun HighlightStarLinkText(
     textStyle: TextStyle = TextStyle(color = MixinAppTheme.colors.textPrimary, fontSize = 14.sp),
     onClick: (link: String) -> Unit,
 ) {
-    val annotatedString = remember {
-        buildAnnotatedString {
-            var start: Int
-            var end: Int
-            val stringBuilder = StringBuilder(source)
-            val targets = arrayListOf<Pair<Int, Int>>()
+    val annotatedString =
+        remember {
+            buildAnnotatedString {
+                var start: Int
+                var end: Int
+                val stringBuilder = StringBuilder(source)
+                val targets = arrayListOf<Pair<Int, Int>>()
 
-            kotlin.runCatching {
-                while (stringBuilder.indexOf("**").also { start = it } != -1) {
-                    stringBuilder.replace(start, start + 2, "")
-                    end = stringBuilder.indexOf("**")
-                    if (end >= 0) {
-                        stringBuilder.replace(end, end + 2, "")
-                        targets.add(start to end)
+                kotlin.runCatching {
+                    while (stringBuilder.indexOf("**").also { start = it } != -1) {
+                        stringBuilder.replace(start, start + 2, "")
+                        end = stringBuilder.indexOf("**")
+                        if (end >= 0) {
+                            stringBuilder.replace(end, end + 2, "")
+                            targets.add(start to end)
+                        }
+                    }
+                }
+
+                append(stringBuilder.toString())
+
+                kotlin.runCatching {
+                    for (i in targets.indices) {
+                        val (highlightStart, highlightEnd) = targets[i]
+                        addStyle(
+                            highlightStyle,
+                            highlightStart,
+                            highlightEnd,
+                        )
+                        addStringAnnotation(TAG_URL, annotation = links[i], highlightStart, highlightEnd)
                     }
                 }
             }
-
-            append(stringBuilder.toString())
-
-            kotlin.runCatching {
-                for (i in targets.indices) {
-                    val (highlightStart, highlightEnd) = targets[i]
-                    addStyle(
-                        highlightStyle,
-                        highlightStart,
-                        highlightEnd,
-                    )
-                    addStringAnnotation(TAG_URL, annotation = links[i], highlightStart, highlightEnd)
-                }
-            }
         }
-    }
 
     ClickableText(
         modifier = modifier,
@@ -99,23 +100,24 @@ fun HighlightText(
     textStyle: TextStyle = TextStyle(color = MixinAppTheme.colors.textPrimary, fontSize = 14.sp),
     overflow: TextOverflow = TextOverflow.Clip,
 ) {
-    val annotatedString = remember {
-        buildAnnotatedString {
-            append(text)
+    val annotatedString =
+        remember {
+            buildAnnotatedString {
+                append(text)
 
-            if (!target.isNullOrBlank()) {
-                var index = text.indexOf(target, ignoreCase = ignoreCase)
-                while (index != -1) {
-                    addStyle(
-                        highlightStyle,
-                        index,
-                        index + target.length,
-                    )
-                    index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
+                if (!target.isNullOrBlank()) {
+                    var index = text.indexOf(target, ignoreCase = ignoreCase)
+                    while (index != -1) {
+                        addStyle(
+                            highlightStyle,
+                            index,
+                            index + target.length,
+                        )
+                        index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
+                    }
                 }
             }
         }
-    }
     Text(
         text = annotatedString,
         style = textStyle,

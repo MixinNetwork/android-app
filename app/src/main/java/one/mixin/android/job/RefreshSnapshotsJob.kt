@@ -11,29 +11,30 @@ class RefreshSnapshotsJob(
     private val offset: String? = null,
     private val opponent: String? = null,
 ) : BaseJob(Params(PRIORITY_BACKGROUND).addTags(GROUP).requireNetwork()) {
-
     companion object {
         private const val serialVersionUID = 1L
         const val GROUP = "RefreshSnapshotsJob"
     }
 
-    override fun onRun() = runBlocking {
-        val response = if (assetId == null) {
-            tokenService.getAllSnapshots(offset, opponent = opponent)
-        } else {
-            tokenService.getSnapshotsByAssetId(assetId, offset)
-        }
-        if (response.isSuccess && response.data != null) {
-            val list = response.data as List<SafeSnapshot>
-            safeSnapshotDao.insertListSuspend(list)
-            list.forEach { item ->
-                if (tokenDao.simpleAsset(item.assetId) == null) {
-                    jobManager.addJobInBackground(RefreshTokensJob(item.assetId))
+    override fun onRun() =
+        runBlocking {
+            val response =
+                if (assetId == null) {
+                    tokenService.getAllSnapshots(offset, opponent = opponent)
+                } else {
+                    tokenService.getSnapshotsByAssetId(assetId, offset)
+                }
+            if (response.isSuccess && response.data != null) {
+                val list = response.data as List<SafeSnapshot>
+                safeSnapshotDao.insertListSuspend(list)
+                list.forEach { item ->
+                    if (tokenDao.simpleAsset(item.assetId) == null) {
+                        jobManager.addJobInBackground(RefreshTokensJob(item.assetId))
+                    }
+                }
+                list.lastOrNull()?.let {
+                    RxBus.publish(RefreshSnapshotEvent(it.createdAt))
                 }
             }
-            list.lastOrNull()?.let {
-                RxBus.publish(RefreshSnapshotEvent(it.createdAt))
-            }
         }
-    }
 }

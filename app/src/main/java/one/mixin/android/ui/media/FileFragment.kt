@@ -23,41 +23,46 @@ class FileFragment : BaseFragment(R.layout.layout_recycler_view) {
     companion object {
         const val TAG = "FileFragment"
 
-        fun newInstance(conversationId: String) = FileFragment().withArgs {
-            putString(Constants.ARGS_CONVERSATION_ID, conversationId)
-        }
+        fun newInstance(conversationId: String) =
+            FileFragment().withArgs {
+                putString(Constants.ARGS_CONVERSATION_ID, conversationId)
+            }
     }
 
     private val conversationId: String by lazy {
         requireArguments().getString(Constants.ARGS_CONVERSATION_ID)!!
     }
 
-    private val adapter = FileAdapter({ messageItem ->
-        when (messageItem.mediaStatus) {
-            MediaStatus.CANCELED.name -> {
-                if (Session.getAccountId() == messageItem.userId) {
-                    viewModel.retryUpload(messageItem.messageId) {
-                        toast(R.string.Retry_upload_failed)
+    private val adapter =
+        FileAdapter({ messageItem ->
+            when (messageItem.mediaStatus) {
+                MediaStatus.CANCELED.name -> {
+                    if (Session.getAccountId() == messageItem.userId) {
+                        viewModel.retryUpload(messageItem.messageId) {
+                            toast(R.string.Retry_upload_failed)
+                        }
+                    } else {
+                        viewModel.retryDownload(messageItem.messageId)
                     }
-                } else {
-                    viewModel.retryDownload(messageItem.messageId)
                 }
+                MediaStatus.PENDING.name -> {
+                    viewModel.cancel(messageItem.messageId, messageItem.conversationId)
+                }
+                MediaStatus.EXPIRED.name -> {}
+                else -> requireContext().openMedia(messageItem)
             }
-            MediaStatus.PENDING.name -> {
-                viewModel.cancel(messageItem.messageId, messageItem.conversationId)
-            }
-            MediaStatus.EXPIRED.name -> {}
-            else -> requireContext().openMedia(messageItem)
-        }
-    }, { messageId ->
-        onLongClickListener?.invoke(messageId)
-    })
+        }, { messageId ->
+            onLongClickListener?.invoke(messageId)
+        })
 
     private val viewModel by viewModels<SharedMediaViewModel>()
     private val binding by viewBinding(LayoutRecyclerViewBinding::bind)
     var onLongClickListener: ((String) -> Unit)? = null
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.emptyIv.setImageResource(R.drawable.ic_empty_file)
         binding.emptyTv.setText(R.string.NO_FILES)

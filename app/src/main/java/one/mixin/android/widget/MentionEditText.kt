@@ -22,6 +22,7 @@ class MentionEditText : ContentEditText {
     )
 
     val mentionSet = ArraySet<String>()
+
     init {
         addTextChangedListener { renderMention() }
     }
@@ -30,11 +31,12 @@ class MentionEditText : ContentEditText {
         val text = this.text
         if (text.isNullOrBlank()) return
         val matcher = mentionNumberPattern.matcher(text)
-        val spansToRemove: Array<Any> = text.getSpans(
-            0,
-            text.length,
-            Any::class.java,
-        ) as Array<Any>
+        val spansToRemove: Array<Any> =
+            text.getSpans(
+                0,
+                text.length,
+                Any::class.java,
+            ) as Array<Any>
         for (span in spansToRemove) {
             if (span is CharacterStyle) text.removeSpan(span)
         }

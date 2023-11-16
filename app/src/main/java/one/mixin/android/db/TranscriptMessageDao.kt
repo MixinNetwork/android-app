@@ -16,7 +16,6 @@ import one.mixin.android.vo.TranscriptMessage
 
 @Dao
 interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
-
     companion object {
         const val ATTACHMENT_CATEGORY =
             "$IMAGES, $VIDEOS, $AUDIOS, $DATA"
@@ -56,7 +55,11 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     )
 
     @Query("UPDATE transcript_messages SET media_status = :mediaStatus WHERE transcript_id = :transcriptId AND message_id = :messageId")
-    fun updateMediaStatus(transcriptId: String, messageId: String, mediaStatus: String)
+    fun updateMediaStatus(
+        transcriptId: String,
+        messageId: String,
+        mediaStatus: String,
+    )
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
@@ -79,7 +82,10 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     fun getTranscriptMessages(transcriptId: String): DataSource.Factory<Int, ChatHistoryMessageItem>
 
     @Query("SELECT count(1) FROM transcript_messages WHERE created_at < (SELECT created_at FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId) AND transcript_id = :transcriptId")
-    suspend fun findTranscriptMessageIndex(transcriptId: String, messageId: String): Int
+    suspend fun findTranscriptMessageIndex(
+        transcriptId: String,
+        messageId: String,
+    ): Int
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
@@ -110,16 +116,25 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
             ORDER BY created_at ASC, rowid ASC
         """,
     )
-    suspend fun indexTranscriptMediaMessages(transcriptId: String, messageId: String): Int
+    suspend fun indexTranscriptMediaMessages(
+        transcriptId: String,
+        messageId: String,
+    ): Int
 
     @Query("SELECT * FROM transcript_messages WHERE transcript_id = :transcriptId")
     suspend fun getTranscriptsById(transcriptId: String): List<TranscriptMessage>
 
     @Query("SELECT * FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId")
-    suspend fun getTranscriptById(transcriptId: String, messageId: String): TranscriptMessage?
+    suspend fun getTranscriptById(
+        transcriptId: String,
+        messageId: String,
+    ): TranscriptMessage?
 
     @Query("SELECT * FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId")
-    fun getTranscriptByIdSync(transcriptId: String, messageId: String): TranscriptMessage?
+    fun getTranscriptByIdSync(
+        transcriptId: String,
+        messageId: String,
+    ): TranscriptMessage?
 
     @Query("SELECT * FROM transcript_messages WHERE message_id = :messageId LIMIT 1")
     fun getTranscriptByMessageId(messageId: String): TranscriptMessage?
@@ -142,10 +157,16 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     @Query(
         "SELECT rowid, message_id, media_url FROM transcript_messages WHERE category IN ($IMAGES, $VIDEOS,  $DATA, $AUDIOS) AND media_status = 'DONE' AND rowid <= :rowId ORDER BY rowid DESC LIMIT :limit",
     )
-    suspend fun findAttachmentMigration(rowId: Long, limit: Int): List<TranscriptAttachmentMigration>
+    suspend fun findAttachmentMigration(
+        rowId: Long,
+        limit: Int,
+    ): List<TranscriptAttachmentMigration>
 
     @Query("UPDATE transcript_messages SET media_url = :mediaUrl WHERE message_id = :messageId")
-    suspend fun updateMediaUrl(mediaUrl: String, messageId: String)
+    suspend fun updateMediaUrl(
+        mediaUrl: String,
+        messageId: String,
+    )
 
     @Query("SELECT count(1) FROM transcript_messages")
     fun countTranscriptMessages(): Long
@@ -157,11 +178,21 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     fun countTranscriptMessages(conversationIds: Collection<String>): Long
 
     @Query("SELECT count(1) FROM transcript_messages WHERE transcript_id IN (SELECT id FROM messages WHERE rowid > :rowId AND conversation_id IN (:conversationIds))")
-    fun countTranscriptMessages(rowId: Long, conversationIds: Collection<String>): Long
+    fun countTranscriptMessages(
+        rowId: Long,
+        conversationIds: Collection<String>,
+    ): Long
 
     @Query("SELECT count(1) FROM transcript_messages WHERE transcript_id IN (SELECT id FROM messages WHERE rowid > :rowId AND created_at >= :createdAt)")
-    fun countTranscriptMessages(rowId: Long, createdAt: String): Long
+    fun countTranscriptMessages(
+        rowId: Long,
+        createdAt: String,
+    ): Long
 
     @Query("SELECT count(1) FROM transcript_messages WHERE transcript_id IN (SELECT id FROM messages WHERE rowid > :rowId AND conversation_id IN (:conversationIds) AND created_at >= :createdAt)")
-    fun countTranscriptMessages(rowId: Long, conversationIds: Collection<String>, createdAt: String): Long
+    fun countTranscriptMessages(
+        rowId: Long,
+        conversationIds: Collection<String>,
+        createdAt: String,
+    ): Long
 }

@@ -51,7 +51,10 @@ import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 
 @Composable
-fun SelectDatePage(onExit: () -> Unit, onResult: (Int?) -> Unit) {
+fun SelectDatePage(
+    onExit: () -> Unit,
+    onResult: (Int?) -> Unit,
+) {
     var dateSelect by remember {
         mutableStateOf(false)
     }
@@ -117,13 +120,14 @@ fun SelectDatePage(onExit: () -> Unit, onResult: (Int?) -> Unit) {
             },
         ) { padding ->
             Column(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .animateContentSize()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MixinAppTheme.colors.backgroundGray),
+                modifier =
+                    Modifier
+                        .padding(padding)
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .animateContentSize()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MixinAppTheme.colors.backgroundGray),
             ) {
                 SelectItem(stringResource(id = R.string.all_time), !dateSelect) {
                     dateSelect = false
@@ -181,12 +185,13 @@ fun Tile(
 ) {
     Column {
         Row(
-            modifier = Modifier
-                .clickable {
-                    onClick()
-                }
-                .height(48.dp)
-                .padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .clickable {
+                        onClick()
+                    }
+                    .height(48.dp)
+                    .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -196,10 +201,11 @@ fun Tile(
             )
             Spacer(Modifier.weight(1f))
             ProvideTextStyle(
-                value = TextStyle(
-                    color = MixinAppTheme.colors.textSubtitle,
-                    fontSize = 13.sp,
-                ),
+                value =
+                    TextStyle(
+                        color = MixinAppTheme.colors.textSubtitle,
+                        fontSize = 13.sp,
+                    ),
             ) {
                 trailing()
             }
@@ -217,9 +223,10 @@ fun YearMothSwitch(onTextChange: (String?, Int) -> Unit) {
         }
     }
     Row(
-        modifier = Modifier
-            .wrapContentSize()
-            .padding(8.dp),
+        modifier =
+            Modifier
+                .wrapContentSize()
+                .padding(8.dp),
         horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -227,17 +234,19 @@ fun YearMothSwitch(onTextChange: (String?, Int) -> Unit) {
         Spacer(modifier = Modifier.width(12.dp))
         BasicTextField(
             cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-            modifier = Modifier
-                .width(56.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(MixinAppTheme.colors.shadow)
-                .padding(horizontal = 8.dp, vertical = 6.dp),
+            modifier =
+                Modifier
+                    .width(56.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(MixinAppTheme.colors.shadow)
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
             value = number,
-            textStyle = TextStyle(
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textPrimary,
-                textAlign = TextAlign.Center,
-            ),
+            textStyle =
+                TextStyle(
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textPrimary,
+                    textAlign = TextAlign.Center,
+                ),
             onValueChange = {
                 if (it.length <= 2 && it.all { char -> char.isDigit() }) {
                     number = it
@@ -268,33 +277,36 @@ fun SegmentedControl(
     val selectedIndex = remember { mutableStateOf(defaultSelectedItemIndex) }
 
     Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(MixinAppTheme.colors.shadow)
-            .wrapContentHeight()
-            .padding(2.dp),
+        modifier =
+            Modifier
+                .clip(RoundedCornerShape(4.dp))
+                .background(MixinAppTheme.colors.shadow)
+                .wrapContentHeight()
+                .padding(2.dp),
     ) {
         items.forEachIndexed { index, item ->
-            val background = if (index == selectedIndex.value) {
-                MixinAppTheme.colors.background
-            } else {
-                Color.Transparent
-            }
+            val background =
+                if (index == selectedIndex.value) {
+                    MixinAppTheme.colors.background
+                } else {
+                    Color.Transparent
+                }
             Text(
                 text = item,
                 color = MixinAppTheme.colors.textPrimary,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(background)
-                    .padding(horizontal = 20.dp, vertical = 3.dp)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = {
-                            selectedIndex.value = index
-                            onItemSelection.invoke(selectedIndex.value)
-                        },
-                    ),
+                modifier =
+                    Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(background)
+                        .padding(horizontal = 20.dp, vertical = 3.dp)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {
+                                selectedIndex.value = index
+                                onItemSelection.invoke(selectedIndex.value)
+                            },
+                        ),
             )
         }
     }

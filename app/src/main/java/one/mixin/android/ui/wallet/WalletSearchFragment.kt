@@ -71,7 +71,10 @@ class WalletSearchFragment : BaseFragment() {
     ): View =
         getPersistentView(inflater, container, R.layout.fragment_wallet_search)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         if (!hasInitializedRootView) {
             hasInitializedRootView = true
@@ -92,24 +95,25 @@ class WalletSearchFragment : BaseFragment() {
                 }
             }
             @SuppressLint("AutoDispose")
-            disposable = searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(destroyScope)
-                .subscribe(
-                    {
-                        if (it.isNullOrBlank()) {
-                            rvVa.displayedChild = POS_DEFAULT
-                            currentQuery = ""
-                        } else {
-                            rvVa.displayedChild = POS_SEARCH
-                            if (it.toString() != currentQuery) {
-                                currentQuery = it.toString()
-                                search(it.toString())
+            disposable =
+                searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDispose(destroyScope)
+                    .subscribe(
+                        {
+                            if (it.isNullOrBlank()) {
+                                rvVa.displayedChild = POS_DEFAULT
+                                currentQuery = ""
+                            } else {
+                                rvVa.displayedChild = POS_SEARCH
+                                if (it.toString() != currentQuery) {
+                                    currentQuery = it.toString()
+                                    search(it.toString())
+                                }
                             }
-                        }
-                    },
-                    {},
-                )
+                        },
+                        {},
+                    )
 
             defaultRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
             val decoration by lazy { StickyRecyclerHeadersDecoration(searchDefaultAdapter) }
@@ -144,26 +148,28 @@ class WalletSearchFragment : BaseFragment() {
         disposable?.dispose()
     }
 
-    private fun loadDefaultRvData() = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
+    private fun loadDefaultRvData() =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
 
-        viewModel.observeTopAssets().observe(
-            viewLifecycleOwner,
-        ) {
-            searchDefaultAdapter.topAssets = it
-            if (binding.searchEt.et.text.isNullOrBlank() && binding.rvVa.displayedChild == POS_SEARCH) {
-                binding.rvVa.displayedChild = POS_DEFAULT
+            viewModel.observeTopAssets().observe(
+                viewLifecycleOwner,
+            ) {
+                searchDefaultAdapter.topAssets = it
+                if (binding.searchEt.et.text.isNullOrBlank() && binding.rvVa.displayedChild == POS_SEARCH) {
+                    binding.rvVa.displayedChild = POS_DEFAULT
+                }
+
+                checkRecent()
             }
-
-            checkRecent()
+            searchDefaultAdapter.recentAssets = loadRecentSearchAssets()
         }
-        searchDefaultAdapter.recentAssets = loadRecentSearchAssets()
-    }
 
     private suspend fun loadRecentSearchAssets(): List<TokenItem>? {
         return withContext(Dispatchers.IO) {
-            val assetList = defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)?.split("=")
-                ?: return@withContext null
+            val assetList =
+                defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)?.split("=")
+                    ?: return@withContext null
             if (assetList.isEmpty()) return@withContext null
             val result = viewModel.findAssetsByIds(assetList.take(2))
             if (result.isEmpty()) return@withContext null
@@ -173,84 +179,96 @@ class WalletSearchFragment : BaseFragment() {
         }
     }
 
-    private fun checkRecent() = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
+    private fun checkRecent() =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
 
-        val recentAssets = searchDefaultAdapter.recentAssets
-        if (recentAssets.isNullOrEmpty()) return@launch
+            val recentAssets = searchDefaultAdapter.recentAssets
+            if (recentAssets.isNullOrEmpty()) return@launch
 
-        val newRecentList = viewModel.findAssetsByIds(recentAssets.take(2).map { it.assetId })
-        var needRefreshRecent = false
-        newRecentList.forEach { n ->
-            val needUpdate = recentAssets.find { r ->
-                r.assetId == n.assetId && r.priceUsd != n.priceUsd
+            val newRecentList = viewModel.findAssetsByIds(recentAssets.take(2).map { it.assetId })
+            var needRefreshRecent = false
+            newRecentList.forEach { n ->
+                val needUpdate =
+                    recentAssets.find { r ->
+                        r.assetId == n.assetId && r.priceUsd != n.priceUsd
+                    }
+                if (needUpdate != null) {
+                    needRefreshRecent = true
+                    return@forEach
+                }
             }
-            if (needUpdate != null) {
-                needRefreshRecent = true
-                return@forEach
+            if (needRefreshRecent) {
+                searchDefaultAdapter.recentAssets = newRecentList
             }
         }
-        if (needRefreshRecent) {
-            searchDefaultAdapter.recentAssets = newRecentList
-        }
-    }
 
     private fun search(query: String) {
         currentSearch?.cancel()
-        currentSearch = lifecycleScope.launch {
-            if (viewDestroyed()) return@launch
+        currentSearch =
+            lifecycleScope.launch {
+                if (viewDestroyed()) return@launch
 
-            searchAdapter.submitList(null)
-            binding.pb.isVisible = true
+                searchAdapter.submitList(null)
+                binding.pb.isVisible = true
 
-            val localAssets = withContext(Dispatchers.IO) { viewModel.fuzzySearchAssets(query) }
-            searchAdapter.submitList(localAssets)
+                val localAssets = withContext(Dispatchers.IO) { viewModel.fuzzySearchAssets(query) }
+                searchAdapter.submitList(localAssets)
 
-            val remoteAssets = withContext(Dispatchers.IO) { viewModel.queryAsset(query) }
-            val result = sortQueryAsset(query, localAssets, remoteAssets)
+                val remoteAssets = withContext(Dispatchers.IO) { viewModel.queryAsset(query) }
+                val result = sortQueryAsset(query, localAssets, remoteAssets)
 
-            searchAdapter.submitList(result)
-            binding.pb.isVisible = false
+                searchAdapter.submitList(result)
+                binding.pb.isVisible = false
 
-            if (localAssets.isNullOrEmpty() && remoteAssets.isEmpty()) {
-                binding.rvVa.displayedChild = POS_EMPTY
+                if (localAssets.isNullOrEmpty() && remoteAssets.isEmpty()) {
+                    binding.rvVa.displayedChild = POS_EMPTY
+                }
             }
-        }
     }
 
-    private val callback = object : WalletSearchCallback {
-        override fun onAssetClick(assetId: String, tokenItem: TokenItem?) {
-            binding.searchEt.hideKeyboard()
-            if (tokenItem != null) {
-                view?.navigate(
-                    R.id.action_wallet_search_to_transactions,
-                    Bundle().apply { putParcelable(ARGS_ASSET, tokenItem) },
-                )
-                viewModel.updateRecentSearchAssets(defaultSharedPreferences, assetId)
-            } else {
-                lifecycleScope.launch {
-                    val dialog = indeterminateProgressDialog(
-                        message = R.string.Please_wait_a_bit,
-                    ).apply {
-                        setCancelable(false)
-                    }
-                    dialog.show()
-                    val asset = viewModel.findOrSyncAsset(assetId)
-                    dialog.dismiss()
-
-                    if (asset == null) return@launch
-
+    private val callback =
+        object : WalletSearchCallback {
+            override fun onAssetClick(
+                assetId: String,
+                tokenItem: TokenItem?,
+            ) {
+                binding.searchEt.hideKeyboard()
+                if (tokenItem != null) {
                     view?.navigate(
                         R.id.action_wallet_search_to_transactions,
-                        Bundle().apply { putParcelable(ARGS_ASSET, asset) },
+                        Bundle().apply { putParcelable(ARGS_ASSET, tokenItem) },
                     )
                     viewModel.updateRecentSearchAssets(defaultSharedPreferences, assetId)
+                } else {
+                    lifecycleScope.launch {
+                        val dialog =
+                            indeterminateProgressDialog(
+                                message = R.string.Please_wait_a_bit,
+                            ).apply {
+                                setCancelable(false)
+                            }
+                        dialog.show()
+                        val asset = viewModel.findOrSyncAsset(assetId)
+                        dialog.dismiss()
+
+                        if (asset == null) return@launch
+
+                        view?.navigate(
+                            R.id.action_wallet_search_to_transactions,
+                            Bundle().apply { putParcelable(ARGS_ASSET, asset) },
+                        )
+                        viewModel.updateRecentSearchAssets(defaultSharedPreferences, assetId)
+                    }
                 }
             }
         }
-    }
 
-    private fun getPersistentView(inflater: LayoutInflater?, container: ViewGroup?, @Suppress("SameParameterValue") layout: Int): View {
+    private fun getPersistentView(
+        inflater: LayoutInflater?,
+        container: ViewGroup?,
+        @Suppress("SameParameterValue") layout: Int,
+    ): View {
         if (rootView == null) {
             rootView = inflater?.inflate(layout, container, false)
         } else {

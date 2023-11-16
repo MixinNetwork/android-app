@@ -19,7 +19,6 @@ import one.mixin.android.extension.colorFromAttribute
 
 @SuppressLint("UseCompatLoadingForDrawables")
 class RecordCircleView : View {
-
     private val colorCircle: Int by lazy {
         ContextCompat.getColor(
             context,
@@ -107,10 +106,11 @@ class RecordCircleView : View {
     }
     private val lockBackgroundDrawable: Drawable by lazy {
         requireNotNull(ResourcesCompat.getDrawable(resources, R.drawable.lock_round, context.theme)).apply {
-            colorFilter = PorterDuffColorFilter(
-                context.colorFromAttribute(R.attr.bg_white),
-                PorterDuff.Mode.MULTIPLY,
-            )
+            colorFilter =
+                PorterDuffColorFilter(
+                    context.colorFromAttribute(R.attr.bg_white),
+                    PorterDuff.Mode.MULTIPLY,
+                )
         }
     }
     private val lockShadowDrawable: Drawable by lazy {
@@ -237,11 +237,12 @@ class RecordCircleView : View {
             )
         }
         canvas.drawCircle(measuredWidth / 2.0f, cy.toFloat(), AndroidUtilities.dp(42f) * sc, paint)
-        val drawable: Drawable = if (locked) {
-            sendDrawable
-        } else {
-            audioDrawable
-        }
+        val drawable: Drawable =
+            if (locked) {
+                sendDrawable
+            } else {
+                audioDrawable
+            }
         drawable.setBounds(
             cx - drawable.intrinsicWidth / 2,
             cy - drawable.intrinsicHeight / 2,
@@ -268,11 +269,12 @@ class RecordCircleView : View {
         if (locked) {
             lockSize = AndroidUtilities.dp(31f)
             lockY =
-                AndroidUtilities.dp(57f) + (
+                AndroidUtilities.dp(57f) +
+                (
                     AndroidUtilities.dp(30f) * (1.0f - sc) - yAdd + AndroidUtilities.dp(
                         20f,
                     ) * moveProgress
-                    ).toInt()
+                ).toInt()
             lockTopY = lockY + AndroidUtilities.dp(5f)
             lockMiddleY = lockY + AndroidUtilities.dp(11f)
             lockArrowY = lockY + AndroidUtilities.dp(25f)
@@ -354,7 +356,9 @@ class RecordCircleView : View {
 
     interface Callback {
         fun onPreview()
+
         fun onSend()
+
         fun onCancel()
     }
 }

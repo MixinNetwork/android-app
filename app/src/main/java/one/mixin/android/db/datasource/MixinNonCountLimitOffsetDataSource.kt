@@ -22,11 +22,11 @@ abstract class MixinNonCountLimitOffsetDataSource<Value : Any>(
     private val db: RoomDatabase,
     vararg tables: String,
 ) : PagingSource<Int, Value>() {
-
-    private val observer = ThreadSafeInvalidationObserver(
-        tables = tables,
-        onInvalidated = ::invalidate,
-    )
+    private val observer =
+        ThreadSafeInvalidationObserver(
+            tables = tables,
+            onInvalidated = ::invalidate,
+        )
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Value> {
         return withContext(db.getQueryDispatcher()) {

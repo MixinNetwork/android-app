@@ -7,7 +7,6 @@ import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatSeekBar
 
 class NoSkipSeekBar constructor(context: Context, attrs: AttributeSet) : AppCompatSeekBar(context, attrs) {
-
     var isDragging = false
 
     @SuppressLint("ClickableViewAccessibility")

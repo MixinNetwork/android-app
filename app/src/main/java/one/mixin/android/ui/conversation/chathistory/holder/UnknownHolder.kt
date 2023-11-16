@@ -13,8 +13,11 @@ import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 
 class UnknownHolder constructor(val binding: ItemChatUnknownBinding) : BaseViewHolder(binding.root) {
-
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END

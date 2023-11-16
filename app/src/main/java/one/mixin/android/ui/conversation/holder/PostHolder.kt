@@ -20,14 +20,17 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
 
 class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(binding.root), Terminable {
-
     init {
         binding.chatTv.layoutParams.width = itemView.context.maxItemWidth()
         binding.chatTv.maxHeight = itemView.context.maxItemWidth() * 10 / 16
         binding.chatTv.round(3.dp)
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f

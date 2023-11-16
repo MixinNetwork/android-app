@@ -16,10 +16,16 @@ class GroupUserAdapter : ListAdapter<User, GroupUserViewHolder>(User.DIFF_CALLBA
     private val mCheckedMap: HashMap<String, Boolean> = HashMap()
     var alreadyUserIds: List<String>? = null
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         GroupUserViewHolder(ItemGroupFriendBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-    override fun onBindViewHolder(holder: GroupUserViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: GroupUserViewHolder,
+        position: Int,
+    ) {
         getItem(position)?.let {
             holder.bind(it, listener, mCheckedMap, alreadyUserIds)
         }
@@ -69,6 +75,10 @@ class GroupUserViewHolder(val binding: ItemGroupFriendBinding) : RecyclerView.Vi
 }
 
 interface GroupUserListener {
-    fun onItemClick(user: User, checked: Boolean)
+    fun onItemClick(
+        user: User,
+        checked: Boolean,
+    )
+
     fun onFull()
 }

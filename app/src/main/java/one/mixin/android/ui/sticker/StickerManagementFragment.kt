@@ -49,9 +49,10 @@ class StickerManagementFragment : BaseFragment() {
         const val TAG = "StickerManagementFragment"
         var COLUMN = 3
 
-        fun newInstance(id: String?) = StickerManagementFragment().apply {
-            arguments = bundleOf(ARGS_ALBUM_ID to id)
-        }
+        fun newInstance(id: String?) =
+            StickerManagementFragment().apply {
+                arguments = bundleOf(ARGS_ALBUM_ID to id)
+            }
     }
 
     private val stickerViewModel by viewModels<ConversationViewModel>()
@@ -65,19 +66,27 @@ class StickerManagementFragment : BaseFragment() {
         StickerAdapter(stickers)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View? =
         layoutInflater.inflate(R.layout.fragment_sticker_management, container, false)
 
     private val binding by viewBinding(FragmentStickerManagementBinding::bind)
 
     @SuppressLint("NotifyDataSetChanged")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        COLUMN = if (requireContext().isWideScreen()) {
-            5
-        } else {
-            3
-        }
+        COLUMN =
+            if (requireContext().isWideScreen()) {
+                5
+            } else {
+                3
+            }
         binding.titleView.leftIb.setOnClickListener { requireActivity().onBackPressed() }
         binding.titleView.rightTv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
         binding.titleView.rightAnimator.setOnClickListener {
@@ -158,7 +167,11 @@ class StickerManagementFragment : BaseFragment() {
         return super.onBackPressed()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             data?.data?.let {
@@ -187,16 +200,20 @@ class StickerManagementFragment : BaseFragment() {
         val checkedList = arrayListOf<String>()
 
         @SuppressLint("NotifyDataSetChanged")
-        override fun onBindViewHolder(holder: StickerViewHolder, position: Int) {
-            val s = if (editing) {
-                stickers[position]
-            } else {
-                if (stickers.isNotEmpty() && position != 0) {
-                    stickers[position - 1]
+        override fun onBindViewHolder(
+            holder: StickerViewHolder,
+            position: Int,
+        ) {
+            val s =
+                if (editing) {
+                    stickers[position]
                 } else {
-                    null
+                    if (stickers.isNotEmpty() && position != 0) {
+                        stickers[position - 1]
+                    } else {
+                        null
+                    }
                 }
-            }
             val v = holder.itemView
 
             val params = v.layoutParams
@@ -245,7 +262,11 @@ class StickerManagementFragment : BaseFragment() {
             }
         }
 
-        private fun handleChecked(cb: CheckBox, cover: View, stickerId: String) {
+        private fun handleChecked(
+            cb: CheckBox,
+            cover: View,
+            stickerId: String,
+        ) {
             if (editing) {
                 cb.isChecked = !cb.isChecked
                 if (cb.isChecked) {
@@ -258,13 +279,17 @@ class StickerManagementFragment : BaseFragment() {
             }
         }
 
-        override fun getItemCount() = if (editing) {
-            stickers.size
-        } else {
-            stickers.size + 1
-        }
+        override fun getItemCount() =
+            if (editing) {
+                stickers.size
+            } else {
+                stickers.size + 1
+            }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StickerViewHolder {
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): StickerViewHolder {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.item_sticker_management, parent, false)
             return StickerViewHolder(view)
         }
@@ -278,6 +303,7 @@ class StickerManagementFragment : BaseFragment() {
 
     interface StickerListener {
         fun onAddClick()
+
         fun onDelete()
     }
 }

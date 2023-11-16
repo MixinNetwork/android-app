@@ -29,11 +29,12 @@ class BarcodeScanningAnalyzer : Analyzer<BarcodeResult> {
     }
 
     constructor(options: BarcodeScannerOptions?) {
-        mDetector = if (options != null) {
-            BarcodeScanning.getClient(options)
-        } else {
-            BarcodeScanning.getClient()
-        }
+        mDetector =
+            if (options != null) {
+                BarcodeScanning.getClient(options)
+            } else {
+                BarcodeScanning.getClient()
+            }
     }
 
     override fun analyze(

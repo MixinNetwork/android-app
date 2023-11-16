@@ -82,7 +82,10 @@ class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayo
         }
     }
 
-    private fun showTip(view: View, @StringRes str: Int) {
+    private fun showTip(
+        view: View,
+        @StringRes str: Int,
+    ) {
         tipView.apply {
             (this as TextView).setText(str)
             setOnClickListener {

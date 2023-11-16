@@ -11,8 +11,12 @@ import retrofit2.http.Path
 
 interface MessageService {
     @GET("messages/status/{offset}")
-    fun messageStatusOffset(@Path("offset") offset: Long): Call<MixinResponse<List<BlazeMessageData>>>
+    fun messageStatusOffset(
+        @Path("offset") offset: Long,
+    ): Call<MixinResponse<List<BlazeMessageData>>>
 
     @POST("acknowledgements")
-    suspend fun acknowledgements(@Body ack: List<BlazeAckMessage>): MixinResponse<Any>
+    suspend fun acknowledgements(
+        @Body ack: List<BlazeAckMessage>,
+    ): MixinResponse<Any>
 }

@@ -47,7 +47,10 @@ class VerificationEmergencyIdFragment : FabLoadingFragment(R.layout.fragment_ver
 
     override fun getContentView() = binding.root
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.verificationNextFab.setOnClickListener {
@@ -59,26 +62,27 @@ class VerificationEmergencyIdFragment : FabLoadingFragment(R.layout.fragment_ver
         binding.verificationKeyboard.setOnClickKeyboardListener(mKeyboardListener)
     }
 
-    private fun sendCode(mixinID: String) = lifecycleScope.launch {
-        showLoading()
-        handleMixinResponse(
-            invokeNetwork = { viewModel.createEmergency(buildEmergencyRequest(mixinID)) },
-            successBlock = { response ->
-                navTo(
-                    VerificationEmergencyFragment.newInstance(
-                        verificationId = (response.data as VerificationResponse).id,
-                        from = FROM_SESSION,
-                        userIdentityNumber = mixinID,
-                    ),
-                    VerificationEmergencyFragment.TAG,
-                )
-            },
-            doAfterNetworkSuccess = { hideLoading() },
-            defaultExceptionHandle = {
-                handleError(it)
-            },
-        )
-    }
+    private fun sendCode(mixinID: String) =
+        lifecycleScope.launch {
+            showLoading()
+            handleMixinResponse(
+                invokeNetwork = { viewModel.createEmergency(buildEmergencyRequest(mixinID)) },
+                successBlock = { response ->
+                    navTo(
+                        VerificationEmergencyFragment.newInstance(
+                            verificationId = (response.data as VerificationResponse).id,
+                            from = FROM_SESSION,
+                            userIdentityNumber = mixinID,
+                        ),
+                        VerificationEmergencyFragment.TAG,
+                    )
+                },
+                doAfterNetworkSuccess = { hideLoading() },
+                defaultExceptionHandle = {
+                    handleError(it)
+                },
+            )
+        }
 
     override fun hideLoading() {
         if (viewDestroyed()) return
@@ -86,11 +90,12 @@ class VerificationEmergencyIdFragment : FabLoadingFragment(R.layout.fragment_ver
         binding.verificationCover.visibility = View.GONE
     }
 
-    private fun buildEmergencyRequest(mixinID: String) = EmergencyRequest(
-        phone = phone,
-        identityNumber = mixinID,
-        purpose = EmergencyPurpose.SESSION.name,
-    )
+    private fun buildEmergencyRequest(mixinID: String) =
+        EmergencyRequest(
+            phone = phone,
+            identityNumber = mixinID,
+            purpose = EmergencyPurpose.SESSION.name,
+        )
 
     private fun handleEditView(str: String) {
         binding.idEt.setSelection(binding.idEt.text.toString().length)
@@ -101,35 +106,53 @@ class VerificationEmergencyIdFragment : FabLoadingFragment(R.layout.fragment_ver
         }
     }
 
-    private val mKeyboardListener = object : Keyboard.OnClickKeyboardListener {
-        override fun onKeyClick(position: Int, value: String) {
-            context?.tickVibrate()
-            if (position == 11) {
-                binding.idEt.setText(binding.idEt.text.dropLast(1))
-            } else {
-                binding.idEt.text = binding.idEt.text.append(value)
+    private val mKeyboardListener =
+        object : Keyboard.OnClickKeyboardListener {
+            override fun onKeyClick(
+                position: Int,
+                value: String,
+            ) {
+                context?.tickVibrate()
+                if (position == 11) {
+                    binding.idEt.setText(binding.idEt.text.dropLast(1))
+                } else {
+                    binding.idEt.text = binding.idEt.text.append(value)
+                }
+            }
+
+            override fun onLongClick(
+                position: Int,
+                value: String,
+            ) {
+                context?.clickVibrate()
+                if (position == 11) {
+                    binding.idEt.setText("")
+                } else {
+                    binding.idEt.text = binding.idEt.text.append(value)
+                }
             }
         }
 
-        override fun onLongClick(position: Int, value: String) {
-            context?.clickVibrate()
-            if (position == 11) {
-                binding.idEt.setText("")
-            } else {
-                binding.idEt.text = binding.idEt.text.append(value)
+    private val watcher: TextWatcher =
+        object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {
+            }
+
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                handleEditView(s.toString())
             }
         }
-    }
-
-    private val watcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
-
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        }
-
-        override fun afterTextChanged(s: Editable?) {
-            handleEditView(s.toString())
-        }
-    }
 }

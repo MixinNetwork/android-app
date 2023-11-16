@@ -9,9 +9,13 @@ import one.mixin.android.extension.highLight
 import one.mixin.android.ui.search.SearchFragment
 
 class TipHolder(val binding: ItemSearchTipBinding) : RecyclerView.ViewHolder(binding.root) {
-
     @SuppressLint("SetTextI18n")
-    fun bind(target: String, searching: Boolean, url: String?, onItemClickListener: SearchFragment.OnSearchClickListener?) {
+    fun bind(
+        target: String,
+        searching: Boolean,
+        url: String?,
+        onItemClickListener: SearchFragment.OnSearchClickListener?,
+    ) {
         if (url != null) {
             binding.searchTipTv.text =
                 itemView.context.getString(R.string.Open_Link, url)

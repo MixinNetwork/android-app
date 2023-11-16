@@ -14,7 +14,6 @@ import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
 
 class SnapshotHolder constructor(val binding: ItemChatSnapshotBinding) : BaseViewHolder(binding.root) {
-
     init {
         binding.chatLayout.layoutParams.width = (itemView.context.realSize().x * 0.6).toInt()
     }
@@ -35,11 +34,12 @@ class SnapshotHolder constructor(val binding: ItemChatSnapshotBinding) : BaseVie
         binding.billIv.loadImage(messageItem.assetIcon, R.drawable.ic_avatar_place_holder)
         val amount = messageItem.snapshotAmount
         if (!amount.isNullOrBlank()) {
-            binding.billTv.text = if (amount.startsWith('-')) {
-                "-${amount.substring(1).numberFormat8()}"
-            } else {
-                amount.numberFormat8()
-            }
+            binding.billTv.text =
+                if (amount.startsWith('-')) {
+                    "-${amount.substring(1).numberFormat8()}"
+                } else {
+                    amount.numberFormat8()
+                }
         }
         binding.billSymbolTv.text = messageItem.assetSymbol
         itemView.setOnLongClickListener {
@@ -80,7 +80,11 @@ class SnapshotHolder constructor(val binding: ItemChatSnapshotBinding) : BaseVie
         }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             if (isLast) {

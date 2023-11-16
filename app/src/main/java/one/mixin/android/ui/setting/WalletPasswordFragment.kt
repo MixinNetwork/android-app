@@ -44,7 +44,6 @@ class WalletPasswordFragment :
     BaseFragment(R.layout.fragment_wallet_password),
     PinView.OnPinListener,
     PinView.OnPinFinishListener {
-
     companion object {
         const val TAG = "WalletPasswordFragment"
 
@@ -107,7 +106,10 @@ class WalletPasswordFragment :
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding.apply {
@@ -117,9 +119,10 @@ class WalletPasswordFragment :
                 TextView(requireContext()).apply {
                     setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
                     gravity = Gravity.CENTER_HORIZONTAL
-                    layoutParams = FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                        gravity = Gravity.CENTER_HORIZONTAL
-                    }
+                    layoutParams =
+                        FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                            gravity = Gravity.CENTER_HORIZONTAL
+                        }
                 }
             }
             if (tipBundle.forChange()) {
@@ -274,7 +277,10 @@ class WalletPasswordFragment :
         }
     }
 
-    private fun changeContent(content: String, target: Int) {
+    private fun changeContent(
+        content: String,
+        target: Int,
+    ) {
         if (target > step) {
             binding.tipTv.inAnimation = rightInAnim
             binding.tipTv.outAnimation = leftOutAnim
@@ -345,43 +351,48 @@ class WalletPasswordFragment :
         return false
     }
 
-    private fun verify(pinCode: String) = lifecycleScope.launch {
-        val dialog = indeterminateProgressDialog(
-            message = getString(R.string.Please_wait_a_bit),
-            title = getString(R.string.Verifying),
-        )
-        dialog.setCancelable(false)
-        dialog.show()
+    private fun verify(pinCode: String) =
+        lifecycleScope.launch {
+            val dialog =
+                indeterminateProgressDialog(
+                    message = getString(R.string.Please_wait_a_bit),
+                    title = getString(R.string.Verifying),
+                )
+            dialog.setCancelable(false)
+            dialog.show()
 
-        handleMixinResponse(
-            invokeNetwork = { walletViewModel.verifyPin(pinCode) },
-            successBlock = { response ->
-                dialog.dismiss()
-                context?.updatePinCheck()
-                response.data?.let {
-                    val pin = binding.pin.code()
-                    val tipBundle = requireArguments().getTipBundle()
-                    tipBundle.oldPin = pin
-                    toStep1()
-                    binding.pin.clear()
-                }
-            },
-            exceptionBlock = {
-                if (it is TipNetworkException) {
-                    return@handleMixinResponse handleFailure(it.error, dialog)
-                } else {
+            handleMixinResponse(
+                invokeNetwork = { walletViewModel.verifyPin(pinCode) },
+                successBlock = { response ->
                     dialog.dismiss()
-                    binding.pin.clear()
-                    return@handleMixinResponse false
-                }
-            },
-            failureBlock = {
-                return@handleMixinResponse handleFailure(requireNotNull(it.error), dialog)
-            },
-        )
-    }
+                    context?.updatePinCheck()
+                    response.data?.let {
+                        val pin = binding.pin.code()
+                        val tipBundle = requireArguments().getTipBundle()
+                        tipBundle.oldPin = pin
+                        toStep1()
+                        binding.pin.clear()
+                    }
+                },
+                exceptionBlock = {
+                    if (it is TipNetworkException) {
+                        return@handleMixinResponse handleFailure(it.error, dialog)
+                    } else {
+                        dialog.dismiss()
+                        binding.pin.clear()
+                        return@handleMixinResponse false
+                    }
+                },
+                failureBlock = {
+                    return@handleMixinResponse handleFailure(requireNotNull(it.error), dialog)
+                },
+            )
+        }
 
-    private suspend fun handleFailure(error: ResponseError, dialog: Dialog): Boolean {
+    private suspend fun handleFailure(
+        error: ResponseError,
+        dialog: Dialog,
+    ): Boolean {
         binding.pin.clear()
         if (error.code == ErrorHandler.TOO_MANY_REQUEST) {
             dialog.dismiss()
@@ -397,23 +408,30 @@ class WalletPasswordFragment :
         return false
     }
 
-    private val keyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
-        override fun onKeyClick(position: Int, value: String) {
-            context?.tickVibrate()
-            if (position == 11) {
-                binding.pin.delete()
-            } else {
-                binding.pin.append(value)
+    private val keyboardListener: Keyboard.OnClickKeyboardListener =
+        object : Keyboard.OnClickKeyboardListener {
+            override fun onKeyClick(
+                position: Int,
+                value: String,
+            ) {
+                context?.tickVibrate()
+                if (position == 11) {
+                    binding.pin.delete()
+                } else {
+                    binding.pin.append(value)
+                }
             }
-        }
 
-        override fun onLongClick(position: Int, value: String) {
-            context?.clickVibrate()
-            if (position == 11) {
-                binding.pin.clear()
-            } else {
-                binding.pin.append(value)
+            override fun onLongClick(
+                position: Int,
+                value: String,
+            ) {
+                context?.clickVibrate()
+                if (position == 11) {
+                    binding.pin.clear()
+                } else {
+                    binding.pin.append(value)
+                }
             }
         }
-    }
 }

@@ -26,7 +26,6 @@ import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isSecret
 
 class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(binding.root) {
-
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
         binding.chatImage.round(radius)
@@ -185,11 +184,12 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
 
         dataWidth = messageItem.mediaWidth
         dataHeight = messageItem.mediaHeight
-        dataUrl = if (messageItem.isLive()) {
-            messageItem.thumbUrl
-        } else {
-            messageItem.absolutePath()
-        }
+        dataUrl =
+            if (messageItem.isLive()) {
+                messageItem.thumbUrl
+            } else {
+                messageItem.absolutePath()
+            }
         type = messageItem.type
         dataThumbImage = messageItem.thumbImage
         chatLayout(isMe, isLast)
@@ -216,7 +216,11 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
     private var dataWidth: Int? = null
     private var dataHeight: Int? = null
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
@@ -258,12 +262,13 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
             binding.chatImage.layoutParams.height = width * dataHeight!! / dataWidth!!
         }
 
-        val mark = when {
-            isMe && isLast -> R.drawable.chat_mark_image_me
-            isMe -> R.drawable.chat_mark_image
-            !isMe && isLast -> R.drawable.chat_mark_image_other
-            else -> R.drawable.chat_mark_image
-        }
+        val mark =
+            when {
+                isMe && isLast -> R.drawable.chat_mark_image_me
+                isMe -> R.drawable.chat_mark_image
+                !isMe && isLast -> R.drawable.chat_mark_image_other
+                else -> R.drawable.chat_mark_image
+            }
 
         binding.chatImage.setShape(mark)
         if (type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name || type == MessageCategory.ENCRYPTED_LIVE.name) {

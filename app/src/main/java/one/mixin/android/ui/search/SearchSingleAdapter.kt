@@ -24,7 +24,10 @@ class SearchSingleAdapter(private val type: SearchType) : HeaderAdapter<Parcelab
     var onItemClickListener: SearchFragment.OnSearchClickListener? = null
     var query: String = ""
 
-    override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder {
+    override fun getNormalViewHolder(
+        context: Context,
+        parent: ViewGroup,
+    ): NormalHolder {
         return when (type) {
             TypeAsset -> AssetHolder(ItemSearchAssetBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             TypeChat -> ChatHolder(ItemSearchChatBinding.inflate(LayoutInflater.from(parent.context), parent, false))
@@ -33,7 +36,10 @@ class SearchSingleAdapter(private val type: SearchType) : HeaderAdapter<Parcelab
         }
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+    ) {
         if (holder is NormalHolder) {
             data?.get(getPos(position)).let {
                 when (type) {

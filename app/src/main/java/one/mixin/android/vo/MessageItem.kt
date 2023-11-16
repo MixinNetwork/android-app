@@ -120,15 +120,17 @@ data class MessageItem(
     val expireIn: Long? = null,
     val expireAt: Long? = null,
 ) : Parcelable, ICategory {
-
     @IgnoredOnParcel
     @Ignore
     private var appCardShareable: Boolean? = null
 
     val formatMemo: FormatMemo?
         get() {
-            return if (snapshotMemo.isNullOrBlank()) null
-            else FormatMemo(snapshotMemo)
+            return if (snapshotMemo.isNullOrBlank()) {
+                null
+            } else {
+                FormatMemo(snapshotMemo)
+            }
         }
 
     fun isShareable(): Boolean? {
@@ -148,15 +150,17 @@ data class MessageItem(
                 appCardShareable =
                     GsonHelper.customGson.fromJson(content, AppCardData::class.java).shareable
             } else if ((type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name || type == MessageCategory.ENCRYPTED_LIVE.name) && appCardShareable == null) {
-                appCardShareable = GsonHelper.customGson.fromJson(
-                    content,
-                    LiveMessagePayload::class.java,
-                ).shareable
+                appCardShareable =
+                    GsonHelper.customGson.fromJson(
+                        content,
+                        LiveMessagePayload::class.java,
+                    ).shareable
             } else if ((type == MessageCategory.PLAIN_AUDIO.name || type == MessageCategory.SIGNAL_AUDIO.name || type == MessageCategory.ENCRYPTED_AUDIO.name) && appCardShareable == null) {
-                appCardShareable = GsonHelper.customGson.fromJson(
-                    content,
-                    AttachmentExtra::class.java,
-                ).shareable
+                appCardShareable =
+                    GsonHelper.customGson.fromJson(
+                        content,
+                        AttachmentExtra::class.java,
+                    ).shareable
             }
         } catch (ignore: Exception) {
         }
@@ -165,23 +169,31 @@ data class MessageItem(
     }
 
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<MessageItem>() {
-            override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem) =
-                oldItem.messageId == newItem.messageId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<MessageItem>() {
+                override fun areItemsTheSame(
+                    oldItem: MessageItem,
+                    newItem: MessageItem,
+                ) =
+                    oldItem.messageId == newItem.messageId
 
-            override fun areContentsTheSame(oldItem: MessageItem, newItem: MessageItem) =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: MessageItem,
+                    newItem: MessageItem,
+                ) =
+                    oldItem == newItem
+            }
     }
 
-    fun canNotForward() = this.type == MessageCategory.APP_BUTTON_GROUP.name ||
-        this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
-        this.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name ||
-        this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
-        this.type == MessageCategory.MESSAGE_PIN.name ||
-        isCallMessage() || isRecall() || isGroupCall() || unfinishedAttachment() ||
-        (isTranscript() && this.mediaStatus != MediaStatus.DONE.name) ||
-        (isLive() && isShareable() == false)
+    fun canNotForward() =
+        this.type == MessageCategory.APP_BUTTON_GROUP.name ||
+            this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
+            this.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name ||
+            this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
+            this.type == MessageCategory.MESSAGE_PIN.name ||
+            isCallMessage() || isRecall() || isGroupCall() || unfinishedAttachment() ||
+            (isTranscript() && this.mediaStatus != MediaStatus.DONE.name) ||
+            (isLive() && isShareable() == false)
 
     fun canNotReply() =
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
@@ -197,16 +209,20 @@ data class MessageItem(
     private fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio())
 }
 
-fun create(type: String, createdAt: String? = null) = MessageItem(
-    "", "", "", "", "",
-    type, null,
-    createdAt
-        ?: nowInUtc(),
-    MessageStatus.READ.name, null, null,
-    null, null, null, null, null, null, null, null,
-    null, null, null, null, null, null, null, null, null,
-    null, null, null, null, null, null, null, null, null, null,
-)
+fun create(
+    type: String,
+    createdAt: String? = null,
+) =
+    MessageItem(
+        "", "", "", "", "",
+        type, null,
+        createdAt
+            ?: nowInUtc(),
+        MessageStatus.READ.name, null, null,
+        null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null,
+    )
 
 fun MessageItem.isCallMessage() =
     type == MessageCategory.WEBRTC_AUDIO_CANCEL.name ||
@@ -230,7 +246,10 @@ fun MessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) 
 fun MessageItem.mediaDownloaded() =
     mediaStatus == MediaStatus.DONE.name || mediaStatus == MediaStatus.READ.name
 
-fun MessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
+fun MessageItem.showVerifiedOrBot(
+    verifiedView: View,
+    botView: View,
+) {
     when {
         sharedUserIsVerified == true -> {
             verifiedView.isVisible = true
@@ -247,7 +266,10 @@ fun MessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
     }
 }
 
-fun MessageItem.shareFile(context: Context, mediaMimeType: String) {
+fun MessageItem.shareFile(
+    context: Context,
+    mediaMimeType: String,
+) {
     if (!hasWritePermission()) return
 
     val filePath = absolutePath()
@@ -288,21 +310,23 @@ suspend fun MessageItem.saveToLocal(context: Context) {
     }
 
     var str = R.string.Save_to_Gallery
-    val outFile = if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {
-        val dir = context.getPublicPicturePath()
-        dir.mkdirs()
-        File(dir, mediaName ?: file.name)
-    } else {
-        val dir = if (MimeTypes.isAudio(mediaMimeType)) {
-            str = R.string.Save_to_Music
-            context.getPublicMusicPath()
+    val outFile =
+        if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {
+            val dir = context.getPublicPicturePath()
+            dir.mkdirs()
+            File(dir, mediaName ?: file.name)
         } else {
-            str = R.string.Save_to_Downloads
-            context.getPublicDownloadPath()
+            val dir =
+                if (MimeTypes.isAudio(mediaMimeType)) {
+                    str = R.string.Save_to_Music
+                    context.getPublicMusicPath()
+                } else {
+                    str = R.string.Save_to_Downloads
+                    context.getPublicDownloadPath()
+                }
+            dir.mkdirs()
+            File(dir, mediaName ?: file.name)
         }
-        dir.mkdirs()
-        File(dir, mediaName ?: file.name)
-    }
     if (outFile.isDirectory) {
         toast(R.string.Save_failure)
         return
@@ -341,7 +365,7 @@ private fun MessageItem.simpleChat(): String {
         isAudio() -> mediaUrl.notNullWithElse({ "[AUDIO - ${File(it).name}]" }, "[AUDIO]")
         type == MessageCategory.APP_BUTTON_GROUP.name -> "[Mixin APP]"
         type == MessageCategory.APP_CARD.name -> "[Mixin APP]"
-        type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name || type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name->
+        type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name || type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name ->
             "[TRANSFER ${
                 if (snapshotAmount?.toFloat()!! > 0) {
                     "+"
@@ -361,7 +385,10 @@ private fun MessageItem.simpleChat(): String {
 
 class FixedMessageDataSource<T : Any>(private val items: List<T>, private val totalCount: Int) :
     PositionalDataSource<T>() {
-    override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<T>) {
+    override fun loadRange(
+        params: LoadRangeParams,
+        callback: LoadRangeCallback<T>,
+    ) {
         callback.onResult(items)
     }
 
@@ -374,18 +401,19 @@ class FixedMessageDataSource<T : Any>(private val items: List<T>, private val to
 }
 
 fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
-    val thumb = if ((thumbImage?.length ?: 0) > Constants.MAX_THUMB_IMAGE_LENGTH) {
-        DEFAULT_THUMB_IMAGE
-    } else if (thumbImage != null && !Base83.isValid(thumbImage)) {
-        try {
-            val bitmap = thumbImage.decodeBase64().encodeBitmap()
-            BlurHashEncoder.encode(requireNotNull(bitmap))
-        } catch (e: Exception) {
+    val thumb =
+        if ((thumbImage?.length ?: 0) > Constants.MAX_THUMB_IMAGE_LENGTH) {
+            DEFAULT_THUMB_IMAGE
+        } else if (thumbImage != null && !Base83.isValid(thumbImage)) {
+            try {
+                val bitmap = thumbImage.decodeBase64().encodeBitmap()
+                BlurHashEncoder.encode(requireNotNull(bitmap))
+            } catch (e: Exception) {
+                thumbImage
+            }
+        } else {
             thumbImage
         }
-    } else {
-        thumbImage
-    }
     return TranscriptMessage(
         transcriptId,
         messageId,

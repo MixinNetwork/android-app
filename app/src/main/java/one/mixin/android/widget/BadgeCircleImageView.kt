@@ -16,7 +16,10 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
 
     var pos: Int = START_BOTTOM
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         measureChild(
             binding.badge,
@@ -25,7 +28,13 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
         )
     }
 
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+    override fun onLayout(
+        changed: Boolean,
+        left: Int,
+        top: Int,
+        right: Int,
+        bottom: Int,
+    ) {
         super.onLayout(changed, left, top, right, bottom)
         val badgeWidth = measuredWidth / 3
         if (pos == START_BOTTOM) {
@@ -38,7 +47,10 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
         }
     }
 
-    fun setBorder(width: Float = 2f, color: Int = Color.WHITE) {
+    fun setBorder(
+        width: Float = 2f,
+        color: Int = Color.WHITE,
+    ) {
         binding.bg.borderWidth = context.dpToPx(width)
         binding.bg.borderColor = color
     }

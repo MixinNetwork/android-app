@@ -30,7 +30,6 @@ import java.util.Locale
 
 @AndroidEntryPoint
 class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
-
     companion object {
         const val TAG = "AddPeopleFragment"
         const val POS_SEARCH = 0
@@ -44,7 +43,10 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
     private val contactsViewModel by viewModels<ContactViewModel>()
     private val binding by viewBinding(FragmentAddPeopleBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
@@ -71,17 +73,18 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
                         searchAnimator.displayedChild = POS_SEARCH
                         searchTv.isEnabled = true
                         when {
-                            r.isSuccess -> r.data?.let { data ->
-                                if (data.userId == Session.getAccountId()) {
-                                    ProfileBottomSheetDialogFragment.newInstance().showNow(
-                                        parentFragmentManager,
-                                        UserBottomSheetDialogFragment.TAG,
-                                    )
-                                } else {
-                                    contactsViewModel.insertUser(user = data)
-                                    showUserBottom(parentFragmentManager, data)
+                            r.isSuccess ->
+                                r.data?.let { data ->
+                                    if (data.userId == Session.getAccountId()) {
+                                        ProfileBottomSheetDialogFragment.newInstance().showNow(
+                                            parentFragmentManager,
+                                            UserBottomSheetDialogFragment.TAG,
+                                        )
+                                    } else {
+                                        contactsViewModel.insertUser(user = data)
+                                        showUserBottom(parentFragmentManager, data)
+                                    }
                                 }
-                            }
                             r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.User_not_found)
                             else -> ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                         }
@@ -108,75 +111,93 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
         return false
     }
 
-    private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
-        override fun onKeyClick(position: Int, value: String) {
-            context?.tickVibrate()
-            if (viewDestroyed()) {
-                return
-            }
-            binding.apply {
-                val editable = searchEt.text
-                val start = searchEt.selectionStart
-                val end = searchEt.selectionEnd
+    private val mKeyboardListener: Keyboard.OnClickKeyboardListener =
+        object : Keyboard.OnClickKeyboardListener {
+            override fun onKeyClick(
+                position: Int,
+                value: String,
+            ) {
+                context?.tickVibrate()
+                if (viewDestroyed()) {
+                    return
+                }
+                binding.apply {
+                    val editable = searchEt.text
+                    val start = searchEt.selectionStart
+                    val end = searchEt.selectionEnd
 
-                try {
+                    try {
+                        if (position == 11) {
+                            if (editable.isEmpty()) return
+
+                            if (start == end) {
+                                if (start == 0) {
+                                    searchEt.text.delete(0, end)
+                                } else {
+                                    searchEt.text.delete(start - 1, end)
+                                }
+                                if (start > 0) {
+                                    searchEt.setSelection(start - 1)
+                                }
+                            } else {
+                                searchEt.text.delete(start, end)
+                                searchEt.setSelection(start)
+                            }
+                        } else {
+                            searchEt.text = editable.insert(start, value)
+                            searchEt.setSelection(start + 1)
+                        }
+                    } catch (e: IndexOutOfBoundsException) {
+                        Timber.w(e)
+                    }
+                }
+            }
+
+            override fun onLongClick(
+                position: Int,
+                value: String,
+            ) {
+                context?.clickVibrate()
+                if (viewDestroyed()) {
+                    return
+                }
+                binding.apply {
+                    val editable = searchEt.text
                     if (position == 11) {
                         if (editable.isEmpty()) return
 
-                        if (start == end) {
-                            if (start == 0) {
-                                searchEt.text.delete(0, end)
-                            } else {
-                                searchEt.text.delete(start - 1, end)
-                            }
-                            if (start > 0) {
-                                searchEt.setSelection(start - 1)
-                            }
-                        } else {
-                            searchEt.text.delete(start, end)
-                            searchEt.setSelection(start)
-                        }
+                        searchEt.text.clear()
                     } else {
+                        val start = searchEt.selectionStart
                         searchEt.text = editable.insert(start, value)
                         searchEt.setSelection(start + 1)
                     }
-                } catch (e: IndexOutOfBoundsException) {
-                    Timber.w(e)
                 }
             }
         }
 
-        override fun onLongClick(position: Int, value: String) {
-            context?.clickVibrate()
-            if (viewDestroyed()) {
-                return
+    private val mWatcher: TextWatcher =
+        object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {
             }
-            binding.apply {
-                val editable = searchEt.text
-                if (position == 11) {
-                    if (editable.isEmpty()) return
 
-                    searchEt.text.clear()
-                } else {
-                    val start = searchEt.selectionStart
-                    searchEt.text = editable.insert(start, value)
-                    searchEt.setSelection(start + 1)
-                }
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                if (viewDestroyed()) return
+
+                binding.searchAnimator.visibility = if (valid(s.toString())) VISIBLE else GONE
             }
         }
-    }
-
-    private val mWatcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
-
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        }
-
-        override fun afterTextChanged(s: Editable?) {
-            if (viewDestroyed()) return
-
-            binding.searchAnimator.visibility = if (valid(s.toString())) VISIBLE else GONE
-        }
-    }
 }

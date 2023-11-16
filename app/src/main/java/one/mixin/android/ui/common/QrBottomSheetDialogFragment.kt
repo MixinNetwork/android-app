@@ -43,12 +43,17 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val TYPE_MY_QR = 0
         const val TYPE_RECEIVE_QR = 1
 
-        fun newInstance(userId: String, type: Int) = QrBottomSheetDialogFragment().apply {
-            arguments = bundleOf(
-                ARGS_USER_ID to userId,
-                ARGS_TYPE to type,
-            )
-        }
+        fun newInstance(
+            userId: String,
+            type: Int,
+        ) =
+            QrBottomSheetDialogFragment().apply {
+                arguments =
+                    bundleOf(
+                        ARGS_USER_ID to userId,
+                        ARGS_TYPE to type,
+                    )
+            }
     }
 
     private val userId: String by lazy { requireArguments().getString(ARGS_USER_ID)!! }
@@ -57,7 +62,10 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentQrBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -100,11 +108,12 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 binding.qr.post {
                     Observable.create<Pair<Bitmap, Int>> { e ->
                         val account = Session.getAccount() ?: return@create
-                        val code = when (type) {
-                            TYPE_MY_QR -> account.codeUrl
-                            TYPE_RECEIVE_QR -> "$HTTPS_PAY/${user.userId}"
-                            else -> ""
-                        }
+                        val code =
+                            when (type) {
+                                TYPE_MY_QR -> account.codeUrl
+                                TYPE_RECEIVE_QR -> "$HTTPS_PAY/${user.userId}"
+                                else -> ""
+                            }
 
                         val r = code.generateQRCode(binding.qr.width)
                         e.onNext(r)

@@ -38,9 +38,11 @@ object RomUtil {
         get() = check(ROM_FLYME)
     val isOneUi: Boolean
         get() = isOneUI()
+
     fun is360(): Boolean {
         return check(ROM_QIKU) || check("360")
     }
+
     val isSmartisan: Boolean
         get() = check(ROM_SMARTISAN)
 

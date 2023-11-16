@@ -20,16 +20,20 @@ class ViewEmergencyContactFragment : BaseFragment(R.layout.fragment_view_emergen
     companion object {
         const val TAG = "ViewEmergencyContactFragment"
 
-        fun newInstance(user: User) = ViewEmergencyContactFragment().withArgs {
-            putParcelable(ARGS_USER, user)
-        }
+        fun newInstance(user: User) =
+            ViewEmergencyContactFragment().withArgs {
+                putParcelable(ARGS_USER, user)
+            }
     }
 
     private val user: User by lazy { requireArguments().getParcelableCompat(ARGS_USER, User::class.java)!! }
 
     private val binding by viewBinding(FragmentViewEmergencyContactBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {

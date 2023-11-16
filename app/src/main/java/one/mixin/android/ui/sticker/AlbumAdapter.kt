@@ -27,10 +27,16 @@ class AlbumAdapter(
     private val fragmentManager: FragmentManager,
     private val addAction: (String) -> Unit,
 ) : ListAdapter<StoreAlbum, AlbumHolder>(StoreAlbum.DIFF_CALLBACK) {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         AlbumHolder(ItemAlbumBinding.inflate(LayoutInflater.from(parent.context), parent, false), fragmentManager, addAction)
 
-    override fun onBindViewHolder(holder: AlbumHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: AlbumHolder,
+        position: Int,
+    ) {
         getItem(position)?.let { album -> holder.bind(album) }
     }
 }
@@ -57,13 +63,14 @@ class AlbumHolder(
                 }
                 layoutManager = LinearLayoutManager(ctx, RecyclerView.HORIZONTAL, false)
                 this.adapter = adapter
-                adapter.stickerListener = object : StickerListener {
-                    override fun onItemClick(sticker: Sticker) {
-                        val stickerAlbumId = sticker.albumId ?: return
-                        StickerAlbumBottomSheetFragment.newInstance(stickerAlbumId)
-                            .showNow(fragmentManager, StickerAlbumBottomSheetFragment.TAG)
+                adapter.stickerListener =
+                    object : StickerListener {
+                        override fun onItemClick(sticker: Sticker) {
+                            val stickerAlbumId = sticker.albumId ?: return
+                            StickerAlbumBottomSheetFragment.newInstance(stickerAlbumId)
+                                .showNow(fragmentManager, StickerAlbumBottomSheetFragment.TAG)
+                        }
                     }
-                }
                 adapter.submitList(album.stickers)
             }
         }
@@ -74,7 +81,10 @@ class StickerAdapter : ListAdapter<Sticker, StickerViewHolder>(Sticker.DIFF_CALL
     var size: Int = 72.dp
     var stickerListener: StickerListener? = null
 
-    override fun onBindViewHolder(holder: StickerViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: StickerViewHolder,
+        position: Int,
+    ) {
         val params = holder.itemView.layoutParams
         params.width = size
         params.height = size
@@ -92,7 +102,10 @@ class StickerAdapter : ListAdapter<Sticker, StickerViewHolder>(Sticker.DIFF_CALL
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         StickerViewHolder(ItemStickerBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 }
 
@@ -102,13 +115,20 @@ data class StoreAlbum(
     val stickers: List<Sticker>,
 ) {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<StoreAlbum>() {
-            override fun areItemsTheSame(oldItem: StoreAlbum, newItem: StoreAlbum) =
-                oldItem.album.albumId == newItem.album.albumId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<StoreAlbum>() {
+                override fun areItemsTheSame(
+                    oldItem: StoreAlbum,
+                    newItem: StoreAlbum,
+                ) =
+                    oldItem.album.albumId == newItem.album.albumId
 
-            override fun areContentsTheSame(oldItem: StoreAlbum, newItem: StoreAlbum) =
-                oldItem.album == newItem.album && oldItem.stickers.size == newItem.stickers.size
-        }
+                override fun areContentsTheSame(
+                    oldItem: StoreAlbum,
+                    newItem: StoreAlbum,
+                ) =
+                    oldItem.album == newItem.album && oldItem.stickers.size == newItem.stickers.size
+            }
     }
 }
 
@@ -118,7 +138,11 @@ interface StickerListener {
     fun onItemClick(sticker: Sticker)
 }
 
-fun TextView.updateAlbumAdd(ctx: Context, added: Boolean, action: (() -> Unit)? = null) {
+fun TextView.updateAlbumAdd(
+    ctx: Context,
+    added: Boolean,
+    action: (() -> Unit)? = null,
+) {
     if (added) {
         text = ctx.getString(R.string.Added)
         textColor = ctx.getColor(R.color.colorAccent)

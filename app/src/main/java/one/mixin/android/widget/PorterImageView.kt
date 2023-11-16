@@ -16,7 +16,6 @@ import one.mixin.android.extension.screenWidth
 import timber.log.Timber
 
 abstract class PorterImageView : AppCompatImageView {
-
     private var maskCanvas: Canvas? = null
     private var maskBitmap: Bitmap? = null
     private lateinit var maskPaint: Paint
@@ -57,7 +56,12 @@ abstract class PorterImageView : AppCompatImageView {
         super.invalidate()
     }
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+    override fun onSizeChanged(
+        w: Int,
+        h: Int,
+        oldw: Int,
+        oldh: Int,
+    ) {
         super.onSizeChanged(w, h, oldw, oldh)
         createMaskCanvas(w, h, oldw, oldh)
     }
@@ -71,7 +75,12 @@ abstract class PorterImageView : AppCompatImageView {
         }
     }
 
-    private fun createMaskCanvas(width: Int, height: Int, oldw: Int = 0, oldh: Int = 0) {
+    private fun createMaskCanvas(
+        width: Int,
+        height: Int,
+        oldw: Int = 0,
+        oldh: Int = 0,
+    ) {
         val sizeChanged = width != oldw || height != oldh
         val isValid = width > 0 && height > 0 && width < context.screenWidth() && height < context.screenHeight()
         if (isValid && (maskCanvas == null || sizeChanged)) {
@@ -104,7 +113,12 @@ abstract class PorterImageView : AppCompatImageView {
         }
     }
 
-    protected abstract fun paintMaskCanvas(maskCanvas: Canvas, maskPaint: Paint, width: Int, height: Int)
+    protected abstract fun paintMaskCanvas(
+        maskCanvas: Canvas,
+        maskPaint: Paint,
+        width: Int,
+        height: Int,
+    )
 
     override fun onDraw(canvas: Canvas) {
         if (!isInEditMode) {

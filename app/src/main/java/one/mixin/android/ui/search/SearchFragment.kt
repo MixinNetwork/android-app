@@ -45,15 +45,14 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.RecentUsedApp
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
 class SearchFragment : BaseFragment(R.layout.fragment_search) {
-
     private val searchViewModel by viewModels<SearchViewModel>()
 
     private val searchAdapter: SearchAdapter by lazy {
@@ -106,11 +105,15 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
     private val binding by viewBinding(FragmentSearchBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        searchChatPopupMenu = SearchChatPopupMenu(requireContext(), lifecycleScope, searchViewModel) {
-            fuzzySearchChat(keyword)
-        }
+        searchChatPopupMenu =
+            SearchChatPopupMenu(requireContext(), lifecycleScope, searchViewModel) {
+                fuzzySearchChat(keyword)
+            }
         view.setOnClickListener {
             if (keyword.isNullOrBlank()) {
                 (requireActivity() as MainActivity).closeSearch()
@@ -126,12 +129,13 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                     if (ItemSearchHeaderBinding.bind(headerView).searchHeaderMore.x > e.rawX) return@setOnHeaderClickListener
 
                     searchAdapter.getTypeData(position)?.let {
-                        val f = SearchSingleFragment.newInstance(
-                            arrayListOf<Parcelable>().apply {
-                                addAll(it)
-                            },
-                            keyword ?: "",
-                        )
+                        val f =
+                            SearchSingleFragment.newInstance(
+                                arrayListOf<Parcelable>().apply {
+                                    addAll(it)
+                                },
+                                keyword ?: "",
+                            )
                         requireActivity().addFragment(this@SearchFragment, f, SearchSingleFragment.TAG, R.id.root_view)
                         binding.searchRv.hideKeyboard()
                     }
@@ -140,76 +144,82 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         )
 
         binding.appRv.layoutManager = GridLayoutManager(requireContext(), 4)
-        appAdapter.appListener = object : AppListener {
-            override fun onItemClick(app: RecentUsedApp) {
-                (requireActivity() as MainActivity).closeSearch()
-                ConversationActivity.show(requireContext(), null, app.appId)
+        appAdapter.appListener =
+            object : AppListener {
+                override fun onItemClick(app: RecentUsedApp) {
+                    (requireActivity() as MainActivity).closeSearch()
+                    ConversationActivity.show(requireContext(), null, app.appId)
+                }
             }
-        }
         binding.appRv.adapter = appAdapter
 
         showBots()
 
-        searchAdapter.onItemClickListener = object : OnSearchClickListener {
-            override fun onTipClick() {
-                binding.searchRv.hideKeyboard()
-                searchAdapter.searchingId = true
-                searchViewModel.search(searchAdapter.query).autoDispose(stopScope).subscribe(
-                    { r ->
-                        searchAdapter.searchingId = false
-                        when {
-                            r.isSuccess -> r.data?.let { data ->
-                                if (data.userId == Session.getAccountId()) {
-                                    ProfileBottomSheetDialogFragment.newInstance().showNow(
-                                        parentFragmentManager,
-                                        UserBottomSheetDialogFragment.TAG,
-                                    )
-                                } else {
-                                    searchViewModel.insertUser(user = data)
-                                    showUserBottom(parentFragmentManager, data)
-                                }
+        searchAdapter.onItemClickListener =
+            object : OnSearchClickListener {
+                override fun onTipClick() {
+                    binding.searchRv.hideKeyboard()
+                    searchAdapter.searchingId = true
+                    searchViewModel.search(searchAdapter.query).autoDispose(stopScope).subscribe(
+                        { r ->
+                            searchAdapter.searchingId = false
+                            when {
+                                r.isSuccess ->
+                                    r.data?.let { data ->
+                                        if (data.userId == Session.getAccountId()) {
+                                            ProfileBottomSheetDialogFragment.newInstance().showNow(
+                                                parentFragmentManager,
+                                                UserBottomSheetDialogFragment.TAG,
+                                            )
+                                        } else {
+                                            searchViewModel.insertUser(user = data)
+                                            showUserBottom(parentFragmentManager, data)
+                                        }
+                                    }
+                                r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.User_not_found)
+                                else -> ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                             }
-                            r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.User_not_found)
-                            else -> ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                        }
-                    },
-                    { t: Throwable ->
-                        searchAdapter.searchingId = false
-                        ErrorHandler.handleError(t)
-                    },
-                )
-            }
+                        },
+                        { t: Throwable ->
+                            searchAdapter.searchingId = false
+                            ErrorHandler.handleError(t)
+                        },
+                    )
+                }
 
-            override fun onUrlClick(url: String) {
-                url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
-            }
+                override fun onUrlClick(url: String) {
+                    url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
+                }
 
-            override fun onAsset(tokenItem: TokenItem) {
-                activity?.let { WalletActivity.show(it, tokenItem) }
-            }
+                override fun onAsset(tokenItem: TokenItem) {
+                    activity?.let { WalletActivity.show(it, tokenItem) }
+                }
 
-            override fun onMessageClick(message: SearchMessageItem) {
-                binding.searchRv.hideKeyboard()
-                val f = SearchMessageFragment.newInstance(message, keyword ?: "")
-                requireActivity().addFragment(this@SearchFragment, f, SearchMessageFragment.TAG, R.id.root_view)
-            }
+                override fun onMessageClick(message: SearchMessageItem) {
+                    binding.searchRv.hideKeyboard()
+                    val f = SearchMessageFragment.newInstance(message, keyword ?: "")
+                    requireActivity().addFragment(this@SearchFragment, f, SearchMessageFragment.TAG, R.id.root_view)
+                }
 
-            override fun onChatClick(chatMinimal: ChatMinimal) {
-                binding.searchRv.hideKeyboard()
-                context?.let { ctx -> ConversationActivity.show(ctx, chatMinimal.conversationId) }
-            }
+                override fun onChatClick(chatMinimal: ChatMinimal) {
+                    binding.searchRv.hideKeyboard()
+                    context?.let { ctx -> ConversationActivity.show(ctx, chatMinimal.conversationId) }
+                }
 
-            override fun onUserClick(user: User) {
-                binding.searchRv.hideKeyboard()
-                context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
-            }
+                override fun onUserClick(user: User) {
+                    binding.searchRv.hideKeyboard()
+                    context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
+                }
 
-            override fun onChatLongClick(chatMinimal: ChatMinimal, anchor: View): Boolean {
-                binding.searchRv.hideKeyboard()
-                searchChatPopupMenu.showPopupMenu(chatMinimal, anchor)
-                return true
+                override fun onChatLongClick(
+                    chatMinimal: ChatMinimal,
+                    anchor: View,
+                ): Boolean {
+                    binding.searchRv.hideKeyboard()
+                    searchChatPopupMenu.showPopupMenu(chatMinimal, anchor)
+                    return true
+                }
             }
-        }
         bindData()
     }
 
@@ -218,28 +228,31 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         loadRecentUsedApps()
     }
 
-    private fun loadRecentUsedApps() = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
+    private fun loadRecentUsedApps() =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
 
-        val apps = withContext(Dispatchers.IO) {
-            var botsList = defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.split("=")
-                ?: return@withContext null
-            if (botsList.size == 1 && !botsList[0].isUUID()) {
-                getPreviousVersionBotsList()?.let {
-                    botsList = it
+            val apps =
+                withContext(Dispatchers.IO) {
+                    var botsList =
+                        defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.split("=")
+                            ?: return@withContext null
+                    if (botsList.size == 1 && !botsList[0].isUUID()) {
+                        getPreviousVersionBotsList()?.let {
+                            botsList = it
+                        }
+                    }
+                    if (botsList.isEmpty()) return@withContext null
+                    val result = searchViewModel.findAppsByIds(botsList.take(8))
+                    if (result.isEmpty()) return@withContext null
+                    result.sortedBy {
+                        botsList.indexOf(it.appId)
+                    }
                 }
-            }
-            if (botsList.isEmpty()) return@withContext null
-            val result = searchViewModel.findAppsByIds(botsList.take(8))
-            if (result.isEmpty()) return@withContext null
-            result.sortedBy {
-                botsList.indexOf(it.appId)
-            }
-        }
-        if (apps.isNullOrEmpty()) return@launch
+            if (apps.isNullOrEmpty()) return@launch
 
-        appAdapter.submitList(apps)
-    }
+            appAdapter.submitList(apps)
+        }
 
     private fun getPreviousVersionBotsList(): List<String>? {
         defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.let { botsString ->
@@ -268,83 +281,96 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     private suspend fun refreshAssetItems(tokenItems: List<TokenItem>?) {
         if (tokenItems.isNullOrEmpty()) return
 
-        val newItems = withContext(Dispatchers.IO) {
-            // Only refresh at most 3 assets, not refresh other matching assets when clicking on `more`.
-            searchViewModel.queryAssets(tokenItems.take(3).map { it.assetId })
-        }
+        val newItems =
+            withContext(Dispatchers.IO) {
+                // Only refresh at most 3 assets, not refresh other matching assets when clicking on `more`.
+                searchViewModel.queryAssets(tokenItems.take(3).map { it.assetId })
+            }
         if (newItems.isEmpty()) return
 
-        val t = if (newItems.size == tokenItems.size) {
-            newItems
-        } else {
-            val m = tokenItems.toMutableList()
-            m.forEachIndexed { i, a ->
-                newItems.find { it.assetId == a.assetId }?.let {
-                    m[i] = it
+        val t =
+            if (newItems.size == tokenItems.size) {
+                newItems
+            } else {
+                val m = tokenItems.toMutableList()
+                m.forEachIndexed { i, a ->
+                    newItems.find { it.assetId == a.assetId }?.let {
+                        m[i] = it
+                    }
                 }
+                m
             }
-            m
-        }
         searchAdapter.setAssetData(t)
         decoration.invalidateHeaders()
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun fuzzySearch(keyword: String?) = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
+    private fun fuzzySearch(keyword: String?) =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
 
-        (requireActivity() as MainActivity).showSearchLoading()
-        searchAdapter.clear()
+            (requireActivity() as MainActivity).showSearchLoading()
+            searchAdapter.clear()
 
-        val cancellationSignal = CancellationSignal()
+            val cancellationSignal = CancellationSignal()
 
-        searchUrlJob = launch {
-            searchViewModel.fuzzySearchUrl(keyword).let { url ->
-                searchAdapter.setUrlData(url)
-            }
+            searchUrlJob =
+                launch {
+                    searchViewModel.fuzzySearchUrl(keyword).let { url ->
+                        searchAdapter.setUrlData(url)
+                    }
+                }
+
+            messageSearchJob =
+                launch {
+                    (searchViewModel.fuzzySearch<SearchMessageItem>(cancellationSignal, keyword, 10) as? List<SearchMessageItem>)?.let { searchMessageItems ->
+                        searchAdapter.setMessageData(searchMessageItems)
+                    }
+                }
+
+            val tokenItems = searchViewModel.fuzzySearch<TokenItem>(cancellationSignal, keyword) as List<TokenItem>?
+            refreshAssetsJob =
+                launch {
+                    refreshAssetItems(tokenItems)
+                }
+
+            val users = searchViewModel.fuzzySearch<User>(cancellationSignal, keyword) as List<User>?
+            val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, keyword) as List<ChatMinimal>?
+            decoration.invalidateHeaders()
+            searchAdapter.setData(tokenItems, users, chatMinimals)
+
+            messageSearchJob?.join()
+            (requireActivity() as MainActivity).hideSearchLoading()
         }
-
-        messageSearchJob = launch {
-            (searchViewModel.fuzzySearch<SearchMessageItem>(cancellationSignal, keyword, 10) as? List<SearchMessageItem>)?.let { searchMessageItems ->
-                searchAdapter.setMessageData(searchMessageItems)
-            }
-        }
-
-        val tokenItems = searchViewModel.fuzzySearch<TokenItem>(cancellationSignal, keyword) as List<TokenItem>?
-        refreshAssetsJob = launch {
-            refreshAssetItems(tokenItems)
-        }
-
-        val users = searchViewModel.fuzzySearch<User>(cancellationSignal, keyword) as List<User>?
-        val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, keyword) as List<ChatMinimal>?
-        decoration.invalidateHeaders()
-        searchAdapter.setData(tokenItems, users, chatMinimals)
-
-        messageSearchJob?.join()
-        (requireActivity() as MainActivity).hideSearchLoading()
-    }
 
     @Suppress("UNCHECKED_CAST")
-    private fun fuzzySearchChat(keyword: String?) = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
+    private fun fuzzySearchChat(keyword: String?) =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
 
-        (requireActivity() as MainActivity).showSearchLoading()
+            (requireActivity() as MainActivity).showSearchLoading()
 
-        val cancellationSignal = CancellationSignal()
-        val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, keyword) as List<ChatMinimal>?
-        searchAdapter.setChatData(chatMinimals)
-        decoration.invalidateHeaders()
+            val cancellationSignal = CancellationSignal()
+            val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, keyword) as List<ChatMinimal>?
+            searchAdapter.setChatData(chatMinimals)
+            decoration.invalidateHeaders()
 
-        (requireActivity() as MainActivity).hideSearchLoading()
-    }
+            (requireActivity() as MainActivity).hideSearchLoading()
+        }
 
     internal class AppAdapter : ListAdapter<RecentUsedApp, AppHolder>(RecentUsedApp.DIFF_CALLBACK) {
         var appListener: AppListener? = null
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ) =
             AppHolder(ItemSearchAppBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-        override fun onBindViewHolder(holder: AppHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: AppHolder,
+            position: Int,
+        ) {
             getItem(position)?.let {
                 holder.bind(it, appListener)
             }
@@ -352,7 +378,10 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     }
 
     internal class AppHolder(val binding: ItemSearchAppBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(app: RecentUsedApp, listener: AppListener?) {
+        fun bind(
+            app: RecentUsedApp,
+            listener: AppListener?,
+        ) {
             binding.iconIv.setInfo(app.fullName, app.iconUrl, app.appId)
             binding.nameTv.text = app.fullName
             binding.root.setOnClickListener {
@@ -367,11 +396,20 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
     interface OnSearchClickListener {
         fun onUserClick(user: User)
+
         fun onChatClick(chatMinimal: ChatMinimal)
+
         fun onMessageClick(message: SearchMessageItem)
+
         fun onAsset(tokenItem: TokenItem)
+
         fun onTipClick()
+
         fun onUrlClick(url: String)
-        fun onChatLongClick(chatMinimal: ChatMinimal, anchor: View): Boolean
+
+        fun onChatLongClick(
+            chatMinimal: ChatMinimal,
+            anchor: View,
+        ): Boolean
     }
 }

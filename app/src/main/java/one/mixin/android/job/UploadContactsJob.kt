@@ -12,7 +12,6 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.createContactsRequests
 
 class UploadContactsJob : BaseJob(Params(PRIORITY_BACKGROUND).requireNetwork()) {
-
     @SuppressLint("CheckResult")
     override fun onRun() {
         val ctx = MixinApplication.appContext

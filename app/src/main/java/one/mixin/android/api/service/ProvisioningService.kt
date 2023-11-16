@@ -10,10 +10,12 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface ProvisioningService {
-
     @GET("device/provisioning/code")
     suspend fun provisionCodeAsync(): MixinResponse<ProvisioningResponseCode>
 
     @POST("provisionings/{id}")
-    suspend fun updateProvisioningAsync(@Path("id") id: String, @Body request: ProvisioningRequest): MixinResponse<ProvisioningResponse>
+    suspend fun updateProvisioningAsync(
+        @Path("id") id: String,
+        @Body request: ProvisioningRequest,
+    ): MixinResponse<ProvisioningResponse>
 }

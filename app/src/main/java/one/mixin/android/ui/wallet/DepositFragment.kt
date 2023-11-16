@@ -43,20 +43,20 @@ import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
 class DepositFragment : BaseFragment() {
-
     companion object {
         const val TAG = "DepositFragment"
     }
 
     private val notSupportDepositAssets = arrayOf(OMNI_USDT_ASSET_ID, BYTOM_CLASSIC_ASSET_ID, MGD_ASSET_ID)
 
-    private val usdtAssets = mapOf(
-        "4d8c508b-91c5-375b-92b0-ee702ed2dac5" to "ERC-20",
-        "b91e18ff-a9ae-3dc7-8679-e935d9a4b34b" to "TRON(TRC-20)",
-        "5dac5e28-ad13-31ea-869f-41770dfcee09" to "EOS",
-        "218bc6f4-7927-3f8e-8568-3a3725b74361" to "Polygon",
-        "94213408-4ee7-3150-a9c4-9c5cce421c78" to "BEP-20",
-    )
+    private val usdtAssets =
+        mapOf(
+            "4d8c508b-91c5-375b-92b0-ee702ed2dac5" to "ERC-20",
+            "b91e18ff-a9ae-3dc7-8679-e935d9a4b34b" to "TRON(TRC-20)",
+            "5dac5e28-ad13-31ea-869f-41770dfcee09" to "EOS",
+            "218bc6f4-7927-3f8e-8568-3a3725b74361" to "Polygon",
+            "94213408-4ee7-3150-a9c4-9c5cce421c78" to "BEP-20",
+        )
 
     private var _binding: FragmentDepositBinding? = null
     private val binding get() = requireNotNull(_binding)
@@ -67,13 +67,20 @@ class DepositFragment : BaseFragment() {
 
     private var alertDialog: Dialog? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
         _binding = FragmentDepositBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
         return binding.root
     }
 
     @SuppressLint("SetTextI18n")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         val asset = requireNotNull(requireArguments().getParcelableCompat(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)) { "required TokenItem can not be null" }
         initView(asset)
@@ -132,18 +139,20 @@ class DepositFragment : BaseFragment() {
                 notSupportLl.isVisible = false
                 sv.isVisible = true
                 val reserveTip = SpannableStringBuilder()
-                val confirmation = requireContext().resources.getQuantityString(
-                    R.plurals.deposit_confirmation,
-                    asset.confirmations,
-                    asset.confirmations,
-                )
-                    .highLight(requireContext(), asset.confirmations.toString())
-                tipTv.text = buildBulletLines(
-                    requireContext(),
-                    SpannableStringBuilder(getTipsByAsset(asset)),
-                    confirmation,
-                    reserveTip,
-                )
+                val confirmation =
+                    requireContext().resources.getQuantityString(
+                        R.plurals.deposit_confirmation,
+                        asset.confirmations,
+                        asset.confirmations,
+                    )
+                        .highLight(requireContext(), asset.confirmations.toString())
+                tipTv.text =
+                    buildBulletLines(
+                        requireContext(),
+                        SpannableStringBuilder(getTipsByAsset(asset)),
+                        confirmation,
+                        reserveTip,
+                    )
             }
         }
 
@@ -158,44 +167,46 @@ class DepositFragment : BaseFragment() {
             networkChipGroup.isSingleSelection = true
             networkChipGroup.removeAllViews()
             usdtAssets.entries.forEach { entry ->
-                val chip = Chip(requireContext()).apply {
-                    text = entry.value
-                    isClickable = true
-                    val same = entry.key == asset.assetId
-                    if (same) {
-                        isChecked = true
-                        setTextColor(Color.WHITE)
-                        chipBackgroundColor = ColorStateList.valueOf(Color.BLACK)
-                    } else {
-                        setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
-                        chipBackgroundColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray_light))
-                    }
-                    setOnClickListener {
-                        if (same) return@setOnClickListener
+                val chip =
+                    Chip(requireContext()).apply {
+                        text = entry.value
+                        isClickable = true
+                        val same = entry.key == asset.assetId
+                        if (same) {
+                            isChecked = true
+                            setTextColor(Color.WHITE)
+                            chipBackgroundColor = ColorStateList.valueOf(Color.BLACK)
+                        } else {
+                            setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
+                            chipBackgroundColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray_light))
+                        }
+                        setOnClickListener {
+                            if (same) return@setOnClickListener
 
-                        lifecycleScope.launch {
-                            var newAsset = walletViewModel.findAssetItemById(entry.key)
-                            if (newAsset == null || newAsset.destination.isNullOrBlank()) {
-                                alertDialog?.dismiss()
-                                alertDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                                    show()
+                            lifecycleScope.launch {
+                                var newAsset = walletViewModel.findAssetItemById(entry.key)
+                                if (newAsset == null || newAsset.destination.isNullOrBlank()) {
+                                    alertDialog?.dismiss()
+                                    alertDialog =
+                                        indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                            show()
+                                        }
+                                    newAsset = walletViewModel.findDepositAsset(entry.key)
+                                    alertDialog?.dismiss()
                                 }
-                                newAsset = walletViewModel.findDepositAsset(entry.key)
-                                alertDialog?.dismiss()
-                            }
-                            if (newAsset == null) {
-                                loading.isVisible = false
-                                toast(R.string.Not_found)
-                            } else {
-                                loading.isVisible = false
-                                addressView.isVisible = true
-                                addressTitle.isVisible = true
-                                tipTv.isVisible = true
-                                initView(newAsset)
+                                if (newAsset == null) {
+                                    loading.isVisible = false
+                                    toast(R.string.Not_found)
+                                } else {
+                                    loading.isVisible = false
+                                    addressView.isVisible = true
+                                    addressTitle.isVisible = true
+                                    tipTv.isVisible = true
+                                    initView(newAsset)
+                                }
                             }
                         }
                     }
-                }
                 networkChipGroup.addView(chip)
             }
         }
@@ -235,11 +246,12 @@ class DepositFragment : BaseFragment() {
 
         if (destination.isNullOrBlank() || signature.isNullOrEmpty()) return
         val pub = Constants.SAFE_PUBLIC_KEY.hexStringToByteArray()
-        val message = if (tag.isNullOrBlank()) {
-            destination
-        } else {
-            "${destination}:${tag}"
-        }.toByteArray().sha3Sum256()
+        val message =
+            if (tag.isNullOrBlank()) {
+                destination
+            } else {
+                "$destination:$tag"
+            }.toByteArray().sha3Sum256()
         val verify = verifyCurve25519Signature(message, signature!!, pub)
         if (verify) {
             val noTag = tag.isNullOrBlank()
@@ -270,7 +282,7 @@ class DepositFragment : BaseFragment() {
                             getString(R.string.deposit_tag_notice)
                         } else {
                             getString(R.string.deposit_memo_notice)
-                        }
+                        },
                     )
                 }
                 addressView.setAsset(
@@ -279,7 +291,13 @@ class DepositFragment : BaseFragment() {
                     asset,
                     null,
                     false,
-                    if (noTag) null else if (asset.assetId == Constants.ChainId.RIPPLE_CHAIN_ID) getString(R.string.deposit_notice_tag, asset.symbol) else getString(R.string.deposit_notice, asset.symbol),
+                    if (noTag) {
+                        null
+                    } else if (asset.assetId == Constants.ChainId.RIPPLE_CHAIN_ID) {
+                        getString(R.string.deposit_notice_tag, asset.symbol)
+                    } else {
+                        getString(R.string.deposit_notice, asset.symbol)
+                    },
                 )
             }
         } else {

@@ -22,7 +22,10 @@ class MySharedAppsAdapter(
     private var unFavoriteApps: List<App>? = null
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setData(favoriteApps: List<App>, unFavoriteApps: List<App>) {
+    fun setData(
+        favoriteApps: List<App>,
+        unFavoriteApps: List<App>,
+    ) {
         this.favoriteApps = favoriteApps
         this.unFavoriteApps = unFavoriteApps
         notifyDataSetChanged()
@@ -65,7 +68,7 @@ class MySharedAppsAdapter(
         return (
             favoriteApps.notNullWithElse({ it.size }, 0) +
                 unFavoriteApps.notNullWithElse({ it.size }, 0)
-            ).run {
+        ).run {
             if (this > 0) {
                 this + 1
             } else {

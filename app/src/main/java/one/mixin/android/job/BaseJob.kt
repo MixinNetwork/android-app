@@ -7,9 +7,6 @@ import com.birbit.android.jobqueue.RetryConstraint
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import java.io.IOException
-import java.net.SocketTimeoutException
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.ExpiredTokenException
@@ -75,9 +72,11 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
+import java.io.IOException
+import java.net.SocketTimeoutException
+import javax.inject.Inject
 
 abstract class BaseJob(params: Params) : Job(params) {
-
     @InstallIn(SingletonComponent::class)
     @EntryPoint
     interface JobEntryPoint {
@@ -344,12 +343,16 @@ abstract class BaseJob(params: Params) : Job(params) {
                             ?: (
                                 (throwable as? WebSocketException)?.shouldRetry()
                                     ?: ((throwable as? LocalJobException)?.shouldRetry() ?: false)
-                                )
-                        )
-                )
+                            )
+                    )
+            )
     }
 
-    public override fun shouldReRunOnThrowable(throwable: Throwable, runCount: Int, maxRunCount: Int): RetryConstraint {
+    public override fun shouldReRunOnThrowable(
+        throwable: Throwable,
+        runCount: Int,
+        maxRunCount: Int,
+    ): RetryConstraint {
         if (runCount >= 10) {
             reportException("Job shouldReRunOnThrowable retry max count:$runCount", throwable)
         }
@@ -363,7 +366,10 @@ abstract class BaseJob(params: Params) : Job(params) {
     override fun onAdded() {
     }
 
-    override fun onCancel(cancelReason: Int, throwable: Throwable?) {
+    override fun onCancel(
+        cancelReason: Int,
+        throwable: Throwable?,
+    ) {
         if (cancelReason == CancelReason.REACHED_RETRY_LIMIT) {
             throwable?.let {
                 reportException("Job cancelReason REACHED_RETRY_LIMIT", it)

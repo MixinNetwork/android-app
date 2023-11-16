@@ -54,7 +54,6 @@ open class Account(
     val transferConfirmationThreshold: Double = 100.0,
     @SerializedName("features")
     val features: ArrayList<String>? = null,
-
     @SerializedName("salt_base64")
     var salt: String?,
 )

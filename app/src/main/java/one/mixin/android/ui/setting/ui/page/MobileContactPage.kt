@@ -97,9 +97,10 @@ fun MobileContactPage() {
         if (loading) {
             SettingTile(title = "", trailing = {
                 CircularProgressIndicator(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .padding(horizontal = 4.dp),
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .padding(horizontal = 4.dp),
                     color = MixinAppTheme.colors.accent,
                     strokeWidth = 2.dp,
                 )
@@ -131,24 +132,25 @@ private fun UploadButton(
         mutableStateOf(false)
     }
 
-    fun uploadContacts(contacts: List<Contact>) = coroutineScope.launch {
-        val mutableList = createContactsRequests(contacts)
+    fun uploadContacts(contacts: List<Contact>) =
+        coroutineScope.launch {
+            val mutableList = createContactsRequests(contacts)
 
-        if (mutableList.isEmpty()) {
+            if (mutableList.isEmpty()) {
+                processing = false
+                toast(R.string.Empty_address_book)
+                return@launch
+            }
+
+            handleMixinResponse(
+                invokeNetwork = { viewModel.syncContacts(mutableList) },
+                successBlock = {
+                    context.defaultSharedPreferences.putBoolean(Constants.Account.PREF_DELETE_MOBILE_CONTACTS, false)
+                    onUploaded()
+                },
+            )
             processing = false
-            toast(R.string.Empty_address_book)
-            return@launch
         }
-
-        handleMixinResponse(
-            invokeNetwork = { viewModel.syncContacts(mutableList) },
-            successBlock = {
-                context.defaultSharedPreferences.putBoolean(Constants.Account.PREF_DELETE_MOBILE_CONTACTS, false)
-                onUploaded()
-            },
-        )
-        processing = false
-    }
 
     SettingTile(
         title = stringResource(R.string.Upload_Mobile_Contacts),
@@ -156,9 +158,10 @@ private fun UploadButton(
         trailing = {
             if (processing) {
                 CircularProgressIndicator(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .padding(4.dp),
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .padding(4.dp),
                     color = MixinAppTheme.colors.accent,
                     strokeWidth = 2.dp,
                 )
@@ -216,9 +219,10 @@ private fun DeleteButton(
         trailing = {
             if (deleting) {
                 CircularProgressIndicator(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .padding(4.dp),
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .padding(4.dp),
                     color = MixinAppTheme.colors.accent,
                     strokeWidth = 2.dp,
                 )
@@ -228,25 +232,26 @@ private fun DeleteButton(
         showAlert = true
     }
 
-    fun deleteContacts() = scope.launch {
-        deleting = true
-        handleMixinResponse(
-            invokeNetwork = { viewModel.deleteContacts() },
-            successBlock = {
-                context.defaultSharedPreferences.putBoolean(Constants.Account.PREF_DELETE_MOBILE_CONTACTS, true)
-                onDeleted()
-            },
-            failureBlock = {
-                return@handleMixinResponse false
-            },
-            exceptionBlock = {
-                return@handleMixinResponse false
-            },
-            doAfterNetworkSuccess = {
-            },
-        )
-        deleting = false
-    }
+    fun deleteContacts() =
+        scope.launch {
+            deleting = true
+            handleMixinResponse(
+                invokeNetwork = { viewModel.deleteContacts() },
+                successBlock = {
+                    context.defaultSharedPreferences.putBoolean(Constants.Account.PREF_DELETE_MOBILE_CONTACTS, true)
+                    onDeleted()
+                },
+                failureBlock = {
+                    return@handleMixinResponse false
+                },
+                exceptionBlock = {
+                    return@handleMixinResponse false
+                },
+                doAfterNetworkSuccess = {
+                },
+            )
+            deleting = false
+        }
 
     if (showAlert) {
         MixinAlertDialog(

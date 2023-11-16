@@ -8,13 +8,16 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.SearchMessageItem
 
 class MessageHolder constructor(val binding: ItemSearchMessageBinding) : NormalHolder(binding.root) {
-
-    fun bind(message: SearchMessageItem, onItemClickListener: SearchFragment.OnSearchClickListener?) {
-        binding.searchNameTv.text = if (message.conversationName.isNullOrEmpty()) {
-            message.userFullName
-        } else {
-            message.conversationName
-        }
+    fun bind(
+        message: SearchMessageItem,
+        onItemClickListener: SearchFragment.OnSearchClickListener?,
+    ) {
+        binding.searchNameTv.text =
+            if (message.conversationName.isNullOrEmpty()) {
+                message.userFullName
+            } else {
+                message.conversationName
+            }
         binding.searchMsgTv.text = itemView.context.resources.getQuantityString(R.plurals.search_related_message, message.messageCount, message.messageCount)
         if (message.conversationCategory == ConversationCategory.CONTACT.name) {
             binding.searchAvatarIv.setInfo(message.userFullName, message.userAvatarUrl, message.userId)

@@ -9,7 +9,6 @@ import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 
 class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHolder(binding.root) {
-
     fun bind(
         messageItem: ChatHistoryMessageItem,
         isFirst: Boolean,
@@ -45,14 +44,19 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
         }
         chatLayout(isMe, isLast)
         binding.chatTime.load(messageItem.createdAt)
-        binding.recallTv.text = if (isMe) {
-            ctx.getString(R.string.You_deleted_this_message) + " "
-        } else {
-            ctx.getString(R.string.This_message_was_deleted) + " "
-        }
+        binding.recallTv.text =
+            if (isMe) {
+                ctx.getString(R.string.You_deleted_this_message) + " "
+            } else {
+                ctx.getString(R.string.This_message_was_deleted) + " "
+            }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         val lp = (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {

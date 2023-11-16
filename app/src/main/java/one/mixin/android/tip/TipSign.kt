@@ -20,7 +20,11 @@ sealed class TipSignSpec(
     open val curve: String,
 ) {
     abstract fun public(priv: ByteArray): String
-    abstract fun sign(priv: ByteArray, data: ByteArray): String
+
+    abstract fun sign(
+        priv: ByteArray,
+        data: ByteArray,
+    ): String
 
     sealed class Ecdsa(override val curve: String) : TipSignSpec("ecdsa", curve) {
         object Secp256k1 : Ecdsa("secp256k1") {
@@ -28,7 +32,10 @@ sealed class TipSignSpec(
                 return ECKeyPair.create(priv).publicKey.toByteArray().toHex()
             }
 
-            override fun sign(priv: ByteArray, data: ByteArray): String {
+            override fun sign(
+                priv: ByteArray,
+                data: ByteArray,
+            ): String {
                 val keyPair = ECKeyPair.create(priv)
                 val signature = Sign.signPrefixedMessage(data, keyPair)
                 val b = ByteArray(65)
@@ -47,7 +54,10 @@ sealed class TipSignSpec(
                 return keypair.publicKey.toHex()
             }
 
-            override fun sign(priv: ByteArray, data: ByteArray): String {
+            override fun sign(
+                priv: ByteArray,
+                data: ByteArray,
+            ): String {
                 return initFromSeedAndSign(priv, data).toHex()
             }
         }
@@ -58,12 +68,20 @@ sealed class TipSignAction(open val spec: TipSignSpec) {
     data class Public(override val spec: TipSignSpec) : TipSignAction(spec) {
         operator fun invoke(priv: ByteArray) = spec.public(tipPrivToPrivateKey(priv))
     }
+
     data class Signature(override val spec: TipSignSpec) : TipSignAction(spec) {
-        operator fun invoke(priv: ByteArray, data: ByteArray) = spec.sign(tipPrivToPrivateKey(priv), data)
+        operator fun invoke(
+            priv: ByteArray,
+            data: ByteArray,
+        ) = spec.sign(tipPrivToPrivateKey(priv), data)
     }
 }
 
-fun matchTipSignAction(action: String, alg: String, crv: String): TipSignAction? {
+fun matchTipSignAction(
+    action: String,
+    alg: String,
+    crv: String,
+): TipSignAction? {
     val spec = matchTipSignSpec(alg, crv) ?: return null
 
     return when (action) {
@@ -73,7 +91,10 @@ fun matchTipSignAction(action: String, alg: String, crv: String): TipSignAction?
     }
 }
 
-private fun matchTipSignSpec(alg: String, crv: String): TipSignSpec? {
+private fun matchTipSignSpec(
+    alg: String,
+    crv: String,
+): TipSignSpec? {
     return if (alg.equals("ecdsa", true) && crv.equals("secp256k1", true)) {
         TipSignSpec.Ecdsa.Secp256k1
     } else if (alg.equals("eddsa", true) && crv.equals("ed25519", true)) {
@@ -83,24 +104,32 @@ private fun matchTipSignSpec(alg: String, crv: String): TipSignSpec? {
     }
 }
 
-fun tipPrivToPrivateKey(priv: ByteArray, chainId: String = Constants.ChainId.ETHEREUM_CHAIN_ID): ByteArray {
+fun tipPrivToPrivateKey(
+    priv: ByteArray,
+    chainId: String = Constants.ChainId.ETHEREUM_CHAIN_ID,
+): ByteArray {
     val seed = priv.sha3Sum256()
     val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed)
-    val bip44KeyPair = when (chainId) {
-        Constants.ChainId.BITCOIN_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Bitcoin)
-        Constants.ChainId.ETHEREUM_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
-        else -> throw IllegalArgumentException("Not supported chainId")
-    }
+    val bip44KeyPair =
+        when (chainId) {
+            Constants.ChainId.BITCOIN_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Bitcoin)
+            Constants.ChainId.ETHEREUM_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+            else -> throw IllegalArgumentException("Not supported chainId")
+        }
     return Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
 }
 
-fun tipPrivToAddress(priv: ByteArray, chainId: String): String {
+fun tipPrivToAddress(
+    priv: ByteArray,
+    chainId: String,
+): String {
     val seed = priv.sha3Sum256()
     val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed)
-    val bip44KeyPair = when (chainId) {
-        Constants.ChainId.BITCOIN_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Bitcoin)
-        Constants.ChainId.ETHEREUM_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
-        else -> throw IllegalArgumentException("Not supported chainId")
-    }
+    val bip44KeyPair =
+        when (chainId) {
+            Constants.ChainId.BITCOIN_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Bitcoin)
+            Constants.ChainId.ETHEREUM_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+            else -> throw IllegalArgumentException("Not supported chainId")
+        }
     return Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
 }

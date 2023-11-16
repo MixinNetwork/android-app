@@ -27,7 +27,10 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
 
     private val binding by viewBinding(FragmentAboutBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.setSubTitle(
@@ -36,19 +39,21 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
             )
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             logAndDebug.isVisible = defaultSharedPreferences.getBoolean(Constants.Debug.LOG_AND_DEBUG, false)
-            imageView.setOnClickListener(object : DebugClickListener() {
-                override fun onDebugClick() {
-                    if (defaultSharedPreferences.getBoolean(Constants.Debug.LOG_AND_DEBUG, false)) {
-                        defaultSharedPreferences.putBoolean(Constants.Debug.LOG_AND_DEBUG, false)
-                        logAndDebug.isVisible = false
-                    } else {
-                        defaultSharedPreferences.putBoolean(Constants.Debug.LOG_AND_DEBUG, true)
-                        logAndDebug.isVisible = true
+            imageView.setOnClickListener(
+                object : DebugClickListener() {
+                    override fun onDebugClick() {
+                        if (defaultSharedPreferences.getBoolean(Constants.Debug.LOG_AND_DEBUG, false)) {
+                            defaultSharedPreferences.putBoolean(Constants.Debug.LOG_AND_DEBUG, false)
+                            logAndDebug.isVisible = false
+                        } else {
+                            defaultSharedPreferences.putBoolean(Constants.Debug.LOG_AND_DEBUG, true)
+                            logAndDebug.isVisible = true
+                        }
                     }
-                }
 
-                override fun onSingleClick() {}
-            })
+                    override fun onSingleClick() {}
+                },
+            )
             twitter.setOnClickListener { context?.openUrl("https://twitter.com/MixinMessenger") }
             facebook.setOnClickListener { context?.openUrl("https://fb.com/MixinMessenger") }
             helpCenter.setOnClickListener { context?.openUrl(Constants.HelpLink.CENTER) }

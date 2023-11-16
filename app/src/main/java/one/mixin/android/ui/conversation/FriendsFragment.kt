@@ -22,19 +22,22 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class FriendsFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListener {
     init {
-        adapter = FriendsAdapter(userCallback).apply {
-            listener = this@FriendsFragment
-        }
+        adapter =
+            FriendsAdapter(userCallback).apply {
+                listener = this@FriendsFragment
+            }
     }
 
     companion object {
         const val TAG = "FriendsFragment"
 
-        fun newInstance(conversationId: String) = FriendsFragment().apply {
-            arguments = bundleOf(
-                CONVERSATION_ID to conversationId,
-            )
-        }
+        fun newInstance(conversationId: String) =
+            FriendsFragment().apply {
+                arguments =
+                    bundleOf(
+                        CONVERSATION_ID to conversationId,
+                    )
+            }
     }
 
     private val viewModel by viewModels<ConversationViewModel>()

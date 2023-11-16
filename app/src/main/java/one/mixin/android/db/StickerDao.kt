@@ -7,12 +7,14 @@ import one.mixin.android.vo.Sticker
 
 @Dao
 interface StickerDao : BaseDao<Sticker> {
-
     @Query("SELECT * FROM stickers WHERE last_use_at > 0 ORDER BY last_use_at DESC LIMIT 20")
     fun recentUsedStickers(): LiveData<List<Sticker>>
 
     @Query("UPDATE stickers SET last_use_at = :at WHERE sticker_id = :stickerId")
-    suspend fun updateUsedAt(stickerId: String, at: String)
+    suspend fun updateUsedAt(
+        stickerId: String,
+        at: String,
+    )
 
     @Query("SELECT * FROM stickers WHERE sticker_id = :stickerId")
     fun getStickerByUnique(stickerId: String): Sticker?
@@ -21,7 +23,10 @@ interface StickerDao : BaseDao<Sticker> {
     fun deleteByStickerId(stickerId: String)
 
     @Query("SELECT s.* FROM sticker_relationships sr, stickers s WHERE sr.sticker_id = s.sticker_id AND sr.album_id = :id AND s.name = :name")
-    fun getStickerByAlbumIdAndName(id: String, name: String): Sticker?
+    fun getStickerByAlbumIdAndName(
+        id: String,
+        name: String,
+    ): Sticker?
 
     @Query("SELECT * FROM stickers WHERE sticker_id = :stickerId")
     suspend fun findStickerById(stickerId: String): Sticker?
@@ -30,10 +35,16 @@ interface StickerDao : BaseDao<Sticker> {
     fun observeStickerById(stickerId: String): LiveData<Sticker>
 
     @Query("UPDATE stickers SET album_id = :albumId WHERE sticker_id = :stickerId")
-    suspend fun updateAlbumId(stickerId: String, albumId: String)
+    suspend fun updateAlbumId(
+        stickerId: String,
+        albumId: String,
+    )
 
     @Query("SELECT s.* FROM stickers s WHERE s.rowid > :rowId ORDER BY s.rowid ASC LIMIT :limit")
-    fun getStickersByLimitAndRowId(limit: Int, rowId: Long): List<Sticker>
+    fun getStickersByLimitAndRowId(
+        limit: Int,
+        rowId: Long,
+    ): List<Sticker>
 
     @Query("SELECT rowid FROM stickers WHERE sticker_id = :stickerId")
     fun getStickerRowId(stickerId: String): Long?

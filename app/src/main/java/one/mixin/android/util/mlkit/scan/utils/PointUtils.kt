@@ -4,7 +4,6 @@ import android.graphics.Point
 import timber.log.Timber
 
 object PointUtils {
-
     @JvmOverloads
     fun transform(
         point: Point,

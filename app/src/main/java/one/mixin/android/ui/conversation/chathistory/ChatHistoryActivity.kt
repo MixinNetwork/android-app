@@ -9,7 +9,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.view.ContextThemeWrapper
 import android.view.View
 import androidx.appcompat.widget.PopupMenu
@@ -76,7 +75,6 @@ import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.copy
@@ -104,8 +102,11 @@ import javax.inject.Inject
 @UnstableApi @AndroidEntryPoint
 class ChatHistoryActivity : BaseActivity() {
     private lateinit var binding: ActivityChatHistoryBinding
+
     override fun getNightThemeId(): Int = R.style.AppTheme_Night_NoActionBar
+
     override fun getDefaultThemeId(): Int = R.style.AppTheme_NoActionBar
+
     private val decoration by lazy {
         MixinHeadersDecoration(chatHistoryAdapter)
     }
@@ -141,6 +142,7 @@ class ChatHistoryActivity : BaseActivity() {
     }
 
     private var firstLoad = true
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatHistoryBinding.inflate(layoutInflater)
@@ -159,21 +161,22 @@ class ChatHistoryActivity : BaseActivity() {
         )
         binding.recyclerView.addItemDecoration(decoration)
         binding.recyclerView.itemAnimator = null
-        binding.recyclerView.layoutManager = object : LinearLayoutManager(this) {
-            override fun onLayoutChildren(
-                recycler: RecyclerView.Recycler,
-                state: RecyclerView.State,
-            ) {
-                if (!isTranscript && firstLoad && state.itemCount > 0) {
-                    firstLoad = false
-                    scrollToPositionWithOffset(
-                        state.itemCount - 1,
-                        0,
-                    )
+        binding.recyclerView.layoutManager =
+            object : LinearLayoutManager(this) {
+                override fun onLayoutChildren(
+                    recycler: RecyclerView.Recycler,
+                    state: RecyclerView.State,
+                ) {
+                    if (!isTranscript && firstLoad && state.itemCount > 0) {
+                        firstLoad = false
+                        scrollToPositionWithOffset(
+                            state.itemCount - 1,
+                            0,
+                        )
+                    }
+                    super.onLayoutChildren(recycler, state)
                 }
-                super.onLayoutChildren(recycler, state)
             }
-        }
         binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.adapter = chatHistoryAdapter
         if (isTranscript) {
@@ -190,12 +193,13 @@ class ChatHistoryActivity : BaseActivity() {
         } else {
             lifecycleScope.launch {
                 if (isGroup) {
-                    val role = withContext(Dispatchers.IO) {
-                        conversationRepository.findParticipantById(
-                            conversationId,
-                            Session.getAccountId()!!,
-                        )?.role
-                    }
+                    val role =
+                        withContext(Dispatchers.IO) {
+                            conversationRepository.findParticipantById(
+                                conversationId,
+                                Session.getAccountId()!!,
+                            )?.role
+                        }
                     binding.unpinTv.isVisible = role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
                 } else {
                     binding.unpinTv.isVisible = true
@@ -251,11 +255,12 @@ class ChatHistoryActivity : BaseActivity() {
     }
 
     private fun buildLivePagedList(dataSource: DataSource.Factory<Int, ChatHistoryMessageItem>): LiveData<PagedList<ChatHistoryMessageItem>> {
-        val pagedListConfig = PagedList.Config.Builder()
-            .setPrefetchDistance(10 * 2)
-            .setPageSize(10)
-            .setEnablePlaceholders(true)
-            .build()
+        val pagedListConfig =
+            PagedList.Config.Builder()
+                .setPrefetchDistance(10 * 2)
+                .setPageSize(10)
+                .setEnablePlaceholders(true)
+                .build()
         return LivePagedListBuilder(
             dataSource,
             pagedListConfig,
@@ -276,7 +281,10 @@ class ChatHistoryActivity : BaseActivity() {
                 )
             }
 
-            override fun onPostClick(view: View, messageItem: ChatHistoryMessageItem) {
+            override fun onPostClick(
+                view: View,
+                messageItem: ChatHistoryMessageItem,
+            ) {
                 MarkdownActivity.show(
                     this@ChatHistoryActivity,
                     messageItem.content!!,
@@ -286,11 +294,12 @@ class ChatHistoryActivity : BaseActivity() {
 
             override fun onUrlLongClick(url: String) {
                 val builder = BottomSheet.Builder(this@ChatHistoryActivity)
-                val view = View.inflate(
-                    ContextThemeWrapper(this@ChatHistoryActivity, R.style.Custom),
-                    R.layout.view_url_bottom,
-                    null,
-                )
+                val view =
+                    View.inflate(
+                        ContextThemeWrapper(this@ChatHistoryActivity, R.style.Custom),
+                        R.layout.view_url_bottom,
+                        null,
+                    )
                 val viewBinding = ViewUrlBottomBinding.bind(view)
                 builder.setCustomView(view)
                 val bottomSheet = builder.create()
@@ -330,20 +339,24 @@ class ChatHistoryActivity : BaseActivity() {
                 this@ChatHistoryActivity.callPhone(phoneNumber)
             }
 
-            override fun onQuoteMessageClick(messageId: String, quoteMessageId: String?) {
+            override fun onQuoteMessageClick(
+                messageId: String,
+                quoteMessageId: String?,
+            ) {
                 quoteMessageId?.let { msgId ->
                     lifecycleScope.launch {
-                        val index = if (isTranscript) {
-                            conversationRepository.findTranscriptMessageIndex(
-                                transcriptId,
-                                msgId,
-                            )
-                        } else {
-                            conversationRepository.findPinMessageIndex(
-                                conversationId,
-                                msgId,
-                            )
-                        }
+                        val index =
+                            if (isTranscript) {
+                                conversationRepository.findTranscriptMessageIndex(
+                                    transcriptId,
+                                    msgId,
+                                )
+                            } else {
+                                conversationRepository.findPinMessageIndex(
+                                    conversationId,
+                                    msgId,
+                                )
+                            }
                         scrollTo(index, this@ChatHistoryActivity.screenHeight() * 3 / 4) {
                             RxBus.publish(BlinkEvent(quoteMessageId))
                         }
@@ -351,7 +364,10 @@ class ChatHistoryActivity : BaseActivity() {
                 }
             }
 
-            override fun onImageClick(messageItem: ChatHistoryMessageItem, view: View) {
+            override fun onImageClick(
+                messageItem: ChatHistoryMessageItem,
+                view: View,
+            ) {
                 if (isTranscript) {
                     TranscriptMediaPagerActivity.show(
                         this@ChatHistoryActivity,
@@ -384,7 +400,10 @@ class ChatHistoryActivity : BaseActivity() {
             override fun onAudioFileClick(messageItem: ChatHistoryMessageItem) {
             }
 
-            override fun onActionClick(action: String, userId: String?) {
+            override fun onActionClick(
+                action: String,
+                userId: String?,
+            ) {
                 if (openInputAction(action) || userId == null) return
 
                 lifecycleScope.launch {
@@ -393,7 +412,10 @@ class ChatHistoryActivity : BaseActivity() {
                 }
             }
 
-            override fun onAppCardClick(appCard: AppCardData, userId: String?) {
+            override fun onAppCardClick(
+                appCard: AppCardData,
+                userId: String?,
+            ) {
                 if (openInputAction(appCard.action)) return
 
                 appCard.action.openAsUrlOrWeb(this@ChatHistoryActivity, conversationId, supportFragmentManager, lifecycleScope, null, appCard)
@@ -410,7 +432,10 @@ class ChatHistoryActivity : BaseActivity() {
                 )
             }
 
-            override fun onRetryDownload(transcriptId: String?, messageId: String) {
+            override fun onRetryDownload(
+                transcriptId: String?,
+                messageId: String,
+            ) {
                 lifecycleScope.launch {
                     if (transcriptId != null) {
                         conversationRepository.getTranscriptById(transcriptId, messageId)
@@ -445,7 +470,10 @@ class ChatHistoryActivity : BaseActivity() {
                 }
             }
 
-            override fun onRetryUpload(transcriptId: String?, messageId: String) {
+            override fun onRetryUpload(
+                transcriptId: String?,
+                messageId: String,
+            ) {
                 lifecycleScope.launch {
                     if (transcriptId != null) {
                         conversationRepository.getTranscriptById(transcriptId, messageId)
@@ -484,7 +512,10 @@ class ChatHistoryActivity : BaseActivity() {
                 }
             }
 
-            override fun onCancel(transcriptId: String?, messageId: String) {
+            override fun onCancel(
+                transcriptId: String?,
+                messageId: String,
+            ) {
                 lifecycleScope.launch(Dispatchers.IO) {
                     if (transcriptId != null) {
                         conversationRepository.getTranscriptById(transcriptId, messageId)
@@ -556,7 +587,10 @@ class ChatHistoryActivity : BaseActivity() {
                 finish()
             }
 
-            override fun onMenu(view: View, messageItem: ChatHistoryMessageItem) {
+            override fun onMenu(
+                view: View,
+                messageItem: ChatHistoryMessageItem,
+            ) {
                 lifecycleScope.launch {
                     val role = withContext(Dispatchers.IO) { conversationRepository.findParticipantById(conversationId, Session.getAccountId()!!) }?.role
                     val isAdmin = role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
@@ -752,11 +786,12 @@ class ChatHistoryActivity : BaseActivity() {
     @SuppressLint("AutoDispose")
     private fun showBottomSheet() {
         val builder = BottomSheet.Builder(this)
-        val view = View.inflate(
-            androidx.appcompat.view.ContextThemeWrapper(this, R.style.Custom),
-            R.layout.view_transcript,
-            null,
-        )
+        val view =
+            View.inflate(
+                androidx.appcompat.view.ContextThemeWrapper(this, R.style.Custom),
+                R.layout.view_transcript,
+                null,
+            )
         val viewBinding = ViewTranscriptBinding.bind(view)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
@@ -788,7 +823,10 @@ class ChatHistoryActivity : BaseActivity() {
         bottomSheet.show()
     }
 
-    private fun retryUpload(id: String, onError: () -> Unit) {
+    private fun retryUpload(
+        id: String,
+        onError: () -> Unit,
+    ) {
         lifecycleScope.launch(Dispatchers.IO) {
             conversationRepository.findMessageById(id)?.let { message ->
                 if (message.isVideo() && message.mediaSize != null && message.mediaSize == 0L) {
@@ -815,11 +853,12 @@ class ChatHistoryActivity : BaseActivity() {
                         onError.invoke()
                     }
                 } else if (message.isImage() && message.mediaSize != null && message.mediaSize == 0L) { // un-downloaded GIPHY
-                    val category = when {
-                        message.isSignal() -> MessageCategory.SIGNAL_IMAGE
-                        message.isEncrypted() -> MessageCategory.ENCRYPTED_IMAGE
-                        else -> MessageCategory.PLAIN_IMAGE
-                    }.name
+                    val category =
+                        when {
+                            message.isSignal() -> MessageCategory.SIGNAL_IMAGE
+                            message.isEncrypted() -> MessageCategory.ENCRYPTED_IMAGE
+                            else -> MessageCategory.PLAIN_IMAGE
+                        }.name
                     try {
                         jobManager.addJobInBackground(
                             SendGiphyJob(
@@ -864,7 +903,13 @@ class ChatHistoryActivity : BaseActivity() {
         private const val COUNT = "count"
         private const val TRANSCRIPT = 0
         private const val CHAT_HISTORY = 1
-        fun show(context: Context, messageId: String, conversationId: String, encryptCategory: EncryptCategory) {
+
+        fun show(
+            context: Context,
+            messageId: String,
+            conversationId: String,
+            encryptCategory: EncryptCategory,
+        ) {
             context.startActivity(
                 Intent(context, ChatHistoryActivity::class.java).apply {
                     putExtra(MESSAGE_ID, messageId)
@@ -875,7 +920,12 @@ class ChatHistoryActivity : BaseActivity() {
             )
         }
 
-        fun getPinIntent(context: Context, conversationId: String, isGroup: Boolean, count: Int): Intent {
+        fun getPinIntent(
+            context: Context,
+            conversationId: String,
+            isGroup: Boolean,
+            count: Int,
+        ): Intent {
             return Intent(context, ChatHistoryActivity::class.java).apply {
                 putExtra(CONVERSATION_ID, conversationId)
                 putExtra(CATEGORY, CHAT_HISTORY)

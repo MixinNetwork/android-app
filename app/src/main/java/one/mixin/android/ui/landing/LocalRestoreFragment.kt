@@ -48,7 +48,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
-
     private val binding by viewBinding(FragmentLocalRestoreBinding::bind)
 
     @Inject
@@ -58,14 +57,18 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        chooseFolderResult = registerForActivityResult(
-            ChooseFolderContract(),
-            requireActivity().activityResultRegistry,
-            ::callbackChooseFolder,
-        )
+        chooseFolderResult =
+            registerForActivityResult(
+                ChooseFolderContract(),
+                requireActivity().activityResultRegistry,
+                ::callbackChooseFolder,
+            )
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         alertDialogBuilder()
             .setMessage(R.string.restore_message)
@@ -103,28 +106,32 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
             }
     }
 
-    private fun findBackupInfo() = lifecycleScope.launch(Dispatchers.IO) {
-        val backupInfo = when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
-                findBackupApi29(requireContext(), coroutineContext)
-            }
-            ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED -> {
-                findBackup(requireContext(), coroutineContext)
-            }
-            else -> {
-                null
+    private fun findBackupInfo() =
+        lifecycleScope.launch(Dispatchers.IO) {
+            val backupInfo =
+                when {
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
+                        findBackupApi29(requireContext(), coroutineContext)
+                    }
+                    ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED -> {
+                        findBackup(requireContext(), coroutineContext)
+                    }
+                    else -> {
+                        null
+                    }
+                }
+            withContext(Dispatchers.Main) {
+                if (backupInfo == null) {
+                    showErrorAlert(Result.NOT_FOUND)
+                } else {
+                    initUI(backupInfo)
+                }
             }
         }
-        withContext(Dispatchers.Main) {
-            if (backupInfo == null) {
-                showErrorAlert(Result.NOT_FOUND)
-            } else {
-                initUI(backupInfo)
-            }
-        }
-    }
 
-    private fun showErrorAlert(@Suppress("SameParameterValue") error: Result) {
+    private fun showErrorAlert(
+        @Suppress("SameParameterValue") error: Result,
+    ) {
         val userBackup = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
         alertDialogBuilder()
             .apply {
@@ -201,8 +208,9 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
                 Timber.d(requireActivity().getDisplayPath(uri))
             }
             defaultSharedPreferences.putString(Constants.Account.PREF_BACKUP_DIRECTORY, uri.toString())
-            val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            val takeFlags =
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             requireActivity().contentResolver
                 .takePersistableUriPermission(uri, takeFlags)
             Timber.d("${canUserAccessBackupDirectory(requireContext())}")
@@ -248,15 +256,16 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
     }
 
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    private fun internalRestore() = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
+    private fun internalRestore() =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            restoreApi29(requireContext(), restoreCallback)
-        } else {
-            restore(requireContext(), restoreCallback)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                restoreApi29(requireContext(), restoreCallback)
+            } else {
+                restore(requireContext(), restoreCallback)
+            }
         }
-    }
 
     private val restoreCallback: (result: Result) -> Unit = { result ->
         BackupNotification.cancel()

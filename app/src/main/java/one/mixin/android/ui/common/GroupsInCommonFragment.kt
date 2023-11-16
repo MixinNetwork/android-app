@@ -25,9 +25,10 @@ class GroupsInCommonFragment : BaseFragment(R.layout.fragment_groups_in_common) 
     companion object {
         const val TAG = "GroupsInCommonFragment"
 
-        fun newInstance(userId: String) = GroupsInCommonFragment().withArgs {
-            putString(ARGS_USER_ID, userId)
-        }
+        fun newInstance(userId: String) =
+            GroupsInCommonFragment().withArgs {
+                putString(ARGS_USER_ID, userId)
+            }
     }
 
     private val viewModel by viewModels<BottomSheetViewModel>()
@@ -35,12 +36,16 @@ class GroupsInCommonFragment : BaseFragment(R.layout.fragment_groups_in_common) 
 
     private lateinit var userId: String
 
-    private val groupAdapter = GroupAdapter { groupMinimal ->
-        requireActivity().supportFragmentManager.popBackStackImmediate()
-        ConversationActivity.show(requireContext(), groupMinimal.conversationId)
-    }
+    private val groupAdapter =
+        GroupAdapter { groupMinimal ->
+            requireActivity().supportFragmentManager.popBackStackImmediate()
+            ConversationActivity.show(requireContext(), groupMinimal.conversationId)
+        }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         userId = requireNotNull(requireArguments().getString(ARGS_USER_ID))
         binding.apply {
@@ -51,24 +56,34 @@ class GroupsInCommonFragment : BaseFragment(R.layout.fragment_groups_in_common) 
         loadData()
     }
 
-    private fun loadData() = lifecycleScope.launch {
-        val common = viewModel.findSameConversations(requireNotNull(Session.getAccountId()), userId)
-        groupAdapter.submitList(common)
-        binding.va.displayedChild = if (common.isEmpty()) 0 else 1
-    }
+    private fun loadData() =
+        lifecycleScope.launch {
+            val common = viewModel.findSameConversations(requireNotNull(Session.getAccountId()), userId)
+            groupAdapter.submitList(common)
+            binding.va.displayedChild = if (common.isEmpty()) 0 else 1
+        }
 }
 
 class GroupAdapter(private val onItemClick: (GroupMinimal) -> Unit) : ListAdapter<GroupMinimal, GroupHolder>(GroupMinimal.DIFF_CALLBACK) {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GroupHolder =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): GroupHolder =
         GroupHolder(ItemGroupsInCommonBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-    override fun onBindViewHolder(holder: GroupHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: GroupHolder,
+        position: Int,
+    ) {
         getItem(position)?.let { holder.bind(it, onItemClick) }
     }
 }
 
 class GroupHolder(val binding: ItemGroupsInCommonBinding) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(item: GroupMinimal, onItemClick: (GroupMinimal) -> Unit) {
+    fun bind(
+        item: GroupMinimal,
+        onItemClick: (GroupMinimal) -> Unit,
+    ) {
         binding.apply {
             icon.setGroup(item.groupIconUrl)
             name.text = item.groupName

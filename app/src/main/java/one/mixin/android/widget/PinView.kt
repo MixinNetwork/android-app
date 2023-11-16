@@ -19,7 +19,6 @@ import one.mixin.android.extension.hintTextColor
 import one.mixin.android.extension.textColor
 
 class PinView : LinearLayout {
-
     companion object {
         const val DEFAULT_COUNT = 6
         const val STAR = "*"

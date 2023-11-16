@@ -15,49 +15,77 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface UserService {
-
     @POST("users/fetch")
-    fun getUsers(@Body ids: List<String>): Call<MixinResponse<List<User>>>
+    fun getUsers(
+        @Body ids: List<String>,
+    ): Call<MixinResponse<List<User>>>
 
     @GET("users/{id}")
-    fun getUserById(@Path("id") id: String): Call<MixinResponse<User>>
+    fun getUserById(
+        @Path("id") id: String,
+    ): Call<MixinResponse<User>>
 
     @GET("search/{query}")
-    fun search(@Path("query") query: String): Observable<MixinResponse<User>>
+    fun search(
+        @Path("query") query: String,
+    ): Observable<MixinResponse<User>>
 
     @GET("search/{query}")
-    suspend fun searchSuspend(@Path("query") query: String): MixinResponse<User>
+    suspend fun searchSuspend(
+        @Path("query") query: String,
+    ): MixinResponse<User>
 
     @POST("relationships")
-    suspend fun relationship(@Body request: RelationshipRequest): MixinResponse<User>
+    suspend fun relationship(
+        @Body request: RelationshipRequest,
+    ): MixinResponse<User>
 
     @POST("reports")
-    suspend fun report(@Body request: RelationshipRequest): MixinResponse<User>
+    suspend fun report(
+        @Body request: RelationshipRequest,
+    ): MixinResponse<User>
 
     @GET("blocking_users")
     fun blockingUsers(): Observable<MixinResponse<List<User>>>
 
     @POST("sessions/fetch")
-    fun fetchSessions(@Body ids: List<String>): Call<MixinResponse<List<UserSession>>>
+    fun fetchSessions(
+        @Body ids: List<String>,
+    ): Call<MixinResponse<List<UserSession>>>
 
     @POST("users/fetch")
-    suspend fun fetchUsers(@Body ids: List<String>): MixinResponse<List<User>>
+    suspend fun fetchUsers(
+        @Body ids: List<String>,
+    ): MixinResponse<List<User>>
 
     @POST("sessions/fetch")
-    suspend fun fetchSessionsSuspend(@Body ids: List<String>): MixinResponse<List<UserSession>>
+    suspend fun fetchSessionsSuspend(
+        @Body ids: List<String>,
+    ): MixinResponse<List<UserSession>>
 
     @POST("apps/{app_id}/favorite")
-    suspend fun addFavoriteApp(@Path("app_id") appId: String): MixinResponse<FavoriteApp>
+    suspend fun addFavoriteApp(
+        @Path("app_id") appId: String,
+    ): MixinResponse<FavoriteApp>
 
     @GET("users/{user_id}/apps/favorite")
-    suspend fun getUserFavoriteApps(@Path("user_id") userId: String): MixinResponse<List<FavoriteApp>>
+    suspend fun getUserFavoriteApps(
+        @Path("user_id") userId: String,
+    ): MixinResponse<List<FavoriteApp>>
 
     @POST("apps/{app_id}/unfavorite")
-    suspend fun removeFavoriteApp(@Path("app_id") appId: String): MixinResponse<Void>
+    suspend fun removeFavoriteApp(
+        @Path("app_id") appId: String,
+    ): MixinResponse<Void>
 
     @GET("users/{id}")
-    suspend fun getUserByIdSuspend(@Path("id") id: String): MixinResponse<User>
+    suspend fun getUserByIdSuspend(
+        @Path("id") id: String,
+    ): MixinResponse<User>
 
     @POST("users/{id}/circles")
-    suspend fun updateCircles(@Path("id") id: String, @Body requests: List<ConversationCircleRequest>): MixinResponse<List<CircleConversation>>
+    suspend fun updateCircles(
+        @Path("id") id: String,
+        @Body requests: List<ConversationCircleRequest>,
+    ): MixinResponse<List<CircleConversation>>
 }

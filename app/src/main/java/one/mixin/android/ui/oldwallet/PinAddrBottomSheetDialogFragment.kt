@@ -22,7 +22,6 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "PinAddrBottomSheetDialogFragment"
 
@@ -59,21 +58,22 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             addressId: String? = null,
             type: Int = ADD,
         ) = PinAddrBottomSheetDialogFragment().apply {
-            val b = bundleOf(
-                ARGS_ASSET_ID to assetId,
-                ARGS_ASSET_NAME to assetName,
-                ARGS_ASSET_URL to assetUrl,
-                ARGS_ASSET_SYMBOL to assetSymbol,
-                ARGS_ASSET_KEY to assetKey,
-                ARGS_CHAIN_ID to chainId,
-                ARGS_CHAIN_NAME to chainName,
-                ARGS_CHAIN_URL to chainIconUrl,
-                ARGS_LABEL to label,
-                ARGS_DESTINATION to destination,
-                ARGS_ADDRESS_ID to addressId,
-                ARGS_TYPE to type,
-                ARGS_TAG to tag,
-            )
+            val b =
+                bundleOf(
+                    ARGS_ASSET_ID to assetId,
+                    ARGS_ASSET_NAME to assetName,
+                    ARGS_ASSET_URL to assetUrl,
+                    ARGS_ASSET_SYMBOL to assetSymbol,
+                    ARGS_ASSET_KEY to assetKey,
+                    ARGS_CHAIN_ID to chainId,
+                    ARGS_CHAIN_NAME to chainName,
+                    ARGS_CHAIN_URL to chainIconUrl,
+                    ARGS_LABEL to label,
+                    ARGS_DESTINATION to destination,
+                    ARGS_ADDRESS_ID to addressId,
+                    ARGS_TYPE to type,
+                    ARGS_TAG to tag,
+                )
             arguments = b
         }
     }
@@ -95,7 +95,10 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentOldwalletPinBottomSheetAddressBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -128,7 +131,10 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         }
     }
 
-    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
+    override fun doWhenInvokeNetworkSuccess(
+        response: MixinResponse<*>,
+        pin: String,
+    ): Boolean {
         lifecycleScope.launch {
             if (type == ADD || type == MODIFY) {
                 bottomViewModel.saveAddr(response.data as Address)
@@ -140,7 +146,10 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         return true
     }
 
-    override suspend fun doWithMixinErrorCode(errorCode: Int, pin: String): String? {
+    override suspend fun doWithMixinErrorCode(
+        errorCode: Int,
+        pin: String,
+    ): String? {
         return if (errorCode == INVALID_ADDRESS) {
             getString(
                 R.string.error_invalid_address,
@@ -156,21 +165,23 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         }
     }
 
-    private fun getTitle() = getString(
-        when (type) {
-            ADD -> R.string.Add_address
-            MODIFY -> R.string.edit_address
-            else -> R.string.Delete_withdraw_Address
-        },
-        assetName,
-    )
+    private fun getTitle() =
+        getString(
+            when (type) {
+                ADD -> R.string.Add_address
+                MODIFY -> R.string.edit_address
+                else -> R.string.Delete_withdraw_Address
+            },
+            assetName,
+        )
 
-    private fun getTipText() = getString(
-        when (type) {
-            ADD -> R.string.withdrawal_addr_pin_add
-            DELETE -> R.string.withdrawal_addr_pin_delete
-            MODIFY -> R.string.withdrawal_addr_pin_modify
-            else -> R.string.withdrawal_addr_pin_add
-        },
-    )
+    private fun getTipText() =
+        getString(
+            when (type) {
+                ADD -> R.string.withdrawal_addr_pin_add
+                DELETE -> R.string.withdrawal_addr_pin_delete
+                MODIFY -> R.string.withdrawal_addr_pin_modify
+                else -> R.string.withdrawal_addr_pin_add
+            },
+        )
 }

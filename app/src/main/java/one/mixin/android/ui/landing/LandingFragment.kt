@@ -13,7 +13,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.DebugClickListener
 
 class LandingFragment : Fragment(R.layout.fragment_landing) {
-
     companion object {
         const val TAG: String = "LandingFragment"
 
@@ -22,7 +21,10 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
 
     private val binding by viewBinding(FragmentLandingBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         val policy: String = requireContext().getString(R.string.Privacy_Policy)
@@ -42,13 +44,15 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
                 MobileFragment.TAG,
             )
         }
-        binding.imageView.setOnClickListener(object : DebugClickListener() {
-            override fun onDebugClick() {
-                navTo(DiagnosisFragment.newInstance(), DiagnosisFragment.TAG)
-            }
+        binding.imageView.setOnClickListener(
+            object : DebugClickListener() {
+                override fun onDebugClick() {
+                    navTo(DiagnosisFragment.newInstance(), DiagnosisFragment.TAG)
+                }
 
-            override fun onSingleClick() {
-            }
-        })
+                override fun onSingleClick() {
+                }
+            },
+        )
     }
 }

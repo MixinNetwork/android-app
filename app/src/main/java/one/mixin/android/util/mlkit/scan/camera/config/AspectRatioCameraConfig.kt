@@ -6,8 +6,8 @@ import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
-import kotlin.math.abs
 import timber.log.Timber
+import kotlin.math.abs
 
 class AspectRatioCameraConfig(context: Context) : CameraConfig() {
     private val aspectRatio: Int
@@ -20,7 +20,10 @@ class AspectRatioCameraConfig(context: Context) : CameraConfig() {
         Timber.d("aspectRatio:$aspectRatio")
     }
 
-    private fun aspectRatio(width: Float, height: Float): Int {
+    private fun aspectRatio(
+        width: Float,
+        height: Float,
+    ): Int {
         val ratio = width.coerceAtLeast(height) / width.coerceAtMost(height)
         return if (abs(ratio - 4.0f / 3.0f) < abs(ratio - 16.0f / 9.0f)) {
             AspectRatio.RATIO_4_3

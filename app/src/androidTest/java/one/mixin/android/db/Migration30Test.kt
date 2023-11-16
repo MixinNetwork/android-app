@@ -4,7 +4,6 @@ import one.mixin.android.Constants
 import org.junit.Test
 
 class Migration30Test : BaseMigrationTest() {
-
     @Test
     fun migrate_15_30() {
         create15()

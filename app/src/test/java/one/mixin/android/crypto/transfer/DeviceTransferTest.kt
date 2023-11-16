@@ -11,7 +11,6 @@ import one.mixin.android.ui.transfer.TransferProtocol
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import org.junit.Test
-import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -39,7 +38,6 @@ import kotlin.test.assertEquals
 class DeviceTransferTest {
     private val secureRandom: SecureRandom by lazy { SecureRandom() }
 
-
     @Test
     fun testAsset() {
         val content = """
@@ -63,20 +61,24 @@ class DeviceTransferTest {
             "withdrawal_memo_possibility": "positive"
         }
         """
-        val serializationJson = Json {
-            ignoreUnknownKeys = true
-            explicitNulls = false
-            encodeDefaults = false
-            coerceInputValues = true
-            isLenient = true
-        }
+        val serializationJson =
+            Json {
+                ignoreUnknownKeys = true
+                explicitNulls = false
+                encodeDefaults = false
+                coerceInputValues = true
+                isLenient = true
+            }
         val asset = serializationJson.decodeFromString<Asset>(content)
         assertEquals(WithdrawalMemoPossibility.POSSIBLE, asset.withdrawalMemoPossibility)
         println(serializationJson.encodeToString(Asset.serializer(), asset))
     }
 
     @Throws(IOException::class)
-    fun generateRandomFile(fileName: String?, fileSize: Long) {
+    fun generateRandomFile(
+        fileName: String?,
+        fileSize: Long,
+    ) {
         val file = RandomAccessFile(fileName, "rw")
         val buffer = ByteArray(4096)
         var remaining = fileSize
@@ -168,44 +170,46 @@ class DeviceTransferTest {
 
     @OptIn(ExperimentalSerializationApi::class)
     @Test
-    fun testProtocol(): Unit = runBlocking {
-        val secretBytes = TransferCipher.generateKey()
-        val outputStream = PipedOutputStream()
-        val inputStream = PipedInputStream(outputStream)
-        val json = Json {
-            ignoreUnknownKeys = true
-            explicitNulls = false
-            encodeDefaults =
-                false
-            coerceInputValues = true
-            isLenient = true
-        }
-        val server = TransferProtocol(json, secretBytes, true)
-        val client = TransferProtocol(json, secretBytes)
-        client.setCachePath(File("."))
-        val md5 = arrayMapOf<String, String>()
-        launch(Dispatchers.IO) {
-            repeat(100) {
-                val uuid = UUID.randomUUID().toString()
-                val fileName = "$uuid.data"
-                val sourceFile = File(fileName)
-                val fileSize = (5242880 + Random().nextInt(5242880)).toLong()
-                generateRandomFile(fileName, fileSize)
-                server.write(outputStream, sourceFile, uuid)
-                md5[uuid] = getFileMd5(sourceFile)
-                sourceFile.delete()
+    fun testProtocol(): Unit =
+        runBlocking {
+            val secretBytes = TransferCipher.generateKey()
+            val outputStream = PipedOutputStream()
+            val inputStream = PipedInputStream(outputStream)
+            val json =
+                Json {
+                    ignoreUnknownKeys = true
+                    explicitNulls = false
+                    encodeDefaults =
+                        false
+                    coerceInputValues = true
+                    isLenient = true
+                }
+            val server = TransferProtocol(json, secretBytes, true)
+            val client = TransferProtocol(json, secretBytes)
+            client.setCachePath(File("."))
+            val md5 = arrayMapOf<String, String>()
+            launch(Dispatchers.IO) {
+                repeat(100) {
+                    val uuid = UUID.randomUUID().toString()
+                    val fileName = "$uuid.data"
+                    val sourceFile = File(fileName)
+                    val fileSize = (5242880 + Random().nextInt(5242880)).toLong()
+                    generateRandomFile(fileName, fileSize)
+                    server.write(outputStream, sourceFile, uuid)
+                    md5[uuid] = getFileMd5(sourceFile)
+                    sourceFile.delete()
+                }
+            }
+            launch(Dispatchers.IO) {
+                repeat(100) {
+                    val result = client.read(inputStream)
+                    assert(result is File)
+                    val file = result as File
+                    assertEquals(md5[file.name], getFileMd5(file))
+                    file.delete()
+                }
             }
         }
-        launch(Dispatchers.IO) {
-            repeat(100) {
-                val result = client.read(inputStream)
-                assert(result is File)
-                val file = result as File
-                assertEquals(md5[file.name], getFileMd5(file))
-                file.delete()
-            }
-        }
-    }
 
     @Test
     fun testAesAndCrc() {

@@ -10,7 +10,11 @@ import one.mixin.android.vo.showVerifiedOrBot
 class ContactHolder constructor(
     val binding: ItemSearchContactBinding,
 ) : NormalHolder(binding.root) {
-    fun bind(user: User, target: String, onItemClickListener: SearchFragment.OnSearchClickListener?) {
+    fun bind(
+        user: User,
+        target: String,
+        onItemClickListener: SearchFragment.OnSearchClickListener?,
+    ) {
         binding.apply {
             normal.text = user.fullName
             normal.highLight(target)

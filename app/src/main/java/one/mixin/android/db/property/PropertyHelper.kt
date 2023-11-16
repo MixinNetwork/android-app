@@ -28,7 +28,6 @@ import one.mixin.android.job.MigratedFts4Job.Companion.FTS_NEED_MIGRATED_LAST_RO
 import one.mixin.android.vo.Property
 
 object PropertyHelper {
-
     private const val PREF_PROPERTY_MIGRATED = "pref_property_migrated"
 
     suspend fun checkAttachmentMigrated(action: () -> Unit) {
@@ -96,20 +95,32 @@ object PropertyHelper {
         return propertyDao
     }
 
-    suspend fun updateKeyValue(key: String, value: String) {
+    suspend fun updateKeyValue(
+        key: String,
+        value: String,
+    ) {
         val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
         propertyDao.insertSuspend(Property(key, value, nowInUtc()))
     }
 
-    suspend fun updateKeyValue(key: String, value: Long) {
+    suspend fun updateKeyValue(
+        key: String,
+        value: Long,
+    ) {
         updateKeyValue(key, value.toString())
     }
 
-    suspend fun updateKeyValue(key: String, value: Int) {
+    suspend fun updateKeyValue(
+        key: String,
+        value: Int,
+    ) {
         updateKeyValue(key, value.toString())
     }
 
-    suspend fun updateKeyValue(key: String, value: Boolean) {
+    suspend fun updateKeyValue(
+        key: String,
+        value: Boolean,
+    ) {
         updateKeyValue(key, value.toString())
     }
 
@@ -118,7 +129,10 @@ object PropertyHelper {
         propertyDao.deletePropertyByKey(key)
     }
 
-    suspend fun <T> findValueByKey(key: String, default: T): T {
+    suspend fun <T> findValueByKey(
+        key: String,
+        default: T,
+    ): T {
         val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
         val value = propertyDao.findValueByKey(key) ?: return default
         return try {

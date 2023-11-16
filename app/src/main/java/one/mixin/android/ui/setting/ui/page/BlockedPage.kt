@@ -98,9 +98,10 @@ private fun EmptyBlockedView() {
             Image(
                 painter = painterResource(id = R.drawable.ic_blocked_users),
                 contentDescription = null,
-                modifier = Modifier
-                    .height(42.dp)
-                    .width(42.dp),
+                modifier =
+                    Modifier
+                        .height(42.dp)
+                        .width(42.dp),
             )
             Box(modifier = Modifier.height(8.dp))
             Text(
@@ -116,16 +117,17 @@ private fun EmptyBlockedView() {
 private fun BlockedUserItem(user: User) {
     val context = LocalContext.current
     Row(
-        modifier = Modifier
-            .height(60.dp)
-            .fillMaxWidth()
-            .clickable {
-                val fragmentManager = context.findFragmentActivityOrNull()?.supportFragmentManager
-                if (fragmentManager != null) {
-                    showUserBottom(user = user, fragmentManager = fragmentManager)
+        modifier =
+            Modifier
+                .height(60.dp)
+                .fillMaxWidth()
+                .clickable {
+                    val fragmentManager = context.findFragmentActivityOrNull()?.supportFragmentManager
+                    if (fragmentManager != null) {
+                        showUserBottom(user = user, fragmentManager = fragmentManager)
+                    }
                 }
-            }
-            .background(MixinAppTheme.colors.background),
+                .background(MixinAppTheme.colors.background),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.width(16.dp))

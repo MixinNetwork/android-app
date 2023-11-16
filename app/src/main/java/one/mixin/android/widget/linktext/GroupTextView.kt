@@ -5,16 +5,21 @@ import android.util.AttributeSet
 import android.view.Gravity
 
 class GroupTextView(context: Context, attrs: AttributeSet?) : AutoLinkTextView(context, attrs) {
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        gravity = if (lineCount > 1) {
-            Gravity.START
-        } else {
-            Gravity.CENTER
-        }
+        gravity =
+            if (lineCount > 1) {
+                Gravity.START
+            } else {
+                Gravity.CENTER
+            }
     }
 
     private var expand = true
+
     fun expand() {
         if (!expand) {
             maxLines = Int.MAX_VALUE
@@ -35,7 +40,10 @@ class GroupTextView(context: Context, attrs: AttributeSet?) : AutoLinkTextView(c
         minLines = 2
     }
 
-    override fun scrollTo(x: Int, y: Int) {
+    override fun scrollTo(
+        x: Int,
+        y: Int,
+    ) {
         if (expand) {
             super.scrollTo(x, y)
         }

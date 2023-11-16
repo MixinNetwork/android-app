@@ -42,9 +42,10 @@ class AppListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         requireArguments().getString(ARGS_TITLE)!!
     }
 
-    private val adapter = AppListAdapter {
-        openApp(it)
-    }
+    private val adapter =
+        AppListAdapter {
+            openApp(it)
+        }
 
     private fun openApp(userId: String) {
         lifecycleScope.launch {
@@ -58,7 +59,10 @@ class AppListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentAppListBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -74,10 +78,16 @@ class AppListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
 class AppListAdapter(private val onClickListener: (String) -> Unit) :
     ListAdapter<App, AppHolder>(App.DIFF_CALLBACK) {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         AppHolder(ItemAppListBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-    override fun onBindViewHolder(holder: AppHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: AppHolder,
+        position: Int,
+    ) {
         getItem(position)?.let { app ->
             holder.bind(app)
             holder.itemView.setOnClickListener {

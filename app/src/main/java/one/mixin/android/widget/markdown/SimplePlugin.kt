@@ -26,7 +26,6 @@ import org.commonmark.node.Text
 import org.commonmark.parser.Parser
 
 class SimplePlugin : AbstractMarkwonPlugin() {
-
     override fun configureParser(builder: Parser.Builder) {
         builder.extensions(setOf(StrikethroughExtension.create()))
             .inlineParserFactory { inlineParserContext -> SimpleInlineParser(inlineParserContext) }
@@ -97,7 +96,10 @@ class SimplePlugin : AbstractMarkwonPlugin() {
             }
     }
 
-    override fun beforeSetText(textView: TextView, markdown: Spanned) {
+    override fun beforeSetText(
+        textView: TextView,
+        markdown: Spanned,
+    ) {
         OrderedListItemSpan.measure(textView, markdown)
 
         if (markdown is Spannable) {

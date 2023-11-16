@@ -9,7 +9,6 @@ import one.mixin.android.vo.TopAssetItem
 
 @Dao
 interface TopAssetDao : BaseDao<TopAsset> {
-
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """

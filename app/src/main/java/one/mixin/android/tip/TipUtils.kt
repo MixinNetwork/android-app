@@ -44,19 +44,24 @@ suspend fun <T> tipNetworkNullable(network: suspend () -> MixinResponse<T>): Res
 
 fun Throwable.isTipNodeException() = this is NotEnoughPartialsException || this is NotAllSignerSuccessException || this is DifferentIdentityException
 
-fun Throwable.getTipExceptionMsg(context: Context, nodeFailedInfo: String? = null): String {
-    var msg = when (this) {
-        is PinIncorrectException -> context.getString(R.string.PIN_incorrect)
-        is NotEnoughPartialsException -> this.getMsg(context)
-        is NotAllSignerSuccessException -> this.getMsg(context)
-        is DifferentIdentityException -> context.getString(R.string.PIN_not_same_as_last_time)
-        is TipNetworkException -> this.error.run {
-            context.getMixinErrorStringByCode(this.code, this.description)
+fun Throwable.getTipExceptionMsg(
+    context: Context,
+    nodeFailedInfo: String? = null,
+): String {
+    var msg =
+        when (this) {
+            is PinIncorrectException -> context.getString(R.string.PIN_incorrect)
+            is NotEnoughPartialsException -> this.getMsg(context)
+            is NotAllSignerSuccessException -> this.getMsg(context)
+            is DifferentIdentityException -> context.getString(R.string.PIN_not_same_as_last_time)
+            is TipNetworkException ->
+                this.error.run {
+                    context.getMixinErrorStringByCode(this.code, this.description)
+                }
+            else -> {
+                "${context.getString(R.string.Set_or_update_PIN_failed)}\n${this.getStackTraceString()}"
+            }
         }
-        else -> {
-            "${context.getString(R.string.Set_or_update_PIN_failed)}\n${this.getStackTraceString()}"
-        }
-    }
     msg = if (nodeFailedInfo.isNullOrBlank().not()) {
         nodeFailedInfo + "\n"
     } else {
@@ -69,11 +74,12 @@ fun Throwable.getTipExceptionMsg(context: Context, nodeFailedInfo: String? = nul
 }
 
 fun NotEnoughPartialsException.getMsg(context: Context): String {
-    val errString = when (tipNodeError) {
-        is TooManyRequestError -> context.getString(R.string.error_too_many_request)
-        is IncorrectPinError -> context.getString(R.string.PIN_incorrect)
-        else -> context.getString(R.string.Not_enough_partials)
-    }
+    val errString =
+        when (tipNodeError) {
+            is TooManyRequestError -> context.getString(R.string.error_too_many_request)
+            is IncorrectPinError -> context.getString(R.string.PIN_incorrect)
+            else -> context.getString(R.string.Not_enough_partials)
+        }
     return if (forRecover) {
         context.getString(R.string.tip_recovery_failed) + "\n" + errString
     } else {
@@ -82,17 +88,18 @@ fun NotEnoughPartialsException.getMsg(context: Context): String {
 }
 
 fun NotAllSignerSuccessException.getMsg(context: Context): String {
-    val errString = if (tipNodeError is TooManyRequestError) {
-        context.getString(R.string.error_too_many_request)
-    } else if (tipNodeError is IncorrectPinError) {
-        context.getString(R.string.PIN_incorrect)
-    } else {
-        if (allFailure()) {
-            "${context.getString(R.string.All_signer_failure)}\n${this.getStackTraceString()}"
+    val errString =
+        if (tipNodeError is TooManyRequestError) {
+            context.getString(R.string.error_too_many_request)
+        } else if (tipNodeError is IncorrectPinError) {
+            context.getString(R.string.PIN_incorrect)
         } else {
-            "${context.getString(R.string.Not_all_signer_success)}\n${this.getStackTraceString()}"
+            if (allFailure()) {
+                "${context.getString(R.string.All_signer_failure)}\n${this.getStackTraceString()}"
+            } else {
+                "${context.getString(R.string.Not_all_signer_success)}\n${this.getStackTraceString()}"
+            }
         }
-    }
     return if (forRecover) {
         context.getString(R.string.tip_recovery_failed) + "\n" + errString
     } else {

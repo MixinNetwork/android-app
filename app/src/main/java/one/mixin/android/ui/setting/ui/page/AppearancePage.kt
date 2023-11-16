@@ -82,13 +82,14 @@ fun AppearancePage() {
             Box(modifier = Modifier.height(20.dp))
 
             Row(
-                modifier = Modifier
-                    .height(60.dp)
-                    .background(MixinAppTheme.colors.background)
-                    .clickable {
-                        navController.navigation(SettingDestination.Wallpaper)
-                    }
-                    .padding(start = 16.dp, end = 16.dp),
+                modifier =
+                    Modifier
+                        .height(60.dp)
+                        .background(MixinAppTheme.colors.background)
+                        .clickable {
+                            navController.navigation(SettingDestination.Wallpaper)
+                        }
+                        .padding(start = 16.dp, end = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
@@ -107,17 +108,19 @@ private fun ThemeItem() {
     val context = LocalContext.current
     val preference = context.defaultSharedPreferences
 
-    val currentThemeId = remember {
-        val id = preference.getInt(
-            Constants.Theme.THEME_CURRENT_ID,
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                Constants.Theme.THEME_DEFAULT_ID
-            } else {
-                Constants.Theme.THEME_AUTO_ID
-            },
-        )
-        mutableStateOf(id)
-    }
+    val currentThemeId =
+        remember {
+            val id =
+                preference.getInt(
+                    Constants.Theme.THEME_CURRENT_ID,
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                        Constants.Theme.THEME_DEFAULT_ID
+                    } else {
+                        Constants.Theme.THEME_AUTO_ID
+                    },
+                )
+            mutableStateOf(id)
+        }
 
     AppearanceItem(
         label = stringResource(id = R.string.Theme),
@@ -155,20 +158,23 @@ private fun ThemeItem() {
 
 @Composable
 private fun LanguageItem() {
-    val languageNames = stringArrayResource(R.array.language_names).apply {
-        this[0] = stringResource(R.string.Follow_system)
-    }
+    val languageNames =
+        stringArrayResource(R.array.language_names).apply {
+            this[0] = stringResource(R.string.Follow_system)
+        }
 
     val showLanguageDialog = remember { mutableStateOf(false) }
 
-    val currentLanguage = remember {
-        val index = if (isFollowSystem()) {
-            AppearanceFragment.POS_FOLLOW_SYSTEM
-        } else {
-            getLanguagePos()
+    val currentLanguage =
+        remember {
+            val index =
+                if (isFollowSystem()) {
+                    AppearanceFragment.POS_FOLLOW_SYSTEM
+                } else {
+                    getLanguagePos()
+                }
+            mutableStateOf(index)
         }
-        mutableStateOf(index)
-    }
 
     AppearanceItem(
         label = stringResource(R.string.Language),
@@ -222,24 +228,26 @@ private fun LanguageItem() {
                     if (newSelected == AppearanceFragment.POS_FOLLOW_SYSTEM) {
                         AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
                     } else {
-                        val selectedLang = when (newSelected) {
-                            AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
-                            AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.language
-                            AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
-                            AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Language
-                            AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Language
-                            AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Language
-                            else -> Locale.US.language
-                        }
-                        val selectedCountry = when (newSelected) {
-                            AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
-                            AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.country
-                            AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
-                            AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Country
-                            AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Country
-                            AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Country
-                            else -> Locale.US.country
-                        }
+                        val selectedLang =
+                            when (newSelected) {
+                                AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
+                                AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.language
+                                AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
+                                AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Language
+                                AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Language
+                                AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Language
+                                else -> Locale.US.language
+                            }
+                        val selectedCountry =
+                            when (newSelected) {
+                                AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
+                                AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.country
+                                AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
+                                AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Country
+                                AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Country
+                                AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Country
+                                else -> Locale.US.country
+                            }
                         val newLocale = Locale(selectedLang, selectedCountry)
                         AppCompatDelegate.setApplicationLocales(LocaleListCompat.create(newLocale))
                     }
@@ -273,9 +281,10 @@ private fun LanguageRadioItem(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         RadioButton(
-            colors = RadioButtonDefaults.colors(
-                selectedColor = MixinAppTheme.colors.accent,
-            ),
+            colors =
+                RadioButtonDefaults.colors(
+                    selectedColor = MixinAppTheme.colors.accent,
+                ),
             selected = selected,
             onClick = null, // null recommended for accessibility with screenreaders
         )
@@ -295,58 +304,64 @@ private fun AppearanceItem(
     onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MixinAppTheme.colors.background)
-            .height(60.dp)
-            .clickable {
-                onClick()
-            }
-            .padding(horizontal = 16.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(MixinAppTheme.colors.background)
+                .height(60.dp)
+                .clickable {
+                    onClick()
+                }
+                .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = label,
-            style = TextStyle(
-                color = MixinAppTheme.colors.textPrimary,
-                fontSize = 14.sp,
-            ),
+            style =
+                TextStyle(
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 14.sp,
+                ),
         )
 
         Spacer(Modifier.weight(1f))
 
         Text(
             text = value,
-            style = TextStyle(
-                color = MixinAppTheme.colors.textSubtitle,
-            ),
+            style =
+                TextStyle(
+                    color = MixinAppTheme.colors.textSubtitle,
+                ),
         )
     }
 }
 
 @Composable
 private fun CurrencyItem() {
-    val currentCurrency = remember {
-        mutableStateOf(Session.getFiatCurrency())
-    }
+    val currentCurrency =
+        remember {
+            mutableStateOf(Session.getFiatCurrency())
+        }
 
     val context = LocalContext.current
 
     AppearanceItem(
         label = stringResource(id = R.string.Currency),
-        value = stringResource(
-            R.string.wallet_setting_currency_desc,
-            currentCurrency.value,
-            Fiats.getSymbol(currentCurrency.value),
-        ),
+        value =
+            stringResource(
+                R.string.wallet_setting_currency_desc,
+                currentCurrency.value,
+                Fiats.getSymbol(currentCurrency.value),
+            ),
     ) {
         val activity = context.findFragmentActivityOrNull() ?: return@AppearanceItem
         val currencyBottom = CurrencyBottomSheetDialogFragment.newInstance()
-        currencyBottom.callback = object : CurrencyBottomSheetDialogFragment.Callback {
-            override fun onCurrencyClick(currency: Currency) {
-                currentCurrency.value = currency.name
+        currencyBottom.callback =
+            object : CurrencyBottomSheetDialogFragment.Callback {
+                override fun onCurrencyClick(currency: Currency) {
+                    currentCurrency.value = currency.name
+                }
             }
-        }
         currencyBottom.showNow(
             activity.supportFragmentManager,
             CurrencyBottomSheetDialogFragment.TAG,

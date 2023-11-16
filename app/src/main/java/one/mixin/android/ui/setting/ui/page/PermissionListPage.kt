@@ -49,9 +49,10 @@ fun PermissionListPage(
 
         val context = LocalContext.current
 
-        val scopes = remember {
-            mutableStateOf(emptyList<Scope>())
-        }
+        val scopes =
+            remember {
+                mutableStateOf(emptyList<Scope>())
+            }
 
         LaunchedEffect(auth) {
             scopes.value = auth.getScopes(context)
@@ -74,11 +75,12 @@ fun PermissionListPage(
 @Composable
 private fun PermissionScopeItem(scope: Scope) {
     Column(
-        modifier = Modifier
-            .height(72.dp)
-            .fillMaxWidth()
-            .background(MixinAppTheme.colors.background)
-            .padding(horizontal = 20.dp),
+        modifier =
+            Modifier
+                .height(72.dp)
+                .fillMaxWidth()
+                .background(MixinAppTheme.colors.background)
+                .padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.Center,
     ) {
         val context = LocalContext.current

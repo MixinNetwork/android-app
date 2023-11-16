@@ -32,7 +32,10 @@ abstract class FooterListAdapter<T, VH : RecyclerView.ViewHolder>(diffCallback: 
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): VH {
         return if (viewType == TYPE_FOOTER) {
             getFootViewHolder() as VH
         } else {
@@ -41,7 +44,11 @@ abstract class FooterListAdapter<T, VH : RecyclerView.ViewHolder>(diffCallback: 
     }
 
     open fun getFootViewHolder() = FootHolder(footerView!!)
-    abstract fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder
+
+    abstract fun getNormalViewHolder(
+        context: Context,
+        parent: ViewGroup,
+    ): NormalHolder
 
     open class FootHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 }

@@ -14,18 +14,17 @@ import one.mixin.android.db.datasource.NoCountLimitOffsetDataSource
 import one.mixin.android.fts.FtsDataSource
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.rawSearch
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
 
 @SuppressLint("RestrictedApi")
 class DataProvider {
     companion object {
-
         fun observeConversations(database: MixinDatabase) =
             object : DataSource.Factory<Int, ConversationItem>() {
                 override fun create(): DataSource<Int, ConversationItem> {
@@ -62,7 +61,10 @@ class DataProvider {
                 }
             }
 
-        fun observeConversationsByCircleId(circleId: String, database: MixinDatabase) =
+        fun observeConversationsByCircleId(
+            circleId: String,
+            database: MixinDatabase,
+        ) =
             object : DataSource.Factory<Int, ConversationItem>() {
                 override fun create(): DataSource<Int, ConversationItem> {
                     val sql =
@@ -87,18 +89,20 @@ class DataProvider {
                         LEFT JOIN users mu ON mu.user_id = m.user_id
                         LEFT JOIN users pu ON pu.user_id = m.participant_id 
                         """
-                    val countStatement = RoomSQLiteQuery.acquire(
-                        """
+                    val countStatement =
+                        RoomSQLiteQuery.acquire(
+                            """
                      SELECT count(1) FROM circle_conversations cc
                      INNER JOIN circles ci ON ci.circle_id = cc.circle_id
                      INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
                      INNER JOIN users ou ON ou.user_id = c.owner_id
                      WHERE c.category IS NOT NULL AND cc.circle_id = '$circleId'
                     """,
-                        0,
-                    )
-                    val offsetStatement = RoomSQLiteQuery.acquire(
-                        """
+                            0,
+                        )
+                    val offsetStatement =
+                        RoomSQLiteQuery.acquire(
+                            """
                         SELECT cc.rowid FROM circle_conversations cc
                         INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
                         INNER JOIN circles ci ON ci.circle_id = cc.circle_id
@@ -113,8 +117,8 @@ class DataProvider {
                         DESC
                         LIMIT ? OFFSET ?
                     """,
-                        2,
-                    )
+                            2,
+                        )
                     val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {
                         return RoomSQLiteQuery.acquire(
                             """
@@ -334,9 +338,10 @@ class DataProvider {
             query: String,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
-        ): List<SearchMessageItem> = withContext(db.getQueryDispatcher()) {
-            val result = ftsDatabase.rawSearch(query, cancellationSignal)
-            val sql = """
+        ): List<SearchMessageItem> =
+            withContext(db.getQueryDispatcher()) {
+                val result = ftsDatabase.rawSearch(query, cancellationSignal)
+                val sql = """
                 SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
                 c.name AS conversationName, c.category AS conversationCategory, 0 as messageCount,
                 u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
@@ -346,26 +351,27 @@ class DataProvider {
                 WHERE m.id IN (*)
                 ORDER BY m.created_at DESC
             """
-            if (result.isEmpty()) return@withContext emptyList()
-            val ids = result.joinToString(
-                prefix = "'",
-                postfix = "'",
-                separator = "', '",
-            ) { it.messageId }
-            val statement = RoomSQLiteQuery.acquire(sql.replace("*", ids), 0)
-            return@withContext CoroutinesRoom.execute(
-                db,
-                true,
-                cancellationSignal,
-                callableSearchMessageItem(db, statement, cancellationSignal),
-            ).map {
-                val obtained = result.find { item -> item.conversationId == it.conversationId }
-                if (obtained != null) {
-                    it.messageCount = obtained.messageCount
+                if (result.isEmpty()) return@withContext emptyList()
+                val ids =
+                    result.joinToString(
+                        prefix = "'",
+                        postfix = "'",
+                        separator = "', '",
+                    ) { it.messageId }
+                val statement = RoomSQLiteQuery.acquire(sql.replace("*", ids), 0)
+                return@withContext CoroutinesRoom.execute(
+                    db,
+                    true,
+                    cancellationSignal,
+                    callableSearchMessageItem(db, statement, cancellationSignal),
+                ).map {
+                    val obtained = result.find { item -> item.conversationId == it.conversationId }
+                    if (obtained != null) {
+                        it.messageCount = obtained.messageCount
+                    }
+                    it
                 }
-                it
             }
-        }
 
         fun fuzzySearchMessageDetail(
             ftsDatabase: FtsDatabase,
@@ -380,7 +386,11 @@ class DataProvider {
                 }
             }
 
-        fun getPinMessages(database: MixinDatabase, conversationId: String, count: Int) =
+        fun getPinMessages(
+            database: MixinDatabase,
+            conversationId: String,
+            count: Int,
+        ) =
             object : DataSource.Factory<Int, ChatHistoryMessageItem>() {
                 override fun create(): DataSource<Int, ChatHistoryMessageItem> {
                     val sql =

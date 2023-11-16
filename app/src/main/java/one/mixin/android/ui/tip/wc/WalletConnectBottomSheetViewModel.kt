@@ -18,55 +18,64 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class WalletConnectBottomSheetViewModel @Inject internal constructor(
-    private val assetRepo: TokenRepository,
-    private val tipService: TipService,
-    private val tip: Tip,
-) : ViewModel() {
-
-    suspend fun getV2SessionProposal(topic: String): Wallet.Model.SessionProposal? {
-        return withContext(Dispatchers.IO) {
-            WalletConnectV2.getSessionProposal(topic)
-        }
-    }
-
-    suspend fun getV2SessionRequest(topic: String): Wallet.Model.SessionRequest? {
-        return withContext(Dispatchers.IO) {
-            WalletConnectV2.getSessionRequest(topic)
-        }
-    }
-
-    fun parseV2SignData(sessionRequest: Wallet.Model.SessionRequest): WalletConnect.WCSignData.V2SignData<*>? {
-        return WalletConnectV2.parseSessionRequest(sessionRequest)
-    }
-
-    suspend fun getTipPriv(context: Context, pin: String): ByteArray {
-        val result = tip.getOrRecoverTipPriv(context, pin)
-        return tipPrivToPrivateKey(result.getOrThrow())
-    }
-
-    suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
-
-    fun sendTransaction(version: WalletConnect.Version, chain: Chain, sessionRequest: Wallet.Model.SessionRequest, signedTransactionData: String): String? {
-        try {
-            when (version) {
-                WalletConnect.Version.V2 -> WalletConnectV2.sendTransaction(chain, sessionRequest, signedTransactionData)
-                WalletConnect.Version.TIP -> {}
+class WalletConnectBottomSheetViewModel
+    @Inject
+    internal constructor(
+        private val assetRepo: TokenRepository,
+        private val tipService: TipService,
+        private val tip: Tip,
+    ) : ViewModel() {
+        suspend fun getV2SessionProposal(topic: String): Wallet.Model.SessionProposal? {
+            return withContext(Dispatchers.IO) {
+                WalletConnectV2.getSessionProposal(topic)
             }
-            return null
-        } catch (e: Exception) {
-            val errorInfo = e.stackTraceToString()
-            Timber.d(
-                "${
-                    when (version) {
-                        WalletConnect.Version.V2 -> WalletConnectV2.TAG
-                        else -> WalletConnectTIP.TAG
-                    }
-                } $errorInfo",
-            )
-            return errorInfo
         }
-    }
 
-    suspend fun getTipGas(assetId: String) = tipService.getTipGas(assetId)
-}
+        suspend fun getV2SessionRequest(topic: String): Wallet.Model.SessionRequest? {
+            return withContext(Dispatchers.IO) {
+                WalletConnectV2.getSessionRequest(topic)
+            }
+        }
+
+        fun parseV2SignData(sessionRequest: Wallet.Model.SessionRequest): WalletConnect.WCSignData.V2SignData<*>? {
+            return WalletConnectV2.parseSessionRequest(sessionRequest)
+        }
+
+        suspend fun getTipPriv(
+            context: Context,
+            pin: String,
+        ): ByteArray {
+            val result = tip.getOrRecoverTipPriv(context, pin)
+            return tipPrivToPrivateKey(result.getOrThrow())
+        }
+
+        suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
+
+        fun sendTransaction(
+            version: WalletConnect.Version,
+            chain: Chain,
+            sessionRequest: Wallet.Model.SessionRequest,
+            signedTransactionData: String,
+        ): String? {
+            try {
+                when (version) {
+                    WalletConnect.Version.V2 -> WalletConnectV2.sendTransaction(chain, sessionRequest, signedTransactionData)
+                    WalletConnect.Version.TIP -> {}
+                }
+                return null
+            } catch (e: Exception) {
+                val errorInfo = e.stackTraceToString()
+                Timber.d(
+                    "${
+                        when (version) {
+                            WalletConnect.Version.V2 -> WalletConnectV2.TAG
+                            else -> WalletConnectTIP.TAG
+                        }
+                    } $errorInfo",
+                )
+                return errorInfo
+            }
+        }
+
+        suspend fun getTipGas(assetId: String) = tipService.getTipGas(assetId)
+    }

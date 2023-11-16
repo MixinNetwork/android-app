@@ -44,21 +44,25 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
 
     private val binding by viewBinding(FragmentAppearanceBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
             nightModeTv.setText(R.string.Theme)
-            val currentId = defaultSharedPreferences.getInt(
-                Constants.Theme.THEME_CURRENT_ID,
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                    Constants.Theme.THEME_DEFAULT_ID
-                } else {
-                    Constants.Theme.THEME_AUTO_ID
-                },
-            )
+            val currentId =
+                defaultSharedPreferences.getInt(
+                    Constants.Theme.THEME_CURRENT_ID,
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                        Constants.Theme.THEME_DEFAULT_ID
+                    } else {
+                        Constants.Theme.THEME_AUTO_ID
+                    },
+                )
             nightModeDescTv.text = resources.getStringArray(R.array.setting_night_array_oreo)[currentId]
             nightModeRl.setOnClickListener {
                 singleChoice(
@@ -88,20 +92,22 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                 }
             }
             val languageNames = resources.getStringArray(R.array.language_names)
-            languageDescTv.text = if (isFollowSystem()) {
-                getString(R.string.Follow_system)
-            } else {
-                languageNames[getLanguagePos()]
-            }
+            languageDescTv.text =
+                if (isFollowSystem()) {
+                    getString(R.string.Follow_system)
+                } else {
+                    languageNames[getLanguagePos()]
+                }
             languageRl.setOnClickListener { showLanguageAlert() }
             currentTv.text = getString(R.string.wallet_setting_currency_desc, Session.getFiatCurrency(), Fiats.getSymbol())
             currencyRl.setOnClickListener {
                 val currencyBottom = CurrencyBottomSheetDialogFragment.newInstance()
-                currencyBottom.callback = object : CurrencyBottomSheetDialogFragment.Callback {
-                    override fun onCurrencyClick(currency: Currency) {
-                        currentTv.text = getString(R.string.wallet_setting_currency_desc, currency.name, currency.symbol)
+                currencyBottom.callback =
+                    object : CurrencyBottomSheetDialogFragment.Callback {
+                        override fun onCurrencyClick(currency: Currency) {
+                            currentTv.text = getString(R.string.wallet_setting_currency_desc, currency.name, currency.symbol)
+                        }
                     }
-                }
                 currencyBottom.showNow(parentFragmentManager, CurrencyBottomSheetDialogFragment.TAG)
             }
 
@@ -130,26 +136,28 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                     if (newSelectItem == POS_FOLLOW_SYSTEM) {
                         AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
                     } else {
-                        val selectedLang = when (newSelectItem) {
-                            POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
-                            POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.language
-                            POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
-                            POS_RUSSIAN -> Constants.Locale.Russian.Language
-                            POS_INDONESIA -> Constants.Locale.Indonesian.Language
-                            POS_Malay -> Constants.Locale.Malay.Language
-                            POS_Spanish -> Constants.Locale.Spanish.Language
-                            else -> Locale.US.language
-                        }
-                        val selectedCountry = when (newSelectItem) {
-                            POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
-                            POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.country
-                            POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
-                            POS_RUSSIAN -> Constants.Locale.Russian.Country
-                            POS_INDONESIA -> Constants.Locale.Indonesian.Country
-                            POS_Malay -> Constants.Locale.Malay.Country
-                            POS_Spanish -> Constants.Locale.Spanish.Country
-                            else -> Locale.US.country
-                        }
+                        val selectedLang =
+                            when (newSelectItem) {
+                                POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
+                                POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.language
+                                POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
+                                POS_RUSSIAN -> Constants.Locale.Russian.Language
+                                POS_INDONESIA -> Constants.Locale.Indonesian.Language
+                                POS_Malay -> Constants.Locale.Malay.Language
+                                POS_Spanish -> Constants.Locale.Spanish.Language
+                                else -> Locale.US.language
+                            }
+                        val selectedCountry =
+                            when (newSelectItem) {
+                                POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
+                                POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.country
+                                POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
+                                POS_RUSSIAN -> Constants.Locale.Russian.Country
+                                POS_INDONESIA -> Constants.Locale.Indonesian.Country
+                                POS_Malay -> Constants.Locale.Malay.Country
+                                POS_Spanish -> Constants.Locale.Spanish.Country
+                                else -> Locale.US.country
+                            }
                         val newLocale = Locale(selectedLang, selectedCountry)
                         AppCompatDelegate.setApplicationLocales(LocaleListCompat.create(newLocale))
                     }
@@ -166,33 +174,34 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
     }
 }
 
-fun getLanguagePos() = when (getLanguage()) {
-    "zh" -> {
-        if (getLocaleString() in Constants.Locale.TraditionalChinese.localeStrings) {
-            AppearanceFragment.POS_TRADITIONAL_CHINESE
-        } else {
-            AppearanceFragment.POS_SIMPLIFY_CHINESE
+fun getLanguagePos() =
+    when (getLanguage()) {
+        "zh" -> {
+            if (getLocaleString() in Constants.Locale.TraditionalChinese.localeStrings) {
+                AppearanceFragment.POS_TRADITIONAL_CHINESE
+            } else {
+                AppearanceFragment.POS_SIMPLIFY_CHINESE
+            }
+        }
+        Locale.ENGLISH.language -> {
+            AppearanceFragment.POS_ENGLISH
+        }
+        Locale.JAPANESE.language -> {
+            AppearanceFragment.POS_SIMPLIFY_JAPANESE
+        }
+        Constants.Locale.Russian.Language -> {
+            AppearanceFragment.POS_RUSSIAN
+        }
+        Constants.Locale.Indonesian.Language -> {
+            AppearanceFragment.POS_INDONESIA
+        }
+        Constants.Locale.Malay.Language -> {
+            AppearanceFragment.POS_Malay
+        }
+        Constants.Locale.Spanish.Language -> {
+            AppearanceFragment.POS_Spanish
+        }
+        else -> {
+            AppearanceFragment.POS_FOLLOW_SYSTEM
         }
     }
-    Locale.ENGLISH.language -> {
-        AppearanceFragment.POS_ENGLISH
-    }
-    Locale.JAPANESE.language -> {
-        AppearanceFragment.POS_SIMPLIFY_JAPANESE
-    }
-    Constants.Locale.Russian.Language -> {
-        AppearanceFragment.POS_RUSSIAN
-    }
-    Constants.Locale.Indonesian.Language -> {
-        AppearanceFragment.POS_INDONESIA
-    }
-    Constants.Locale.Malay.Language -> {
-        AppearanceFragment.POS_Malay
-    }
-    Constants.Locale.Spanish.Language -> {
-        AppearanceFragment.POS_Spanish
-    }
-    else -> {
-        AppearanceFragment.POS_FOLLOW_SYSTEM
-    }
-}

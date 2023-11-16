@@ -22,7 +22,10 @@ class PostAdapter(
         MarkwonUtil.getMiniMarkwon(context)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         PostHolder(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_post,
@@ -31,7 +34,10 @@ class PostAdapter(
             ),
         )
 
-    override fun onBindViewHolder(holder: PostHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: PostHolder,
+        position: Int,
+    ) {
         getItem(position)?.let { item ->
             holder.bind(item, miniMarkwon)
             holder.chatTv.setOnClickListener {
@@ -50,7 +56,11 @@ class PostAdapter(
 class PostHolder(itemView: View) : NormalHolder(itemView) {
     private val binding = ItemPostBinding.bind(itemView)
     val chatTv get() = binding.chatTv
-    fun bind(item: MessageItem, miniMarkwon: Markwon) {
+
+    fun bind(
+        item: MessageItem,
+        miniMarkwon: Markwon,
+    ) {
         if (chatTv.tag != item.content.hashCode()) {
             if (!item.thumbImage.isNullOrEmpty()) {
                 miniMarkwon.setMarkdown(chatTv, item.thumbImage.postLengthOptimize())

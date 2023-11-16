@@ -34,5 +34,5 @@ data class DepositEntry(
     val threshold: Int,
     @ColumnInfo(name = "is_primary")
     @SerializedName("is_primary")
-    val isPrimary: Boolean
+    val isPrimary: Boolean,
 )

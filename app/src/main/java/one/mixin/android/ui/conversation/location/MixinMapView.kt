@@ -55,9 +55,10 @@ class MixinMapView(
 
     fun addMarker(latLng: MixinLatLng) {
         if (useMapbox) {
-            val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
-                .withPoint(latLng.toMapbox())
-                .withIconImage(BitmapFactory.decodeResource(context.resources, R.drawable.ic_location_search_maker))
+            val pointAnnotationOptions: PointAnnotationOptions =
+                PointAnnotationOptions()
+                    .withPoint(latLng.toMapbox())
+                    .withIconImage(BitmapFactory.decodeResource(context.resources, R.drawable.ic_location_search_maker))
             pointAnnotationManager?.create(pointAnnotationOptions)
         } else {
             googleMap?.addMarker(
@@ -68,11 +69,15 @@ class MixinMapView(
         }
     }
 
-    fun addMarker(index: Int, venue: Venue) {
+    fun addMarker(
+        index: Int,
+        venue: Venue,
+    ) {
         if (useMapbox) {
-            val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
-                .withPoint(Point.fromLngLat(venue.location.lng, venue.location.lat))
-                .withIconImage(BitmapFactory.decodeResource(context.resources, R.drawable.ic_location_search_maker))
+            val pointAnnotationOptions: PointAnnotationOptions =
+                PointAnnotationOptions()
+                    .withPoint(Point.fromLngLat(venue.location.lng, venue.location.lat))
+                    .withIconImage(BitmapFactory.decodeResource(context.resources, R.drawable.ic_location_search_maker))
             pointAnnotationManager?.create(pointAnnotationOptions)
         } else {
             googleMap?.addMarker(
@@ -174,15 +179,18 @@ class MixinMapView(
     }
 }
 
-fun useMapbox() = !MixinApplication.appContext.isGooglePlayServicesAvailable() &&
-    BuildConfig.MAPBOX_PUBLIC_TOKEN.isNotBlank()
+fun useMapbox() =
+    !MixinApplication.appContext.isGooglePlayServicesAvailable() &&
+        BuildConfig.MAPBOX_PUBLIC_TOKEN.isNotBlank()
 
 data class MixinLatLng(val latitude: Double, val longitude: Double) {
     fun toGoogleMap() = LatLng(latitude, longitude)
+
     fun toMapbox(): Point = Point.fromLngLat(longitude, latitude)
 }
 
 data class MixinLatLngBounds(val southwest: MixinLatLng, val northeast: MixinLatLng) {
     fun toGoogleMap() = LatLngBounds(LatLng(southwest.latitude, southwest.longitude), LatLng(northeast.latitude, northeast.longitude))
+
     fun toMapbox() = CoordinateBounds(Point.fromLngLat(southwest.longitude, southwest.latitude), Point.fromLngLat(northeast.longitude, northeast.latitude))
 }

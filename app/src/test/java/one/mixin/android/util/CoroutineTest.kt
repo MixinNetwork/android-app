@@ -17,52 +17,55 @@ import kotlin.random.Random
 
 class CoroutineTest {
     @Test
-    fun testFlow() = runBlocking {
-        val dropFlow by lazy {
-            MutableSharedFlow<Int>(0, 1, BufferOverflow.DROP_OLDEST)
-        }
-
-        val job = launch {
-            dropFlow.collect {
-                println("collect $it")
-                delay(200)
-                println("collect done")
+    fun testFlow() =
+        runBlocking {
+            val dropFlow by lazy {
+                MutableSharedFlow<Int>(0, 1, BufferOverflow.DROP_OLDEST)
             }
-        }
-        repeat(10) {
-            delay(100)
-            dropFlow.emit(it)
-        }
 
-        job.cancel()
-        println("Done")
-    }
-
-    @Test
-    fun testMockBarrier() = runBlocking {
-        coroutineScope {
-            (0..10).map { i ->
-                async(Dispatchers.IO) {
-                    var failed = true
-                    var retryCount = 0
-                    while (failed) {
-                        val r = Random.nextInt(4)
-                        delay(r * 1000L)
-
-                        failed = Random.nextBoolean()
-                        if (!failed) {
-                            println("$i delay $r success")
-                            return@async
-                        }
-                        retryCount++
-                        println("$i delay $r failed, retry $retryCount")
+            val job =
+                launch {
+                    dropFlow.collect {
+                        println("collect $it")
+                        delay(200)
+                        println("collect done")
                     }
                 }
-            }.awaitAll()
+            repeat(10) {
+                delay(100)
+                dropFlow.emit(it)
+            }
+
+            job.cancel()
+            println("Done")
         }
 
-        return@runBlocking
-    }
+    @Test
+    fun testMockBarrier() =
+        runBlocking {
+            coroutineScope {
+                (0..10).map { i ->
+                    async(Dispatchers.IO) {
+                        var failed = true
+                        var retryCount = 0
+                        while (failed) {
+                            val r = Random.nextInt(4)
+                            delay(r * 1000L)
+
+                            failed = Random.nextBoolean()
+                            if (!failed) {
+                                println("$i delay $r success")
+                                return@async
+                            }
+                            retryCount++
+                            println("$i delay $r failed, retry $retryCount")
+                        }
+                    }
+                }.awaitAll()
+            }
+
+            return@runBlocking
+        }
 
     private val channel = Channel<Int>()
 
@@ -75,37 +78,38 @@ class CoroutineTest {
     }
 
     @Test
-    fun `test process coroutine`(): Unit = runBlocking {
-        launch {
-            for (i in channel) {
-                println("${Thread.currentThread().name} Receive: $i")
-                list.add(i)
-                if (list.size > 1) {
-                    val str = list.toString()
-                    list.clear()
-                    launch(SINGLE_PROCESS_THREAD) {
-                        processList(str)
+    fun `test process coroutine`(): Unit =
+        runBlocking {
+            launch {
+                for (i in channel) {
+                    println("${Thread.currentThread().name} Receive: $i")
+                    list.add(i)
+                    if (list.size > 1) {
+                        val str = list.toString()
+                        list.clear()
+                        launch(SINGLE_PROCESS_THREAD) {
+                            processList(str)
+                        }
                     }
                 }
             }
-        }
-        launch {
-            repeat(5) {
-                delay(5)
-                channel.send(it)
+            launch {
+                repeat(5) {
+                    delay(5)
+                    channel.send(it)
+                }
             }
-        }
-        delay(500)
-        launch {
-            launch(SINGLE_PROCESS_THREAD) {
-                processList(list.toString())
+            delay(500)
+            launch {
+                launch(SINGLE_PROCESS_THREAD) {
+                    processList(list.toString())
+                }
             }
+            delay(1000)
+            SINGLE_LISTEN_THREAD.close()
+            SINGLE_PROCESS_THREAD.close()
+            println("DONE")
         }
-        delay(1000)
-        SINGLE_LISTEN_THREAD.close()
-        SINGLE_PROCESS_THREAD.close()
-        println("DONE")
-    }
 
     private val list = mutableListOf<Int>()
 

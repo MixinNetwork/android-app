@@ -12,12 +12,19 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
 
 class FriendsAdapter(callback: UserItemCallback) : AbsFriendsAdapter<FriendsViewHolder>(callback) {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         FriendsViewHolder(ItemContactNormalBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 }
 
 class FriendsViewHolder(val binding: ItemContactNormalBinding) : BaseFriendsViewHolder(binding.root) {
-    override fun bind(item: User, filter: String, listener: FriendsListener?) {
+    override fun bind(
+        item: User,
+        filter: String,
+        listener: FriendsListener?,
+    ) {
         binding.apply {
             normal.text = item.fullName
             normal.highLight(filter)

@@ -11,6 +11,7 @@ import one.mixin.android.widget.markdown.RoundedBackgroundSpan
 
 class CodeEditHandler : EditHandler<RoundedBackgroundSpan> {
     private lateinit var theme: MarkwonTheme
+
     override fun init(markwon: Markwon) {
         theme = markwon.configuration().theme()
     }

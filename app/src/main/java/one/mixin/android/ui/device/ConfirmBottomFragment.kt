@@ -45,7 +45,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "ConfirmBottomFragment"
 
@@ -89,24 +88,29 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         requireNotNull(requireArguments().getString(AvatarActivity.ARGS_URL)) { "required url must not be null" }
     }
 
-    private fun authDevice(ephemeralId: String, pubKey: String, pin: String) = lifecycleScope.launch {
-        handleMixinResponse(
-            invokeNetwork = { provisioningService.provisionCodeAsync() },
-            successBlock = { response ->
-                withContext(Dispatchers.IO) {
-                    encryptKey(requireContext(), ephemeralId, pubKey, response.data!!.code, pin)
-                }
-            },
-            failureBlock = {
-                handleError(requireNotNull(it.error))
-                return@handleMixinResponse true
-            },
-            exceptionBlock = {
-                handleThrowable(it)
-                return@handleMixinResponse true
-            },
-        )
-    }
+    private fun authDevice(
+        ephemeralId: String,
+        pubKey: String,
+        pin: String,
+    ) =
+        lifecycleScope.launch {
+            handleMixinResponse(
+                invokeNetwork = { provisioningService.provisionCodeAsync() },
+                successBlock = { response ->
+                    withContext(Dispatchers.IO) {
+                        encryptKey(requireContext(), ephemeralId, pubKey, response.data!!.code, pin)
+                    }
+                },
+                failureBlock = {
+                    handleError(requireNotNull(it.error))
+                    return@handleMixinResponse true
+                },
+                exceptionBlock = {
+                    handleThrowable(it)
+                    return@handleMixinResponse true
+                },
+            )
+        }
 
     private fun handleThrowable(t: Throwable) {
         if (t is TipNetworkException) {
@@ -127,7 +131,10 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentConfirmBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -141,7 +148,10 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         return MixinResponse(Response.success(Any()))
     }
 
-    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
+    override fun doWhenInvokeNetworkSuccess(
+        response: MixinResponse<*>,
+        pin: String,
+    ): Boolean {
         response.data?.let {
             isCancelable = false
             val uri = Uri.parse(url)
@@ -162,11 +172,12 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         return false
     }
 
-    override fun getBiometricInfo() = BiometricInfo(
-        getString(R.string.Verify_by_Biometric),
-        "",
-        "",
-    )
+    override fun getBiometricInfo() =
+        BiometricInfo(
+            getString(R.string.Verify_by_Biometric),
+            "",
+            "",
+        )
 
     private suspend fun encryptKey(
         ctx: Context,
@@ -183,13 +194,14 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         val publicKey = Curve.decodePoint(Base64.decode(publicKeyEncoded), 0)
         val identityKeyPair = IdentityKeyUtil.getIdentityKeyPair(ctx)
         val cipher = ProvisioningCipher(publicKey)
-        val message = ProvisionMessage(
-            identityKeyPair.publicKey.serialize(),
-            identityKeyPair.privateKey.serialize(),
-            account.userId,
-            account.sessionId,
-            verificationCode,
-        )
+        val message =
+            ProvisionMessage(
+                identityKeyPair.publicKey.serialize(),
+                identityKeyPair.privateKey.serialize(),
+                account.userId,
+                account.sessionId,
+                verificationCode,
+            )
         val cipherText = cipher.encrypt(message.toByteArray())
         val encoded = cipherText.base64Encode()
         withContext(Dispatchers.Main) {
@@ -225,12 +237,14 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         }
     }
 
-    private val sanitizer = UnescapeIgnorePlusUrlQuerySanitizer().apply {
-        allowUnregisteredParamaters = true
-        unregisteredParameterValueSanitizer = UrlQuerySanitizer.IllegalCharacterValueSanitizer(
-            UrlQuerySanitizer.IllegalCharacterValueSanitizer.ALL_OK,
-        )
-    }
+    private val sanitizer =
+        UnescapeIgnorePlusUrlQuerySanitizer().apply {
+            allowUnregisteredParamaters = true
+            unregisteredParameterValueSanitizer =
+                UrlQuerySanitizer.IllegalCharacterValueSanitizer(
+                    UrlQuerySanitizer.IllegalCharacterValueSanitizer.ALL_OK,
+                )
+        }
 
     private var confirmCallback: ((Boolean, Boolean) -> Unit)? = null
 

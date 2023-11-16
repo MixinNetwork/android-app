@@ -3,13 +3,13 @@ package one.mixin.android.widget.gallery.internal.model
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import java.util.ArrayList
-import java.util.LinkedHashSet
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.widget.gallery.internal.entity.IncapableCause
 import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.internal.entity.SelectionSpec
 import one.mixin.android.widget.gallery.internal.utils.PhotoMetadataUtils
+import java.util.ArrayList
+import java.util.LinkedHashSet
 
 class SelectedItemCollection(private val mContext: Context) {
     private var mItems: MutableSet<Item>? = null
@@ -85,7 +85,10 @@ class SelectedItemCollection(private val mContext: Context) {
         return removed
     }
 
-    fun overwrite(items: ArrayList<Item>, collectionType: Int) {
+    fun overwrite(
+        items: ArrayList<Item>,
+        collectionType: Int,
+    ) {
         if (items.size == 0) {
             this.collectionType = COLLECTION_UNDEFINED
         } else {
@@ -167,7 +170,6 @@ class SelectedItemCollection(private val mContext: Context) {
     }
 
     companion object {
-
         val STATE_SELECTION = "state_selection"
         val STATE_COLLECTION_TYPE = "state_collection_type"
         val COLLECTION_UNDEFINED = 0x00

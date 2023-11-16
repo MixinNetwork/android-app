@@ -58,11 +58,12 @@ suspend fun backup(
 
     val exists = backupDir.listFiles()?.any { it.name.contains(dbFile.name) } == true
     val name = dbFile.name
-    val tmpName = if (exists) {
-        "$name$BACKUP_POSTFIX"
-    } else {
-        name
-    }
+    val tmpName =
+        if (exists) {
+            "$name$BACKUP_POSTFIX"
+        } else {
+            name
+        }
     val copyPath = "$backupDir${File.separator}$tmpName"
     var result: File? = null
     try {
@@ -82,11 +83,12 @@ suspend fun backup(
 
     var db: SQLiteDatabase? = null
     try {
-        db = SQLiteDatabase.openDatabase(
-            "$backupDir${File.separator}$tmpName",
-            null,
-            SQLiteDatabase.OPEN_READWRITE,
-        )
+        db =
+            SQLiteDatabase.openDatabase(
+                "$backupDir${File.separator}$tmpName",
+                null,
+                SQLiteDatabase.OPEN_READWRITE,
+            )
     } catch (e: Exception) {
         result?.delete()
         db?.close()
@@ -130,7 +132,11 @@ suspend fun backup(
     }
 }
 
-suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Result) -> Unit) =
+suspend fun backupApi29(
+    context: Context,
+    backupMedia: Boolean,
+    callback: (Result) -> Unit,
+) =
     withContext(Dispatchers.IO) {
         val backupDirectoryUri =
             context.defaultSharedPreferences.getString(
@@ -160,14 +166,15 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
             }
             return@withContext
         }
-        val backupChildDirectory = backupDirectory.findFile(BACKUP_DIR_NAME).run {
-            if (this?.isDirectory == true && this.exists()) {
-                this
-            } else {
-                this?.delete()
-                backupDirectory.createDirectory(BACKUP_DIR_NAME)
+        val backupChildDirectory =
+            backupDirectory.findFile(BACKUP_DIR_NAME).run {
+                if (this?.isDirectory == true && this.exists()) {
+                    this
+                } else {
+                    this?.delete()
+                    backupDirectory.createDirectory(BACKUP_DIR_NAME)
+                }
             }
-        }
         if (backupChildDirectory == null) {
             withContext(Dispatchers.Main) {
                 Timber.e("Backup child directory is null")
@@ -206,11 +213,12 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
             }
             var db: SQLiteDatabase? = null
             try {
-                db = SQLiteDatabase.openDatabase(
-                    tmpFile.path,
-                    null,
-                    SQLiteDatabase.OPEN_READWRITE,
-                )
+                db =
+                    SQLiteDatabase.openDatabase(
+                        tmpFile.path,
+                        null,
+                        SQLiteDatabase.OPEN_READWRITE,
+                    )
             } catch (e: Exception) {
                 db?.close()
                 tmpFile.deleteOnExists()
@@ -253,8 +261,9 @@ suspend fun restore(
     context: Context,
     callback: (Result) -> Unit,
 ) = withContext(Dispatchers.IO) {
-    val target = internalFindBackup(context, coroutineContext)
-        ?: return@withContext callback(Result.NOT_FOUND)
+    val target =
+        internalFindBackup(context, coroutineContext)
+            ?: return@withContext callback(Result.NOT_FOUND)
     val file = context.getDatabasePath(DB_NAME)
     try {
         if (file.exists()) {
@@ -350,31 +359,34 @@ suspend fun restoreApi29(
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun delete(
     context: Context,
-): Boolean = withContext(Dispatchers.IO) {
-    val backupDir = context.getLegacyBackupPath()
-    return@withContext backupDir?.deleteRecursively() ?: return@withContext false
-}
+): Boolean =
+    withContext(Dispatchers.IO) {
+        val backupDir = context.getLegacyBackupPath()
+        return@withContext backupDir?.deleteRecursively() ?: return@withContext false
+    }
 
 suspend fun deleteApi29(
     context: Context,
-): Boolean = withContext(Dispatchers.IO) {
-    val backupDirectoryUri = getBackupDirectory(context) ?: return@withContext false
-    val backupDirectory =
-        DocumentFile.fromTreeUri(context, backupDirectoryUri)?.findFile(BACKUP_DIR_NAME)
-            ?: return@withContext false
-    if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
-        return@withContext false
+): Boolean =
+    withContext(Dispatchers.IO) {
+        val backupDirectoryUri = getBackupDirectory(context) ?: return@withContext false
+        val backupDirectory =
+            DocumentFile.fromTreeUri(context, backupDirectoryUri)?.findFile(BACKUP_DIR_NAME)
+                ?: return@withContext false
+        if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
+            return@withContext false
+        }
+        return@withContext backupDirectory.delete()
     }
-    return@withContext backupDirectory.delete()
-}
 
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun findBackup(
     context: Context,
     coroutineContext: CoroutineContext,
-): BackupInfo? = internalFindBackup(context, coroutineContext)?.run {
-    BackupInfo(lastModified(), absolutePath)
-}
+): BackupInfo? =
+    internalFindBackup(context, coroutineContext)?.run {
+        BackupInfo(lastModified(), absolutePath)
+    }
 
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 private suspend fun internalFindBackup(
@@ -386,42 +398,44 @@ private suspend fun internalFindBackup(
         coroutineContext,
         legacy = true,
     ) ?: findOldBackup(context, coroutineContext)
-    )
+)
 
 suspend fun findBackupApi29(
     context: Context,
     coroutineContext: CoroutineContext,
-): BackupInfo? = withContext(coroutineContext) {
-    val backupDirectoryUri = getBackupDirectory(context) ?: return@withContext null
-    val backupDirectory =
-        DocumentFile.fromTreeUri(context, backupDirectoryUri) ?: return@withContext null
-    if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
-        return@withContext null
+): BackupInfo? =
+    withContext(coroutineContext) {
+        val backupDirectoryUri = getBackupDirectory(context) ?: return@withContext null
+        val backupDirectory =
+            DocumentFile.fromTreeUri(context, backupDirectoryUri) ?: return@withContext null
+        if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
+            return@withContext null
+        }
+        val backupChildDirectory = backupDirectory.findFile(BACKUP_DIR_NAME)
+        val dbFile = backupChildDirectory?.findFile("mixin.db")
+        if (backupChildDirectory == null || !backupChildDirectory.exists() || backupChildDirectory.length() <= 0 || dbFile == null || !dbFile.exists() || dbFile.length() <= 0) {
+            return@withContext null
+        }
+        return@withContext BackupInfo(
+            backupDirectory.lastModified(),
+            context.getDisplayPath(backupDirectory.uri),
+        )
     }
-    val backupChildDirectory = backupDirectory.findFile(BACKUP_DIR_NAME)
-    val dbFile = backupChildDirectory?.findFile("mixin.db")
-    if (backupChildDirectory == null || !backupChildDirectory.exists() || backupChildDirectory.length() <= 0 || dbFile == null || !dbFile.exists() || dbFile.length() <= 0) {
-        return@withContext null
-    }
-    return@withContext BackupInfo(
-        backupDirectory.lastModified(),
-        context.getDisplayPath(backupDirectory.uri),
-    )
-}
 
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun findNewBackup(
     context: Context,
     coroutineContext: CoroutineContext,
     legacy: Boolean = false,
-): File? = withContext(coroutineContext) {
-    val backupDir = context.getLegacyBackupPath(legacy = legacy) ?: return@withContext null
-    if (!backupDir.exists() || !backupDir.isDirectory) return@withContext null
-    if (checkDb("$backupDir${File.separator}$DB_NAME")) {
-        return@withContext File("$backupDir${File.separator}$DB_NAME")
+): File? =
+    withContext(coroutineContext) {
+        val backupDir = context.getLegacyBackupPath(legacy = legacy) ?: return@withContext null
+        if (!backupDir.exists() || !backupDir.isDirectory) return@withContext null
+        if (checkDb("$backupDir${File.separator}$DB_NAME")) {
+            return@withContext File("$backupDir${File.separator}$DB_NAME")
+        }
+        null
     }
-    null
-}
 
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun findOldBackup(
@@ -434,30 +448,35 @@ suspend fun findOldBackup(
     if (files.isNullOrEmpty()) return@withContext null
     files.forEach { f ->
         val name = f.name
-        val exists = try {
-            val version = name.split('.')[2].toInt()
-            version in Constants.DataBase.MINI_VERSION..Constants.DataBase.CURRENT_VERSION
-        } catch (e: Exception) {
-            false
-        }
+        val exists =
+            try {
+                val version = name.split('.')[2].toInt()
+                version in Constants.DataBase.MINI_VERSION..Constants.DataBase.CURRENT_VERSION
+            } catch (e: Exception) {
+                false
+            }
         if (exists) return@withContext f
     }
     null
 }
 
-fun findOldBackupSync(context: Context, legacy: Boolean = false): File? {
+fun findOldBackupSync(
+    context: Context,
+    legacy: Boolean = false,
+): File? {
     val backupDir = context.getOldBackupPath(legacy = legacy) ?: return null
     if (!backupDir.exists() || !backupDir.isDirectory) return null
     val files = backupDir.listFiles()
     if (files.isNullOrEmpty()) return null
     files.forEach { f ->
         val name = f.name
-        val exists = try {
-            val version = name.split('.')[2].toInt()
-            version in Constants.DataBase.MINI_VERSION..Constants.DataBase.CURRENT_VERSION
-        } catch (e: Exception) {
-            false
-        }
+        val exists =
+            try {
+                val version = name.split('.')[2].toInt()
+                version in Constants.DataBase.MINI_VERSION..Constants.DataBase.CURRENT_VERSION
+            } catch (e: Exception) {
+                false
+            }
         if (exists) return f
     }
     return null
@@ -482,12 +501,18 @@ private fun checkDb(path: String): Boolean {
     }
 }
 
-private fun internalCheckAccessBackupDirectory(context: Context, uri: Uri): Boolean {
+private fun internalCheckAccessBackupDirectory(
+    context: Context,
+    uri: Uri,
+): Boolean {
     val backupDirectory = DocumentFile.fromTreeUri(context, uri)
     return backupDirectory != null && backupDirectory.canRead() && backupDirectory.canWrite()
 }
 
-private fun copyFileToDirectory(file: File, dir: DocumentFile) {
+private fun copyFileToDirectory(
+    file: File,
+    dir: DocumentFile,
+) {
     if (file.isFile && file.length() > 0) {
         val documentFile =
             dir.createFile("application/octet-stream", file.name)
@@ -506,7 +531,10 @@ private fun copyFileToDirectory(file: File, dir: DocumentFile) {
     }
 }
 
-private fun copyDirectoryToDirectory(file: File, dir: DocumentFile) {
+private fun copyDirectoryToDirectory(
+    file: File,
+    dir: DocumentFile,
+) {
     if (file.isDirectory) {
         val childDir = dir.createDirectory(file.name) ?: return
         if (childDir.name != file.name) {
@@ -532,7 +560,11 @@ private fun File.forEachFile(callback: (File) -> Unit) {
     }
 }
 
-private fun copyFileToDirectory(context: Context, sourceFile: DocumentFile, parentDir: File) {
+private fun copyFileToDirectory(
+    context: Context,
+    sourceFile: DocumentFile,
+    parentDir: File,
+) {
     val fileName = sourceFile.name ?: return
     if (!sourceFile.exists()) {
         return
@@ -546,7 +578,11 @@ private fun copyFileToDirectory(context: Context, sourceFile: DocumentFile, pare
     }
 }
 
-private fun copyDirectoryToDirectory(context: Context, sourceFile: DocumentFile, parentDir: File) {
+private fun copyDirectoryToDirectory(
+    context: Context,
+    sourceFile: DocumentFile,
+    parentDir: File,
+) {
     val fileName = sourceFile.name ?: return
     if (!sourceFile.exists()) {
         return

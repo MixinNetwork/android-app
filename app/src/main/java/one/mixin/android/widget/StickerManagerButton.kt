@@ -18,7 +18,11 @@ class StickerManagerButton : AppCompatTextView {
     private var deleteCallback: OnClickListener? = null
     private var addCallback: OnClickListener? = null
     private var status = false // false when added and true when deleted
-    fun init(deleteCallback: OnClickListener?, addCallback: OnClickListener) {
+
+    fun init(
+        deleteCallback: OnClickListener?,
+        addCallback: OnClickListener,
+    ) {
         this.deleteCallback = deleteCallback
         this.addCallback = addCallback
     }

@@ -18,7 +18,12 @@ import one.mixin.android.util.viewBinding
 class SharedMediaActivity : BaseActivity() {
     companion object {
         const val FROM_CHAT = "from_chat"
-        fun show(context: Context, conversationId: String, fromChat: Boolean) {
+
+        fun show(
+            context: Context,
+            conversationId: String,
+            fromChat: Boolean,
+        ) {
             Intent(context, SharedMediaActivity::class.java).run {
                 putExtra(ARGS_CONVERSATION_ID, conversationId)
                 putExtra(FROM_CHAT, fromChat)
@@ -28,11 +33,17 @@ class SharedMediaActivity : BaseActivity() {
     }
 
     class SharedMediaContract : ActivityResultContract<Pair<String, Boolean>, Intent?>() {
-        override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
+        override fun parseResult(
+            resultCode: Int,
+            intent: Intent?,
+        ): Intent? {
             return intent
         }
 
-        override fun createIntent(context: Context, input: Pair<String, Boolean>): Intent {
+        override fun createIntent(
+            context: Context,
+            input: Pair<String, Boolean>,
+        ): Intent {
             return Intent(context, SharedMediaActivity::class.java).apply {
                 putExtra(ARGS_CONVERSATION_ID, input.first)
                 putExtra(FROM_CHAT, input.second)

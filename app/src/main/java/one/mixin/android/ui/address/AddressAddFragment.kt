@@ -45,8 +45,8 @@ import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.WithdrawalMemoPossibility
+import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
 class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
@@ -71,6 +71,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
     lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
     private lateinit var getScanMemoResult: ActivityResultLauncher<Pair<String, Boolean>>
     private val binding by viewBinding(FragmentAddressAddBinding::bind)
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (!::resultRegistry.isInitialized) {
@@ -78,16 +79,18 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                 requireActivity().activityResultRegistry
         }
 
-        getScanResult = registerForActivityResult(
-            CaptureActivity.CaptureContract(),
-            resultRegistry,
-            ::callbackScan,
-        )
-        getScanMemoResult = registerForActivityResult(
-            CaptureActivity.CaptureContract(),
-            resultRegistry,
-            ::callbackScanMemo,
-        )
+        getScanResult =
+            registerForActivityResult(
+                CaptureActivity.CaptureContract(),
+                resultRegistry,
+                ::callbackScan,
+            )
+        getScanMemoResult =
+            registerForActivityResult(
+                CaptureActivity.CaptureContract(),
+                resultRegistry,
+                ::callbackScanMemo,
+            )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,7 +98,10 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         asset = requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)!!
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.rightAnimator.isEnabled = false
         binding.titleView.leftIb.setOnClickListener {
@@ -136,22 +142,25 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                     chainIconUrl = asset.chainIconUrl,
                     label = binding.labelEt.text.toString(),
                     destination = destination,
-                    tag = if (memoEnabled) {
-                        binding.tagEt.text.toString()
-                    } else {
-                        ""
-                    },
+                    tag =
+                        if (memoEnabled) {
+                            binding.tagEt.text.toString()
+                        } else {
+                            ""
+                        },
                     type = ADD,
                 )
 
             bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
-            bottomSheet.setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
-                override fun onDismiss(success: Boolean) {
-                    if (success && !viewDestroyed()) {
-                        view.navigateUp()
+            bottomSheet.setCallback(
+                object : BiometricBottomSheetDialogFragment.Callback() {
+                    override fun onDismiss(success: Boolean) {
+                        if (success && !viewDestroyed()) {
+                            view.navigateUp()
+                        }
                     }
-                }
-            })
+                },
+            )
         }
 
         if (asset.assetId == RIPPLE_CHAIN_ID) {
@@ -161,15 +170,16 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         }
         if (asset.chainId == EOS_CHAIN_ID) {
             binding.tipTv.isVisible = true
-            binding.tipTv.text = buildSpannedString {
-                append(getString(R.string.wallet_address_add_tip))
-                bold {
-                    append(" ")
-                    color(requireContext().colorFromAttribute(R.attr.text_primary)) {
-                        append(getString(R.string.EOS_contract_address))
+            binding.tipTv.text =
+                buildSpannedString {
+                    append(getString(R.string.wallet_address_add_tip))
+                    bold {
+                        append(" ")
+                        color(requireContext().colorFromAttribute(R.attr.text_primary)) {
+                            append(getString(R.string.EOS_contract_address))
+                        }
                     }
                 }
-            }
         } else {
             binding.tipTv.isVisible = false
         }
@@ -209,14 +219,15 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                 updateSaveButton()
                 handleMemo()
             }
-            binding.info.text = getString(
-                R.string.withdrawal_addr_has_memo_or_tag,
-                if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    getString(R.string.No_tag)
-                } else {
-                    getString(R.string.withdrawal_no_memo)
-                },
-            )
+            binding.info.text =
+                getString(
+                    R.string.withdrawal_addr_has_memo_or_tag,
+                    if (asset.assetId == RIPPLE_CHAIN_ID) {
+                        getString(R.string.No_tag)
+                    } else {
+                        getString(R.string.withdrawal_no_memo)
+                    },
+                )
             binding.info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
                     getString(R.string.No_tag)
@@ -235,14 +246,15 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                 handleMemo()
                 binding.tagEt.showKeyboard()
             }
-            binding.info.text = getString(
-                R.string.withdrawal_addr_no_memo_or_tag,
-                if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    getString(R.string.Add_Tag)
-                } else {
-                    getString(R.string.Add_memo)
-                },
-            )
+            binding.info.text =
+                getString(
+                    R.string.withdrawal_addr_no_memo_or_tag,
+                    if (asset.assetId == RIPPLE_CHAIN_ID) {
+                        getString(R.string.Add_Tag)
+                    } else {
+                        getString(R.string.Add_memo)
+                    },
+                )
             binding.info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
                     getString(R.string.Add_Tag)
@@ -274,7 +286,10 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         callbackScan(data, false)
     }
 
-    private fun callbackScan(data: Intent?, isAddr: Boolean = true) {
+    private fun callbackScan(
+        data: Intent?,
+        isAddr: Boolean = true,
+    ) {
         val text = data?.getStringExtra(ARGS_FOR_SCAN_RESULT)
         if (text != null) {
             if (isAddr) {
@@ -289,18 +304,29 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         }
     }
 
-    private val mWatcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
+    private val mWatcher: TextWatcher =
+        object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {
+            }
 
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        }
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {
+            }
 
-        override fun afterTextChanged(s: Editable) {
-            if (viewDestroyed()) return
-            updateSaveButton()
+            override fun afterTextChanged(s: Editable) {
+                if (viewDestroyed()) return
+                updateSaveButton()
+            }
         }
-    }
 
     private fun updateSaveButton() {
         if (binding.addrEt.text.isNotEmpty() && binding.labelEt.text.isNotEmpty() && (!memoEnabled || binding.tagEt.text.isNotEmpty())) {

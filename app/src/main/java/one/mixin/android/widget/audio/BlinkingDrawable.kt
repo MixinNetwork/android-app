@@ -12,17 +12,17 @@ import android.graphics.RectF
 import android.graphics.drawable.Drawable
 
 class BlinkingDrawable(private val color: Int) : Drawable() {
-
     private val bounds = RectF()
     private var w = 0f
     private var h = 0f
 
     private var alphaAnimator: ObjectAnimator? = null
 
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = this@BlinkingDrawable.color
-        style = Paint.Style.FILL
-    }
+    private val paint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = this@BlinkingDrawable.color
+            style = Paint.Style.FILL
+        }
 
     override fun onBoundsChange(bounds: Rect) {
         this.bounds.set(bounds)
@@ -51,11 +51,12 @@ class BlinkingDrawable(private val color: Int) : Drawable() {
             alphaAnimator?.cancel()
         }
 
-        alphaAnimator = ObjectAnimator.ofInt(this, "alpha", 255, 0).apply {
-            duration = 1000
-            repeatMode = REVERSE
-            repeatCount = INFINITE
-        }
+        alphaAnimator =
+            ObjectAnimator.ofInt(this, "alpha", 255, 0).apply {
+                duration = 1000
+                repeatMode = REVERSE
+                repeatCount = INFINITE
+            }
         alphaAnimator?.start()
     }
 

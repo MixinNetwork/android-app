@@ -11,62 +11,63 @@ class RefreshStickerAndRelatedAlbumJob(private val stickerId: String) : BaseJob(
     Params(PRIORITY_UI_HIGH)
         .addTags(GROUP).persist().requireNetwork(),
 ) {
-
     companion object {
         private const val serialVersionUID = 1L
         const val GROUP = "RefreshStickerAndRelatedAlbumJob"
     }
 
-    override fun onRun() = runBlocking {
-        val localSticker = stickerDao.findStickerById(stickerId)
-        var albumId: String? = null
-        if (localSticker != null) {
-            albumId = localSticker.albumId
-        }
-
-        if (albumId.isNullOrBlank()) {
-            val response = accountService.getStickerById(stickerId).execute().body()
-            if (response != null && response.isSuccess && response.data != null) {
-                albumId = (response.data as Sticker).albumId
+    override fun onRun() =
+        runBlocking {
+            val localSticker = stickerDao.findStickerById(stickerId)
+            var albumId: String? = null
+            if (localSticker != null) {
+                albumId = localSticker.albumId
             }
-        }
 
-        if (albumId.isNullOrBlank()) {
-            albumId?.let { stickerDao.updateAlbumId(stickerId, it) }
-            return@runBlocking
-        }
-
-        var album = stickerAlbumDao.findAlbumById(albumId)
-        if (album == null) {
-            val albumResponse = accountService.getAlbumByIdSuspend(albumId)
-            if (albumResponse.isSuccess && albumResponse.data != null) {
-                album = albumResponse.data as StickerAlbum
-                stickerAlbumDao.insertSuspend(album)
-            }
-        }
-
-        if (album == null || album.category == "PERSONAL") {
-            stickerDao.updateAlbumId(stickerId, albumId)
-            return@runBlocking
-        }
-
-        val stickersResponse = accountService.getStickersByAlbumIdSuspend(albumId)
-        if (stickersResponse.isSuccess && stickersResponse.data != null) {
-            val stickers = stickersResponse.data as List<Sticker>
-            val relationships: MutableList<StickerRelationship>? = if (album.category == "SYSTEM") {
-                arrayListOf()
-            } else {
-                null
-            }
-            mixinDatabase.runInTransaction {
-                for (s in stickers) {
-                    stickerDao.insertUpdate(s)
-                    relationships?.add(StickerRelationship(albumId, s.stickerId))
-                }
-                relationships?.let { rs ->
-                    stickerRelationshipDao.insertList(rs)
+            if (albumId.isNullOrBlank()) {
+                val response = accountService.getStickerById(stickerId).execute().body()
+                if (response != null && response.isSuccess && response.data != null) {
+                    albumId = (response.data as Sticker).albumId
                 }
             }
+
+            if (albumId.isNullOrBlank()) {
+                albumId?.let { stickerDao.updateAlbumId(stickerId, it) }
+                return@runBlocking
+            }
+
+            var album = stickerAlbumDao.findAlbumById(albumId)
+            if (album == null) {
+                val albumResponse = accountService.getAlbumByIdSuspend(albumId)
+                if (albumResponse.isSuccess && albumResponse.data != null) {
+                    album = albumResponse.data as StickerAlbum
+                    stickerAlbumDao.insertSuspend(album)
+                }
+            }
+
+            if (album == null || album.category == "PERSONAL") {
+                stickerDao.updateAlbumId(stickerId, albumId)
+                return@runBlocking
+            }
+
+            val stickersResponse = accountService.getStickersByAlbumIdSuspend(albumId)
+            if (stickersResponse.isSuccess && stickersResponse.data != null) {
+                val stickers = stickersResponse.data as List<Sticker>
+                val relationships: MutableList<StickerRelationship>? =
+                    if (album.category == "SYSTEM") {
+                        arrayListOf()
+                    } else {
+                        null
+                    }
+                mixinDatabase.runInTransaction {
+                    for (s in stickers) {
+                        stickerDao.insertUpdate(s)
+                        relationships?.add(StickerRelationship(albumId, s.stickerId))
+                    }
+                    relationships?.let { rs ->
+                        stickerRelationshipDao.insertList(rs)
+                    }
+                }
+            }
         }
-    }
 }

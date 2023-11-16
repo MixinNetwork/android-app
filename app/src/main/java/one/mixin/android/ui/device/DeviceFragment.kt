@@ -44,11 +44,12 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "DeviceFragment"
 
-        fun newInstance(url: String? = null) = DeviceFragment().withArgs {
-            if (url != null) {
-                putString(ARGS_URL, url)
+        fun newInstance(url: String? = null) =
+            DeviceFragment().withArgs {
+                if (url != null) {
+                    putString(ARGS_URL, url)
+                }
             }
-        }
     }
 
     private var disposable: Disposable? = null
@@ -58,11 +59,12 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
     private val sessionPref =
         MixinApplication.appContext.sharedPreferences(PREF_SESSION)
 
-    private val sessionListener = SharedPreferences.OnSharedPreferenceChangeListener { sp, key ->
-        if (key == PREF_EXTENSION_SESSION_ID) {
-            updateUI(sp.getString(key, null) != null)
+    private val sessionListener =
+        SharedPreferences.OnSharedPreferenceChangeListener { sp, key ->
+            if (key == PREF_EXTENSION_SESSION_ID) {
+                updateUI(sp.getString(key, null) != null)
+            }
         }
-    }
 
     // for testing
     private lateinit var resultRegistry: ActivityResultRegistry
@@ -90,7 +92,10 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentDeviceBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
@@ -111,14 +116,15 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
                         toast(R.string.setting_desktop_logout_failed)
                         return@launch
                     }
-                    val response = try {
-                        bottomViewModel.logout(sessionId)
-                    } catch (t: Throwable) {
-                        loadOuting.dismiss()
-                        toast(R.string.setting_desktop_logout_failed)
-                        ErrorHandler.handleError(t)
-                        return@launch
-                    }
+                    val response =
+                        try {
+                            bottomViewModel.logout(sessionId)
+                        } catch (t: Throwable) {
+                            loadOuting.dismiss()
+                            toast(R.string.setting_desktop_logout_failed)
+                            ErrorHandler.handleError(t)
+                            return@launch
+                        }
                     if (response.isSuccess) {
                         loadOuting.dismiss()
                         updateUI(false)

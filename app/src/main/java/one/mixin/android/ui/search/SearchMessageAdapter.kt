@@ -23,10 +23,16 @@ import one.mixin.android.vo.isTranscript
 class SearchMessageAdapter : SafePagedListAdapter<SearchMessageDetailItem, SearchMessageHolder>(SearchMessageDetailItem.DIFF_CALLBACK) {
     var query: String = ""
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         SearchMessageHolder(ItemSearchMessageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-    override fun onBindViewHolder(holder: SearchMessageHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: SearchMessageHolder,
+        position: Int,
+    ) {
         getItem(position)?.let {
             holder.bind(it, query, callback)
         }
@@ -69,14 +75,15 @@ class SearchMessageHolder(val binding: ItemSearchMessageBinding) : RecyclerView.
             binding.searchMsgTv.text = message.mediaName
         } else if (message.isAppCard()) {
             TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, appIcon, null, null, null)
-            val cardData = try {
-                GsonHelper.customGson.fromJson(
-                    message.content,
-                    AppCardData::class.java,
-                )
-            } catch (e: Exception) {
-                null
-            }
+            val cardData =
+                try {
+                    GsonHelper.customGson.fromJson(
+                        message.content,
+                        AppCardData::class.java,
+                    )
+                } catch (e: Exception) {
+                    null
+                }
             binding.searchMsgTv.text = "[${cardData?.title}]"
         } else if (message.isContact()) {
             TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, contactIcon, null, null, null)

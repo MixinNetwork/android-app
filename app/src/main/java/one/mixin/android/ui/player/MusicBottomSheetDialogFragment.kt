@@ -62,9 +62,10 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val TAG = "MusicBottomSheetDialogFragment"
         const val CONVERSATION_UI_PAGE_SIZE = 15
 
-        fun newInstance(conversationId: String) = MusicBottomSheetDialogFragment().withArgs {
-            putString(EXTRA_CONVERSATION_ID, conversationId)
-        }
+        fun newInstance(conversationId: String) =
+            MusicBottomSheetDialogFragment().withArgs {
+                putString(EXTRA_CONVERSATION_ID, conversationId)
+            }
     }
 
     private val stopScope = scope(Lifecycle.Event.ON_STOP)
@@ -92,7 +93,10 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         dialog.setContentView(contentView)
@@ -108,29 +112,30 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
         behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
 
         binding.apply {
-            listAdapter.listener = object : MediaItemListener {
-                override fun onItemClick(mediaItem: MediaMetadataCompat) {
-                    val id = requireNotNull(mediaItem.id)
-                    if (MusicPlayer.isPlay(id)) {
-                        MusicPlayer.pause()
-                    } else {
-                        val albumId = requireNotNull(mediaItem.album)
-                        if (albumId == MUSIC_PLAYLIST) {
-                            MusicPlayer.get().playMediaById(id)
+            listAdapter.listener =
+                object : MediaItemListener {
+                    override fun onItemClick(mediaItem: MediaMetadataCompat) {
+                        val id = requireNotNull(mediaItem.id)
+                        if (MusicPlayer.isPlay(id)) {
+                            MusicPlayer.pause()
                         } else {
-                            MusicService.playConversation(requireContext(), requireNotNull(mediaItem.album), id)
+                            val albumId = requireNotNull(mediaItem.album)
+                            if (albumId == MUSIC_PLAYLIST) {
+                                MusicPlayer.get().playMediaById(id)
+                            } else {
+                                MusicService.playConversation(requireContext(), requireNotNull(mediaItem.album), id)
+                            }
                         }
                     }
-                }
 
-                override fun onDownload(mediaItem: MediaMetadataCompat) {
-                    download(requireNotNull(mediaItem.id))
-                }
+                    override fun onDownload(mediaItem: MediaMetadataCompat) {
+                        download(requireNotNull(mediaItem.id))
+                    }
 
-                override fun onCancel(mediaItem: MediaMetadataCompat) {
-                    viewModel.cancel(requireNotNull(mediaItem.id), conversationId)
+                    override fun onCancel(mediaItem: MediaMetadataCompat) {
+                        viewModel.cancel(requireNotNull(mediaItem.id), conversationId)
+                    }
                 }
-            }
             titleView.leftIv.setPadding(12.dp)
             titleView.rightIv.setPadding(8.dp)
             titleView.leftIv.setOnClickListener { dismiss() }
@@ -160,11 +165,12 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
             } else {
                 lifecycleScope.launch {
                     val mediaId = MusicPlayer.get().currentPlayMediaId()
-                    val index = if (mediaId != null) {
-                        viewModel.indexAudioByConversationId(conversationId, mediaId)
-                    } else {
-                        0
-                    }
+                    val index =
+                        if (mediaId != null) {
+                            viewModel.indexAudioByConversationId(conversationId, mediaId)
+                        } else {
+                            0
+                        }
                     viewModel.conversationLiveData(conversationId, index)
                         .observe(this@MusicBottomSheetDialogFragment) { list ->
                             if (list.isEmpty()) return@observe
@@ -219,7 +225,10 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun updateMusicLayout(pagedList: PagedList<MediaMetadataCompat>, mediaId: String) {
+    private fun updateMusicLayout(
+        pagedList: PagedList<MediaMetadataCompat>,
+        mediaId: String,
+    ) {
         binding.apply {
             var mediaItem: MediaMetadataCompat? = null
             for (i in 0 until pagedList.size) {
@@ -277,47 +286,60 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private val playerListener = object : Player.Listener {
-        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            if (reason == MEDIA_ITEM_TRANSITION_REASON_REPEAT ||
-                reason == MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED ||
-                mediaItem == null
+    private val playerListener =
+        object : Player.Listener {
+            override fun onMediaItemTransition(
+                mediaItem: MediaItem?,
+                reason: Int,
             ) {
-                return
-            }
-            val pagedList = listAdapter.currentList ?: return
+                if (reason == MEDIA_ITEM_TRANSITION_REASON_REPEAT ||
+                    reason == MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED ||
+                    mediaItem == null
+                ) {
+                    return
+                }
+                val pagedList = listAdapter.currentList ?: return
 
-            val mediaId = mediaItem.mediaId
-            updateMusicLayout(pagedList, mediaId)
+                val mediaId = mediaItem.mediaId
+                updateMusicLayout(pagedList, mediaId)
+            }
         }
-    }
 
     @SuppressLint("RestrictedApi")
-    private val urlObserver = UrlLoader.UrlObserver { list ->
-        val pagedConfig = PagedList.Config.Builder()
-            .setPageSize(CONVERSATION_UI_PAGE_SIZE)
-            .build()
-        val pagedList = PagedList.Builder(
-            FixedMessageDataSource(list, list.size),
-            pagedConfig,
-        ).setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
-            .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
-            .build()
-        lifecycleScope.launch {
-            listAdapter.submitList(pagedList)
-            binding.pb.isVisible = false
-        }
-    }
-
-    private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
-
-        override fun onStateChanged(bottomSheet: View, newState: Int) {
-            if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                dismissAllowingStateLoss()
+    private val urlObserver =
+        UrlLoader.UrlObserver { list ->
+            val pagedConfig =
+                PagedList.Config.Builder()
+                    .setPageSize(CONVERSATION_UI_PAGE_SIZE)
+                    .build()
+            val pagedList =
+                PagedList.Builder(
+                    FixedMessageDataSource(list, list.size),
+                    pagedConfig,
+                ).setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
+                    .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
+                    .build()
+            lifecycleScope.launch {
+                listAdapter.submitList(pagedList)
+                binding.pb.isVisible = false
             }
         }
 
-        override fun onSlide(bottomSheet: View, slideOffset: Float) {
+    private val bottomSheetBehaviorCallback =
+        object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(
+                bottomSheet: View,
+                newState: Int,
+            ) {
+                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                    dismissAllowingStateLoss()
+                }
+            }
+
+            override fun onSlide(
+                bottomSheet: View,
+                slideOffset: Float,
+            ) {
+            }
         }
-    }
 }

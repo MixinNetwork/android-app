@@ -58,23 +58,29 @@ class MusicService : MediaSessionService(), LifecycleOwner {
     override fun onCreate() {
         dispatcher.onServicePreSuperOnCreate()
         super.onCreate()
-        val sessionActivityPendingIntent = Intent(this, MusicActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }.let { sessionIntent ->
-            PendingIntent.getActivity(this, 0, sessionIntent, PendingIntent.FLAG_IMMUTABLE)
-        }
+        val sessionActivityPendingIntent =
+            Intent(this, MusicActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }.let { sessionIntent ->
+                PendingIntent.getActivity(this, 0, sessionIntent, PendingIntent.FLAG_IMMUTABLE)
+            }
 
-        mediaSession = MediaSession.Builder(this, MusicPlayer.get().exoPlayer)
-            .setSessionActivity(sessionActivityPendingIntent)
-            .setCallback(mediaSessionCallback)
-            .build()
+        mediaSession =
+            MediaSession.Builder(this, MusicPlayer.get().exoPlayer)
+                .setSessionActivity(sessionActivityPendingIntent)
+                .setCallback(mediaSessionCallback)
+                .build()
         // we don't use MediaController API anywhere, so we need to add session here manually.
         addSession(mediaSession)
 
         MusicPlayer.get().exoPlayer.addListener(playerListener)
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         dispatcher.onServicePreSuperOnStart()
         super.onStartCommand(intent, flags, startId)
         val action = intent?.action
@@ -126,7 +132,10 @@ class MusicService : MediaSessionService(), LifecycleOwner {
         handleConversation(albumId, mediaId)
     }
 
-    private suspend fun handleConversation(albumId: String, mediaId: String?) {
+    private suspend fun handleConversation(
+        albumId: String,
+        mediaId: String?,
+    ) {
         if (albumId == this.albumId) {
             if (mediaId == null) return
 
@@ -158,11 +167,12 @@ class MusicService : MediaSessionService(), LifecycleOwner {
         mediaId?.let { RxBus.publish(playEvent(it)) } // respond UI before load
 
         conversationObserver = ConversationObserver(mediaId)
-        val initialLoadKey = if (mediaId != null) {
-            db.messageDao().indexAudioByConversationId(mediaId, albumId)
-        } else {
-            0
-        }
+        val initialLoadKey =
+            if (mediaId != null) {
+                db.messageDao().indexAudioByConversationId(mediaId, albumId)
+            } else {
+                0
+            }
         conversationLiveData = conversationLoader.conversationLiveData(albumId, db, initialLoadKey = initialLoadKey)
         conversationLiveData?.observe(this, conversationObserver)
     }
@@ -196,7 +206,11 @@ class MusicService : MediaSessionService(), LifecycleOwner {
             }
         }
 
-        fun loadAround(index: Int, mediaId: String, playWhenReady: Boolean = true) {
+        fun loadAround(
+            index: Int,
+            mediaId: String,
+            playWhenReady: Boolean = true,
+        ) {
             currentPagedList?.let { list ->
                 if (list.isEmpty()) return@let
 
@@ -224,9 +238,10 @@ class MusicService : MediaSessionService(), LifecycleOwner {
         MusicPlayer.resetModeAndSpeed()
         urlObserver?.let { urlLoader.removeObserver(it) }
 
-        urlObserver = UrlObserver().apply {
-            urlLoader.addObserver(this)
-        }
+        urlObserver =
+            UrlObserver().apply {
+                urlLoader.addObserver(this)
+            }
         urlLoader.load(urls)
     }
 
@@ -280,14 +295,23 @@ class MusicService : MediaSessionService(), LifecycleOwner {
     companion object {
         fun isRunning(context: Context) = context.isServiceRunning(MusicService::class.java)
 
-        fun playConversation(context: Context, albumId: String, mediaId: String) = startService(context, ACTION_PLAY_CONVERSATION) {
-            putExtra(EXTRA_ALBUM_ID, albumId)
-            putExtra(EXTRA_MEDIA_ID, mediaId)
-        }
+        fun playConversation(
+            context: Context,
+            albumId: String,
+            mediaId: String,
+        ) =
+            startService(context, ACTION_PLAY_CONVERSATION) {
+                putExtra(EXTRA_ALBUM_ID, albumId)
+                putExtra(EXTRA_MEDIA_ID, mediaId)
+            }
 
-        fun playUrls(context: Context, urls: Array<String>) = startService(context, ACTION_PLAY_URLS) {
-            putExtra(EXTRA_URLS, urls)
-        }
+        fun playUrls(
+            context: Context,
+            urls: Array<String>,
+        ) =
+            startService(context, ACTION_PLAY_URLS) {
+                putExtra(EXTRA_URLS, urls)
+            }
 
         fun stopMusic(context: Context) = startService(context, ACTION_STOP_MUSIC)
 
@@ -296,10 +320,11 @@ class MusicService : MediaSessionService(), LifecycleOwner {
             action: String? = null,
             putExtra: (Intent.() -> Unit)? = null,
         ) {
-            val intent = Intent(ctx, MusicService::class.java).apply {
-                this.action = action
-                putExtra?.invoke(this)
-            }
+            val intent =
+                Intent(ctx, MusicService::class.java).apply {
+                    this.action = action
+                    putExtra?.invoke(this)
+                }
             ctx.startService(intent)
         }
 

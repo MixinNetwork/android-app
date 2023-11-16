@@ -70,7 +70,10 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
 
     private var cancellationSignal: CancellationSignal? = null
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener {
             binding.searchRv.hideKeyboard()
@@ -91,38 +94,39 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
         }
 
         binding.searchRv.layoutManager = LinearLayoutManager(requireContext())
-        adapter.callback = object : SearchMessageAdapter.SearchMessageCallback {
-            override fun onItemClick(item: SearchMessageDetailItem) {
-                searchViewModel.findConversationById(searchMessageItem.conversationId)
-                    .autoDispose(stopScope)
-                    .subscribe {
-                        binding.searchEt.hideKeyboard()
-                        val activity = requireActivity()
-                        val conversationFragment = activity.supportFragmentManager.findFragmentByTag(ConversationFragment.TAG) as? ConversationFragment
-                        if (activity is ConversationActivity && conversationFragment != null) {
-                            lifecycleScope.launch {
-                                activity.supportFragmentManager.inTransaction {
-                                    setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
-                                    show(conversationFragment)
-                                    hide(this@SearchMessageFragment)
-                                    addToBackStack(null)
+        adapter.callback =
+            object : SearchMessageAdapter.SearchMessageCallback {
+                override fun onItemClick(item: SearchMessageDetailItem) {
+                    searchViewModel.findConversationById(searchMessageItem.conversationId)
+                        .autoDispose(stopScope)
+                        .subscribe {
+                            binding.searchEt.hideKeyboard()
+                            val activity = requireActivity()
+                            val conversationFragment = activity.supportFragmentManager.findFragmentByTag(ConversationFragment.TAG) as? ConversationFragment
+                            if (activity is ConversationActivity && conversationFragment != null) {
+                                lifecycleScope.launch {
+                                    activity.supportFragmentManager.inTransaction {
+                                        setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
+                                        show(conversationFragment)
+                                        hide(this@SearchMessageFragment)
+                                        addToBackStack(null)
+                                    }
+                                    conversationFragment.updateConversationInfo(item.messageId, binding.searchEt.text.toString())
                                 }
-                                conversationFragment.updateConversationInfo(item.messageId, binding.searchEt.text.toString())
-                            }
-                        } else {
-                            ConversationActivity.show(
-                                requireContext(),
-                                conversationId = searchMessageItem.conversationId,
-                                messageId = item.messageId,
-                                keyword = binding.searchEt.text.toString(),
-                            )
-                            if (isConversationSearch()) {
-                                parentFragmentManager.popBackStack()
+                            } else {
+                                ConversationActivity.show(
+                                    requireContext(),
+                                    conversationId = searchMessageItem.conversationId,
+                                    messageId = item.messageId,
+                                    keyword = binding.searchEt.text.toString(),
+                                )
+                                if (isConversationSearch()) {
+                                    parentFragmentManager.popBackStack()
+                                }
                             }
                         }
-                    }
+                }
             }
-        }
         binding.searchRv.adapter = adapter
 
         binding.clearIb.setOnClickListener { binding.searchEt.setText("") }
@@ -174,27 +178,28 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
 
     private fun isConversationSearch() = searchMessageItem.messageCount == 0
 
-    private fun onTextChanged(s: String) = lifecycleScope.launch {
-        if (s == adapter.query) {
-            return@launch
-        }
-
-        adapter.query = s
-        if (s.isEmpty()) {
-            removeObserverAndCancel()
-            cancellationSignal = null
-            observer?.let {
-                curLiveData?.removeObserver(it)
+    private fun onTextChanged(s: String) =
+        lifecycleScope.launch {
+            if (s == adapter.query) {
+                return@launch
             }
-            observer = null
-            curLiveData = null
-            binding.progress.isVisible = false
-            adapter.submitList(null)
-            return@launch
-        }
 
-        bindAndSearch(s)
-    }
+            adapter.query = s
+            if (s.isEmpty()) {
+                removeObserverAndCancel()
+                cancellationSignal = null
+                observer?.let {
+                    curLiveData?.removeObserver(it)
+                }
+                observer = null
+                curLiveData = null
+                binding.progress.isVisible = false
+                adapter.submitList(null)
+                return@launch
+            }
+
+            bindAndSearch(s)
+        }
 
     private fun bindAndSearch(s: String) {
         binding.progress.isVisible = true
@@ -202,12 +207,13 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
         removeObserverAndCancel()
         cancellationSignal = CancellationSignal()
         curLiveData = searchViewModel.observeFuzzySearchMessageDetail(s, searchMessageItem.conversationId, cancellationSignal!!)
-        observer = Observer {
-            if (s != binding.searchEt.text.toString()) return@Observer
-            binding.progress.isVisible = false
+        observer =
+            Observer {
+                if (s != binding.searchEt.text.toString()) return@Observer
+                binding.progress.isVisible = false
 
-            adapter.submitList(it)
-        }
+                adapter.submitList(it)
+            }
         observer?.let {
             curLiveData?.observe(viewLifecycleOwner, it)
         }

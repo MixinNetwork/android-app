@@ -239,7 +239,10 @@ fun MediaMetadataCompat.copy(status: Long): MediaMetadataCompat =
         .copy(this, status)
         .build()
 
-fun MediaMetadataCompat.Builder.copy(media: MediaMetadataCompat, status: Long): MediaMetadataCompat.Builder {
+fun MediaMetadataCompat.Builder.copy(
+    media: MediaMetadataCompat,
+    status: Long,
+): MediaMetadataCompat.Builder {
     id = media.id!!
     title = media.title
     artist = media.artist
@@ -268,23 +271,27 @@ fun List<MediaMetadataCompat>.toMediaItems(): List<MediaItem> {
  */
 const val METADATA_KEY_MIXIN_FLAGS = "one.mixin.messenger.player.METADATA_KEY_MIXIN_FLAGS"
 
-internal val diffCallback = object : DiffUtil.ItemCallback<MediaMetadataCompat>() {
-    override fun areItemsTheSame(
-        oldItem: MediaMetadataCompat,
-        newItem: MediaMetadataCompat,
-    ): Boolean =
-        oldItem.id == newItem.id
+internal val diffCallback =
+    object : DiffUtil.ItemCallback<MediaMetadataCompat>() {
+        override fun areItemsTheSame(
+            oldItem: MediaMetadataCompat,
+            newItem: MediaMetadataCompat,
+        ): Boolean =
+            oldItem.id == newItem.id
 
-    override fun areContentsTheSame(oldItem: MediaMetadataCompat, newItem: MediaMetadataCompat): Boolean =
-        oldItem.id == newItem.id &&
-            oldItem.title == newItem.title &&
-            oldItem.artist == newItem.artist &&
-            oldItem.album == newItem.album &&
-            oldItem.mediaUri == newItem.mediaUri &&
-            oldItem.downloadStatus == newItem.downloadStatus &&
-            oldItem.flag == newItem.flag &&
-            oldItem.albumArtUri == newItem.albumArtUri &&
-            oldItem.displayTitle == newItem.displayTitle &&
-            oldItem.displaySubtitle == newItem.displaySubtitle &&
-            oldItem.displayIconUri == newItem.displayIconUri
-}
+        override fun areContentsTheSame(
+            oldItem: MediaMetadataCompat,
+            newItem: MediaMetadataCompat,
+        ): Boolean =
+            oldItem.id == newItem.id &&
+                oldItem.title == newItem.title &&
+                oldItem.artist == newItem.artist &&
+                oldItem.album == newItem.album &&
+                oldItem.mediaUri == newItem.mediaUri &&
+                oldItem.downloadStatus == newItem.downloadStatus &&
+                oldItem.flag == newItem.flag &&
+                oldItem.albumArtUri == newItem.albumArtUri &&
+                oldItem.displayTitle == newItem.displayTitle &&
+                oldItem.displaySubtitle == newItem.displaySubtitle &&
+                oldItem.displayIconUri == newItem.displayIconUri
+    }

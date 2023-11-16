@@ -14,10 +14,11 @@ class BorderTextView(context: Context, attrs: AttributeSet?) : AppCompatTextView
     }
 
     private var borderPaint: Paint? = null
-    private val bgPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.FILL
-        color = DEFAULT_COLOR
-    }
+    private val bgPaint: Paint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.FILL
+            color = DEFAULT_COLOR
+        }
 
     override fun onDraw(canvas: Canvas) {
         val w = width
@@ -34,11 +35,15 @@ class BorderTextView(context: Context, attrs: AttributeSet?) : AppCompatTextView
         bgPaint.color = color
     }
 
-    fun setBorderInfo(borderWidth: Float?, borderColor: Int?) {
-        borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.STROKE
-            color = borderColor ?: DEFAULT_COLOR
-            strokeWidth = borderWidth ?: DEFAULT_WIDTH
-        }
+    fun setBorderInfo(
+        borderWidth: Float?,
+        borderColor: Int?,
+    ) {
+        borderPaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                style = Paint.Style.STROKE
+                color = borderColor ?: DEFAULT_COLOR
+                strokeWidth = borderWidth ?: DEFAULT_WIDTH
+            }
     }
 }

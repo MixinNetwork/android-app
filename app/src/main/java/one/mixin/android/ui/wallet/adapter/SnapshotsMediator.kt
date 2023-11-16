@@ -25,31 +25,33 @@ class SnapshotsMediator(
         state: PagingState<Int, SnapshotItem>,
     ): MediatorResult {
         return try {
-            val offset = when (loadType) {
-                LoadType.REFRESH -> null
-                LoadType.APPEND -> getRemoteKeyForLastItem(state)
-                LoadType.PREPEND -> getRemoteKeyForFirstItem(state)
-            }
+            val offset =
+                when (loadType) {
+                    LoadType.REFRESH -> null
+                    LoadType.APPEND -> getRemoteKeyForLastItem(state)
+                    LoadType.PREPEND -> getRemoteKeyForFirstItem(state)
+                }
             val resp = assetService.getSnapshotsByAssetId(assetId, offset = offset)
             if (!resp.isSuccess) {
                 return MediatorResult.Error(IllegalStateException(resp.error?.toString()))
             }
             val list = resp.data
-            val nextKey = if (list.isNullOrEmpty()) {
-                null
-            } else {
-                safeSnapshotDao.insertListSuspend(list)
-                list.forEach { item ->
-                    if (tokenDao.simpleAsset(item.assetId) == null) {
-                        jobManager.addJobInBackground(RefreshTokensJob(item.assetId))
-                    }
-                }
-                if (list.size < LIMIT) {
+            val nextKey =
+                if (list.isNullOrEmpty()) {
                     null
                 } else {
-                    list.last().createdAt
+                    safeSnapshotDao.insertListSuspend(list)
+                    list.forEach { item ->
+                        if (tokenDao.simpleAsset(item.assetId) == null) {
+                            jobManager.addJobInBackground(RefreshTokensJob(item.assetId))
+                        }
+                    }
+                    if (list.size < LIMIT) {
+                        null
+                    } else {
+                        list.last().createdAt
+                    }
                 }
-            }
             return MediatorResult.Success(endOfPaginationReached = nextKey == null)
         } catch (e: Exception) {
             MediatorResult.Error(e)

@@ -51,7 +51,10 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     }
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -117,12 +120,16 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         }
     }
 
-    private fun showUserList(userList: ArrayList<User>, isSender: Boolean) {
-        val title = if (isSender) {
-            "${getString(R.string.Senders)} ${t.sendersThreshold}/${t.senders.size}"
-        } else {
-            getString(R.string.multisig_receivers_threshold, "${t.receiversThreshold}/${t.receivers.size}")
-        }
+    private fun showUserList(
+        userList: ArrayList<User>,
+        isSender: Boolean,
+    ) {
+        val title =
+            if (isSender) {
+                "${getString(R.string.Senders)} ${t.sendersThreshold}/${t.senders.size}"
+            } else {
+                getString(R.string.multisig_receivers_threshold, "${t.receiversThreshold}/${t.receivers.size}")
+            }
         UserListBottomSheetDialogFragment.newInstance(userList, title)
             .showNow(parentFragmentManager, UserListBottomSheetDialogFragment.TAG)
     }
@@ -157,7 +164,10 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         }
     }
 
-    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
+    override fun doWhenInvokeNetworkSuccess(
+        response: MixinResponse<*>,
+        pin: String,
+    ): Boolean {
         success = true
 
         showDone()

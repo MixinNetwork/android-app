@@ -60,7 +60,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class GroupCallService : CallService() {
-
     private val scheduledExecutors = Executors.newScheduledThreadPool(1)
     private val scheduledFutures = mutableMapOf<String, ScheduledFuture<*>>()
     private var reconnectingTimeoutFuture: ScheduledFuture<*>? = null
@@ -88,15 +87,16 @@ class GroupCallService : CallService() {
 
     override fun onCreate() {
         super.onCreate()
-        callSenderKey = GroupCallSenderKey(
-            participantSessionDao,
-            signalProtocol,
-            conversationApi,
-            participantDao,
-            chatWebSocket,
-        ) {
-            return@GroupCallSenderKey webSocketChannel(it)
-        }
+        callSenderKey =
+            GroupCallSenderKey(
+                participantSessionDao,
+                signalProtocol,
+                conversationApi,
+                participantDao,
+                chatWebSocket,
+            ) {
+                return@GroupCallSenderKey webSocketChannel(it)
+            }
     }
 
     override fun handleIntent(intent: Intent): Boolean {
@@ -186,18 +186,22 @@ class GroupCallService : CallService() {
     }
 
     @SuppressLint("AutoDispose")
-    private fun createOfferWithTurns(conversationId: String, turns: List<PeerConnection.IceServer>? = null) {
+    private fun createOfferWithTurns(
+        conversationId: String,
+        turns: List<PeerConnection.IceServer>? = null,
+    ) {
         callSenderKey.checkSessionSenderKey(conversationId)
         val key = signalProtocol.getSenderKeyPublic(conversationId, Session.getAccountId()!!)
         peerConnectionClient.createOffer(
             turns,
             setLocalSuccess = {
-                val blazeMessageParam = BlazeMessageParam(
-                    conversation_id = conversationId,
-                    category = MessageCategory.KRAKEN_PUBLISH.name,
-                    message_id = UUID.randomUUID().toString(),
-                    jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
-                )
+                val blazeMessageParam =
+                    BlazeMessageParam(
+                        conversation_id = conversationId,
+                        category = MessageCategory.KRAKEN_PUBLISH.name,
+                        message_id = UUID.randomUUID().toString(),
+                        jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
+                    )
                 val bm = createKrakenMessage(blazeMessageParam)
                 val data = getBlazeMessageData(bm) ?: return@createOffer
                 val krakenData = gson.fromJson(String(data.data.decodeBase64()), KrakenData::class.java)
@@ -209,25 +213,29 @@ class GroupCallService : CallService() {
             },
         )
 
-        disposable = RxBus.listen(SenderKeyChange::class.java)
-            .subscribe { event ->
-                if (event.conversationId != conversationId) {
-                    return@subscribe
+        disposable =
+            RxBus.listen(SenderKeyChange::class.java)
+                .subscribe { event ->
+                    if (event.conversationId != conversationId) {
+                        return@subscribe
+                    }
+                    if (event.userId != null && event.sessionId != null) {
+                        val frameKey = getSenderPublicKey(event.userId, event.sessionId) ?: return@subscribe
+                        peerConnectionClient.setReceiverFrameKey(event.userId, event.sessionId, frameKey)
+                    } else if (event.userId != null) {
+                        callSenderKey.checkSessionSenderKey(event.conversationId)
+                    } else {
+                        callSenderKey.checkSessionSenderKey(conversationId)
+                        val frameKey = signalProtocol.getSenderKeyPublic(conversationId, Session.getAccountId()!!)
+                        peerConnectionClient.setSenderFrameKey(frameKey)
+                    }
                 }
-                if (event.userId != null && event.sessionId != null) {
-                    val frameKey = getSenderPublicKey(event.userId, event.sessionId) ?: return@subscribe
-                    peerConnectionClient.setReceiverFrameKey(event.userId, event.sessionId, frameKey)
-                } else if (event.userId != null) {
-                    callSenderKey.checkSessionSenderKey(event.conversationId)
-                } else {
-                    callSenderKey.checkSessionSenderKey(conversationId)
-                    val frameKey = signalProtocol.getSenderKeyPublic(conversationId, Session.getAccountId()!!)
-                    peerConnectionClient.setSenderFrameKey(frameKey)
-                }
-            }
     }
 
-    private fun subscribe(data: KrakenData, conversationId: String) {
+    private fun subscribe(
+        data: KrakenData,
+        conversationId: String,
+    ) {
         if (callState.isIdle()) return
 
         Timber.d("$TAG_CALL subscribe ${data.getSessionDescription().type == SessionDescription.Type.ANSWER}")
@@ -239,16 +247,20 @@ class GroupCallService : CallService() {
         }
     }
 
-    private fun sendSubscribe(conversationId: String, trackId: String) {
+    private fun sendSubscribe(
+        conversationId: String,
+        trackId: String,
+    ) {
         Timber.d("$TAG_CALL sendSubscribe")
         if (callState.isIdle()) return
 
-        val blazeMessageParam = BlazeMessageParam(
-            conversation_id = conversationId,
-            category = MessageCategory.KRAKEN_SUBSCRIBE.name,
-            message_id = UUID.randomUUID().toString(),
-            track_id = trackId,
-        )
+        val blazeMessageParam =
+            BlazeMessageParam(
+                conversation_id = conversationId,
+                category = MessageCategory.KRAKEN_SUBSCRIBE.name,
+                message_id = UUID.randomUUID().toString(),
+                track_id = trackId,
+            )
         val bm = createKrakenMessage(blazeMessageParam)
         Timber.d("$TAG_CALL subscribe track id: $trackId")
         val bmData = getBlazeMessageData(bm) ?: return
@@ -256,7 +268,10 @@ class GroupCallService : CallService() {
         answer(krakenData, conversationId)
     }
 
-    private fun answer(krakenData: KrakenData, conversationId: String) {
+    private fun answer(
+        krakenData: KrakenData,
+        conversationId: String,
+    ) {
         if (callState.isIdle()) return
 
         Timber.d("$TAG_CALL answer ${krakenData.getSessionDescription().type == SessionDescription.Type.OFFER}")
@@ -265,13 +280,14 @@ class GroupCallService : CallService() {
                 null,
                 krakenData.getSessionDescription(),
                 setLocalSuccess = {
-                    val blazeMessageParam = BlazeMessageParam(
-                        conversation_id = conversationId,
-                        category = MessageCategory.KRAKEN_ANSWER.name,
-                        message_id = UUID.randomUUID().toString(),
-                        jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
-                        track_id = krakenData.trackId,
-                    )
+                    val blazeMessageParam =
+                        BlazeMessageParam(
+                            conversation_id = conversationId,
+                            category = MessageCategory.KRAKEN_ANSWER.name,
+                            message_id = UUID.randomUUID().toString(),
+                            jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
+                            track_id = krakenData.trackId,
+                        )
                     val bm = createKrakenMessage(blazeMessageParam)
                     val data = webSocketChannel(bm) ?: return@createAnswer
                     Timber.d("$TAG_CALL answer data: $data")
@@ -295,16 +311,20 @@ class GroupCallService : CallService() {
         if (existsFuture == null) {
             if (scheduledExecutors.isShutdown) return
 
-            scheduledFutures[cid] = scheduledExecutors.scheduleAtFixedRate(
-                ListRunnable(cid),
-                KRAKEN_LIST_INTERVAL,
-                KRAKEN_LIST_INTERVAL,
-                TimeUnit.SECONDS,
-            )
+            scheduledFutures[cid] =
+                scheduledExecutors.scheduleAtFixedRate(
+                    ListRunnable(cid),
+                    KRAKEN_LIST_INTERVAL,
+                    KRAKEN_LIST_INTERVAL,
+                    TimeUnit.SECONDS,
+                )
         }
     }
 
-    private fun getPeers(conversationId: String, setWhenCurrentListEmpty: Boolean = false) {
+    private fun getPeers(
+        conversationId: String,
+        setWhenCurrentListEmpty: Boolean = false,
+    ) {
         val peerList = sendPeer(conversationId) ?: return
         Timber.d("$TAG_CALL getPeers : ${peerList.peers}")
         if (peerList.peers.isNullOrEmpty()) {
@@ -332,11 +352,12 @@ class GroupCallService : CallService() {
     }
 
     private fun sendPeer(conversationId: String): PeerList? {
-        val blazeMessageParam = BlazeMessageParam(
-            conversation_id = conversationId,
-            category = MessageCategory.KRAKEN_LIST.name,
-            message_id = UUID.randomUUID().toString(),
-        )
+        val blazeMessageParam =
+            BlazeMessageParam(
+                conversation_id = conversationId,
+                category = MessageCategory.KRAKEN_LIST.name,
+                message_id = UUID.randomUUID().toString(),
+            )
         val bm = createListKrakenPeers(blazeMessageParam)
         val json = getJsonElement(bm) ?: return null
         return gson.fromJson(json, PeerList::class.java)
@@ -353,12 +374,13 @@ class GroupCallService : CallService() {
             userId?.let {
                 saveMessage(cid, it, MessageCategory.KRAKEN_INVITE.name)
 
-                val blazeMessageParam = BlazeMessageParam(
-                    conversation_id = cid,
-                    recipient_id = it,
-                    category = MessageCategory.KRAKEN_DECLINE.name,
-                    message_id = UUID.randomUUID().toString(),
-                )
+                val blazeMessageParam =
+                    BlazeMessageParam(
+                        conversation_id = cid,
+                        recipient_id = it,
+                        category = MessageCategory.KRAKEN_DECLINE.name,
+                        message_id = UUID.randomUUID().toString(),
+                    )
                 val bm = createKrakenMessage(blazeMessageParam)
                 val bmData = getBlazeMessageData(bm) ?: return
 
@@ -379,11 +401,12 @@ class GroupCallService : CallService() {
                     callState.addPendingUsers(cid, arrayListOf(it))
                 }
                 callState.isOffer = false
-                timeoutFuture = timeoutExecutor.schedule(
-                    TimeoutRunnable(),
-                    DEFAULT_TIMEOUT_MINUTES,
-                    TimeUnit.MINUTES,
-                )
+                timeoutFuture =
+                    timeoutExecutor.schedule(
+                        TimeoutRunnable(),
+                        DEFAULT_TIMEOUT_MINUTES,
+                        TimeUnit.MINUTES,
+                    )
                 CallActivity.show(this, !playRing)
                 audioManager.start(false, playRing)
                 startCheckPeers(cid)
@@ -472,12 +495,13 @@ class GroupCallService : CallService() {
         }
 
         val duration = System.currentTimeMillis() - (callState.connectedTime ?: 0)
-        val blazeMessageParam = BlazeMessageParam(
-            conversation_id = cid,
-            category = MessageCategory.KRAKEN_END.name,
-            message_id = UUID.randomUUID().toString(),
-            track_id = trackId,
-        )
+        val blazeMessageParam =
+            BlazeMessageParam(
+                conversation_id = cid,
+                category = MessageCategory.KRAKEN_END.name,
+                message_id = UUID.randomUUID().toString(),
+                track_id = trackId,
+            )
 
         disconnect()
 
@@ -501,11 +525,12 @@ class GroupCallService : CallService() {
             return
         }
 
-        val blazeMessageParam = BlazeMessageParam(
-            conversation_id = cid,
-            category = MessageCategory.KRAKEN_CANCEL.name,
-            message_id = UUID.randomUUID().toString(),
-        )
+        val blazeMessageParam =
+            BlazeMessageParam(
+                conversation_id = cid,
+                category = MessageCategory.KRAKEN_CANCEL.name,
+                message_id = UUID.randomUUID().toString(),
+            )
 
         audioManager.stop()
         disconnect()
@@ -537,12 +562,13 @@ class GroupCallService : CallService() {
 
         saveMessage(cid, self.userId, MessageCategory.KRAKEN_DECLINE.name)
         if (inviter != null) {
-            val blazeMessageParam = BlazeMessageParam(
-                conversation_id = cid,
-                recipient_id = inviter,
-                category = MessageCategory.KRAKEN_DECLINE.name,
-                message_id = UUID.randomUUID().toString(),
-            )
+            val blazeMessageParam =
+                BlazeMessageParam(
+                    conversation_id = cid,
+                    recipient_id = inviter,
+                    category = MessageCategory.KRAKEN_DECLINE.name,
+                    message_id = UUID.randomUUID().toString(),
+                )
             val bm = createKrakenMessage(blazeMessageParam)
             val bmData = getBlazeMessageData(bm) ?: return
 
@@ -664,13 +690,14 @@ class GroupCallService : CallService() {
             peerConnectionClient.createOffer(
                 null,
                 setLocalSuccess = {
-                    val blazeMessageParam = BlazeMessageParam(
-                        conversation_id = conversationId,
-                        category = MessageCategory.KRAKEN_RESTART.name,
-                        message_id = UUID.randomUUID().toString(),
-                        track_id = trackId,
-                        jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
-                    )
+                    val blazeMessageParam =
+                        BlazeMessageParam(
+                            conversation_id = conversationId,
+                            category = MessageCategory.KRAKEN_RESTART.name,
+                            message_id = UUID.randomUUID().toString(),
+                            track_id = trackId,
+                            jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
+                        )
                     val bm = createKrakenMessage(blazeMessageParam)
                     val data = getBlazeMessageData(bm) ?: return@createOffer
                     val krakenData = gson.fromJson(String(data.data.decodeBase64()), KrakenData::class.java)
@@ -683,7 +710,10 @@ class GroupCallService : CallService() {
         }
     }
 
-    override fun getSenderPublicKey(userId: String, sessionId: String): ByteArray? {
+    override fun getSenderPublicKey(
+        userId: String,
+        sessionId: String,
+    ): ByteArray? {
         callState.conversationId?.let {
             callState.addUser(it, userId)
             return signalProtocol.getSenderKeyPublic(it, userId, sessionId)
@@ -691,7 +721,10 @@ class GroupCallService : CallService() {
         return null
     }
 
-    override fun requestResendKey(userId: String, sessionId: String) {
+    override fun requestResendKey(
+        userId: String,
+        sessionId: String,
+    ) {
         callState.conversationId?.let { cid ->
             val deviceId = sessionId.getDeviceId()
             val address = SignalProtocolAddress(userId, deviceId)
@@ -729,13 +762,14 @@ class GroupCallService : CallService() {
             val trackId = callState.trackId ?: return@execute
             val cid = callState.conversationId ?: return@execute
 
-            val blazeMessageParam = BlazeMessageParam(
-                conversation_id = cid,
-                category = MessageCategory.KRAKEN_TRICKLE.name,
-                message_id = UUID.randomUUID().toString(),
-                candidate = gson.toJson(candidate).base64Encode(),
-                track_id = trackId,
-            )
+            val blazeMessageParam =
+                BlazeMessageParam(
+                    conversation_id = cid,
+                    category = MessageCategory.KRAKEN_TRICKLE.name,
+                    message_id = UUID.randomUUID().toString(),
+                    candidate = gson.toJson(candidate).base64Encode(),
+                    track_id = trackId,
+                )
             val bm = createKrakenMessage(blazeMessageParam)
 
             @Suppress("UNUSED_VARIABLE")
@@ -871,19 +905,25 @@ class GroupCallService : CallService() {
         }
     }
 
-    private fun saveMessage(cid: String, userId: String, category: String, duration: String? = null) {
+    private fun saveMessage(
+        cid: String,
+        userId: String,
+        category: String,
+        duration: String? = null,
+    ) {
         if (!category.isGroupCallType()) return
 
-        val message = createCallMessage(
-            UUID.randomUUID().toString(),
-            cid,
-            userId,
-            category,
-            "",
-            nowInUtc(),
-            MessageStatus.READ.name,
-            mediaDuration = duration,
-        )
+        val message =
+            createCallMessage(
+                UUID.randomUUID().toString(),
+                cid,
+                userId,
+                category,
+                "",
+                nowInUtc(),
+                MessageStatus.READ.name,
+                mediaDuration = duration,
+            )
         database.conversationDao().findConversationById(cid)?.let {
             val expiredIn = it.expireIn ?: return@let
             if (it.expireIn > 0) {
@@ -976,43 +1016,70 @@ data class PeerList(
     val peers: ArrayList<UserSession>?,
 )
 
-fun publish(ctx: Context, conversationId: String, users: ArrayList<String>? = null) =
+fun publish(
+    ctx: Context,
+    conversationId: String,
+    users: ArrayList<String>? = null,
+) =
     startService<GroupCallService>(ctx, ACTION_KRAKEN_PUBLISH) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         it.putExtra(EXTRA_USERS, users)
     }
 
-fun receivePublish(ctx: Context, data: BlazeMessageData) =
+fun receivePublish(
+    ctx: Context,
+    data: BlazeMessageData,
+) =
     startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_PUBLISH) {
         it.putExtra(EXTRA_BLAZE, data)
     }
 
-fun receiveInvite(ctx: Context, conversationId: String, userId: String? = null, playRing: Boolean) =
+fun receiveInvite(
+    ctx: Context,
+    conversationId: String,
+    userId: String? = null,
+    playRing: Boolean,
+) =
     startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_INVITE) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         it.putExtra(EXTRA_USER_ID, userId)
         it.putExtra(EXTRA_PLAY_RING, playRing)
     }
 
-fun receiveEnd(ctx: Context, conversationId: String, userId: String) =
+fun receiveEnd(
+    ctx: Context,
+    conversationId: String,
+    userId: String,
+) =
     startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_END) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         it.putExtra(EXTRA_USER_ID, userId)
     }
 
-fun receiveCancel(ctx: Context, conversationId: String, userId: String) =
+fun receiveCancel(
+    ctx: Context,
+    conversationId: String,
+    userId: String,
+) =
     startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_CANCEL) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         it.putExtra(EXTRA_USER_ID, userId)
     }
 
-fun receiveDecline(ctx: Context, conversationId: String, userId: String) =
+fun receiveDecline(
+    ctx: Context,
+    conversationId: String,
+    userId: String,
+) =
     startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_DECLINE) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         it.putExtra(EXTRA_USER_ID, userId)
     }
 
-fun checkPeers(ctx: Context, conversationId: String) =
+fun checkPeers(
+    ctx: Context,
+    conversationId: String,
+) =
     startService<GroupCallService>(ctx, ACTION_CHECK_PEER) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
     }

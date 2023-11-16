@@ -49,7 +49,10 @@ class BiometricTimeFragment : BaseFragment(R.layout.fragment_biometric_time) {
 
     private val binding by viewBinding(FragmentBiometricTimeBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
@@ -61,19 +64,21 @@ class BiometricTimeFragment : BaseFragment(R.layout.fragment_biometric_time) {
 
                 val bottomSheet =
                     PinBiometricsBottomSheetDialogFragment.newInstance(false)
-                bottomSheet.setCallback(object : BiometricBottomSheetDialogFragment.Callback() {
-                    override fun onDismiss(success: Boolean) {
-                        if (!success) return
+                bottomSheet.setCallback(
+                    object : BiometricBottomSheetDialogFragment.Callback() {
+                        override fun onDismiss(success: Boolean) {
+                            if (!success) return
 
-                        val intervalMillis = (VALUES[i] * X_HOUR).toLong()
-                        defaultSharedPreferences.putLong(BIOMETRIC_INTERVAL, intervalMillis)
-                        adapter.selectedPos = i
+                            val intervalMillis = (VALUES[i] * X_HOUR).toLong()
+                            defaultSharedPreferences.putLong(BIOMETRIC_INTERVAL, intervalMillis)
+                            adapter.selectedPos = i
 
-                        val pinSettingFragment = parentFragmentManager.findFragmentByTag(PinSettingFragment.TAG)
-                        (pinSettingFragment as? PinSettingFragment)?.setTimeDesc()
-                        activity?.onBackPressedDispatcher?.onBackPressed()
-                    }
-                })
+                            val pinSettingFragment = parentFragmentManager.findFragmentByTag(PinSettingFragment.TAG)
+                            (pinSettingFragment as? PinSettingFragment)?.setTimeDesc()
+                            activity?.onBackPressedDispatcher?.onBackPressed()
+                        }
+                    },
+                )
                 bottomSheet.showNow(parentFragmentManager, PinBiometricsBottomSheetDialogFragment.TAG)
             }
         }
@@ -103,7 +108,11 @@ class BiometricTimeFragment : BaseFragment(R.layout.fragment_biometric_time) {
                 notifyDataSetChanged()
             }
 
-        override fun getView(pos: Int, contentView: View?, parent: ViewGroup): View {
+        override fun getView(
+            pos: Int,
+            contentView: View?,
+            parent: ViewGroup,
+        ): View {
             var view = contentView
             var vh = TimeHolder()
             if (view == null) {

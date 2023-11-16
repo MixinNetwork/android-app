@@ -17,9 +17,10 @@ class DepositEntryListConverter {
     }
 
     @TypeConverter
-    fun converterDate(list: List<OldDepositEntry>?): String = if (list.isNullOrEmpty()) {
-        ""
-    } else {
-        GsonHelper.customGson.toJson(list)
-    }
+    fun converterDate(list: List<OldDepositEntry>?): String =
+        if (list.isNullOrEmpty()) {
+            ""
+        } else {
+            GsonHelper.customGson.toJson(list)
+        }
 }

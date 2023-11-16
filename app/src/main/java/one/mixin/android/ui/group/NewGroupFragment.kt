@@ -71,7 +71,10 @@ class NewGroupFragment : BaseFragment() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         val users: List<User> = requireArguments().getParcelableArrayListCompat(ARGS_USERS, User::class.java)!!
         binding.titleView.leftIb.setOnClickListener {
@@ -94,57 +97,61 @@ class NewGroupFragment : BaseFragment() {
         _binding = null
     }
 
-    private fun createGroup() = lifecycleScope.launch {
-        if (dialog == null) {
-            dialog = indeterminateProgressDialog(
-                message = R.string.Please_wait_a_bit,
-                title = R.string.Creating,
-            ).apply {
-                setCancelable(false)
-            }
-        }
-        dialog?.show()
-
-        val uri = resultUri
-        val groupIcon = if (uri == null) {
-            null
-        } else {
-            val bitmap = uri.getCapturedImage(requireContext().contentResolver)
-            Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP)
-        }
-        val conversation = groupViewModel.createGroupConversation(
-            binding.nameDescEt.text.toString(),
-            binding.noticeDescEt.text.toString(),
-            groupIcon,
-            adapter.users!!,
-            sender,
-        )
-        val liveData = groupViewModel.getConversationStatusById(conversation.conversationId)
-        liveData.observe(
-            viewLifecycleOwner,
-        ) { c ->
-            if (c != null) {
-                when (c.status) {
-                    ConversationStatus.SUCCESS.ordinal -> {
-                        liveData.removeObservers(viewLifecycleOwner)
-                        binding.nameDescEt.hideKeyboard()
-                        dialog?.dismiss()
-                        activity?.finish()
-                        ConversationActivity.showAndClear(
-                            requireContext(),
-                            conversation.conversationId,
-                        )
+    private fun createGroup() =
+        lifecycleScope.launch {
+            if (dialog == null) {
+                dialog =
+                    indeterminateProgressDialog(
+                        message = R.string.Please_wait_a_bit,
+                        title = R.string.Creating,
+                    ).apply {
+                        setCancelable(false)
                     }
-                    ConversationStatus.FAILURE.ordinal -> {
-                        liveData.removeObservers(viewLifecycleOwner)
-                        binding.nameDescEt.hideKeyboard()
-                        dialog?.dismiss()
-                        MainActivity.reopen(requireContext())
+            }
+            dialog?.show()
+
+            val uri = resultUri
+            val groupIcon =
+                if (uri == null) {
+                    null
+                } else {
+                    val bitmap = uri.getCapturedImage(requireContext().contentResolver)
+                    Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP)
+                }
+            val conversation =
+                groupViewModel.createGroupConversation(
+                    binding.nameDescEt.text.toString(),
+                    binding.noticeDescEt.text.toString(),
+                    groupIcon,
+                    adapter.users!!,
+                    sender,
+                )
+            val liveData = groupViewModel.getConversationStatusById(conversation.conversationId)
+            liveData.observe(
+                viewLifecycleOwner,
+            ) { c ->
+                if (c != null) {
+                    when (c.status) {
+                        ConversationStatus.SUCCESS.ordinal -> {
+                            liveData.removeObservers(viewLifecycleOwner)
+                            binding.nameDescEt.hideKeyboard()
+                            dialog?.dismiss()
+                            activity?.finish()
+                            ConversationActivity.showAndClear(
+                                requireContext(),
+                                conversation.conversationId,
+                            )
+                        }
+                        ConversationStatus.FAILURE.ordinal -> {
+                            liveData.removeObservers(viewLifecycleOwner)
+                            binding.nameDescEt.hideKeyboard()
+                            dialog?.dismiss()
+                            MainActivity.reopen(requireContext())
+                        }
                     }
                 }
             }
         }
-    }
 
     private fun enableCreate(enable: Boolean) {
         if (enable) {
@@ -159,10 +166,16 @@ class NewGroupFragment : BaseFragment() {
     class NewGroupAdapter : RecyclerView.Adapter<ItemHolder>() {
         var users: List<User>? = null
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): ItemHolder =
             ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_contact_normal, parent, false))
 
-        override fun onBindViewHolder(holder: ItemHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: ItemHolder,
+            position: Int,
+        ) {
             if (users == null || users!!.isEmpty()) {
                 return
             }
@@ -174,6 +187,7 @@ class NewGroupFragment : BaseFragment() {
 
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val binding = ItemContactNormalBinding.bind(itemView)
+
         fun bind(user: User) {
             binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             binding.normal.text = user.fullName
@@ -181,19 +195,30 @@ class NewGroupFragment : BaseFragment() {
         }
     }
 
-    private val mWatcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
+    private val mWatcher: TextWatcher =
+        object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {
+            }
 
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        }
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {
+            }
 
-        override fun afterTextChanged(s: Editable?) {
-            if (!s.isNullOrEmpty()) {
-                enableCreate(true)
-            } else {
-                enableCreate(false)
+            override fun afterTextChanged(s: Editable?) {
+                if (!s.isNullOrEmpty()) {
+                    enableCreate(true)
+                } else {
+                    enableCreate(false)
+                }
             }
         }
-    }
 }

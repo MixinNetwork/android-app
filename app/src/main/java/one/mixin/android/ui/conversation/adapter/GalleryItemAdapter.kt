@@ -36,7 +36,10 @@ class GalleryItemAdapter(
     var selectedPos: Int? = null
     var selectedUri: Uri? = null
 
-    override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ItemViewHolder,
+        position: Int,
+    ) {
         val params = holder.itemView.layoutParams
         params.width = size
         params.height = size
@@ -126,13 +129,17 @@ class GalleryItemAdapter(
         }
     }
 
-    override fun getItemCount(): Int = if (needCamera) {
-        items?.size ?: +1
-    } else {
-        items?.size ?: 0
-    }
+    override fun getItemCount(): Int =
+        if (needCamera) {
+            items?.size ?: +1
+        } else {
+            items?.size ?: 0
+        }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ItemViewHolder {
         return ItemViewHolder(ItemChatGalleryBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 

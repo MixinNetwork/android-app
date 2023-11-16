@@ -129,7 +129,6 @@ import kotlin.math.min
 @Suppress("DEPRECATION")
 @AndroidEntryPoint
 class ConversationListFragment : LinkFragment() {
-
     private lateinit var navigationController: NavigationController
 
     @Inject
@@ -152,7 +151,10 @@ class ConversationListFragment : LinkFragment() {
 
     private val messageAdapterDataObserver =
         object : RecyclerView.AdapterDataObserver() {
-            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+            override fun onItemRangeInserted(
+                positionStart: Int,
+                itemCount: Int,
+            ) {
                 if (viewDestroyed()) return
 
                 if (isTop) {
@@ -160,7 +162,10 @@ class ConversationListFragment : LinkFragment() {
                 }
             }
 
-            override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
+            override fun onItemRangeChanged(
+                positionStart: Int,
+                itemCount: Int,
+            ) {
                 if (viewDestroyed()) return
 
                 if (scrollTop || isTop) {
@@ -203,23 +208,32 @@ class ConversationListFragment : LinkFragment() {
 
     override fun getContentView() = binding.root
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         navigationController = NavigationController(activity as MainActivity)
-        bulletinView = BulletinView(requireContext()).apply {
-            layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                bottomMargin = 8.dp
-                marginStart = 16.dp
-                marginEnd = 16.dp
+        bulletinView =
+            BulletinView(requireContext()).apply {
+                layoutParams =
+                    RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                        bottomMargin = 8.dp
+                        marginStart = 16.dp
+                        marginEnd = 16.dp
+                    }
             }
-        }
         messageAdapter.headerView = bulletinView
         binding.messageRv.adapter = messageAdapter
         binding.messageRv.itemAnimator = null
         binding.messageRv.setHasFixedSize(true)
         binding.messageRv.addOnScrollListener(
             object : RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                override fun onScrolled(
+                    recyclerView: RecyclerView,
+                    dx: Int,
+                    dy: Int,
+                ) {
                     if (distance < -touchSlop && !shadowVisible) {
                         binding.shadowFl.animate().translationY(0f).duration = 200
                         distance = 0
@@ -247,61 +261,62 @@ class ConversationListFragment : LinkFragment() {
                 }
             },
         )
-        binding.messageRv.callback = object : DraggableRecyclerView.Callback {
-            override fun onScroll(dis: Float) {
-                val topFl = binding.topFl
+        binding.messageRv.callback =
+            object : DraggableRecyclerView.Callback {
+                override fun onScroll(dis: Float) {
+                    val topFl = binding.topFl
 
-                if (topFl.isGone) {
-                    topFl.isVisible = true
-                }
-                val targetH = topFl.height + (dis / DRAG_FRICTION).toInt()
-                if (targetH <= 0) return
+                    if (topFl.isGone) {
+                        topFl.isVisible = true
+                    }
+                    val targetH = topFl.height + (dis / DRAG_FRICTION).toInt()
+                    if (targetH <= 0) return
 
-                topFl.updateLayoutParams<ViewGroup.LayoutParams> {
-                    height = targetH
+                    topFl.updateLayoutParams<ViewGroup.LayoutParams> {
+                        height = targetH
 
-                    if (height >= vibrateDis) {
-                        if (!vibrated) {
-                            requireContext().clickVibrate()
-                            vibrated = true
+                        if (height >= vibrateDis) {
+                            if (!vibrated) {
+                                requireContext().clickVibrate()
+                                vibrated = true
+                            }
+                            animDownIcon(true)
+                        } else {
+                            animDownIcon(false)
                         }
-                        animDownIcon(true)
+                    }
+                    val progress = min(targetH / vibrateDis.toFloat(), 1f)
+                    (requireActivity() as MainActivity).dragSearch(progress)
+                }
+
+                override fun onRelease(fling: Int) {
+                    val shouldVibrate = false
+                    if (shouldVibrate && !vibrated) {
+                        requireContext().clickVibrate()
+                        vibrated = true
+                    }
+                    val topFl = _binding?.topFl
+
+                    val open = (fling == FLING_DOWN && shouldVibrate) || topFl?.height ?: 0 >= vibrateDis
+                    if (open) {
+                        (requireActivity() as MainActivity).openSearch()
                     } else {
-                        animDownIcon(false)
+                        (requireActivity() as MainActivity).closeSearch()
+                    }
+
+                    topFl?.animateHeight(
+                        topFl.height,
+                        0,
+                        onEndAction = {
+                            vibrated = false
+                        },
+                    )
+                    _binding?.downIv?.apply {
+                        scaleX = 1f
+                        scaleY = 1f
                     }
                 }
-                val progress = min(targetH / vibrateDis.toFloat(), 1f)
-                (requireActivity() as MainActivity).dragSearch(progress)
             }
-
-            override fun onRelease(fling: Int) {
-                val shouldVibrate = false
-                if (shouldVibrate && !vibrated) {
-                    requireContext().clickVibrate()
-                    vibrated = true
-                }
-                val topFl = _binding?.topFl
-
-                val open = (fling == FLING_DOWN && shouldVibrate) || topFl?.height ?: 0 >= vibrateDis
-                if (open) {
-                    (requireActivity() as MainActivity).openSearch()
-                } else {
-                    (requireActivity() as MainActivity).closeSearch()
-                }
-
-                topFl?.animateHeight(
-                    topFl.height,
-                    0,
-                    onEndAction = {
-                        vibrated = false
-                    },
-                )
-                _binding?.downIv?.apply {
-                    scaleX = 1f
-                    scaleY = 1f
-                }
-            }
-        }
         binding.shadowView.more.setOnClickListener {
             BotManagerBottomSheetDialogFragment()
                 .show(parentFragmentManager, BotManagerBottomSheetDialogFragment.TAG)
@@ -318,7 +333,7 @@ class ConversationListFragment : LinkFragment() {
                     if (item.isGroupConversation() && (
                             item.status == ConversationStatus.START.ordinal ||
                                 item.status == ConversationStatus.FAILURE.ordinal
-                            )
+                        )
                     ) {
                         if (!requireContext().networkConnected()) {
                             toast(R.string.Network_error)
@@ -327,18 +342,20 @@ class ConversationListFragment : LinkFragment() {
                         lifecycleScope.launch(Dispatchers.IO) { conversationListViewModel.createGroupConversation(item.conversationId) }
                     } else {
                         enterJob?.cancel()
-                        enterJob = lifecycleScope.launch {
-                            val user = if (item.isContactConversation()) {
-                                conversationListViewModel.suspendFindUserById(item.ownerId)
-                            } else {
-                                null
+                        enterJob =
+                            lifecycleScope.launch {
+                                val user =
+                                    if (item.isContactConversation()) {
+                                        conversationListViewModel.suspendFindUserById(item.ownerId)
+                                    } else {
+                                        null
+                                    }
+                                ConversationActivity.fastShow(
+                                    requireContext(),
+                                    conversationId = item.conversationId,
+                                    recipient = user,
+                                )
                             }
-                            ConversationActivity.fastShow(
-                                requireContext(),
-                                conversationId = item.conversationId,
-                                recipient = user,
-                            )
-                        }
                     }
                 }
             }
@@ -406,10 +423,11 @@ class ConversationListFragment : LinkFragment() {
                 pagedList
                     .filter { item: ConversationItem? ->
                         item?.isGroupConversation() == true && (
-                            item.iconUrl() == null || !File(
-                                item.iconUrl() ?: "",
-                            ).exists()
-                            )
+                            item.iconUrl() == null ||
+                                !File(
+                                    item.iconUrl() ?: "",
+                                ).exists()
+                        )
                     }.forEach {
                         jobManager.addJobInBackground(GenerateAvatarJob(it.conversationId))
                     }
@@ -427,6 +445,7 @@ class ConversationListFragment : LinkFragment() {
         }
 
     private var scrollTop = false
+
     private fun selectCircle(circleId: String?) {
         conversationLiveData?.removeObserver(observer)
         val liveData = conversationListViewModel.observeConversations(circleId)
@@ -524,21 +543,23 @@ class ConversationListFragment : LinkFragment() {
         lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
 
-            val shown = bulletinBoard
-                .addBulletin(NewWalletBulletin(bulletinView, requireActivity() as MainActivity, ::onClose))
-                .addBulletin(NotificationBulletin(bulletinView, ::onClose))
-                .addBulletin(EmergencyContactBulletin(bulletinView, totalUsd >= 100, ::onClose))
-                .post()
+            val shown =
+                bulletinBoard
+                    .addBulletin(NewWalletBulletin(bulletinView, requireActivity() as MainActivity, ::onClose))
+                    .addBulletin(NotificationBulletin(bulletinView, ::onClose))
+                    .addBulletin(EmergencyContactBulletin(bulletinView, totalUsd >= 100, ::onClose))
+                    .post()
             messageAdapter.setShowHeader(shown, binding.messageRv)
         }
     }
 
     private fun onClose(type: BulletinView.Type) {
-        val shown = if (type.ordinal < BulletinView.Type.values().size - 1) {
-            bulletinBoard.post()
-        } else {
-            false
-        }
+        val shown =
+            if (type.ordinal < BulletinView.Type.values().size - 1) {
+                bulletinBoard.post()
+            } else {
+                false
+            }
         messageAdapter.setShowHeader(shown, binding.messageRv)
     }
 
@@ -639,8 +660,10 @@ class ConversationListFragment : LinkFragment() {
     }
 
     class MessageAdapter : PagedHeaderAdapter<ConversationItem>(ConversationItem.DIFF_CALLBACK) {
-
-        override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder =
+        override fun getNormalViewHolder(
+            context: Context,
+            parent: ViewGroup,
+        ): NormalHolder =
             MessageHolder(
                 ItemListConversationBinding.inflate(
                     LayoutInflater.from(parent.context),
@@ -649,7 +672,10 @@ class ConversationListFragment : LinkFragment() {
                 ),
             )
 
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: RecyclerView.ViewHolder,
+            position: Int,
+        ) {
             if (holder is MessageHolder) {
                 val pos = getPos(position)
                 getItem(pos)?.let {
@@ -661,461 +687,471 @@ class ConversationListFragment : LinkFragment() {
 
     class MessageHolder constructor(val binding: ItemListConversationBinding) :
         NormalHolder(binding.root) {
-        var context: Context = itemView.context
-        private fun getText(id: Int) = context.getText(id).toString()
+            var context: Context = itemView.context
 
-        @SuppressLint("SetTextI18n")
-        fun bind(
-            onItemClickListener: PagedHeaderAdapter.OnItemListener<ConversationItem>?,
-            conversationItem: ConversationItem,
-        ) {
-            val id = Session.getAccountId()
-            conversationItem.getConversationName().let {
-                binding.nameTv.text = it
-            }
-            binding.groupNameTv.visibility = GONE
-            binding.msgExpire.isVisible = conversationItem.isExpire()
-            binding.mentionFlag.isVisible =
-                conversationItem.mentionCount != null && conversationItem.mentionCount > 0
-            when {
-                conversationItem.messageStatus == MessageStatus.FAILED.name -> {
-                    conversationItem.content?.let {
-                        setConversationName(conversationItem)
-                        binding.msgTv.setText(
-                            if (conversationItem.isSignal()) {
-                                R.string.Waiting_for_this_message
-                            } else {
-                                R.string.chat_decryption_failed
-                            },
-                        )
-                    }
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_fail)
+            private fun getText(id: Int) = context.getText(id).toString()
+
+            @SuppressLint("SetTextI18n")
+            fun bind(
+                onItemClickListener: PagedHeaderAdapter.OnItemListener<ConversationItem>?,
+                conversationItem: ConversationItem,
+            ) {
+                val id = Session.getAccountId()
+                conversationItem.getConversationName().let {
+                    binding.nameTv.text = it
                 }
-                conversationItem.messageStatus == MessageStatus.UNKNOWN.name -> {
-                    conversationItem.content?.let {
-                        conversationItem.content.let {
+                binding.groupNameTv.visibility = GONE
+                binding.msgExpire.isVisible = conversationItem.isExpire()
+                binding.mentionFlag.isVisible =
+                    conversationItem.mentionCount != null && conversationItem.mentionCount > 0
+                when {
+                    conversationItem.messageStatus == MessageStatus.FAILED.name -> {
+                        conversationItem.content?.let {
                             setConversationName(conversationItem)
-                            binding.msgTv.setText(R.string.message_not_support)
+                            binding.msgTv.setText(
+                                if (conversationItem.isSignal()) {
+                                    R.string.Waiting_for_this_message
+                                } else {
+                                    R.string.chat_decryption_failed
+                                },
+                            )
                         }
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_fail)
                     }
-                    null
-                }
-                conversationItem.isText() -> {
-                    conversationItem.content?.let {
+                    conversationItem.messageStatus == MessageStatus.UNKNOWN.name -> {
+                        conversationItem.content?.let {
+                            conversationItem.content.let {
+                                setConversationName(conversationItem)
+                                binding.msgTv.setText(R.string.message_not_support)
+                            }
+                        }
+                        null
+                    }
+                    conversationItem.isText() -> {
+                        conversationItem.content?.let {
+                            setConversationName(conversationItem)
+                            if (conversationItem.mentions != null) {
+                                binding.msgTv.renderMessage(
+                                    it,
+                                    MentionRenderCache.singleton.getMentionRenderContext(
+                                        conversationItem.mentions,
+                                    ),
+                                )
+                            } else {
+                                binding.msgTv.text = it
+                            }
+                        }
+                        null
+                    }
+                    conversationItem.contentType == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {
+                        binding.msgTv.setText(R.string.content_transfer)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transfer)
+                    }
+                    conversationItem.contentType == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name -> {
+                        binding.msgTv.setText(R.string.content_transfer)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transfer)
+                    }
+                    conversationItem.isSticker() -> {
                         setConversationName(conversationItem)
+                        binding.msgTv.setText(R.string.content_sticker)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_stiker)
+                    }
+                    conversationItem.isImage() -> {
+                        setConversationName(conversationItem)
+                        binding.msgTv.setText(R.string.content_photo)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_pic)
+                    }
+                    conversationItem.isVideo() -> {
+                        setConversationName(conversationItem)
+                        binding.msgTv.setText(R.string.content_video)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_video)
+                    }
+                    conversationItem.isLive() -> {
+                        setConversationName(conversationItem)
+                        binding.msgTv.setText(R.string.content_live)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_live)
+                    }
+                    conversationItem.isData() -> {
+                        setConversationName(conversationItem)
+                        binding.msgTv.setText(R.string.content_file)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file)
+                    }
+                    conversationItem.isPost() -> {
+                        setConversationName(conversationItem)
+                        binding.msgTv.text = MarkwonUtil.parseContent(conversationItem.content)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file)
+                    }
+                    conversationItem.isTranscript() -> {
+                        setConversationName(conversationItem)
+                        binding.msgTv.setText(R.string.content_transcript)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transcript)
+                    }
+                    conversationItem.isLocation() -> {
+                        setConversationName(conversationItem)
+                        binding.msgTv.setText(R.string.content_location)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_location)
+                    }
+                    conversationItem.isAudio() -> {
+                        setConversationName(conversationItem)
+                        binding.msgTv.setText(R.string.content_audio)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_audio)
+                    }
+                    conversationItem.contentType == MessageCategory.APP_BUTTON_GROUP.name -> {
+                        binding.groupNameTv.visibility = GONE
+                        val buttons =
+                            try {
+                                GsonHelper.customGson.fromJson(
+                                    conversationItem.content,
+                                    Array<AppButtonData>::class.java,
+                                )
+                            } catch (e: Exception) {
+                                null
+                            }
+                        var content = ""
+                        buttons?.map { content += "[" + it.label + "]" }
+                        binding.msgTv.text = content
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app)
+                    }
+                    conversationItem.contentType == MessageCategory.APP_CARD.name -> {
+                        binding.groupNameTv.visibility = GONE
+                        val cardData =
+                            try {
+                                GsonHelper.customGson.fromJson(
+                                    conversationItem.content,
+                                    AppCardData::class.java,
+                                )
+                            } catch (e: Exception) {
+                                null
+                            }
+                        binding.msgTv.text = "[${cardData?.title}]"
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app)
+                    }
+                    conversationItem.isContact() -> {
+                        setConversationName(conversationItem)
+                        binding.msgTv.setText(R.string.content_contact)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_contact)
+                    }
+                    conversationItem.isCallMessage() -> {
+                        setConversationName(conversationItem)
+                        binding.msgTv.setText(R.string.content_voice)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_voice)
+                    }
+                    conversationItem.isRecall() -> {
+                        setConversationName(conversationItem)
+                        if (id == conversationItem.senderId) {
+                            binding.msgTv.setText(R.string.You_deleted_this_message)
+                        } else {
+                            binding.msgTv.text =
+                                itemView.context.getString(R.string.This_message_was_deleted)
+                        }
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_recall)
+                    }
+                    conversationItem.isGroupCall() -> {
+                        setConversationName(conversationItem)
+                        binding.msgTv.setText(R.string.content_group_call)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_voice)
+                    }
+                    conversationItem.contentType == MessageCategory.MESSAGE_PIN.name -> {
+                        val pinMessage =
+                            try {
+                                GsonHelper.customGson.fromJson(
+                                    conversationItem.content,
+                                    PinMessageMinimal::class.java,
+                                )
+                            } catch (e: Exception) {
+                                null
+                            }
                         if (conversationItem.mentions != null) {
                             binding.msgTv.renderMessage(
-                                it,
+                                String.format(
+                                    getText(R.string.chat_pin_message),
+                                    if (Session.getAccountId() == conversationItem.participantUserId) {
+                                        getText(R.string.You)
+                                    } else {
+                                        conversationItem.senderFullName
+                                    },
+                                    pinMessage?.let { msg ->
+                                        " \"${msg.content}\""
+                                    } ?: getText(R.string.a_message),
+                                ),
                                 MentionRenderCache.singleton.getMentionRenderContext(
                                     conversationItem.mentions,
                                 ),
                             )
                         } else {
-                            binding.msgTv.text = it
-                        }
-                    }
-                    null
-                }
-                conversationItem.contentType == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {
-                    binding.msgTv.setText(R.string.content_transfer)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transfer)
-                }
-                conversationItem.contentType == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name -> {
-                    binding.msgTv.setText(R.string.content_transfer)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transfer)
-                }
-                conversationItem.isSticker() -> {
-                    setConversationName(conversationItem)
-                    binding.msgTv.setText(R.string.content_sticker)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_stiker)
-                }
-                conversationItem.isImage() -> {
-                    setConversationName(conversationItem)
-                    binding.msgTv.setText(R.string.content_photo)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_pic)
-                }
-                conversationItem.isVideo() -> {
-                    setConversationName(conversationItem)
-                    binding.msgTv.setText(R.string.content_video)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_video)
-                }
-                conversationItem.isLive() -> {
-                    setConversationName(conversationItem)
-                    binding.msgTv.setText(R.string.content_live)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_live)
-                }
-                conversationItem.isData() -> {
-                    setConversationName(conversationItem)
-                    binding.msgTv.setText(R.string.content_file)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file)
-                }
-                conversationItem.isPost() -> {
-                    setConversationName(conversationItem)
-                    binding.msgTv.text = MarkwonUtil.parseContent(conversationItem.content)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file)
-                }
-                conversationItem.isTranscript() -> {
-                    setConversationName(conversationItem)
-                    binding.msgTv.setText(R.string.content_transcript)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transcript)
-                }
-                conversationItem.isLocation() -> {
-                    setConversationName(conversationItem)
-                    binding.msgTv.setText(R.string.content_location)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_location)
-                }
-                conversationItem.isAudio() -> {
-                    setConversationName(conversationItem)
-                    binding.msgTv.setText(R.string.content_audio)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_audio)
-                }
-                conversationItem.contentType == MessageCategory.APP_BUTTON_GROUP.name -> {
-                    binding.groupNameTv.visibility = GONE
-                    val buttons =
-                        try {
-                            GsonHelper.customGson.fromJson(
-                                conversationItem.content,
-                                Array<AppButtonData>::class.java,
-                            )
-                        } catch (e: Exception) {
-                            null
-                        }
-                    var content = ""
-                    buttons?.map { content += "[" + it.label + "]" }
-                    binding.msgTv.text = content
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app)
-                }
-                conversationItem.contentType == MessageCategory.APP_CARD.name -> {
-                    binding.groupNameTv.visibility = GONE
-                    val cardData = try {
-                        GsonHelper.customGson.fromJson(
-                            conversationItem.content,
-                            AppCardData::class.java,
-                        )
-                    } catch (e: Exception) {
-                        null
-                    }
-                    binding.msgTv.text = "[${cardData?.title}]"
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app)
-                }
-                conversationItem.isContact() -> {
-                    setConversationName(conversationItem)
-                    binding.msgTv.setText(R.string.content_contact)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_contact)
-                }
-                conversationItem.isCallMessage() -> {
-                    setConversationName(conversationItem)
-                    binding.msgTv.setText(R.string.content_voice)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_voice)
-                }
-                conversationItem.isRecall() -> {
-                    setConversationName(conversationItem)
-                    if (id == conversationItem.senderId) {
-                        binding.msgTv.setText(R.string.You_deleted_this_message)
-                    } else {
-                        binding.msgTv.text =
-                            itemView.context.getString(R.string.This_message_was_deleted)
-                    }
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_recall)
-                }
-                conversationItem.isGroupCall() -> {
-                    setConversationName(conversationItem)
-                    binding.msgTv.setText(R.string.content_group_call)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_voice)
-                }
-                conversationItem.contentType == MessageCategory.MESSAGE_PIN.name -> {
-                    val pinMessage = try {
-                        GsonHelper.customGson.fromJson(
-                            conversationItem.content,
-                            PinMessageMinimal::class.java,
-                        )
-                    } catch (e: Exception) {
-                        null
-                    }
-                    if (conversationItem.mentions != null) {
-                        binding.msgTv.renderMessage(
-                            String.format(
-                                getText(R.string.chat_pin_message),
-                                if (Session.getAccountId() == conversationItem.participantUserId) {
-                                    getText(R.string.You)
-                                } else {
-                                    conversationItem.senderFullName
-                                },
-                                pinMessage?.let { msg ->
-                                    " \"${msg.content}\""
-                                } ?: getText(R.string.a_message),
-                            ),
-                            MentionRenderCache.singleton.getMentionRenderContext(
-                                conversationItem.mentions,
-                            ),
-                        )
-                    } else {
-                        binding.msgTv.text = String.format(
-                            getText(R.string.chat_pin_message),
-                            if (id == conversationItem.senderId) {
-                                getText(R.string.You)
-                            } else {
-                                conversationItem.senderFullName
-                            },
-                            pinMessage.explain(itemView.context),
-                        )
-                    }
-                    null
-                }
-                conversationItem.contentType == MessageCategory.SYSTEM_CONVERSATION.name -> {
-                    when (conversationItem.actionName) {
-                        SystemConversationAction.CREATE.name -> {
                             binding.msgTv.text =
                                 String.format(
-                                    getText(R.string.created_this_group),
-                                    if (id == conversationItem.senderId) {
-                                        getText(R.string.You)
-                                    } else {
-                                        conversationItem.name
-                                    },
-                                )
-                        }
-                        SystemConversationAction.ADD.name -> {
-                            binding.msgTv.text =
-                                String.format(
-                                    getText(R.string.chat_group_add),
+                                    getText(R.string.chat_pin_message),
                                     if (id == conversationItem.senderId) {
                                         getText(R.string.You)
                                     } else {
                                         conversationItem.senderFullName
                                     },
-                                    if (id == conversationItem.participantUserId) {
-                                        getText(R.string.you)
-                                    } else {
-                                        conversationItem.participantFullName
-                                    },
+                                    pinMessage.explain(itemView.context),
                                 )
                         }
-                        SystemConversationAction.REMOVE.name -> {
-                            binding.msgTv.text =
-                                String.format(
-                                    getText(R.string.chat_group_remove),
-                                    if (id == conversationItem.senderId) {
-                                        getText(R.string.You)
-                                    } else {
-                                        conversationItem.senderFullName
-                                    },
-                                    if (id == conversationItem.participantUserId) {
-                                        getText(R.string.you)
-                                    } else {
-                                        conversationItem.participantFullName
-                                    },
-                                )
-                        }
-                        SystemConversationAction.JOIN.name -> {
-                            binding.msgTv.text =
-                                String.format(
-                                    getText(R.string.chat_group_join),
-                                    if (id == conversationItem.participantUserId) {
-                                        getText(R.string.You)
-                                    } else {
-                                        conversationItem.participantFullName
-                                    },
-                                )
-                        }
-                        SystemConversationAction.EXIT.name -> {
-                            binding.msgTv.text =
-                                String.format(
-                                    getText(R.string.chat_group_exit),
-                                    if (id == conversationItem.participantUserId) {
-                                        getText(R.string.You)
-                                    } else {
-                                        conversationItem.participantFullName
-                                    },
-                                )
-                        }
-                        SystemConversationAction.ROLE.name -> {
-                            binding.msgTv.text = getText(R.string.group_role)
-                        }
-                        SystemConversationAction.EXPIRE.name -> {
-                            val timeInterval = conversationItem.content?.toLongOrNull()
-                            val name = if (id == conversationItem.senderId) {
-                                getText(R.string.You)
-                            } else {
-                                conversationItem.senderFullName
+                        null
+                    }
+                    conversationItem.contentType == MessageCategory.SYSTEM_CONVERSATION.name -> {
+                        when (conversationItem.actionName) {
+                            SystemConversationAction.CREATE.name -> {
+                                binding.msgTv.text =
+                                    String.format(
+                                        getText(R.string.created_this_group),
+                                        if (id == conversationItem.senderId) {
+                                            getText(R.string.You)
+                                        } else {
+                                            conversationItem.name
+                                        },
+                                    )
                             }
-                            binding.msgTv.text =
-                                when {
-                                    timeInterval == null -> {
-                                        String.format(
-                                            getText(R.string.changed_disappearing_message_settings),
-                                            name,
-                                        )
+                            SystemConversationAction.ADD.name -> {
+                                binding.msgTv.text =
+                                    String.format(
+                                        getText(R.string.chat_group_add),
+                                        if (id == conversationItem.senderId) {
+                                            getText(R.string.You)
+                                        } else {
+                                            conversationItem.senderFullName
+                                        },
+                                        if (id == conversationItem.participantUserId) {
+                                            getText(R.string.you)
+                                        } else {
+                                            conversationItem.participantFullName
+                                        },
+                                    )
+                            }
+                            SystemConversationAction.REMOVE.name -> {
+                                binding.msgTv.text =
+                                    String.format(
+                                        getText(R.string.chat_group_remove),
+                                        if (id == conversationItem.senderId) {
+                                            getText(R.string.You)
+                                        } else {
+                                            conversationItem.senderFullName
+                                        },
+                                        if (id == conversationItem.participantUserId) {
+                                            getText(R.string.you)
+                                        } else {
+                                            conversationItem.participantFullName
+                                        },
+                                    )
+                            }
+                            SystemConversationAction.JOIN.name -> {
+                                binding.msgTv.text =
+                                    String.format(
+                                        getText(R.string.chat_group_join),
+                                        if (id == conversationItem.participantUserId) {
+                                            getText(R.string.You)
+                                        } else {
+                                            conversationItem.participantFullName
+                                        },
+                                    )
+                            }
+                            SystemConversationAction.EXIT.name -> {
+                                binding.msgTv.text =
+                                    String.format(
+                                        getText(R.string.chat_group_exit),
+                                        if (id == conversationItem.participantUserId) {
+                                            getText(R.string.You)
+                                        } else {
+                                            conversationItem.participantFullName
+                                        },
+                                    )
+                            }
+                            SystemConversationAction.ROLE.name -> {
+                                binding.msgTv.text = getText(R.string.group_role)
+                            }
+                            SystemConversationAction.EXPIRE.name -> {
+                                val timeInterval = conversationItem.content?.toLongOrNull()
+                                val name =
+                                    if (id == conversationItem.senderId) {
+                                        getText(R.string.You)
+                                    } else {
+                                        conversationItem.senderFullName
                                     }
-                                    timeInterval <= 0 -> {
-                                        String.format(
-                                            getText(R.string.disable_disappearing_message),
-                                            name,
-                                        )
+                                binding.msgTv.text =
+                                    when {
+                                        timeInterval == null -> {
+                                            String.format(
+                                                getText(R.string.changed_disappearing_message_settings),
+                                                name,
+                                            )
+                                        }
+                                        timeInterval <= 0 -> {
+                                            String.format(
+                                                getText(R.string.disable_disappearing_message),
+                                                name,
+                                            )
+                                        }
+                                        else -> {
+                                            String.format(
+                                                getText(R.string.set_disappearing_message_time_to),
+                                                name,
+                                                toTimeInterval(timeInterval),
+                                            )
+                                        }
                                     }
-                                    else -> {
-                                        String.format(
-                                            getText(R.string.set_disappearing_message_time_to),
-                                            name,
-                                            toTimeInterval(timeInterval),
-                                        )
-                                    }
-                                }
+                            }
+                            else -> {
+                                binding.msgTv.text = ""
+                            }
                         }
+                        null
+                    }
+                    else -> {
+                        binding.msgTv.text = ""
+                        null
+                    }
+                }.also { drawable ->
+                    if (drawable != null) {
+                        drawable.setBounds(
+                            0,
+                            0,
+                            itemView.context.dpToPx(12f),
+                            itemView.context.dpToPx(12f),
+                        )
+                        binding.msgType.setImageDrawable(drawable)
+                        binding.msgType.isVisible = true
+                    } else {
+                        binding.msgType.isVisible = false
+                    }
+                }
+
+                if (conversationItem.senderId == Session.getAccountId() &&
+                    conversationItem.contentType != MessageCategory.SYSTEM_CONVERSATION.name &&
+                    conversationItem.contentType != MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name &&
+                    conversationItem.contentType != MessageCategory.SYSTEM_SAFE_SNAPSHOT.name &&
+                    conversationItem.messageStatus != MessageStatus.FAILED.name &&
+                    !conversationItem.isCallMessage() && !conversationItem.isRecall() &&
+                    !conversationItem.isGroupCall() &&
+                    !conversationItem.isPin()
+                ) {
+                    when (conversationItem.messageStatus) {
+                        MessageStatus.SENDING.name ->
+                            AppCompatResources.getDrawable(
+                                itemView.context,
+                                R.drawable.ic_status_sending,
+                            )
+                        MessageStatus.SENT.name ->
+                            AppCompatResources.getDrawable(
+                                itemView.context,
+                                R.drawable.ic_status_sent_large,
+                            )
+                        MessageStatus.DELIVERED.name ->
+                            AppCompatResources.getDrawable(
+                                itemView.context,
+                                R.drawable.ic_status_delivered,
+                            )
+                        MessageStatus.READ.name ->
+                            AppCompatResources.getDrawable(
+                                itemView.context,
+                                R.drawable.ic_status_read_dark,
+                            )
                         else -> {
-                            binding.msgTv.text = ""
+                            AppCompatResources.getDrawable(
+                                itemView.context,
+                                R.drawable.ic_status_sending,
+                            )
+                        }
+                    }.also {
+                        it?.setBounds(0, 0, itemView.context.dpToPx(14f), itemView.context.dpToPx(14f))
+                        binding.msgStatus.setImageDrawable(it)
+                        binding.msgStatus.visibility = VISIBLE
+                        if (conversationItem.messageStatus == MessageStatus.SENDING.name) {
+                            (it as Animatable).start()
                         }
                     }
-                    null
-                }
-                else -> {
-                    binding.msgTv.text = ""
-                    null
-                }
-            }.also { drawable ->
-                if (drawable != null) {
-                    drawable.setBounds(
-                        0,
-                        0,
-                        itemView.context.dpToPx(12f),
-                        itemView.context.dpToPx(12f),
-                    )
-                    binding.msgType.setImageDrawable(drawable)
-                    binding.msgType.isVisible = true
                 } else {
-                    binding.msgType.isVisible = false
+                    binding.msgStatus.visibility = GONE
                 }
-            }
+                conversationItem.createdAt?.let {
+                    binding.timeTv.timeAgo(it)
+                }
+                if (conversationItem.pinTime == null) {
+                    binding.msgPin.visibility = GONE
+                    if (conversationItem.isGroupConversation() && conversationItem.status == ConversationStatus.START.ordinal) {
+                        binding.pb.visibility = VISIBLE
+                        binding.unreadTv.visibility = GONE
+                    } else {
+                        binding.pb.visibility = GONE
+                        conversationItem.unseenMessageCount.notEmptyWithElse(
+                            {
+                                binding.unreadTv.text = "$it"
+                                binding.unreadTv.visibility = VISIBLE
+                            },
+                            { binding.unreadTv.visibility = GONE },
+                        )
 
-            if (conversationItem.senderId == Session.getAccountId() &&
-                conversationItem.contentType != MessageCategory.SYSTEM_CONVERSATION.name &&
-                conversationItem.contentType != MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name &&
-                conversationItem.contentType != MessageCategory.SYSTEM_SAFE_SNAPSHOT.name &&
-                conversationItem.messageStatus != MessageStatus.FAILED.name &&
-                !conversationItem.isCallMessage() && !conversationItem.isRecall() &&
-                !conversationItem.isGroupCall() &&
-                !conversationItem.isPin()
-            ) {
-                when (conversationItem.messageStatus) {
-                    MessageStatus.SENDING.name -> AppCompatResources.getDrawable(
-                        itemView.context,
-                        R.drawable.ic_status_sending,
-                    )
-                    MessageStatus.SENT.name -> AppCompatResources.getDrawable(
-                        itemView.context,
-                        R.drawable.ic_status_sent_large,
-                    )
-                    MessageStatus.DELIVERED.name -> AppCompatResources.getDrawable(
-                        itemView.context,
-                        R.drawable.ic_status_delivered,
-                    )
-                    MessageStatus.READ.name -> AppCompatResources.getDrawable(
-                        itemView.context,
-                        R.drawable.ic_status_read_dark,
-                    )
-                    else -> {
-                        AppCompatResources.getDrawable(
-                            itemView.context,
-                            R.drawable.ic_status_sending,
+                        if (conversationItem.isGroupConversation() && conversationItem.status == ConversationStatus.FAILURE.ordinal) {
+                            binding.msgTv.text = getText(R.string.group_click_create_tip)
+                        }
+                    }
+                } else {
+                    binding.msgPin.visibility = VISIBLE
+                    if (conversationItem.isGroupConversation() && conversationItem.status == ConversationStatus.START.ordinal) {
+                        binding.pb.visibility = VISIBLE
+                        binding.unreadTv.visibility = GONE
+                    } else {
+                        binding.pb.visibility = GONE
+                        conversationItem.unseenMessageCount.notEmptyWithElse(
+                            {
+                                binding.unreadTv.text = "$it"
+                                binding.unreadTv.visibility =
+                                    VISIBLE
+                            },
+                            { binding.unreadTv.visibility = GONE },
                         )
                     }
-                }.also {
-                    it?.setBounds(0, 0, itemView.context.dpToPx(14f), itemView.context.dpToPx(14f))
-                    binding.msgStatus.setImageDrawable(it)
-                    binding.msgStatus.visibility = VISIBLE
-                    if (conversationItem.messageStatus == MessageStatus.SENDING.name) {
-                        (it as Animatable).start()
-                    }
                 }
-            } else {
-                binding.msgStatus.visibility = GONE
-            }
-            conversationItem.createdAt?.let {
-                binding.timeTv.timeAgo(it)
-            }
-            if (conversationItem.pinTime == null) {
-                binding.msgPin.visibility = GONE
-                if (conversationItem.isGroupConversation() && conversationItem.status == ConversationStatus.START.ordinal) {
-                    binding.pb.visibility = VISIBLE
-                    binding.unreadTv.visibility = GONE
-                } else {
-                    binding.pb.visibility = GONE
-                    conversationItem.unseenMessageCount.notEmptyWithElse(
-                        {
-                            binding.unreadTv.text = "$it"
-                            binding.unreadTv.visibility = VISIBLE
-                        },
-                        { binding.unreadTv.visibility = GONE },
-                    )
 
-                    if (conversationItem.isGroupConversation() && conversationItem.status == ConversationStatus.FAILURE.ordinal) {
-                        binding.msgTv.text = getText(R.string.group_click_create_tip)
-                    }
-                }
-            } else {
-                binding.msgPin.visibility = VISIBLE
-                if (conversationItem.isGroupConversation() && conversationItem.status == ConversationStatus.START.ordinal) {
-                    binding.pb.visibility = VISIBLE
-                    binding.unreadTv.visibility = GONE
+                binding.muteIv.visibility = if (conversationItem.isMute()) VISIBLE else GONE
+                if (conversationItem.isMute()) {
+                    binding.unreadTv.setBackgroundResource(R.drawable.bg_unread_mute)
+                    binding.unreadTv.setTextColor(context.colorFromAttribute(R.attr.badger_text_mute))
                 } else {
-                    binding.pb.visibility = GONE
-                    conversationItem.unseenMessageCount.notEmptyWithElse(
-                        {
-                            binding.unreadTv.text = "$it"
-                            binding.unreadTv.visibility =
-                                VISIBLE
-                        },
-                        { binding.unreadTv.visibility = GONE },
+                    binding.unreadTv.setBackgroundResource(R.drawable.bg_unread)
+                    binding.unreadTv.setTextColor(context.colorFromAttribute(R.attr.badger_text))
+                }
+
+                conversationItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
+                if (conversationItem.isGroupConversation()) {
+                    binding.avatarIv.setGroup(conversationItem.iconUrl())
+                } else {
+                    binding.avatarIv.setInfo(
+                        conversationItem.getConversationName(),
+                        conversationItem.iconUrl(),
+                        conversationItem.ownerId,
+                    )
+                }
+                itemView.setOnClickListener { onItemClickListener?.onNormalItemClick(conversationItem) }
+                itemView.setOnLongClickListener {
+                    onItemClickListener.notNullWithElse(
+                        { it.onNormalLongClick(conversationItem) },
+                        false,
                     )
                 }
             }
 
-            binding.muteIv.visibility = if (conversationItem.isMute()) VISIBLE else GONE
-            if (conversationItem.isMute()) {
-                binding.unreadTv.setBackgroundResource(R.drawable.bg_unread_mute)
-                binding.unreadTv.setTextColor(context.colorFromAttribute(R.attr.badger_text_mute))
-            } else {
-                binding.unreadTv.setBackgroundResource(R.drawable.bg_unread)
-                binding.unreadTv.setTextColor(context.colorFromAttribute(R.attr.badger_text))
-            }
-
-            conversationItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
-            if (conversationItem.isGroupConversation()) {
-                binding.avatarIv.setGroup(conversationItem.iconUrl())
-            } else {
-                binding.avatarIv.setInfo(
-                    conversationItem.getConversationName(),
-                    conversationItem.iconUrl(),
-                    conversationItem.ownerId,
-                )
-            }
-            itemView.setOnClickListener { onItemClickListener?.onNormalItemClick(conversationItem) }
-            itemView.setOnLongClickListener {
-                onItemClickListener.notNullWithElse(
-                    { it.onNormalLongClick(conversationItem) },
-                    false,
-                )
+            @SuppressLint("SetTextI18n")
+            private fun setConversationName(conversationItem: ConversationItem) {
+                if (conversationItem.isGroupConversation() && conversationItem.senderId != Session.getAccountId()) {
+                    binding.groupNameTv.text = "${conversationItem.senderFullName}: "
+                    binding.groupNameTv.visibility = VISIBLE
+                } else {
+                    binding.groupNameTv.visibility = GONE
+                }
             }
         }
-
-        @SuppressLint("SetTextI18n")
-        private fun setConversationName(conversationItem: ConversationItem) {
-            if (conversationItem.isGroupConversation() && conversationItem.senderId != Session.getAccountId()) {
-                binding.groupNameTv.text = "${conversationItem.senderFullName}: "
-                binding.groupNameTv.visibility = VISIBLE
-            } else {
-                binding.groupNameTv.visibility = GONE
-            }
-        }
-    }
 
     private fun showMuteDialog(conversationItem: ConversationItem) {
-        val choices = arrayOf(
-            getString(R.string.one_hour),
-            resources.getQuantityString(R.plurals.Hour, 8, 8),
-            getString(R.string.one_week),
-            getString(R.string.one_year),
-        )
+        val choices =
+            arrayOf(
+                getString(R.string.one_hour),
+                resources.getQuantityString(R.plurals.Hour, 8, 8),
+                getString(R.string.one_week),
+                getString(R.string.one_year),
+            )
         var duration = MUTE_8_HOURS
         var whichItem = 0
         alertDialogBuilder()

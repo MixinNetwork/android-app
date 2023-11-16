@@ -67,23 +67,27 @@ class ChatHistoryMessageItem(
     val mentions: String? = null,
 ) : ICategory {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ChatHistoryMessageItem>() {
-            override fun areItemsTheSame(
-                oldItem: ChatHistoryMessageItem,
-                newItem: ChatHistoryMessageItem,
-            ): Boolean = oldItem.messageId == newItem.messageId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<ChatHistoryMessageItem>() {
+                override fun areItemsTheSame(
+                    oldItem: ChatHistoryMessageItem,
+                    newItem: ChatHistoryMessageItem,
+                ): Boolean = oldItem.messageId == newItem.messageId
 
-            override fun areContentsTheSame(
-                oldItem: ChatHistoryMessageItem,
-                newItem: ChatHistoryMessageItem,
-            ): Boolean = oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: ChatHistoryMessageItem,
+                    newItem: ChatHistoryMessageItem,
+                ): Boolean = oldItem == newItem
+            }
     }
 }
 
 fun ChatHistoryMessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) == true
 
-fun ChatHistoryMessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
+fun ChatHistoryMessageItem.showVerifiedOrBot(
+    verifiedView: View,
+    botView: View,
+) {
     when {
         sharedUserIsVerified == true -> {
             verifiedView.isVisible = true
@@ -116,19 +120,21 @@ fun ChatHistoryMessageItem.saveToLocal(context: Context) {
         toast(R.string.File_does_not_exist)
         return
     }
-    val outFile = if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {
-        File(context.getPublicPicturePath(), mediaName ?: file.name).apply {
-            mkdirs()
-        }
-    } else {
-        val dir = if (MimeTypes.isAudio(mediaMimeType)) {
-            context.getExternalFilesDir(DIRECTORY_MUSIC)
+    val outFile =
+        if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {
+            File(context.getPublicPicturePath(), mediaName ?: file.name).apply {
+                mkdirs()
+            }
         } else {
-            context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-        } ?: return
-        dir.mkdir()
-        File(dir, mediaName ?: file.name)
-    }
+            val dir =
+                if (MimeTypes.isAudio(mediaMimeType)) {
+                    context.getExternalFilesDir(DIRECTORY_MUSIC)
+                } else {
+                    context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+                } ?: return
+            dir.mkdir()
+            File(dir, mediaName ?: file.name)
+        }
     outFile.copyFromInputStream(FileInputStream(file))
     MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
     toast(getLocalString(MixinApplication.appContext, R.string.Save_to, outFile.absolutePath))

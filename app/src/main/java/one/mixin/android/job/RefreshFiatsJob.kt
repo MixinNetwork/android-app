@@ -12,12 +12,13 @@ class RefreshFiatsJob : BaseJob(
         const val GROUP = "RefreshFiatsJob"
     }
 
-    override fun onRun() = runBlocking {
-        val resp = accountService.getFiats()
-        if (resp.isSuccess) {
-            resp.data?.let { fiatList ->
-                Fiats.updateFiats(fiatList)
+    override fun onRun() =
+        runBlocking {
+            val resp = accountService.getFiats()
+            if (resp.isSuccess) {
+                resp.data?.let { fiatList ->
+                    Fiats.updateFiats(fiatList)
+                }
             }
         }
-    }
 }

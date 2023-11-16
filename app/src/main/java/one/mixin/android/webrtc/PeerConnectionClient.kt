@@ -141,60 +141,64 @@ class PeerConnectionClient(context: Context) {
         if (peerConnection == null || connectionState == PeerConnection.PeerConnectionState.CLOSED) {
             peerConnection = createPeerConnectionInternal(frameKey)
         }
-        val offerSdpObserver = object : SdpObserverWrapper() {
-            override fun onCreateSuccess(sdp: SessionDescription) {
-                peerConnection?.setLocalDescription(
-                    object : SdpObserverWrapper() {
-                        override fun onSetFailure(error: String?) {
-                            if (doWhenSetFailure != null) {
-                                Timber.d("$TAG_CALL createOffer setLocalSdp onSetFailure error: $error")
-                                doWhenSetFailure.invoke()
-                            } else {
-                                reportError("createOffer setLocalSdp onSetFailure error: $error")
+        val offerSdpObserver =
+            object : SdpObserverWrapper() {
+                override fun onCreateSuccess(sdp: SessionDescription) {
+                    peerConnection?.setLocalDescription(
+                        object : SdpObserverWrapper() {
+                            override fun onSetFailure(error: String?) {
+                                if (doWhenSetFailure != null) {
+                                    Timber.d("$TAG_CALL createOffer setLocalSdp onSetFailure error: $error")
+                                    doWhenSetFailure.invoke()
+                                } else {
+                                    reportError("createOffer setLocalSdp onSetFailure error: $error")
+                                }
                             }
-                        }
-                        override fun onSetSuccess() {
-                            Timber.d("$TAG_CALL createOffer setLocalSdp onSetSuccess")
-                            setLocalSuccess(sdp)
-                        }
-                        override fun onCreateSuccess(sdp: SessionDescription) {
-                            Timber.d("$TAG_CALL createOffer setLocalSdp onCreateSuccess")
-                        }
-                        override fun onCreateFailure(error: String?) {
-                            if (doWhenSetFailure != null) {
-                                Timber.d("$TAG_CALL createOffer setLocalSdp onCreateFailure error: $error")
-                                doWhenSetFailure.invoke()
-                            } else {
-                                reportError("createOffer setLocalSdp onCreateFailure error: $error")
-                            }
-                        }
-                    },
-                    sdp,
-                )
-            }
 
-            override fun onCreateFailure(error: String?) {
-                if (doWhenSetFailure != null) {
-                    Timber.d("$TAG_CALL createOffer onCreateFailure error: $error")
-                    doWhenSetFailure.invoke()
-                } else {
-                    reportError("createOffer onCreateFailure error: $error")
+                            override fun onSetSuccess() {
+                                Timber.d("$TAG_CALL createOffer setLocalSdp onSetSuccess")
+                                setLocalSuccess(sdp)
+                            }
+
+                            override fun onCreateSuccess(sdp: SessionDescription) {
+                                Timber.d("$TAG_CALL createOffer setLocalSdp onCreateSuccess")
+                            }
+
+                            override fun onCreateFailure(error: String?) {
+                                if (doWhenSetFailure != null) {
+                                    Timber.d("$TAG_CALL createOffer setLocalSdp onCreateFailure error: $error")
+                                    doWhenSetFailure.invoke()
+                                } else {
+                                    reportError("createOffer setLocalSdp onCreateFailure error: $error")
+                                }
+                            }
+                        },
+                        sdp,
+                    )
+                }
+
+                override fun onCreateFailure(error: String?) {
+                    if (doWhenSetFailure != null) {
+                        Timber.d("$TAG_CALL createOffer onCreateFailure error: $error")
+                        doWhenSetFailure.invoke()
+                    } else {
+                        reportError("createOffer onCreateFailure error: $error")
+                    }
+                }
+
+                override fun onSetFailure(error: String?) {
+                    if (doWhenSetFailure != null) {
+                        Timber.d("$TAG_CALL createOffer onSetFailure error: $error")
+                        doWhenSetFailure.invoke()
+                    } else {
+                        reportError("createOffer onSetFailure error: $error")
+                    }
+                }
+
+                override fun onSetSuccess() {
+                    Timber.d("$TAG_CALL createOffer onSetSuccess")
                 }
             }
-
-            override fun onSetFailure(error: String?) {
-                if (doWhenSetFailure != null) {
-                    Timber.d("$TAG_CALL createOffer onSetFailure error: $error")
-                    doWhenSetFailure.invoke()
-                } else {
-                    reportError("createOffer onSetFailure error: $error")
-                }
-            }
-
-            override fun onSetSuccess() {
-                Timber.d("$TAG_CALL createOffer onSetSuccess")
-            }
-        }
         peerConnection?.createOffer(offerSdpObserver, sdpConstraint)
     }
 
@@ -246,60 +250,64 @@ class PeerConnectionClient(context: Context) {
             },
             remoteSdp,
         )
-        val answerSdpObserver = object : SdpObserverWrapper() {
-            override fun onCreateSuccess(sdp: SessionDescription) {
-                peerConnection?.setLocalDescription(
-                    object : SdpObserverWrapper() {
-                        override fun onSetFailure(error: String?) {
-                            if (doWhenSetFailure != null) {
+        val answerSdpObserver =
+            object : SdpObserverWrapper() {
+                override fun onCreateSuccess(sdp: SessionDescription) {
+                    peerConnection?.setLocalDescription(
+                        object : SdpObserverWrapper() {
+                            override fun onSetFailure(error: String?) {
+                                if (doWhenSetFailure != null) {
+                                    Timber.d("$TAG_CALL createAnswer setLocalSdp onSetSuccess")
+                                    doWhenSetFailure.invoke()
+                                } else {
+                                    reportError("createAnswer setLocalSdp onSetFailure error: $error")
+                                }
+                            }
+
+                            override fun onSetSuccess() {
                                 Timber.d("$TAG_CALL createAnswer setLocalSdp onSetSuccess")
-                                doWhenSetFailure.invoke()
-                            } else {
-                                reportError("createAnswer setLocalSdp onSetFailure error: $error")
+                                setLocalSuccess(sdp)
                             }
-                        }
-                        override fun onSetSuccess() {
-                            Timber.d("$TAG_CALL createAnswer setLocalSdp onSetSuccess")
-                            setLocalSuccess(sdp)
-                        }
-                        override fun onCreateSuccess(sdp: SessionDescription) {
-                            Timber.d("$TAG_CALL createAnswer setLocalSdp onCreateSuccess")
-                        }
-                        override fun onCreateFailure(error: String?) {
-                            if (doWhenSetFailure != null) {
-                                Timber.d("$TAG_CALL createAnswer setLocalSdp onCreateFailure error: $error")
-                                doWhenSetFailure.invoke()
-                            } else {
-                                reportError("createAnswer setLocalSdp onCreateFailure error: $error")
-                            }
-                        }
-                    },
-                    sdp,
-                )
-            }
 
-            override fun onCreateFailure(error: String?) {
-                if (doWhenSetFailure != null) {
-                    Timber.d("$TAG_CALL createAnswer setLocalSdp onCreateFailure error: $error")
-                    doWhenSetFailure.invoke()
-                } else {
-                    reportError("createAnswer setLocalSdp onCreateFailure error: $error")
+                            override fun onCreateSuccess(sdp: SessionDescription) {
+                                Timber.d("$TAG_CALL createAnswer setLocalSdp onCreateSuccess")
+                            }
+
+                            override fun onCreateFailure(error: String?) {
+                                if (doWhenSetFailure != null) {
+                                    Timber.d("$TAG_CALL createAnswer setLocalSdp onCreateFailure error: $error")
+                                    doWhenSetFailure.invoke()
+                                } else {
+                                    reportError("createAnswer setLocalSdp onCreateFailure error: $error")
+                                }
+                            }
+                        },
+                        sdp,
+                    )
+                }
+
+                override fun onCreateFailure(error: String?) {
+                    if (doWhenSetFailure != null) {
+                        Timber.d("$TAG_CALL createAnswer setLocalSdp onCreateFailure error: $error")
+                        doWhenSetFailure.invoke()
+                    } else {
+                        reportError("createAnswer setLocalSdp onCreateFailure error: $error")
+                    }
+                }
+
+                override fun onSetFailure(error: String?) {
+                    if (doWhenSetFailure != null) {
+                        Timber.d("$TAG_CALL createAnswer setLocalSdp onSetFailure error: $error")
+                        doWhenSetFailure.invoke()
+                    } else {
+                        reportError("createAnswer setLocalSdp onSetFailure error: $error")
+                    }
+                }
+
+                override fun onSetSuccess() {
+                    Timber.d("$TAG_CALL createAnswer setLocalSdp onSetSuccess")
                 }
             }
-
-            override fun onSetFailure(error: String?) {
-                if (doWhenSetFailure != null) {
-                    Timber.d("$TAG_CALL createAnswer setLocalSdp onSetFailure error: $error")
-                    doWhenSetFailure.invoke()
-                } else {
-                    reportError("createAnswer setLocalSdp onSetFailure error: $error")
-                }
-            }
-
-            override fun onSetSuccess() {
-                Timber.d("$TAG_CALL createAnswer setLocalSdp onSetSuccess")
-            }
-        }
         peerConnection?.createAnswer(answerSdpObserver, sdpConstraint)
     }
 
@@ -427,14 +435,15 @@ class PeerConnectionClient(context: Context) {
             reportError("PeerConnectionFactory is not created")
             return null
         }
-        val rtcConfig = PeerConnection.RTCConfiguration(iceServers).apply {
-            tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.ENABLED
-            iceTransportsType = PeerConnection.IceTransportsType.RELAY
-            bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE
-            rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE
-            sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
-            continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_ONCE
-        }
+        val rtcConfig =
+            PeerConnection.RTCConfiguration(iceServers).apply {
+                tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.ENABLED
+                iceTransportsType = PeerConnection.IceTransportsType.RELAY
+                bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE
+                rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE
+                sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
+                continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_ONCE
+            }
         val peerConnection = factory!!.createPeerConnection(rtcConfig, pcObserver)
         if (peerConnection == null) {
             reportError("PeerConnection is not created")
@@ -457,7 +466,11 @@ class PeerConnectionClient(context: Context) {
         }
     }
 
-    fun setReceiverFrameKey(userId: String, sessionId: String, frameKey: ByteArray? = null) {
+    fun setReceiverFrameKey(
+        userId: String,
+        sessionId: String,
+        frameKey: ByteArray? = null,
+    ) {
         val key = "$userId~$sessionId"
         if (rtpReceivers.containsKey(key) && frameKey != null) {
             val receiver = rtpReceivers[key] ?: return
@@ -472,9 +485,10 @@ class PeerConnectionClient(context: Context) {
     }
 
     private fun createPeerConnectionFactoryInternal(options: PeerConnectionFactory.Options) {
-        factory = PeerConnectionFactory.builder()
-            .setOptions(options)
-            .createPeerConnectionFactory()
+        factory =
+            PeerConnectionFactory.builder()
+                .setOptions(options)
+                .createPeerConnectionFactory()
     }
 
     private fun createAudioTrack(): AudioTrack {
@@ -484,23 +498,24 @@ class PeerConnectionClient(context: Context) {
         return audioTrack!!
     }
 
-    private fun createMediaConstraint() = MediaConstraints().apply {
-        mandatory.add(offerReceiveAudioConstraint)
-        mandatory.add(offerReceiveVideoConstraint)
-    }
-
-    private val iceObserver = object : AddIceObserver {
-        override fun onAddSuccess() {
-            Timber.d("$TAG_CALL iceObserver onAddSuccess")
+    private fun createMediaConstraint() =
+        MediaConstraints().apply {
+            mandatory.add(offerReceiveAudioConstraint)
+            mandatory.add(offerReceiveVideoConstraint)
         }
 
-        override fun onAddFailure(error: String?) {
-            Timber.d("$TAG_CALL iceObserver onAddFailure error: $error")
+    private val iceObserver =
+        object : AddIceObserver {
+            override fun onAddSuccess() {
+                Timber.d("$TAG_CALL iceObserver onAddSuccess")
+            }
+
+            override fun onAddFailure(error: String?) {
+                Timber.d("$TAG_CALL iceObserver onAddFailure error: $error")
+            }
         }
-    }
 
     private inner class PCObserver : PeerConnection.Observer {
-
         override fun onIceCandidate(candidate: IceCandidate) {
             events?.onIceCandidate(candidate)
         }
@@ -558,7 +573,10 @@ class PeerConnectionClient(context: Context) {
             Timber.d("$TAG_CALL onTrack=%s", transceiver.toString())
         }
 
-        override fun onAddTrack(receiver: RtpReceiver, mediaStreams: Array<out MediaStream>) {
+        override fun onAddTrack(
+            receiver: RtpReceiver,
+            mediaStreams: Array<out MediaStream>,
+        ) {
             var hasAllMediaStreamKey = true
             for (m in mediaStreams) {
                 Timber.d("$TAG_CALL mediaStream: $m")
@@ -604,7 +622,6 @@ class PeerConnectionClient(context: Context) {
      * Peer connection events.
      */
     interface PeerConnectionEvents {
-
         /**
          * Callback fired once local Ice candidate is generated.
          */
@@ -658,9 +675,15 @@ class PeerConnectionClient(context: Context) {
          */
         fun onPeerConnectionError(errorMsg: String)
 
-        fun getSenderPublicKey(userId: String, sessionId: String): ByteArray?
+        fun getSenderPublicKey(
+            userId: String,
+            sessionId: String,
+        ): ByteArray?
 
-        fun requestResendKey(userId: String, sessionId: String)
+        fun requestResendKey(
+            userId: String,
+            sessionId: String,
+        )
     }
 
     companion object {

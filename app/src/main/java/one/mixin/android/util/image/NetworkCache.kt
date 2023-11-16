@@ -1,9 +1,9 @@
 package one.mixin.android.util.image
 
 import android.content.Context
+import timber.log.Timber
 import java.io.File
 import java.io.InputStream
-import timber.log.Timber
 
 class NetworkCache(context: Context) {
     private val appContext = context.applicationContext
@@ -14,7 +14,10 @@ class NetworkCache(context: Context) {
         return cachedFile
     }
 
-    fun writeTempCacheFile(url: String, stream: InputStream): File {
+    fun writeTempCacheFile(
+        url: String,
+        stream: InputStream,
+    ): File {
         val fileName = filenameForUrl(url, true)
         val file = File(parentDir(), fileName)
         file.outputStream().use {
@@ -69,7 +72,10 @@ class NetworkCache(context: Context) {
     }
 
     companion object {
-        fun filenameForUrl(url: String, isTemp: Boolean) =
+        fun filenameForUrl(
+            url: String,
+            isTemp: Boolean,
+        ) =
             "lottie_cache_" + url.replace("\\W+".toRegex(), "") + if (isTemp) TEMP_JSON_EXTENSION else JSON_EXTENSION
     }
 }

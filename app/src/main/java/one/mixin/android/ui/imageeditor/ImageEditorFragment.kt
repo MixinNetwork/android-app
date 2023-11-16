@@ -62,10 +62,14 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
 
         private const val MAX_IMAGE_SIZE = 4096
 
-        fun newInstance(imageUri: Uri, nextTitle: String? = null) = ImageEditorFragment().withArgs {
-            putParcelable(ARGS_IMAGE_URI, imageUri)
-            nextTitle?.let { putString(ARGS_NEXT_TITLE, it) }
-        }
+        fun newInstance(
+            imageUri: Uri,
+            nextTitle: String? = null,
+        ) =
+            ImageEditorFragment().withArgs {
+                putParcelable(ARGS_IMAGE_URI, imageUri)
+                nextTitle?.let { putString(ARGS_NEXT_TITLE, it) }
+            }
     }
 
     private var currentSelection: EditorElement? = null
@@ -82,14 +86,15 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
 
     private val currentElementIds = arraySetOf<String>()
 
-    private val colorPaletteAdapter = ColorPaletteAdapter(
-        paletteColors[5],
-        onColorChanged = { c ->
-            onColorChanged(c)
-        },
-    ).apply {
-        submitList(paletteColors)
-    }
+    private val colorPaletteAdapter =
+        ColorPaletteAdapter(
+            paletteColors[5],
+            onColorChanged = { c ->
+                onColorChanged(c)
+            },
+        ).apply {
+            submitList(paletteColors)
+        }
 
     private var _binding: FragmentImageEditorBinding? = null
     private val binding get() = requireNotNull(_binding)
@@ -103,7 +108,10 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             requireArguments().getString(ARGS_NEXT_TITLE)?.let {
@@ -188,7 +196,10 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
         }
     }
 
-    private fun setMode(mode: Mode, notify: Boolean = true) {
+    private fun setMode(
+        mode: Mode,
+        notify: Boolean = true,
+    ) {
         currentMode = mode
 
         when (mode) {
@@ -308,7 +319,10 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
         }
     }
 
-    private fun startTextEntityEditing(textElement: EditorElement, selectAll: Boolean) {
+    private fun startTextEntityEditing(
+        textElement: EditorElement,
+        selectAll: Boolean,
+    ) {
         binding.imageEditorView.startTextEditing(textElement)
 
         TextEntryDialogFragment.show(
@@ -334,7 +348,10 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
         startTextEntityEditing(element, true)
     }
 
-    private fun onUndoRedoAvailabilityChanged(undoAvailable: Boolean, redoAvailable: Boolean) {
+    private fun onUndoRedoAvailabilityChanged(
+        undoAvailable: Boolean,
+        redoAvailable: Boolean,
+    ) {
         this.undoAvailable = undoAvailable
         this.redoAvailable = redoAvailable
         binding.undoRedoView.updatePrevNextView()
@@ -346,45 +363,49 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
         next.isEnabled = redoAvailable
     }
 
-    private fun renderAndSave(notCompress: Boolean) = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
+    private fun renderAndSave(notCompress: Boolean) =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
 
-        fun finishWithUri(uri: Uri) {
-            val result = Intent().apply {
-                putExtra(ARGS_EDITOR_RESULT, uri)
-                putExtra(ARGS_NOT_COMPRESS, notCompress)
+            fun finishWithUri(uri: Uri) {
+                val result =
+                    Intent().apply {
+                        putExtra(ARGS_EDITOR_RESULT, uri)
+                        putExtra(ARGS_NOT_COMPRESS, notCompress)
+                    }
+                requireActivity().apply {
+                    setResult(Activity.RESULT_OK, result)
+                    finish()
+                }
             }
-            requireActivity().apply {
-                setResult(Activity.RESULT_OK, result)
-                finish()
+
+            if (undoAvailable.not()) {
+                finishWithUri(imageUri)
+                return@launch
             }
-        }
 
-        if (undoAvailable.not()) {
-            finishWithUri(imageUri)
-            return@launch
-        }
+            val dialog =
+                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                    setCancelable(false)
+                }
+            val file = requireContext().getImageCachePath().createImageTemp()
+            val saveResult =
+                withContext(Dispatchers.IO) {
+                    kotlin.runCatching {
+                        val image = binding.imageEditorView.model.render(requireContext())
+                        image.save(file)
+                    }
+                }
+            dialog.dismiss()
 
-        val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-            setCancelable(false)
-        }
-        val file = requireContext().getImageCachePath().createImageTemp()
-        val saveResult = withContext(Dispatchers.IO) {
-            kotlin.runCatching {
-                val image = binding.imageEditorView.model.render(requireContext())
-                image.save(file)
+            if (saveResult.isFailure) {
+                file.delete()
+                toast(R.string.Save_failure)
+                return@launch
             }
-        }
-        dialog.dismiss()
 
-        if (saveResult.isFailure) {
-            file.delete()
-            toast(R.string.Save_failure)
-            return@launch
+            finishWithUri(file.toUri())
         }
-
-        finishWithUri(file.toUri())
-    }
 
     override fun onTextEntryDialogDismissed(hasText: Boolean) {
         binding.imageEditorView.doneTextEditing()
@@ -395,7 +416,10 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
         }
     }
 
-    override fun zoomToFitText(editorElement: EditorElement, textRenderer: MultiLineTextRenderer) {
+    override fun zoomToFitText(
+        editorElement: EditorElement,
+        textRenderer: MultiLineTextRenderer,
+    ) {
         binding.imageEditorView.zoomToFitText(editorElement, textRenderer)
     }
 
@@ -403,119 +427,140 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
         onColorChanged(color)
     }
 
-    private val onSeekChangeListener = object : OnSeekChangeListener {
-        override fun onSeeking(seekParams: SeekParams) {
-        }
-
-        override fun onStartTrackingTouch(seekBar: IndicatorSeekBar) {
-        }
-
-        override fun onStopTrackingTouch(seekBar: IndicatorSeekBar) {
-            val value = seekBar.progressFloat
-            binding.imageEditorView.startDrawing(value / 100, Paint.Cap.ROUND, false)
-        }
-    }
-
-    private val dragListener = object : ImageEditorView.DragListener {
-        override fun onDragStarted(editorElement: EditorElement?) {
-            if (currentMode == Mode.Crop) {
-                return
+    private val onSeekChangeListener =
+        object : OnSeekChangeListener {
+            override fun onSeeking(seekParams: SeekParams) {
             }
-            currentSelection = if (editorElement == null || editorElement.renderer is BezierDrawingRenderer) {
-                null
-            } else {
-                editorElement
+
+            override fun onStartTrackingTouch(seekBar: IndicatorSeekBar) {
             }
-            if (binding.imageEditorView.mode == ImageEditorView.Mode.MoveAndResize) {
-                setMode(Mode.Delete)
+
+            override fun onStopTrackingTouch(seekBar: IndicatorSeekBar) {
+                val value = seekBar.progressFloat
+                binding.imageEditorView.startDrawing(value / 100, Paint.Cap.ROUND, false)
             }
         }
 
-        override fun onDragMoved(editorElement: EditorElement?, isInTrashHitZone: Boolean) {
-            if (currentMode == Mode.Crop || editorElement == null) {
-                return
-            }
-            if (isInTrashHitZone) {
-                deleteFadeDebouncer.publish {
-                    if (!wasInTrashHitZone) {
-                        wasInTrashHitZone = true
-                        requireContext().heavyClickVibrate()
-                    }
-                    editorElement.animatePartialFadeOut(binding.imageEditorView::invalidate)
+    private val dragListener =
+        object : ImageEditorView.DragListener {
+            override fun onDragStarted(editorElement: EditorElement?) {
+                if (currentMode == Mode.Crop) {
+                    return
                 }
-            } else {
-                deleteFadeDebouncer.publish {
-                    wasInTrashHitZone = false
+                currentSelection =
+                    if (editorElement == null || editorElement.renderer is BezierDrawingRenderer) {
+                        null
+                    } else {
+                        editorElement
+                    }
+                if (binding.imageEditorView.mode == ImageEditorView.Mode.MoveAndResize) {
+                    setMode(Mode.Delete)
+                }
+            }
+
+            override fun onDragMoved(
+                editorElement: EditorElement?,
+                isInTrashHitZone: Boolean,
+            ) {
+                if (currentMode == Mode.Crop || editorElement == null) {
+                    return
+                }
+                if (isInTrashHitZone) {
+                    deleteFadeDebouncer.publish {
+                        if (!wasInTrashHitZone) {
+                            wasInTrashHitZone = true
+                            requireContext().heavyClickVibrate()
+                        }
+                        editorElement.animatePartialFadeOut(binding.imageEditorView::invalidate)
+                    }
+                } else {
+                    deleteFadeDebouncer.publish {
+                        wasInTrashHitZone = false
+                        editorElement.animatePartialFadeIn(binding.imageEditorView::invalidate)
+                    }
+                }
+            }
+
+            override fun onDragEnded(
+                editorElement: EditorElement?,
+                isInTrashHitZone: Boolean,
+            ) {
+                wasInTrashHitZone = false
+                if (currentMode == Mode.Crop || currentMode == Mode.Draw) {
+                    return
+                }
+                if (isInTrashHitZone) {
+                    deleteFadeDebouncer.clear()
+                    binding.imageEditorView.deleteElement(currentSelection)
+                    currentSelection = null
+                } else if (editorElement != null && editorElement.renderer is MultiLineTextRenderer) {
                     editorElement.animatePartialFadeIn(binding.imageEditorView::invalidate)
                 }
-            }
-        }
-
-        override fun onDragEnded(editorElement: EditorElement?, isInTrashHitZone: Boolean) {
-            wasInTrashHitZone = false
-            if (currentMode == Mode.Crop || currentMode == Mode.Draw) {
-                return
-            }
-            if (isInTrashHitZone) {
-                deleteFadeDebouncer.clear()
-                binding.imageEditorView.deleteElement(currentSelection)
-                currentSelection = null
-            } else if (editorElement != null && editorElement.renderer is MultiLineTextRenderer) {
-                editorElement.animatePartialFadeIn(binding.imageEditorView::invalidate)
-            }
-            setMode(Mode.None)
-        }
-    }
-
-    private val drawListener = ImageEditorView.DrawListener { id -> currentElementIds.add(id) }
-
-    private val tapListener = object : ImageEditorView.TapListener {
-        override fun onEntityDown(editorElement: EditorElement?) {
-        }
-
-        override fun onEntitySingleTap(editorElement: EditorElement?) {
-            setCurrentSelection(editorElement)
-            if (currentSelection != null) {
-                if (editorElement?.renderer is MultiLineTextRenderer) {
-                    setTextElement(editorElement, editorElement.renderer as ColorableRenderer, binding.imageEditorView.isTextEditing)
-                }
-            } else {
                 setMode(Mode.None)
             }
         }
 
-        override fun onEntityDoubleTap(editorElement: EditorElement) {
-            setCurrentSelection(editorElement)
-            if (editorElement.renderer is MultiLineTextRenderer) {
-                setTextElement(editorElement, editorElement.renderer as ColorableRenderer, true)
+    private val drawListener = ImageEditorView.DrawListener { id -> currentElementIds.add(id) }
+
+    private val tapListener =
+        object : ImageEditorView.TapListener {
+            override fun onEntityDown(editorElement: EditorElement?) {
+            }
+
+            override fun onEntitySingleTap(editorElement: EditorElement?) {
+                setCurrentSelection(editorElement)
+                if (currentSelection != null) {
+                    if (editorElement?.renderer is MultiLineTextRenderer) {
+                        setTextElement(editorElement, editorElement.renderer as ColorableRenderer, binding.imageEditorView.isTextEditing)
+                    }
+                } else {
+                    setMode(Mode.None)
+                }
+            }
+
+            override fun onEntityDoubleTap(editorElement: EditorElement) {
+                setCurrentSelection(editorElement)
+                if (editorElement.renderer is MultiLineTextRenderer) {
+                    setTextElement(editorElement, editorElement.renderer as ColorableRenderer, true)
+                }
+            }
+
+            private fun setTextElement(
+                editorElement: EditorElement,
+                colorableRenderer: ColorableRenderer,
+                startEditing: Boolean,
+            ) {
+                val color = colorableRenderer.color
+                setMode(Mode.Text, startEditing)
+                activeColor = color
+                if (startEditing) {
+                    startTextEntityEditing(editorElement, false)
+                }
+            }
+
+            private fun setCurrentSelection(selection: EditorElement?) {
+                setSelectionState(currentSelection, false)
+                currentSelection = selection
+                setSelectionState(currentSelection, true)
+                binding.imageEditorView.invalidate()
+            }
+
+            private fun setSelectionState(
+                editorElement: EditorElement?,
+                selected: Boolean,
+            ) {
+                if (editorElement != null && editorElement.renderer is SelectableRenderer) {
+                    (editorElement.renderer as SelectableRenderer).onSelected(selected)
+                }
+                binding.imageEditorView.model.setSelected(if (selected) editorElement else null)
             }
         }
-
-        private fun setTextElement(editorElement: EditorElement, colorableRenderer: ColorableRenderer, startEditing: Boolean) {
-            val color = colorableRenderer.color
-            setMode(Mode.Text, startEditing)
-            activeColor = color
-            if (startEditing) {
-                startTextEntityEditing(editorElement, false)
-            }
-        }
-
-        private fun setCurrentSelection(selection: EditorElement?) {
-            setSelectionState(currentSelection, false)
-            currentSelection = selection
-            setSelectionState(currentSelection, true)
-            binding.imageEditorView.invalidate()
-        }
-
-        private fun setSelectionState(editorElement: EditorElement?, selected: Boolean) {
-            if (editorElement != null && editorElement.renderer is SelectableRenderer) {
-                (editorElement.renderer as SelectableRenderer).onSelected(selected)
-            }
-            binding.imageEditorView.model.setSelected(if (selected) editorElement else null)
-        }
-    }
 
     enum class Mode {
-        None, Crop, Text, Draw, Delete,
+        None,
+        Crop,
+        Text,
+        Draw,
+        Delete,
     }
 }

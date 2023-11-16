@@ -83,9 +83,10 @@ fun NotificationsPage() {
         backgroundColor = MixinAppTheme.colors.backgroundWindow,
     ) {
         Column(
-            modifier = Modifier
-                .padding(it)
-                .verticalScroll(rememberScrollState()),
+            modifier =
+                Modifier
+                    .padding(it)
+                    .verticalScroll(rememberScrollState()),
         ) {
             TransferNotificationItem()
             TransferLargeAmountItem()
@@ -112,12 +113,13 @@ fun NotificationsPage() {
                 trailing = {
                     Switch(
                         checked = duplicateTransferSelected,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = MixinAppTheme.colors.accent,
-                            uncheckedThumbColor = MixinAppTheme.colors.unchecked,
-                            checkedTrackColor = MixinAppTheme.colors.accent,
-                            uncheckedTrackColor = MixinAppTheme.colors.unchecked,
-                        ),
+                        colors =
+                            SwitchDefaults.colors(
+                                checkedThumbColor = MixinAppTheme.colors.accent,
+                                uncheckedThumbColor = MixinAppTheme.colors.unchecked,
+                                checkedTrackColor = MixinAppTheme.colors.accent,
+                                uncheckedTrackColor = MixinAppTheme.colors.unchecked,
+                            ),
                         onCheckedChange = null,
                     )
                 },
@@ -138,12 +140,13 @@ fun NotificationsPage() {
                 trailing = {
                     Switch(
                         checked = strangerTransferChecked,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = MixinAppTheme.colors.accent,
-                            uncheckedThumbColor = MixinAppTheme.colors.unchecked,
-                            checkedTrackColor = MixinAppTheme.colors.accent,
-                            uncheckedTrackColor = MixinAppTheme.colors.unchecked,
-                        ),
+                        colors =
+                            SwitchDefaults.colors(
+                                checkedThumbColor = MixinAppTheme.colors.accent,
+                                uncheckedThumbColor = MixinAppTheme.colors.unchecked,
+                                checkedTrackColor = MixinAppTheme.colors.accent,
+                                uncheckedTrackColor = MixinAppTheme.colors.unchecked,
+                            ),
                         onCheckedChange = null,
                     )
                 },
@@ -191,13 +194,14 @@ private fun NotificationItem(
 ) {
     Column {
         Row(
-            modifier = Modifier
-                .clickable {
-                    onClick()
-                }
-                .height(60.dp)
-                .background(color = MixinAppTheme.colors.background)
-                .padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .clickable {
+                        onClick()
+                    }
+                    .height(60.dp)
+                    .background(color = MixinAppTheme.colors.background)
+                    .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -207,20 +211,22 @@ private fun NotificationItem(
             )
             Spacer(Modifier.weight(1f))
             ProvideTextStyle(
-                value = TextStyle(
-                    color = MixinAppTheme.colors.textSubtitle,
-                    fontSize = 13.sp,
-                ),
+                value =
+                    TextStyle(
+                        color = MixinAppTheme.colors.textSubtitle,
+                        fontSize = 13.sp,
+                    ),
             ) {
                 trailing()
             }
         }
         if (description != null) {
             Text(
-                modifier = Modifier
-                    .background(color = MixinAppTheme.colors.backgroundWindow)
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, top = 8.dp, bottom = 16.dp, end = 16.dp),
+                modifier =
+                    Modifier
+                        .background(color = MixinAppTheme.colors.backgroundWindow)
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, top = 8.dp, bottom = 16.dp, end = 16.dp),
                 text = description,
                 fontSize = 13.sp,
                 color = MixinAppTheme.colors.textSubtitle,
@@ -231,12 +237,14 @@ private fun NotificationItem(
 
 @Composable
 private fun TransferNotificationItem() {
-    val accountSymbol = remember {
-        Fiats.getSymbol()
-    }
-    val threshold = remember {
-        mutableStateOf(Session.getAccount()!!.transferNotificationThreshold)
-    }
+    val accountSymbol =
+        remember {
+            Fiats.getSymbol()
+        }
+    val threshold =
+        remember {
+            mutableStateOf(Session.getAccount()!!.transferNotificationThreshold)
+        }
 
     var showEditDialog by remember {
         mutableStateOf(false)
@@ -317,12 +325,14 @@ private fun TransferNotificationItem() {
 
 @Composable
 private fun TransferLargeAmountItem() {
-    val accountSymbol = remember {
-        Fiats.getSymbol()
-    }
-    val threshold = remember {
-        mutableStateOf(Session.getAccount()!!.transferConfirmationThreshold)
-    }
+    val accountSymbol =
+        remember {
+            Fiats.getSymbol()
+        }
+    val threshold =
+        remember {
+            mutableStateOf(Session.getAccount()!!.transferConfirmationThreshold)
+        }
 
     var showEditDialog by remember {
         mutableStateOf(false)
@@ -343,17 +353,18 @@ private fun TransferLargeAmountItem() {
             showEditDialog = true
         },
         title = stringResource(R.string.Transfer_Notifications),
-        description = if (threshold.value <= 0.0) {
-            stringResource(
-                R.string.setting_transfer_large_summary_greater,
-                "${accountSymbol}0",
-            )
-        } else {
-            stringResource(
-                R.string.setting_transfer_large_summary,
-                "$accountSymbol${threshold.value}",
-            )
-        },
+        description =
+            if (threshold.value <= 0.0) {
+                stringResource(
+                    R.string.setting_transfer_large_summary_greater,
+                    "${accountSymbol}0",
+                )
+            } else {
+                stringResource(
+                    R.string.setting_transfer_large_summary,
+                    "$accountSymbol${threshold.value}",
+                )
+            },
     )
 
     if (showEditDialog) {
@@ -421,30 +432,33 @@ private fun EditDialog(
     text: String = "",
     onConfirm: (String) -> Unit = {},
 ) {
-    val inputText = remember {
-        mutableStateOf(
-            TextFieldValue(
-                text = text,
-                selection = TextRange(text.length),
-            ),
-        )
-    }
-    Column(
-        modifier = Modifier
-            .background(
-                color = MixinAppTheme.colors.background,
-                shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
+    val inputText =
+        remember {
+            mutableStateOf(
+                TextFieldValue(
+                    text = text,
+                    selection = TextRange(text.length),
+                ),
             )
-            .padding(24.dp),
+        }
+    Column(
+        modifier =
+            Modifier
+                .background(
+                    color = MixinAppTheme.colors.background,
+                    shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
+                )
+                .padding(24.dp),
     ) {
         Text(
             text = title,
             color = MixinAppTheme.colors.textPrimary,
         )
 
-        val focusRequester = remember {
-            FocusRequester()
-        }
+        val focusRequester =
+            remember {
+                FocusRequester()
+            }
         val keyboardController = LocalSoftwareKeyboardController.current
 
         val interactionSource = remember { MutableInteractionSource() }
@@ -466,18 +480,21 @@ private fun EditDialog(
         BasicTextField(
             value = inputText.value,
             onValueChange = { inputText.value = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .focusRequester(focusRequester),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .focusRequester(focusRequester),
             interactionSource = interactionSource,
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Decimal,
-            ),
-            textStyle = TextStyle(
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textPrimary,
-            ),
+            keyboardOptions =
+                KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Decimal,
+                ),
+            textStyle =
+                TextStyle(
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textPrimary,
+                ),
             cursorBrush = SolidColor(MixinAppTheme.colors.accent),
         ) { innerTextField ->
             Box(contentAlignment = Alignment.CenterStart) {
@@ -492,10 +509,11 @@ private fun EditDialog(
             }
             Box(contentAlignment = Alignment.BottomCenter) {
                 Box(
-                    modifier = Modifier
-                        .height(1.5.dp)
-                        .fillMaxWidth()
-                        .background(color = if (hasFocus) MixinAppTheme.colors.accent else MixinAppTheme.colors.textSubtitle),
+                    modifier =
+                        Modifier
+                            .height(1.5.dp)
+                            .fillMaxWidth()
+                            .background(color = if (hasFocus) MixinAppTheme.colors.accent else MixinAppTheme.colors.textSubtitle),
                 )
             }
         }
@@ -508,10 +526,11 @@ private fun EditDialog(
             }) {
                 Text(
                     text = stringResource(R.string.Cancel),
-                    style = TextStyle(
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.accent,
-                    ),
+                    style =
+                        TextStyle(
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.accent,
+                        ),
                 )
             }
             TextButton(onClick = {
@@ -521,10 +540,11 @@ private fun EditDialog(
             }) {
                 Text(
                     text = stringResource(R.string.Save),
-                    style = TextStyle(
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.accent,
-                    ),
+                    style =
+                        TextStyle(
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.accent,
+                        ),
                 )
             }
         }

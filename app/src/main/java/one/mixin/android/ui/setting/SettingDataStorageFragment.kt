@@ -44,7 +44,10 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
 
     private val binding by viewBinding(FragmentStorageDataBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
@@ -88,13 +91,14 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
         refresh()
     }
 
-    private fun refresh() = lifecycleScope.launch {
-        binding.apply {
-            storageMobileInfo.text = getInfo(getAutoDownloadMobileValue())
-            storageWifiInfo.text = getInfo(getAutoDownloadWifiValue())
-            storageRoamingInfo.text = getInfo(getAutoDownloadRoamingValue())
+    private fun refresh() =
+        lifecycleScope.launch {
+            binding.apply {
+                storageMobileInfo.text = getInfo(getAutoDownloadMobileValue())
+                storageWifiInfo.text = getInfo(getAutoDownloadWifiValue())
+                storageRoamingInfo.text = getInfo(getAutoDownloadRoamingValue())
+            }
         }
-    }
 
     private suspend fun getInfo(value: Int): String {
         val list = mutableListOf<String>()
@@ -114,48 +118,55 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
     }
 
     private var menuDialog: AlertDialog? = null
-    private suspend fun showMenu(key: String, value: Int, @StringRes titleId: Int) {
+
+    private suspend fun showMenu(
+        key: String,
+        value: Int,
+        @StringRes titleId: Int,
+    ) {
         menuDialog?.dismiss()
-        val menuBinding = ViewStotageDataBinding.inflate(requireContext().layoutInflater, null, false).apply {
-            this.checkPhoto.apply {
-                setName(R.string.Photos)
-                isChecked = autoDownloadPhoto(value)
-            }
-            this.checkVideo.apply {
-                setName(R.string.Videos)
-                isChecked = autoDownloadVideo(value)
-            }
-            this.checkDocument.apply {
-                setName(R.string.Documents)
-                isChecked = autoDownloadDocument(value)
-            }
-        }
-        menuDialog = alertDialogBuilder()
-            .setTitle(titleId)
-            .setView(menuBinding.root)
-            .setNegativeButton(android.R.string.cancel) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                var localValue = 0
-                if (menuBinding.checkPhoto.isChecked) {
-                    localValue += (AUTO_DOWNLOAD_PHOTO)
+        val menuBinding =
+            ViewStotageDataBinding.inflate(requireContext().layoutInflater, null, false).apply {
+                this.checkPhoto.apply {
+                    setName(R.string.Photos)
+                    isChecked = autoDownloadPhoto(value)
                 }
-                if (menuBinding.checkVideo.isChecked) {
-                    localValue += (AUTO_DOWNLOAD_VIDEO)
+                this.checkVideo.apply {
+                    setName(R.string.Videos)
+                    isChecked = autoDownloadVideo(value)
                 }
-                if (menuBinding.checkDocument.isChecked) {
-                    localValue += (AUTO_DOWNLOAD_DOCUMENT)
+                this.checkDocument.apply {
+                    setName(R.string.Documents)
+                    isChecked = autoDownloadDocument(value)
                 }
-                lifecycleScope.launch {
-                    PropertyHelper.updateKeyValue(key, localValue)
-                    defaultSharedPreferences.putInt(key, localValue)
-                    refresh()
+            }
+        menuDialog =
+            alertDialogBuilder()
+                .setTitle(titleId)
+                .setView(menuBinding.root)
+                .setNegativeButton(android.R.string.cancel) { dialog, _ ->
                     dialog.dismiss()
                 }
-            }.create().apply {
-                this.window?.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT)
-            }
+                .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                    var localValue = 0
+                    if (menuBinding.checkPhoto.isChecked) {
+                        localValue += (AUTO_DOWNLOAD_PHOTO)
+                    }
+                    if (menuBinding.checkVideo.isChecked) {
+                        localValue += (AUTO_DOWNLOAD_VIDEO)
+                    }
+                    if (menuBinding.checkDocument.isChecked) {
+                        localValue += (AUTO_DOWNLOAD_DOCUMENT)
+                    }
+                    lifecycleScope.launch {
+                        PropertyHelper.updateKeyValue(key, localValue)
+                        defaultSharedPreferences.putInt(key, localValue)
+                        refresh()
+                        dialog.dismiss()
+                    }
+                }.create().apply {
+                    this.window?.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT)
+                }
         menuDialog?.show()
     }
 }

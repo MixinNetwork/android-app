@@ -18,7 +18,10 @@ fun getEncryptCipher(alias: String): Cipher {
     return cipher
 }
 
-fun getDecryptCipher(alias: String, iv: ByteArray): Cipher {
+fun getDecryptCipher(
+    alias: String,
+    iv: ByteArray,
+): Cipher {
     val cipher = Cipher.getInstance("AES/CBC/PKCS7Padding")
     cipher.init(Cipher.DECRYPT_MODE, getKeyByAlias(alias), IvParameterSpec(iv))
     return cipher
@@ -26,9 +29,10 @@ fun getDecryptCipher(alias: String, iv: ByteArray): Cipher {
 
 fun deleteKeyByAlias(alias: String): Boolean {
     try {
-        val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
-            load(null)
-        }
+        val ks: KeyStore =
+            KeyStore.getInstance("AndroidKeyStore").apply {
+                load(null)
+            }
         ks.deleteEntry(alias)
         return true
     } catch (e: Exception) {
@@ -41,9 +45,10 @@ private fun getKeyByAlias(
     alias: String,
     userAuthenticationRequired: Boolean = false,
 ): SecretKey? {
-    val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
-        load(null)
-    }
+    val ks: KeyStore =
+        KeyStore.getInstance("AndroidKeyStore").apply {
+            load(null)
+        }
     var key: SecretKey? = null
     try {
         key = ks.getKey(alias, null) as? SecretKey
@@ -55,16 +60,17 @@ private fun getKeyByAlias(
     }
     try {
         val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
-        val builder = KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-            .setBlockModes(
-                KeyProperties.BLOCK_MODE_CBC,
-                KeyProperties.BLOCK_MODE_CTR,
-                KeyProperties.BLOCK_MODE_GCM,
-            )
-            .setEncryptionPaddings(
-                KeyProperties.ENCRYPTION_PADDING_PKCS7,
-                KeyProperties.ENCRYPTION_PADDING_NONE,
-            )
+        val builder =
+            KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+                .setBlockModes(
+                    KeyProperties.BLOCK_MODE_CBC,
+                    KeyProperties.BLOCK_MODE_CTR,
+                    KeyProperties.BLOCK_MODE_GCM,
+                )
+                .setEncryptionPaddings(
+                    KeyProperties.ENCRYPTION_PADDING_PKCS7,
+                    KeyProperties.ENCRYPTION_PADDING_NONE,
+                )
         if (userAuthenticationRequired) {
             builder.setUserAuthenticationRequired(true).apply {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {

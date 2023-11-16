@@ -21,7 +21,6 @@ import one.mixin.android.widget.AndroidUtilities
 import kotlin.math.abs
 
 class SlidePanelView : RelativeLayout {
-
     private var blinkingDrawable: BlinkingDrawable? = null
     private var timeValue = 0
     private var toCanceled = false
@@ -38,9 +37,10 @@ class SlidePanelView : RelativeLayout {
         isClickable = true
 
         val blinkSize = context.resources.getDimensionPixelSize(R.dimen.blink_size)
-        blinkingDrawable = BlinkingDrawable(ContextCompat.getColor(context, R.color.color_blink)).apply {
-            setBounds(0, 0, blinkSize, blinkSize)
-        }
+        blinkingDrawable =
+            BlinkingDrawable(ContextCompat.getColor(context, R.color.color_blink)).apply {
+                setBounds(0, 0, blinkSize, blinkSize)
+            }
         binding.timeTv.setCompoundDrawables(blinkingDrawable, null, null, null)
         binding.cancelTv.setOnClickListener { callback?.onCancel() }
         binding.timeTv.text = 0L.formatMillis()
@@ -49,18 +49,19 @@ class SlidePanelView : RelativeLayout {
     fun onStart() {
         visibility = VISIBLE
         translationX = measuredWidth.toFloat()
-        val animSet = AnimatorSet().apply {
-            interpolator = DecelerateInterpolator()
-            duration = 200
-            addListener(
-                object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        blinkingDrawable?.blinking()
-                        postDelayed(updateTimeRunnable, 200)
-                    }
-                },
-            )
-        }
+        val animSet =
+            AnimatorSet().apply {
+                interpolator = DecelerateInterpolator()
+                duration = 200
+                addListener(
+                    object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            blinkingDrawable?.blinking()
+                            postDelayed(updateTimeRunnable, 200)
+                        }
+                    },
+                )
+            }
         animSet.playTogether(
             ObjectAnimator.ofFloat(this, "translationX", 0f),
             ObjectAnimator.ofFloat(this, "alpha", 1f),
@@ -88,10 +89,11 @@ class SlidePanelView : RelativeLayout {
     fun toCancel() {
         if (onEnding) return
 
-        val animSet = AnimatorSet().apply {
-            duration = 200
-            interpolator = DecelerateInterpolator()
-        }
+        val animSet =
+            AnimatorSet().apply {
+                duration = 200
+                interpolator = DecelerateInterpolator()
+            }
         animSet.playTogether(
             ObjectAnimator.ofFloat(binding.slideLl, "alpha", 0f),
             ObjectAnimator.ofFloat(binding.slideLl, "translationY", AndroidUtilities.dp(20f).toFloat()),
@@ -104,23 +106,24 @@ class SlidePanelView : RelativeLayout {
 
     fun onEnd() {
         onEnding = true
-        val animSet = AnimatorSet().apply {
-            interpolator = AccelerateInterpolator()
-            duration = 200
-            addListener(
-                object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        handleEnd()
-                        onEnding = false
-                    }
+        val animSet =
+            AnimatorSet().apply {
+                interpolator = AccelerateInterpolator()
+                duration = 200
+                addListener(
+                    object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            handleEnd()
+                            onEnding = false
+                        }
 
-                    override fun onAnimationCancel(animation: Animator) {
-                        handleEnd()
-                        onEnding = false
-                    }
-                },
-            )
-        }
+                        override fun onAnimationCancel(animation: Animator) {
+                            handleEnd()
+                            onEnding = false
+                        }
+                    },
+                )
+            }
         animSet.playTogether(
             ObjectAnimator.ofFloat(this, "translationX", measuredWidth.toFloat()),
             ObjectAnimator.ofFloat(this, "alpha", 0f),
@@ -157,6 +160,7 @@ class SlidePanelView : RelativeLayout {
 
     interface Callback {
         fun onTimeout()
+
         fun onCancel()
     }
 }

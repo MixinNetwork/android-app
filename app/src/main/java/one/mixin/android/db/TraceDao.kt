@@ -6,7 +6,6 @@ import one.mixin.android.vo.Trace
 
 @Dao
 interface TraceDao : BaseDao<Trace> {
-
     @Query("SELECT * FROM traces WHERE trace_id = :traceId")
     suspend fun suspendFindTraceById(traceId: String): Trace?
 
@@ -22,7 +21,13 @@ interface TraceDao : BaseDao<Trace> {
         LIMIT 1
         """,
     )
-    suspend fun suspendFindTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String): Trace?
+    suspend fun suspendFindTrace(
+        opponentId: String?,
+        destination: String?,
+        tag: String?,
+        amount: String,
+        assetId: String,
+    ): Trace?
 
     @Query(" DELETE FROM traces WHERE created_at <= date('now', '-6 hours')")
     suspend fun deletePreviousTraces()

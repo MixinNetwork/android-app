@@ -15,7 +15,7 @@ import one.mixin.android.vo.safe.TokenItem
 interface TokenDao : BaseDao<Token> {
     companion object {
         const val PREFIX_ASSET_ITEM =
-           """
+            """
             SELECT a1.asset_id AS assetId, a1.symbol, a1.name, a1.icon_url AS iconUrl, COALESCE(ae.balance,'0') as balance,
             d.destination as destination, d.tag as tag, a1.price_btc AS priceBtc, a1.price_usd AS priceUsd,
             a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden,
@@ -34,6 +34,7 @@ interface TokenDao : BaseDao<Token> {
         const val POSTFIX_ASSET_ITEM_NOT_HIDDEN =
             " WHERE ae.hidden IS NULL OR NOT ae.hidden$POSTFIX_ASSET_ITEM"
     }
+
     @Query("SELECT * FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id $POSTFIX")
     fun assets(): LiveData<List<Token>>
 
@@ -94,7 +95,10 @@ interface TokenDao : BaseDao<Token> {
             a1.price_usd*ae.balance DESC
         """,
     )
-    suspend fun fuzzySearchAsset(name: String, symbol: String): List<TokenItem>
+    suspend fun fuzzySearchAsset(
+        name: String,
+        symbol: String,
+    ): List<TokenItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
@@ -105,7 +109,10 @@ interface TokenDao : BaseDao<Token> {
             a1.price_usd*ae.balance DESC
         """,
     )
-    suspend fun fuzzySearchAssetIgnoreAmount(name: String, symbol: String): List<TokenItem>
+    suspend fun fuzzySearchAssetIgnoreAmount(
+        name: String,
+        symbol: String,
+    ): List<TokenItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :id")
@@ -145,7 +152,10 @@ interface TokenDao : BaseDao<Token> {
 
     // Todo replace
     @Query("SELECT a.* FROM assets a WHERE a.rowid > :rowId ORDER BY a.rowid ASC LIMIT :limit")
-    fun getAssetByLimitAndRowId(limit: Int, rowId: Long): List<Asset>
+    fun getAssetByLimitAndRowId(
+        limit: Int,
+        rowId: Long,
+    ): List<Asset>
 
     @Query("SELECT rowid FROM assets WHERE asset_id = :assetId")
     fun getAssetRowId(assetId: String): Long?

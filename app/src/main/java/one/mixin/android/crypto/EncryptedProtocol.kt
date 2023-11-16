@@ -6,7 +6,6 @@ import one.mixin.android.extension.toLeByteArray
 import java.util.UUID
 
 class EncryptedProtocol {
-
     fun encryptMessage(
         keyPair: EdKeyPair,
         plaintext: ByteArray,
@@ -36,19 +35,32 @@ class EncryptedProtocol {
         }
     }
 
-    private fun encryptCipherMessageKey(privateKey: ByteArray, publicKey: ByteArray, aesGcmKey: ByteArray): ByteArray {
+    private fun encryptCipherMessageKey(
+        privateKey: ByteArray,
+        publicKey: ByteArray,
+        aesGcmKey: ByteArray,
+    ): ByteArray {
         val private = privateKeyToCurve25519(privateKey)
         val sharedSecret = calculateAgreement(publicKey, private)
         return aesEncrypt(sharedSecret, aesGcmKey)
     }
 
-    private fun decryptCipherMessageKey(privateKey: ByteArray, publicKey: ByteArray, iv: ByteArray, ciphertext: ByteArray): ByteArray {
+    private fun decryptCipherMessageKey(
+        privateKey: ByteArray,
+        publicKey: ByteArray,
+        iv: ByteArray,
+        ciphertext: ByteArray,
+    ): ByteArray {
         val private = privateKeyToCurve25519(privateKey)
         val sharedSecret = calculateAgreement(publicKey, private)
         return aesDecrypt(sharedSecret, iv, ciphertext)
     }
 
-    fun decryptMessage(keyPair: EdKeyPair, sessionId: ByteArray, ciphertext: ByteArray): ByteArray {
+    fun decryptMessage(
+        keyPair: EdKeyPair,
+        sessionId: ByteArray,
+        ciphertext: ByteArray,
+    ): ByteArray {
         val sessionSize = leByteArrayToInt(ciphertext.slice(IntRange(1, 2)).toByteArray()).toInt()
         val senderPublicKey = ciphertext.slice(IntRange(3, 34)).toByteArray()
         var key: ByteArray? = null

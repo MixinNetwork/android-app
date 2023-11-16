@@ -37,7 +37,6 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 
 @AndroidEntryPoint
 class TextPreviewActivity : BlazeBaseActivity() {
-
     private lateinit var binding: ActivityPreviewTextBinding
 
     private val viewModel by viewModels<TextPreviewViewModel>()
@@ -100,48 +99,59 @@ class TextPreviewActivity : BlazeBaseActivity() {
                 binding.text.gravity = Gravity.CENTER_HORIZONTAL
             }
         }
-        binding.text.customSelectionActionModeCallback = object : ActionMode.Callback {
-            override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
-                val menuInflater: MenuInflater = mode.menuInflater
-                menuInflater.inflate(R.menu.text_preview_selection_action_menu, menu)
-                actionMode = mode
-                dismissWhenClickText = false
-                return true
-            }
+        binding.text.customSelectionActionModeCallback =
+            object : ActionMode.Callback {
+                override fun onCreateActionMode(
+                    mode: ActionMode,
+                    menu: Menu,
+                ): Boolean {
+                    val menuInflater: MenuInflater = mode.menuInflater
+                    menuInflater.inflate(R.menu.text_preview_selection_action_menu, menu)
+                    actionMode = mode
+                    dismissWhenClickText = false
+                    return true
+                }
 
-            override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-                return true
-            }
+                override fun onPrepareActionMode(
+                    mode: ActionMode?,
+                    menu: Menu?,
+                ): Boolean {
+                    return true
+                }
 
-            override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-                binding.text.text?.let { editable ->
-                    when (item.itemId) {
-                        android.R.id.copy -> {
-                            toast(R.string.copied_to_clipboard)
+                override fun onActionItemClicked(
+                    mode: ActionMode,
+                    item: MenuItem,
+                ): Boolean {
+                    binding.text.text?.let { editable ->
+                        when (item.itemId) {
+                            android.R.id.copy -> {
+                                toast(R.string.copied_to_clipboard)
+                            }
+                            R.id.forward -> {
+                                ForwardActivity.show(this@TextPreviewActivity, editable.toString())
+                            }
+                            else -> ""
                         }
-                        R.id.forward -> {
-                            ForwardActivity.show(this@TextPreviewActivity, editable.toString())
-                        }
-                        else -> ""
                     }
+                    dismissWhenClickText = true
+                    return false
                 }
-                dismissWhenClickText = true
-                return false
-            }
 
-            override fun onDestroyActionMode(mode: ActionMode?) {
-                actionMode = null
-            }
-        }
-        binding.text.listener = object : GestureDetector.SimpleOnGestureListener() {
-            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-                if (actionMode == null && dismissWhenClickText) {
-                    finish()
+                override fun onDestroyActionMode(mode: ActionMode?) {
+                    actionMode = null
                 }
-                dismissWhenClickText = true
-                return true
             }
-        }
+        binding.text.listener =
+            object : GestureDetector.SimpleOnGestureListener() {
+                override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                    if (actionMode == null && dismissWhenClickText) {
+                        finish()
+                    }
+                    dismissWhenClickText = true
+                    return true
+                }
+            }
         binding.root.setOnClickListener {
             if (actionMode == null) {
                 finish()
@@ -177,14 +187,20 @@ class TextPreviewActivity : BlazeBaseActivity() {
         const val ARGS_MESSAGE = "args_message"
         const val ARGS_CONTENT = "args_content"
 
-        fun show(context: Context, messageItem: MessageItem) {
+        fun show(
+            context: Context,
+            messageItem: MessageItem,
+        ) {
             Intent(context, TextPreviewActivity::class.java).apply {
                 putExtra(ARGS_MESSAGE, messageItem)
                 context.startActivity(this)
             }
         }
 
-        fun show(context: Context, content: String) {
+        fun show(
+            context: Context,
+            content: String,
+        ) {
             Intent(context, TextPreviewActivity::class.java).apply {
                 putExtra(ARGS_CONTENT, content)
                 context.startActivity(this)

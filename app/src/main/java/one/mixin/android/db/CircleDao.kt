@@ -13,7 +13,6 @@ import one.mixin.android.vo.ConversationMinimal
 
 @Dao
 interface CircleDao : BaseDao<Circle> {
-
     @Query(
         """
         SELECT c.* FROM circle_conversations cc

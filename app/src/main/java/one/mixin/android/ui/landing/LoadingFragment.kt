@@ -6,7 +6,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -40,10 +39,10 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
-
     companion object {
         const val TAG: String = "LoadingFragment"
 
@@ -56,49 +55,53 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
     private val loadingViewModel by viewModels<LoadingViewModel>()
     private val binding by viewBinding(FragmentLoadingBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         MixinApplication.get().isOnline.set(true)
         checkAndLoad()
     }
 
-    private fun checkAndLoad() = lifecycleScope.launch {
-        showLoading()
-
-        if (Session.shouldUpdateKey()) {
-            updateRsa2EdDsa()
+    private fun checkAndLoad() =
+        lifecycleScope.launch {
+            showLoading()
 
             if (Session.shouldUpdateKey()) {
-                showRetry()
-                return@launch
-            }
-        }
+                updateRsa2EdDsa()
 
-        if (!getIsLoaded(requireContext(), false)) {
-            load()
+                if (Session.shouldUpdateKey()) {
+                    showRetry()
+                    return@launch
+                }
+            }
 
             if (!getIsLoaded(requireContext(), false)) {
-                showRetry()
-                return@launch
-            }
-        }
+                load()
 
-        if (!getIsSyncSession(requireContext(), false)) {
-            syncSession()
+                if (!getIsLoaded(requireContext(), false)) {
+                    showRetry()
+                    return@launch
+                }
+            }
 
             if (!getIsSyncSession(requireContext(), false)) {
-                showRetry()
-                return@launch
-            }
-        }
+                syncSession()
 
-        jobManager.addJobInBackground(InitializeJob(TEAM_MIXIN_USER_ID, TEAM_MIXIN_USER_NAME))
-        if (TEAM_BOT_ID.isNotEmpty()) {
-            jobManager.addJobInBackground(InitializeJob(TEAM_BOT_ID, TEAM_BOT_NAME))
+                if (!getIsSyncSession(requireContext(), false)) {
+                    showRetry()
+                    return@launch
+                }
+            }
+
+            jobManager.addJobInBackground(InitializeJob(TEAM_MIXIN_USER_ID, TEAM_MIXIN_USER_NAME))
+            if (TEAM_BOT_ID.isNotEmpty()) {
+                jobManager.addJobInBackground(InitializeJob(TEAM_BOT_ID, TEAM_BOT_NAME))
+            }
+            MainActivity.show(requireContext())
+            activity?.finish()
         }
-        MainActivity.show(requireContext())
-        activity?.finish()
-    }
 
     private suspend fun updateRsa2EdDsa() {
         val sessionKey = generateEd25519KeyPair()

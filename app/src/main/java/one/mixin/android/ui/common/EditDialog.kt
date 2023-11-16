@@ -66,7 +66,10 @@ class EditDialog : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentBottomEditBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         binding.editEt.setText(editText)
@@ -75,11 +78,12 @@ class EditDialog : MixinBottomSheetDialogFragment() {
         editInputType?.let {
             binding.editEt.inputType = it
         }
-        val maxLines = if (editMaxLines > MAX_LINE) {
-            MAX_LINE.toInt()
-        } else {
-            editMaxLines
-        }
+        val maxLines =
+            if (editMaxLines > MAX_LINE) {
+                MAX_LINE.toInt()
+            } else {
+                editMaxLines
+            }
         if (maxLines == 1) {
             binding.editEt.isSingleLine = true
         }
@@ -96,15 +100,26 @@ class EditDialog : MixinBottomSheetDialogFragment() {
             object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {}
 
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    binding.editSave.isEnabled = when {
-                        s.isNullOrBlank() -> allowEmpty
-                        maxTextCount == -1 -> true
-                        else -> s.length <= maxTextCount
-                    }
+                override fun onTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    before: Int,
+                    count: Int,
+                ) {
+                    binding.editSave.isEnabled =
+                        when {
+                            s.isNullOrBlank() -> allowEmpty
+                            maxTextCount == -1 -> true
+                            else -> s.length <= maxTextCount
+                        }
                 }
 
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int,
+                ) {}
             },
         )
         binding.editCancel.setText(leftText)

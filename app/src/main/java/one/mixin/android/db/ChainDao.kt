@@ -13,5 +13,11 @@ interface ChainDao : BaseDao<Chain> {
     suspend fun getChains(): List<Chain>
 
     @Query("SELECT chain_id FROM chains WHERE chain_id = :chainId AND name = :name AND symbol = :symbol AND icon_url = :iconUrl AND threshold = :threshold")
-    suspend fun isExits(chainId: String, name: String, symbol: String, iconUrl: String, threshold: Int): String?
+    suspend fun isExits(
+        chainId: String,
+        name: String,
+        symbol: String,
+        iconUrl: String,
+        threshold: Int,
+    ): String?
 }

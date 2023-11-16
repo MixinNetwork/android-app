@@ -11,7 +11,6 @@ import one.mixin.android.ui.common.BlazeBaseActivity
 
 @AndroidEntryPoint
 class GroupActivity : BlazeBaseActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contact)
@@ -34,7 +33,12 @@ class GroupActivity : BlazeBaseActivity() {
         const val CREATE = 0
         const val INFO = 1
 
-        fun show(context: Context, type: Int = CREATE, conversationId: String? = null, expand: Boolean = false) {
+        fun show(
+            context: Context,
+            type: Int = CREATE,
+            conversationId: String? = null,
+            expand: Boolean = false,
+        ) {
             context.startActivity(
                 Intent(context, GroupActivity::class.java).apply {
                     putExtra(ARGS_TYPE, type)
@@ -47,7 +51,11 @@ class GroupActivity : BlazeBaseActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         super.onActivityResult(requestCode, resultCode, data)
         val newGroupFragment = supportFragmentManager.findFragmentByTag(NewGroupFragment.TAG)
         newGroupFragment?.onActivityResult(requestCode, resultCode, data)

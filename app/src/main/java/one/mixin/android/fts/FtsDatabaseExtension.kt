@@ -18,20 +18,23 @@ import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
 import one.mixin.android.vo.isFtsMessage
 
-fun FtsDatabase.deleteByMessageId(messageId: String) = runBlocking(FTS_THREAD) {
-    messageFtsDao().deleteMessageFtsByMessageId(messageId)
-    messageMetaDao().deleteMessageMetasByMessageId(messageId)
-}
+fun FtsDatabase.deleteByMessageId(messageId: String) =
+    runBlocking(FTS_THREAD) {
+        messageFtsDao().deleteMessageFtsByMessageId(messageId)
+        messageMetaDao().deleteMessageMetasByMessageId(messageId)
+    }
 
-fun FtsDatabase.deleteByMessageIds(messageIds: List<String>) = runBlocking(FTS_THREAD) {
-    messageFtsDao().deleteMessageMetasByMessageIds(messageIds)
-    messageMetaDao().deleteMessageMetasByMessageIds(messageIds)
-}
+fun FtsDatabase.deleteByMessageIds(messageIds: List<String>) =
+    runBlocking(FTS_THREAD) {
+        messageFtsDao().deleteMessageMetasByMessageIds(messageIds)
+        messageMetaDao().deleteMessageMetasByMessageIds(messageIds)
+    }
 
-fun FtsDatabase.deleteByConversationId(conversationId: String) = runBlocking(FTS_THREAD) {
-    messageFtsDao().deleteMessageMetasByConversationId(conversationId)
-    messageMetaDao().deleteMessageMetasByConversationId(conversationId)
-}
+fun FtsDatabase.deleteByConversationId(conversationId: String) =
+    runBlocking(FTS_THREAD) {
+        messageFtsDao().deleteMessageMetasByConversationId(conversationId)
+        messageMetaDao().deleteMessageMetasByConversationId(conversationId)
+    }
 
 private suspend fun FtsDatabase.insertMessageFts4(
     content: String,
@@ -51,19 +54,20 @@ private suspend fun FtsDatabase.insertMessageFts4(
 fun FtsDatabase.insertOrReplaceMessageFts4(message: Message) {
     // If the message is not a full-text search message, or its status is "FAILED" or "UNKNOWN", do not perform subsequent operations
     if (!message.isFtsMessage() || message.status == MessageStatus.FAILED.name || message.status == MessageStatus.UNKNOWN.name) return
-    val content = if (message.isContact() || message.isData()) {
-        message.name
-    } else if (message.isAppCard()) {
-        try {
-            val actionCard =
-                GsonHelper.customGson.fromJson(message.content, AppCardData::class.java)
-            "${actionCard.title} ${actionCard.description}"
-        } catch (e: Exception) {
-            null
+    val content =
+        if (message.isContact() || message.isData()) {
+            message.name
+        } else if (message.isAppCard()) {
+            try {
+                val actionCard =
+                    GsonHelper.customGson.fromJson(message.content, AppCardData::class.java)
+                "${actionCard.title} ${actionCard.description}"
+            } catch (e: Exception) {
+                null
+            }
+        } else {
+            message.content
         }
-    } else {
-        message.content
-    }
     val ftsContent = content?.joinWhiteSpace() ?: return
     runBlocking {
         insertMessageFts4(

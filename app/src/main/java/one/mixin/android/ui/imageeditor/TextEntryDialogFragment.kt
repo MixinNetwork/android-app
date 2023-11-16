@@ -23,7 +23,6 @@ import one.mixin.android.widget.imageeditor.model.EditorElement
 import one.mixin.android.widget.imageeditor.renderers.MultiLineTextRenderer
 
 class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_editor_text_entry_fragment) {
-
     private lateinit var hiddenTextEntry: HiddenEditText
     private lateinit var controller: Controller
     private lateinit var colorRv: RecyclerView
@@ -31,7 +30,10 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
     private val initColor by lazy { requireArguments().getInt("color") }
     private var activeColor = ColorPaletteAdapter.paletteColors[5]
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         controller = requireNotNull(findListener())
 
         hiddenTextEntry = HiddenEditText(requireContext())
@@ -71,16 +73,17 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
         val colorIndicator: ImageView = view.findViewById(R.id.color_indicator)
         colorIndicator.background = AppCompatResources.getDrawable(requireContext(), R.drawable.ic_color_preview)
 
-        val colorPaletteAdapter = ColorPaletteAdapter(
-            initColor,
-            onColorChanged = { c ->
-                activeColor = c
-                colorIndicator.drawable.colorFilter = SimpleColorFilter(c)
-                controller.onTextColorChange(c)
-            },
-        ).apply {
-            submitList(ColorPaletteAdapter.paletteColors)
-        }
+        val colorPaletteAdapter =
+            ColorPaletteAdapter(
+                initColor,
+                onColorChanged = { c ->
+                    activeColor = c
+                    colorIndicator.drawable.colorFilter = SimpleColorFilter(c)
+                    controller.onTextColorChange(c)
+                },
+            ).apply {
+                submitList(ColorPaletteAdapter.paletteColors)
+            }
         colorRv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
         colorRv.adapter = colorPaletteAdapter
     }
@@ -96,7 +99,12 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
 
     interface Controller {
         fun onTextEntryDialogDismissed(hasText: Boolean)
-        fun zoomToFitText(editorElement: EditorElement, textRenderer: MultiLineTextRenderer)
+
+        fun zoomToFitText(
+            editorElement: EditorElement,
+            textRenderer: MultiLineTextRenderer,
+        )
+
         fun onTextColorChange(color: Int)
     }
 
@@ -108,12 +116,13 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
             selectAll: Boolean,
             color: Int,
         ) {
-            val args = Bundle().apply {
-                putParcelable("element", editorElement)
-                putBoolean("incognito", isIncognitoEnabled)
-                putBoolean("selectAll", selectAll)
-                putInt("color", color)
-            }
+            val args =
+                Bundle().apply {
+                    putParcelable("element", editorElement)
+                    putBoolean("incognito", isIncognitoEnabled)
+                    putBoolean("selectAll", selectAll)
+                    putInt("color", color)
+                }
 
             TextEntryDialogFragment().apply {
                 arguments = args
@@ -123,5 +132,7 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
     }
 }
 
-class SimpleColorFilter(@ColorInt color: Int) :
+class SimpleColorFilter(
+    @ColorInt color: Int,
+) :
     PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP)

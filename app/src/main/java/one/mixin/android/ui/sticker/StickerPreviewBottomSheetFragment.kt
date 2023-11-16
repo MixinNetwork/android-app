@@ -30,6 +30,7 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
 
         @SuppressLint("StaticFieldLeak")
         private var instant: StickerPreviewBottomSheetFragment? = null
+
         fun newInstance(
             stickerId: String,
         ): StickerPreviewBottomSheetFragment {
@@ -39,9 +40,10 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
             }
             instant = null
             return StickerPreviewBottomSheetFragment().apply {
-                arguments = Bundle().apply {
-                    putString(EXTRA_STICKER_ID, stickerId)
-                }
+                arguments =
+                    Bundle().apply {
+                        putString(EXTRA_STICKER_ID, stickerId)
+                    }
                 instant = this
             }
         }
@@ -53,7 +55,10 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
     private var firstLoad = true
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -70,47 +75,52 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
                     LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
                 this.adapter = adapter
             }
-            adapter.stickerListener = object : StickerListener {
-                override fun onItemClick(sticker: Sticker) {
-                    previewIv.loadSticker(
+            adapter.stickerListener =
+                object : StickerListener {
+                    override fun onItemClick(sticker: Sticker) {
+                        previewIv.loadSticker(
+                            sticker.assetUrl,
+                            sticker.assetType,
+                            "${sticker.assetUrl}${sticker.albumId}",
+                        )
+                    }
+                }
+        }
+
+        val stickerLiveData = viewModel.observeStickerById(stickerId)
+        val observer =
+            object : Observer<Sticker> {
+                override fun onChanged(sticker: Sticker) {
+                    binding.previewIv.loadSticker(
                         sticker.assetUrl,
                         sticker.assetType,
                         "${sticker.assetUrl}${sticker.albumId}",
                     )
-                }
-            }
-        }
 
-        val stickerLiveData = viewModel.observeStickerById(stickerId)
-        val observer = object : Observer<Sticker> {
-            override fun onChanged(sticker: Sticker) {
-                binding.previewIv.loadSticker(
-                    sticker.assetUrl,
-                    sticker.assetType,
-                    "${sticker.assetUrl}${sticker.albumId}",
-                )
-
-                val albumId = sticker.albumId
-                if (albumId.isNullOrBlank()) {
-                    return
-                }
-                stickerLiveData.removeObserver(this)
-
-                lifecycleScope.launch {
-                    val personalAlbumId = viewModel.findPersonalAlbumId()
-                    if (personalAlbumId == albumId) {
-                        return@launch
+                    val albumId = sticker.albumId
+                    if (albumId.isNullOrBlank()) {
+                        return
                     }
+                    stickerLiveData.removeObserver(this)
 
-                    observeAlbum(albumId, adapter)
+                    lifecycleScope.launch {
+                        val personalAlbumId = viewModel.findPersonalAlbumId()
+                        if (personalAlbumId == albumId) {
+                            return@launch
+                        }
+
+                        observeAlbum(albumId, adapter)
+                    }
                 }
             }
-        }
         stickerLiveData.observe(this, observer)
         viewModel.refreshStickerAndRelatedAlbum(stickerId)
     }
 
-    private fun observeAlbum(albumId: String, adapter: StickerAdapter) {
+    private fun observeAlbum(
+        albumId: String,
+        adapter: StickerAdapter,
+    ) {
         viewModel.observeSystemAlbumById(albumId)
             .observe(this@StickerPreviewBottomSheetFragment) albumObserve@{ album ->
                 if (album == null) return@albumObserve

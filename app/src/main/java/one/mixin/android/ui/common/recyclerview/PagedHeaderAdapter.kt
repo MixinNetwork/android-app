@@ -32,11 +32,12 @@ abstract class PagedHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallback<T
         if (isShowHeader()) super.getItemCount() + 1 else super.getItemCount()
 
     protected fun getPos(position: Int): Int {
-        var pos = if (isShowHeader()) {
-            position - 1
-        } else {
-            position
-        }
+        var pos =
+            if (isShowHeader()) {
+                position - 1
+            } else {
+                position
+            }
         if (pos < 0) {
             pos = 0
         }
@@ -46,7 +47,10 @@ abstract class PagedHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallback<T
     protected fun isShowHeader() = headerView != null && showHeader
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setShowHeader(show: Boolean, rv: RecyclerView) {
+    fun setShowHeader(
+        show: Boolean,
+        rv: RecyclerView,
+    ) {
         if (show != showHeader) {
             showHeader = show
             rv.swapAdapter(this, false)
@@ -66,23 +70,34 @@ abstract class PagedHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallback<T
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): RecyclerView.ViewHolder {
         return (
             if (viewType == TYPE_HEADER) {
                 getHeaderViewHolder(parent.context, parent)
             } else {
                 getNormalViewHolder(parent.context, parent)
             }
-            )
+        )
     }
 
-    open fun getHeaderViewHolder(context: Context, parent: ViewGroup) = HeadHolder(headerView!!)
-    abstract fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder
+    open fun getHeaderViewHolder(
+        context: Context,
+        parent: ViewGroup,
+    ) = HeadHolder(headerView!!)
+
+    abstract fun getNormalViewHolder(
+        context: Context,
+        parent: ViewGroup,
+    ): NormalHolder
 
     open class HeadHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     interface OnItemListener<in T> {
         fun onNormalItemClick(item: T)
+
         fun onNormalLongClick(item: T): Boolean
     }
 }

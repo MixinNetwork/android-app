@@ -8,7 +8,6 @@ import one.mixin.android.db.BaseDao
 
 @Dao
 interface PreKeyDao : BaseDao<PreKey> {
-
     @Transaction
     @Query("SELECT * FROM prekeys WHERE prekey_id = :preKeyId")
     fun getPreKey(preKeyId: Int): PreKey?

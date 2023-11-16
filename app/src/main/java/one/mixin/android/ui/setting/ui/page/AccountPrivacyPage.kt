@@ -82,12 +82,13 @@ fun AccountPrivacyPage() {
                 trailing = {
                     Switch(
                         checked = incognitoEnable,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = MixinAppTheme.colors.accent,
-                            uncheckedThumbColor = MixinAppTheme.colors.unchecked,
-                            checkedTrackColor = MixinAppTheme.colors.accent,
-                            uncheckedTrackColor = MixinAppTheme.colors.unchecked,
-                        ),
+                        colors =
+                            SwitchDefaults.colors(
+                                checkedThumbColor = MixinAppTheme.colors.accent,
+                                uncheckedThumbColor = MixinAppTheme.colors.unchecked,
+                                checkedTrackColor = MixinAppTheme.colors.accent,
+                                uncheckedTrackColor = MixinAppTheme.colors.unchecked,
+                            ),
                         onCheckedChange = null,
                     )
                 },
@@ -107,14 +108,16 @@ fun AccountPrivacyPage() {
                         defaultValue = -1,
                     )
                 Text(
-                    text = stringResource(
-                        id = when (fingerprintLock) {
-                            0 -> R.string.Enable_immediately
-                            1 -> R.string.Enable_after_1_minute
-                            2 -> R.string.Enable_after_30_minutes
-                            else -> R.string.Disabled
-                        },
-                    ),
+                    text =
+                        stringResource(
+                            id =
+                                when (fingerprintLock) {
+                                    0 -> R.string.Enable_immediately
+                                    1 -> R.string.Enable_after_1_minute
+                                    2 -> R.string.Enable_after_30_minutes
+                                    else -> R.string.Disabled
+                                },
+                        ),
                 )
             },
         ) {

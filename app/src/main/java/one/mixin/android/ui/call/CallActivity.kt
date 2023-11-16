@@ -11,7 +11,6 @@ import one.mixin.android.ui.common.BaseActivity
 
 @AndroidEntryPoint
 class CallActivity : BaseActivity() {
-
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_Call
     }
@@ -51,7 +50,10 @@ class CallActivity : BaseActivity() {
         const val CHANNEL_PIP_PERMISSION = "channel_pip_permission"
         const val ID_PIP_PERMISSION = 313389
 
-        fun show(context: Context, join: Boolean = false) {
+        fun show(
+            context: Context,
+            join: Boolean = false,
+        ) {
             Intent(context, CallActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)

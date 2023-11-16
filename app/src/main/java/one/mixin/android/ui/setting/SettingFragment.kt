@@ -29,7 +29,10 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
     private val viewModel by viewModels<SettingViewModel>()
     private val binding by viewBinding(FragmentSettingBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener {
             activity?.onBackPressedDispatcher?.onBackPressed()

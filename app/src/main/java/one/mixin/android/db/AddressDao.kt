@@ -7,7 +7,6 @@ import one.mixin.android.vo.Address
 
 @Dao
 interface AddressDao : BaseDao<Address> {
-
     @Query("SELECT * FROM addresses WHERE asset_id = :id ORDER BY updated_at DESC")
     fun addresses(id: String): LiveData<List<Address>>
 
@@ -21,5 +20,8 @@ interface AddressDao : BaseDao<Address> {
     fun observeById(id: String): LiveData<Address>
 
     @Query("SELECT * FROM addresses WHERE address_id = :addressId AND asset_id = :assetId")
-    suspend fun findAddressById(addressId: String, assetId: String): Address?
+    suspend fun findAddressById(
+        addressId: String,
+        assetId: String,
+    ): Address?
 }

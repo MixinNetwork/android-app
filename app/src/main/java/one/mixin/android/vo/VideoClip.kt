@@ -10,7 +10,10 @@ class VideoClip(
 
 fun VideoClip.toJson(): String = GsonHelper.customGson.toJson(this)
 
-fun toVideoClip(content: String?, mediaUrl: String?): VideoClip {
+fun toVideoClip(
+    content: String?,
+    mediaUrl: String?,
+): VideoClip {
     return if (content != null) {
         try {
             GsonHelper.customGson.fromJson(content, VideoClip::class.java)

@@ -21,7 +21,10 @@ class MediaAdapter(private val onClickListener: (imageView: View, messageItem: M
     SharedMediaHeaderAdapter<MediaHolder>() {
     var size: Int = 0
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         MediaHolder(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_media,
@@ -30,7 +33,10 @@ class MediaAdapter(private val onClickListener: (imageView: View, messageItem: M
             ),
         )
 
-    override fun onBindViewHolder(holder: MediaHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: MediaHolder,
+        position: Int,
+    ) {
         getItem(position)?.let {
             holder.bind(it, size, onClickListener, onLongClickListener)
         }

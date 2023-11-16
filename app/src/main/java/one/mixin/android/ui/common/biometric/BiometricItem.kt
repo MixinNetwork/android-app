@@ -2,9 +2,9 @@ package one.mixin.android.ui.common.biometric
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 
 @Parcelize

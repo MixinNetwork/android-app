@@ -8,6 +8,7 @@ import one.mixin.android.extension.timeAgoDay
 
 class MediaHeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val binding = ItemTransactionHeaderBinding.bind(itemView)
+
     fun bind(time: String) {
         binding.dateTv.timeAgoDay(time, itemView.context.getString(R.string.date_format_date))
     }

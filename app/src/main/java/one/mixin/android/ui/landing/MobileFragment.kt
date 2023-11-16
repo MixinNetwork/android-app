@@ -49,7 +49,6 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
-
     companion object {
         const val TAG: String = "MobileFragment"
         const val ARGS_PHONE_NUM = "args_phone_num"
@@ -58,14 +57,18 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         const val FROM_CHANGE_PHONE_ACCOUNT = 1
         const val FROM_DELETE_ACCOUNT = 2
 
-        fun newInstance(pin: String? = null, from: Int = FROM_LANDING): MobileFragment =
+        fun newInstance(
+            pin: String? = null,
+            from: Int = FROM_LANDING,
+        ): MobileFragment =
             MobileFragment().apply {
-                val b = Bundle().apply {
-                    if (pin != null) {
-                        putString(ARGS_PIN, pin)
+                val b =
+                    Bundle().apply {
+                        if (pin != null) {
+                            putString(ARGS_PIN, pin)
+                        }
+                        putInt(ARGS_FROM, from)
                     }
-                    putInt(ARGS_FROM, from)
-                }
                 arguments = b
             }
     }
@@ -96,7 +99,10 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     }
 
     @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             pin = requireArguments().getString(ARGS_PIN)
@@ -175,22 +181,23 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         binding.mobileFab.show()
         binding.mobileCover.visibility = VISIBLE
         val phoneNum = anonymousNumber ?: phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
-        val verificationRequest = VerificationRequest(
-            phoneNum,
-            when (from) {
-                FROM_DELETE_ACCOUNT -> {
-                    VerificationPurpose.DEACTIVATED.name
-                }
+        val verificationRequest =
+            VerificationRequest(
+                phoneNum,
+                when (from) {
+                    FROM_DELETE_ACCOUNT -> {
+                        VerificationPurpose.DEACTIVATED.name
+                    }
 
-                FROM_CHANGE_PHONE_ACCOUNT -> {
-                    VerificationPurpose.PHONE.name
-                }
+                    FROM_CHANGE_PHONE_ACCOUNT -> {
+                        VerificationPurpose.PHONE.name
+                    }
 
-                else -> {
-                    VerificationPurpose.SESSION.name
-                }
-            },
-        )
+                    else -> {
+                        VerificationPurpose.SESSION.name
+                    }
+                },
+            )
         if (captchaResponse != null) {
             if (captchaResponse.first.isG()) {
                 verificationRequest.gRecaptchaResponse = captchaResponse.second
@@ -248,27 +255,29 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             )
     }
 
-    private fun initAndLoadCaptcha() = lifecycleScope.launch {
-        if (captchaView == null) {
-            captchaView = CaptchaView(
-                requireContext(),
-                object : CaptchaView.Callback {
-                    override fun onStop() {
-                        if (viewDestroyed()) return
+    private fun initAndLoadCaptcha() =
+        lifecycleScope.launch {
+            if (captchaView == null) {
+                captchaView =
+                    CaptchaView(
+                        requireContext(),
+                        object : CaptchaView.Callback {
+                            override fun onStop() {
+                                if (viewDestroyed()) return
 
-                        binding.mobileFab.hide()
-                        binding.mobileCover.visibility = GONE
-                    }
+                                binding.mobileFab.hide()
+                                binding.mobileCover.visibility = GONE
+                            }
 
-                    override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
-                        requestSend(value)
-                    }
-                },
-            )
-            (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
+                            override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
+                                requestSend(value)
+                            }
+                        },
+                    )
+                (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
+            }
+            captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
         }
-        captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
-    }
 
     private fun hideLoading() {
         if (viewDestroyed()) return
@@ -292,16 +301,17 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             mobileEt.setSelection(mobileText.length)
             val dialCode = country.dialCode
             val number = country.dialCode + mobileText
-            val valid = if (dialCode == xinDialCode) {
-                val r = isAnonymousNumber(number, dialCode)
-                anonymousNumber = if (r) number else null
-                r
-            } else {
-                anonymousNumber = null
-                val validResult = isValidNumber(phoneUtil, number, country.code, country.dialCode)
-                phoneNumber = validResult.second
-                validResult.first
-            }
+            val valid =
+                if (dialCode == xinDialCode) {
+                    val r = isAnonymousNumber(number, dialCode)
+                    anonymousNumber = if (r) number else null
+                    r
+                } else {
+                    anonymousNumber = null
+                    val validResult = isValidNumber(phoneUtil, number, country.code, country.dialCode)
+                    phoneNumber = validResult.second
+                    validResult.first
+                }
             mobileFab.isVisible = (countryCodeEt.text?.length ?: 0) > 1 && mobileText.isNotEmpty() && valid
         }
     }
@@ -354,7 +364,10 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener =
         object : Keyboard.OnClickKeyboardListener {
-            override fun onKeyClick(position: Int, value: String) {
+            override fun onKeyClick(
+                position: Int,
+                value: String,
+            ) {
                 context?.tickVibrate()
                 if (viewDestroyed()) {
                     return
@@ -429,7 +442,10 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                 }
             }
 
-            override fun onLongClick(position: Int, value: String) {
+            override fun onLongClick(
+                position: Int,
+                value: String,
+            ) {
                 context?.clickVibrate()
                 if (viewDestroyed()) {
                     return
@@ -471,51 +487,74 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             }
         }
 
-    private val countryCodeWatcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
+    private val countryCodeWatcher: TextWatcher =
+        object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {
+            }
 
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        }
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {
+            }
 
-        override fun afterTextChanged(s: Editable?) {
-            val et = binding.countryCodeEt
-            if (!s.toString().startsWith("+")) {
-                et.setText("+")
-                Selection.setSelection(et.text, et.text?.length ?: 0)
-            }
-            val dialCode = et.text.toString()
-            val country = if (dialCode == xinDialCode) {
-                mixinCountry
-            } else {
-                countryPicker.getCountryByDialCode(dialCode)
-            }
-            if (mCountry?.dialCode == country?.dialCode) {
-                handleEditView()
-                return
-            }
-            mCountry = country
-            binding.apply {
-                if (country == null) {
-                    countryIconIv.setImageResource(R.drawable.ic_arrow_down_info)
-                } else {
-                    countryIconIv.setImageResource(country.flag)
+            override fun afterTextChanged(s: Editable?) {
+                val et = binding.countryCodeEt
+                if (!s.toString().startsWith("+")) {
+                    et.setText("+")
+                    Selection.setSelection(et.text, et.text?.length ?: 0)
                 }
+                val dialCode = et.text.toString()
+                val country =
+                    if (dialCode == xinDialCode) {
+                        mixinCountry
+                    } else {
+                        countryPicker.getCountryByDialCode(dialCode)
+                    }
+                if (mCountry?.dialCode == country?.dialCode) {
+                    handleEditView()
+                    return
+                }
+                mCountry = country
+                binding.apply {
+                    if (country == null) {
+                        countryIconIv.setImageResource(R.drawable.ic_arrow_down_info)
+                    } else {
+                        countryIconIv.setImageResource(country.flag)
+                    }
+                }
+                updateMobileOrAnonymous(dialCode)
+                handleEditView()
             }
-            updateMobileOrAnonymous(dialCode)
-            handleEditView()
-        }
-    }
-
-    private val mWatcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
         }
 
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        }
+    private val mWatcher: TextWatcher =
+        object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {
+            }
 
-        override fun afterTextChanged(s: Editable?) {
-            handleEditView()
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                handleEditView()
+            }
         }
-    }
 }

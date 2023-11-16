@@ -47,9 +47,10 @@ suspend fun parseExternalTransferUri(
     if (amount != amountBD.toPlainString()) {
         return null
     }
-    val memo = uri.getQueryParameter("memo")?.run {
-        Uri.decode(this)
-    }
+    val memo =
+        uri.getQueryParameter("memo")?.run {
+            Uri.decode(this)
+        }
     return ExternalTransfer(addressFeeResponse.destination, amount, assetId, addressFeeResponse.fee.toBigDecimalOrNull(), memo)
 }
 

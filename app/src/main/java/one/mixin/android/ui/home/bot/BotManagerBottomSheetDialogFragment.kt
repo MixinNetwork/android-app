@@ -54,6 +54,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock.OnDockListener {
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
+
     companion object {
         const val TAG = "BorManagerBottomSheetDialogFragment"
     }
@@ -79,7 +80,10 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
     private val binding get() = requireNotNull(_binding)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         _binding = FragmentBotManagerBinding.inflate(LayoutInflater.from(context), null, false)
         contentView = binding.root

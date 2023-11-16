@@ -37,10 +37,11 @@ class FloatingAvatarsView : ViewGroup {
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.AvatarsView)
 
-        borderWidth = ta.getDimensionPixelSize(
-            R.styleable.AvatarsView_avatar_border_width,
-            DEFAULT_BORDER_WIDTH,
-        )
+        borderWidth =
+            ta.getDimensionPixelSize(
+                R.styleable.AvatarsView_avatar_border_width,
+                DEFAULT_BORDER_WIDTH,
+            )
         borderColor = ta.getColor(R.styleable.AvatarsView_avatar_border_color, DEFAULT_BORDER_COLOR)
         avatarSize =
             ta.getDimensionPixelSize(R.styleable.AvatarsView_avatar_size, DEFAULT_AVATAR_SIZE)
@@ -54,7 +55,11 @@ class FloatingAvatarsView : ViewGroup {
         initWithList()
     }
 
-    fun initParams(borderWith: Int, avatarSize: Int, borderColor: Int) {
+    fun initParams(
+        borderWith: Int,
+        avatarSize: Int,
+        borderColor: Int,
+    ) {
         this.borderWidth = borderWith.dp
         this.avatarSize = avatarSize.dp
         this.borderColor = borderColor
@@ -65,12 +70,16 @@ class FloatingAvatarsView : ViewGroup {
         requestLayout()
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val parentWidth = if (isOver()) {
-            avatarSize * (1 + 1 / 3f + (1 / 6f) * 3)
-        } else {
-            avatarSize + (childCount - 1) * avatarSize * ratio
-        }
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
+        val parentWidth =
+            if (isOver()) {
+                avatarSize * (1 + 1 / 3f + (1 / 6f) * 3)
+            } else {
+                avatarSize + (childCount - 1) * avatarSize * ratio
+            }
         setMeasuredDimension(
             MeasureSpec.makeMeasureSpec(parentWidth.toInt(), MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY),
@@ -85,20 +94,27 @@ class FloatingAvatarsView : ViewGroup {
         }
     }
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+    override fun onLayout(
+        changed: Boolean,
+        l: Int,
+        t: Int,
+        r: Int,
+        b: Int,
+    ) {
         val offset = avatarSize * ratio
         val overOffset = avatarSize * overRatio
         val overSize = isOver()
         for (i in 0 until childCount) {
             val c = getChildAt(i)
-            val itemOffset: Float = if (overSize) {
-                when (i) {
-                    0, 1, 2, 3 -> overOffset * i
-                    else -> overOffset * 3 + offset
+            val itemOffset: Float =
+                if (overSize) {
+                    when (i) {
+                        0, 1, 2, 3 -> overOffset * i
+                        else -> overOffset * 3 + offset
+                    }
+                } else {
+                    i * avatarSize * ratio
                 }
-            } else {
-                i * avatarSize * ratio
-            }
             if (rtl) {
                 c.layout(
                     (itemOffset).toInt(),
@@ -125,19 +141,21 @@ class FloatingAvatarsView : ViewGroup {
         val takeCount = if (overSize) MAX_VISIBLE_COUNT - 1 else data.size
         if (overSize) {
             for (i in 0..2) {
-                val overImageView = ImageView(context).apply {
-                    setBackgroundResource(R.drawable.bg_multisigs_gray)
-                }
+                val overImageView =
+                    ImageView(context).apply {
+                        setBackgroundResource(R.drawable.bg_multisigs_gray)
+                    }
                 addView(overImageView)
             }
         }
         data.toMutableList()
             .take(takeCount)
             .forEachReversedWithIndex { _, t ->
-                val circleView = CircleImageView(context).apply {
-                    borderWidth = this@FloatingAvatarsView.borderWidth
-                    borderColor = this@FloatingAvatarsView.borderColor
-                }
+                val circleView =
+                    CircleImageView(context).apply {
+                        borderWidth = this@FloatingAvatarsView.borderWidth
+                        borderColor = this@FloatingAvatarsView.borderColor
+                    }
                 addView(circleView)
                 circleView.loadImage(t, R.drawable.ic_link_place_holder, true)
             }

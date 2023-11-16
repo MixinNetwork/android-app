@@ -128,7 +128,11 @@ fun ICategory.canRecall(): Boolean {
         type == MessageCategory.ENCRYPTED_TRANSCRIPT.name
 }
 
-fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: String?): String? {
+fun ICategory.absolutePath(
+    context: Context,
+    conversationId: String,
+    mediaUrl: String?,
+): String? {
     if (mediaUrl == null) return null
     if (isLive()) {
         return mediaUrl
@@ -156,22 +160,26 @@ private fun generatePath(
     mediaUrl: String,
 ): File? {
     return when {
-        iCategory.isImage() -> File(
-            context.getImagePath(legacy).generateConversationPath(conversationId),
-            mediaUrl,
-        )
-        iCategory.isVideo() -> File(
-            context.getVideoPath(legacy).generateConversationPath(conversationId),
-            mediaUrl,
-        )
-        iCategory.isAudio() -> File(
-            context.getAudioPath(legacy).generateConversationPath(conversationId),
-            mediaUrl,
-        )
-        iCategory.isData() -> File(
-            context.getDocumentPath(legacy).generateConversationPath(conversationId),
-            mediaUrl,
-        )
+        iCategory.isImage() ->
+            File(
+                context.getImagePath(legacy).generateConversationPath(conversationId),
+                mediaUrl,
+            )
+        iCategory.isVideo() ->
+            File(
+                context.getVideoPath(legacy).generateConversationPath(conversationId),
+                mediaUrl,
+            )
+        iCategory.isAudio() ->
+            File(
+                context.getAudioPath(legacy).generateConversationPath(conversationId),
+                mediaUrl,
+            )
+        iCategory.isData() ->
+            File(
+                context.getDocumentPath(legacy).generateConversationPath(conversationId),
+                mediaUrl,
+            )
         iCategory.isTranscript() -> File(context.getTranscriptDirPath(legacy), mediaUrl)
         else -> null
     }

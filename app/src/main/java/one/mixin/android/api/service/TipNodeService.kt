@@ -12,11 +12,19 @@ import retrofit2.http.Path
 
 interface TipNodeService {
     @POST("/{path}")
-    suspend fun sign(@Body tipSignRequest: TipSignRequest, @Path(value = "path", encoded = true) path: String): Response<TipSignResponse>
+    suspend fun sign(
+        @Body tipSignRequest: TipSignRequest,
+        @Path(value = "path", encoded = true) path: String,
+    ): Response<TipSignResponse>
 
     @POST("/{path}")
-    suspend fun watch(@Body tipWatchRequest: TipWatchRequest, @Path(value = "path", encoded = true) path: String): Response<TipWatchResponse>
+    suspend fun watch(
+        @Body tipWatchRequest: TipWatchRequest,
+        @Path(value = "path", encoded = true) path: String,
+    ): Response<TipWatchResponse>
 
     @GET("/{path}")
-    suspend fun get(@Path(value = "path", encoded = true) path: String): Any
+    suspend fun get(
+        @Path(value = "path", encoded = true) path: String,
+    ): Any
 }

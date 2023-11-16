@@ -31,27 +31,45 @@ inline fun SharedPreferences.clear() {
     this.edit().clear().apply()
 }
 
-inline fun SharedPreferences.putBoolean(key: String, value: Boolean) {
+inline fun SharedPreferences.putBoolean(
+    key: String,
+    value: Boolean,
+) {
     this.edit().putBoolean(key, value).apply()
 }
 
-inline fun SharedPreferences.putFloat(key: String, value: Float) {
+inline fun SharedPreferences.putFloat(
+    key: String,
+    value: Float,
+) {
     this.edit().putFloat(key, value).apply()
 }
 
-inline fun SharedPreferences.putInt(key: String, value: Int) {
+inline fun SharedPreferences.putInt(
+    key: String,
+    value: Int,
+) {
     this.edit().putInt(key, value).apply()
 }
 
-inline fun SharedPreferences.putLong(key: String, value: Long) {
+inline fun SharedPreferences.putLong(
+    key: String,
+    value: Long,
+) {
     this.edit().putLong(key, value).apply()
 }
 
-inline fun SharedPreferences.putString(key: String, value: String?) {
+inline fun SharedPreferences.putString(
+    key: String,
+    value: String?,
+) {
     this.edit().putString(key, value).apply()
 }
 
-inline fun SharedPreferences.putStringSet(key: String, values: Set<String>?) {
+inline fun SharedPreferences.putStringSet(
+    key: String,
+    values: Set<String>?,
+) {
     this.edit().putStringSet(key, values).apply()
 }
 

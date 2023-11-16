@@ -6,7 +6,6 @@ import android.util.AttributeSet
 import android.widget.LinearLayout
 
 class SurpriseLinearLayout(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) {
-
     init {
         setWillNotDraw(false)
     }

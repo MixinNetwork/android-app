@@ -11,7 +11,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.util.reportException
 
 internal class MusicPlayerUpdater(private val player: ExoPlayer) {
-
     suspend fun update(incoming: List<MediaMetadataCompat>) {
         val find = incoming.find { it.id == player.currentMediaItem?.mediaId }
         if (find == null) {
@@ -26,9 +25,10 @@ internal class MusicPlayerUpdater(private val player: ExoPlayer) {
         val oldItems = player.currentMediaItems
         val newItems = incoming.toMediaItems()
 
-        val patch = withContext(Dispatchers.Default) {
-            DiffUtils.diff(oldItems, newItems)
-        }
+        val patch =
+            withContext(Dispatchers.Default) {
+                DiffUtils.diff(oldItems, newItems)
+            }
 
         patch.deltas.forEach { delta ->
             when (delta.type) {

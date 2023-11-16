@@ -13,7 +13,10 @@ class BadgeAvatarView(context: Context, attrs: AttributeSet?) : FrameLayout(cont
 
     var pos: Int = START_BOTTOM
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         measureChild(
             binding.badge,
@@ -22,7 +25,13 @@ class BadgeAvatarView(context: Context, attrs: AttributeSet?) : FrameLayout(cont
         )
     }
 
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+    override fun onLayout(
+        changed: Boolean,
+        left: Int,
+        top: Int,
+        right: Int,
+        bottom: Int,
+    ) {
         super.onLayout(changed, left, top, right, bottom)
         val i = measuredWidth / 8
         if (pos == START_BOTTOM) {

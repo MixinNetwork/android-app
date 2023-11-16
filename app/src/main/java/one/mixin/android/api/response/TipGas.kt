@@ -19,7 +19,10 @@ data class TipGas(
 )
 
 enum class GasPriceType {
-    Safe, Propose, Fast;
+    Safe,
+    Propose,
+    Fast,
+    ;
 
     fun calcGas(tipGas: TipGas): BigDecimal =
         when (this) {

@@ -2,11 +2,9 @@ package one.mixin.android.util
 
 import one.mixin.android.vo.assetIdToAsset
 import org.junit.Test
-import timber.log.Timber
 import kotlin.test.assertEquals
 
 class AssetTest {
-
     @Test
     fun testUUID() {
         val asset = assetIdToAsset("31d2ea9c-95eb-3355-b65b-ba096853bc18")

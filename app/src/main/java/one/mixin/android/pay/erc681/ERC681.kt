@@ -12,10 +12,8 @@ data class ERC681(
     var value: BigInteger? = null,
     var gasPrice: BigInteger? = null,
     var gasLimit: BigInteger? = null,
-
     var function: String? = null,
     var functionParams: List<Pair<String, String>> = listOf(),
-
     // extra adapted field
     var amount: BigDecimal? = null,
 )

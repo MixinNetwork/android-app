@@ -112,10 +112,11 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             action: ForwardAction,
         ): ForwardFragment {
             val fragment = ForwardFragment()
-            val b = bundleOf(
-                ARGS_MESSAGES to messages,
-                ARGS_ACTION to action,
-            )
+            val b =
+                bundleOf(
+                    ARGS_MESSAGES to messages,
+                    ARGS_ACTION to action,
+                )
             fragment.arguments = b
             return fragment
         }
@@ -125,10 +126,11 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             action: ForwardAction,
         ): ForwardFragment {
             val fragment = ForwardFragment()
-            val b = bundleOf(
-                ARGS_COMBINE_MESSAGES to messages,
-                ARGS_ACTION to action,
-            )
+            val b =
+                bundleOf(
+                    ARGS_COMBINE_MESSAGES to messages,
+                    ARGS_ACTION to action,
+                )
             fragment.arguments = b
             return fragment
         }
@@ -170,7 +172,11 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         getEditorResult = registerForActivityResult(ImageEditorActivity.ImageEditorContract(), requireActivity().activityResultRegistry, ::callbackEditor)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View? =
         layoutInflater.inflate(R.layout.fragment_forward, container, false)
 
     private fun setForwardText() {
@@ -202,7 +208,10 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         binding.forwardTv.text = str
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         val cid = action.conversationId
         if (cid != null) {
@@ -233,19 +242,20 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             checkPermission {
                 updateDynamicShortcuts(adapter.selectItem)
 
-                val selectItems = adapter.selectItem.mapNotNull {
-                    when (it) {
-                        is ConversationMinimal -> {
-                            SelectItem(it.conversationId, null)
-                        }
-                        is User -> {
-                            SelectItem(null, it.userId)
-                        }
-                        else -> {
-                            null
+                val selectItems =
+                    adapter.selectItem.mapNotNull {
+                        when (it) {
+                            is ConversationMinimal -> {
+                                SelectItem(it.conversationId, null)
+                            }
+                            is User -> {
+                                SelectItem(null, it.userId)
+                            }
+                            else -> {
+                                null
+                            }
                         }
                     }
-                }
                 if (action is ForwardAction.Combine) {
                     sendCombineMessage(selectItems)
                 } else {
@@ -299,84 +309,90 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             }
     }
 
-    private fun loadData() = lifecycleScope.launch {
-        val conversations = chatViewModel.successConversationList()
-        adapter.sourceConversations = conversations
-        val set = ArraySet<String>()
-        conversations.forEach { item ->
-            if (item.isContactConversation()) {
-                set.add(item.ownerId)
+    private fun loadData() =
+        lifecycleScope.launch {
+            val conversations = chatViewModel.successConversationList()
+            adapter.sourceConversations = conversations
+            val set = ArraySet<String>()
+            conversations.forEach { item ->
+                if (item.isContactConversation()) {
+                    set.add(item.ownerId)
+                }
             }
+
+            val friends = mutableListOf<User>()
+            val bots = mutableListOf<User>()
+            chatViewModel.getFriends().filter { item ->
+                !set.contains(item.userId)
+            }.forEach {
+                if (it.isBot()) {
+                    bots.add(it)
+                } else {
+                    friends.add(it)
+                }
+            }
+            adapter.sourceFriends = friends
+            adapter.sourceBots = bots
+
+            adapter.changeData()
         }
 
-        val friends = mutableListOf<User>()
-        val bots = mutableListOf<User>()
-        chatViewModel.getFriends().filter { item ->
-            !set.contains(item.userId)
-        }.forEach {
-            if (it.isBot()) {
-                bots.add(it)
+    private fun sendMessage(selectItems: List<SelectItem>) =
+        lifecycleScope.launch {
+            val errList = arrayListOf<String>()
+            selectItems.forEach { item ->
+                val err = sendMessageInternal(item)
+                if (err != null) {
+                    errList.addAll(err)
+                }
+            }
+            if (errList.isEmpty()) {
+                toast(R.string.Message_sent)
+            }
+            if (action is ForwardAction.System) {
+                finishAndOpenChat(selectItems[0])
             } else {
-                friends.add(it)
+                if (action is ForwardAction.App.Resultful) {
+                    val result =
+                        Intent().apply {
+                            putParcelableArrayListExtra(ForwardActivity.ARGS_RESULT, ArrayList(selectItems))
+                        }
+                    requireActivity().setResult(RESULT_OK, result)
+                }
+                requireActivity().finish()
             }
         }
-        adapter.sourceFriends = friends
-        adapter.sourceBots = bots
 
-        adapter.changeData()
-    }
-
-    private fun sendMessage(selectItems: List<SelectItem>) = lifecycleScope.launch {
-        val errList = arrayListOf<String>()
-        selectItems.forEach { item ->
-            val err = sendMessageInternal(item)
-            if (err != null) {
-                errList.addAll(err)
+    private fun sendCombineMessage(selectItems: List<SelectItem>) =
+        lifecycleScope.launch {
+            if (sender == null) return@launch
+            val hasMultiple = selectItems.size > 1
+            selectItems.forEach { item ->
+                chatViewModel.checkData(item) { conversationId: String, encryptCategory: EncryptCategory ->
+                    var transcripts = chatViewModel.processTranscript(combineMessages)
+                    val messageId =
+                        if (hasMultiple) {
+                            val id = UUID.randomUUID().toString()
+                            transcripts = transcripts.map { it.copy(id) }
+                            id
+                        } else {
+                            transcripts[0].transcriptId
+                        }
+                    try {
+                        chatViewModel.sendTranscriptMessage(conversationId, messageId, sender, transcripts, encryptCategory)
+                    } catch (e: Exception) {
+                        toast(R.string.Data_error)
+                        Timber.e(e)
+                    }
+                }
             }
-        }
-        if (errList.isEmpty()) {
-            toast(R.string.Message_sent)
-        }
-        if (action is ForwardAction.System) {
-            finishAndOpenChat(selectItems[0])
-        } else {
-            if (action is ForwardAction.App.Resultful) {
-                val result = Intent().apply {
+            val result =
+                Intent().apply {
                     putParcelableArrayListExtra(ForwardActivity.ARGS_RESULT, ArrayList(selectItems))
                 }
-                requireActivity().setResult(RESULT_OK, result)
-            }
+            requireActivity().setResult(RESULT_OK, result)
             requireActivity().finish()
         }
-    }
-
-    private fun sendCombineMessage(selectItems: List<SelectItem>) = lifecycleScope.launch {
-        if (sender == null) return@launch
-        val hasMultiple = selectItems.size > 1
-        selectItems.forEach { item ->
-            chatViewModel.checkData(item) { conversationId: String, encryptCategory: EncryptCategory ->
-                var transcripts = chatViewModel.processTranscript(combineMessages)
-                val messageId = if (hasMultiple) {
-                    val id = UUID.randomUUID().toString()
-                    transcripts = transcripts.map { it.copy(id) }
-                    id
-                } else {
-                    transcripts[0].transcriptId
-                }
-                try {
-                    chatViewModel.sendTranscriptMessage(conversationId, messageId, sender, transcripts, encryptCategory)
-                } catch (e: Exception) {
-                    toast(R.string.Data_error)
-                    Timber.e(e)
-                }
-            }
-        }
-        val result = Intent().apply {
-            putParcelableArrayListExtra(ForwardActivity.ARGS_RESULT, ArrayList(selectItems))
-        }
-        requireActivity().setResult(RESULT_OK, result)
-        requireActivity().finish()
-    }
 
     private fun checkPermission(afterGranted: () -> Job) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
@@ -428,20 +444,22 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                                 )
                             },
                             {
-                                val code = if (shareImageData.url.startsWith("http", true)) {
-                                    val file: File? = try {
-                                        Glide.with(requireContext()).asFile().load(shareImageData.url).submit().get()
-                                    } catch (t: Throwable) {
-                                        null
-                                    }
-                                    if (file == null) {
-                                        chatViewModel.sendImageMessage(conversationId, sender, shareImageData.url.toUri(), encryptCategory)
+                                val code =
+                                    if (shareImageData.url.startsWith("http", true)) {
+                                        val file: File? =
+                                            try {
+                                                Glide.with(requireContext()).asFile().load(shareImageData.url).submit().get()
+                                            } catch (t: Throwable) {
+                                                null
+                                            }
+                                        if (file == null) {
+                                            chatViewModel.sendImageMessage(conversationId, sender, shareImageData.url.toUri(), encryptCategory)
+                                        } else {
+                                            chatViewModel.sendImageMessage(conversationId, sender, file.toUri(), encryptCategory)
+                                        }
                                     } else {
-                                        chatViewModel.sendImageMessage(conversationId, sender, file.toUri(), encryptCategory)
+                                        chatViewModel.sendImageMessage(conversationId, sender, shareImageData.url.toUri(), encryptCategory)
                                     }
-                                } else {
-                                    chatViewModel.sendImageMessage(conversationId, sender, shareImageData.url.toUri(), encryptCategory)
-                                }
                                 val errorRes = ShareCategory.Image.getErrorStringOrNull(code)
                                 if (errorRes != null) {
                                     withContext(Dispatchers.Main) {
@@ -565,12 +583,13 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         fallbackAction: suspend () -> Unit,
     ) = withContext(Dispatchers.IO) {
         if (attachmentExtraString != null) {
-            val attachmentExtra: AttachmentExtra = try {
-                GsonHelper.customGson.fromJson(attachmentExtraString, AttachmentExtra::class.java)
-            } catch (e: Exception) {
-                parseAsAttachmentMessagePayload(attachmentExtraString, sender, conversationId, getCategory.invoke(), mediaUrl, fallbackAction)
-                return@withContext
-            }
+            val attachmentExtra: AttachmentExtra =
+                try {
+                    GsonHelper.customGson.fromJson(attachmentExtraString, AttachmentExtra::class.java)
+                } catch (e: Exception) {
+                    parseAsAttachmentMessagePayload(attachmentExtraString, sender, conversationId, getCategory.invoke(), mediaUrl, fallbackAction)
+                    return@withContext
+                }
             val createdAt = attachmentExtra.createdAt
             val messageId = attachmentExtra.messageId
             if (createdAt == null || messageId == null || !createdAt.within24Hours()) {
@@ -602,12 +621,13 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         mediaUrl: String?,
         fallbackAction: suspend () -> Unit,
     ) {
-        val payload: AttachmentMessagePayload = try {
-            GsonHelper.customGson.fromJson(String(Base64.decode(attachmentExtraString)), AttachmentMessagePayload::class.java)
-        } catch (e: Exception) {
-            fallbackAction.invoke()
-            return
-        }
+        val payload: AttachmentMessagePayload =
+            try {
+                GsonHelper.customGson.fromJson(String(Base64.decode(attachmentExtraString)), AttachmentMessagePayload::class.java)
+            } catch (e: Exception) {
+                fallbackAction.invoke()
+                return
+            }
         // Should be removed when PLAIN message's attachment is encrypted
         if ((category.startsWith("SIGNAL_") && (payload.key == null || payload.digest == null)) ||
             (category.startsWith("PLAIN_") && (payload.key != null && payload.digest != null))
@@ -624,11 +644,12 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             fallbackAction.invoke()
             return
         }
-        val file = try {
-            Uri.parse(mediaUrl).toFile()
-        } catch (e: Exception) {
-            null
-        }
+        val file =
+            try {
+                Uri.parse(mediaUrl).toFile()
+            } catch (e: Exception) {
+                null
+            }
         if (file?.exists() != true) {
             fallbackAction.invoke()
             return
@@ -637,12 +658,13 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             val messageId = UUID.randomUUID().toString()
             val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")
             outfile.copyFromInputStream(FileInputStream(file))
-            val message = Message(
-                messageId, conversationId, sender.userId, category, GsonHelper.customGson.toJson(payload).base64Encode(), outfile.name,
-                payload.mimeType, payload.size, payload.duration?.toString(), payload.width, payload.height, null, payload.thumbnail, null,
-                payload.key, payload.digest, MediaStatus.DONE.name, MessageStatus.SENDING.name, nowInUtc(), name = payload.name, mediaWaveform = payload.waveform,
-                caption = payload.caption,
-            )
+            val message =
+                Message(
+                    messageId, conversationId, sender.userId, category, GsonHelper.customGson.toJson(payload).base64Encode(), outfile.name,
+                    payload.mimeType, payload.size, payload.duration?.toString(), payload.width, payload.height, null, payload.thumbnail, null,
+                    payload.key, payload.digest, MediaStatus.DONE.name, MessageStatus.SENDING.name, nowInUtc(), name = payload.name, mediaWaveform = payload.waveform,
+                    caption = payload.caption,
+                )
             chatViewModel.sendMessage(message)
         } catch (e: Exception) {
             fallbackAction.invoke()
@@ -650,13 +672,20 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         }
     }
 
-    private fun buildAttachmentMessage(conversationId: String, sender: User, category: String, attachmentExtra: AttachmentExtra, message: Message): Message? {
+    private fun buildAttachmentMessage(
+        conversationId: String,
+        sender: User,
+        category: String,
+        attachmentExtra: AttachmentExtra,
+        message: Message,
+    ): Message? {
         try {
             val messageId = UUID.randomUUID().toString()
-            val attachmentMessagePayload = AttachmentMessagePayload(
-                message.mediaKey, message.mediaDigest, attachmentExtra.attachmentId, message.mediaMimeType!!, message.mediaSize ?: 0, message.name, message.mediaWidth,
-                message.mediaHeight, message.thumbImage, message.mediaDuration?.toLongOrNull(), message.mediaWaveform, createdAt = attachmentExtra.createdAt,
-            )
+            val attachmentMessagePayload =
+                AttachmentMessagePayload(
+                    message.mediaKey, message.mediaDigest, attachmentExtra.attachmentId, message.mediaMimeType!!, message.mediaSize ?: 0, message.name, message.mediaWidth,
+                    message.mediaHeight, message.thumbImage, message.mediaDuration?.toLongOrNull(), message.mediaWaveform, createdAt = attachmentExtra.createdAt,
+                )
             val file = Uri.parse(message.absolutePath()).toFile()
             val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")
             outfile.copyFromInputStream(FileInputStream(file))
@@ -673,17 +702,18 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         }
     }
 
-    private fun sendDirectMessages(cid: String) = lifecycleScope.launch {
-        if (needOpenEditor()) {
-            editorPreserver = EditorPreserver(messages[0], listOf(SelectItem(cid, null)))
-            editAndSend(requireNotNull(editorPreserver?.forwardMessage))
-            return@launch
-        }
+    private fun sendDirectMessages(cid: String) =
+        lifecycleScope.launch {
+            if (needOpenEditor()) {
+                editorPreserver = EditorPreserver(messages[0], listOf(SelectItem(cid, null)))
+                editAndSend(requireNotNull(editorPreserver?.forwardMessage))
+                return@launch
+            }
 
-        if (!MixinApplication.get().checkAndShowAppAuth(requireActivity())) {
-            sendAndGo2Chat(cid)
+            if (!MixinApplication.get().checkAndShowAppAuth(requireActivity())) {
+                sendAndGo2Chat(cid)
+            }
         }
-    }
 
     private suspend fun sendAndGo2Chat(cid: String) {
         val err = sendMessageInternal(SelectItem(cid, null))
@@ -695,40 +725,45 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         ConversationActivity.show(requireContext(), cid)
     }
 
-    private fun updateDynamicShortcuts(selectItems: ArrayList<Any>) = lifecycleScope.launch {
-        val shortcuts = mutableListOf<ShortcutInfoCompat>()
-        for (i in 0 until selectItems.size) {
-            val s = selectItems[i]
-            if (shortcuts.size >= maxDynamicShortcutCount) {
-                break
-            }
+    private fun updateDynamicShortcuts(selectItems: ArrayList<Any>) =
+        lifecycleScope.launch {
+            val shortcuts = mutableListOf<ShortcutInfoCompat>()
+            for (i in 0 until selectItems.size) {
+                val s = selectItems[i]
+                if (shortcuts.size >= maxDynamicShortcutCount) {
+                    break
+                }
 
-            val shortcutInfo = if (s is ConversationMinimal) {
-                val bitmap = loadBitmap(s.iconUrl()) ?: continue
-                val intent = ConversationActivity.getShortcutIntent(
-                    MixinApplication.appContext,
-                    s.conversationId,
-                    null,
-                )
-                ShortcutInfo(s.conversationId, s.getConversationName(), bitmap, intent)
-            } else {
-                s as User
-                val bitmap = loadBitmap(s.avatarUrl) ?: continue
-                val cid = generateConversationId(
-                    Session.getAccountId()!!,
-                    s.userId,
-                )
-                val intent = ConversationActivity.getShortcutIntent(
-                    MixinApplication.appContext,
-                    cid,
-                    s.userId,
-                )
-                ShortcutInfo(cid, s.fullName ?: "", bitmap, intent)
+                val shortcutInfo =
+                    if (s is ConversationMinimal) {
+                        val bitmap = loadBitmap(s.iconUrl()) ?: continue
+                        val intent =
+                            ConversationActivity.getShortcutIntent(
+                                MixinApplication.appContext,
+                                s.conversationId,
+                                null,
+                            )
+                        ShortcutInfo(s.conversationId, s.getConversationName(), bitmap, intent)
+                    } else {
+                        s as User
+                        val bitmap = loadBitmap(s.avatarUrl) ?: continue
+                        val cid =
+                            generateConversationId(
+                                Session.getAccountId()!!,
+                                s.userId,
+                            )
+                        val intent =
+                            ConversationActivity.getShortcutIntent(
+                                MixinApplication.appContext,
+                                cid,
+                                s.userId,
+                            )
+                        ShortcutInfo(cid, s.fullName ?: "", bitmap, intent)
+                    }
+                shortcuts.add(generateDynamicShortcut(MixinApplication.appContext, shortcutInfo))
             }
-            shortcuts.add(generateDynamicShortcut(MixinApplication.appContext, shortcutInfo))
+            updateShortcuts(shortcuts)
         }
-        updateShortcuts(shortcuts)
-    }
 
     private suspend fun loadBitmap(url: String?): Bitmap? {
         if (url.isNullOrBlank()) return null
@@ -751,16 +786,18 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     private fun editAndSend(forwardMessage: ForwardMessage) {
         val content = forwardMessage.content
         val shareImageData = GsonHelper.customGson.fromJson(content, ShareImageData::class.java)
-        val uri = if (shareImageData.url.startsWith("http", true)) {
-            val file: File? = try {
-                Glide.with(requireContext()).asFile().load(shareImageData.url).submit().get()
-            } catch (t: Throwable) {
-                null
+        val uri =
+            if (shareImageData.url.startsWith("http", true)) {
+                val file: File? =
+                    try {
+                        Glide.with(requireContext()).asFile().load(shareImageData.url).submit().get()
+                    } catch (t: Throwable) {
+                        null
+                    }
+                file?.toUri() ?: shareImageData.url.toUri()
+            } else {
+                shareImageData.url.toUri()
             }
-            file?.toUri() ?: shareImageData.url.toUri()
-        } else {
-            shareImageData.url.toUri()
-        }
         getEditorResult.launch(Pair(uri, getString(R.string.Share)))
 
         if (action is ForwardAction.System && action.conversationId != null) {
@@ -806,25 +843,38 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         }
     }
 
-    private val mWatcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
+    private val mWatcher: TextWatcher =
+        object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {
+            }
 
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        }
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {
+            }
 
-        override fun afterTextChanged(s: Editable?) {
-            adapter.keyword = s
-            adapter.changeData()
+            override fun afterTextChanged(s: Editable?) {
+                adapter.keyword = s
+                adapter.changeData()
+            }
         }
-    }
 
     private var dialog: Dialog? = null
+
     private fun showPb() {
         if (dialog == null) {
-            dialog = indeterminateProgressDialog(message = getString(R.string.Please_wait_a_bit)).apply {
-                setCancelable(false)
-            }
+            dialog =
+                indeterminateProgressDialog(message = getString(R.string.Please_wait_a_bit)).apply {
+                    setCancelable(false)
+                }
         }
         dialog?.show()
     }

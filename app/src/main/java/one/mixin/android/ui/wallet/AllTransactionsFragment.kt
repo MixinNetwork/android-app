@@ -32,7 +32,6 @@ import one.mixin.android.vo.safe.SafeSnapshotType
 
 @AndroidEntryPoint
 class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
-
     companion object {
         const val TAG = "AllTransactionsFragment"
     }
@@ -42,12 +41,19 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     private val adapter = SnapshotPagedAdapter()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
         _binding = FragmentAllTransactionsBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         adapter.listener = this
         binding.apply {
@@ -59,25 +65,27 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             transactionsRv.adapter = adapter
             transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         }
-        dataObserver = Observer { pagedList ->
-            if (pagedList.isNotEmpty()) {
-                showEmpty(false)
-                val opponentIds = pagedList.filter {
-                    !it?.opponentId.isNullOrBlank()
-                }.map {
-                    it.opponentId!!
+        dataObserver =
+            Observer { pagedList ->
+                if (pagedList.isNotEmpty()) {
+                    showEmpty(false)
+                    val opponentIds =
+                        pagedList.filter {
+                            !it?.opponentId.isNullOrBlank()
+                        }.map {
+                            it.opponentId!!
+                        }
+                    walletViewModel.checkAndRefreshUsers(opponentIds)
+                } else {
+                    showEmpty(true)
                 }
-                walletViewModel.checkAndRefreshUsers(opponentIds)
-            } else {
-                showEmpty(true)
-            }
-            adapter.submitList(pagedList)
+                adapter.submitList(pagedList)
 
-            if (!refreshedSnapshots) {
-                walletViewModel.refreshSnapshots()
-                refreshedSnapshots = true
+                if (!refreshedSnapshots) {
+                    walletViewModel.refreshSnapshots()
+                    refreshedSnapshots = true
+                }
             }
-        }
         bindLiveData()
     }
 
@@ -89,9 +97,10 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     override fun <T> onNormalItemClick(item: T) {
         lifecycleScope.launch {
             val snapshot = item as SnapshotItem
-            val a = withContext(Dispatchers.IO) {
-                walletViewModel.simpleAssetItem(snapshot.assetId)
-            }
+            val a =
+                withContext(Dispatchers.IO) {
+                    walletViewModel.simpleAssetItem(snapshot.assetId)
+                }
             a?.let {
                 if (viewDestroyed()) return@launch
 
@@ -108,9 +117,10 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     override fun onUserClick(userId: String) {
         lifecycleScope.launch {
-            val user = withContext(Dispatchers.IO) {
-                walletViewModel.getUser(userId)
-            } ?: return@launch
+            val user =
+                withContext(Dispatchers.IO) {
+                    walletViewModel.getUser(userId)
+                } ?: return@launch
             if (user.notMessengerUser()) {
                 NonMessengerUserBottomSheetDialogFragment.newInstance(user)
                     .showNow(parentFragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)

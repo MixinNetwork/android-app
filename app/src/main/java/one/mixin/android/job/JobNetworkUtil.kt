@@ -30,10 +30,11 @@ class JobNetworkUtil(val context: Context, private val linkState: LinkState) : N
 
     private fun listenNetworkViaConnectivityManager(context: Context) {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val request = NetworkRequest.Builder()
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
-            .build()
+        val request =
+            NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
+                .build()
         cm.registerNetworkCallback(
             request,
             object : ConnectivityManager.NetworkCallback() {
@@ -48,7 +49,10 @@ class JobNetworkUtil(val context: Context, private val linkState: LinkState) : N
     private fun listenForIdle(context: Context) {
         context.registerReceiver(
             object : BroadcastReceiver() {
-                override fun onReceive(context: Context, intent: Intent) {
+                override fun onReceive(
+                    context: Context,
+                    intent: Intent,
+                ) {
                     dispatchNetworkChange(context)
                 }
             },
@@ -78,11 +82,12 @@ class JobNetworkUtil(val context: Context, private val linkState: LinkState) : N
         } catch (t: Throwable) {
             return NetworkUtil.DISCONNECTED
         }
-        val metered = try {
-            ConnectivityManagerCompat.isActiveNetworkMetered(cm)
-        } catch (e: Exception) {
-            return NetworkUtil.DISCONNECTED
-        }
+        val metered =
+            try {
+                ConnectivityManagerCompat.isActiveNetworkMetered(cm)
+            } catch (e: Exception) {
+                return NetworkUtil.DISCONNECTED
+            }
         if (netInfo.isConnected) {
             if (LinkState.isOnline(linkState.state)) {
                 return NetworkUtil.WEB_SOCKET
@@ -104,9 +109,10 @@ class JobNetworkUtil(val context: Context, private val linkState: LinkState) : N
     @TargetApi(23)
     private fun isDozing(context: Context): Boolean {
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-        return powerManager.isDeviceIdleMode && !powerManager.isIgnoringBatteryOptimizations(
-            context.packageName,
-        )
+        return powerManager.isDeviceIdleMode &&
+            !powerManager.isIgnoringBatteryOptimizations(
+                context.packageName,
+            )
     }
 
     override fun setListener(listener: NetworkEventProvider.Listener) {

@@ -24,13 +24,14 @@ class SendBottomSheet(
 
     fun show(asset: TokenItem) {
         val builder = BottomSheet.Builder(fragment.requireActivity())
-        _bottomSendBinding = ViewWalletTransactionsSendBottomBinding.bind(
-            View.inflate(
-                ContextThemeWrapper(fragment.requireActivity(), R.style.Custom),
-                R.layout.view_wallet_transactions_send_bottom,
-                null,
-            ),
-        )
+        _bottomSendBinding =
+            ViewWalletTransactionsSendBottomBinding.bind(
+                View.inflate(
+                    ContextThemeWrapper(fragment.requireActivity(), R.style.Custom),
+                    R.layout.view_wallet_transactions_send_bottom,
+                    null,
+                ),
+            )
         builder.setCustomView(bottomSendBinding.root)
         val bottomSheet = builder.create()
         bottomSendBinding.apply {

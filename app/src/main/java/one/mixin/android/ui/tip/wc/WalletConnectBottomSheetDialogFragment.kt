@@ -89,10 +89,18 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     enum class Step {
-        Connecting, Sign, Send, Input, Loading, Sending, Done, Error,
+        Connecting,
+        Sign,
+        Send,
+        Input,
+        Loading,
+        Sending,
+        Done,
+        Error,
     }
 
     private var behavior: BottomSheetBehavior<*>? = null
+
     override fun getTheme() = R.style.AppTheme_Dialog
 
     private val viewModel by viewModels<WalletConnectBottomSheetViewModel>()
@@ -116,7 +124,10 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var signedTransactionData: String? = null
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
@@ -135,77 +146,83 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View = ComposeView(requireContext()).apply {
-        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-        step = when (requestType) {
-            RequestType.Connect -> Step.Connecting
-            RequestType.SessionProposal -> Step.Input
-            RequestType.SessionRequest -> Step.Sign
-        }
-        setContent {
-            when (requestType) {
-                RequestType.Connect -> {
-                    Loading()
+    ): View =
+        ComposeView(requireContext()).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            step =
+                when (requestType) {
+                    RequestType.Connect -> Step.Connecting
+                    RequestType.SessionProposal -> Step.Input
+                    RequestType.SessionRequest -> Step.Sign
                 }
-                RequestType.SessionProposal -> {
-                    SessionProposalPage(
-                        version,
-                        step,
-                        chain,
-                        topic,
-                        sessionProposal,
-                        errorInfo,
-                        onDismissRequest = { dismiss() },
-                        onBiometricClick = { showBiometricPrompt() },
-                        onPinComplete = { pin -> doAfterPinComplete(pin) },
-                    )
-                }
-                RequestType.SessionRequest -> {
-                    val gson = GsonBuilder()
-                        .serializeNulls()
-                        .setPrettyPrinting()
-                        .create()
-                    SessionRequestPage(
-                        gson,
-                        version,
-                        step,
-                        chain,
-                        topic,
-                        sessionRequest,
-                        signData,
-                        asset,
-                        tipGas,
-                        gasPriceType,
-                        errorInfo,
-                        onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
-                        onDismissRequest = { dismiss() },
-                        onPositiveClick = { onPositiveClick(it) },
-                        onBiometricClick = { showBiometricPrompt() },
-                        onPinComplete = { pin -> doAfterPinComplete(pin) },
-                        onGasItemClick = { type ->
-                            gasPriceType = type
-                            if (version == WalletConnect.Version.V2) {
-                                signData?.gasPriceType = type
-                            }
-                        },
-                    )
+            setContent {
+                when (requestType) {
+                    RequestType.Connect -> {
+                        Loading()
+                    }
+                    RequestType.SessionProposal -> {
+                        SessionProposalPage(
+                            version,
+                            step,
+                            chain,
+                            topic,
+                            sessionProposal,
+                            errorInfo,
+                            onDismissRequest = { dismiss() },
+                            onBiometricClick = { showBiometricPrompt() },
+                            onPinComplete = { pin -> doAfterPinComplete(pin) },
+                        )
+                    }
+                    RequestType.SessionRequest -> {
+                        val gson =
+                            GsonBuilder()
+                                .serializeNulls()
+                                .setPrettyPrinting()
+                                .create()
+                        SessionRequestPage(
+                            gson,
+                            version,
+                            step,
+                            chain,
+                            topic,
+                            sessionRequest,
+                            signData,
+                            asset,
+                            tipGas,
+                            gasPriceType,
+                            errorInfo,
+                            onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
+                            onDismissRequest = { dismiss() },
+                            onPositiveClick = { onPositiveClick(it) },
+                            onBiometricClick = { showBiometricPrompt() },
+                            onPinComplete = { pin -> doAfterPinComplete(pin) },
+                            onGasItemClick = { type ->
+                                gasPriceType = type
+                                if (version == WalletConnect.Version.V2) {
+                                    signData?.gasPriceType = type
+                                }
+                            },
+                        )
+                    }
                 }
             }
-        }
-        doOnPreDraw {
-            val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-            behavior = params?.behavior as? BottomSheetBehavior<*>
-            val ctx = requireContext()
-            behavior?.peekHeight = ctx.realSize().y - ctx.statusBarHeight() - ctx.navigationBarHeight()
-            behavior?.isDraggable = false
-            behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
-        }
+            doOnPreDraw {
+                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
+                behavior = params?.behavior as? BottomSheetBehavior<*>
+                val ctx = requireContext()
+                behavior?.peekHeight = ctx.realSize().y - ctx.statusBarHeight() - ctx.navigationBarHeight()
+                behavior?.isDraggable = false
+                behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
+            }
 
-        checkV2ChainAndParseSignData()
-    }
+            checkV2ChainAndParseSignData()
+        }
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, R.style.MixinBottomSheet)
         dialog.window?.let { window ->
             SystemUIManager.lightUI(window, requireContext().isNightMode())
@@ -258,43 +275,46 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         dismissAllowingStateLoss()
     }
 
-    private fun checkV2ChainAndParseSignData() = lifecycleScope.launch {
-        val topic = this@WalletConnectBottomSheetDialogFragment.topic
+    private fun checkV2ChainAndParseSignData() =
+        lifecycleScope.launch {
+            val topic = this@WalletConnectBottomSheetDialogFragment.topic
 
-        when (requestType) {
-            RequestType.SessionProposal -> {
-                sessionProposal = viewModel.getV2SessionProposal(topic)?.apply {
-                    requiredNamespaces.values.firstOrNull()?.chains?.firstOrNull()?.getChain()?.let { chain = it }
+            when (requestType) {
+                RequestType.SessionProposal -> {
+                    sessionProposal =
+                        viewModel.getV2SessionProposal(topic)?.apply {
+                            requiredNamespaces.values.firstOrNull()?.chains?.firstOrNull()?.getChain()?.let { chain = it }
+                        }
                 }
-            }
-            RequestType.SessionRequest -> {
-                sessionRequest = viewModel.getV2SessionRequest(topic)?.apply {
-                    chainId?.getChain()?.let { chain = it }
+                RequestType.SessionRequest -> {
+                    sessionRequest =
+                        viewModel.getV2SessionRequest(topic)?.apply {
+                            chainId?.getChain()?.let { chain = it }
+                        }
                 }
+                else -> {}
             }
-            else -> {}
+
+            if (requestType != RequestType.SessionRequest) return@launch
+            val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@launch
+
+            var signData = this@WalletConnectBottomSheetDialogFragment.signData
+            if (signData == null) {
+                signData = viewModel.parseV2SignData(sessionRequest)
+            }
+
+            // not supported sessionRequest, like eth_call
+            if (signData == null) {
+                dismiss()
+                return@launch
+            }
+
+            this@WalletConnectBottomSheetDialogFragment.signData = signData
+
+            if (signData.signMessage is WCEthereumTransaction) {
+                refreshEstimatedGasAndAsset(chain)
+            }
         }
-
-        if (requestType != RequestType.SessionRequest) return@launch
-        val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@launch
-
-        var signData = this@WalletConnectBottomSheetDialogFragment.signData
-        if (signData == null) {
-            signData = viewModel.parseV2SignData(sessionRequest)
-        }
-
-        // not supported sessionRequest, like eth_call
-        if (signData == null) {
-            dismiss()
-            return@launch
-        }
-
-        this@WalletConnectBottomSheetDialogFragment.signData = signData
-
-        if (signData.signMessage is WCEthereumTransaction) {
-            refreshEstimatedGasAndAsset(chain)
-        }
-    }
 
     private fun refreshEstimatedGasAndAsset(chain: Chain) {
         val signData = this.signData ?: return
@@ -310,12 +330,13 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         tickerFlow(15.seconds)
             .onEach {
                 asset = viewModel.refreshAsset(assetId)
-                tipGas = handleMixinResponse(
-                    invokeNetwork = { viewModel.getTipGas(assetId) },
-                    successBlock = {
-                        it.data
-                    },
-                )
+                tipGas =
+                    handleMixinResponse(
+                        invokeNetwork = { viewModel.getTipGas(assetId) },
+                        successBlock = {
+                            it.data
+                        },
+                    )
                 if (version == WalletConnect.Version.V2) {
                     (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
                 }
@@ -323,32 +344,35 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             .launchIn(lifecycleScope)
     }
 
-    private fun doAfterPinComplete(pin: String) = lifecycleScope.launch {
-        step = Step.Loading
-        try {
-            val error = withContext(Dispatchers.IO) {
-                if (onPinCompleteAction != null) {
-                    onPinCompleteAction?.invoke(pin)
+    private fun doAfterPinComplete(pin: String) =
+        lifecycleScope.launch {
+            step = Step.Loading
+            try {
+                val error =
+                    withContext(Dispatchers.IO) {
+                        if (onPinCompleteAction != null) {
+                            onPinCompleteAction?.invoke(pin)
+                        } else {
+                            val priv = viewModel.getTipPriv(requireContext(), pin)
+                            approveWithPriv(priv)
+                        }
+                    }
+                if (error == null) {
+                    step =
+                        if (isSignTransaction()) {
+                            Step.Send
+                        } else {
+                            processCompleted = true
+                            Step.Done
+                        }
                 } else {
-                    val priv = viewModel.getTipPriv(requireContext(), pin)
-                    approveWithPriv(priv)
+                    errorInfo = error
+                    step = Step.Error
                 }
+            } catch (e: Exception) {
+                handleException(e)
             }
-            if (error == null) {
-                step = if (isSignTransaction()) {
-                    Step.Send
-                } else {
-                    processCompleted = true
-                    Step.Done
-                }
-            } else {
-                errorInfo = error
-                step = Step.Error
-            }
-        } catch (e: Exception) {
-            handleException(e)
         }
-    }
 
     private fun onPositiveClick(requestId: Long?) {
         if (step == Step.Sign) {
@@ -358,11 +382,12 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 lifecycleScope.launch {
                     step = Step.Sending
                     try {
-                        val error = withContext(Dispatchers.IO) {
-                            val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@withContext "sessionRequest is null"
-                            val signedTransactionData = this@WalletConnectBottomSheetDialogFragment.signedTransactionData ?: return@withContext "signedTransactionData is null"
-                            viewModel.sendTransaction(version, chain, sessionRequest, signedTransactionData)
-                        }
+                        val error =
+                            withContext(Dispatchers.IO) {
+                                val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@withContext "sessionRequest is null"
+                                val signedTransactionData = this@WalletConnectBottomSheetDialogFragment.signedTransactionData ?: return@withContext "signedTransactionData is null"
+                                viewModel.sendTransaction(version, chain, sessionRequest, signedTransactionData)
+                            }
                         if (error == null) {
                             processCompleted = true
                             step = Step.Done
@@ -421,35 +446,42 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun handleException(e: Exception) {
-        errorInfo = when (e) {
-            is TipNetworkException -> {
-                "code: ${e.error.code}, message: ${e.error.description}"
+        errorInfo =
+            when (e) {
+                is TipNetworkException -> {
+                    "code: ${e.error.code}, message: ${e.error.description}"
+                }
+                is WalletConnectException -> {
+                    "code: ${e.code}, message: ${e.message}"
+                }
+                else -> {
+                    e.stackTraceToString()
+                }
             }
-            is WalletConnectException -> {
-                "code: ${e.code}, message: ${e.message}"
-            }
-            else -> {
-                e.stackTraceToString()
-            }
-        }
         reportException("$TAG handleException", e)
         step = Step.Error
     }
 
     private fun isSignTransaction() = signData != null && signData?.signMessage is WCEthereumTransaction
 
-    private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
+    private val bottomSheetBehaviorCallback =
+        object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(
+                bottomSheet: View,
+                newState: Int,
+            ) {
+                when (newState) {
+                    BottomSheetBehavior.STATE_HIDDEN -> dismiss()
+                    else -> {}
+                }
+            }
 
-        override fun onStateChanged(bottomSheet: View, newState: Int) {
-            when (newState) {
-                BottomSheetBehavior.STATE_HIDDEN -> dismiss()
-                else -> {}
+            override fun onSlide(
+                bottomSheet: View,
+                slideOffset: Float,
+            ) {
             }
         }
-
-        override fun onSlide(bottomSheet: View, slideOffset: Float) {
-        }
-    }
 
     fun setOnPinComplete(callback: suspend (String) -> String?): WalletConnectBottomSheetDialogFragment {
         onPinCompleteAction = callback
@@ -465,32 +497,36 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var onRejectAction: (() -> Unit)? = null
 
     private var biometricDialog: BiometricDialog? = null
+
     private fun showBiometricPrompt() {
-        biometricDialog = BiometricDialog(
-            requireActivity(),
-            getBiometricInfo(),
-        )
+        biometricDialog =
+            BiometricDialog(
+                requireActivity(),
+                getBiometricInfo(),
+            )
         biometricDialog?.callback = biometricDialogCallback
         biometricDialog?.show()
     }
 
-    fun getBiometricInfo() = BiometricInfo(
-        getString(R.string.Verify_by_Biometric),
-        "",
-        "",
-    )
+    fun getBiometricInfo() =
+        BiometricInfo(
+            getString(R.string.Verify_by_Biometric),
+            "",
+            "",
+        )
 
-    private val biometricDialogCallback = object : BiometricDialog.Callback {
-        override fun onPinComplete(pin: String) {
-            doAfterPinComplete(pin)
+    private val biometricDialogCallback =
+        object : BiometricDialog.Callback {
+            override fun onPinComplete(pin: String) {
+                doAfterPinComplete(pin)
+            }
+
+            override fun showPin() {
+                dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            }
+
+            override fun onCancel() {}
         }
-
-        override fun showPin() {
-            dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        }
-
-        override fun onCancel() {}
-    }
 }
 
 fun showWalletConnectBottomSheetDialogFragment(

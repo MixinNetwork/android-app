@@ -33,7 +33,6 @@ class SendTranscriptJob(
     private val transcriptMessages: List<TranscriptMessage>,
     messagePriority: Int = PRIORITY_SEND_MESSAGE,
 ) : MixinJob(Params(messagePriority).groupBy("send_message_group").persist(), message.messageId) {
-
     companion object {
         private const val serialVersionUID = 1L
     }
@@ -71,10 +70,11 @@ class SendTranscriptJob(
                     } else {
                         val file = File(requireNotNull(Uri.parse(transcript.absolutePath()).path))
                         if (file.exists()) {
-                            val outFile = MixinApplication.appContext.getTranscriptFile(
-                                transcript.messageId,
-                                file.name.getExtensionName().notNullWithElse({ ".$it" }, ""),
-                            )
+                            val outFile =
+                                MixinApplication.appContext.getTranscriptFile(
+                                    transcript.messageId,
+                                    file.name.getExtensionName().notNullWithElse({ ".$it" }, ""),
+                                )
                             if (!outFile.exists() || outFile.length() <= 0) {
                                 file.copy(outFile)
                             }
@@ -107,11 +107,12 @@ class SendTranscriptJob(
             transcripts.filter { t ->
                 t.isAttachment()
             }.forEach { t ->
-                val encryptCategory = when {
-                    message.isEncrypted() -> EncryptCategory.ENCRYPTED
-                    message.isSignal() -> EncryptCategory.SIGNAL
-                    else -> EncryptCategory.PLAIN
-                }
+                val encryptCategory =
+                    when {
+                        message.isEncrypted() -> EncryptCategory.ENCRYPTED
+                        message.isSignal() -> EncryptCategory.SIGNAL
+                        else -> EncryptCategory.PLAIN
+                    }
                 jobManager.addJob(SendTranscriptAttachmentMessageJob(t, encryptCategory, message.messageId))
             }
         } else {
@@ -123,7 +124,10 @@ class SendTranscriptJob(
         }
     }
 
-    private fun getTranscripts(transcriptId: String, list: MutableSet<TranscriptMessage>) {
+    private fun getTranscripts(
+        transcriptId: String,
+        list: MutableSet<TranscriptMessage>,
+    ) {
         val transcripts = transcriptMessageDao.getTranscript(transcriptId)
         list.addAll(transcripts)
         transcripts.asSequence().filter { t -> t.isTranscript() }.forEach { transcriptMessage ->

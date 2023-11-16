@@ -26,7 +26,11 @@ import java.util.concurrent.TimeoutException
 
     private val metaCache = LruCache<String, MusicMeta>(100 * 1024)
 
-    protected fun retrieveMetadata(id: String, url: String, timeoutMillis: Long = RETRIEVE_TIMEOUT_MILLI_SEC): MusicMeta? {
+    protected fun retrieveMetadata(
+        id: String,
+        url: String,
+        timeoutMillis: Long = RETRIEVE_TIMEOUT_MILLI_SEC,
+    ): MusicMeta? {
         val hit = metaCache[url]
         if (hit != null) return hit
 
@@ -64,7 +68,11 @@ import java.util.concurrent.TimeoutException
         return null
     }
 
-    private fun decodeMetadata(id: String, url: String, metadata: Metadata): MusicMeta {
+    private fun decodeMetadata(
+        id: String,
+        url: String,
+        metadata: Metadata,
+    ): MusicMeta {
         val artistList = mutableSetOf<String>()
         var title: String? = null
         var album: String? = null
@@ -105,11 +113,12 @@ import java.util.concurrent.TimeoutException
                 }
             }
         }
-        val artist = if (artistList.isNotEmpty()) {
-            artistList.joinToString { it }
-        } else {
-            null
-        }
+        val artist =
+            if (artistList.isNotEmpty()) {
+                artistList.joinToString { it }
+            } else {
+                null
+            }
         return MusicMeta(title, album, albumArt, artist)
     }
 

@@ -9,7 +9,6 @@ import java.util.Date
 import java.util.Locale
 
 interface FoursquareService {
-
     @GET("venues/search")
     suspend fun searchVenues(
         @Query("ll") latlng: String,

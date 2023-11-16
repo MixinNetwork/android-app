@@ -46,7 +46,10 @@ object BiometricUtil {
             isKeyguardSecure(ctx) && isSecureHardware() && !RootUtil.isDeviceRooted
     }
 
-    fun isSupportWithErrorInfo(ctx: Context, type: Int): Pair<Boolean, String?> {
+    fun isSupportWithErrorInfo(
+        ctx: Context,
+        type: Int,
+    ): Pair<Boolean, String?> {
         val biometricManager = BiometricManager.from(ctx)
         val authStatusCode = biometricManager.canAuthenticate(type)
         if (authStatusCode == BIOMETRIC_STATUS_UNKNOWN ||
@@ -73,21 +76,25 @@ object BiometricUtil {
         return Pair(true, null)
     }
 
-    fun savePin(ctx: Context, pin: String): Boolean {
-        val cipher = try {
-            getEncryptCipher()
-        } catch (e: Exception) {
-            when (e) {
-                is UserNotAuthenticatedException -> throw e
-                is InvalidKeyException -> {
-                    deleteKey(ctx)
-                    toast(R.string.wallet_biometric_invalid)
-                    reportException("$CRASHLYTICS_BIOMETRIC-getEncryptCipher", e)
+    fun savePin(
+        ctx: Context,
+        pin: String,
+    ): Boolean {
+        val cipher =
+            try {
+                getEncryptCipher()
+            } catch (e: Exception) {
+                when (e) {
+                    is UserNotAuthenticatedException -> throw e
+                    is InvalidKeyException -> {
+                        deleteKey(ctx)
+                        toast(R.string.wallet_biometric_invalid)
+                        reportException("$CRASHLYTICS_BIOMETRIC-getEncryptCipher", e)
+                    }
+                    else -> reportException("$CRASHLYTICS_BIOMETRIC-getEncryptCipher", e)
                 }
-                else -> reportException("$CRASHLYTICS_BIOMETRIC-getEncryptCipher", e)
+                return false
             }
-            return false
-        }
         val iv = Base64.encodeBytes(cipher.iv, Base64.URL_SAFE)
         ctx.defaultSharedPreferences.putString(Constants.BIOMETRICS_IV, iv)
         val encrypt = cipher.doFinal(pin.toByteArray(Charset.defaultCharset()))
@@ -98,9 +105,10 @@ object BiometricUtil {
 
     fun deleteKey(ctx: Context) {
         try {
-            val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
-                load(null)
-            }
+            val ks: KeyStore =
+                KeyStore.getInstance("AndroidKeyStore").apply {
+                    load(null)
+                }
             ks.deleteEntry(BIOMETRICS_ALIAS)
         } catch (e: Exception) {
             reportException("$CRASHLYTICS_BIOMETRIC-deleteKey", e)
@@ -135,9 +143,10 @@ object BiometricUtil {
     }
 
     private fun getKey(): SecretKey? {
-        val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
-            load(null)
-        }
+        val ks: KeyStore =
+            KeyStore.getInstance("AndroidKeyStore").apply {
+                load(null)
+            }
         var key: SecretKey? = null
         try {
             key = ks.getKey(BIOMETRICS_ALIAS, null) as? SecretKey
@@ -146,10 +155,11 @@ object BiometricUtil {
         }
         try {
             if (key == null) {
-                val keyGenerator = KeyGenerator.getInstance(
-                    KeyProperties.KEY_ALGORITHM_AES,
-                    "AndroidKeyStore",
-                )
+                val keyGenerator =
+                    KeyGenerator.getInstance(
+                        KeyProperties.KEY_ALGORITHM_AES,
+                        "AndroidKeyStore",
+                    )
                 keyGenerator.init(
                     KeyGenParameterSpec.Builder(
                         BIOMETRICS_ALIAS,

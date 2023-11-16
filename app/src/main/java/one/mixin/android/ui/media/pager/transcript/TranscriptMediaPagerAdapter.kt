@@ -29,15 +29,18 @@ class TranscriptMediaPagerAdapter(
     private val onDismissListener: DismissFrameLayout.OnDismissListener,
     private val onMediaPagerAdapterListener: MediaPagerAdapterListener,
 ) : RecyclerView.Adapter<MediaPagerHolder>() {
-
     var initialPos: Int = 0
 
     private val videoStatusCache = LruCache<String, String>(100)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaPagerHolder {
-        val layout = DismissFrameLayout(context).apply {
-            layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-        }
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): MediaPagerHolder {
+        val layout =
+            DismissFrameLayout(context).apply {
+                layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            }
         layout.setDismissListener(onDismissListener)
         val circleProgress = layout.inflate(R.layout.view_circle_progress) as CircleProgress
         circleProgress.updateLayoutParams<FrameLayout.LayoutParams> {
@@ -63,7 +66,10 @@ class TranscriptMediaPagerAdapter(
         }
     }
 
-    override fun onBindViewHolder(holder: MediaPagerHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: MediaPagerHolder,
+        position: Int,
+    ) {
         getItem(position).let { messageItem ->
             when (holder) {
                 is PhotoHolder -> {
@@ -95,7 +101,7 @@ class TranscriptMediaPagerAdapter(
                         messageItem.mediaHeight > context.screenHeight() * 3 ||
                         messageItem.mediaWidth > context.screenWidth() * 3 ||
                         (messageItem.mediaSize != null && messageItem.mediaSize >= BIG_IMAGE_SIZE)
-                    )
+                )
             ) {
                 MediaItemType.LargeImage.ordinal
             } else {
@@ -114,10 +120,11 @@ class TranscriptMediaPagerAdapter(
         val imageView = PhotoView(parent.context)
         val photoViewAttacher = PhotoViewAttacher(imageView)
         photoViewAttacher.isZoomable = false
-        imageView.layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT,
-        )
+        imageView.layoutParams =
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+            )
         return imageView
     }
 

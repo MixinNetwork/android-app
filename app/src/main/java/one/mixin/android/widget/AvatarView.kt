@@ -24,7 +24,6 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
 
 class AvatarView : ViewAnimator {
-
     private val binding = ViewAvatarBinding.inflate(LayoutInflater.from(context), this)
     val avatarSimple get() = binding.avatarSimple
 
@@ -44,10 +43,11 @@ class AvatarView : ViewAnimator {
         }
         if (ta.hasValue(R.styleable.CircleImageView_border_width)) {
             avatarSimple.borderWidth = ta.getDimensionPixelSize(R.styleable.CircleImageView_border_width, 0)
-            avatarSimple.borderColor = ta.getColor(
-                R.styleable.CircleImageView_border_color,
-                ContextCompat.getColor(context, android.R.color.white),
-            )
+            avatarSimple.borderColor =
+                ta.getColor(
+                    R.styleable.CircleImageView_border_color,
+                    ContextCompat.getColor(context, android.R.color.white),
+                )
             binding.avatarTv.setBorderInfo(avatarSimple.borderWidth.toFloat(), avatarSimple.borderColor)
         }
 
@@ -111,21 +111,26 @@ class AvatarView : ViewAnimator {
         avatarSimple.setImageResource(R.drawable.ic_snapshot_anonymous)
     }
 
-    fun setInfo(name: String?, url: String?, id: String) {
+    fun setInfo(
+        name: String?,
+        url: String?,
+        id: String,
+    ) {
         binding.avatarTv.text = checkEmoji(name)
         try {
             binding.avatarTv.setBackgroundColor(getAvatarPlaceHolderById(id.getColorCode(CodeType.Avatar(avatarArray.size))))
         } catch (e: NumberFormatException) {
         }
-        displayedChild = if (url != null && url.isNotEmpty()) {
-            avatarSimple.setBackgroundResource(0)
-            avatarSimple.setImageResource(0)
-            avatarSimple.setPadding(0)
-            avatarSimple.loadImage(url, R.drawable.ic_avatar_place_holder)
-            POS_AVATAR
-        } else {
-            POS_TEXT
-        }
+        displayedChild =
+            if (url != null && url.isNotEmpty()) {
+                avatarSimple.setBackgroundResource(0)
+                avatarSimple.setImageResource(0)
+                avatarSimple.setPadding(0)
+                avatarSimple.loadImage(url, R.drawable.ic_avatar_place_holder)
+                POS_AVATAR
+            } else {
+                POS_TEXT
+            }
     }
 
     fun renderApp(app: BotInterface) {

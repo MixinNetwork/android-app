@@ -16,7 +16,6 @@ import kotlin.math.max
 
 class ChatItemCallback(private val context: Context, private val listener: ItemCallbackListener) :
     ItemTouchHelper.Callback() {
-
     private fun vibrate() {
         context.clickVibrate()
     }
@@ -33,11 +32,12 @@ class ChatItemCallback(private val context: Context, private val listener: ItemC
         recyclerView: RecyclerView,
         viewHolder: RecyclerView.ViewHolder,
     ): Int {
-        val swipeFlags = if (viewHolder is BaseViewHolder && !viewHolder.canNotReply) {
-            ItemTouchHelper.LEFT
-        } else {
-            0
-        }
+        val swipeFlags =
+            if (viewHolder is BaseViewHolder && !viewHolder.canNotReply) {
+                ItemTouchHelper.LEFT
+            } else {
+                0
+            }
         return makeMovementFlags(0, swipeFlags)
     }
 
@@ -49,9 +49,15 @@ class ChatItemCallback(private val context: Context, private val listener: ItemC
         return false
     }
 
-    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+    override fun onSwiped(
+        viewHolder: RecyclerView.ViewHolder,
+        direction: Int,
+    ) {}
 
-    override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
+    override fun onSelectedChanged(
+        viewHolder: RecyclerView.ViewHolder?,
+        actionState: Int,
+    ) {
         super.onSelectedChanged(viewHolder, actionState)
         if (actionState == ItemTouchHelper.ACTION_STATE_IDLE) {
             listener.onSwiped(hold)
@@ -59,6 +65,7 @@ class ChatItemCallback(private val context: Context, private val listener: ItemC
     }
 
     private var hold = -1
+
     override fun onChildDraw(
         c: Canvas,
         recyclerView: RecyclerView,
@@ -88,7 +95,10 @@ class ChatItemCallback(private val context: Context, private val listener: ItemC
         }
     }
 
-    override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+    override fun clearView(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder,
+    ) {
         super.clearView(recyclerView, viewHolder)
         rootLayout(viewHolder.itemView).apply {
             translationX(0f, 100)

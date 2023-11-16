@@ -76,17 +76,23 @@ data class App(
     @ColumnInfo(name = "updated_at")
     val updatedAt: String?,
 ) : Parcelable, BotInterface {
-
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<App>() {
-            override fun areItemsTheSame(p0: App, p1: App): Boolean {
-                return p0.appId == p1.appId
-            }
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<App>() {
+                override fun areItemsTheSame(
+                    p0: App,
+                    p1: App,
+                ): Boolean {
+                    return p0.appId == p1.appId
+                }
 
-            override fun areContentsTheSame(p0: App, p1: App): Boolean {
-                return p0 == p1
+                override fun areContentsTheSame(
+                    p0: App,
+                    p1: App,
+                ): Boolean {
+                    return p0 == p1
+                }
             }
-        }
     }
 
     override fun getBotId() = appId

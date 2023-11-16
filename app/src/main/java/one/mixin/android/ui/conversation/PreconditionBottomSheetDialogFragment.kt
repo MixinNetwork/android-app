@@ -51,7 +51,10 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val FROM_LINK = 0
         const val FROM_TRANSFER = 1
 
-        inline fun <reified T : AssetBiometricItem> newInstance(t: T, from: Int) =
+        inline fun <reified T : AssetBiometricItem> newInstance(
+            t: T,
+            from: Int,
+        ) =
             PreconditionBottomSheetDialogFragment().withArgs {
                 putParcelable(ValuableBiometricBottomSheetDialogFragment.ARGS_BIOMETRIC_ITEM, t)
                 putInt(ARGS_FROM, from)
@@ -68,7 +71,10 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var mCountDownTimer: CountDownTimer? = null
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).run {
@@ -149,10 +155,11 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         binding.warningTv.text = t.displayAddress()
         binding.warningTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
         binding.warningBottomTv.isVisible = true
-        binding.warningBottomTv.text = getString(
-            R.string.wallet_withdrawal_not_in_addresses,
-            t.displayAddress(),
-        )
+        binding.warningBottomTv.text =
+            getString(
+                R.string.wallet_withdrawal_not_in_addresses,
+                t.displayAddress(),
+            )
         binding.continueTv.setOnClickListener {
             callback?.onSuccess()
             dismiss()
@@ -175,12 +182,13 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val time = trace.createdAt.getRelativeTimeSpan()
         val amount = "${t.amount} ${t.asset.symbol}"
         binding.titleTv.text = getString(R.string.Duplicate_Withdraw_Confirmation)
-        binding.warningTv.text = getString(
-            R.string.wallet_withdrawal_recent_tip,
-            time,
-            t.displayAddress().formatPublicKey(),
-            amount,
-        )
+        binding.warningTv.text =
+            getString(
+                R.string.wallet_withdrawal_recent_tip,
+                time,
+                t.displayAddress().formatPublicKey(),
+                amount,
+            )
         binding.continueTv.setOnClickListener {
             callback?.onSuccess()
             dismiss()
@@ -213,17 +221,18 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         binding.titleTv.text = getString(R.string.Large_Amount_Confirmation)
         val fiatAmount =
             (BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()
-        binding.warningTv.text = getString(
-            R.string.wallet_transaction_tip,
-            if (t is TransferBiometricItem) {
-                t.user.fullName
-            } else {
-                t as AddressTransferBiometricItem
-                t.address
-            },
-            "${Fiats.getSymbol()}$fiatAmount",
-            t.asset.symbol,
-        )
+        binding.warningTv.text =
+            getString(
+                R.string.wallet_transaction_tip,
+                if (t is TransferBiometricItem) {
+                    t.user.fullName
+                } else {
+                    t as AddressTransferBiometricItem
+                    t.address
+                },
+                "${Fiats.getSymbol()}$fiatAmount",
+                t.asset.symbol,
+            )
         binding.continueTv.setOnClickListener {
             callback?.onSuccess()
             dismiss()
@@ -275,34 +284,36 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             !isStrangerTransferDisable() && t.user.relationship != UserRelationship.FRIEND.name
     }
 
-    private suspend fun isDuplicateTransferDisable() = withContext(Dispatchers.IO) {
-        !(PropertyHelper.findValueByKey(PREF_DUPLICATE_TRANSFER, true))
-    }
+    private suspend fun isDuplicateTransferDisable() =
+        withContext(Dispatchers.IO) {
+            !(PropertyHelper.findValueByKey(PREF_DUPLICATE_TRANSFER, true))
+        }
 
-    private suspend fun isStrangerTransferDisable() = withContext(Dispatchers.IO) {
-        !(PropertyHelper.findValueByKey(PREF_STRANGER_TRANSFER, true))
-    }
+    private suspend fun isStrangerTransferDisable() =
+        withContext(Dispatchers.IO) {
+            !(PropertyHelper.findValueByKey(PREF_STRANGER_TRANSFER, true))
+        }
 
     private fun startCountDown() {
         binding.continueTv.isEnabled = false
         binding.continueTv.textColor = ContextCompat.getColor(requireContext(), R.color.wallet_text_gray)
         mCountDownTimer?.cancel()
-        mCountDownTimer = object : CountDownTimer(4000, 1000) {
+        mCountDownTimer =
+            object : CountDownTimer(4000, 1000) {
+                override fun onTick(l: Long) {
+                    if (isAdded) {
+                        binding.continueTv.text = getString(R.string.wallet_transaction_continue_count_down, l / 1000)
+                    }
+                }
 
-            override fun onTick(l: Long) {
-                if (isAdded) {
-                    binding.continueTv.text = getString(R.string.wallet_transaction_continue_count_down, l / 1000)
+                override fun onFinish() {
+                    if (isAdded) {
+                        binding.continueTv.text = getString(R.string.Continue)
+                        binding.continueTv.textColor = ContextCompat.getColor(requireContext(), R.color.white)
+                        binding.continueTv.isEnabled = true
+                    }
                 }
             }
-
-            override fun onFinish() {
-                if (isAdded) {
-                    binding.continueTv.text = getString(R.string.Continue)
-                    binding.continueTv.textColor = ContextCompat.getColor(requireContext(), R.color.white)
-                    binding.continueTv.isEnabled = true
-                }
-            }
-        }
         mCountDownTimer?.start()
     }
 

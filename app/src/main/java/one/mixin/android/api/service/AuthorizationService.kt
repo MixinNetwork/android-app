@@ -11,16 +11,21 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface AuthorizationService {
-
     @POST("oauth/authorize")
-    suspend fun authorize(@Body request: AuthorizeRequest): MixinResponse<AuthorizationResponse>
+    suspend fun authorize(
+        @Body request: AuthorizeRequest,
+    ): MixinResponse<AuthorizationResponse>
 
     @GET("authorizations")
     fun authorizations(): Observable<MixinResponse<List<AuthorizationResponse>>>
 
     @GET("authorizations")
-    suspend fun getAuthorizationByAppId(@Query("app") appId: String): MixinResponse<List<AuthorizationResponse>>
+    suspend fun getAuthorizationByAppId(
+        @Query("app") appId: String,
+    ): MixinResponse<List<AuthorizationResponse>>
 
     @POST("oauth/cancel")
-    fun deAuthorize(@Body request: DeauthorRequest): Observable<MixinResponse<Unit>>
+    fun deAuthorize(
+        @Body request: DeauthorRequest,
+    ): Observable<MixinResponse<Unit>>
 }

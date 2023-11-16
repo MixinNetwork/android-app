@@ -74,7 +74,10 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
 
     override fun getContentView() = binding.root
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.pinVerificationTitleTv.text =
             getString(R.string.setting_emergency_send_code, user?.identityNumber ?: userIdentityNumber)
@@ -92,82 +95,84 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
         viewModel.upsertUser(u)
     }
 
-    private fun createVerify() = lifecycleScope.launch {
-        showLoading()
-        val code = binding.pinVerificationView.code()
-        handleMixinResponse(
-            invokeNetwork = {
-                viewModel.createVerifyEmergency(
-                    verificationId,
-                    EmergencyRequest(
-                        user?.phone,
-                        user?.identityNumber ?: userIdentityNumber,
-                        pinCipher.encryptPin(requireNotNull(pin), TipBody.forEmergencyContactCreate(verificationId, code)),
-                        code,
-                        EmergencyPurpose.CONTACT.name,
-                    ),
-                )
-            },
-            successBlock = { response ->
-                val a = response.data as Account
-                Session.storeAccount(a)
-                Session.setHasEmergencyContact(a.hasEmergencyContact)
-                activity?.supportFragmentManager?.findFragmentByTag(EmergencyContactFragment.TAG)?.let {
-                    (it as? EmergencyContactFragment)?.setEmergencySet()
-                }
-
-                alertDialogBuilder()
-                    .setMessage(
-                        getString(
-                            if (Session.hasEmergencyContact()) {
-                                R.string.Your_emergency_contact_has_been_changed
-                            } else {
-                                R.string.setting_emergency_create_success
-                            },
+    private fun createVerify() =
+        lifecycleScope.launch {
+            showLoading()
+            val code = binding.pinVerificationView.code()
+            handleMixinResponse(
+                invokeNetwork = {
+                    viewModel.createVerifyEmergency(
+                        verificationId,
+                        EmergencyRequest(
+                            user?.phone,
+                            user?.identityNumber ?: userIdentityNumber,
+                            pinCipher.encryptPin(requireNotNull(pin), TipBody.forEmergencyContactCreate(verificationId, code)),
+                            code,
+                            EmergencyPurpose.CONTACT.name,
                         ),
                     )
-                    .setPositiveButton(R.string.OK) { dialog, _ ->
-                        parentFragmentManager.popBackStackImmediate()
-                        parentFragmentManager.popBackStackImmediate()
-                        dialog.dismiss()
+                },
+                successBlock = { response ->
+                    val a = response.data as Account
+                    Session.storeAccount(a)
+                    Session.setHasEmergencyContact(a.hasEmergencyContact)
+                    activity?.supportFragmentManager?.findFragmentByTag(EmergencyContactFragment.TAG)?.let {
+                        (it as? EmergencyContactFragment)?.setEmergencySet()
                     }
-                    .setCancelable(false)
-                    .show()
-            },
-            doAfterNetworkSuccess = { hideLoading() },
-            defaultErrorHandle = {
-                handleFailure(it)
-            },
-            defaultExceptionHandle = {
-                if (it is TipNetworkException) {
-                    handleFailure(it.error)
-                } else {
-                    handleError(it)
-                }
-            },
-        )
-    }
 
-    private fun loginVerify() = lifecycleScope.launch {
-        showLoading()
-        SignalProtocol.initSignal(requireContext().applicationContext)
-        val sessionKey = generateEd25519KeyPair()
-        handleMixinResponse(
-            invokeNetwork = { viewModel.loginVerifyEmergency(verificationId, buildLoginEmergencyRequest(sessionKey)) },
-            successBlock = { response ->
-                handleAccount(response, sessionKey) {
-                    defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_EMERGENCY)
-                }
-            },
-            doAfterNetworkSuccess = { hideLoading() },
-            defaultErrorHandle = {
-                handleFailure(it)
-            },
-            defaultExceptionHandle = {
-                handleError(it)
-            },
-        )
-    }
+                    alertDialogBuilder()
+                        .setMessage(
+                            getString(
+                                if (Session.hasEmergencyContact()) {
+                                    R.string.Your_emergency_contact_has_been_changed
+                                } else {
+                                    R.string.setting_emergency_create_success
+                                },
+                            ),
+                        )
+                        .setPositiveButton(R.string.OK) { dialog, _ ->
+                            parentFragmentManager.popBackStackImmediate()
+                            parentFragmentManager.popBackStackImmediate()
+                            dialog.dismiss()
+                        }
+                        .setCancelable(false)
+                        .show()
+                },
+                doAfterNetworkSuccess = { hideLoading() },
+                defaultErrorHandle = {
+                    handleFailure(it)
+                },
+                defaultExceptionHandle = {
+                    if (it is TipNetworkException) {
+                        handleFailure(it.error)
+                    } else {
+                        handleError(it)
+                    }
+                },
+            )
+        }
+
+    private fun loginVerify() =
+        lifecycleScope.launch {
+            showLoading()
+            SignalProtocol.initSignal(requireContext().applicationContext)
+            val sessionKey = generateEd25519KeyPair()
+            handleMixinResponse(
+                invokeNetwork = { viewModel.loginVerifyEmergency(verificationId, buildLoginEmergencyRequest(sessionKey)) },
+                successBlock = { response ->
+                    handleAccount(response, sessionKey) {
+                        defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_EMERGENCY)
+                    }
+                },
+                doAfterNetworkSuccess = { hideLoading() },
+                defaultErrorHandle = {
+                    handleFailure(it)
+                },
+                defaultExceptionHandle = {
+                    handleError(it)
+                },
+            )
+        }
 
     private fun buildLoginEmergencyRequest(sessionKey: EdKeyPair): EmergencyRequest {
         val registrationId = CryptoPreference.getLocalRegistrationId(requireContext())

@@ -11,7 +11,9 @@ import one.mixin.android.extension.getParcelableExtraCompat
 
 @Parcelize
 enum class TipType : Parcelable {
-    Create, Change, Upgrade
+    Create,
+    Change,
+    Upgrade,
 }
 
 sealed class TipStep : Parcelable
@@ -31,7 +33,7 @@ sealed class TipStep : Parcelable
 
     @Parcelize internal data object Updating : Processing()
 
-    @Parcelize internal data object Registering: Processing()
+    @Parcelize internal data object Registering : Processing()
 }
 
 @Parcelize internal data class RetryRegister(val tipPriv: ByteArray?, val reason: String) : TipStep()
@@ -51,15 +53,20 @@ data class TipBundle(
 
     fun forRecover() = tipEvent != null
 
-    fun updateTipEvent(failedSigners: List<TipSigner>?, nodeCounter: Int) {
+    fun updateTipEvent(
+        failedSigners: List<TipSigner>?,
+        nodeCounter: Int,
+    ) {
         tipEvent = TipEvent(nodeCounter, failedSigners)
     }
 }
 
-internal fun Intent.getTipBundle(): TipBundle = requireNotNull(
-    getParcelableExtraCompat(TipFragment.ARGS_TIP_BUNDLE, TipBundle::class.java),
-) { "required TipBundle can not be null" }
+internal fun Intent.getTipBundle(): TipBundle =
+    requireNotNull(
+        getParcelableExtraCompat(TipFragment.ARGS_TIP_BUNDLE, TipBundle::class.java),
+    ) { "required TipBundle can not be null" }
 
-internal fun Bundle.getTipBundle(): TipBundle = requireNotNull(
-    getParcelableCompat(TipFragment.ARGS_TIP_BUNDLE, TipBundle::class.java),
-) { "required TipBundle can not be null" }
+internal fun Bundle.getTipBundle(): TipBundle =
+    requireNotNull(
+        getParcelableCompat(TipFragment.ARGS_TIP_BUNDLE, TipBundle::class.java),
+    ) { "required TipBundle can not be null" }

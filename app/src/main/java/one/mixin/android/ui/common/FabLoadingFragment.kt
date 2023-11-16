@@ -11,9 +11,12 @@ import one.mixin.android.widget.Keyboard
 
 abstract class FabLoadingFragment : BaseFragment {
     constructor() : super()
-    constructor(@LayoutRes contentLayoutId: Int) : super(contentLayoutId)
+    constructor(
+        @LayoutRes contentLayoutId: Int,
+    ) : super(contentLayoutId)
 
     abstract fun getContentView(): View
+
     protected val _contentView get() = getContentView()
 
     protected val backIv: View by lazy {
@@ -29,7 +32,10 @@ abstract class FabLoadingFragment : BaseFragment {
         _contentView.findViewById(R.id.verification_next_fab)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         verificationKeyboard.initPinKeys()

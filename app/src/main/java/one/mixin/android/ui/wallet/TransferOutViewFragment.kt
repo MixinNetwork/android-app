@@ -42,11 +42,11 @@ import kotlin.math.abs
 
 @AndroidEntryPoint
 class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotListener {
-
     companion object {
         const val TAG = "TransferOutViewController"
         private const val ARGS_USER_AVATAR_URL = "args_user_avatar_url"
         private const val ARGS_SYMBOL = "args_symbol"
+
         fun newInstance(
             assetId: String,
             userId: String? = null,
@@ -74,7 +74,10 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
     private val walletViewModel by viewModels<WalletViewModel>()
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         binding.apply {
@@ -111,14 +114,15 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
         isLoading = true
 
         lifecycleScope.launch(errorHandler) {
-            val result = walletViewModel.getSnapshots(
-                assetId,
-                opponent = userId,
-                destination = address?.destination,
-                tag = address?.tag,
-                offset = adapter.getLastSnapshotCreated(),
-                limit = LIMIT,
-            )
+            val result =
+                walletViewModel.getSnapshots(
+                    assetId,
+                    opponent = userId,
+                    destination = address?.destination,
+                    tag = address?.tag,
+                    offset = adapter.getLastSnapshotCreated(),
+                    limit = LIMIT,
+                )
             if (result.isSuccess && result.data?.isNotEmpty() == true) {
                 if (result.data?.size!! < LIMIT) {
                     hasMore = false
@@ -140,16 +144,16 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
     class SnapshotPagedAdapter :
         RecyclerView.Adapter<SnapshotHolder>(),
         StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
-
         var list: MutableList<SnapshotItem> = mutableListOf()
 
         var listener: OnSnapshotListener? = null
 
-        fun getLastSnapshotCreated(): String? = if (list.isEmpty()) {
-            null
-        } else {
-            list.last().createdAt
-        }
+        fun getLastSnapshotCreated(): String? =
+            if (list.isEmpty()) {
+                null
+            } else {
+                list.last().createdAt
+            }
 
         override fun getHeaderId(pos: Int): Long {
             val snapshot = getItem(pos)
@@ -159,19 +163,28 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
         override fun onCreateHeaderViewHolder(parent: ViewGroup) =
             SnapshotHeaderViewHolder(parent.inflate(R.layout.item_transaction_header, false))
 
-        override fun onBindHeaderViewHolder(vh: SnapshotHeaderViewHolder, pos: Int) {
+        override fun onBindHeaderViewHolder(
+            vh: SnapshotHeaderViewHolder,
+            pos: Int,
+        ) {
             getItem(pos).let {
                 vh.bind(it.createdAt)
             }
         }
 
-        override fun onBindViewHolder(holder: SnapshotHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: SnapshotHolder,
+            position: Int,
+        ) {
             getItem(position).let {
                 holder.bind(it, listener)
             }
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SnapshotHolder {
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): SnapshotHolder {
             return SnapshotHolder(
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_wallet_transactions, parent, false),

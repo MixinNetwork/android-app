@@ -31,7 +31,10 @@ class DatabaseDebugFragment : BaseFragment(R.layout.fragment_database_debug) {
     private val binding by viewBinding(FragmentDatabaseDebugBinding::bind)
 
     @SuppressLint("SetTextI18n")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.root.setOnClickListener { }
         binding.runBn.setOnClickListener {
@@ -70,13 +73,15 @@ class DatabaseDebugFragment : BaseFragment(R.layout.fragment_database_debug) {
         }
     }
 
-    private val showWarningRunnable = Runnable {
-        val bottom = WarningBottomSheetDialogFragment.newInstance(getString(R.string.db_debug_warning), 5)
-        bottom.callback = object : WarningBottomSheetDialogFragment.Callback {
-            override fun onContinue() {
-                defaultSharedPreferences.putBoolean(Constants.Debug.DB_DEBUG_WARNING, false)
-            }
+    private val showWarningRunnable =
+        Runnable {
+            val bottom = WarningBottomSheetDialogFragment.newInstance(getString(R.string.db_debug_warning), 5)
+            bottom.callback =
+                object : WarningBottomSheetDialogFragment.Callback {
+                    override fun onContinue() {
+                        defaultSharedPreferences.putBoolean(Constants.Debug.DB_DEBUG_WARNING, false)
+                    }
+                }
+            bottom.showNow(parentFragmentManager, WarningBottomSheetDialogFragment.TAG)
         }
-        bottom.showNow(parentFragmentManager, WarningBottomSheetDialogFragment.TAG)
-    }
 }

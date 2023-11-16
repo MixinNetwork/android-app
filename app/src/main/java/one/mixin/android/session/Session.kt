@@ -84,19 +84,20 @@ object Session {
         }
     }
 
-    fun getAccount(): Account? = if (self != null) {
-        self
-    } else {
-        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
-        val json = preference.getString(PREF_NAME_ACCOUNT, "")
-        if (!json.isNullOrBlank()) {
-            Gson().fromJson<Account>(json, object : TypeToken<Account>() {}.type).also {
-                self = it
-            }
+    fun getAccount(): Account? =
+        if (self != null) {
+            self
         } else {
-            null
+            val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
+            val json = preference.getString(PREF_NAME_ACCOUNT, "")
+            if (!json.isNullOrBlank()) {
+                Gson().fromJson<Account>(json, object : TypeToken<Account>() {}.type).also {
+                    self = it
+                }
+            } else {
+                null
+            }
         }
-    }
 
     fun clearAccount() {
         self = null
@@ -210,11 +211,16 @@ object Session {
 
     fun checkToken() = getAccount() != null && !getPinToken().isNullOrBlank()
 
-    fun shouldUpdateKey() = getEd25519Seed().isNullOrBlank() &&
-        !MixinApplication.appContext.defaultSharedPreferences
-            .getBoolean(PREF_TRIED_UPDATE_KEY, false)
+    fun shouldUpdateKey() =
+        getEd25519Seed().isNullOrBlank() &&
+            !MixinApplication.appContext.defaultSharedPreferences
+                .getBoolean(PREF_TRIED_UPDATE_KEY, false)
 
-    fun signToken(acct: Account?, request: Request, xRequestId: String): String {
+    fun signToken(
+        acct: Account?,
+        request: Request,
+        xRequestId: String,
+    ): String {
         return if (useGoEd()) {
             signGoToken(acct, request, xRequestId)
         } else {
@@ -222,7 +228,11 @@ object Session {
         }
     }
 
-    fun requestDelay(acct: Account?, string: String, offset: Int): JwtResult {
+    fun requestDelay(
+        acct: Account?,
+        string: String,
+        offset: Int,
+    ): JwtResult {
         return if (useGoEd()) {
             requestGoDelay(acct, string, offset)
         } else {
@@ -230,7 +240,12 @@ object Session {
         }
     }
 
-    fun signGoToken(acct: Account?, request: Request, xRequestId: String, key: ByteArray? = getGoJwtKey(true)): String {
+    fun signGoToken(
+        acct: Account?,
+        request: Request,
+        xRequestId: String,
+        key: ByteArray? = getGoJwtKey(true),
+    ): String {
         if (acct == null || key == null) {
             return ""
         }
@@ -245,7 +260,12 @@ object Session {
         return Jwt.signToken(xRequestId, acct.userId, acct.sessionId, content.sha256().toHex(), key)
     }
 
-    fun signLegacyToken(acct: Account?, request: Request, xRequestId: String, key: Key? = getLegacyJwtKey(true)): String {
+    fun signLegacyToken(
+        acct: Account?,
+        request: Request,
+        xRequestId: String,
+        key: Key? = getLegacyJwtKey(true),
+    ): String {
         if (acct == null || key == null) {
             return ""
         }
@@ -275,7 +295,12 @@ object Session {
             .compact()
     }
 
-    fun requestGoDelay(acct: Account?, string: String, offset: Int, key: ByteArray? = getGoJwtKey(false)): JwtResult {
+    fun requestGoDelay(
+        acct: Account?,
+        string: String,
+        offset: Int,
+        key: ByteArray? = getGoJwtKey(false),
+    ): JwtResult {
         if (acct == null || key == null) {
             return JwtResult(false)
         }
@@ -295,7 +320,12 @@ object Session {
         }
     }
 
-    fun requestLegacyDelay(acct: Account?, string: String, offset: Int, key: Key? = getLegacyJwtKey(false)): JwtResult {
+    fun requestLegacyDelay(
+        acct: Account?,
+        string: String,
+        offset: Int,
+        key: Key? = getLegacyJwtKey(false),
+    ): JwtResult {
         if (acct == null || key == null) {
             return JwtResult(false)
         }
@@ -364,7 +394,10 @@ object Session {
         return Pair(ts, (requireNotNull(getAccountId()).toByteArray() + content.hmacSha256(sharedKey)).base64RawURLEncode())
     }
 
-    fun getRegisterSignature(message: String, seed: ByteArray): String {
+    fun getRegisterSignature(
+        message: String,
+        seed: ByteArray,
+    ): String {
         val signTarget = message.sha3Sum256()
         return if (useGoEd()) {
             Ed25519.sign(signTarget, seed).base64RawURLEncode()
@@ -380,7 +413,10 @@ object Session {
     }
 }
 
-fun decryptPinToken(serverPublicKey: ByteArray, privateKey: ByteArray): ByteArray {
+fun decryptPinToken(
+    serverPublicKey: ByteArray,
+    privateKey: ByteArray,
+): ByteArray {
     val private = privateKeyToCurve25519(privateKey)
     return calculateAgreement(serverPublicKey, private)
 }

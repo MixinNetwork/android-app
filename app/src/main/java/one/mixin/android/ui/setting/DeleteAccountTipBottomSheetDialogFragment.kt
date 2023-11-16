@@ -20,7 +20,10 @@ class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment
     private val binding by viewBinding(FragmentDeleteAccountTipBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).run {

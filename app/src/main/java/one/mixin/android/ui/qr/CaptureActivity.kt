@@ -22,7 +22,6 @@ import one.mixin.android.util.isCameraCanUse
 
 @AndroidEntryPoint
 class CaptureActivity : BlazeBaseActivity() {
-
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_Capture
     }
@@ -83,13 +82,19 @@ class CaptureActivity : BlazeBaseActivity() {
     }
 
     class CaptureContract : ActivityResultContract<Pair<String, Boolean>, Intent?>() {
-        override fun createIntent(context: Context, input: Pair<String, Boolean>): Intent {
+        override fun createIntent(
+            context: Context,
+            input: Pair<String, Boolean>,
+        ): Intent {
             return Intent(context, CaptureActivity::class.java).apply {
                 putExtra(input.first, input.second)
             }
         }
 
-        override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
+        override fun parseResult(
+            resultCode: Int,
+            intent: Intent?,
+        ): Intent? {
             if (intent == null || resultCode != Activity.RESULT_OK) return null
             return intent
         }

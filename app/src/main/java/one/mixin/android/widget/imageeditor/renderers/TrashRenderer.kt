@@ -16,19 +16,20 @@ import one.mixin.android.widget.imageeditor.Renderer
 import one.mixin.android.widget.imageeditor.RendererContext
 
 internal class TrashRenderer : InvalidateableRenderer, Renderer, Parcelable {
+    private val outlinePaint =
+        Paint().apply {
+            isAntiAlias = true
+            color = Color.WHITE
+            style = Paint.Style.STROKE
+            strokeWidth = DimensionUnit.DP.toPixels(1.5f)
+        }
 
-    private val outlinePaint = Paint().apply {
-        isAntiAlias = true
-        color = Color.WHITE
-        style = Paint.Style.STROKE
-        strokeWidth = DimensionUnit.DP.toPixels(1.5f)
-    }
-
-    private val shadePaint = Paint().apply {
-        isAntiAlias = true
-        color = 0x99000000.toInt()
-        style = Paint.Style.FILL
-    }
+    private val shadePaint =
+        Paint().apply {
+            isAntiAlias = true
+            color = 0x99000000.toInt()
+            style = Paint.Style.FILL
+        }
 
     private val bounds = RectF()
 
@@ -117,7 +118,10 @@ internal class TrashRenderer : InvalidateableRenderer, Renderer, Parcelable {
         invalidate()
     }
 
-    override fun hitTest(x: Float, y: Float): Boolean {
+    override fun hitTest(
+        x: Float,
+        y: Float,
+    ): Boolean {
         val dx = x - buttonCenter[0]
         val dy = y - buttonCenter[1]
         val radius = diameterLarge / 2
@@ -129,21 +133,24 @@ internal class TrashRenderer : InvalidateableRenderer, Renderer, Parcelable {
         return 0
     }
 
-    override fun writeToParcel(dest: Parcel, flags: Int) {}
+    override fun writeToParcel(
+        dest: Parcel,
+        flags: Int,
+    ) {}
 
     companion object {
-
         private const val DURATION = 150L
 
         @JvmField
-        val CREATOR: Parcelable.Creator<TrashRenderer> = object : Parcelable.Creator<TrashRenderer> {
-            override fun createFromParcel(`in`: Parcel): TrashRenderer {
-                return TrashRenderer()
-            }
+        val CREATOR: Parcelable.Creator<TrashRenderer> =
+            object : Parcelable.Creator<TrashRenderer> {
+                override fun createFromParcel(`in`: Parcel): TrashRenderer {
+                    return TrashRenderer()
+                }
 
-            override fun newArray(size: Int): Array<TrashRenderer?> {
-                return arrayOfNulls(size)
+                override fun newArray(size: Int): Array<TrashRenderer?> {
+                    return arrayOfNulls(size)
+                }
             }
-        }
     }
 }

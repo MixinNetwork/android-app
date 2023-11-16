@@ -20,6 +20,7 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
     val leftIv = binding.leftIv
     val rightIv = binding.rightIv
     val titleTv = binding.titleTv
+
     init {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.RoundTitleView)
         if (ta.hasValue(R.styleable.RoundTitleView_title_text)) {
@@ -79,7 +80,10 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
         }
     }
 
-    fun setSubTitle(first: String, second: String? = null) {
+    fun setSubTitle(
+        first: String,
+        second: String? = null,
+    ) {
         binding.titleTv.text = first
         if (second.isNullOrBlank()) {
             binding.subTitleTv.visibility = View.GONE

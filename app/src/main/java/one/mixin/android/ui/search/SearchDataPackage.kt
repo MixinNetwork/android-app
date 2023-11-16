@@ -1,10 +1,10 @@
 package one.mixin.android.ui.search
 
 import one.mixin.android.ui.search.holder.TipItem
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
 import kotlin.math.min
 
 class SearchDataPackage(
@@ -14,7 +14,6 @@ class SearchDataPackage(
     var messageList: List<SearchMessageItem>? = null,
     var url: String? = null,
 ) {
-
     companion object {
         const val LIMIT_COUNT = 3
     }
@@ -74,29 +73,33 @@ class SearchDataPackage(
         }
     }
 
-    private fun assetCount() = if (assetLimit) {
-        min(assetList?.size ?: 0, LIMIT_COUNT)
-    } else {
-        assetList?.size ?: 0
-    }
+    private fun assetCount() =
+        if (assetLimit) {
+            min(assetList?.size ?: 0, LIMIT_COUNT)
+        } else {
+            assetList?.size ?: 0
+        }
 
-    private fun userCount() = if (userLimit) {
-        min(userList?.size ?: 0, LIMIT_COUNT)
-    } else {
-        userList?.size ?: 0
-    }
+    private fun userCount() =
+        if (userLimit) {
+            min(userList?.size ?: 0, LIMIT_COUNT)
+        } else {
+            userList?.size ?: 0
+        }
 
-    fun chatCount() = if (chatLimit) {
-        min(chatList?.size ?: 0, LIMIT_COUNT)
-    } else {
-        chatList?.size ?: 0
-    }
+    fun chatCount() =
+        if (chatLimit) {
+            min(chatList?.size ?: 0, LIMIT_COUNT)
+        } else {
+            chatList?.size ?: 0
+        }
 
-    fun messageCount() = if (messageLimit) {
-        min(messageList?.size ?: 0, LIMIT_COUNT)
-    } else {
-        messageList?.size ?: 0
-    }
+    fun messageCount() =
+        if (messageLimit) {
+            min(messageList?.size ?: 0, LIMIT_COUNT)
+        } else {
+            messageList?.size ?: 0
+        }
 
     fun getCount() = assetCount() + chatCount() + userCount() + messageCount().incTip()
 
@@ -127,5 +130,6 @@ class SearchDataPackage(
     }
 
     private fun Int.incTip() = this + if (showTip) 1 else 0
+
     private fun Int.decTip() = this - if (showTip) 1 else 0
 }

@@ -32,30 +32,31 @@ fun TextView.highlightStarTag(
     @ColorInt color: Int = ContextCompat.getColor(context, R.color.colorBlue),
     onItemListener: MessageAdapter.OnItemListener? = null,
 ) {
-    val spannableStringBuilder = try {
-        var start: Int
-        var end: Int
-        val stringBuilder = StringBuilder(source)
-        val targets = arrayListOf<Int>()
-        while (stringBuilder.indexOf("**").also { start = it } != -1) {
-            stringBuilder.replace(start, start + 2, "")
-            end = stringBuilder.indexOf("**")
-            if (end >= 0) {
-                stringBuilder.replace(end, end + 2, "")
-                targets.add(start)
-                targets.add(end)
+    val spannableStringBuilder =
+        try {
+            var start: Int
+            var end: Int
+            val stringBuilder = StringBuilder(source)
+            val targets = arrayListOf<Int>()
+            while (stringBuilder.indexOf("**").also { start = it } != -1) {
+                stringBuilder.replace(start, start + 2, "")
+                end = stringBuilder.indexOf("**")
+                if (end >= 0) {
+                    stringBuilder.replace(end, end + 2, "")
+                    targets.add(start)
+                    targets.add(end)
+                }
             }
-        }
 
-        val spannableStringBuilder = SpannableStringBuilder(stringBuilder)
-        for (i in 0 until targets.count() / 2) {
-            spannableStringBuilder.setSpan(NoUnderLineSpan(links[i], onItemListener), targets[i * 2], targets[i * 2 + 1], Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
-            spannableStringBuilder.setSpan(ForegroundColorSpan(color), targets[i * 2], targets[i * 2 + 1], Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
+            val spannableStringBuilder = SpannableStringBuilder(stringBuilder)
+            for (i in 0 until targets.count() / 2) {
+                spannableStringBuilder.setSpan(NoUnderLineSpan(links[i], onItemListener), targets[i * 2], targets[i * 2 + 1], Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
+                spannableStringBuilder.setSpan(ForegroundColorSpan(color), targets[i * 2], targets[i * 2 + 1], Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
+            }
+            spannableStringBuilder
+        } catch (e: Exception) {
+            SpannableStringBuilder(source)
         }
-        spannableStringBuilder
-    } catch (e: Exception) {
-        SpannableStringBuilder(source)
-    }
 
     text = spannableStringBuilder
     movementMethod = LinkMovementMethod.getInstance()
@@ -176,7 +177,10 @@ fun TextView.timeAgoDate(str: String) {
     text = str.timeAgoDate(context)
 }
 
-fun TextView.timeAgoDay(str: String, pattern: String = "dd/MM/yyyy") {
+fun TextView.timeAgoDay(
+    str: String,
+    pattern: String = "dd/MM/yyyy",
+) {
     text = str.timeAgoDay(pattern)
 }
 
@@ -216,7 +220,9 @@ fun EditText.clearCharacterStyle() {
     }
 }
 
-fun AutoLinkTextView.initChatMode(@ColorInt linkColor: Int) {
+fun AutoLinkTextView.initChatMode(
+    @ColorInt linkColor: Int,
+) {
     addAutoLinkMode(AutoLinkMode.MODE_BOT, AutoLinkMode.MODE_EMAIL, AutoLinkMode.MODE_URL)
     setUrlModeColor(linkColor)
     setMentionModeColor(linkColor)

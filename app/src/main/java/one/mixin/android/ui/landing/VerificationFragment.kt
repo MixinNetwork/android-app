@@ -67,15 +67,17 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             pin: String? = null,
             hasEmergencyContact: Boolean = false,
             from: Int = FROM_LANDING,
-        ): VerificationFragment = VerificationFragment().apply {
-            arguments = bundleOf(
-                ARGS_ID to id,
-                ARGS_PHONE_NUM to phoneNum,
-                ARGS_PIN to pin,
-                ARGS_HAS_EMERGENCY_CONTACT to hasEmergencyContact,
-                ARGS_FROM to from,
-            )
-        }
+        ): VerificationFragment =
+            VerificationFragment().apply {
+                arguments =
+                    bundleOf(
+                        ARGS_ID to id,
+                        ARGS_PHONE_NUM to phoneNum,
+                        ARGS_PIN to pin,
+                        ARGS_HAS_EMERGENCY_CONTACT to hasEmergencyContact,
+                        ARGS_FROM to from,
+                    )
+            }
     }
 
     private val viewModel by viewModels<MobileViewModel>()
@@ -98,7 +100,10 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
 
     override fun getContentView() = binding.root
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         hasEmergencyContact = requireArguments().getBoolean(ARGS_HAS_EMERGENCY_CONTACT)
         binding.pinVerificationTitleTv.text = getString(R.string.landing_validation_title, phoneNum)
@@ -181,76 +186,80 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             )
     }
 
-    private fun handlePhoneModification() = lifecycleScope.launch {
-        showLoading()
-        handleMixinResponse(
-            invokeNetwork = {
-                viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code(), pin = pin!!)
-            },
-            successBlock = {
-                withContext(Dispatchers.IO) {
-                    val a = Session.getAccount()
-                    a?.let {
-                        val phone = requireArguments().getString(ARGS_PHONE_NUM)
-                            ?: return@withContext
-                        viewModel.updatePhone(a.userId, phone)
-                        a.phone = phone
-                        Session.storeAccount(a)
+    private fun handlePhoneModification() =
+        lifecycleScope.launch {
+            showLoading()
+            handleMixinResponse(
+                invokeNetwork = {
+                    viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code(), pin = pin!!)
+                },
+                successBlock = {
+                    withContext(Dispatchers.IO) {
+                        val a = Session.getAccount()
+                        a?.let {
+                            val phone =
+                                requireArguments().getString(ARGS_PHONE_NUM)
+                                    ?: return@withContext
+                            viewModel.updatePhone(a.userId, phone)
+                            a.phone = phone
+                            Session.storeAccount(a)
+                        }
                     }
-                }
-                alert(getString(R.string.Changed))
-                    .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                        dialog.dismiss()
-                        activity?.finish()
+                    alert(getString(R.string.Changed))
+                        .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                            dialog.dismiss()
+                            activity?.finish()
+                        }
+                        .show()
+                },
+                doAfterNetworkSuccess = { hideLoading() },
+                defaultErrorHandle = {
+                    handleFailure(it)
+                },
+                defaultExceptionHandle = {
+                    if (it is TipNetworkException) {
+                        handleFailure(it.error)
+                    } else {
+                        handleError(it)
                     }
-                    .show()
-            },
-            doAfterNetworkSuccess = { hideLoading() },
-            defaultErrorHandle = {
-                handleFailure(it)
-            },
-            defaultExceptionHandle = {
-                if (it is TipNetworkException) {
-                    handleFailure(it.error)
-                } else {
+                },
+            )
+        }
+
+    private fun handleLogin() =
+        lifecycleScope.launch {
+            showLoading()
+
+            SignalProtocol.initSignal(requireContext().applicationContext)
+            val registrationId = CryptoPreference.getLocalRegistrationId(requireContext())
+            val sessionKey = generateEd25519KeyPair()
+            val publicKey = sessionKey.publicKey
+
+            val sessionSecret = publicKey.base64Encode()
+            val accountRequest =
+                AccountRequest(
+                    binding.pinVerificationView.code(),
+                    registration_id = registrationId,
+                    purpose = VerificationPurpose.SESSION.name,
+                    session_secret = sessionSecret,
+                )
+
+            handleMixinResponse(
+                invokeNetwork = { viewModel.create(requireArguments().getString(ARGS_ID)!!, accountRequest) },
+                successBlock = { response ->
+                    handleAccount(response, sessionKey) {
+                        defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
+                    }
+                },
+                doAfterNetworkSuccess = { hideLoading() },
+                defaultErrorHandle = {
+                    handleFailure(it)
+                },
+                defaultExceptionHandle = {
                     handleError(it)
-                }
-            },
-        )
-    }
-
-    private fun handleLogin() = lifecycleScope.launch {
-        showLoading()
-
-        SignalProtocol.initSignal(requireContext().applicationContext)
-        val registrationId = CryptoPreference.getLocalRegistrationId(requireContext())
-        val sessionKey = generateEd25519KeyPair()
-        val publicKey = sessionKey.publicKey
-
-        val sessionSecret = publicKey.base64Encode()
-        val accountRequest = AccountRequest(
-            binding.pinVerificationView.code(),
-            registration_id = registrationId,
-            purpose = VerificationPurpose.SESSION.name,
-            session_secret = sessionSecret,
-        )
-
-        handleMixinResponse(
-            invokeNetwork = { viewModel.create(requireArguments().getString(ARGS_ID)!!, accountRequest) },
-            successBlock = { response ->
-                handleAccount(response, sessionKey) {
-                    defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
-                }
-            },
-            doAfterNetworkSuccess = { hideLoading() },
-            defaultErrorHandle = {
-                handleFailure(it)
-            },
-            defaultExceptionHandle = {
-                handleError(it)
-            },
-        )
-    }
+                },
+            )
+        }
 
     override fun hideLoading() {
         super.hideLoading()
@@ -259,14 +268,15 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
 
     private fun sendVerification(captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null) {
         showLoading()
-        val verificationRequest = VerificationRequest(
-            requireArguments().getString(ARGS_PHONE_NUM),
-            when {
-                from == FROM_DELETE_ACCOUNT -> VerificationPurpose.DEACTIVATED.name
-                isPhoneModification() -> VerificationPurpose.PHONE.name
-                else -> VerificationPurpose.SESSION.name
-            },
-        )
+        val verificationRequest =
+            VerificationRequest(
+                requireArguments().getString(ARGS_PHONE_NUM),
+                when {
+                    from == FROM_DELETE_ACCOUNT -> VerificationPurpose.DEACTIVATED.name
+                    isPhoneModification() -> VerificationPurpose.PHONE.name
+                    else -> VerificationPurpose.SESSION.name
+                },
+            )
         if (captchaResponse != null) {
             if (captchaResponse.first.isG()) {
                 verificationRequest.gRecaptchaResponse = captchaResponse.second
@@ -299,37 +309,39 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             )
     }
 
-    private fun initAndLoadCaptcha() = lifecycleScope.launch {
-        if (captchaView == null) {
-            captchaView = CaptchaView(
-                requireContext(),
-                object : CaptchaView.Callback {
-                    override fun onStop() {
-                        hideLoading()
-                    }
+    private fun initAndLoadCaptcha() =
+        lifecycleScope.launch {
+            if (captchaView == null) {
+                captchaView =
+                    CaptchaView(
+                        requireContext(),
+                        object : CaptchaView.Callback {
+                            override fun onStop() {
+                                hideLoading()
+                            }
 
-                    override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
-                        sendVerification(value)
-                    }
-                },
-            )
-            (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
+                            override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
+                                sendVerification(value)
+                            }
+                        },
+                    )
+                (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
+            }
+            captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
         }
-        captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
-    }
 
     private fun startCountDown() {
         mCountDownTimer?.cancel()
-        mCountDownTimer = object : CountDownTimer(60000, 1000) {
+        mCountDownTimer =
+            object : CountDownTimer(60000, 1000) {
+                override fun onTick(l: Long) {
+                    binding.verificationResendTv.text = getString(R.string.Resend_code_in, l / 1000)
+                }
 
-            override fun onTick(l: Long) {
-                binding.verificationResendTv.text = getString(R.string.Resend_code_in, l / 1000)
+                override fun onFinish() {
+                    resetCountDown()
+                }
             }
-
-            override fun onFinish() {
-                resetCountDown()
-            }
-        }
         mCountDownTimer?.start()
         binding.verificationResendTv.isEnabled = false
         context?.let {

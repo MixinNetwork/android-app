@@ -58,7 +58,11 @@ import kotlin.math.roundToInt
 
 private const val QUIET_ZONE_SIZE = 4
 private val radii = FloatArray(8)
-fun String.generateQRCode(qrSize: Int, padding: Int = 32.dp): Pair<Bitmap, Int> {
+
+fun String.generateQRCode(
+    qrSize: Int,
+    padding: Int = 32.dp,
+): Pair<Bitmap, Int> {
     require(isNotEmpty()) { "Found empty contents" }
     require(qrSize >= 0) { "Requested dimensions are too small: $qrSize" }
     var errorCorrectionLevel = ErrorCorrectionLevel.M
@@ -169,7 +173,14 @@ fun String.generateQRCode(qrSize: Int, padding: Int = 32.dp): Pair<Bitmap, Int> 
     return Pair(bitmap, imageIgnore * multiple - 2.dp)
 }
 
-private fun has(input: ByteMatrix, imageBlockX: Int, imageBloks: Int, sideQuadSize: Int, x: Int, y: Int): Boolean {
+private fun has(
+    input: ByteMatrix,
+    imageBlockX: Int,
+    imageBloks: Int,
+    sideQuadSize: Int,
+    x: Int,
+    y: Int,
+): Boolean {
     if (x >= imageBlockX && x < imageBlockX + imageBloks && y >= imageBlockX && y < imageBlockX + imageBloks) {
         return false
     }
@@ -236,13 +247,15 @@ inline fun String.isWebUrl(): Boolean {
     return startsWith("http://", true) || startsWith("https://", true)
 }
 
-inline fun <reified T> Gson.fromJson(json: JsonElement) = try {
-    this.fromJson<T>(json, object : TypeToken<T>() {}.type)!!
-} catch (_: JsonSyntaxException) {
-    null
-}
+inline fun <reified T> Gson.fromJson(json: JsonElement) =
+    try {
+        this.fromJson<T>(json, object : TypeToken<T>() {}.type)!!
+    } catch (_: JsonSyntaxException) {
+        null
+    }
 
 private val HEX_CHARS = "0123456789abcdef"
+
 fun ByteArray.toHex(): String {
     val hex = HEX_CHARS.toCharArray()
     val result = StringBuffer()
@@ -408,13 +421,14 @@ fun String.getPattern(count: Int = 8): String {
     if (index == -1) return ",###"
     if (index >= count) return ",###"
 
-    val bit = if (index == 1 && this[0] == '0') {
-        count + 1
-    } else if (index == 2 && this[0] == '-' && this[1] == '0') {
-        count + 2
-    } else {
-        count
-    }
+    val bit =
+        if (index == 1 && this[0] == '0') {
+            count + 1
+        } else if (index == 2 && this[0] == '-' && this[1] == '0') {
+            count + 2
+        } else {
+            count
+        }
 
     val sb = StringBuilder(",###.")
     for (i in 0 until (bit - index)) {
@@ -433,13 +447,14 @@ fun Long.formatMillis(): String {
 fun Editable.maxDecimal(bit: Int = 8) {
     val index = this.indexOf('.')
     if (index > -1) {
-        val max = if (index == 1 && this[0] == '0') {
-            bit
-        } else if (index == 2 && this[0] == '-' && this[1] == '0') {
-            bit + 1
-        } else {
-            bit - 1
-        }
+        val max =
+            if (index == 1 && this[0] == '0') {
+                bit
+            } else if (index == 2 && this[0] == '-' && this[1] == '0') {
+                bit + 1
+            } else {
+                bit - 1
+            }
         if (this.length - 1 - index > max) {
             this.delete(this.length - 1, this.length)
         }
@@ -460,28 +475,32 @@ val idNameCodeMap = ConcurrentHashMap<String, Int>()
 
 sealed class CodeType(val count: Int) {
     class Name(count: Int) : CodeType(count)
+
     class Avatar(count: Int) : CodeType(count)
 }
 
 fun String.getColorCode(codeType: CodeType): Int {
-    val cacheMap = when (codeType) {
-        is CodeType.Name -> idNameCodeMap
-        is CodeType.Avatar -> idAvatarCodeMap
-    }
-    var code = try {
-        cacheMap[this]
-    } catch (e: NullPointerException) {
-        null
-    }
+    val cacheMap =
+        when (codeType) {
+            is CodeType.Name -> idNameCodeMap
+            is CodeType.Avatar -> idAvatarCodeMap
+        }
+    var code =
+        try {
+            cacheMap[this]
+        } catch (e: NullPointerException) {
+            null
+        }
     if (code != null) return code
 
-    val hashcode = try {
-        UUID.fromString(this).hashCode()
-    } catch (e: IllegalArgumentException) {
-        hashCode()
-    } catch (e: NullPointerException) {
-        0
-    }
+    val hashcode =
+        try {
+            UUID.fromString(this).hashCode()
+        } catch (e: IllegalArgumentException) {
+            hashCode()
+        } catch (e: NullPointerException) {
+            0
+        }
     code = abs(hashcode).rem(codeType.count)
     try {
         cacheMap[this] = code
@@ -578,16 +597,18 @@ fun String.joinStar() = joinWithCharacter('*')
 fun String.joinWithCharacter(char: Char): String {
     val result = StringBuilder()
     this.trim().forEachIndexed { i, c ->
-        val lookAhead = try {
-            this[i + 1]
-        } catch (ignored: IndexOutOfBoundsException) {
-            char
-        }
-        val isSameType = if (c.isAlphabet() && lookAhead.isAlphabet()) {
-            true
-        } else {
-            c.isDigit() && lookAhead.isDigit()
-        }
+        val lookAhead =
+            try {
+                this[i + 1]
+            } catch (ignored: IndexOutOfBoundsException) {
+                char
+            }
+        val isSameType =
+            if (c.isAlphabet() && lookAhead.isAlphabet()) {
+                true
+            } else {
+                c.isDigit() && lookAhead.isDigit()
+            }
 
         val needWhiteSpace = !isSameType && !c.isWhitespace()
         result.append(c)
@@ -600,10 +621,16 @@ fun String.joinWithCharacter(char: Char): String {
 
 private fun Char.isAlphabet() = this in 'a'..'z' || this in 'A'..'Z'
 
-fun String.appendQueryParamsFromOtherUri(otherUri: Uri, exclusiveKey: String = "action"): String =
+fun String.appendQueryParamsFromOtherUri(
+    otherUri: Uri,
+    exclusiveKey: String = "action",
+): String =
     this.toUri().appendQueryParamsFromOtherUri(otherUri, exclusiveKey)
 
-fun Uri.appendQueryParamsFromOtherUri(otherUri: Uri, exclusiveKey: String = "action"): String {
+fun Uri.appendQueryParamsFromOtherUri(
+    otherUri: Uri,
+    exclusiveKey: String = "action",
+): String {
     val builder = this.buildUpon()
     otherUri.queryParameterNames
         .filter { it != exclusiveKey }
@@ -629,19 +656,23 @@ fun String?.containsCaseInsensitive(other: String?) =
     }
 
 fun String?.equalsIgnoreCase(other: String?): Boolean = this?.equals(other, true) == true
+
 fun String?.equalsIgnoreCase(other: CharSequence?): Boolean = equalsIgnoreCase(other.toString())
+
 fun String?.containsIgnoreCase(other: CharSequence?): Boolean = this?.contains(other.toString(), true) == true
+
 fun String?.startsWithIgnoreCase(other: CharSequence?): Boolean = this?.startsWith(other.toString(), true) == true
 
 inline fun SpannableStringBuilder.backgroundColor(color: Int): BackgroundColorSpan =
     BackgroundColorSpan(color)
 
 fun String.matchResourcePattern(resourcePatterns: Collection<String>?): Boolean {
-    fun toSchemeHostOrNull(url: String) = try {
-        url.toUri().run { "$scheme://$host" }
-    } catch (ignored: Exception) {
-        null
-    }
+    fun toSchemeHostOrNull(url: String) =
+        try {
+            url.toUri().run { "$scheme://$host" }
+        } catch (ignored: Exception) {
+            null
+        }
     val uri = toSchemeHostOrNull(this)
     return resourcePatterns?.mapNotNull { pattern -> toSchemeHostOrNull(pattern) }
         ?.find { pattern -> uri.equals(pattern, true) } != null
@@ -702,6 +733,6 @@ fun ByteArray.isByteArrayValidUtf8(): Boolean {
     }
 }
 
-fun String.isValidHex():Boolean{
+fun String.isValidHex(): Boolean {
     return matches("[0-9a-fA-F]+".toRegex())
 }

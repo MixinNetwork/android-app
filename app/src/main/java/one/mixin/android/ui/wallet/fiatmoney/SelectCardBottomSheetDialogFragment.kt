@@ -30,20 +30,20 @@ import one.mixin.android.extension.round
 import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.cardIcon
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.MixinBottomSheetDialog
 
 @AndroidEntryPoint
 class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "SelectCardBottomSheetDialogFragment"
 
-        fun newInstance(bundle: Bundle) = SelectCardBottomSheetDialogFragment().apply {
-            arguments = bundle
-        }
+        fun newInstance(bundle: Bundle) =
+            SelectCardBottomSheetDialogFragment().apply {
+                arguments = bundle
+            }
     }
 
     private val asset by lazy {
@@ -66,6 +66,7 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
     var addCallback: (() -> Unit)? = null
 
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
+
     override fun getTheme() = R.style.MixinBottomSheet
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -80,7 +81,10 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private lateinit var contentView: View
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         _binding = FragmentSelectCardBinding.inflate(LayoutInflater.from(context), null, false)
         contentView = binding.root
@@ -96,15 +100,20 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
             title.titleTv.setTypeface(null, Typeface.BOLD)
             ItemTouchHelper(
-                ItemCallback(object : ItemCallback.ItemCallbackListener {
-                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                        lifecycleScope.launch {
-                            val anchorView = cardRv
-                            val card = cardAdapter.data?.get(viewHolder.absoluteAdapterPosition) ?: return@launch
-                            delete(card)
+                ItemCallback(
+                    object : ItemCallback.ItemCallbackListener {
+                        override fun onSwiped(
+                            viewHolder: RecyclerView.ViewHolder,
+                            direction: Int,
+                        ) {
+                            lifecycleScope.launch {
+                                val anchorView = cardRv
+                                val card = cardAdapter.data?.get(viewHolder.absoluteAdapterPosition) ?: return@launch
+                                delete(card)
+                            }
                         }
-                    }
-                }) { viewHolder ->
+                    },
+                ) { viewHolder ->
                     if (viewHolder.absoluteAdapterPosition >= (cardAdapter.data?.size ?: 0)) {
                         0
                     } else {
@@ -173,11 +182,13 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     class CardAdapter(val addCallback: () -> Unit, val callback: (String, String, String) -> Unit) :
         RecyclerView.Adapter<CardViewHolder>() {
-
         var data: List<Card>? = null
         var deletingIds: ArraySet<String> = arraySetOf()
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): CardViewHolder {
             val binding =
                 ItemCardBinding.inflate(LayoutInflater.from(parent.context), parent, false)
             return CardViewHolder(binding)
@@ -187,7 +198,10 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
             return (data?.size ?: 0) + 1
         }
 
-        override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: CardViewHolder,
+            position: Int,
+        ) {
             if (position == data?.size) {
                 holder.bind()
                 holder.itemView.setOnClickListener {
@@ -209,7 +223,10 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
 
         @SuppressLint("SetTextI18n", "DefaultLocale")
-        fun bind(card: Card? = null, deleting: Boolean = false) {
+        fun bind(
+            card: Card? = null,
+            deleting: Boolean = false,
+        ) {
             if (card == null) {
                 binding.cardNumber.setText(R.string.Add_debit_or_credit_card)
                 binding.logo.setImageResource(R.drawable.ic_select_add)

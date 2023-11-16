@@ -28,9 +28,10 @@ class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
 
         const val PAGE_SIZE = 25
 
-        fun newInstance(conversationId: String) = MediaFragment().withArgs {
-            putString(ARGS_CONVERSATION_ID, conversationId)
-        }
+        fun newInstance(conversationId: String) =
+            MediaFragment().withArgs {
+                putString(ARGS_CONVERSATION_ID, conversationId)
+            }
     }
 
     private val conversationId: String by lazy {
@@ -41,35 +42,43 @@ class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
         PADDING.dp
     }
 
-    private val adapter = MediaAdapter(
-        fun(imageView: View, messageItem: MessageItem) {
-            MediaPagerActivity.show(requireActivity(), imageView, conversationId, messageItem.messageId, messageItem, MediaPagerActivity.MediaSource.SharedMedia)
-        },
-        fun(messageId: String) {
-            onLongClickListener?.invoke(messageId)
-        },
-    )
+    private val adapter =
+        MediaAdapter(
+            fun(
+                imageView: View,
+                messageItem: MessageItem,
+            ) {
+                MediaPagerActivity.show(requireActivity(), imageView, conversationId, messageItem.messageId, messageItem, MediaPagerActivity.MediaSource.SharedMedia)
+            },
+            fun(messageId: String) {
+                onLongClickListener?.invoke(messageId)
+            },
+        )
 
     private val viewModel by viewModels<SharedMediaViewModel>()
     private val binding by viewBinding(LayoutRecyclerViewBinding::bind)
     var onLongClickListener: ((String) -> Unit)? = null
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         adapter.size = (requireContext().realSize().x - (COLUMN - 1) * padding) / COLUMN
         val lm = GridLayoutManager(requireContext(), COLUMN)
-        lm.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int {
-                return if (different2Next(position)) {
-                    val offset = getSameIdItemCount(position)
-                    val columnIndex = offset.rem(COLUMN)
-                    val extraColumn = COLUMN - (columnIndex + 1)
-                    1 + extraColumn
-                } else {
-                    1
+        lm.spanSizeLookup =
+            object : GridLayoutManager.SpanSizeLookup() {
+                override fun getSpanSize(position: Int): Int {
+                    return if (different2Next(position)) {
+                        val offset = getSameIdItemCount(position)
+                        val columnIndex = offset.rem(COLUMN)
+                        val extraColumn = COLUMN - (columnIndex + 1)
+                        1 + extraColumn
+                    } else {
+                        1
+                    }
                 }
             }
-        }
         binding.recyclerView.layoutManager = lm
         binding.recyclerView.itemAnimator = null
         binding.recyclerView.isVerticalScrollBarEnabled = false

@@ -34,13 +34,17 @@ class SettingBlockedFragment : BaseFragment(R.layout.fragment_blocked) {
 
     private val adapter = BlockedAdapter()
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        adapter.callback = object : Callback {
-            override fun onClick(user: User) {
-                showUserBottom(parentFragmentManager, user)
+        adapter.callback =
+            object : Callback {
+                override fun onClick(user: User) {
+                    showUserBottom(parentFragmentManager, user)
+                }
             }
-        }
         binding.apply {
             blockedRv.adapter = adapter
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
@@ -81,7 +85,10 @@ class SettingBlockedFragment : BaseFragment(R.layout.fragment_blocked) {
             }
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): RecyclerView.ViewHolder {
             return if (viewType == TYPE_FOOTER) {
                 FooterHolder(ItemBlockedFooterBinding.inflate(LayoutInflater.from(parent.context), parent, false).root)
             } else {
@@ -89,7 +96,10 @@ class SettingBlockedFragment : BaseFragment(R.layout.fragment_blocked) {
             }
         }
 
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: RecyclerView.ViewHolder,
+            position: Int,
+        ) {
             if (users == null || users!!.isEmpty()) {
                 return
             }
@@ -102,7 +112,10 @@ class SettingBlockedFragment : BaseFragment(R.layout.fragment_blocked) {
     }
 
     class ItemHolder(private val itemBinding: ItemContactNormalBinding) : RecyclerView.ViewHolder(itemBinding.root) {
-        fun bind(user: User, callback: Callback?) {
+        fun bind(
+            user: User,
+            callback: Callback?,
+        ) {
             itemBinding.apply {
                 avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
                 normal.text = user.fullName

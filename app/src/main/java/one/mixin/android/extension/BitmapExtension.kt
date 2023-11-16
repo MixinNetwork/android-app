@@ -41,7 +41,10 @@ fun Bitmap.toPNGBytes(): ByteArray {
     }
 }
 
-fun Bitmap.saveGroupAvatar(ctx: Context, name: String) {
+fun Bitmap.saveGroupAvatar(
+    ctx: Context,
+    name: String,
+) {
     try {
         ByteArrayOutputStream().use { bos ->
             compress(Bitmap.CompressFormat.PNG, 100, bos)

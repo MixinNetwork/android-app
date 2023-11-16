@@ -84,10 +84,11 @@ fun CircleConversationDao.insertUpdate(
     circleConversation: CircleConversation,
 ) {
     runInTransaction {
-        val c = findCircleConversationByCircleId(
-            circleConversation.circleId,
-            circleConversation.conversationId,
-        )
+        val c =
+            findCircleConversationByCircleId(
+                circleConversation.circleId,
+                circleConversation.conversationId,
+            )
         if (c == null) {
             insert(circleConversation)
         } else {
@@ -172,15 +173,16 @@ fun JobDao.insertNoReplace(job: Job) {
 }
 
 fun OutputDao.insertUnspentOutputs(outputs: List<Output>) {
-    runInTransaction { 
+    runInTransaction {
         val signed = findSignedOutput(outputs.map { it.outputId })
-        if (signed.isEmpty()){
+        if (signed.isEmpty()) {
             insertList(outputs)
         } else {
             // Exclude signed data
-            val list = outputs.filter {
-                signed.contains(it.outputId)
-            }
+            val list =
+                outputs.filter {
+                    signed.contains(it.outputId)
+                }
             insertList(list)
         }
     }
@@ -197,7 +199,10 @@ fun MixinDatabase.deleteMessageById(messageId: String) {
     }
 }
 
-fun MixinDatabase.deleteMessageById(messageId: String, conversationId: String) {
+fun MixinDatabase.deleteMessageById(
+    messageId: String,
+    conversationId: String,
+) {
     runInTransaction {
         pinMessageDao().deleteByMessageId(messageId)
         mentionMessageDao().deleteMessage(messageId)
@@ -219,7 +224,11 @@ fun MixinDatabase.deleteMessageByIds(messageIds: List<String>) {
     }
 }
 
-fun MixinDatabase.makeMessageStatus(status: String, messageId: String, noExistCallback: (() -> Unit)? = null) {
+fun MixinDatabase.makeMessageStatus(
+    status: String,
+    messageId: String,
+    noExistCallback: (() -> Unit)? = null,
+) {
     val messageStatus = MessageStatus.values().firstOrNull { it.name == status } ?: return
     if (messageStatus != MessageStatus.SENT && messageStatus != MessageStatus.DELIVERED && messageStatus != MessageStatus.READ) {
         return
@@ -238,7 +247,11 @@ fun MixinDatabase.makeMessageStatus(status: String, messageId: String, noExistCa
     }
 }
 
-fun PendingDatabase.makeMessageStatus(status: String, messageId: String, noExistCallback: (() -> Unit)? = null) {
+fun PendingDatabase.makeMessageStatus(
+    status: String,
+    messageId: String,
+    noExistCallback: (() -> Unit)? = null,
+) {
     val messageStatus = MessageStatus.values().firstOrNull { it.name == status } ?: return
     if (messageStatus != MessageStatus.SENT && messageStatus != MessageStatus.DELIVERED && messageStatus != MessageStatus.READ) {
         return

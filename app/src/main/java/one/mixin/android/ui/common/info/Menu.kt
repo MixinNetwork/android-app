@@ -86,7 +86,9 @@ data class Menu(
 )
 
 enum class MenuStyle {
-    Normal, Danger, Info
+    Normal,
+    Danger,
+    Info,
 }
 
 @SuppressLint("InflateParams")
@@ -94,17 +96,19 @@ fun MenuList.createMenuLayout(
     context: Context,
     createdAt: String? = null,
 ): ViewGroup {
-    val listLayout = LinearLayout(context).apply {
-        orientation = LinearLayout.VERTICAL
-    }
+    val listLayout =
+        LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+        }
     val dp5 = context.dpToPx(5f)
     val dp13 = context.dpToPx(13f)
     val dp16 = context.dpToPx(16f)
     val dp56 = context.dpToPx(56f)
     groups.forEach { group ->
-        val groupLayout = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-        }
+        val groupLayout =
+            LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+            }
         group.menus.forEachIndexed { index, menu ->
             val menuBinding = LayoutMenuBinding.inflate(LayoutInflater.from(context), null, false)
             menuBinding.titleTv.text = menu.title
@@ -193,12 +197,13 @@ private fun addCirclesLayout(
     val dp12 = context.dpToPx(12f)
     val dp4 = context.dpToPx(4f)
     circles.forEach { name ->
-        val tv = TextView(context).apply {
-            setBackgroundResource(R.drawable.bg_round_rect_gray_border)
-            text = name
-            setTextColor(context.colorAttr(R.attr.text_remarks))
-            setPadding(dp12, dp4, dp12, dp4)
-        }
+        val tv =
+            TextView(context).apply {
+                setBackgroundResource(R.drawable.bg_round_rect_gray_border)
+                text = name
+                setTextColor(context.colorAttr(R.attr.text_remarks))
+                setPadding(dp12, dp4, dp12, dp4)
+            }
         flowLayout.addView(tv)
         (tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp4
     }

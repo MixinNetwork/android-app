@@ -19,7 +19,6 @@ import one.mixin.android.vo.LinkState
 import javax.inject.Inject
 
 abstract class LinkFragment : BaseFragment(), Observer<Int> {
-
     @Inject
     lateinit var linkState: LinkState
 
@@ -33,12 +32,16 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
 
     private var barShown = false
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        processedCount = floodMessageDao.getFloodMessageCount()
-            .combineWith(pendingMessageDao.getPendingMessageCount()) { a, b ->
-                (a ?: 0) + (b ?: 0)
-            }
+        processedCount =
+            floodMessageDao.getFloodMessageCount()
+                .combineWith(pendingMessageDao.getPendingMessageCount()) { a, b ->
+                    (a ?: 0) + (b ?: 0)
+                }
         linkState.observe(viewLifecycleOwner) { state ->
             check(state)
         }
@@ -80,6 +83,7 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
     }
 
     abstract fun getContentView(): View
+
     private val _contentView get() = getContentView()
     private val stateLayout: View by lazy {
         _contentView.findViewById(R.id.state_layout)

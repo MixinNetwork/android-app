@@ -34,7 +34,10 @@ object PrivacyPreference {
         deleteKeyByAlias(ALIAS_EPHEMERAL_SEED)
     }
 
-    private fun getPreference(context: Context, key: String): SharedPreferences {
+    private fun getPreference(
+        context: Context,
+        key: String,
+    ): SharedPreferences {
         val privacyPreference = getPrivacyPreference(context)
         return if (privacyPreference.contains(key)) {
             privacyPreference
@@ -43,14 +46,35 @@ object PrivacyPreference {
         }
     }
 
-    fun getPrefPinInterval(context: Context, defaultValue: Long): Long = getPreference(context, PREF_PIN_INTERVAL).getLong(PREF_PIN_INTERVAL, defaultValue)
-    fun putPrefPinInterval(context: Context, value: Long) {
+    fun getPrefPinInterval(
+        context: Context,
+        defaultValue: Long,
+    ): Long = getPreference(context, PREF_PIN_INTERVAL).getLong(PREF_PIN_INTERVAL, defaultValue)
+
+    fun putPrefPinInterval(
+        context: Context,
+        value: Long,
+    ) {
         getPrivacyPreference(context).putLong(PREF_PIN_INTERVAL, value)
     }
 
-    fun getIsLoaded(context: Context, defaultValue: Boolean): Boolean = getPreference(context, IS_LOADED).getBoolean(IS_LOADED, defaultValue)
-    fun putIsLoaded(context: Context, value: Boolean) = getPrivacyPreference(context).putBoolean(IS_LOADED, value)
+    fun getIsLoaded(
+        context: Context,
+        defaultValue: Boolean,
+    ): Boolean = getPreference(context, IS_LOADED).getBoolean(IS_LOADED, defaultValue)
 
-    fun getIsSyncSession(context: Context, defaultValue: Boolean): Boolean = getPreference(context, IS_SYNC_SESSION).getBoolean(IS_SYNC_SESSION, defaultValue)
-    fun putIsSyncSession(context: Context, value: Boolean) = getPrivacyPreference(context).putBoolean(IS_SYNC_SESSION, value)
+    fun putIsLoaded(
+        context: Context,
+        value: Boolean,
+    ) = getPrivacyPreference(context).putBoolean(IS_LOADED, value)
+
+    fun getIsSyncSession(
+        context: Context,
+        defaultValue: Boolean,
+    ): Boolean = getPreference(context, IS_SYNC_SESSION).getBoolean(IS_SYNC_SESSION, defaultValue)
+
+    fun putIsSyncSession(
+        context: Context,
+        value: Boolean,
+    ) = getPrivacyPreference(context).putBoolean(IS_SYNC_SESSION, value)
 }

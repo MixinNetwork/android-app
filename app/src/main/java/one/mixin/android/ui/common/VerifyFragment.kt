@@ -33,7 +33,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPinListener {
-
     companion object {
         val TAG = VerifyFragment::class.java.simpleName
 
@@ -43,9 +42,10 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
 
         const val ARGS_FROM = "args_from"
 
-        fun newInstance(from: Int) = VerifyFragment().withArgs {
-            putInt(ARGS_FROM, from)
-        }
+        fun newInstance(from: Int) =
+            VerifyFragment().withArgs {
+                putInt(ARGS_FROM, from)
+            }
     }
 
     private val from by lazy { requireArguments().getInt(ARGS_FROM) }
@@ -55,7 +55,10 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
 
     private val binding by viewBinding(FragmentVerifyPinBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding.apply {
@@ -101,51 +104,52 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
         binding.pin.clear()
     }
 
-    private fun verify(pinCode: String) = lifecycleScope.launch {
-        showLoading()
+    private fun verify(pinCode: String) =
+        lifecycleScope.launch {
+            showLoading()
 
-        handleMixinResponse(
-            invokeNetwork = {
-                accountRepository.verifyPin(pinCode)
-            },
-            successBlock = {
-                hideLoading()
-                clearPin()
-                context?.updatePinCheck()
-                activity?.supportFragmentManager?.inTransaction {
-                    remove(this@VerifyFragment)
-                }
-                when (from) {
-                    FROM_PHONE -> {
-                        LandingActivity.show(requireContext(), pinCode)
-                    }
-                    FROM_EMERGENCY -> {
-                        val f = FriendsNoBotFragment.newInstance(pinCode)
-                        activity?.addFragment(this@VerifyFragment, f, FriendsNoBotFragment.TAG)
-                    }
-                    FROM_DELETE_ACCOUNT -> {
-                        val f = MobileFragment.newInstance(from = from)
-                        activity?.addFragment(this@VerifyFragment, f, MobileFragment.TAG)
-                    }
-                    else -> {
-                        throw IllegalArgumentException("Illegal argument")
-                    }
-                }
-            },
-            failureBlock = {
-                return@handleMixinResponse handleFailure(requireNotNull(it.error))
-            },
-            exceptionBlock = {
-                if (it is TipNetworkException) {
-                    return@handleMixinResponse handleFailure(it.error)
-                } else {
+            handleMixinResponse(
+                invokeNetwork = {
+                    accountRepository.verifyPin(pinCode)
+                },
+                successBlock = {
                     hideLoading()
                     clearPin()
-                    return@handleMixinResponse false
-                }
-            },
-        )
-    }
+                    context?.updatePinCheck()
+                    activity?.supportFragmentManager?.inTransaction {
+                        remove(this@VerifyFragment)
+                    }
+                    when (from) {
+                        FROM_PHONE -> {
+                            LandingActivity.show(requireContext(), pinCode)
+                        }
+                        FROM_EMERGENCY -> {
+                            val f = FriendsNoBotFragment.newInstance(pinCode)
+                            activity?.addFragment(this@VerifyFragment, f, FriendsNoBotFragment.TAG)
+                        }
+                        FROM_DELETE_ACCOUNT -> {
+                            val f = MobileFragment.newInstance(from = from)
+                            activity?.addFragment(this@VerifyFragment, f, MobileFragment.TAG)
+                        }
+                        else -> {
+                            throw IllegalArgumentException("Illegal argument")
+                        }
+                    }
+                },
+                failureBlock = {
+                    return@handleMixinResponse handleFailure(requireNotNull(it.error))
+                },
+                exceptionBlock = {
+                    if (it is TipNetworkException) {
+                        return@handleMixinResponse handleFailure(it.error)
+                    } else {
+                        hideLoading()
+                        clearPin()
+                        return@handleMixinResponse false
+                    }
+                },
+            )
+        }
 
     private suspend fun handleFailure(error: ResponseError): Boolean {
         clearPin()
@@ -167,7 +171,10 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
 
     private val keyboardListener: Keyboard.OnClickKeyboardListener =
         object : Keyboard.OnClickKeyboardListener {
-            override fun onKeyClick(position: Int, value: String) {
+            override fun onKeyClick(
+                position: Int,
+                value: String,
+            ) {
                 context?.tickVibrate()
                 if (position == 11) {
                     binding.pin.delete()
@@ -176,7 +183,10 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
                 }
             }
 
-            override fun onLongClick(position: Int, value: String) {
+            override fun onLongClick(
+                position: Int,
+                value: String,
+            ) {
                 context?.clickVibrate()
                 if (position == 11) {
                     binding.pin.clear()

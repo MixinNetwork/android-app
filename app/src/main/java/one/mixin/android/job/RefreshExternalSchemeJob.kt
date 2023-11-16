@@ -17,11 +17,12 @@ class RefreshExternalSchemeJob : BaseJob(
         const val PREF_EXTERNAL_SCHEMES = "pref_external_schemes"
     }
 
-    override fun onRun() = runBlocking {
-        val response = accountService.getExternalSchemes()
-        if (response.isSuccess && response.data != null) {
-            val schemes = response.data as Set<String>
-            MixinApplication.appContext.defaultSharedPreferences.putStringSet(PREF_EXTERNAL_SCHEMES, schemes)
+    override fun onRun() =
+        runBlocking {
+            val response = accountService.getExternalSchemes()
+            if (response.isSuccess && response.data != null) {
+                val schemes = response.data as Set<String>
+                MixinApplication.appContext.defaultSharedPreferences.putStringSet(PREF_EXTERNAL_SCHEMES, schemes)
+            }
         }
-    }
 }

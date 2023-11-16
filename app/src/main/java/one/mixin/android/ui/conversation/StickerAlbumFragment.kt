@@ -33,7 +33,6 @@ import one.mixin.android.widget.viewpager2.TabLayoutMediator
 
 @AndroidEntryPoint
 class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
-
     companion object {
         const val TAG = "StickerAlbumFragment"
 
@@ -60,7 +59,10 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
     private var first = true
 
     @SuppressLint("NotifyDataSetChanged")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             stickerViewModel.observeSystemAddedAlbums().observe(
@@ -81,39 +83,42 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
                     }
                 }
             }
-            albumAdapter.rvCallback = object : DraggableRecyclerView.Callback {
-                override fun onScroll(dis: Float) {
-                    rvCallback?.onScroll(dis)
-                }
+            albumAdapter.rvCallback =
+                object : DraggableRecyclerView.Callback {
+                    override fun onScroll(dis: Float) {
+                        rvCallback?.onScroll(dis)
+                    }
 
-                override fun onRelease(fling: Int) {
-                    rvCallback?.onRelease(fling)
+                    override fun onRelease(fling: Int) {
+                        rvCallback?.onRelease(fling)
+                    }
                 }
-            }
             viewPager.adapter = albumAdapter
-            tabLayoutMediator = TabLayoutMediator(
-                albumTl,
-                viewPager,
-            ) { tab, pos ->
-                if (pos == TYPE_STORE) {
-                    _storeBinding = TabAlbumStoreBinding.inflate(layoutInflater, null, false).apply {
-                        tab.customView = root
-                        tab.view.isEnabled = false
-                        root.setOnClickListener {
-                            dotIv.isVisible = false
-                            defaultSharedPreferences.putBoolean(PREF_NEW_ALBUM, false)
-                            StickerStoreActivity.show(requireContext())
+            tabLayoutMediator =
+                TabLayoutMediator(
+                    albumTl,
+                    viewPager,
+                ) { tab, pos ->
+                    if (pos == TYPE_STORE) {
+                        _storeBinding =
+                            TabAlbumStoreBinding.inflate(layoutInflater, null, false).apply {
+                                tab.customView = root
+                                tab.view.isEnabled = false
+                                root.setOnClickListener {
+                                    dotIv.isVisible = false
+                                    defaultSharedPreferences.putBoolean(PREF_NEW_ALBUM, false)
+                                    StickerStoreActivity.show(requireContext())
+                                }
+                                dotIv.isVisible = defaultSharedPreferences.getBoolean(PREF_NEW_ALBUM, false)
+                            }
+                    } else {
+                        val tabView = albumAdapter.getTabView(pos, requireContext())
+                        tab.customView = tabView
+                        if (albumTl.selectedTabPosition == pos) {
+                            tabView.setBackgroundResource(R.drawable.bg_sticker_tab)
                         }
-                        dotIv.isVisible = defaultSharedPreferences.getBoolean(PREF_NEW_ALBUM, false)
                     }
-                } else {
-                    val tabView = albumAdapter.getTabView(pos, requireContext())
-                    tab.customView = tabView
-                    if (albumTl.selectedTabPosition == pos) {
-                        tabView.setBackgroundResource(R.drawable.bg_sticker_tab)
-                    }
-                }
-            }.apply { attach() }
+                }.apply { attach() }
             albumTl.tabMode = TabLayout.MODE_SCROLLABLE
             albumTl.addOnTabSelectedListener(
                 object : TabLayout.OnTabSelectedListener {
@@ -161,20 +166,25 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
         this.callback = callback
     }
 
-    private val onPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
-        override fun onPageScrolled(
-            position: Int,
-            positionOffset: Float,
-            positionOffsetPixels: Int,
-        ) {
-            if (position == 0 && positionOffset > 0) {
-                binding.viewPager.setCurrentItem(TYPE_RECENT, false)
+    private val onPageChangeCallback =
+        object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageScrolled(
+                position: Int,
+                positionOffset: Float,
+                positionOffsetPixels: Int,
+            ) {
+                if (position == 0 && positionOffset > 0) {
+                    binding.viewPager.setCurrentItem(TYPE_RECENT, false)
+                }
             }
         }
-    }
 
     interface Callback {
         fun onStickerClick(stickerId: String)
-        fun onGiphyClick(image: Image, previewUrl: String)
+
+        fun onGiphyClick(
+            image: Image,
+            previewUrl: String,
+        )
     }
 }

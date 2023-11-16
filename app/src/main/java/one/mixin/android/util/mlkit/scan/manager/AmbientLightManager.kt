@@ -7,7 +7,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 
 class AmbientLightManager(context: Context) : SensorEventListener {
-
     private var darkLightLux = DARK_LUX
 
     private var brightLightLux = BRIGHT_LUX
@@ -63,7 +62,10 @@ class AmbientLightManager(context: Context) : SensorEventListener {
         brightLightLux = lightLux
     }
 
-    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
+    override fun onAccuracyChanged(
+        sensor: Sensor,
+        accuracy: Int,
+    ) {
         // do nothing
     }
 
@@ -72,10 +74,12 @@ class AmbientLightManager(context: Context) : SensorEventListener {
     }
 
     interface OnLightSensorEventListener {
-
         fun onSensorChanged(lightLux: Float) {}
 
-        fun onSensorChanged(dark: Boolean, lightLux: Float)
+        fun onSensorChanged(
+            dark: Boolean,
+            lightLux: Float,
+        )
     }
 
     companion object {

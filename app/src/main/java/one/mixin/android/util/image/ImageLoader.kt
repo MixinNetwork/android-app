@@ -11,11 +11,18 @@ import java.util.concurrent.Callable
 sealed class ImageLoader<T> {
     private val taskCache = HashMap<String, ImageTask<T>>()
 
-    protected fun fromUrl(url: String, cacheKey: String? = url, callable: Callable<ImageResult<T>>): ImageTask<T> {
+    protected fun fromUrl(
+        url: String,
+        cacheKey: String? = url,
+        callable: Callable<ImageResult<T>>,
+    ): ImageTask<T> {
         return cache(cacheKey, callable)
     }
 
-    private fun cache(cacheKey: String?, callable: Callable<ImageResult<T>>): ImageTask<T> {
+    private fun cache(
+        cacheKey: String?,
+        callable: Callable<ImageResult<T>>,
+    ): ImageTask<T> {
         if (cacheKey != null && taskCache.containsKey(cacheKey)) {
             val cachedTask = taskCache[cacheKey]
             if (cachedTask != null) {
@@ -49,9 +56,12 @@ const val TEMP_JSON_EXTENSION = ".temp.json"
 const val JSON_EXTENSION = ".json"
 
 object HeicLoader : ImageLoader<Drawable>() {
-
     @RequiresApi(Build.VERSION_CODES.P)
-    fun fromUrl(context: Context, uri: Uri, cacheKey: String? = uri.toString()): ImageTask<Drawable> {
+    fun fromUrl(
+        context: Context,
+        uri: Uri,
+        cacheKey: String? = uri.toString(),
+    ): ImageTask<Drawable> {
         return fromUrl(
             uri.toString(),
             cacheKey,

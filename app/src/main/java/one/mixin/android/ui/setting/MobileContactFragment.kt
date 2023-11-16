@@ -31,13 +31,17 @@ import one.mixin.android.util.viewBinding
 class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_contact) {
     companion object {
         const val TAG = "MobileContactFragment"
+
         fun newInstance() = MobileContactFragment()
     }
 
     private val viewModel by viewModels<SettingViewModel>()
     private val binding by viewBinding(FragmentSettingMobileContactBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
 
@@ -129,49 +133,51 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
         }
     }
 
-    private fun deleteContacts() = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
+    private fun deleteContacts() =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
 
-        binding.opPb.isVisible = true
-        handleMixinResponse(
-            invokeNetwork = { viewModel.deleteContacts() },
-            successBlock = {
-                defaultSharedPreferences.putBoolean(PREF_DELETE_MOBILE_CONTACTS, true)
-                setUpdate()
-            },
-            exceptionBlock = {
-                binding.opPb.isVisible = false
-                return@handleMixinResponse false
-            },
-            doAfterNetworkSuccess = {
-                binding.opPb.isVisible = false
-            },
-        )
-    }
-
-    private fun updateContacts(contacts: List<Contact>) = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
-
-        binding.opPb.isVisible = true
-        val mutableList = createContactsRequests(contacts)
-        if (mutableList.isEmpty()) {
-            binding.opPb.isVisible = false
-            toast(R.string.Empty_address_book)
-            return@launch
+            binding.opPb.isVisible = true
+            handleMixinResponse(
+                invokeNetwork = { viewModel.deleteContacts() },
+                successBlock = {
+                    defaultSharedPreferences.putBoolean(PREF_DELETE_MOBILE_CONTACTS, true)
+                    setUpdate()
+                },
+                exceptionBlock = {
+                    binding.opPb.isVisible = false
+                    return@handleMixinResponse false
+                },
+                doAfterNetworkSuccess = {
+                    binding.opPb.isVisible = false
+                },
+            )
         }
-        handleMixinResponse(
-            invokeNetwork = { viewModel.syncContacts(mutableList) },
-            successBlock = {
-                defaultSharedPreferences.putBoolean(PREF_DELETE_MOBILE_CONTACTS, false)
-                setDelete()
-            },
-            exceptionBlock = {
+
+    private fun updateContacts(contacts: List<Contact>) =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
+
+            binding.opPb.isVisible = true
+            val mutableList = createContactsRequests(contacts)
+            if (mutableList.isEmpty()) {
                 binding.opPb.isVisible = false
-                return@handleMixinResponse false
-            },
-            doAfterNetworkSuccess = {
-                binding.opPb.isVisible = false
-            },
-        )
-    }
+                toast(R.string.Empty_address_book)
+                return@launch
+            }
+            handleMixinResponse(
+                invokeNetwork = { viewModel.syncContacts(mutableList) },
+                successBlock = {
+                    defaultSharedPreferences.putBoolean(PREF_DELETE_MOBILE_CONTACTS, false)
+                    setDelete()
+                },
+                exceptionBlock = {
+                    binding.opPb.isVisible = false
+                    return@handleMixinResponse false
+                },
+                doAfterNetworkSuccess = {
+                    binding.opPb.isVisible = false
+                },
+            )
+        }
 }

@@ -16,7 +16,6 @@ import androidx.media3.exoplayer.source.UnrecognizedInputFormatException
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import java.util.concurrent.TimeUnit
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -33,6 +32,7 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_DONE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
+import java.util.concurrent.TimeUnit
 
 @UnstableApi class MusicPlayer private constructor() {
     companion object {
@@ -64,7 +64,10 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 
         fun isPlay(id: String): Boolean = instance.notNullWithElse({ return it.status == STATUS_PLAY && it.id() == id }, false)
 
-        fun seekTo(progress: Int, max: Float = 100f) = instance?.seekTo(progress, max)
+        fun seekTo(
+            progress: Int,
+            max: Float = 100f,
+        ) = instance?.seekTo(progress, max)
 
         fun resetModeAndSpeed() {
             instance?.exoPlayer?.let {
@@ -74,10 +77,11 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
         }
     }
 
-    private val audioAttributes = AudioAttributes.Builder()
-        .setContentType(AUDIO_CONTENT_TYPE_MUSIC)
-        .setUsage(C.USAGE_MEDIA)
-        .build()
+    private val audioAttributes =
+        AudioAttributes.Builder()
+            .setContentType(AUDIO_CONTENT_TYPE_MUSIC)
+            .setUsage(C.USAGE_MEDIA)
+            .build()
 
     private val playerListener = PlayerListener()
 
@@ -112,7 +116,10 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
             }
         }
 
-        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+        override fun onPlayWhenReadyChanged(
+            playWhenReady: Boolean,
+            reason: Int,
+        ) {
             if (playWhenReady) {
                 AudioPlayer.pause()
                 resume()
@@ -149,7 +156,10 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
         updater.update(mediaMetadataCompatList)
     }
 
-    fun playMediaById(mediaId: String, playWhenReady: Boolean = true) {
+    fun playMediaById(
+        mediaId: String,
+        playWhenReady: Boolean = true,
+    ) {
         val index = exoPlayer.currentMediaItems.indexOfFirst { it.mediaId == mediaId }
         if (index == -1) return
 
@@ -194,7 +204,10 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
         }
     }
 
-    private fun seekTo(progress: Int, max: Float = 100f) {
+    private fun seekTo(
+        progress: Int,
+        max: Float = 100f,
+    ) {
         val p = progress * duration() / max
         exoPlayer.seekTo(p.toLong())
         id()?.let { id -> RxBus.publish(playEvent(id, p)) }
@@ -208,26 +221,29 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
         var position = exoPlayer.currentPosition
         val currentTimeline = exoPlayer.currentTimeline
         if (!currentTimeline.isEmpty) {
-            position -= currentTimeline.getPeriod(exoPlayer.currentPeriodIndex, period)
-                .positionInWindowMs
+            position -=
+                currentTimeline.getPeriod(exoPlayer.currentPeriodIndex, period)
+                    .positionInWindowMs
         }
         return position
     }
 
     private var timerDisposable: Disposable? = null
     var progress = 0f
+
     private fun startTimer() {
         if (timerDisposable == null) {
-            timerDisposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread()).subscribe {
-                    if (duration() == 0) {
-                        return@subscribe
+            timerDisposable =
+                Observable.interval(0, 100, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread()).subscribe {
+                        if (duration() == 0) {
+                            return@subscribe
+                        }
+                        progress = getCurrentPos().toFloat() / duration()
+                        id()?.let { id ->
+                            RxBus.publish(playEvent(id, progress))
+                        }
                     }
-                    progress = getCurrentPos().toFloat() / duration()
-                    id()?.let { id ->
-                        RxBus.publish(playEvent(id, progress))
-                    }
-                }
         }
     }
 

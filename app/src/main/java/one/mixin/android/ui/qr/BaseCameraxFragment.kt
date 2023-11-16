@@ -109,16 +109,20 @@ abstract class BaseCameraxFragment : VisionFragment() {
     private var isPinchToZoomEnabled = true
     private var isZoomSupported = true
 
-    private val displayListener = object : DisplayManager.DisplayListener {
-        override fun onDisplayAdded(displayId: Int) = Unit
-        override fun onDisplayRemoved(displayId: Int) = Unit
-        override fun onDisplayChanged(displayId: Int) = view?.let { view ->
-            if (displayId == this@BaseCameraxFragment.displayId) {
-                imageAnalysis?.targetRotation = view.display.rotation
-                this@BaseCameraxFragment.onDisplayChanged(view.display.rotation)
-            }
-        } ?: Unit
-    }
+    private val displayListener =
+        object : DisplayManager.DisplayListener {
+            override fun onDisplayAdded(displayId: Int) = Unit
+
+            override fun onDisplayRemoved(displayId: Int) = Unit
+
+            override fun onDisplayChanged(displayId: Int) =
+                view?.let { view ->
+                    if (displayId == this@BaseCameraxFragment.displayId) {
+                        imageAnalysis?.targetRotation = view.display.rotation
+                        this@BaseCameraxFragment.onDisplayChanged(view.display.rotation)
+                    }
+                } ?: Unit
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,6 +131,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
     }
 
     abstract fun getContentView(): View
+
     private val _contentView get() = getContentView()
 
     private val close: View by lazy {
@@ -146,7 +151,10 @@ abstract class BaseCameraxFragment : VisionFragment() {
     }
 
     @SuppressLint("RestrictedApi", "ClickableViewAccessibility")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         close.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         flash.setOnClickListener {
@@ -175,8 +183,9 @@ abstract class BaseCameraxFragment : VisionFragment() {
         }
         checkFlash()
 
-        displayManager = viewFinder.context
-            .getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+        displayManager =
+            viewFinder.context
+                .getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
         displayManager.registerDisplayListener(displayListener, null)
 
         setZoomRatio(UNITY_ZOOM_SCALE)
@@ -220,10 +229,11 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 cameraProvider = cameraProviderFuture.get()
 
                 val useCases = arrayListOf<UseCase>()
-                preview = Preview.Builder()
-                    .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
-                    .setTargetRotation(rotation)
-                    .build()
+                preview =
+                    Preview.Builder()
+                        .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
+                        .setTargetRotation(rotation)
+                        .build()
 
                 useCases.add(preview!!)
                 useCases.add(getImageAnalysis())
@@ -232,11 +242,12 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 cameraProvider?.unbindAll()
 
                 try {
-                    camera = cameraProvider?.bindToLifecycle(
-                        this as LifecycleOwner,
-                        cameraSelector!!,
-                        *useCases.toTypedArray(),
-                    )
+                    camera =
+                        cameraProvider?.bindToLifecycle(
+                            this as LifecycleOwner,
+                            cameraSelector!!,
+                            *useCases.toTypedArray(),
+                        )
                     preview?.setSurfaceProvider(viewFinder.surfaceProvider)
                 } catch (e: Exception) {
                     reportException("$CRASHLYTICS_CAMERAX-camera bindToLifecycle failure", e)
@@ -253,7 +264,11 @@ abstract class BaseCameraxFragment : VisionFragment() {
         displayManager.unregisterDisplayListener(displayListener)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             data?.data?.let {
                 @Suppress("DEPRECATION")
@@ -273,11 +288,12 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
     protected fun bindUseCases(vararg useCases: UseCase) {
         try {
-            camera = cameraProvider?.bindToLifecycle(
-                this as LifecycleOwner,
-                cameraSelector!!,
-                *useCases,
-            )
+            camera =
+                cameraProvider?.bindToLifecycle(
+                    this as LifecycleOwner,
+                    cameraSelector!!,
+                    *useCases,
+                )
         } catch (e: Exception) {
             reportException("$CRASHLYTICS_CAMERAX-bindUseCases", e)
             Timber.w(e)
@@ -309,11 +325,12 @@ abstract class BaseCameraxFragment : VisionFragment() {
     protected fun startImageAnalysis() {
         val localImageAnalysis = getImageAnalysis()
         try {
-            camera = cameraProvider?.bindToLifecycle(
-                this as LifecycleOwner,
-                cameraSelector!!,
-                localImageAnalysis,
-            )
+            camera =
+                cameraProvider?.bindToLifecycle(
+                    this as LifecycleOwner,
+                    cameraSelector!!,
+                    localImageAnalysis,
+                )
         } catch (e: Exception) {
             reportException("$CRASHLYTICS_CAMERAX-startImageAnalysis", e)
             Timber.w(e)
@@ -323,13 +340,14 @@ abstract class BaseCameraxFragment : VisionFragment() {
     private fun getImageAnalysis(): ImageAnalysis {
         if (imageAnalysis != null) return imageAnalysis!!
 
-        imageAnalysis = ImageAnalysis.Builder()
-            .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
-            .setTargetRotation(getRotation())
-            .build()
-            .also {
-                it.setAnalyzer(backgroundExecutor, imageAnalyzer)
-            }
+        imageAnalysis =
+            ImageAnalysis.Builder()
+                .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
+                .setTargetRotation(getRotation())
+                .build()
+                .also {
+                    it.setAnalyzer(backgroundExecutor, imageAnalyzer)
+                }
         return imageAnalysis!!
     }
 
@@ -343,7 +361,11 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
     private fun isLensBack() = CameraSelector.LENS_FACING_BACK == lensFacing
 
-    protected fun openEdit(path: String, isVideo: Boolean, fromGallery: Boolean = false) {
+    protected fun openEdit(
+        path: String,
+        isVideo: Boolean,
+        fromGallery: Boolean = false,
+    ) {
         activity?.supportFragmentManager?.inTransaction {
             add(R.id.container, EditFragment.newInstance(path, isVideo, fromGallery, fromScan()), EditFragment.TAG)
                 .addToBackStack(null)
@@ -410,15 +432,16 @@ abstract class BaseCameraxFragment : VisionFragment() {
             val afPoint = pointFactory.createPoint(x, y, afPointWidth)
             val aePoint = pointFactory.createPoint(x, y, aePointWidth)
 
-            val future = c.cameraControl.startFocusAndMetering(
-                FocusMeteringAction.Builder(
-                    afPoint,
-                    FocusMeteringAction.FLAG_AF,
-                ).addPoint(
-                    aePoint,
-                    FocusMeteringAction.FLAG_AE,
-                ).build(),
-            )
+            val future =
+                c.cameraControl.startFocusAndMetering(
+                    FocusMeteringAction.Builder(
+                        afPoint,
+                        FocusMeteringAction.FLAG_AF,
+                    ).addPoint(
+                        aePoint,
+                        FocusMeteringAction.FLAG_AE,
+                    ).build(),
+                )
             Futures.addCallback(
                 future,
                 object : FutureCallback<FocusMeteringResult> {
@@ -449,14 +472,24 @@ abstract class BaseCameraxFragment : VisionFragment() {
     protected fun getMinZoomRation(): Float =
         camera?.cameraInfo?.zoomState?.value?.minZoomRatio ?: UNITY_ZOOM_SCALE
 
-    private fun rangeLimit(value: Float, max: Float, min: Float) =
+    private fun rangeLimit(
+        value: Float,
+        max: Float,
+        min: Float,
+    ) =
         min(max(value, min), max)
 
     private fun delta() = System.currentTimeMillis() - downEventTimestamp
 
     abstract fun onFlashClick()
-    abstract fun appendOtherUseCases(useCases: ArrayList<UseCase>, rotation: Int)
+
+    abstract fun appendOtherUseCases(
+        useCases: ArrayList<UseCase>,
+        rotation: Int,
+    )
+
     abstract fun onDisplayChanged(rotation: Int)
+
     abstract fun fromScan(): Boolean
 
     private fun handleAnalysis(analysisResult: String) {
@@ -465,19 +498,21 @@ abstract class BaseCameraxFragment : VisionFragment() {
         requireContext().heavyClickVibrate()
         requireContext().defaultSharedPreferences.putBoolean(CaptureActivity.SHOW_QR_CODE, false)
         if (forScanResult) {
-            val scanResult = if (analysisResult.isDonateUrl()) {
-                val index = analysisResult.indexOf("?")
-                if (index != -1) {
-                    analysisResult.take(index)
+            val scanResult =
+                if (analysisResult.isDonateUrl()) {
+                    val index = analysisResult.indexOf("?")
+                    if (index != -1) {
+                        analysisResult.take(index)
+                    } else {
+                        analysisResult
+                    }
                 } else {
                     analysisResult
                 }
-            } else {
-                analysisResult
-            }
-            val result = Intent().apply {
-                putExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT, scanResult)
-            }
+            val result =
+                Intent().apply {
+                    putExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT, scanResult)
+                }
             activity?.setResult(Activity.RESULT_OK, result)
             activity?.finish()
             return
@@ -514,97 +549,98 @@ abstract class BaseCameraxFragment : VisionFragment() {
         }
     }
 
-    private val imageAnalyzer = object : ImageAnalysis.Analyzer {
-        private val detecting = AtomicBoolean(false)
+    private val imageAnalyzer =
+        object : ImageAnalysis.Analyzer {
+            private val detecting = AtomicBoolean(false)
 
-        override fun analyze(image: ImageProxy) {
-            if (!alreadyDetected && image.planes.isNotEmpty() &&
-                detecting.compareAndSet(false, true)
-            ) {
-                try {
-                    decodeWithFirebaseVision(image)
-                } catch (e: Exception) {
-                    decodeWithZxing(image)
-                    reportException("$CRASHLYTICS_CAMERAX-decodeWithFirebaseVision failure", e)
-                }
-            } else {
-                image.close()
-            }
-        }
-
-        @SuppressLint("UnsafeExperimentalUsageError", "UnsafeOptInUsageError")
-        private fun decodeWithFirebaseVision(image: ImageProxy) {
-            val processImage = image.image
-            if (processImage == null) {
-                image.close()
-                return
-            }
-            val inputImage = InputImage.fromMediaImage(processImage, image.imageInfo.rotationDegrees)
-            val latch = CountDownLatch(1)
-            scanner.process(inputImage)
-                .addOnSuccessListener { result ->
-                    result.firstOrNull()?.rawValue?.let {
-                        alreadyDetected = true
-                        handleAnalysis(it)
+            override fun analyze(image: ImageProxy) {
+                if (!alreadyDetected && image.planes.isNotEmpty() &&
+                    detecting.compareAndSet(false, true)
+                ) {
+                    try {
+                        decodeWithFirebaseVision(image)
+                    } catch (e: Exception) {
+                        decodeWithZxing(image)
+                        reportException("$CRASHLYTICS_CAMERAX-decodeWithFirebaseVision failure", e)
                     }
-                }
-                .addOnCompleteListener {
-                    if (!alreadyDetected) {
-                        val bitmap = getBitmapFromImage(image)
-                        if (bitmap == null) {
-                            detecting.set(false)
-                        } else {
-                            decodeBitmapWithZxing(bitmap)
-                        }
-                    } else {
-                        detecting.set(false)
-                    }
+                } else {
                     image.close()
-                    latch.countDown()
                 }
-            latch.await()
-        }
+            }
 
-        private fun decodeWithZxing(imageProxy: ImageProxy) {
-            val bitmap = getBitmapFromImage(imageProxy)
-            if (bitmap == null) {
+            @SuppressLint("UnsafeExperimentalUsageError", "UnsafeOptInUsageError")
+            private fun decodeWithFirebaseVision(image: ImageProxy) {
+                val processImage = image.image
+                if (processImage == null) {
+                    image.close()
+                    return
+                }
+                val inputImage = InputImage.fromMediaImage(processImage, image.imageInfo.rotationDegrees)
+                val latch = CountDownLatch(1)
+                scanner.process(inputImage)
+                    .addOnSuccessListener { result ->
+                        result.firstOrNull()?.rawValue?.let {
+                            alreadyDetected = true
+                            handleAnalysis(it)
+                        }
+                    }
+                    .addOnCompleteListener {
+                        if (!alreadyDetected) {
+                            val bitmap = getBitmapFromImage(image)
+                            if (bitmap == null) {
+                                detecting.set(false)
+                            } else {
+                                decodeBitmapWithZxing(bitmap)
+                            }
+                        } else {
+                            detecting.set(false)
+                        }
+                        image.close()
+                        latch.countDown()
+                    }
+                latch.await()
+            }
+
+            private fun decodeWithZxing(imageProxy: ImageProxy) {
+                val bitmap = getBitmapFromImage(imageProxy)
+                if (bitmap == null) {
+                    detecting.set(false)
+                    return
+                }
+                val result = bitmap.decodeQR()
+                if (result != null) {
+                    alreadyDetected = true
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        if (viewDestroyed()) return@launch
+                        handleAnalysis(result)
+                    }
+                }
+                imageProxy.close()
                 detecting.set(false)
-                return
             }
-            val result = bitmap.decodeQR()
-            if (result != null) {
-                alreadyDetected = true
-                lifecycleScope.launch(Dispatchers.Main) {
-                    if (viewDestroyed()) return@launch
-                    handleAnalysis(result)
+
+            private fun decodeBitmapWithZxing(bitmap: Bitmap) {
+                val result = bitmap.decodeQR()
+                if (result != null) {
+                    alreadyDetected = true
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        if (viewDestroyed()) return@launch
+                        handleAnalysis(result)
+                    }
+                }
+                detecting.set(false)
+            }
+
+            private fun getBitmapFromImage(image: ImageProxy): Bitmap? {
+                return try {
+                    val byteArray = ImageUtil.imageToJpegByteArray(image)
+                    BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+                } catch (e: Exception) {
+                    reportException("$CRASHLYTICS_CAMERAX-getBitmapFromImage failure", e)
+                    null
                 }
             }
-            imageProxy.close()
-            detecting.set(false)
         }
-
-        private fun decodeBitmapWithZxing(bitmap: Bitmap) {
-            val result = bitmap.decodeQR()
-            if (result != null) {
-                alreadyDetected = true
-                lifecycleScope.launch(Dispatchers.Main) {
-                    if (viewDestroyed()) return@launch
-                    handleAnalysis(result)
-                }
-            }
-            detecting.set(false)
-        }
-
-        private fun getBitmapFromImage(image: ImageProxy): Bitmap? {
-            return try {
-                val byteArray = ImageUtil.imageToJpegByteArray(image)
-                BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-            } catch (e: Exception) {
-                reportException("$CRASHLYTICS_CAMERAX-getBitmapFromImage failure", e)
-                null
-            }
-        }
-    }
 
     class S : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         lateinit var listener: ScaleGestureDetector.OnScaleGestureListener
@@ -624,11 +660,12 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             var scale = detector.scaleFactor
-            scale = if (scale > 1f) {
-                1.0f + (scale - 1.0f) * 2
-            } else {
-                1.0f - (1.0f - scale) * 2
-            }
+            scale =
+                if (scale > 1f) {
+                    1.0f + (scale - 1.0f) * 2
+                } else {
+                    1.0f - (1.0f - scale) * 2
+                }
 
             var newRatio = getZoomRatio() * scale
             newRatio = rangeLimit(newRatio, getMaxZoomRatio(), getMinZoomRation())
@@ -643,8 +680,9 @@ abstract class BaseCameraxFragment : VisionFragment() {
     }
 }
 
-val donateSupported = arrayOf(
-    "bitcoin:", "bitcoincash:", "bitcoinsv:", "ethereum:",
-    "litecoin:", "dash:", "ripple:", "zcash:", "horizen:", "monero:", "binancecoin:",
-    "stellar:", "dogecoin:", "mobilecoin:",
-)
+val donateSupported =
+    arrayOf(
+        "bitcoin:", "bitcoincash:", "bitcoinsv:", "ethereum:",
+        "litecoin:", "dash:", "ripple:", "zcash:", "horizen:", "monero:", "binancecoin:",
+        "stellar:", "dogecoin:", "mobilecoin:",
+    )

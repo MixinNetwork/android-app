@@ -8,7 +8,6 @@ import one.mixin.android.ui.conversation.adapter.MessageAdapter
 
 class NoUnderLineSpan(url: String, private val onItemListener: MessageAdapter.OnItemListener? = null) :
     URLSpan(url) {
-
     override fun updateDrawState(ds: TextPaint) {
         super.updateDrawState(ds)
         ds.isUnderlineText = false

@@ -17,7 +17,10 @@ interface ConversationExtDao : BaseDao<ConversationExt> {
     fun deleteConversationById(conversationId: String)
 
     @Query("INSERT OR REPLACE INTO conversation_ext (`conversation_id`, `count`, `created_at`) VALUES (:conversationId, (SELECT count(1) FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = :conversationId), :createdAt)")
-    fun refreshCountByConversationId(conversationId: String, createdAt: String = nowInUtc())
+    fun refreshCountByConversationId(
+        conversationId: String,
+        createdAt: String = nowInUtc(),
+    )
 
     @Query("UPDATE conversation_ext SET count = count + 1 WHERE conversation_id = :conversationId")
     fun increment(conversationId: String)
@@ -26,5 +29,8 @@ interface ConversationExtDao : BaseDao<ConversationExt> {
     fun decrement(conversationId: String)
 
     @Query("UPDATE conversation_ext SET count = count + :increment WHERE conversation_id = :conversationId")
-    fun increment(conversationId: String, increment: Int)
+    fun increment(
+        conversationId: String,
+        increment: Int,
+    )
 }

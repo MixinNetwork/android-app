@@ -1,8 +1,6 @@
 package one.mixin.android.crypto.storage
 
 import android.content.Context
-import java.io.IOException
-import java.util.LinkedList
 import one.mixin.android.crypto.db.PreKeyDao
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.db.SignedPreKeyDao
@@ -14,9 +12,10 @@ import org.whispersystems.libsignal.state.PreKeyStore
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import org.whispersystems.libsignal.state.SignedPreKeyStore
 import timber.log.Timber
+import java.io.IOException
+import java.util.LinkedList
 
 class MixinPreKeyStore(context: Context) : PreKeyStore, SignedPreKeyStore {
-
     private val prekeyDao: PreKeyDao
     private val signedPreKeyDao: SignedPreKeyDao
 
@@ -39,7 +38,10 @@ class MixinPreKeyStore(context: Context) : PreKeyStore, SignedPreKeyStore {
         }
     }
 
-    override fun storePreKey(preKeyId: Int, record: PreKeyRecord) {
+    override fun storePreKey(
+        preKeyId: Int,
+        record: PreKeyRecord,
+    ) {
         synchronized(FILE_LOCK) {
             prekeyDao.insert(PreKey(preKeyId, record.serialize()))
         }
@@ -93,7 +95,10 @@ class MixinPreKeyStore(context: Context) : PreKeyStore, SignedPreKeyStore {
         }
     }
 
-    override fun storeSignedPreKey(signedPreKeyId: Int, record: SignedPreKeyRecord) {
+    override fun storeSignedPreKey(
+        signedPreKeyId: Int,
+        record: SignedPreKeyRecord,
+    ) {
         synchronized(FILE_LOCK) {
             signedPreKeyDao.insert(SignedPreKey(signedPreKeyId, record.serialize(), System.currentTimeMillis()))
         }

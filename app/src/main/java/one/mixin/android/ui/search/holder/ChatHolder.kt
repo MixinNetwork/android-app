@@ -15,7 +15,11 @@ class ChatHolder constructor(val binding: ItemSearchChatBinding) : NormalHolder(
         binding.verifiedIv.visibility = View.GONE
     }
 
-    fun bind(chat: ChatMinimal, target: String?, onItemClickListener: SearchFragment.OnSearchClickListener?) {
+    fun bind(
+        chat: ChatMinimal,
+        target: String?,
+        onItemClickListener: SearchFragment.OnSearchClickListener?,
+    ) {
         if (chat.category == ConversationCategory.CONTACT.name) {
             binding.searchName.text = chat.fullName
             binding.searchName.highLight(target)

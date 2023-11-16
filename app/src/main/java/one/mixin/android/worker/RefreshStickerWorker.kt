@@ -12,30 +12,31 @@ import one.mixin.android.db.insertUpdate
 import one.mixin.android.vo.Sticker
 
 @HiltWorker
-class RefreshStickerWorker @AssistedInject constructor(
-    @Assisted context: Context,
-    @Assisted parameters: WorkerParameters,
-    private val accountService: AccountService,
-    private val stickerDao: StickerDao,
-) : BaseWork(context, parameters) {
+class RefreshStickerWorker
+    @AssistedInject
+    constructor(
+        @Assisted context: Context,
+        @Assisted parameters: WorkerParameters,
+        private val accountService: AccountService,
+        private val stickerDao: StickerDao,
+    ) : BaseWork(context, parameters) {
+        companion object {
+            const val STICKER_ID = "sticker_id"
+        }
 
-    companion object {
-        const val STICKER_ID = "sticker_id"
-    }
-
-    override suspend fun onRun(): Result {
-        val stickerId = inputData.getString(STICKER_ID) ?: return Result.failure()
-        val response = accountService.getStickerById(stickerId).execute().body()
-        return if (response != null && response.isSuccess && response.data != null) {
-            val s = response.data as Sticker
-            stickerDao.insertUpdate(s)
-            try {
-                Glide.with(applicationContext).load(s.assetUrl).submit(s.assetWidth, s.assetHeight)
-            } catch (e: Exception) {
+        override suspend fun onRun(): Result {
+            val stickerId = inputData.getString(STICKER_ID) ?: return Result.failure()
+            val response = accountService.getStickerById(stickerId).execute().body()
+            return if (response != null && response.isSuccess && response.data != null) {
+                val s = response.data as Sticker
+                stickerDao.insertUpdate(s)
+                try {
+                    Glide.with(applicationContext).load(s.assetUrl).submit(s.assetWidth, s.assetHeight)
+                } catch (e: Exception) {
+                }
+                Result.success()
+            } else {
+                Result.failure()
             }
-            Result.success()
-        } else {
-            Result.failure()
         }
     }
-}

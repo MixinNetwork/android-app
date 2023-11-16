@@ -21,7 +21,6 @@ import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.widget.ActionButton
 
 class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHolder(binding.root) {
-
     @SuppressLint("RestrictedApi")
     fun bind(
         messageItem: ChatHistoryMessageItem,

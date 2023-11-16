@@ -26,7 +26,6 @@ import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.linktext.AutoLinkMode
 
 class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(binding.root) {
-
     init {
         binding.root.context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14).apply {
             if (this != 14) {
@@ -41,7 +40,11 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
         binding.chatLayout.setMaxWidth(itemView.context.maxItemWidth())
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
@@ -84,9 +87,10 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
         onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         if (messageItem.mentions?.isNotBlank() == true) {
-            val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
-                messageItem.mentions,
-            )
+            val mentionRenderContext =
+                MentionRenderCache.singleton.getMentionRenderContext(
+                    messageItem.mentions,
+                )
             binding.chatTv.renderMessage(messageItem.content, null, mentionRenderContext)
         } else {
             binding.chatTv.renderMessage(messageItem.content, null)
@@ -122,12 +126,13 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
         }
 
         if (textGestureListener == null) {
-            textGestureListener = TextGestureListener(
-                binding.root,
-                messageItem,
-                onItemListener = onItemListener,
-                absoluteAdapterPosition = absoluteAdapterPosition,
-            )
+            textGestureListener =
+                TextGestureListener(
+                    binding.root,
+                    messageItem,
+                    onItemListener = onItemListener,
+                    absoluteAdapterPosition = absoluteAdapterPosition,
+                )
         } else {
             textGestureListener?.apply {
                 this.messageItem = messageItem

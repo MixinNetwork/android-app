@@ -14,15 +14,15 @@ class AutoFillPhoneText(
     context: Context,
     attributeSet: AttributeSet,
 ) : AppCompatEditText(context, attributeSet) {
-
     @TargetApi(Build.VERSION_CODES.O)
     override fun autofill(value: AutofillValue) {
         val autoFilledText = value.textValue
-        val phoneNum = try {
-            PhoneNumberUtil.getInstance().parse(autoFilledText, Locale.getDefault().country).nationalNumber.toString()
-        } catch (e: NumberParseException) {
-            ""
-        }
+        val phoneNum =
+            try {
+                PhoneNumberUtil.getInstance().parse(autoFilledText, Locale.getDefault().country).nationalNumber.toString()
+            } catch (e: NumberParseException) {
+                ""
+            }
         super.autofill(AutofillValue.forText(phoneNum))
     }
 }

@@ -6,7 +6,6 @@ import android.widget.RelativeLayout
 import one.mixin.android.extension.statusBarHeight
 
 class BottomSheetRelativeLayout(context: Context, attributeSet: AttributeSet) : RelativeLayout(context, attributeSet) {
-
     private val statusBarHeight = context.statusBarHeight()
 
     var heightOffset: Int = statusBarHeight
@@ -17,11 +16,15 @@ class BottomSheetRelativeLayout(context: Context, attributeSet: AttributeSet) : 
             }
         }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val parentHeightSpec = MeasureSpec.makeMeasureSpec(
-            MeasureSpec.getSize(heightMeasureSpec) - heightOffset,
-            MeasureSpec.getMode(heightMeasureSpec),
-        )
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
+        val parentHeightSpec =
+            MeasureSpec.makeMeasureSpec(
+                MeasureSpec.getSize(heightMeasureSpec) - heightOffset,
+                MeasureSpec.getMode(heightMeasureSpec),
+            )
         super.onMeasure(widthMeasureSpec, parentHeightSpec)
     }
 }

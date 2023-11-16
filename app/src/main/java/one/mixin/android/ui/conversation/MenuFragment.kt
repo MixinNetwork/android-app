@@ -39,13 +39,17 @@ class MenuFragment : BaseFragment(R.layout.fragment_recycler_view) {
 
     private val binding by viewBinding(FragmentRecyclerViewBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        menuAdapter.onMenuListener = object : MenuAdapter.OnMenuListener {
-            override fun onMenuClick(menu: Menu) {
-                callback?.onMenuClick(menu)
+        menuAdapter.onMenuListener =
+            object : MenuAdapter.OnMenuListener {
+                override fun onMenuClick(menu: Menu) {
+                    callback?.onMenuClick(menu)
+                }
             }
-        }
         binding.apply {
             rv.layoutManager = GridLayoutManager(requireContext(), 4)
             rv.adapter = menuAdapter

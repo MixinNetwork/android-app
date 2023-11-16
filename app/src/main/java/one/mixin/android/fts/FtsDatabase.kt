@@ -21,22 +21,24 @@ abstract class FtsDatabase : RoomDatabase() {
         private val lock = Any()
 
         private lateinit var supportSQLiteDatabase: SupportSQLiteDatabase
+
         fun getDatabase(context: Context): FtsDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
-                    val builder = Room.databaseBuilder(
-                        context,
-                        FtsDatabase::class.java,
-                        FTS_DB_NAME,
-                    ).addCallback(
-                        object : Callback() {
-                            override fun onOpen(db: SupportSQLiteDatabase) {
-                                super.onOpen(db)
-                                db.execSQL("PRAGMA synchronous = NORMAL")
-                                supportSQLiteDatabase = db
-                            }
-                        },
-                    )
+                    val builder =
+                        Room.databaseBuilder(
+                            context,
+                            FtsDatabase::class.java,
+                            FTS_DB_NAME,
+                        ).addCallback(
+                            object : Callback() {
+                                override fun onOpen(db: SupportSQLiteDatabase) {
+                                    super.onOpen(db)
+                                    db.execSQL("PRAGMA synchronous = NORMAL")
+                                    supportSQLiteDatabase = db
+                                }
+                            },
+                        )
                     INSTANCE = builder.build()
                 }
             }
