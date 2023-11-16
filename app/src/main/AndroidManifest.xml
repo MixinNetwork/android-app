@@ -93,7 +93,6 @@
                 <data android:host="transfer" />
                 <data android:host="device" />
                 <data android:host="send" />
-                <data android:host="withdrawal" />
                 <data android:host="address" />
                 <data android:host="snapshots" />
                 <data android:host="conversations" />
@@ -156,17 +155,6 @@
                         android:scheme="https"
                         android:host="mixin.one"
                         android:pathPrefix="/address" />
-            </intent-filter>
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                        android:scheme="https"
-                        android:host="mixin.one"
-                        android:pathPrefix="/withdrawal" />
             </intent-filter>
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />

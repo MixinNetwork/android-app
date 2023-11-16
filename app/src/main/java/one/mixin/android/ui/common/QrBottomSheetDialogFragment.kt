@@ -19,7 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.ARGS_USER_ID
-import one.mixin.android.Constants.Scheme.TRANSFER
+import one.mixin.android.Constants.Scheme.HTTPS_PAY
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentQrBottomSheetBinding
 import one.mixin.android.databinding.ViewQrBottomBinding
@@ -102,7 +102,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         val account = Session.getAccount() ?: return@create
                         val code = when (type) {
                             TYPE_MY_QR -> account.codeUrl
-                            TYPE_RECEIVE_QR -> "$TRANSFER/${user.userId}"
+                            TYPE_RECEIVE_QR -> "$HTTPS_PAY/${user.userId}"
                             else -> ""
                         }
 
