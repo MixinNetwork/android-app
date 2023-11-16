@@ -299,8 +299,14 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             operateKeyboard(false)
             prepareTransferBottom()
         }
-        requireArguments().getString(ARGS_AMOUNT)?.let { binding.amountEt.setText(it)}
-        requireArguments().getString(ARGS_MEMO)?.let { binding.transferMemo.setText(it) }
+        requireArguments().getString(ARGS_AMOUNT)?.let {
+            binding.amountEt.setText(it)
+            binding.amountEt.isEnabled = false
+        }
+        requireArguments().getString(ARGS_MEMO)?.let {
+            binding.transferMemo.setText(it)
+            binding.transferMemo.isEnabled = false
+        }
     }
 
     private fun handleAddressTransfer() {
@@ -380,6 +386,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun updateFeeUI() {
         currentFee?.let { fee ->
             binding.apply {
