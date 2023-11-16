@@ -132,7 +132,7 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun assetItemsWithBalance(): LiveData<List<TokenItem>> = tokenRepository.assetItemsWithBalance()
 
-    suspend fun withdrawal(
+    suspend fun kernelWithdrawalTransaction(
         receiverId: String,
         traceId: String,
         assetId: String,
@@ -261,7 +261,7 @@ class BottomSheetViewModel @Inject internal constructor(
         return withdrawalRequestResponse
     }
 
-    suspend fun addressTransfer(
+    suspend fun kernelAddressTransaction(
         assetId: String,
         kernelAddress: String,
         amount: String,
@@ -321,7 +321,7 @@ class BottomSheetViewModel @Inject internal constructor(
         return innerTransaction(signResult.raw, traceId, null, assetId, amount, memo)
     }
 
-    suspend fun newTransfer(
+    suspend fun kernelTransaction(
         assetId: String,
         receiverId: String,
         amount: String,

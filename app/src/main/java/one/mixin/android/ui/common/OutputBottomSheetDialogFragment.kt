@@ -160,7 +160,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
         val response = when (val t = this.t) {
             is TransferBiometricItem -> {
                 trace = Trace(t.traceId!!, t.asset.assetId, t.amount, t.user.userId, null, null, null, nowInUtc())
-                bottomViewModel.newTransfer(t.asset.assetId, t.user.userId, t.amount, pin, t.traceId, t.memo)
+                bottomViewModel.kernelTransaction(t.asset.assetId, t.user.userId, t.amount, pin, t.traceId, t.memo)
             }
             is AddressTransferBiometricItem -> {
                 trace = Trace(t.traceId!!, t.asset.assetId, t.amount, null, t.address, null, null, nowInUtc())
@@ -169,7 +169,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             else -> {
                 t as WithdrawBiometricItem
                 trace = Trace(t.traceId!!, t.asset.assetId, t.amount, null, t.destination, t.tag, null, nowInUtc())
-                bottomViewModel.withdrawal(MIXIN_FEE_USER_ID, t.traceId!!, t.asset.assetId, t.feeAssetId, t.amount, t.fee, t.destination, t.tag, t.memo, pin)
+                bottomViewModel.kernelWithdrawalTransaction(MIXIN_FEE_USER_ID, t.traceId!!, t.asset.assetId, t.feeAssetId, t.amount, t.fee, t.destination, t.tag, t.memo, pin)
             }
         }
         bottomViewModel.insertTrace(trace)
