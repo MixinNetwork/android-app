@@ -413,6 +413,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                                 callback = { networkFee ->
                                     currentFee = networkFee
                                     updateFeeUI()
+                                    dismiss()
                                 }
                             }.showNow(
                                 parentFragmentManager,
