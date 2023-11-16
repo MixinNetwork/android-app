@@ -91,7 +91,6 @@ object Constants {
         const val DEVICE = "mixin://device/auth"
         const val SEND = "mixin://send"
         const val ADDRESS = "mixin://address"
-        const val WITHDRAWAL = "mixin://withdrawal"
         const val APPS = "mixin://apps"
         const val SNAPSHOTS = "mixin://snapshots"
         const val CONVERSATIONS = "mixin://conversations"
@@ -99,13 +98,13 @@ object Constants {
         const val DEVICE_TRANSFER = "mixin://device-transfer"
         const val TIP = "mixin://tip"
         const val BUY = "mixin://buy"
+        const val MIXIN_PAY = "mixin://mixin.one/pay/"
 
         const val HTTPS_CODES = "https://mixin.one/codes"
         const val HTTPS_PAY = "https://mixin.one/pay"
         const val HTTPS_USERS = "https://mixin.one/users"
         const val HTTPS_TRANSFER = "https://mixin.one/transfer"
         const val HTTPS_ADDRESS = "https://mixin.one/address"
-        const val HTTPS_WITHDRAWAL = "https://mixin.one/withdrawal"
         const val HTTPS_APPS = "https://mixin.one/apps"
 
         const val WALLET_CONNECT_PREFIX = "wc:"
@@ -114,7 +113,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 52
+        const val CURRENT_VERSION = 53
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -301,6 +300,8 @@ object Constants {
     const val MIXIN_BOTS_USER_ID = "68ef7899-3e81-4b3d-8124-83ae652def89"
     const val MIXIN_DATA_USER_ID = "96c1460b-c7c4-480a-a342-acaa73995a37"
     const val MIXIN_BOND_USER_ID = "84c9dfb1-bfcf-4cb4-8404-cc5a1354005b"
+    const val MIXIN_FEE_USER_ID = "674d6776-d600-4346-af46-58e77d8df185"
+
 
     const val TEAM_MIXIN_USER_NAME = "Team Mixin"
     const val MIXIN_BOND_USER_NAME = "Bond Bot"

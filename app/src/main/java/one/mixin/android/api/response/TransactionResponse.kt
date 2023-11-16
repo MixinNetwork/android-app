@@ -1,6 +1,7 @@
 package one.mixin.android.api.response
 
 import com.google.gson.annotations.SerializedName
+import java.lang.NullPointerException
 
 data class TransactionResponse(
     val type: String,
@@ -34,3 +35,21 @@ data class TransactionResponse(
     @SerializedName("views")
     val views: List<String>
 )
+
+fun getTransactionResult(transactionList: List<TransactionResponse>?, firstRequestId: String, secondRequestId: String?): Pair<TransactionResponse, TransactionResponse?> {
+    transactionList ?: throw NullPointerException("Empty response")
+    var firstTransaction: TransactionResponse? = null
+    var secondTransaction: TransactionResponse? = null
+    transactionList.forEach { transaction ->
+        if (transaction.requestId == firstRequestId) {
+            firstTransaction = transaction
+        } else if (secondRequestId != null && transaction.requestId == secondRequestId) {
+            secondTransaction = transaction
+        }
+    }
+    if (firstTransaction == null) {
+        throw NullPointerException("The first transaction was not found")
+    } else {
+        return Pair(firstTransaction!!, secondTransaction)
+    }
+}

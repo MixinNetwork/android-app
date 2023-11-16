@@ -86,6 +86,7 @@ import one.mixin.android.vo.safe.toPriceAndChange
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.Call
+import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -320,9 +321,6 @@ constructor(
 
     fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 
-    suspend fun withdrawal(withdrawalRequest: WithdrawalRequest) =
-        tokenService.withdrawals(withdrawalRequest)
-
     fun saveAddr(addr: Address) = addressDao.insert(addr)
 
     suspend fun syncAddr(addressRequest: AddressRequest) = addressService.addresses(addressRequest)
@@ -336,6 +334,8 @@ constructor(
     fun assetItems() = tokenDao.assetItems()
 
     fun assetItems(assetIds: List<String>) = tokenDao.assetItems(assetIds)
+
+    suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenDao.findTokenItems(ids)
 
     suspend fun fuzzySearchToken(query: String, cancellationSignal: CancellationSignal) =
         DataProvider.fuzzySearchToken(query, query, appDatabase, cancellationSignal)
@@ -519,11 +519,7 @@ constructor(
         amount: String,
         assetId: String
     ): Pair<Trace?, Boolean> {
-        val trace =
-            traceDao.suspendFindTrace(opponentId, destination, tag, amount, assetId) ?: return Pair(
-                null,
-                false
-            )
+        val trace = traceDao.suspendFindTrace(opponentId, destination, tag, amount, assetId) ?: return Pair(null, false)
 
         val with6hours = trace.createdAt.within6Hours()
         if (!with6hours) {
@@ -668,8 +664,8 @@ constructor(
         rawTransactionDao.insert(rawTransaction)
     }
 
-    fun deleteRawTransaction(requestId: String) {
-        rawTransactionDao.deleteById(requestId)
+    suspend fun updateRawTransaction(requestId: String, state: String) {
+        rawTransactionDao.updateRawTransaction(requestId, state)
     }
 
     fun updateUtxoToSigned(ids: List<String>) {
@@ -687,4 +683,6 @@ constructor(
     }
 
     fun findRawTransaction(traceId: String) = rawTransactionDao.findRawTransaction(traceId)
+
+    suspend fun getFees(id: String, destination: String) = tokenService.getFees(id, destination)
 }

@@ -2,9 +2,13 @@ package one.mixin.android.vo.safe
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "raw_transactions")
+@Entity(tableName = "raw_transactions",
+    indices = [
+        Index(value = arrayOf("state", "type")),
+    ])
 data class RawTransaction(
     @PrimaryKey
     @ColumnInfo(name = "request_id")
@@ -13,6 +17,10 @@ data class RawTransaction(
     val rawTransaction: String,
     @ColumnInfo(name = "receiver_id")
     val receiverId: String,
+    @ColumnInfo(name = "type")
+    val type: RawTransactionType,
+    @ColumnInfo(name = "state")
+    val state: OutputState,
     @ColumnInfo(name = "created_at")
     val createdAt: String,
 )

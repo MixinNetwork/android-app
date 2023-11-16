@@ -30,6 +30,7 @@ import one.mixin.android.extension.textColor
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
@@ -95,6 +96,13 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         checkWithdrawTrace(t)
                     } else {
                         checkWithdrawalWithoutAddress(t)
+                    }
+                } else if (t is AddressTransferBiometricItem) {
+                    if (shouldShowTransferTip(t)) {
+                        showLargeAmountTip(t)
+                    } else {
+                        callback?.onSuccess()
+                        binding.root.post { dismiss() }
                     }
                 }
             }
@@ -201,13 +209,18 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         startCountDown()
     }
 
-    private fun showLargeAmountTip(t: TransferBiometricItem) {
+    private fun showLargeAmountTip(t: AssetBiometricItem) {
         binding.titleTv.text = getString(R.string.Large_Amount_Confirmation)
         val fiatAmount =
             (BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()
         binding.warningTv.text = getString(
             R.string.wallet_transaction_tip,
-            t.user.fullName,
+            if (t is TransferBiometricItem) {
+                t.user.fullName
+            } else {
+                t as AddressTransferBiometricItem
+                t.address
+            },
             "${Fiats.getSymbol()}$fiatAmount",
             t.asset.symbol,
         )
@@ -251,7 +264,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun shouldShowTransferTip(t: TransferBiometricItem): Boolean {
+    private fun shouldShowTransferTip(t: AssetBiometricItem): Boolean {
         val price = t.asset.priceUsd.toBigDecimalOrNull() ?: return false
         val amount = BigDecimal(t.amount).multiply(price)
         return amount > BigDecimal.ZERO && amount >= BigDecimal(Session.getAccount()!!.transferConfirmationThreshold)

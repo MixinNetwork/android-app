@@ -448,6 +448,7 @@
     <string name="error_used_phone">ERROR 20122: This phone number is already associated with another account.</string>
     <string name="error_user_invalid_format">Invalid user id</string>
     <string name="error_withdrawal_memo_format_incorrect">ERROR 20131: Withdrawal memo format incorrect.</string>
+    <string name="error_withdrawal_suspend">ERROR 20137: Withdrawal suspend.</string>
     <string name="Everybody">Everybody</string>
     <string name="Exchanging_data">Synchronization key shards in progress %1$s%%…</string>
     <string name="Exit">Exit</string>
@@ -1323,5 +1324,12 @@
     <string name="withdrawal_hash">Withdrawal hash</string>
     <string name="Anonymous">Anonymous</string>
     <string name="Confirmations">Confirmations</string>
+    <string name="choose_network_fee">Choose an asset to pay network fee</string>
     <string name="legacy_network_transfer_hint">Current transfer is using legacy network</string>
+    <string name="FREE">FREE</string>
+    <string name="Send_crypto_to_contact">Send crypto to Mixin contact</string>
+    <string name="Send_crypto_to_address">Send crypto to a wallet or exchange</string>
+    <string name="Withdrawal_Suspended">%1$s Withdrawal Suspended</string>
+    <string name="Withdrawal_Suspended_Content">%1$s withdrawals are temporarily suspended, possibly due to node failure, blockchain network hard fork, or congestion. Please try again later.</string>
+    <string name="Contact_Support">Contact Support</string>
 </resources>

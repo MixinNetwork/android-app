@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_upper_round"
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
+
+    <ImageView
+        android:id="@+id/cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:contentDescription="@null"
+        android:foreground="@drawable/play_ripple"
+        android:src="@drawable/ic_circle_close"
+        android:layout_margin="16dp" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/Withdrawal_Suspended"
+        android:textColor="?attr/text_primary"
+        android:textSize="18sp" />
+
+    <one.mixin.android.widget.BadgeCircleImageView
+        android:id="@+id/asset_icon"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_marginTop="24dp" />
+
+    <TextView
+        android:id="@+id/content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="@string/Withdrawal_Suspended_Content"
+        android:textColor="?attr/text_primary"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/got_it_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:layout_marginTop="32dp"
+        android:background="@drawable/bg_round_blue_btn"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="@string/Got_it"
+        android:textSize="14sp"
+        android:textColor="@color/white"/>
+
+    <TextView
+        android:id="@+id/contact_support"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:layout_marginTop="32dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="@string/Contact_Support"
+        android:textSize="14sp"
+        android:textColor="@color/selector_blue_tv"/>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="40dp" />
+</LinearLayout>

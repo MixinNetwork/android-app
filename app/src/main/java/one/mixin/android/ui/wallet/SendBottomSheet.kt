@@ -1,5 +1,5 @@
 package one.mixin.android.ui.wallet
-
+import android.os.Bundle
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.appcompat.view.ContextThemeWrapper
@@ -38,6 +38,15 @@ class SendBottomSheet(
                 bottomSheet.dismiss()
                 fragment.defaultSharedPreferences.putString(TransferFragment.ASSET_PREFERENCE, asset.assetId)
                 this@SendBottomSheet.fragment.view?.navigate(navContactAction)
+            }
+            address.setOnClickListener {
+                bottomSheet.dismiss()
+                this@SendBottomSheet.fragment.view?.navigate(
+                    navAddressAction,
+                    Bundle().apply {
+                        putParcelable(TransactionsFragment.ARGS_ASSET, asset)
+                    },
+                )
             }
             sendCancel.setOnClickListener { bottomSheet.dismiss() }
         }

@@ -184,6 +184,8 @@ android {
             force "org.bouncycastle:bcutil-jdk15on:1.69"
             exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
             exclude group: 'org.bouncycastle', module: 'bcprov-jdk15to18'
+
+            force "junit:junit:4.13.2"
         }
     }
 }

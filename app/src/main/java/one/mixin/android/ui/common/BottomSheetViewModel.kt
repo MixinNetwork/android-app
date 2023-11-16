@@ -26,11 +26,14 @@ import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
-import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.request.buildGhostKeyRequest
+import one.mixin.android.api.request.buildKernelTransferGhostKeyRequest
+import one.mixin.android.api.request.buildWithdrawalFeeGhostKeyRequest
+import one.mixin.android.api.request.buildWithdrawalSubmitGhostKeyRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.TransactionResponse
+import one.mixin.android.api.response.getTransactionResult
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.runInTransaction
@@ -46,7 +49,6 @@ import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.UpdateRelationshipJob
-import one.mixin.android.pay.generateAddressId
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.ConversationRepository
@@ -59,8 +61,6 @@ import one.mixin.android.ui.common.biometric.MaxCountNotEnoughUtxoException
 import one.mixin.android.ui.common.biometric.NotEnoughUtxoException
 import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.common.message.CleanMessageHelper
-import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.reportEvent
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
@@ -82,13 +82,17 @@ import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
-import one.mixin.android.vo.safe.Utxo
+import one.mixin.android.vo.safe.OutputState
 import one.mixin.android.vo.toSimpleChat
 import one.mixin.android.vo.safe.RawTransaction
+import one.mixin.android.vo.safe.RawTransactionType
+import one.mixin.android.vo.safe.UtxoWrapper
 import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
+import uniqueObjectId
 import java.io.File
 import java.lang.IllegalArgumentException
+import java.lang.NullPointerException
 import java.math.BigDecimal
 import java.util.UUID
 import javax.inject.Inject
@@ -124,9 +128,200 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun assetItems(assetIds: List<String>): LiveData<List<TokenItem>> = tokenRepository.assetItems(assetIds)
 
+    suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenRepository.findTokenItems(ids)
+
     fun assetItemsWithBalance(): LiveData<List<TokenItem>> = tokenRepository.assetItemsWithBalance()
 
-    suspend fun newTransfer(
+    suspend fun kernelWithdrawalTransaction(
+        receiverId: String,
+        traceId: String,
+        assetId: String,
+        feeAssetId: String,
+        amount: String,
+        feeAmount: String,
+        destination: String,
+        tag: String?,
+        memo: String?,
+        pin: String
+    ): MixinResponse<*> {
+        val isDifferentFee = feeAssetId != assetId
+        val asset = assetIdToAsset(assetId)
+        val feeAsset = assetIdToAsset(feeAssetId)
+        val senderId = Session.getAccountId()!!
+        val threshold = 1L
+        val feeTraceId = uniqueObjectId(traceId, "FEE")
+
+        val withdrawalUtxos = UtxoWrapper(
+            packUtxo(
+                asset, if (isDifferentFee) amount else {
+                    (BigDecimal(amount) + BigDecimal(feeAmount)).toPlainString()
+                }
+            )
+        )
+        val feeUtxos = if (isDifferentFee) {
+            UtxoWrapper(
+                packUtxo(
+                    feeAsset, feeAmount
+                )
+            )
+        } else {
+            null
+        }
+
+        val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
+        val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
+        val ghostKeyResponse = tokenRepository.ghostKey(
+            if (isDifferentFee) {
+                buildWithdrawalFeeGhostKeyRequest(receiverId, senderId, traceId)
+            } else {
+                buildWithdrawalSubmitGhostKeyRequest(receiverId, senderId, traceId)
+            }
+        )
+        if (ghostKeyResponse.error != null) {
+            return ghostKeyResponse
+        }
+        val data = ghostKeyResponse.data!!
+
+        val feeOutputKeys = data[0].keys.joinToString(",")
+        val feeOutputMask = data[0].mask
+
+        val changeKeys = data[1].keys.joinToString(",")
+        val changeMask = data[1].mask
+
+        val withdrawalTx = Kernel.buildWithdrawalTx(asset, amount, destination, tag ?: "", if (isDifferentFee) "" else feeAmount, if (isDifferentFee) "" else feeOutputKeys, if (isDifferentFee) "" else feeOutputMask, withdrawalUtxos.input, changeKeys, changeMask, memo)
+        val withdrawalRequests = mutableListOf(TransactionRequest(withdrawalTx.raw, traceId))
+
+        val feeTx = if (isDifferentFee) {
+            val feeChangeKeys = data[2].keys.joinToString(",")
+            val feeChangeMask = data[2].mask
+            val feeTx = Kernel.buildTx(feeAsset, feeAmount, threshold, feeOutputKeys, feeOutputMask, feeUtxos!!.input, feeChangeKeys, feeChangeMask, memo, withdrawalTx.hash)
+            withdrawalRequests.add(TransactionRequest(feeTx, feeTraceId))
+            feeTx
+        } else {
+            null
+        }
+
+        val withdrawalRequestResponse = tokenRepository.transactionRequest(withdrawalRequests)
+        if (withdrawalRequestResponse.error != null) {
+            return withdrawalRequestResponse
+        } else if ((withdrawalRequestResponse.data?.size ?: 0) < 1) {
+            throw IllegalArgumentException("Parameter exception")
+        } else if (withdrawalRequestResponse.data?.first()?.state != OutputState.unspent.name) {
+            throw IllegalArgumentException("Transfer is already paid")
+        }
+        val (withdrawalData, feeData) = getTransactionResult(withdrawalRequestResponse.data, traceId, feeTraceId)
+        val withdrawalViews = withdrawalData.views.joinToString(",")
+        val signWithdrawal = Kernel.signTx(withdrawalTx.raw, withdrawalUtxos.formatKeys, withdrawalViews, spendKey.toHex(), isDifferentFee)
+        val signWithdrawalResult = SignResult(signWithdrawal.raw, signWithdrawal.change)
+        val rawRequest = mutableListOf(TransactionRequest(signWithdrawalResult.raw, traceId))
+        if (isDifferentFee) {
+            feeUtxos ?: throw NullPointerException("Lost fee UTXO")
+            feeData ?:  throw NullPointerException("Lost fee fee data")
+            val feeViews = feeData.views.joinToString(",")
+            val signFee = Kernel.signTx(feeTx, feeUtxos.formatKeys, feeViews, spendKey.toHex(), false)
+            val signFeeResult = SignResult(signFee.raw, signFee.change)
+            rawRequest.add(TransactionRequest(signFeeResult.raw, feeTraceId))
+            runInTransaction {
+                tokenRepository.updateUtxoToSigned(feeUtxos.ids)
+                tokenRepository.updateUtxoToSigned(withdrawalUtxos.ids)
+                if (signWithdrawalResult.change != null) {
+                    val changeOutput = changeToOutput(signWithdrawalResult.change, asset, changeMask, data[1].keys, withdrawalUtxos.lastOutput)
+                    tokenRepository.insertOutput(changeOutput)
+                }
+                if (signFeeResult.change != null) {
+                    val changeOutput = changeToOutput(signFeeResult.change, feeAsset, changeMask, data[2].keys, feeUtxos.lastOutput)
+                    tokenRepository.insertOutput(changeOutput)
+                }
+                tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, receiverId, RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))
+                tokenRepository.insetRawTransaction(RawTransaction(feeData.requestId, signFeeResult.raw, receiverId, RawTransactionType.FEE, OutputState.unspent, nowInUtc()))
+            }
+            jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId), assetIdToAsset(feeAssetId))))
+        } else {
+            runInTransaction {
+                if (signWithdrawalResult.change != null) {
+                    val changeOutput = changeToOutput(signWithdrawalResult.change, asset, changeMask, data.last().keys, withdrawalUtxos.lastOutput)
+                    tokenRepository.insertOutput(changeOutput)
+                }
+                tokenRepository.updateUtxoToSigned(withdrawalUtxos.ids)
+                tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, receiverId, RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))
+            }
+            jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
+        }
+        val transactionRsp = tokenRepository.transactions(rawRequest)
+        if (transactionRsp.error != null) {
+            reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
+            tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
+            tokenRepository.updateRawTransaction(feeTraceId, OutputState.signed.name)
+            return transactionRsp
+        } else {
+            tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
+            tokenRepository.updateRawTransaction(feeTraceId, OutputState.signed.name)
+        }
+        jobManager.addJobInBackground(SyncOutputJob())
+        return withdrawalRequestResponse
+    }
+
+    suspend fun kernelAddressTransaction(
+        assetId: String,
+        kernelAddress: String,
+        amount: String,
+        pin: String,
+        trace: String?,
+        memo: String?,
+    ): MixinResponse<*> {
+        val asset = assetIdToAsset(assetId)
+        val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
+        val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
+        val utxoWrapper = UtxoWrapper(packUtxo(asset, amount))
+        if (trace != null) {
+            val rawTransaction = tokenRepository.findRawTransaction(trace)
+            if (rawTransaction != null) {
+                return innerTransaction(rawTransaction.rawTransaction, trace, null, assetId, amount, memo)
+            }
+        }
+
+        val traceId = trace ?: UUID.randomUUID().toString()
+        val senderId = Session.getAccountId()!!
+
+
+        val ghostKeyResponse = tokenRepository.ghostKey(buildKernelTransferGhostKeyRequest(senderId, traceId))
+        if (ghostKeyResponse.error != null) {
+            return ghostKeyResponse
+        }
+        val data = ghostKeyResponse.data!!
+
+        val input = utxoWrapper.input
+
+        val changeKeys = data.first().keys.joinToString(",")
+        val changeMask = data.first().mask
+
+        val tx = Kernel.buildTxToKernelAddress(asset, amount, kernelAddress, input, changeKeys, changeMask, memo)
+        val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, traceId)))
+        if (transactionResponse.error != null) {
+            return transactionResponse
+        } else if ((transactionResponse.data?.size ?: 0) > 1) {
+            throw IllegalArgumentException("Parameter exception")
+        } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name) {
+            throw IllegalArgumentException("Transfer is already paid")
+        }
+        // Workaround with only the case of a single transfer
+        val views = transactionResponse.data!!.first().views.joinToString(",")
+        val keys = utxoWrapper.formatKeys
+        val sign = Kernel.signTx(tx, keys, views, spendKey.toHex(), false)
+        val signResult = SignResult(sign.raw, sign.change)
+        runInTransaction {
+            if (signResult.change != null) {
+                val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxoWrapper.lastOutput)
+                tokenRepository.insertOutput(changeOutput)
+            }
+            tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, "",  RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc()))
+            tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
+        }
+        jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
+        return innerTransaction(signResult.raw, traceId, null, assetId, amount, memo)
+    }
+
+    suspend fun kernelTransaction(
         assetId: String,
         receiverId: String,
         amount: String,
@@ -134,9 +329,10 @@ class BottomSheetViewModel @Inject internal constructor(
         trace: String?,
         memo: String?,
     ): MixinResponse<*> {
+        val asset = assetIdToAsset(assetId)
         val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
         val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
-
+        val utxoWrapper = UtxoWrapper(packUtxo(asset, amount))
         if (trace != null) {
             val rawTransaction = tokenRepository.findRawTransaction(trace)
             if (rawTransaction != null) {
@@ -147,9 +343,7 @@ class BottomSheetViewModel @Inject internal constructor(
         val traceId = trace ?: UUID.randomUUID().toString()
         val senderId = Session.getAccountId()!!
 
-        val asset = assetIdToAsset(assetId)
         val threshold = 1L
-        val utxos = packUtxo(asset, amount)
 
         val ghostKeyResponse = tokenRepository.ghostKey(buildGhostKeyRequest(receiverId, senderId, traceId))
         if (ghostKeyResponse.error != null) {
@@ -157,13 +351,7 @@ class BottomSheetViewModel @Inject internal constructor(
         }
         val data = ghostKeyResponse.data!!
 
-        val inputs = arrayListOf<Utxo>()
-        val inputKeys = arrayListOf<List<String>>()
-        for (output in utxos) {
-            inputs.add(Utxo(output.transactionHash, output.amount, output.outputIndex))
-            inputKeys.add(output.keys)
-        }
-        val input = GsonHelper.customGson.toJson(inputs).toByteArray()
+        val input = utxoWrapper.input
         val receiverKeys = data.first().keys.joinToString(",")
         val receiverMask = data.first().mask
 
@@ -174,45 +362,43 @@ class BottomSheetViewModel @Inject internal constructor(
         val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, traceId)))
         if (transactionResponse.error != null) {
             return transactionResponse
-        }
-        if ((transactionResponse.data?.size ?: 0) > 1){
+        } else if ((transactionResponse.data?.size ?: 0) > 1) {
             throw IllegalArgumentException("Parameter exception")
+        } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name) {
+            throw IllegalArgumentException("Transfer is already paid")
         }
         // Workaround with only the case of a single transfer
         val views = transactionResponse.data!!.first().views.joinToString(",")
-        val keys = GsonHelper.customGson.toJson(inputKeys)
-        val sign = Kernel.signTx(tx, keys, views, spendKey.toHex())
+        val keys = utxoWrapper.formatKeys
+        val sign = Kernel.signTx(tx, keys, views, spendKey.toHex(), false)
         val signResult = SignResult(sign.raw, sign.change)
         runInTransaction {
             if (signResult.change != null) {
-                val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxos.last())
+                val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxoWrapper.lastOutput)
                 tokenRepository.insertOutput(changeOutput)
             }
-            tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverId, nowInUtc()))
-
-            val outputIds = arrayListOf<String>()
-            outputIds.addAll(inputs.map {
-                UUID.nameUUIDFromBytes("${it.hash}:${it.index}".toByteArray()).toString()
-            })
-            tokenRepository.updateUtxoToSigned(outputIds)
+            tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverId, RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc()))
+            tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
         }
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
-        return innerTransaction(signResult.raw,traceId, receiverId, assetId, amount, memo)
+        return innerTransaction(signResult.raw, traceId, receiverId, assetId, amount, memo)
     }
 
-    private suspend fun innerTransaction(raw: String, traceId: String, receiverId: String, assetId: String, amount: String, memo: String?): MixinResponse<List<TransactionResponse>> {
+    private suspend fun innerTransaction(raw: String, traceId: String, receiverId: String?, assetId: String, amount: String, memo: String?): MixinResponse<List<TransactionResponse>> {
         val transactionRsp = tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
         if (transactionRsp.error != null) {
             reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
-            tokenRepository.deleteRawTransaction(traceId)
+            tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, OutputState.signed.name)
             return transactionRsp
         } else {
-            tokenRepository.deleteRawTransaction(transactionRsp.data!!.first().requestId)
+            tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, OutputState.signed.name)
         }
-        // Workaround with only the case of a single transfer
-        val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)
-        initConversation(conversationId, transactionRsp.data!!.first().userId, receiverId)
-        tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), conversationId, assetId, amount, receiverId, memo)
+        if (receiverId!=null) {
+            // Workaround with only the case of a single transfer
+            val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)
+            initConversation(conversationId, transactionRsp.data!!.first().userId, receiverId)
+            tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), conversationId, assetId, amount, receiverId, memo)
+        }
         jobManager.addJobInBackground(SyncOutputJob())
         return transactionRsp
     }
@@ -272,32 +458,7 @@ class BottomSheetViewModel @Inject internal constructor(
         tokenRepository.paySuspend(request)
     }
 
-    suspend fun withdrawal(
-        addressId: String?,
-        amount: String,
-        code: String,
-        traceId: String,
-        memo: String?,
-        fee: String?,
-        assetId: String?,
-        destination: String?,
-        tag: String?,
-    ) = tokenRepository.withdrawal(
-        WithdrawalRequest(
-            addressId,
-            amount,
-            pinCipher.encryptPin(
-                code,
-                TipBody.forWithdrawalCreate(if (addressId.isNullOrBlank()) generateAddressId(requireNotNull(Session.getAccountId()), assetId ?: "", destination ?: "", tag) else addressId, amount, fee, traceId, memo),
-            ),
-            traceId,
-            memo,
-            fee,
-            assetId,
-            destination,
-            tag,
-        ),
-    )
+    suspend fun getFees(id: String, destination: String) = tokenRepository.getFees(id, destination)
 
     suspend fun syncAddr(
         assetId: String,

@@ -139,6 +139,7 @@ open class ErrorHandler {
         const val FAVORITE_LIMIT = 20132
         const val CIRCLE_LIMIT = 20133
         const val WITHDRAWAL_FEE_TOO_SMALL = 20135
+        const val WITHDRAWAL_SUSPEND = 20137
         const val CONVERSATION_CHECKSUM_INVALID_ERROR = 20140
         const val BLOCKCHAIN_ERROR = 30100
         const val INVALID_ADDRESS = 30102
@@ -242,6 +243,9 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
         }
         ErrorHandler.WITHDRAWAL_MEMO_FORMAT_INCORRECT -> {
             getString(R.string.error_withdrawal_memo_format_incorrect)
+        }
+        ErrorHandler.WITHDRAWAL_SUSPEND -> {
+            getString(R.string.error_withdrawal_suspend)
         }
         ErrorHandler.FAVORITE_LIMIT, ErrorHandler.CIRCLE_LIMIT -> {
             getString(R.string.error_number_reached_limit)

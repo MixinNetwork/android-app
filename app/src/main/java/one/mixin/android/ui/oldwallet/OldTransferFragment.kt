@@ -39,7 +39,7 @@ import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
-import one.mixin.android.databinding.FragmentTransferBinding
+import one.mixin.android.databinding.FragmentOldTransferBinding
 import one.mixin.android.databinding.ItemTransferTypeBinding
 import one.mixin.android.databinding.ViewWalletTransferTypeBottomBinding
 import one.mixin.android.extension.appCompatActionBarHeight
@@ -202,7 +202,7 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
         binding.transferMemo.setText(memo)
     }
 
-    private val binding by viewBinding(FragmentTransferBinding::inflate)
+    private val binding by viewBinding(FragmentOldTransferBinding::inflate)
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {

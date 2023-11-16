@@ -11,8 +11,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.MIXIN_FEE_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.ResponseError
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.extension.defaultSharedPreferences
@@ -21,6 +23,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putStringSet
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricItem
@@ -29,6 +32,7 @@ import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogF
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.ui.common.biometric.hasAddress
+import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.BLOCKCHAIN_ERROR
 import one.mixin.android.util.ErrorHandler.Companion.INSUFFICIENT_BALANCE
@@ -39,7 +43,6 @@ import one.mixin.android.util.ErrorHandler.Companion.TOO_SMALL
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.safe.SafeSnapshot
-import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Trace
 import one.mixin.android.widget.BottomSheet
 
@@ -75,6 +78,13 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
                         title.text =
                             getString(R.string.transfer_to, it.user.fullName ?: "")
                         subTitle.text = if (it.user.identityNumber == "0") it.user.userId else "Mixin ID: ${it.user.identityNumber}"
+                    }
+                    biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
+                }
+                is AddressTransferBiometricItem -> {
+                    (t as AddressTransferBiometricItem).let {
+                        title.text = getString(R.string.Transfer)
+                        subTitle.text = it.address
                     }
                     biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
                 }
@@ -121,6 +131,16 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
                     getDescription(),
                 )
             }
+            is AddressTransferBiometricItem -> {
+                BiometricInfo(
+                    getString(
+                        R.string.transfer_to,
+                        t.address,
+                    ),
+                    "",
+                    getDescription(),
+                )
+            }
             else -> {
                 t as WithdrawBiometricItem
                 BiometricInfo(
@@ -139,12 +159,16 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
         val response = when (val t = this.t) {
             is TransferBiometricItem -> {
                 trace = Trace(t.traceId!!, t.asset.assetId, t.amount, t.user.userId, null, null, null, nowInUtc())
-                bottomViewModel.newTransfer(t.asset.assetId, t.user.userId, t.amount, pin, t.traceId, t.memo)
+                bottomViewModel.kernelTransaction(t.asset.assetId, t.user.userId, t.amount, pin, t.traceId, t.memo)
+            }
+            is AddressTransferBiometricItem -> {
+                trace = Trace(t.traceId!!, t.asset.assetId, t.amount, null, t.address, null, null, nowInUtc())
+                bottomViewModel.kernelAddressTransaction(t.asset.assetId, t.address, t.amount, pin, t.traceId, t.memo)
             }
             else -> {
                 t as WithdrawBiometricItem
                 trace = Trace(t.traceId!!, t.asset.assetId, t.amount, null, t.destination, t.tag, null, nowInUtc())
-                bottomViewModel.withdrawal(t.addressId, t.amount, pin, t.traceId!!, t.memo, t.fee, t.asset.assetId, t.destination, t.tag)
+                bottomViewModel.kernelWithdrawalTransaction(MIXIN_FEE_USER_ID, t.traceId!!, t.asset.assetId, t.feeAssetId, t.amount, t.fee, t.destination, t.tag, t.memo, pin)
             }
         }
         bottomViewModel.insertTrace(trace)
@@ -152,11 +176,23 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
         return response
     }
 
+    override suspend fun handleWithErrorCodeAndDesc(pin: String, error: ResponseError) {
+        if (error.code == ErrorHandler.WITHDRAWAL_SUSPEND) {
+            WithdrawalSuspendedBottomSheet.newInstance(t.asset).show(parentFragmentManager, WithdrawalSuspendedBottomSheet.TAG)
+            dismissNow()
+        } else {
+            super.handleWithErrorCodeAndDesc(pin, error)
+        }
+    }
+
     override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
         var returnTo: String? = null
         when (val t = this@OutputBottomSheetDialogFragment.t) {
             is TransferBiometricItem -> {
                 returnTo = t.returnTo
+            }
+            is AddressTransferBiometricItem -> {
+                // left empty
             }
             else -> {
                 t as WithdrawBiometricItem
@@ -172,7 +208,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             lifecycleScope.launch {
                 val trace = bottomViewModel.suspendFindTraceById(traceId)
                 if (trace != null) {
-                    if (data is Snapshot) {
+                    if (data is SafeSnapshot) {
                         trace.snapshotId = data.snapshotId
                         bottomViewModel.insertTrace(trace)
                     }

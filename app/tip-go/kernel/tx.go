@@ -25,6 +25,55 @@ type Tx struct {
 	Change *Utxo  `json:"change,omitempty"`
 }
 
+func BuildTxToKernelAddress(asset string, amount string, kenelAddress string, inputs []byte, changeKeys, changeMask, extra string) (string, error) {
+	a, err := common.NewAddressFromString(kenelAddress)
+	if err != nil {
+		return "", err
+	}
+	seed := make([]byte, 64)
+	crypto.ReadRand(seed)
+	r := crypto.NewKeyFromSeed(seed)
+	receiverMask := r.Public()
+	keys := crypto.DeriveGhostPublicKey(&r, &a.PublicViewKey, &a.PublicSpendKey, uint64(0))
+
+	ckeys := strings.Split(changeKeys, ",")
+	cks := []*crypto.Key{}
+	for _, k := range ckeys {
+		ke := k
+		rk, err := crypto.KeyFromString(ke)
+		if err != nil {
+			return "", err
+		}
+		cks = append(cks, &rk)
+	}
+	var utxo []Utxo
+	err = json.Unmarshal(inputs, &utxo)
+	if err != nil {
+		panic(err)
+	}
+	ins := []*common.UTXO{}
+	for _, u := range utxo {
+		ut := u
+		h, err := crypto.HashFromString(ut.Hash)
+		if err != nil {
+			return "", err
+		}
+		amount := common.NewIntegerFromString(ut.Amount)
+		u := common.UTXO{
+			Input: common.Input{
+				Hash:  h,
+				Index: uint(ut.Index),
+			},
+			Output: common.Output{
+				Amount: amount,
+			},
+		}
+		ins = append(ins, &u)
+	}
+
+	return buildTransaction(asset, amount, 1, []*crypto.Key{keys}, receiverMask, ins, cks, changeMask, extra, "")
+}
+
 func BuildTx(asset string, amount string, threshold int, receiverKeys string, receiverMask string, inputs []byte, changeKeys, changeMask, extra, reference string) (string, error) {
 	keys := strings.Split(receiverKeys, ",")
 	rks := []*crypto.Key{}
@@ -70,7 +119,11 @@ func BuildTx(asset string, amount string, threshold int, receiverKeys string, re
 		}
 		ins = append(ins, &u)
 	}
-	return buildTransaction(asset, amount, threshold, rks, receiverMask, ins, cks, changeMask, extra, reference)
+	mask, err := crypto.KeyFromString(receiverMask)
+	if err != nil {
+		return "", err
+	}
+	return buildTransaction(asset, amount, threshold, rks, mask, ins, cks, changeMask, extra, reference)
 }
 
 func BuildWithdrawalTx(asset string, amount, address, tag string, feeAmount, feeKeys string, feeMask string, inputs []byte, changeKeys, changeMask, extra string) (*Tx, error) {
@@ -132,7 +185,10 @@ func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, addr
 	}
 
 	amountValue := common.NewIntegerFromString(amount)
-	feeAmountValue := common.NewIntegerFromString(feeAmount)
+	feeAmountValue := common.NewInteger(0)
+	if feeAmount != "" {
+		feeAmountValue = common.NewIntegerFromString(feeAmount)
+	}
 	total := common.NewInteger(0)
 
 	tx := common.NewTransactionV5(assetHash)
@@ -140,7 +196,7 @@ func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, addr
 		tx.AddInput(in.Hash, in.Index)
 		total = total.Add(in.Amount)
 	}
-	if total.Cmp(amountValue.Add(feeAmountValue)) < 0 {
+	if feeAmountValue.Cmp(common.Zero) > 0 && total.Cmp(amountValue.Add(feeAmountValue)) < 0 {
 		return nil, errors.New("insufficient funds")
 	}
 	withdrawalOutput := &common.Output{
@@ -174,8 +230,12 @@ func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, addr
 		tx.Outputs = append(tx.Outputs, feeOutput)
 	}
 
-	if total.Cmp(amountValue.Add(feeAmountValue)) > 0 {
-		change := total.Sub(amountValue).Sub(feeAmountValue)
+	amountAndFee := amountValue
+	if feeAmount != "" {
+		amountAndFee = amountAndFee.Add(feeAmountValue)
+	}
+	if total.Cmp(amountAndFee) > 0 {
+		change := total.Sub(amountAndFee)
 		script := common.NewThresholdScript(1)
 
 		changeMaskKey, err := crypto.KeyFromString(changeMask)
@@ -209,7 +269,7 @@ func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, addr
 	return t, nil
 }
 
-func buildTransaction(asset string, amount string, threshold int, receiverKeys []*crypto.Key, receiverMask string, inputs []*common.UTXO, changeKeys []*crypto.Key, changeMask string, extra, reference string) (string, error) {
+func buildTransaction(asset string, amount string, threshold int, receiverKeys []*crypto.Key, receiverMask crypto.Key, inputs []*common.UTXO, changeKeys []*crypto.Key, changeMask string, extra, reference string) (string, error) {
 	assetHash, err := crypto.HashFromString(asset)
 	if err != nil {
 		return "", err
@@ -228,18 +288,14 @@ func buildTransaction(asset string, amount string, threshold int, receiverKeys [
 		return "", errors.New("insufficient funds")
 	}
 
-	mask, err := crypto.KeyFromString(receiverMask)
-	if err != nil {
-		return "", err
-	}
-	if !mask.CheckKey() {
+	if !receiverMask.CheckKey() {
 		return "", errors.New("invalid mask")
 	}
 	output := &common.Output{
 		Type:   common.OutputTypeScript,
 		Amount: amountValue,
 		Keys:   receiverKeys,
-		Mask:   mask,
+		Mask:   receiverMask,
 		Script: common.NewThresholdScript(uint8(threshold)),
 	}
 	tx.Outputs = append(tx.Outputs, output)
@@ -282,7 +338,7 @@ func buildTransaction(asset string, amount string, threshold int, receiverKeys [
 	return hex.EncodeToString(ver.Marshal()), nil
 }
 
-func SignTx(raw, inputKeys, viewKeys string, spendKey string) (*Tx, error) {
+func SignTx(raw, inputKeys, viewKeys string, spendKey string, withoutFee bool) (*Tx, error) {
 	views := strings.Split(viewKeys, ",")
 	rawBytes, err := hex.DecodeString(raw)
 	if err != nil {
@@ -343,11 +399,32 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string) (*Tx, error) {
 		ver.SignaturesMap = append(ver.SignaturesMap, sigs)
 	}
 	var changeUtxo *Utxo
-	if len(ver.Outputs) == 2 {
-		changeUtxo = &Utxo{
-			Hash:   ver.PayloadHash().String(),
-			Amount: ver.Outputs[1].Amount.String(),
-			Index:  1,
+	if ver.Outputs[0].Withdrawal != nil {
+		if len(ver.Outputs) == 3 {
+			changeIndex := len(ver.Outputs) - 1
+			changeUtxo = &Utxo{
+				Hash:   ver.PayloadHash().String(),
+				Amount: ver.Outputs[changeIndex].Amount.String(),
+				Index:  changeIndex,
+			}
+		} else if len(ver.Outputs) == 2 {
+			if withoutFee {
+				changeIndex := len(ver.Outputs) - 1
+				changeUtxo = &Utxo{
+					Hash:   ver.PayloadHash().String(),
+					Amount: ver.Outputs[changeIndex].Amount.String(),
+					Index:  changeIndex,
+				}
+			}
+		}
+	} else {
+		if len(ver.Outputs) > 1 {
+			changeIndex := len(ver.Outputs) - 1
+			changeUtxo = &Utxo{
+				Hash:   ver.PayloadHash().String(),
+				Amount: ver.Outputs[changeIndex].Amount.String(),
+				Index:  changeIndex,
+			}
 		}
 	}
 

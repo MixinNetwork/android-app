@@ -10,6 +10,7 @@ import one.mixin.android.databinding.ViewHeadTailBinding
 class HeadTailView(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
     private val binding: ViewHeadTailBinding = ViewHeadTailBinding.inflate(LayoutInflater.from(context), this)
     val tail = binding.tailTv
+    val head = binding.headTv
 
     init {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.HeadTailView)

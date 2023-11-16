@@ -17,3 +17,8 @@ object UUIDUtils {
         return bb.array()
     }
 }
+
+fun uniqueObjectId(vararg args: String): String {
+    val h = args.joinToString("")
+    return UUID.nameUUIDFromBytes(h.toByteArray()).toString()
+}

@@ -4,6 +4,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.PaymentResponse
+import one.mixin.android.api.response.WithdrawalResponse
 import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Chain
@@ -36,6 +37,9 @@ interface TokenService {
     @GET("safe/assets/{id}")
     suspend fun getAssetPrecisionById(@Path("id") id: String): MixinResponse<AssetPrecision>
 
+    @GET("safe/assets/{id}/fees")
+    suspend fun getFees(@Path("id") id: String, @Query("destination") destination: String): MixinResponse<List<WithdrawalResponse>>
+
     @GET("safe/snapshots")
     suspend fun getSnapshotsByAssetId(
         @Query("asset") id: String,
@@ -63,9 +67,6 @@ interface TokenService {
 
     @POST("payments")
     suspend fun paySuspend(@Body request: TransferRequest): MixinResponse<PaymentResponse>
-
-    @POST("withdrawals")
-    suspend fun withdrawals(@Body request: WithdrawalRequest): MixinResponse<SafeSnapshot>
 
     @GET("safe/snapshots/{id}")
     suspend fun getSnapshotById(@Path("id") id: String): MixinResponse<SafeSnapshot>

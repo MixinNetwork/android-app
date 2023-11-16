@@ -118,7 +118,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
-    private val linkViewModel by viewModels<BottomSheetViewModel>()
+    private val oldLinkViewModel by viewModels<BottomSheetViewModel>()
+
+    val linkViewModel by viewModels<one.mixin.android.ui.common.BottomSheetViewModel>()
 
     private val binding by viewBinding(FragmentBottomSheetBinding::inflate)
 
@@ -126,6 +128,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private lateinit var contentView: View
 
     private val url: String by lazy { requireArguments().getString(CODE)!! }
+
+    private val newSchemaParser: NewSchemaParser by lazy { NewSchemaParser(this) }
 
     override fun onStart() {
         try {
@@ -175,7 +179,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 dismiss()
             } else {
                 lifecycleScope.launch(errorHandler) {
-                    val user = linkViewModel.refreshUser(userId)
+                    val user = oldLinkViewModel.refreshUser(userId)
                     if (user == null) {
                         toast(getUserOrAppNotFoundTip(isAppScheme))
                         dismiss()
@@ -184,7 +188,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
                     if (isOpenApp && user.appId != null) {
                         lifecycleScope.launch(errorHandler) {
-                            val app = linkViewModel.findAppById(user.appId!!)
+                            val app = oldLinkViewModel.findAppById(user.appId!!)
                             if (app != null) {
                                 val url = try {
                                     app.homeUri.appendQueryParamsFromOtherUri(uri)
@@ -222,7 +226,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 dismiss()
             } else {
                 lifecycleScope.launch(errorHandler) {
-                    val user = linkViewModel.refreshUser(userId)
+                    val user = oldLinkViewModel.refreshUser(userId)
                     if (user == null) {
                         toast(R.string.User_not_found)
                         dismiss()
@@ -239,8 +243,18 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             if (checkHasPin()) return
 
             lifecycleScope.launch(errorHandler) {
-                if (!showTransfer(url)) {
-                    showError(R.string.Invalid_payment_link)
+                val uri = url.toUri()
+                val segments = uri.pathSegments
+                if (segments.size == 1) {
+                    if (!showOldTransfer(url)) {
+                        showError(R.string.Invalid_payment_link)
+                    }
+                } else if (segments.size == 2) {
+                    if (!newSchemaParser.parse(url)) {
+                        showError(R.string.Invalid_payment_link)
+                    } else {
+                        dismiss()
+                    }
                 } else {
                     dismiss()
                 }
@@ -255,14 +269,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 segments[0]
             }
             lifecycleScope.launch(errorHandler) {
-                val result = linkViewModel.searchCode(code)
+                val result = oldLinkViewModel.searchCode(code)
                 when (result.first) {
                     QrCodeType.conversation.name -> {
                         val response = result.second as ConversationResponse
                         val found =
                             response.participants.find { it.userId == Session.getAccountId() }
                         if (found != null) {
-                            linkViewModel.refreshConversation(response.conversationId)
+                            oldLinkViewModel.refreshConversation(response.conversationId)
                             toast(R.string.group_already_in)
                             context?.let { ConversationActivity.show(it, response.conversationId) }
                             dismiss()
@@ -270,7 +284,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             val avatarUserIds = mutableListOf<String>()
                             val notExistsUserIdList = mutableListOf<String>()
                             for (p in response.participants) {
-                                val u = linkViewModel.suspendFindUserById(p.userId)
+                                val u = oldLinkViewModel.suspendFindUserById(p.userId)
                                 if (u == null) {
                                     notExistsUserIdList.add(p.userId)
                                 }
@@ -280,15 +294,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             }
                             val avatar4List = avatarUserIds.take(4)
                             val iconUrl = if (notExistsUserIdList.isNotEmpty()) {
-                                linkViewModel.refreshUsers(
+                                oldLinkViewModel.refreshUsers(
                                     notExistsUserIdList,
                                     response.conversationId,
                                 )
                                 null
                             } else {
                                 val avatarUsers =
-                                    linkViewModel.findMultiUsersByIds(avatar4List.toSet())
-                                linkViewModel.startGenerateAvatar(
+                                    oldLinkViewModel.findMultiUsersByIds(avatar4List.toSet())
+                                oldLinkViewModel.startGenerateAvatar(
                                     response.conversationId,
                                     avatar4List,
                                 )
@@ -408,12 +422,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             if (paymentCodeResponse.receivers.isEmpty()) {
                                 showError()
                             } else if (paymentCodeResponse.receivers.size == 1 && paymentCodeResponse.threshold == 1) { // Transfer when there is only one recipient
-                                val user = linkViewModel.refreshUser(paymentCodeResponse.receivers.first())
+                                val user = oldLinkViewModel.refreshUser(paymentCodeResponse.receivers.first())
                                 if (user == null) {
                                     showError(R.string.User_not_found)
                                     return@launch
                                 }
-                                showTransferBottom(user, paymentCodeResponse.amount, asset, paymentCodeResponse.traceId, paymentCodeResponse.status, paymentCodeResponse.memo, null)
+                                showOldTransferBottom(user, paymentCodeResponse.amount, asset, paymentCodeResponse.traceId, paymentCodeResponse.status, paymentCodeResponse.memo, null)
                             } else if (paymentCodeResponse.receivers.size > 1) {
                                 val multisigsBiometricItem = One2MultiBiometricItem(
                                     threshold = paymentCodeResponse.threshold,
@@ -451,7 +465,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val addressId = uri.getQueryParameter("address")
                 if (assetId != null && assetId.isUUID() && addressId != null && addressId.isUUID()) {
                     lifecycleScope.launch(errorHandler) {
-                        val pair = linkViewModel.findAddressById(addressId, assetId)
+                        val pair = oldLinkViewModel.findAddressById(addressId, assetId)
                         val address = pair.first
                         if (pair.second) {
                             showError(R.string.error_address_exists)
@@ -528,7 +542,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val traceId = uri.getQueryParameter("trace")
             if (!traceId.isNullOrEmpty() && traceId.isUUID()) {
                 lifecycleScope.launch(errorHandler) {
-                    val result = linkViewModel.getSnapshotByTraceId(traceId)
+                    val result = oldLinkViewModel.getSnapshotByTraceId(traceId)
                     if (result != null) {
                         dismiss()
                         TransactionBottomSheetDialogFragment.newInstance(result.first, result.second)
@@ -544,7 +558,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 showError()
             } else {
                 lifecycleScope.launch(errorHandler) {
-                    val result = linkViewModel.getSnapshotAndAsset(snapshotId)
+                    val result = oldLinkViewModel.getSnapshotAndAsset(snapshotId)
                     if (result != null) {
                         dismiss()
                         TransactionBottomSheetDialogFragment.newInstance(result.first, result.second)
@@ -567,7 +581,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val userId = uri.getQueryParameter("user")
             lifecycleScope.launch(errorHandler) {
                 if (userId != null) {
-                    val user = linkViewModel.refreshUser(userId)
+                    val user = oldLinkViewModel.refreshUser(userId)
                     when {
                         user == null -> {
                             showError(R.string.User_not_found)
@@ -581,7 +595,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         }
                     }
                 } else {
-                    val conversation = linkViewModel.getAndSyncConversation(conversationId)
+                    val conversation = oldLinkViewModel.getAndSyncConversation(conversationId)
                     if (conversation != null) {
                         ConversationActivity.show(requireContext(), conversation.conversationId)
                         dismiss()
@@ -621,7 +635,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
                 lifecycleScope.launch(errorHandler) {
                     val newUrl = url.addSlashesIfNeeded()
-                    if (isDonateUrl && showTransfer(newUrl)) {
+                    if (isDonateUrl && showOldTransfer(newUrl)) {
                         dismiss()
                     } else {
                         showError()
@@ -686,14 +700,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val result = parseExternalTransferUri(url, { assetId, destination ->
             handleMixinResponse(
                 invokeNetwork = {
-                    linkViewModel.getExternalAddressFee(assetId, destination, null)
+                    oldLinkViewModel.getExternalAddressFee(assetId, destination, null)
                 },
                 successBlock = {
                     return@handleMixinResponse it.data
                 },
             )
         }, { assetKey ->
-            val assetId = linkViewModel.findAssetIdByAssetKey(assetKey)
+            val assetId = oldLinkViewModel.findAssetIdByAssetKey(assetKey)
             if (assetId == null) {
                 errorMsg = getString(R.string.external_pay_no_asset_found)
             }
@@ -701,7 +715,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }, { assetId ->
             handleMixinResponse(
                 invokeNetwork = {
-                    linkViewModel.getAssetPrecisionById(assetId)
+                    oldLinkViewModel.getAssetPrecisionById(assetId)
                 },
                 successBlock = {
                     return@handleMixinResponse it.data
@@ -732,11 +746,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 invokeNetwork = {
                     // raw_payment_url support
                     val transferRequest = TransferRequest(result.assetId, null, amount, null, traceId, result.memo, null, destination)
-                    linkViewModel.paySuspend(transferRequest)
+                    oldLinkViewModel.paySuspend(transferRequest)
                 },
                 successBlock = { r ->
                     val response = r.data ?: return@handleMixinResponse false
-                    showWithdrawalBottom(
+                    showOldWithdrawalBottom(
                         null,
                         destination,
                         null,
@@ -827,7 +841,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private suspend fun showTransfer(text: String): Boolean {
+    private suspend fun showOldTransfer(text: String): Boolean {
         val uri = text.toUri()
         val amount = uri.getQueryParameter("amount")?.stripAmountZero() ?: return false
         if (amount.toBigDecimalOrNull() == null) return false
@@ -853,34 +867,34 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         val asset: AssetItem = checkAsset(assetId) ?: return false
 
-        val user = linkViewModel.refreshUser(userId) ?: return false
+        val user = oldLinkViewModel.refreshUser(userId) ?: return false
 
         val transferRequest = TransferRequest(assetId, userId, amount, null, trace, memo)
         return handleMixinResponse(
             invokeNetwork = {
-                linkViewModel.paySuspend(transferRequest)
+                oldLinkViewModel.paySuspend(transferRequest)
             },
             successBlock = { r ->
                 val response = r.data ?: return@handleMixinResponse false
 
-                showTransferBottom(user, amount, asset, trace, response.status, memo, returnTo)
+                showOldTransferBottom(user, amount, asset, trace, response.status, memo, returnTo)
                 return@handleMixinResponse true
             },
         ) ?: false
     }
 
-    private suspend fun showTransferBottom(user: User, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?, returnTo: String?) {
-        val pair = linkViewModel.findLatestTrace(user.userId, null, null, amount, asset.assetId)
+    private suspend fun showOldTransferBottom(user: User, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?, returnTo: String?) {
+        val pair = oldLinkViewModel.findLatestTrace(user.userId, null, null, amount, asset.assetId)
         if (pair.second) {
             showError(getString(R.string.check_trace_failed))
             return
         }
         val biometricItem = TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first, returnTo)
-        showPreconditionBottom(biometricItem)
+        showOldPreconditionBottom(biometricItem)
     }
 
-    private suspend fun showWithdrawalBottom(addressId: String?, destination: String, tag: String?, label: String?, fee: String, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
-        val pair = linkViewModel.findLatestTrace(null, destination, tag, amount, asset.assetId)
+    private suspend fun showOldWithdrawalBottom(addressId: String?, destination: String, tag: String?, label: String?, fee: String, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
+        val pair = oldLinkViewModel.findLatestTrace(null, destination, tag, amount, asset.assetId)
         if (pair.second) {
             showError(getString(R.string.check_trace_failed))
             return
@@ -889,10 +903,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             destination, tag, addressId, label, fee,
             asset, amount, null, traceId, memo, status, pair.first,
         )
-        showPreconditionBottom(biometricItem)
+        showOldPreconditionBottom(biometricItem)
     }
 
-    private fun showPreconditionBottom(biometricItem: AssetBiometricItem) {
+    private fun showOldPreconditionBottom(biometricItem: AssetBiometricItem) {
         val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, FROM_LINK)
         preconditionBottom.callback = object : PreconditionBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
@@ -909,14 +923,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private suspend fun checkAsset(assetId: String): AssetItem? {
-        var asset = linkViewModel.findAssetItemById(assetId)
+        var asset = oldLinkViewModel.findAssetItemById(assetId)
         if (asset == null) {
-            asset = linkViewModel.refreshAsset(assetId)
+            asset = oldLinkViewModel.refreshAsset(assetId)
         }
-        if (asset != null && asset.assetId != asset.chainId && linkViewModel.findAssetItemById(asset.chainId) == null) {
-            linkViewModel.refreshAsset(asset.chainId)
+        if (asset != null && asset.assetId != asset.chainId && oldLinkViewModel.findAssetItemById(asset.chainId) == null) {
+            oldLinkViewModel.refreshAsset(asset.chainId)
         }
-        return linkViewModel.findAssetItemById(assetId)
+        return oldLinkViewModel.findAssetItemById(assetId)
     }
 
     @SuppressLint("SetTextI18n")
@@ -935,7 +949,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun showError(error: String) {
+    fun showError(error: String) {
         if (!isAdded) return
 
         binding.apply {

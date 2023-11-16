@@ -69,12 +69,12 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.DEVICE, true) ||
         startsWith(Constants.Scheme.SEND, true) ||
         startsWith(Constants.Scheme.ADDRESS, true) ||
-        startsWith(Constants.Scheme.WITHDRAWAL, true) ||
         startsWith(Constants.Scheme.APPS, true) ||
         startsWith(Constants.Scheme.SNAPSHOTS, true) ||
         startsWith(Constants.Scheme.CONVERSATIONS, true) ||
         startsWith(Constants.Scheme.TIP, true) ||
-        startsWith(Constants.Scheme.BUY, true)
+        startsWith(Constants.Scheme.BUY, true) ||
+        startsWith(Constants.Scheme.MIXIN_PAY, true)
     ) {
         true
     } else {
@@ -93,10 +93,8 @@ fun String.isMixinUrl(): Boolean {
             segments.size >= 1 && segments[0].isUUID()
         } else if (startsWith(Constants.Scheme.HTTPS_TRANSFER, true)) {
             segments.size >= 2 && segments[1].isUUID()
-        } else if (startsWith(Constants.Scheme.HTTPS_ADDRESS, true)) {
-            true
         } else {
-            startsWith(Constants.Scheme.HTTPS_WITHDRAWAL, true)
+            startsWith(Constants.Scheme.HTTPS_ADDRESS, true)
         }
     }
 }
