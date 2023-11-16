@@ -10,9 +10,8 @@ import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
-import one.mixin.android.util.decodeBase58
+import one.mixin.android.vo.MixAddressPrefix
 import one.mixin.android.vo.safe.TokenItem
-import tip.Tip
 
 enum class PayType {
     Uuid, XinAddress, MixAddress,
@@ -31,7 +30,7 @@ class NewSchemaParser(
             PayType.Uuid
         } else if (lastPath.startsWith("XIN")) {
             PayType.XinAddress
-        } else if (lastPath.startsWith("MIX")) {
+        } else if (lastPath.startsWith(MixAddressPrefix)) {
             PayType.MixAddress
         } else {
             return false
@@ -84,9 +83,8 @@ class NewSchemaParser(
                 }.show(bottomSheet.parentFragmentManager, TransferFragment.TAG)
             }
         } else {
-            val b = lastPath.removePrefix("MIX")
-            val data = b.decodeBase58()
             // TODO
+//            val mixAddress = lastPath.toMixAddress() ?: return false
             return false
         }
         return true
