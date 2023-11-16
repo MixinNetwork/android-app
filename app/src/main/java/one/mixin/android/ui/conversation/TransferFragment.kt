@@ -86,6 +86,8 @@ import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.NetworkFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferOutViewFragment
+import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
@@ -710,6 +712,15 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     private suspend fun refreshFees(token: TokenItem, address: Address): Boolean {
         return handleMixinResponse(
             invokeNetwork = { bottomViewModel.getFees(token.assetId, address.destination) },
+            failureBlock = {
+                if (it.errorCode == ErrorHandler.WITHDRAWAL_SUSPEND) {
+                    WithdrawalSuspendedBottomSheet.newInstance(token).show(parentFragmentManager, WithdrawalSuspendedBottomSheet.TAG)
+                    dismissNow()
+                    true
+                } else {
+                    false
+                }
+            },
             successBlock = { resp ->
                 val data = requireNotNull(resp.data) { "required list can not be null" }
                 val ids = data.mapNotNull { it.assetId }
