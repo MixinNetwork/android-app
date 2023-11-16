@@ -91,7 +91,6 @@ object Constants {
         const val DEVICE = "mixin://device/auth"
         const val SEND = "mixin://send"
         const val ADDRESS = "mixin://address"
-        const val WITHDRAWAL = "mixin://withdrawal"
         const val APPS = "mixin://apps"
         const val SNAPSHOTS = "mixin://snapshots"
         const val CONVERSATIONS = "mixin://conversations"
@@ -106,8 +105,8 @@ object Constants {
         const val HTTPS_USERS = "https://mixin.one/users"
         const val HTTPS_TRANSFER = "https://mixin.one/transfer"
         const val HTTPS_ADDRESS = "https://mixin.one/address"
-        const val HTTPS_WITHDRAWAL = "https://mixin.one/withdrawal"
         const val HTTPS_APPS = "https://mixin.one/apps"
+
         const val HTTP_MIXIN_PAY = "https://mixin.one/pay/"
 
         const val WALLET_CONNECT_PREFIX = "wc:"
