@@ -277,6 +277,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
         binding.titleView.rightAnimator.isVisible = true
         binding.titleView.rightIb.setImageResource(R.drawable.ic_transaction)
+        address = requireArguments().getParcelableCompat(ARGS_ADDRESS, Address::class.java)
         if (isInnerTransfer()) {
             handleInnerTransfer()
         } else {
@@ -317,8 +318,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         this.currentAsset = currentAsset
         currentAsset?.let { updateAssetUI(it) }
 
-        val address = requireArguments().getParcelableCompat(ARGS_ADDRESS, Address::class.java)
-        this.address = address
+        val address = this.address
         if (address == null || currentAsset == null) return
 
         if (address.addressId.isBlank()) { // mock address
