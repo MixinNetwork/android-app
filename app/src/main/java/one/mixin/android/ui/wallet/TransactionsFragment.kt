@@ -169,14 +169,10 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
 
                         pendingDeposits.chunked(100) { trunk ->
                             lifecycleScope.launch(Dispatchers.IO) {
-                                val hashList = trunk.map { it.transactionHash }
-                                val existHashList =
-                                    walletViewModel.findSnapshotByTransactionHashList(
-                                        asset.assetId,
-                                        hashList
-                                    )
+                                val ids = trunk.map { it.depositId }
+                                val existIds = walletViewModel.findPendingSnapshotsByIds(asset.assetId, ids)
                                 trunk.filter {
-                                    it.transactionHash !in existHashList
+                                    it.depositId !in existIds
                                 }.map {
                                     it.toSnapshot(asset.assetId)
                                 }.let {

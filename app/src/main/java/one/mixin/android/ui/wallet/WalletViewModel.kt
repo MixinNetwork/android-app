@@ -152,7 +152,7 @@ internal constructor(
 
     suspend fun clearPendingDepositsByAssetId(assetId: String) = tokenRepository.clearPendingDepositsByAssetId(assetId)
 
-    suspend fun findSnapshotByTransactionHashList(assetId: String, hashList: List<String>) = tokenRepository.findSnapshotByTransactionHashList(assetId, hashList)
+    suspend fun findPendingSnapshotsByIds(assetId: String, ids: List<String>) = tokenRepository.findPendingSnapshotsByIds(assetId, ids)
 
     suspend fun insertPendingDeposit(snapshot: List<SafeSnapshot>) = tokenRepository.insertPendingDeposit(snapshot)
 
