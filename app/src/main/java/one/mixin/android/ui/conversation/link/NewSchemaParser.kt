@@ -10,6 +10,7 @@ import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
+import one.mixin.android.util.decodeBase58
 import one.mixin.android.vo.safe.TokenItem
 import tip.Tip
 
@@ -84,7 +85,7 @@ class NewSchemaParser(
             }
         } else {
             val b = lastPath.removePrefix("MIX")
-            val data = Tip.base58Decode(b)
+            val data = b.decodeBase58()
             // TODO
             return false
         }
