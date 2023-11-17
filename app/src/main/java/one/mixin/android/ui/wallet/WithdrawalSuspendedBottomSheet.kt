@@ -52,7 +52,6 @@ class WithdrawalSuspendedBottomSheet : MixinBottomSheetDialogFragment() {
         bottomSendBinding.apply {
             assetIcon.bg.loadImage(token.iconUrl, R.drawable.ic_avatar_place_holder)
             assetIcon.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            cancel.setOnClickListener { dismiss() }
             title.text = getString(R.string.Withdrawal_Suspended, token.symbol)
             content.text = getString(R.string.Withdrawal_Suspended_Content, token.symbol)
             gotItTv.setOnClickListener { dismiss() }
