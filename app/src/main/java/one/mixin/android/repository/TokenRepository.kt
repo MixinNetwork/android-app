@@ -540,8 +540,7 @@ class TokenRepository
 
         suspend fun getTransactionsById(traceId: String) = utxoService.getTransactionsById(traceId)
 
-
-    suspend fun findLatestTrace(
+        suspend fun findLatestTrace(
             opponentId: String?,
             destination: String?,
             tag: String?,
