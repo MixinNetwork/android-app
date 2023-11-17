@@ -243,7 +243,6 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             setCustomView(contentView)
         }
 
-        jobManager.addJobInBackground(RefreshTokensJob())
         binding.titleView.leftIb.setOnClickListener {
             contentView.hideKeyboard()
             dismiss()

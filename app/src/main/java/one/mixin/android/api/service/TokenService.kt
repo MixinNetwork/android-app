@@ -98,11 +98,6 @@ interface TokenService {
         @Query("kind") kind: String = "NORMAL",
     ): Call<MixinResponse<List<TopAsset>>>
 
-    @GET("safe/snapshots/trace/{id}")
-    suspend fun getTrace(
-        @Path("id") traceId: String,
-    ): MixinResponse<SafeSnapshot>
-
     @GET("network/ticker")
     suspend fun ticker(
         @Query("asset") assetId: String,

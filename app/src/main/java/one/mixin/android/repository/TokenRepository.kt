@@ -538,9 +538,10 @@ class TokenRepository
         suspend fun suspendFindTraceById(traceId: String): Trace? =
             traceDao.suspendFindTraceById(traceId)
 
-        suspend fun getTrace(traceId: String) = tokenService.getTrace(traceId)
+        suspend fun getTransactionsById(traceId: String) = utxoService.getTransactionsById(traceId)
 
-        suspend fun findLatestTrace(
+
+    suspend fun findLatestTrace(
             opponentId: String?,
             destination: String?,
             tag: String?,
@@ -558,14 +559,16 @@ class TokenRepository
                 val response =
                     try {
                         withContext(Dispatchers.IO) {
-                            tokenService.getTrace(trace.traceId)
+                            utxoService.getTransactionsById(trace.traceId)
                         }
                     } catch (t: Throwable) {
                         ErrorHandler.handleError(t)
                         return Pair(null, true)
                     }
                 return if (response.isSuccess) {
-                    trace.snapshotId = response.data?.snapshotId
+                    val data = response.data!!
+                    val snapshotId = UUID.nameUUIDFromBytes("${data.userId}:${data.transactionHash}".toByteArray()).toString()
+                    trace.snapshotId = snapshotId
                     traceDao.insertSuspend(trace)
                     Pair(trace, false)
                 } else {

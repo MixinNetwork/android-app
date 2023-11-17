@@ -106,7 +106,6 @@ import one.mixin.android.job.RefreshFcmJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
-import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RestoreTransactionJob
 import one.mixin.android.job.SyncOutputJob
@@ -368,7 +367,6 @@ class MainActivity : BlazeBaseActivity() {
             refreshStickerAlbum()
             refreshExternalSchemes()
             cleanCache()
-            jobManager.addJobInBackground(RefreshTokensJob())
             jobManager.addJobInBackground(RefreshAssetsJob())
             sendSafetyNetRequest()
             checkBatteryOptimization()
