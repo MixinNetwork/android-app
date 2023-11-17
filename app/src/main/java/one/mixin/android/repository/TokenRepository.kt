@@ -566,7 +566,7 @@ class TokenRepository
                     }
                 return if (response.isSuccess) {
                     val data = response.data!!
-                    trace.snapshotId = data.safeSnapshotId
+                    trace.snapshotId = data.getSnapshotId
                     traceDao.insertSuspend(trace)
                     Pair(trace, false)
                 } else {
@@ -720,7 +720,7 @@ class TokenRepository
             opponentId: String,
             memo: String?,
         ) {
-            val snapshotId = data.safeSnapshotId
+            val snapshotId = data.getSnapshotId
             val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-$amount", data.userId, opponentId, memo ?: "", data.transactionHash, data.createdAt, data.requestId, null, null, null, null, null)
             val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, snapshot.type, null, snapshot.snapshotId)
             safeSnapshotDao.insert(snapshot)

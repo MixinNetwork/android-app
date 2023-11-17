@@ -39,9 +39,12 @@ data class TransactionResponse(
     @SerializedName("views")
     val views: List<String>,
 ) {
-    val safeSnapshotId: String
+    val getSnapshotId: String
         get() {
-            return snapshotId ?: UUID.nameUUIDFromBytes("${userId}:${transactionHash}".toByteArray()).toString()
+            if (snapshotId.isNullOrBlank()) {
+                return nameUUIDFromBytes("${userId}:${transactionHash}".toByteArray()).toString()
+            }
+            return snapshotId
         }
 }
 
