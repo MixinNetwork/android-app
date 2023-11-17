@@ -114,6 +114,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         const val ARGS_AMOUNT = "args_amount"
         const val ARGS_MEMO = "args_memo"
         const val ARGS_TRACE = "args_trace"
+        const val ARGS_RETURN_TO = "args_return_to"
 
         const val POST_TEXT = 0
         const val POST_PB = 1
@@ -126,6 +127,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             amount: String? = null,
             memo: String? = null,
             trace: String? = null,
+            returnTo: String? = null,
             supportSwitchAsset: Boolean = false,
         ) = TransferFragment().withArgs {
             userId?.let { putString(ARGS_USER_ID, it) }
@@ -135,6 +137,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             amount?.let { putString(ARGS_AMOUNT, it) }
             memo?.let { putString(ARGS_MEMO, it) }
             trace?.let { putString(ARGS_TRACE, it) }
+            returnTo?.let { putString(ARGS_RETURN_TO, it) }
             putBoolean(ARGS_SWITCH_ASSET, supportSwitchAsset)
         }
 
@@ -698,18 +701,33 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 binding.continueVa.displayedChild = POST_TEXT
                 return@launch
             }
+            val tx =
+                handleMixinResponse(
+                    invokeNetwork = { bottomViewModel.getTransactionsById(traceId) },
+                    successBlock = { r -> r.data },
+                    failureBlock = {
+                        return@handleMixinResponse it.errorCode == ErrorHandler.NOT_FOUND
+                    },
+                )
+            val status =
+                if (tx != null) {
+                    PaymentStatus.paid.name
+                } else {
+                    PaymentStatus.pending.name
+                }
 
             val trace = pair.first
+            val returnTo = requireArguments().getString(ARGS_RETURN_TO)
             val biometricItem =
                 if (user != null) {
-                    TransferBiometricItem(user!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace, null)
+                    TransferBiometricItem(user!!, currentAsset!!, amount, null, traceId, memo, status, trace, returnTo)
                 } else if (mainnetAddress != null) {
-                    AddressTransferBiometricItem(mainnetAddress!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name)
+                    AddressTransferBiometricItem(mainnetAddress!!, currentAsset!!, amount, null, traceId, memo, status, returnTo)
                 } else {
                     val fee = requireNotNull(currentFee) { "withdrawal currentFee can not be null" }
                     WithdrawBiometricItem(
                         address!!.destination, address!!.tag, address!!.addressId, address!!.label, fee.fee, fee.token.assetId, fee.token.symbol, fee.token.priceFiat(),
-                        currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace,
+                        currentAsset!!, amount, null, traceId, memo, status, trace,
                     )
                 }
             binding.continueVa.displayedChild = POST_TEXT

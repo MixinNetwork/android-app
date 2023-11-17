@@ -1052,4 +1052,6 @@ class BottomSheetViewModel
             pin: String,
         ): String =
             pinCipher.encryptPin(pin, TipBody.forSequencerRegister(userId, pkHex))
+
+        suspend fun getTransactionsById(traceId: String) = tokenRepository.getTransactionsById(traceId)
     }

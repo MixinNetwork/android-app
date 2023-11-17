@@ -2,6 +2,7 @@ package one.mixin.android.ui.conversation.link
 
 import androidx.core.net.toUri
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.stripAmountZero
@@ -11,8 +12,12 @@ import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.MixAddressPrefix
 import one.mixin.android.vo.safe.TokenItem
+import java.io.UnsupportedEncodingException
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import java.util.UUID
 
 enum class PayType {
@@ -55,18 +60,42 @@ class NewSchemaParser(
         if (trace != null && !trace.isUUID()) {
             return false
         }
+        val returnTo =
+            uri.getQueryParameter("return_to")?.run {
+                try {
+                    URLDecoder.decode(this, StandardCharsets.UTF_8.name())
+                } catch (e: UnsupportedEncodingException) {
+                    this
+                }
+            }
 
         if (payType == PayType.Uuid || payType == PayType.XinAddress) {
             if (asset != null && amount != null) {
-                val token: TokenItem = checkToken(asset) ?: return false // TODO 404?
                 val traceId = trace ?: UUID.randomUUID().toString()
+                val tx =
+                    handleMixinResponse(
+                        invokeNetwork = { linkViewModel.getTransactionsById(traceId) },
+                        successBlock = { r -> r.data },
+                        failureBlock = {
+                            return@handleMixinResponse it.errorCode == ErrorHandler.NOT_FOUND
+                        },
+                    )
+                val status =
+                    if (tx != null) {
+                        PaymentStatus.paid.name
+                    } else {
+                        PaymentStatus.pending.name
+                    }
+
+                val token: TokenItem = checkToken(asset) ?: return false // TODO 404?
                 if (payType == PayType.Uuid) {
                     val user = linkViewModel.refreshUser(lastPath) ?: return false
-                    val biometricItem = TransferBiometricItem(user, token, amount, null, traceId, memo, PaymentStatus.pending.name, null, null)
+
+                    val biometricItem = TransferBiometricItem(user, token, amount, null, traceId, memo, status, null, returnTo)
                     showPreconditionBottom(biometricItem)
                 } else {
                     // TODO verify address?
-                    val addressTransferBiometricItem = AddressTransferBiometricItem(lastPath, token, amount, null, traceId, memo, PaymentStatus.pending.name)
+                    val addressTransferBiometricItem = AddressTransferBiometricItem(lastPath, token, amount, null, traceId, memo, status, returnTo)
                     showPreconditionBottom(addressTransferBiometricItem)
                 }
             } else {
@@ -76,6 +105,7 @@ class NewSchemaParser(
                         amount = amount,
                         memo = memo,
                         trace = trace,
+                        returnTo = returnTo,
                         supportSwitchAsset = true,
                     )
                 } else {
@@ -84,6 +114,7 @@ class NewSchemaParser(
                         amount = amount,
                         memo = memo,
                         trace = trace,
+                        returnTo = returnTo,
                         supportSwitchAsset = true,
                     )
                 }.show(bottomSheet.parentFragmentManager, TransferFragment.TAG)
