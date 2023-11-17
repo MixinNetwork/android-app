@@ -243,32 +243,22 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     dismiss()
                 }
             }
-        } else if (url.startsWith(Scheme.HTTPS_PAY, true)) {
+        } else if (url.startsWith(Scheme.HTTPS_PAY, true) || url.startsWith(Scheme.PAY, true)) {
             if (checkHasPin()) return
 
             lifecycleScope.launch(errorHandler) {
                 val uri = url.toUri()
                 val segments = uri.pathSegments
-                if (segments.size == 1) {
+                if (segments.size == (if (url.startsWith(Scheme.HTTPS_PAY, true)) 1 else 0)) {
                     if (!showOldTransfer(url)) {
                         showError(R.string.Invalid_payment_link)
                     }
-                } else if (segments.size == 2) {
+                } else if (segments.size == (if (url.startsWith(Scheme.HTTPS_PAY, true)) 2 else 1)) {
                     if (!newSchemaParser.parse(url)) {
                         showError(R.string.Invalid_payment_link)
                     } else {
                         dismiss()
                     }
-                } else {
-                    dismiss()
-                }
-            }
-        } else if (url.startsWith(Scheme.PAY, true)) {
-            if (checkHasPin()) return
-
-            lifecycleScope.launch(errorHandler) {
-                if (!showOldTransfer(url)) {
-                    showError(R.string.Invalid_payment_link)
                 } else {
                     dismiss()
                 }
