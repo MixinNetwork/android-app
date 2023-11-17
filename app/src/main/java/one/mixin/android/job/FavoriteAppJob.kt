@@ -25,6 +25,8 @@ class FavoriteAppJob(vararg val userIds: String?) : BaseJob(
                             data.map { app -> app.appId }.filter { id ->
                                 appDao.findAppById(id) == null || userDao.suspendFindUserById(id) == null
                             }.let { ids ->
+                                if (ids.isEmpty()) return@forEach
+
                                 val response = userService.fetchUsers(ids)
                                 if (response.isSuccess) {
                                     response.data?.apply {

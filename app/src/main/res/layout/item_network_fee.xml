@@ -45,7 +45,7 @@
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:layout_alignParentEnd="true"
-        android:layout_above="@id/center_place_holder"
+        android:layout_centerVertical="true"
         android:layout_marginEnd="20dp"
         android:visibility="gone"
         android:src="@drawable/ic_check_blue_24dp" />

@@ -741,42 +741,6 @@ class BottomSheetViewModel
             }
         }
 
-        suspend fun getSnapshotByTraceId(traceId: String): Pair<SnapshotItem, TokenItem>? {
-            return withContext(Dispatchers.IO) {
-                val localItem = tokenRepository.findSnapshotByTraceId(traceId)
-                if (localItem != null) {
-                    var assetItem = findAssetItemById(localItem.assetId)
-                    if (assetItem != null) {
-                        return@withContext Pair(localItem, assetItem)
-                    } else {
-                        assetItem = refreshAsset(localItem.assetId)
-                        if (assetItem != null) {
-                            return@withContext Pair(localItem, assetItem)
-                        } else {
-                            return@withContext null
-                        }
-                    }
-                } else {
-                    handleMixinResponse(
-                        invokeNetwork = {
-                            tokenRepository.getTrace(traceId)
-                        },
-                        successBlock = { response ->
-                            response.data?.let { snapshot ->
-                                tokenRepository.insertSnapshot(snapshot)
-                                val assetItem =
-                                    refreshAsset(snapshot.assetId) ?: return@handleMixinResponse null
-                                val snapshotItem =
-                                    tokenRepository.findSnapshotById(snapshot.snapshotId)
-                                        ?: return@handleMixinResponse null
-                                return@handleMixinResponse Pair(snapshotItem, assetItem)
-                            }
-                        },
-                    )
-                }
-            }
-        }
-
         suspend fun getSnapshotAndAsset(snapshotId: String): Pair<SnapshotItem, TokenItem>? {
             return withContext(Dispatchers.IO) {
                 var snapshotItem = findSnapshotById(snapshotId)

@@ -243,7 +243,6 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             setCustomView(contentView)
         }
 
-        jobManager.addJobInBackground(RefreshTokensJob())
         binding.titleView.leftIb.setOnClickListener {
             contentView.hideKeyboard()
             dismiss()
@@ -312,6 +311,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         requireArguments().getString(ARGS_MEMO)?.let {
             binding.transferMemo.setText(it)
             binding.transferMemo.isEnabled = false
+            binding.memoIv.isEnabled = false
         }
     }
 
@@ -505,8 +505,10 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             this,
             Observer { r: List<TokenItem>? ->
                 if (transferBottomOpened) return@Observer
-
                 if (!r.isNullOrEmpty()) {
+                    if (assets == r) {
+                        return@Observer
+                    }
                     assets = r
                     adapter.submitList(r)
                     r.find {
