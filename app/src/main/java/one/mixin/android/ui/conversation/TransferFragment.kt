@@ -505,8 +505,10 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             this,
             Observer { r: List<TokenItem>? ->
                 if (transferBottomOpened) return@Observer
-
                 if (!r.isNullOrEmpty()) {
+                    if (assets == r) {
+                        return@Observer
+                    }
                     assets = r
                     adapter.submitList(r)
                     r.find {
