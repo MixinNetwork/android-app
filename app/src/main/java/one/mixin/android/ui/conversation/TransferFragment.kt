@@ -311,6 +311,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         requireArguments().getString(ARGS_MEMO)?.let {
             binding.transferMemo.setText(it)
             binding.transferMemo.isEnabled = false
+            binding.memoIv.isEnabled = false
         }
     }
 
