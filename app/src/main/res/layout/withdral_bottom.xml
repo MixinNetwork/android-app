@@ -6,21 +6,11 @@
     android:orientation="vertical"
     android:gravity="center_horizontal">
 
-    <ImageView
-        android:id="@+id/cancel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:contentDescription="@null"
-        android:foreground="@drawable/play_ripple"
-        android:src="@drawable/ic_circle_close"
-        android:layout_margin="16dp" />
-
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="32dp"
         android:text="@string/Withdrawal_Suspended"
         android:textColor="?attr/text_primary"
         android:textSize="18sp" />
