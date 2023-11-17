@@ -243,9 +243,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     dismiss()
                 }
             }
-        } else if (url.startsWith(Scheme.HTTPS_PAY, true) ||
-            url.startsWith(Scheme.PAY, true)
-        ) {
+        } else if (url.startsWith(Scheme.HTTPS_PAY, true)) {
             if (checkHasPin()) return
 
             lifecycleScope.launch(errorHandler) {
@@ -261,6 +259,16 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     } else {
                         dismiss()
                     }
+                } else {
+                    dismiss()
+                }
+            }
+        } else if (url.startsWith(Scheme.PAY, true)) {
+            if (checkHasPin()) return
+
+            lifecycleScope.launch(errorHandler) {
+                if (!showOldTransfer(url)) {
+                    showError(R.string.Invalid_payment_link)
                 } else {
                     dismiss()
                 }
