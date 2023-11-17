@@ -4,19 +4,12 @@ import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import one.mixin.android.R;
 import one.mixin.android.widget.imageeditor.Bounds;
 import one.mixin.android.widget.imageeditor.SelectableRenderer;
-import one.mixin.android.widget.imageeditor.renderers.CropAreaRenderer;
-import one.mixin.android.widget.imageeditor.renderers.FillRenderer;
-import one.mixin.android.widget.imageeditor.renderers.InverseFillRenderer;
-import one.mixin.android.widget.imageeditor.renderers.OvalGuideRenderer;
-import one.mixin.android.widget.imageeditor.renderers.SelectedElementGuideRenderer;
-import one.mixin.android.widget.imageeditor.renderers.TrashRenderer;
+import one.mixin.android.widget.imageeditor.renderers.*;
 
 
 /**

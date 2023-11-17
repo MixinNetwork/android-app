@@ -1,7 +1,6 @@
 package one.mixin.android.widget.recyclerview;
 
 import android.graphics.Canvas;
-
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;

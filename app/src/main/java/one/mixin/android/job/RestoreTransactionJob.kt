@@ -29,7 +29,6 @@ import one.mixin.android.vo.safe.RawTransactionType
 import one.mixin.android.vo.safe.SafeSnapshot
 import timber.log.Timber
 import uniqueObjectId
-import java.lang.IllegalArgumentException
 import java.util.UUID
 
 class RestoreTransactionJob : BaseJob(

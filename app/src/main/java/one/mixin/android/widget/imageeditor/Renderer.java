@@ -1,7 +1,6 @@
 package one.mixin.android.widget.imageeditor;
 
 import android.os.Parcelable;
-
 import androidx.annotation.NonNull;
 
 /**

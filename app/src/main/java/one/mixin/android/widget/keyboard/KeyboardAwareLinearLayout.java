@@ -9,10 +9,8 @@ import android.os.Build.VERSION_CODES;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.WindowInsets;
-
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.preference.PreferenceManager;
-
 import one.mixin.android.R;
 import one.mixin.android.extension.ContextExtensionKt;
 import timber.log.Timber;

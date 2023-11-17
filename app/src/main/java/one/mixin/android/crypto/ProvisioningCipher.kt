@@ -11,7 +11,6 @@ import javax.crypto.IllegalBlockSizeException
 import javax.crypto.Mac
 import javax.crypto.NoSuchPaddingException
 import javax.crypto.spec.SecretKeySpec
-import kotlin.jvm.Throws
 
 class ProvisioningCipher(private val theirPublicKey: ECPublicKey) {
     @Throws(InvalidKeyException::class)

@@ -1,8 +1,8 @@
 package one.mixin.android.widget.gallery.internal.ui.widget;
 
 import android.graphics.Rect;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class MediaGridInset extends RecyclerView.ItemDecoration {
 

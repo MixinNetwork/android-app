@@ -7,7 +7,6 @@ import org.web3j.crypto.Hash;
 import org.web3j.crypto.Sign;
 
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.security.SignatureException;
 
 public class ECCTest {

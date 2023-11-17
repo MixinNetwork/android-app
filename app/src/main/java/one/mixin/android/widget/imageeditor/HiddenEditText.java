@@ -10,10 +10,8 @@ import android.view.Gravity;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import one.mixin.android.widget.imageeditor.model.EditorElement;
 import one.mixin.android.widget.imageeditor.renderers.MultiLineTextRenderer;
 

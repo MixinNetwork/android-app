@@ -3,14 +3,12 @@ package one.mixin.android.util;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.util.SparseIntArray;
-
 import androidx.annotation.UiThread;
-
-import java.util.ArrayList;
-
 import one.mixin.android.crypto.CryptoUtilKt;
 import one.mixin.android.extension.ContextExtensionKt;
 import one.mixin.android.widget.lottie.Utilities;
+
+import java.util.ArrayList;
 
 public class DispatchQueuePoolBackground {
 

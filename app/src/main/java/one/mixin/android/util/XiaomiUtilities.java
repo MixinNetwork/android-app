@@ -1,6 +1,5 @@
 package one.mixin.android.util;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AppOpsManager;
 import android.content.Context;

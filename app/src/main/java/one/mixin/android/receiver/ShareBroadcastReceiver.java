@@ -3,7 +3,6 @@ package one.mixin.android.receiver;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-
 import one.mixin.android.R;
 
 public class ShareBroadcastReceiver extends BroadcastReceiver {

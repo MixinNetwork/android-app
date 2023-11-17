@@ -3,7 +3,6 @@ package one.mixin.android.widget.imageeditor.model;
 import android.animation.ValueAnimator;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
-
 import androidx.annotation.Nullable;
 
 final class AlphaAnimation {

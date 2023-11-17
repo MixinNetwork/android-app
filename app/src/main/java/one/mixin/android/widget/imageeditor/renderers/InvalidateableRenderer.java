@@ -1,11 +1,10 @@
 package one.mixin.android.widget.imageeditor.renderers;
 
 import androidx.annotation.NonNull;
-
-import java.lang.ref.WeakReference;
-
 import one.mixin.android.widget.imageeditor.Renderer;
 import one.mixin.android.widget.imageeditor.RendererContext;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Maintains a weak reference to the an invalidate callback allowing future invalidation without memory leak risk.

@@ -4,10 +4,9 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ImageView;
+import one.mixin.android.widget.AndroidUtilities;
 
 import java.util.HashMap;
-
-import one.mixin.android.widget.AndroidUtilities;
 
 @SuppressLint("AppCompatCustomView")
 public class RLottieImageView extends ImageView {

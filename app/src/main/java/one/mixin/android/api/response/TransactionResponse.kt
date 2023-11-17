@@ -1,8 +1,6 @@
 package one.mixin.android.api.response
 
 import com.google.gson.annotations.SerializedName
-import java.lang.NullPointerException
-import java.util.UUID
 import java.util.UUID.nameUUIDFromBytes
 
 data class TransactionResponse(

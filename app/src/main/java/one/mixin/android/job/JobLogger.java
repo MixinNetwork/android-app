@@ -2,7 +2,6 @@ package one.mixin.android.job;
 
 import com.birbit.android.jobqueue.BuildConfig;
 import com.birbit.android.jobqueue.log.JqLog;
-
 import one.mixin.android.util.CrashExceptionReportKt;
 import timber.log.Timber;
 

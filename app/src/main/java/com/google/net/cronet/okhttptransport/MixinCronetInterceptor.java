@@ -16,14 +16,13 @@
 
 package com.google.net.cronet.okhttptransport;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
-import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import com.google.net.cronet.okhttptransport.RequestResponseConverter.CronetRequestAndOkHttpResponse;
+import okhttp3.*;
+import org.chromium.net.CronetEngine;
+import org.chromium.net.UrlRequest;
+import timber.log.Timber;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,15 +31,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import okhttp3.Call;
-import okhttp3.Interceptor;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-import timber.log.Timber;
 
-import org.chromium.net.CronetEngine;
-import org.chromium.net.UrlRequest;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * An OkHttp interceptor that redirects HTTP traffic to use Cronet instead of using the OkHttp

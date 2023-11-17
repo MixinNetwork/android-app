@@ -1,9 +1,7 @@
 package one.mixin.android.net
 
-import java.lang.NullPointerException
 import java.net.InetAddress
 import java.net.UnknownHostException
-import kotlin.jvm.Throws
 import okhttp3.Dns
 import org.xbill.DNS.ARecord
 import org.xbill.DNS.Lookup

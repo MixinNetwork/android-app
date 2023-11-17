@@ -3,7 +3,6 @@ package one.mixin.android.vo.utxo
 import kernel.Utxo
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.vo.safe.Output
-import java.lang.Exception
 import java.util.UUID
 
 class Change(

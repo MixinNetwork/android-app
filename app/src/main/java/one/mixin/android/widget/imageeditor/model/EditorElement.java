@@ -3,21 +3,13 @@ package one.mixin.android.widget.imageeditor.model;
 import android.graphics.Matrix;
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import one.mixin.android.widget.imageeditor.MatrixUtils;
 import one.mixin.android.widget.imageeditor.Renderer;
 import one.mixin.android.widget.imageeditor.RendererContext;
+
+import java.util.*;
 
 
 /**

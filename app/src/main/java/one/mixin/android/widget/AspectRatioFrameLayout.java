@@ -22,6 +22,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.widget.FrameLayout;
 import androidx.annotation.IntDef;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

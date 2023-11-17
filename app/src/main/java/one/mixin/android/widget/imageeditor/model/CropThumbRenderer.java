@@ -3,9 +3,7 @@ package one.mixin.android.widget.imageeditor.model;
 import android.graphics.Matrix;
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import androidx.annotation.NonNull;
-
 import one.mixin.android.R;
 import one.mixin.android.widget.imageeditor.Bounds;
 import one.mixin.android.widget.imageeditor.Renderer;
