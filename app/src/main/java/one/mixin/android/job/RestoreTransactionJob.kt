@@ -125,7 +125,7 @@ class RestoreTransactionJob : BaseJob(
         opponentId: String,
         memo: String?,
     ) {
-        val snapshotId = UUID.nameUUIDFromBytes("${data.userId}:${data.transactionHash}".toByteArray()).toString()
+        val snapshotId = data.safeSnapshotId
         val conversationId = generateConversationId(data.userId, opponentId)
         initConversation(conversationId, data.userId, opponentId)
         val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-$amount", data.userId, opponentId, memo ?: "", "", data.createdAt, data.requestId, null, null, null, null, null)

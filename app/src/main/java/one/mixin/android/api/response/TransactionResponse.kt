@@ -2,6 +2,8 @@ package one.mixin.android.api.response
 
 import com.google.gson.annotations.SerializedName
 import java.lang.NullPointerException
+import java.util.UUID
+import java.util.UUID.nameUUIDFromBytes
 
 data class TransactionResponse(
     val type: String,
@@ -13,6 +15,8 @@ data class TransactionResponse(
     val amount: String,
     @SerializedName("transaction_hash")
     val transactionHash: String,
+    @SerializedName("snapshot_id")
+    val snapshotId: String?,
     val asset: String,
     @SerializedName("senders_hash")
     val sendersHash: String,
@@ -34,7 +38,12 @@ data class TransactionResponse(
     val snapshotAt: String,
     @SerializedName("views")
     val views: List<String>,
-)
+) {
+    val safeSnapshotId: String
+        get() {
+            return snapshotId ?: UUID.nameUUIDFromBytes("${userId}:${transactionHash}".toByteArray()).toString()
+        }
+}
 
 fun getTransactionResult(
     transactionList: List<TransactionResponse>?,
