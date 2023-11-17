@@ -156,7 +156,7 @@ interface AccountService {
     @GET("/")
     fun ping(): Call<MixinResponse<Void>>
 
-    @GET("fiats")
+    @GET("external/fiats")
     suspend fun getFiats(): MixinResponse<List<Fiat>>
 
     @GET("logs")
