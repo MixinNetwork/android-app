@@ -13,6 +13,9 @@ import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.vo.MixAddressPrefix
 import one.mixin.android.vo.safe.TokenItem
+import java.io.UnsupportedEncodingException
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import java.util.UUID
 
 enum class PayType {
@@ -55,6 +58,13 @@ class NewSchemaParser(
         if (trace != null && !trace.isUUID()) {
             return false
         }
+        val returnTo = uri.getQueryParameter("return_to")?.run {
+            try {
+                URLDecoder.decode(this, StandardCharsets.UTF_8.name())
+            } catch (e: UnsupportedEncodingException) {
+                this
+            }
+        }
 
         if (payType == PayType.Uuid || payType == PayType.XinAddress) {
             if (asset != null && amount != null) {
@@ -62,11 +72,11 @@ class NewSchemaParser(
                 val traceId = trace ?: UUID.randomUUID().toString()
                 if (payType == PayType.Uuid) {
                     val user = linkViewModel.refreshUser(lastPath) ?: return false
-                    val biometricItem = TransferBiometricItem(user, token, amount, null, traceId, memo, PaymentStatus.pending.name, null, null)
+                    val biometricItem = TransferBiometricItem(user, token, amount, null, traceId, memo, PaymentStatus.pending.name, null, returnTo)
                     showPreconditionBottom(biometricItem)
                 } else {
                     // TODO verify address?
-                    val addressTransferBiometricItem = AddressTransferBiometricItem(lastPath, token, amount, null, traceId, memo, PaymentStatus.pending.name)
+                    val addressTransferBiometricItem = AddressTransferBiometricItem(lastPath, token, amount, null, traceId, memo, PaymentStatus.pending.name, returnTo)
                     showPreconditionBottom(addressTransferBiometricItem)
                 }
             } else {

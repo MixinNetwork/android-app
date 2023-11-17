@@ -203,7 +203,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
                 returnTo = t.returnTo
             }
             is AddressTransferBiometricItem -> {
-                // left empty
+                returnTo = t.returnTo
             }
             else -> {
                 t as WithdrawBiometricItem
