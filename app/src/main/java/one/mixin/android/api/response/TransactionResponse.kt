@@ -40,7 +40,7 @@ data class TransactionResponse(
     val getSnapshotId: String
         get() {
             if (snapshotId.isNullOrBlank()) {
-                return nameUUIDFromBytes("${userId}:${transactionHash}".toByteArray()).toString()
+                return nameUUIDFromBytes("$userId:$transactionHash".toByteArray()).toString()
             }
             return snapshotId
         }

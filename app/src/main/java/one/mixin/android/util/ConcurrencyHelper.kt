@@ -1,6 +1,5 @@
 package one.mixin.android.util
 
-import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineStart.LAZY
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -9,6 +8,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.yield
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * A helper class to execute tasks sequentially in coroutines.

@@ -1,11 +1,11 @@
 package one.mixin.android.pay.erc681
 
-import java.math.BigDecimal
-import java.math.BigInteger
 import one.mixin.android.pay.CommonEthereumURIData
 import one.mixin.android.pay.EthereumURI
 import one.mixin.android.pay.erc831.ERC831
 import one.mixin.android.pay.parseCommonURI
+import java.math.BigDecimal
+import java.math.BigInteger
 
 internal val scientificNumberRegEx = Regex("^\\d+(\\.\\d+)?(e\\d+)?$")
 

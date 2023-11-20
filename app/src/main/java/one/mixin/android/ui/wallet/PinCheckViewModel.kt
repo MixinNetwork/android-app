@@ -2,8 +2,8 @@ package one.mixin.android.ui.wallet
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import one.mixin.android.repository.AccountRepository
+import javax.inject.Inject
 
 @HiltViewModel
 class PinCheckViewModel

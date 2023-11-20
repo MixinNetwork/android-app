@@ -1,7 +1,5 @@
 package one.mixin.android.net
 
-import java.net.InetAddress
-import java.net.UnknownHostException
 import okhttp3.Dns
 import org.xbill.DNS.ARecord
 import org.xbill.DNS.Lookup
@@ -10,6 +8,8 @@ import org.xbill.DNS.Resolver
 import org.xbill.DNS.SimpleResolver
 import org.xbill.DNS.TextParseException
 import org.xbill.DNS.Type
+import java.net.InetAddress
+import java.net.UnknownHostException
 
 class CustomDns(val dnsHostname: String) : Dns {
     override fun lookup(hostname: String): List<InetAddress> {
