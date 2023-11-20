@@ -765,11 +765,11 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 val tokens = bottomViewModel.findTokenItems(ids)
                 fees.clear()
                 fees.addAll(
-                    tokens.mapNotNull { t ->
-                        data.find { it.assetId == t.assetId }?.amount?.let { amount ->
-                            NetworkFee(t, amount)
+                    data.mapNotNull { d ->
+                        tokens.find { t -> t.assetId == d.assetId }?.let {
+                            NetworkFee(it, d.amount!!)
                         }
-                    },
+                    }
                 )
                 if (currentFee == null) {
                     currentFee = fees.firstOrNull()
