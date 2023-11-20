@@ -150,19 +150,15 @@ interface TokenDao : BaseDao<Token> {
     @Query("SELECT asset_id FROM tokens WHERE asset_key = :assetKey COLLATE NOCASE")
     suspend fun findAssetIdByAssetKey(assetKey: String): String?
 
-    // Todo replace
-    @Query("SELECT a.* FROM assets a WHERE a.rowid > :rowId ORDER BY a.rowid ASC LIMIT :limit")
-    fun getAssetByLimitAndRowId(
-        limit: Int,
-        rowId: Long,
-    ): List<Asset>
+    @Query("SELECT a.* FROM tokens a WHERE a.rowid > :rowId ORDER BY a.rowid ASC LIMIT :limit")
+    fun getTokenByLimitAndRowId(limit: Int, rowId: Long): List<Token>
 
-    @Query("SELECT rowid FROM assets WHERE asset_id = :assetId")
-    fun getAssetRowId(assetId: String): Long?
+    @Query("SELECT rowid FROM tokens WHERE asset_id = :assetId")
+    fun getTokenRowId(assetId: String): Long?
 
     @Query("SELECT count(1) FROM tokens")
-    fun countAssets(): Long
+    fun countTokens(): Long
 
-    @Query("SELECT count(1) FROM assets WHERE rowid > :rowId")
-    fun countAssets(rowId: Long): Long
+    @Query("SELECT count(1) FROM tokens WHERE rowid > :rowId")
+    fun countTokens(rowId: Long): Long
 }
