@@ -421,17 +421,21 @@ class TransferClient
                 if (isFinal) return
                 transferInserter.insertMessages(mutableList)
                 currentOutputStream?.close()
-                // Final db work
-                conversationDao.getAllConversationId().forEach { conversationId ->
-                    conversationDao.refreshLastMessageId(conversationId)
-                    remoteMessageStatusDao.updateConversationUnseen(conversationId)
-                }
-                conversationExtDao.getAllConversationId().forEach { conversationId ->
-                    conversationExtDao.refreshCountByConversationId(conversationId)
-                }
                 if (status.value != TransferStatus.ERROR) {
                     currentFile?.let { file ->
                         processDataFile(file)
+                    }
+                    if (mutableList.isNotEmpty()) {
+                        transferInserter.insertMessages(mutableList)
+                        mutableList.clear()
+                    }
+                    // Final db work
+                    conversationDao.getAllConversationId().forEach { conversationId ->
+                        conversationDao.refreshLastMessageId(conversationId)
+                        remoteMessageStatusDao.updateConversationUnseen(conversationId)
+                    }
+                    conversationExtDao.getAllConversationId().forEach { conversationId ->
+                        conversationExtDao.refreshCountByConversationId(conversationId)
                     }
                     processAttachmentFile(getAttachmentPath())
                 } else {
