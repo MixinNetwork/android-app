@@ -15,6 +15,7 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.MixAddressPrefix
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.toMixAddress
 import java.io.UnsupportedEncodingException
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -69,43 +70,74 @@ class NewSchemaParser(
                 }
             }
 
-        if (payType == PayType.Uuid || payType == PayType.XinAddress) {
-            if (asset != null && amount != null) {
-                val traceId = trace ?: UUID.randomUUID().toString()
-                var isTraceNotFound = false
-                val tx =
-                    handleMixinResponse(
-                        invokeNetwork = { linkViewModel.getTransactionsById(traceId) },
-                        successBlock = { r -> r.data },
-                        failureBlock = {
-                            isTraceNotFound = it.errorCode == ErrorHandler.NOT_FOUND
-                            return@handleMixinResponse isTraceNotFound
-                        },
-                    )
-                val status =
-                    if (isTraceNotFound) {
-                        PaymentStatus.pending.name
-                    } else if (tx != null) {
-                        PaymentStatus.paid.name
-                    } else {
-                        return false
-                    }
+        if (asset != null && amount != null) {
+            val traceId = trace ?: UUID.randomUUID().toString()
+            var isTraceNotFound = false
+            val tx =
+                handleMixinResponse(
+                    invokeNetwork = { linkViewModel.getTransactionsById(traceId) },
+                    successBlock = { r -> r.data },
+                    failureBlock = {
+                        isTraceNotFound = it.errorCode == ErrorHandler.NOT_FOUND
+                        return@handleMixinResponse isTraceNotFound
+                    },
+                )
+            val status =
+                if (isTraceNotFound) {
+                    PaymentStatus.pending.name
+                } else if (tx != null) {
+                    PaymentStatus.paid.name
+                } else {
+                    return false
+                }
 
-                val token: TokenItem = checkToken(asset) ?: return false // TODO 404?
-                if (payType == PayType.Uuid) {
-                    val user = linkViewModel.refreshUser(lastPath) ?: return false
+            val token: TokenItem = checkToken(asset) ?: return false // TODO 404?
+            if (payType == PayType.Uuid) {
+                val user = linkViewModel.refreshUser(lastPath) ?: return false
 
+                val biometricItem = TransferBiometricItem(user, token, amount, null, traceId, memo, status, null, returnTo)
+                showPreconditionBottom(biometricItem)
+            } else if (payType == PayType.MixAddress) {
+                val mixinAddress = lastPath.toMixAddress()
+                if (mixinAddress?.uuidMembers?.size == 1) { // TODO Support for multiple uuid
+                    val user = linkViewModel.refreshUser(mixinAddress.uuidMembers.first()) ?: return false
                     val biometricItem = TransferBiometricItem(user, token, amount, null, traceId, memo, status, null, returnTo)
                     showPreconditionBottom(biometricItem)
-                } else {
-                    // TODO verify address?
-                    val addressTransferBiometricItem = AddressTransferBiometricItem(lastPath, token, amount, null, traceId, memo, status, returnTo)
+                } else if (mixinAddress?.xinMembers?.size == 1) { // TODO Support for multiple address
+                    val addressTransferBiometricItem = AddressTransferBiometricItem(mixinAddress.xinMembers.first().string(), token, amount, null, traceId, memo, status, returnTo)
                     showPreconditionBottom(addressTransferBiometricItem)
+                } else {
+                    return false
                 }
             } else {
-                if (payType == PayType.Uuid) {
+                // TODO verify address?
+                val addressTransferBiometricItem = AddressTransferBiometricItem(lastPath, token, amount, null, traceId, memo, status, returnTo)
+                showPreconditionBottom(addressTransferBiometricItem)
+            }
+        } else {
+            if (payType == PayType.Uuid) {
+                TransferFragment.newInstance(
+                    userId = lastPath,
+                    amount = amount,
+                    memo = memo,
+                    trace = trace,
+                    returnTo = returnTo,
+                    supportSwitchAsset = true,
+                )
+            } else if (payType == PayType.MixAddress) {
+                val mixinAddress = lastPath.toMixAddress()
+                if (mixinAddress?.uuidMembers?.size == 1) { // TODO Support for multiple uuid
                     TransferFragment.newInstance(
-                        userId = lastPath,
+                        userId = mixinAddress.uuidMembers.first(),
+                        amount = amount,
+                        memo = memo,
+                        trace = trace,
+                        returnTo = returnTo,
+                        supportSwitchAsset = true,
+                    )
+                } else if (mixinAddress?.xinMembers?.size == 1) { // TODO Support for multiple address
+                    TransferFragment.newInstance(
+                        mainnetAddress = mixinAddress.xinMembers.first().string(),
                         amount = amount,
                         memo = memo,
                         trace = trace,
@@ -113,21 +145,23 @@ class NewSchemaParser(
                         supportSwitchAsset = true,
                     )
                 } else {
-                    TransferFragment.newInstance(
-                        mainnetAddress = lastPath,
-                        amount = amount,
-                        memo = memo,
-                        trace = trace,
-                        returnTo = returnTo,
-                        supportSwitchAsset = true,
-                    )
-                }.show(bottomSheet.parentFragmentManager, TransferFragment.TAG)
+                    null
+                }
+            } else {
+                TransferFragment.newInstance(
+                    mainnetAddress = lastPath,
+                    amount = amount,
+                    memo = memo,
+                    trace = trace,
+                    returnTo = returnTo,
+                    supportSwitchAsset = true,
+                )
+            }.let { fragment ->
+                if (fragment == null) return false
+                fragment.show(bottomSheet.parentFragmentManager, TransferFragment.TAG)
             }
-        } else {
-            // TODO
-//            val mixAddress = lastPath.toMixAddress() ?: return false
-            return false
         }
+
         return true
     }
 
