@@ -1,7 +1,6 @@
 package one.mixin.android.vo
 
 import androidx.room.TypeConverters
-import java.util.ArrayList
 
 @TypeConverters(ArrayConverters::class)
 class AppItem(

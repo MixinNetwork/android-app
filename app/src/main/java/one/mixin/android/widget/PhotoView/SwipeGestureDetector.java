@@ -1,10 +1,10 @@
 package one.mixin.android.widget.PhotoView;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.core.view.MotionEventCompat;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
+import androidx.annotation.NonNull;
+import androidx.core.view.MotionEventCompat;
 
 class SwipeGestureDetector {
     static final int DIRECTION_TOP_BOTTOM = 1;

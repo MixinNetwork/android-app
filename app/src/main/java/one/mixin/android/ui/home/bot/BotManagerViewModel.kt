@@ -2,8 +2,8 @@ package one.mixin.android.ui.home.bot
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import one.mixin.android.repository.UserRepository
+import javax.inject.Inject
 
 @HiltViewModel
 class BotManagerViewModel

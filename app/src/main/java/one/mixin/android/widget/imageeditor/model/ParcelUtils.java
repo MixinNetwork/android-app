@@ -3,7 +3,6 @@ package one.mixin.android.widget.imageeditor.model;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.os.Parcel;
-
 import androidx.annotation.NonNull;
 
 import java.util.UUID;

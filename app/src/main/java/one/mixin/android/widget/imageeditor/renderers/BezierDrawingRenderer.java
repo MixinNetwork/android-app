@@ -6,10 +6,8 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import one.mixin.android.widget.imageeditor.ColorableRenderer;
 import one.mixin.android.widget.imageeditor.RendererContext;
 

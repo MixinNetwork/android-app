@@ -4,15 +4,13 @@ import android.content.ContentResolver;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
-
 import androidx.collection.ArraySet;
+import one.mixin.android.widget.gallery.internal.utils.PhotoMetadataUtils;
 
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Set;
-
-import one.mixin.android.widget.gallery.internal.utils.PhotoMetadataUtils;
 
 public enum MimeType {
 

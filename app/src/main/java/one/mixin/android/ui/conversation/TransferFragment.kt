@@ -99,7 +99,6 @@ import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.ArrayList
 import java.util.UUID
 import javax.inject.Inject
 
@@ -766,13 +765,11 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 val tokens = bottomViewModel.findTokenItems(ids)
                 fees.clear()
                 fees.addAll(
-                    ArrayList(
-                        tokens.map { t ->
-                            data.find { it.assetId == t.assetId }?.amount?.let { amount ->
-                                NetworkFee(t, amount)
-                            }
-                        },
-                    ),
+                    tokens.mapNotNull { t ->
+                        data.find { it.assetId == t.assetId }?.amount?.let { amount ->
+                            NetworkFee(t, amount)
+                        }
+                    },
                 )
                 if (currentFee == null) {
                     currentFee = fees.firstOrNull()

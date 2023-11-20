@@ -6,10 +6,10 @@ import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import androidx.appcompat.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import androidx.appcompat.widget.AppCompatImageView;
 
 @SuppressWarnings("unused")
 public class PhotoView extends AppCompatImageView {

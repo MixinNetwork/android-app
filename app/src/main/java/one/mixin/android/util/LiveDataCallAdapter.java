@@ -17,18 +17,16 @@
 package one.mixin.android.util;
 
 
-import androidx.lifecycle.LiveData;
 import androidx.annotation.NonNull;
-
-
-import java.lang.reflect.Type;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import androidx.lifecycle.LiveData;
 import one.mixin.android.api.MixinResponse;
 import retrofit2.Call;
 import retrofit2.CallAdapter;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import java.lang.reflect.Type;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A Retrofit adapterthat converts the Call into a LiveData of MixinResponse.

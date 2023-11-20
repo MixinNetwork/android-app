@@ -6,11 +6,9 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
-
 import one.mixin.android.R;
 import one.mixin.android.widget.imageeditor.Bounds;
 import one.mixin.android.widget.imageeditor.Renderer;

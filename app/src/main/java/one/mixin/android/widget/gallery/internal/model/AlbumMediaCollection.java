@@ -9,9 +9,10 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
-import java.lang.ref.WeakReference;
 import one.mixin.android.widget.gallery.internal.entity.Album;
 import one.mixin.android.widget.gallery.internal.loader.AlbumMediaLoader;
+
+import java.lang.ref.WeakReference;
 
 public class AlbumMediaCollection implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final int LOADER_ID = 2;

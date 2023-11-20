@@ -1,21 +1,18 @@
 package one.mixin.android.util.markdown;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import io.noties.prism4j.GrammarUtils;
 import io.noties.prism4j.Prism4j;
 import io.noties.prism4j.annotations.Aliases;
 import io.noties.prism4j.annotations.Extend;
 import io.noties.prism4j.annotations.Modify;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static io.noties.prism4j.Prism4j.*;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.compile;
-import static io.noties.prism4j.Prism4j.grammar;
-import static io.noties.prism4j.Prism4j.pattern;
-import static io.noties.prism4j.Prism4j.token;
 
 @SuppressWarnings("unused")
 @Aliases("js")

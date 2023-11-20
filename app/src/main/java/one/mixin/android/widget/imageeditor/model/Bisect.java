@@ -1,7 +1,6 @@
 package one.mixin.android.widget.imageeditor.model;
 
 import android.graphics.Matrix;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 

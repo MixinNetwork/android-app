@@ -3,10 +3,8 @@ package one.mixin.android.widget.imageeditor.renderers;
 import android.graphics.Path;
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
-
 import one.mixin.android.widget.imageeditor.Bounds;
 import one.mixin.android.widget.imageeditor.Renderer;
 import one.mixin.android.widget.imageeditor.RendererContext;

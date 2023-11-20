@@ -2,7 +2,6 @@ package one.mixin.android.widget.imageeditor.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 

@@ -4,10 +4,8 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
-
 import one.mixin.android.widget.imageeditor.Bounds;
 import one.mixin.android.widget.imageeditor.DimensionUnit;
 import one.mixin.android.widget.imageeditor.Renderer;

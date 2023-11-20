@@ -1,11 +1,5 @@
 package one.mixin.android.crypto;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.SecureRandom;
-
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -13,6 +7,12 @@ import one.mixin.android.crypto.attachment.CancelationSignal;
 import one.mixin.android.crypto.attachment.DigestingRequestBody;
 import one.mixin.android.crypto.attachment.OutputStreamFactory;
 import one.mixin.android.crypto.attachment.PushAttachmentData;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.SecureRandom;
 
 public class Util {
 

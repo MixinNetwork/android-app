@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.util.SparseArray;
-
 import androidx.loader.content.CursorLoader;
 import one.mixin.android.widget.gallery.internal.entity.Album;
 import one.mixin.android.widget.gallery.internal.entity.SelectionSpec;

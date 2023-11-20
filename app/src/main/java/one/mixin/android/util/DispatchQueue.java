@@ -4,10 +4,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
+import timber.log.Timber;
 
 import java.util.concurrent.CountDownLatch;
-
-import timber.log.Timber;
 
 public class DispatchQueue extends Thread {
 

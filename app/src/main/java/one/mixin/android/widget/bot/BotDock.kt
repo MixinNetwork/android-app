@@ -18,7 +18,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemDockBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.vo.BotInterface
-import java.lang.Exception
 import kotlin.math.max
 
 class BotDock : ViewGroup, View.OnLongClickListener {

@@ -1,11 +1,6 @@
 package one.mixin.android.widget.lottie;
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.PixelFormat;
-import android.graphics.Rect;
-import android.graphics.RectF;
+import android.graphics.*;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
@@ -14,8 +9,14 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
-
 import com.google.gson.Gson;
+import one.mixin.android.MixinApplication;
+import one.mixin.android.extension.ContextExtensionKt;
+import one.mixin.android.util.DispatchQueue;
+import one.mixin.android.util.DispatchQueuePool;
+import one.mixin.android.util.DispatchQueuePoolBackground;
+import one.mixin.android.widget.AndroidUtilities;
+import timber.log.Timber;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,14 +26,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
-
-import one.mixin.android.MixinApplication;
-import one.mixin.android.extension.ContextExtensionKt;
-import one.mixin.android.util.DispatchQueue;
-import one.mixin.android.util.DispatchQueuePool;
-import one.mixin.android.util.DispatchQueuePoolBackground;
-import one.mixin.android.widget.AndroidUtilities;
-import timber.log.Timber;
 
 public class RLottieDrawable extends BitmapDrawable implements Animatable, BitmapsCache.Cacheable {
     public boolean skipFrameUpdate;

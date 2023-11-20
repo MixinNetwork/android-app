@@ -1,17 +1,14 @@
 package one.mixin.android.widget.viewpager2;
 
-import static androidx.viewpager2.widget.ViewPager2.SCROLL_STATE_DRAGGING;
-import static androidx.viewpager2.widget.ViewPager2.SCROLL_STATE_IDLE;
-import static androidx.viewpager2.widget.ViewPager2.SCROLL_STATE_SETTLING;
-
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
-
 import com.google.android.material.tabs.TabLayout;
 
 import java.lang.ref.WeakReference;
+
+import static androidx.viewpager2.widget.ViewPager2.*;
 
 /**
  * A mediator to link a TabLayout with a ViewPager2. The mediator will synchronize the ViewPager2's

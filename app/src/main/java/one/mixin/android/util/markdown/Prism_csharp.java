@@ -1,18 +1,13 @@
 package one.mixin.android.util.markdown;
 
-import org.jetbrains.annotations.NotNull;
-
 import io.noties.prism4j.GrammarUtils;
 import io.noties.prism4j.Prism4j;
 import io.noties.prism4j.annotations.Aliases;
 import io.noties.prism4j.annotations.Extend;
+import org.jetbrains.annotations.NotNull;
 
-import static java.util.regex.Pattern.CASE_INSENSITIVE;
-import static java.util.regex.Pattern.MULTILINE;
-import static java.util.regex.Pattern.compile;
-import static io.noties.prism4j.Prism4j.grammar;
-import static io.noties.prism4j.Prism4j.pattern;
-import static io.noties.prism4j.Prism4j.token;
+import static io.noties.prism4j.Prism4j.*;
+import static java.util.regex.Pattern.*;
 
 @SuppressWarnings("unused")
 @Aliases("dotnet")

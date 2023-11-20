@@ -61,7 +61,6 @@ import one.mixin.android.vo.cardIcon
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
-import java.lang.IllegalArgumentException
 import java.util.Locale
 
 @AndroidEntryPoint

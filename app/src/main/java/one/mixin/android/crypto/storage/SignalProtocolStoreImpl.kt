@@ -13,7 +13,6 @@ import org.whispersystems.libsignal.state.SessionStore
 import org.whispersystems.libsignal.state.SignalProtocolStore
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import org.whispersystems.libsignal.state.SignedPreKeyStore
-import kotlin.jvm.Throws
 
 class SignalProtocolStoreImpl(context: Context) : SignalProtocolStore {
     private val preKeyStore: PreKeyStore

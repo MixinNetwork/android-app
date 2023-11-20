@@ -1,14 +1,11 @@
 package one.mixin.android.util.markdown;
 
+import io.noties.prism4j.Prism4j;
 import org.jetbrains.annotations.NotNull;
 
-import io.noties.prism4j.Prism4j;
-
+import static io.noties.prism4j.Prism4j.*;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.compile;
-import static io.noties.prism4j.Prism4j.grammar;
-import static io.noties.prism4j.Prism4j.pattern;
-import static io.noties.prism4j.Prism4j.token;
 
 @SuppressWarnings("unused")
 public class Prism_sql {

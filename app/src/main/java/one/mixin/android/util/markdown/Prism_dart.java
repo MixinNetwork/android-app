@@ -1,14 +1,13 @@
 package one.mixin.android.util.markdown;
 
-import org.jetbrains.annotations.NotNull;
-
 import io.noties.prism4j.GrammarUtils;
 import io.noties.prism4j.Prism4j;
 import io.noties.prism4j.annotations.Extend;
+import org.jetbrains.annotations.NotNull;
 
-import static java.util.regex.Pattern.compile;
 import static io.noties.prism4j.Prism4j.pattern;
 import static io.noties.prism4j.Prism4j.token;
+import static java.util.regex.Pattern.compile;
 
 @SuppressWarnings("unused")
 @Extend("clike")

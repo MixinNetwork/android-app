@@ -1,7 +1,6 @@
 package one.mixin.android.util
 
 import kotlinx.serialization.builtins.LongAsStringSerializer
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement

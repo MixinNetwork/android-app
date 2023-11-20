@@ -2,13 +2,11 @@ package one.mixin.android.util;
 
 import android.os.SystemClock;
 import android.util.SparseIntArray;
-
 import androidx.annotation.UiThread;
-
-import java.util.LinkedList;
-
 import one.mixin.android.crypto.CryptoUtilKt;
 import one.mixin.android.extension.ContextExtensionKt;
+
+import java.util.LinkedList;
 
 public class DispatchQueuePool {
 

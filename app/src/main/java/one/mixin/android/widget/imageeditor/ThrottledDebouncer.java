@@ -3,9 +3,9 @@ package one.mixin.android.widget.imageeditor;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
+import okio.Throttler;
 
 /**
  * Mixes the behavior of {@link Throttler} and {@link Debouncer}.

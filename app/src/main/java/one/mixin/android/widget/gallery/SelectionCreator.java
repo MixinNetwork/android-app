@@ -6,10 +6,6 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
-import java.util.Set;
 import one.mixin.android.R;
 import one.mixin.android.widget.gallery.engine.ImageEngine;
 import one.mixin.android.widget.gallery.filter.Filter;
@@ -18,6 +14,10 @@ import one.mixin.android.widget.gallery.internal.entity.SelectionSpec;
 import one.mixin.android.widget.gallery.listener.OnSelectedListener;
 import one.mixin.android.widget.gallery.ui.GalleryActivity;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.Set;
 
 import static android.content.pm.ActivityInfo.*;
 

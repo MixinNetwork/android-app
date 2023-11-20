@@ -6,12 +6,12 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import androidx.annotation.NonNull;
-import androidx.appcompat.widget.ListPopupWindow;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.ListPopupWindow;
 import one.mixin.android.R;
 import one.mixin.android.widget.gallery.internal.entity.Album;
 

@@ -4,20 +4,18 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build;
-
 import androidx.annotation.IntDef;
+import one.mixin.android.MixinApplication;
+import one.mixin.android.extension.ContextExtensionKt;
+import one.mixin.android.util.DispatchQueue;
+import one.mixin.android.widget.AndroidUtilities;
+import timber.log.Timber;
 
 import java.io.RandomAccessFile;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.Locale;
-
-import one.mixin.android.MixinApplication;
-import one.mixin.android.extension.ContextExtensionKt;
-import one.mixin.android.util.DispatchQueue;
-import one.mixin.android.widget.AndroidUtilities;
-import timber.log.Timber;
 
 public class Utilities {
     public static volatile DispatchQueue globalQueue = new DispatchQueue("globalQueue");

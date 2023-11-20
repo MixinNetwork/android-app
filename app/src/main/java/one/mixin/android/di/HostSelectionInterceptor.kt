@@ -1,5 +1,11 @@
 package one.mixin.android.di
 
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.Interceptor
+import okhttp3.Request
+import one.mixin.android.Constants
+import one.mixin.android.Constants.API.URL
 import java.io.IOException
 import java.net.ConnectException
 import java.net.NoRouteToHostException
@@ -9,12 +15,6 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.net.ssl.SSLHandshakeException
 import javax.net.ssl.SSLPeerUnverifiedException
-import okhttp3.HttpUrl
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.Interceptor
-import okhttp3.Request
-import one.mixin.android.Constants
-import one.mixin.android.Constants.API.URL
 
 fun Throwable.isNeedSwitch(): Boolean {
     return (
