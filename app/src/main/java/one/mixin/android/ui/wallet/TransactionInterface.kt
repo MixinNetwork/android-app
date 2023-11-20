@@ -26,6 +26,7 @@ import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat2
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.vo.Fiats
@@ -319,8 +320,10 @@ interface TransactionInterface {
                 SafeSnapshotType.transfer -> {
                     fromTv.text =
                         if (snapshot.opponentId.isBlank()) {
+                            fromTv.textColor = fromTv.context.colorFromAttribute(R.attr.text_minor)
                             "N/A"
                         } else {
+                            fromTv.textColor = fromTv.context.colorFromAttribute(R.attr.text_primary)
                             snapshot.opponentFullName
                         }
                     if (isPositive) {
