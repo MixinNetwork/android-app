@@ -55,6 +55,7 @@ import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.toHex
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
@@ -721,7 +722,7 @@ class TokenRepository
             memo: String?,
         ) {
             val snapshotId = data.getSnapshotId
-            val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-$amount", data.userId, opponentId, memo ?: "", data.transactionHash, data.createdAt, data.requestId, null, null, null, null, null)
+            val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-$amount", data.userId, opponentId, memo?.toHex() ?: "", data.transactionHash, data.createdAt, data.requestId, null, null, null, null, null)
             val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, snapshot.type, null, snapshot.snapshotId)
             safeSnapshotDao.insert(snapshot)
             appDatabase.insertMessage(message)
