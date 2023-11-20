@@ -10,6 +10,7 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.util.UnstableApi
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.ConcatAdapter
@@ -60,7 +61,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.ConcatHeadersDecoration
 import javax.inject.Inject
 
-@OptIn(ExperimentalPagingApi::class)
+@UnstableApi @OptIn(ExperimentalPagingApi::class)
 @AndroidEntryPoint
 class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(), OnSnapshotListener {
     companion object {
@@ -322,7 +323,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                         },
                     ) ?: return@launch
 
-                val mockAddress = Address("", "address", asset.assetId, addressFeeResponse.destination, "TIP Wallet", nowInUtc(), "0", addressFeeResponse.fee, null, null, asset.chainId)
+                val mockAddress = Address("", "address", asset.assetId, addressFeeResponse.destination, "TIP Wallet", nowInUtc(), addressFeeResponse.fee, null, asset.chainId)
                 val withdrawalBiometricItem = buildWithdrawalBiometricItem(mockAddress, asset)
                 val transferFragment = TransferFragment.newInstance(withdrawalBiometricItem)
                 transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)

@@ -340,8 +340,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     private fun updateFeeUI(t: WithdrawBiometricItem) =
         lifecycleScope.launch {
             val token = t.asset ?: return@launch
-            val address = t.address
-            if (address.feeAssetId.isBlank()) {
+            val feeToken = t.fee
+            if (feeToken != null) {
                 binding.apply {
                     memoRl.isVisible = false
                     networkHtv.isVisible = false
@@ -353,31 +353,21 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 }
             } else {
                 binding.continueVa.displayedChild = POST_PB
-                val feeAsset = chatViewModel.refreshAsset(address.feeAssetId)
-                if (feeAsset == null) {
-                    jobManager.addJobInBackground(RefreshTokensJob(address.feeAssetId))
-                    return@launch
-                }
-                val reserveDouble = address.reserve.toBigDecimalOrNull()
-                val dustDouble = address.dust?.toBigDecimalOrNull()
                 binding.apply {
                     memoRl.isVisible = isInnerTransfer()
                     networkHtv.isVisible = true
                     feeHtv.isVisible = true
                     continueVa.setBackgroundResource(R.drawable.bg_round_blue_btn)
                     networkHtv.tail.text = getChainName(token.chainId, token.chainName, token.assetKey)
-                    if (dustDouble != null && dustDouble != BigDecimal.ZERO) {
+                    val dustDouble = BigDecimal(token.dust)
+                    if (dustDouble != BigDecimal.ZERO) {
                         dustHtv.isVisible = true
-                        dustHtv.tail.text = "${address.dust} ${token.symbol}"
-                    }
-                    if (reserveDouble != null && reserveDouble != BigDecimal.ZERO) {
-                        reserveHtv.isVisible = true
-                        reserveHtv.tail.text = "${address.reserve} ${token.symbol}"
+                        dustHtv.tail.text = "${token.dust} ${token.symbol}"
                     }
                 }
-                var success = refreshFees(token, address)
+                var success = refreshFees(token, t.address)
                 while (!success) {
-                    success = refreshFees(token, address)
+                    success = refreshFees(token, t.address)
                     delay(500)
                 }
                 updateFeeUI()
