@@ -82,6 +82,7 @@ import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.OutputState
 import one.mixin.android.vo.safe.RawTransaction
+import one.mixin.android.vo.safe.RawTransactionState
 import one.mixin.android.vo.safe.RawTransactionType
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.TokenItem
@@ -285,7 +286,7 @@ class BottomSheetViewModel
             val utxoWrapper = UtxoWrapper(packUtxo(asset, amount))
             if (trace != null) {
                 val rawTransaction = tokenRepository.findRawTransaction(trace)
-                if (rawTransaction != null) {
+                if (rawTransaction?.state == OutputState.unspent) {
                     return innerTransaction(rawTransaction.rawTransaction, trace, null, assetId, amount, memo)
                 }
             }
