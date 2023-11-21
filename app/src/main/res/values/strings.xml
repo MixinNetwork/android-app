@@ -1332,4 +1332,5 @@
     <string name="Withdrawal_Suspended">%1$s Withdrawal Suspended</string>
     <string name="Withdrawal_Suspended_Content">%1$s withdrawals are temporarily suspended, possibly due to node failure, blockchain network hard fork, or congestion. Please try again later.</string>
     <string name="Contact_Support">Contact Support</string>
+    <string name="withdrawal_pending">Pending</string>
 </resources>

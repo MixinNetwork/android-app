@@ -27,7 +27,10 @@ data class RawTransaction(
     val createdAt: String,
 )
 
-fun formatDestination(destination: String, tag: String?): String {
+fun formatDestination(
+    destination: String,
+    tag: String?,
+): String {
     return if (tag.isNullOrEmpty()) {
         destination
     } else {

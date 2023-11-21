@@ -3,7 +3,6 @@ package one.mixin.android.ui.conversation.holder
 import android.graphics.Color
 import android.view.Gravity
 import android.view.TouchDelegate.BELOW
-import android.view.View
 import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import android.widget.RelativeLayout.ALIGN_BOTTOM

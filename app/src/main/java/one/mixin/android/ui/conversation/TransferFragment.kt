@@ -769,7 +769,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                         tokens.find { t -> t.assetId == d.assetId }?.let {
                             NetworkFee(it, d.amount!!)
                         }
-                    }
+                    },
                 )
                 if (currentFee == null) {
                     currentFee = fees.firstOrNull()

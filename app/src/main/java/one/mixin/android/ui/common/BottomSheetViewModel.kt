@@ -82,7 +82,6 @@ import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.OutputState
 import one.mixin.android.vo.safe.RawTransaction
-import one.mixin.android.vo.safe.RawTransactionState
 import one.mixin.android.vo.safe.RawTransactionType
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.TokenItem
