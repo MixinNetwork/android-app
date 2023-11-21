@@ -26,3 +26,11 @@ data class RawTransaction(
     @ColumnInfo(name = "created_at")
     val createdAt: String,
 )
+
+fun formatDestination(destination: String, tag: String?): String {
+    return if (tag.isNullOrEmpty()) {
+        destination
+    } else {
+        "$destination:$tag"
+    }
+}
