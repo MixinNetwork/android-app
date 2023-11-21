@@ -55,21 +55,8 @@ class SafeSnapshotHolder constructor(val binding: ItemChatSafeSnapshBinding) : B
             }
         }
 
-        binding.billMemo.isVisible = !messageItem.formatMemo?.utf.isNullOrBlank()
         binding.billMemo.text = messageItem.formatMemo?.utf
         binding.chatTime.load(messageItem.createdAt)
-        if (binding.billMemo.isVisible) {
-            (binding.chatTime.layoutParams as RelativeLayout.LayoutParams).apply {
-                addRule(ALIGN_BOTTOM, R.id.bill_memo)
-                removeRule(BELOW)
-            }
-        } else {
-            (binding.chatTime.layoutParams as RelativeLayout.LayoutParams).apply {
-                addRule(BELOW, R.id.bill_iv)
-                removeRule(ALIGN_BOTTOM)
-            }
-        }
-
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
