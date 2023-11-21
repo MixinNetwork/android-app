@@ -191,7 +191,7 @@ class DepositFragment : BaseFragment() {
                                         indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                                             show()
                                         }
-                                    newAsset = walletViewModel.findDepositAsset(entry.key)
+                                    newAsset = walletViewModel.findOrSyncAsset(entry.key)
                                     alertDialog?.dismiss()
                                 }
                                 if (newAsset == null) {
@@ -213,9 +213,8 @@ class DepositFragment : BaseFragment() {
     }
 
     private fun refreshAsset(asset: TokenItem) {
-        if (!asset.destination.isNullOrBlank()) return
         lifecycleScope.launch {
-            val assetItem = walletViewModel.findOrSyncAsset(asset.assetId)
+            val assetItem = walletViewModel.findOrSyncAsset(asset.assetId, forceRefresh = true)
             if (assetItem == null) {
                 // workaround skip loop
                 if (usdtAssets.contains(asset.assetId)) {
