@@ -3,6 +3,8 @@ package one.mixin.android.ui.transfer
 import android.database.SQLException
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.converter.DepositEntryListConverter
+import one.mixin.android.db.converter.SafeDepositConverter
+import one.mixin.android.db.converter.SafeWithdrawalConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -17,6 +19,8 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.SafeSnapshot
+import one.mixin.android.vo.safe.Token
 import timber.log.Timber
 
 class TransferInserter {
@@ -565,6 +569,33 @@ class TransferInserter {
         }
     }
 
+    fun insertIgnore(token: Token) {
+        val stmt =
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `tokens` (`asset_id`,`kernel_asset_id`,`symbol`,`name`,`icon_url`,`price_btc`,`price_usd`,`chain_id`,`change_usd`,`change_btc`,`confirmations`,`asset_key`,`dust`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        try {
+            stmt.bindString(1, token.assetId)
+            stmt.bindString(2, token.asset)
+            stmt.bindString(3, token.symbol)
+            stmt.bindString(4, token.name)
+            stmt.bindString(5, token.iconUrl)
+            stmt.bindString(6, token.priceBtc)
+            stmt.bindString(7, token.priceUsd)
+            stmt.bindString(8, token.chainId)
+            stmt.bindString(9, token.changeUsd)
+            stmt.bindString(10, token.changeBtc)
+            stmt.bindLong(11, token.confirmations.toLong())
+            stmt.bindString(12, token.assetKey)
+            stmt.bindString(13, token.dust)
+            stmt.executeInsert()
+            primaryId = token.assetId
+            assistanceId = null
+        } catch (e: Exception) {
+            Timber.e(e)
+        } finally {
+            stmt.close()
+        }
+    }
+
     fun insertIgnore(snapshot: Snapshot) {
         val stmt =
             writableDatabase.compileStatement("INSERT OR IGNORE INTO `snapshots` (`snapshot_id`, `type`, `asset_id`, `amount`, `created_at`, `opponent_id`, `trace_id`, `transaction_hash`, `sender`, `receiver`, `memo`, `confirmations`, `snapshot_hash`, `opening_balance`, `closing_balance`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
@@ -626,6 +657,65 @@ class TransferInserter {
             }
             stmt.executeInsert()
             primaryId = snapshot.snapshotId
+            assistanceId = null
+        } catch (e: Exception) {
+            Timber.e(e)
+        } finally {
+            stmt.close()
+        }
+    }
+
+    private val safeDepositConverter = SafeDepositConverter()
+
+    private val safeWithdrawalConverter = SafeWithdrawalConverter()
+
+    fun insertIgnore(safeSnapshot: SafeSnapshot) {
+        val stmt =
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `safe_snapshots` (`snapshot_id`,`type`,`asset_id`,`amount`,`user_id`,`opponent_id`,`memo`,`transaction_hash`,`created_at`,`trace_id`,`confirmations`,`opening_balance`,`closing_balance`,`deposit`,`withdrawal`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        try {
+            stmt.bindString(1, safeSnapshot.snapshotId)
+            stmt.bindString(2, safeSnapshot.type)
+            stmt.bindString(3, safeSnapshot.assetId)
+            stmt.bindString(4, safeSnapshot.amount)
+            stmt.bindString(5, safeSnapshot.userId)
+            stmt.bindString(6, safeSnapshot.opponentId)
+            stmt.bindString(7, safeSnapshot.memo)
+            stmt.bindString(8, safeSnapshot.transactionHash)
+            stmt.bindString(9, safeSnapshot.createdAt)
+            if (safeSnapshot.traceId == null) {
+                stmt.bindNull(10)
+            } else {
+                stmt.bindString(10, safeSnapshot.traceId)
+            }
+            if (safeSnapshot.confirmations == null) {
+                stmt.bindNull(11)
+            } else {
+                stmt.bindLong(11, safeSnapshot.confirmations.toLong())
+            }
+            if (safeSnapshot.openingBalance == null) {
+                stmt.bindNull(12)
+            } else {
+                stmt.bindString(12, safeSnapshot.openingBalance)
+            }
+            if (safeSnapshot.closingBalance == null) {
+                stmt.bindNull(13)
+            } else {
+                stmt.bindString(13, safeSnapshot.closingBalance)
+            }
+            val tmpSafeDeposit: String? = safeDepositConverter.converterData(safeSnapshot.deposit)
+            if (tmpSafeDeposit == null) {
+                stmt.bindNull(14)
+            } else {
+                stmt.bindString(14, tmpSafeDeposit)
+            }
+            val tmpWithdrawal: String? = safeWithdrawalConverter.converterData(safeSnapshot.withdrawal)
+            if (tmpWithdrawal == null) {
+                stmt.bindNull(15)
+            } else {
+                stmt.bindString(15, tmpWithdrawal)
+            }
+            stmt.executeInsert()
+            primaryId = safeSnapshot.snapshotId
             assistanceId = null
         } catch (e: Exception) {
             Timber.e(e)
