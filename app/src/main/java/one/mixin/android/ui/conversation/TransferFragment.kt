@@ -700,19 +700,23 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 binding.continueVa.displayedChild = POST_TEXT
                 return@launch
             }
+            var isTraceNotFound = false
             val tx =
                 handleMixinResponse(
                     invokeNetwork = { bottomViewModel.getTransactionsById(traceId) },
                     successBlock = { r -> r.data },
                     failureBlock = {
-                        return@handleMixinResponse it.errorCode == ErrorHandler.NOT_FOUND
+                        isTraceNotFound = it.errorCode == ErrorHandler.NOT_FOUND
+                        return@handleMixinResponse isTraceNotFound
                     },
                 )
             val status =
-                if (tx != null) {
+                if (isTraceNotFound) {
+                    PaymentStatus.pending.name
+                } else if (tx != null) {
                     PaymentStatus.paid.name
                 } else {
-                    PaymentStatus.pending.name
+                    return@launch
                 }
 
             val trace = pair.first
