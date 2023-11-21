@@ -96,7 +96,7 @@ interface TokenService {
     @GET("network/assets/top")
     fun topAssets(
         @Query("kind") kind: String = "NORMAL",
-        @Query("limit") limit: Int = 50,
+        @Query("limit") limit: Int = 100,
     ): Call<MixinResponse<List<TopAsset>>>
 
     @GET("network/ticker")
