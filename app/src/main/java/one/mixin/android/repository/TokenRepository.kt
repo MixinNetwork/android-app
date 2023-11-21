@@ -129,51 +129,22 @@ class TokenRepository
 
         suspend fun getAssetPrecisionById(id: String) = tokenService.getAssetPrecisionById(id)
 
-        suspend fun findDepositAsset(assetId: String): TokenItem? {
+        suspend fun findOrSyncAsset(
+            assetId: String,
+            forceRefresh: Boolean = false,
+        ): TokenItem? {
             var assetItem = tokenDao.findAssetItemById(assetId)
-            if (assetItem != null && !assetItem.destination.isNullOrBlank()) {
+            if (!forceRefresh && assetItem != null && !assetItem.destination.isNullOrBlank()) {
                 return assetItem
-            } else if (assetItem != null) {
-                val depositResponse =
-                    utxoService.createDeposit(
-                        DepositEntryRequest(assetItem.chainId),
-                    )
-                val pub = SAFE_PUBLIC_KEY.hexStringToByteArray()
-                if (depositResponse.error != null) return assetItem
-                depositResponse.data?.filter {
-                    val message =
-                        if (it.tag.isNullOrBlank()) {
-                            it.destination
-                        } else {
-                            "${it.destination}:${it.tag}"
-                        }.toByteArray().sha3Sum256()
-                    val signature = it.signature.hexStringToByteArray()
-                    verifyCurve25519Signature(message, signature, pub)
-                }?.let { list ->
-                    depositDao.insertList(list)
-                }
             }
-
-            assetItem = syncAsset(assetId)
-            if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
-                val chain = syncAsset(assetItem.chainId)
-                assetItem.chainIconUrl = chain?.chainIconUrl
-                assetItem.chainSymbol = chain?.chainSymbol
-                assetItem.chainName = chain?.chainName
-                assetItem.chainPriceUsd = chain?.chainPriceUsd
+            if (assetItem == null) {
+                assetItem = syncAsset(assetId)
             }
-            return assetItem
-        }
-
-        suspend fun findOrSyncAsset(assetId: String): TokenItem? {
-            var assetItem = tokenDao.findAssetItemById(assetId)
-            if (assetItem != null && !assetItem.destination.isNullOrBlank()) {
-                return assetItem
-            } else if (assetItem != null) {
+            if (assetItem != null) {
                 handleMixinResponse(
                     invokeNetwork = {
                         utxoService.createDeposit(
-                            DepositEntryRequest(assetItem!!.chainId),
+                            DepositEntryRequest(assetItem.chainId),
                         )
                     },
                     successBlock = { resp ->
@@ -194,7 +165,6 @@ class TokenRepository
                 ) ?: return null
             }
 
-            assetItem = syncAsset(assetId)
             if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
                 val chain = syncAsset(assetItem.chainId)
                 assetItem.chainIconUrl = chain?.chainIconUrl

@@ -17,6 +17,7 @@ import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.AppDao
+import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.ExpiredMessageDao
@@ -25,6 +26,7 @@ import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
+import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TokenDao
@@ -78,6 +80,8 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
+import one.mixin.android.vo.safe.SafeSnapshot
+import one.mixin.android.vo.safe.Token
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.EOFException
@@ -99,7 +103,7 @@ class TransferClient
     @Inject
     internal constructor(
         val context: Application,
-        val tokenDao: TokenDao,
+        val assetDao: AssetDao,
         val conversationDao: ConversationDao,
         val conversationExtDao: ConversationExtDao,
         val expiredMessageDao: ExpiredMessageDao,
@@ -327,9 +331,19 @@ class TransferClient
                     transferInserter.insertIgnore(asset)
                 }
 
+                TransferDataType.TOKEN.value -> {
+                    val token = serializationJson.decodeFromJsonElement<Token>(transferData.data)
+                    transferInserter.insertIgnore(token)
+                }
+
                 TransferDataType.SNAPSHOT.value -> {
                     val snapshot = serializationJson.decodeFromJsonElement<Snapshot>(transferData.data)
                     transferInserter.insertIgnore(snapshot)
+                }
+
+                TransferDataType.SAFE_SNAPSHOT.value -> {
+                    val safeSnapshot = serializationJson.decodeFromJsonElement<SafeSnapshot>(transferData.data)
+                    transferInserter.insertIgnore(safeSnapshot)
                 }
 
                 TransferDataType.STICKER.value -> {
@@ -407,17 +421,21 @@ class TransferClient
                 if (isFinal) return
                 transferInserter.insertMessages(mutableList)
                 currentOutputStream?.close()
-                // Final db work
-                conversationDao.getAllConversationId().forEach { conversationId ->
-                    conversationDao.refreshLastMessageId(conversationId)
-                    remoteMessageStatusDao.updateConversationUnseen(conversationId)
-                }
-                conversationExtDao.getAllConversationId().forEach { conversationId ->
-                    conversationExtDao.refreshCountByConversationId(conversationId)
-                }
                 if (status.value != TransferStatus.ERROR) {
                     currentFile?.let { file ->
                         processDataFile(file)
+                    }
+                    if (mutableList.isNotEmpty()) {
+                        transferInserter.insertMessages(mutableList)
+                        mutableList.clear()
+                    }
+                    // Final db work
+                    conversationDao.getAllConversationId().forEach { conversationId ->
+                        conversationDao.refreshLastMessageId(conversationId)
+                        remoteMessageStatusDao.updateConversationUnseen(conversationId)
+                    }
+                    conversationExtDao.getAllConversationId().forEach { conversationId ->
+                        conversationExtDao.refreshCountByConversationId(conversationId)
                     }
                     processAttachmentFile(getAttachmentPath())
                 } else {

@@ -12,12 +12,14 @@ import kotlinx.serialization.json.Json
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.AppDao
+import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.PinMessageDao
+import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TokenDao
@@ -58,6 +60,8 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.markAttachmentAsPending
+import one.mixin.android.vo.safe.SafeSnapshot
+import one.mixin.android.vo.safe.Token
 import timber.log.Timber
 import java.io.InputStream
 import java.io.OutputStream
@@ -74,6 +78,7 @@ import kotlin.random.Random
 class TransferServer
     @Inject
     internal constructor(
+        val assetDao: AssetDao,
         val tokenDao: TokenDao,
         val conversationDao: ConversationDao,
         val expiredMessageDao: ExpiredMessageDao,
@@ -81,6 +86,7 @@ class TransferServer
         val participantDao: ParticipantDao,
         val pinMessageDao: PinMessageDao,
         val snapshotDao: SnapshotDao,
+        val safeSnapshotDao: SafeSnapshotDao,
         val stickerDao: StickerDao,
         val transcriptMessageDao: TranscriptMessageDao,
         val userDao: UserDao,
@@ -282,7 +288,9 @@ class TransferServer
             syncUser(outputStream, transferDataType, primaryId)
             syncApp(outputStream, transferDataType, primaryId)
             syncAsset(outputStream, transferDataType, primaryId)
+            syncToken(outputStream, transferDataType, primaryId)
             syncSnapshot(outputStream, transferDataType, primaryId)
+            syncSafeSnapshot(outputStream, transferDataType, primaryId)
             syncSticker(outputStream, transferDataType, primaryId)
             syncPinMessage(outputStream, transferDataType, primaryId)
             syncMessage(outputStream, transferDataType, primaryId)
@@ -494,12 +502,12 @@ class TransferServer
                     // skip
                     return
                 } else if (transferDataType == TransferDataType.ASSET && primaryId != null) {
-                    rowId = tokenDao.getAssetRowId(primaryId) ?: -1
+                    rowId = assetDao.getAssetRowId(primaryId) ?: -1
                 }
             }
             currentType = TransferDataType.ASSET.value
             while (!quit) {
-                val list = tokenDao.getAssetByLimitAndRowId(LIMIT, rowId)
+                val list = assetDao.getAssetByLimitAndRowId(LIMIT, rowId)
                 if (list.isEmpty()) {
                     return
                 }
@@ -513,9 +521,43 @@ class TransferServer
                     return
                 }
                 currentId = list.last().assetId
-                rowId = tokenDao.getAssetRowId(list.last().assetId) ?: return
+                rowId = assetDao.getAssetRowId(list.last().assetId) ?: return
             }
         }
+
+    private fun syncToken(
+        outputStream: OutputStream,
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+    ) {
+        var rowId = -1L
+        if (transferDataType != null) {
+            if (transferDataType.ordinal > TransferDataType.TOKEN.ordinal) {
+                // skip
+                return
+            } else if (transferDataType == TransferDataType.TOKEN && primaryId != null) {
+                rowId = tokenDao.getTokenRowId(primaryId) ?: -1
+            }
+        }
+        currentType = TransferDataType.TOKEN.value
+        while (!quit) {
+            val list = tokenDao.getTokenByLimitAndRowId(LIMIT, rowId)
+            if (list.isEmpty()) {
+                return
+            }
+            list.map {
+                TransferData(TransferDataType.TOKEN.value, it)
+            }.forEach { token ->
+                writeJson(outputStream, TransferData.serializer(Token.serializer()), token)
+                count++
+            }
+            if (list.size < LIMIT) {
+                return
+            }
+            currentId = list.last().assetId
+            rowId = tokenDao.getTokenRowId(list.last().assetId) ?: return
+        }
+    }
 
         private fun syncSticker(
             outputStream: OutputStream,
@@ -597,6 +639,40 @@ class TransferServer
                 rowId = snapshotDao.getSnapshotRowId(list.last().snapshotId) ?: return
             }
         }
+
+    private fun syncSafeSnapshot(
+        outputStream: OutputStream,
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+    ) {
+        var rowId = -1L
+        if (transferDataType != null) {
+            if (transferDataType.ordinal > TransferDataType.SAFE_SNAPSHOT.ordinal) {
+                // skip
+                return
+            } else if (transferDataType == TransferDataType.SAFE_SNAPSHOT && primaryId != null) {
+                rowId = safeSnapshotDao.getSnapshotRowId(primaryId) ?: -1
+            }
+        }
+        currentType = TransferDataType.SAFE_SNAPSHOT.value
+        while (!quit) {
+            val list = safeSnapshotDao.getSnapshotByLimitAndRowId(LIMIT, rowId)
+            if (list.isEmpty()) {
+                return
+            }
+            list.map {
+                TransferData(TransferDataType.SAFE_SNAPSHOT.value, it)
+            }.forEach { snapshot ->
+                writeJson(outputStream, TransferData.serializer(SafeSnapshot.serializer()), snapshot)
+                count++
+            }
+            if (list.size < LIMIT) {
+                return
+            }
+            currentId = list.last().snapshotId
+            rowId = safeSnapshotDao.getSnapshotRowId(list.last().snapshotId) ?: return
+        }
+    }
 
         // Sync data by messageId
         private fun syncTranscriptMessage(
@@ -882,33 +958,23 @@ class TransferServer
                 }
             }
 
-        private fun totalCount(
-            transferDataType: TransferDataType?,
-            primaryId: String?,
-            assistanceId: String?,
-        ): Long {
-            this.total = totalConversationCount(transferDataType, primaryId) +
-                totalParticipantCount(transferDataType, primaryId, assistanceId) +
-                totalUserCount(
-                    transferDataType,
-                    primaryId,
-                ) + totalAppCount(transferDataType, primaryId) + totalAssetCount(transferDataType, primaryId) +
-                totalSnapshotCount(transferDataType, primaryId) +
-                totalStickerCount(
-                    transferDataType,
-                    primaryId,
-                ) + totalPinMessageCount(transferDataType, primaryId) + totalMessageCount(transferDataType, primaryId) + totalMessageMentionCount(transferDataType, primaryId) +
-                totalExpiredMessageCount(
-                    transferDataType,
-                    primaryId,
-                )
+    private fun totalCount(
+        transferDataType: TransferDataType?,
+        primaryId: String?,
+        assistanceId: String?,
+    ): Long {
+            this.total = totalConversationCount(transferDataType, primaryId) + totalParticipantCount(transferDataType, primaryId, assistanceId) + totalUserCount(transferDataType, primaryId) +
+                totalAppCount(transferDataType, primaryId) + totalAssetCount(transferDataType, primaryId) + totalTokenCount(transferDataType, primaryId) +
+                totalSnapshotCount(transferDataType, primaryId) + totalSafeSnapshotCount(transferDataType, primaryId) + totalStickerCount(transferDataType, primaryId) +
+                totalStickerCount(transferDataType, primaryId) + totalPinMessageCount(transferDataType, primaryId) + totalMessageCount(transferDataType, primaryId) +
+                totalMessageMentionCount(transferDataType, primaryId) + totalExpiredMessageCount(transferDataType, primaryId)
             return total
-        }
+    }
 
-        private fun totalConversationCount(
+    private fun totalConversationCount(
             transferDataType: TransferDataType?,
             primaryId: String?,
-        ): Long {
+            ): Long {
             val collection = conversationIds
             if (!collection.isNullOrEmpty()) return collection.size.toLong()
             return if (transferDataType == null || primaryId == null) {
@@ -930,6 +996,17 @@ class TransferServer
             } else if (transferDataType == TransferDataType.SNAPSHOT) {
                 val rowId = snapshotDao.getSnapshotRowId(primaryId) ?: -1L
                 snapshotDao.countSnapshots(rowId)
+            } else {
+                0L
+            }
+        }
+
+        private fun totalSafeSnapshotCount(transferDataType: TransferDataType?, primaryId: String?): Long {
+            return if (transferDataType == null || primaryId == null || transferDataType.ordinal < TransferDataType.SAFE_SNAPSHOT.ordinal) {
+                safeSnapshotDao.countSnapshots()
+            } else if (transferDataType == TransferDataType.SAFE_SNAPSHOT) {
+                val rowId = safeSnapshotDao.getSnapshotRowId(primaryId) ?: -1L
+                safeSnapshotDao.countSnapshots(rowId)
             } else {
                 0L
             }
@@ -982,10 +1059,22 @@ class TransferServer
             primaryId: String?,
         ): Long {
             return if (transferDataType == null || primaryId == null || transferDataType.ordinal < TransferDataType.ASSET.ordinal) {
-                tokenDao.countAssets()
+                assetDao.countAssets()
             } else if (transferDataType == TransferDataType.ASSET) {
-                val rowId = tokenDao.getAssetRowId(primaryId) ?: -1L
-                tokenDao.countAssets(rowId)
+                val rowId = tokenDao.getTokenRowId(primaryId) ?: -1L
+                assetDao.countAssets(rowId)
+            } else {
+                0L
+            }
+        }
+
+
+        private fun totalTokenCount(transferDataType: TransferDataType?, primaryId: String?): Long {
+            return if (transferDataType == null || primaryId == null || transferDataType.ordinal < TransferDataType.TOKEN.ordinal) {
+                tokenDao.countTokens()
+            } else if (transferDataType == TransferDataType.TOKEN) {
+                val rowId = tokenDao.getTokenRowId(primaryId) ?: -1L
+                tokenDao.countTokens(rowId)
             } else {
                 0L
             }
