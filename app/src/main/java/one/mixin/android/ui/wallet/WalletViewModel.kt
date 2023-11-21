@@ -195,15 +195,12 @@ class WalletViewModel
 
         suspend fun findAssetItemById(assetId: String) = tokenRepository.findAssetItemById(assetId)
 
-        suspend fun findOrSyncAsset(assetId: String): TokenItem? {
+        suspend fun findOrSyncAsset(
+            assetId: String,
+            forceRefresh: Boolean = false,
+        ): TokenItem? {
             return withContext(Dispatchers.IO) {
-                tokenRepository.findOrSyncAsset(assetId)
-            }
-        }
-
-        suspend fun findDepositAsset(assetId: String): TokenItem? {
-            return withContext(Dispatchers.IO) {
-                tokenRepository.findDepositAsset(assetId)
+                tokenRepository.findOrSyncAsset(assetId, forceRefresh)
             }
         }
 
