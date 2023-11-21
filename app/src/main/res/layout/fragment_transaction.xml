@@ -210,18 +210,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textIsSelectable="true" />
-
-                    <ProgressBar
-                        android:id="@+id/hash_pb"
-                        style="?android:attr/progressBarStyleSmall"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginTop="5dp"
-                        android:layout_marginBottom="12dp"
-                        android:indeterminate="true"
-                        android:theme="@style/AppTheme.GrayProgress"
-                        android:visibility="gone" />
                 </LinearLayout>
 
                 <LinearLayout

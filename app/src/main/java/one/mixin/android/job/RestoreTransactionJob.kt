@@ -13,6 +13,7 @@ import one.mixin.android.db.insertMessage
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.toHex
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.ConversationCategory
@@ -127,7 +128,7 @@ class RestoreTransactionJob : BaseJob(
         val snapshotId = data.getSnapshotId
         val conversationId = generateConversationId(data.userId, opponentId)
         initConversation(conversationId, data.userId, opponentId)
-        val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-$amount", data.userId, opponentId, memo ?: "", "", data.createdAt, data.requestId, null, null, null, null, null)
+        val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-$amount", data.userId, opponentId, memo?.toHex() ?: "", "", data.createdAt, data.requestId, null, null, null, null, null)
         val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, snapshot.type, null, snapshot.snapshotId)
         safeSnapshotDao.insert(snapshot)
         appDatabase.insertMessage(message)

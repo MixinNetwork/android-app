@@ -2,7 +2,11 @@ package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
 import android.view.Gravity
+import android.view.TouchDelegate.BELOW
 import android.widget.FrameLayout
+import android.widget.RelativeLayout
+import android.widget.RelativeLayout.ALIGN_BOTTOM
+import androidx.core.view.isVisible
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSafeSnapshBinding
@@ -53,7 +57,6 @@ class SafeSnapshotHolder constructor(val binding: ItemChatSafeSnapshBinding) : B
 
         binding.billMemo.text = messageItem.formatMemo?.utf
         binding.chatTime.load(messageItem.createdAt)
-
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {

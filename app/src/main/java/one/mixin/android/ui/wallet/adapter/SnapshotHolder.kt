@@ -5,8 +5,10 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransactionHeaderBinding
 import one.mixin.android.databinding.ItemWalletTransactionsBinding
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.timeAgoDay
 import one.mixin.android.ui.common.recyclerview.NormalHolder
@@ -25,9 +27,11 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
             SafeSnapshotType.transfer -> {
                 if (snapshot.opponentId.isBlank()) {
                     binding.name.text = "N/A"
+                    binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_minor)
                     binding.avatar.setAnonymous()
                 } else {
                     binding.name.text = snapshot.opponentFullName
+                    binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_primary)
                     binding.avatar.setInfo(snapshot.opponentFullName, snapshot.avatarUrl, snapshot.opponentId)
                     binding.avatar.setOnClickListener {
                         listener?.onUserClick(snapshot.opponentId)

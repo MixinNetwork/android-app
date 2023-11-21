@@ -270,6 +270,8 @@ fun ByteArray.toHex(): String {
     return result.toString()
 }
 
+fun String.toHex() = toByteArray().toHex()
+
 fun String.hexStringToByteArray(): ByteArray {
     val result = ByteArray(length / 2)
     for (i in 0 until length step 2) {

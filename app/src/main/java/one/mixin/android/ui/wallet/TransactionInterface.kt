@@ -26,6 +26,7 @@ import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat2
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.vo.Fiats
@@ -314,13 +315,14 @@ interface TransactionInterface {
                 MemoBottomSheetDialogFragment.newInstance(memo).showNow(fragment.parentFragmentManager, MemoBottomSheetDialogFragment.TAG)
             }
             val type = snapshot.simulateType()
-
             when (type) {
                 SafeSnapshotType.transfer -> {
                     fromTv.text =
                         if (snapshot.opponentId.isBlank()) {
+                            fromTv.textColor = fromTv.context.colorFromAttribute(R.attr.text_minor)
                             "N/A"
                         } else {
+                            fromTv.textColor = fromTv.context.colorFromAttribute(R.attr.text_primary)
                             snapshot.opponentFullName
                         }
                     if (isPositive) {
@@ -330,7 +332,6 @@ interface TransactionInterface {
                     }
                 }
                 SafeSnapshotType.pending -> {
-                    fromLl.isVisible = false
                     memoLl.isVisible = false
                     transactionIdLl.isVisible = false
                     transactionHashLayout.isVisible = false
@@ -346,15 +347,24 @@ interface TransactionInterface {
                         hashLl.isVisible = true
                         hashTitle.text = fragment.getString(R.string.deposit_hash)
                         hashTv.text = snapshot.deposit.depositHash
+                        if (snapshot.deposit.sender.isNotBlank()) {
+                            fromTv.text = snapshot.deposit.sender
+                        } else {
+                            fromTv.text = "N/A"
+                        }
                     }
                 }
                 SafeSnapshotType.deposit -> {
-                    fromLl.isVisible = false
                     memoLl.isVisible = false
                     if (snapshot.deposit != null) {
                         hashLl.isVisible = true
                         hashTitle.text = fragment.getString(R.string.deposit_hash)
                         hashTv.text = snapshot.deposit.depositHash
+                        if (snapshot.deposit.sender.isNotBlank()) {
+                            fromTv.text = snapshot.deposit.sender
+                        } else {
+                            fromTv.text = "N/A"
+                        }
                     }
                 }
                 SafeSnapshotType.withdrawal -> {
@@ -364,15 +374,16 @@ interface TransactionInterface {
                         hashLl.isVisible = true
                         hashTitle.text = fragment.getString(R.string.withdrawal_hash)
                         if (snapshot.withdrawal.withdrawalHash.isBlank()) {
-                            hashPb.isVisible = true
-                            hashTv.isVisible = false
+                            hashTv.text = fragment.getString(R.string.withdrawal_pending)
                         } else {
-                            hashPb.isVisible = false
-                            hashTv.isVisible = true
                             hashTv.text = snapshot.withdrawal.withdrawalHash
                         }
                         fromTitle.text = fragment.getString(R.string.To)
-                        fromTv.text = snapshot.withdrawal.receiver
+                        if (snapshot.withdrawal.receiver.isNotBlank()) {
+                            fromTv.text = snapshot.withdrawal.receiver
+                        } else {
+                            fromTv.text = "N/A"
+                        }
                     }
                 }
                 else -> {

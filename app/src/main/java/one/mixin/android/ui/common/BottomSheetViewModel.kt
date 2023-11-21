@@ -86,6 +86,7 @@ import one.mixin.android.vo.safe.RawTransactionType
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.UtxoWrapper
+import one.mixin.android.vo.safe.formatDestination
 import one.mixin.android.vo.toSimpleChat
 import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
@@ -242,7 +243,7 @@ class BottomSheetViewModel
                         val changeOutput = changeToOutput(signFeeResult.change, feeAsset, changeMask, data[2].keys, feeUtxos.lastOutput)
                         tokenRepository.insertOutput(changeOutput)
                     }
-                    tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, receiverId, RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))
+                    tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))
                     tokenRepository.insetRawTransaction(RawTransaction(feeData.requestId, signFeeResult.raw, receiverId, RawTransactionType.FEE, OutputState.unspent, nowInUtc()))
                 }
                 jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId), assetIdToAsset(feeAssetId))))
@@ -253,7 +254,7 @@ class BottomSheetViewModel
                         tokenRepository.insertOutput(changeOutput)
                     }
                     tokenRepository.updateUtxoToSigned(withdrawalUtxos.ids)
-                    tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, receiverId, RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))
+                    tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))
                 }
                 jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
             }
@@ -285,7 +286,7 @@ class BottomSheetViewModel
             val utxoWrapper = UtxoWrapper(packUtxo(asset, amount))
             if (trace != null) {
                 val rawTransaction = tokenRepository.findRawTransaction(trace)
-                if (rawTransaction != null) {
+                if (rawTransaction?.state == OutputState.unspent) {
                     return innerTransaction(rawTransaction.rawTransaction, trace, null, assetId, amount, memo)
                 }
             }
