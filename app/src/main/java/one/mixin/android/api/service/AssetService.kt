@@ -10,7 +10,6 @@ import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Chain
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Ticker
-import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.safe.PendingDeposit
 import retrofit2.Call
 import retrofit2.http.Body

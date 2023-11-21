@@ -151,7 +151,10 @@ interface TokenDao : BaseDao<Token> {
     suspend fun findAssetIdByAssetKey(assetKey: String): String?
 
     @Query("SELECT a.* FROM tokens a WHERE a.rowid > :rowId ORDER BY a.rowid ASC LIMIT :limit")
-    fun getTokenByLimitAndRowId(limit: Int, rowId: Long): List<Token>
+    fun getTokenByLimitAndRowId(
+        limit: Int,
+        rowId: Long,
+    ): List<Token>
 
     @Query("SELECT rowid FROM tokens WHERE asset_id = :assetId")
     fun getTokenRowId(assetId: String): Long?

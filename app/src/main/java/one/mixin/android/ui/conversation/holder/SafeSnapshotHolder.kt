@@ -2,11 +2,7 @@ package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
 import android.view.Gravity
-import android.view.TouchDelegate.BELOW
 import android.widget.FrameLayout
-import android.widget.RelativeLayout
-import android.widget.RelativeLayout.ALIGN_BOTTOM
-import androidx.core.view.isVisible
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSafeSnapshBinding
