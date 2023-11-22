@@ -78,6 +78,7 @@ import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.C
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
 import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.NetworkFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -174,7 +175,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     private var transferBottomOpened = false
 
     private fun selectAsset() {
-        AssetListBottomSheetDialogFragment.newInstance(true)
+        AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
             .setOnAssetClick { asset ->
                 currentAsset = asset
                 updateAssetUI(asset)
