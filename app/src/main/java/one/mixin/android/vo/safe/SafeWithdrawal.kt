@@ -12,7 +12,7 @@ class SafeWithdrawal(
     @SerializedName("withdrawal_hash")
     @SerialName("withdrawal_hash")
     val withdrawalHash: String,
-    @SerializedName("Receiver")
-    @SerialName("Receiver")
+    @SerializedName("receiver")
+    @SerialName("receiver")
     val receiver: String,
 ) : Parcelable
