@@ -43,14 +43,10 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.databinding.FragmentTransferBinding
 import one.mixin.android.databinding.ItemTransferTypeBinding
-import one.mixin.android.databinding.ViewWalletTransferTypeBottomBinding
-import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.clearCharacterStyle
-import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
@@ -81,6 +77,7 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_TRANSFER
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.NetworkFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -95,14 +92,12 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.displayAddress
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.widget.SearchView
-import one.mixin.android.widget.getMaxCustomViewHeight
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
 import javax.inject.Inject
 
-@AndroidEntryPoint
+@UnstableApi @AndroidEntryPoint
 @SuppressLint("InflateParams")
 class TransferFragment() : MixinBottomSheetDialogFragment() {
     companion object {
@@ -160,11 +155,8 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     private var currentAsset: TokenItem? = null
         set(value) {
             field = value
-            adapter.currentAsset = value
             activity?.defaultSharedPreferences!!.putString(ASSET_PREFERENCE, value?.assetId)
         }
-
-    private val adapter = TypeAdapter()
 
     private val userId: String? by lazy { requireArguments().getString(ARGS_USER_ID) }
     private var address: Address? = null
@@ -181,27 +173,12 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
     private var transferBottomOpened = false
 
-    private val assetsViewBinding: ViewWalletTransferTypeBottomBinding by lazy {
-        val viewBinding = ViewWalletTransferTypeBottomBinding.inflate(LayoutInflater.from(context), null, false)
-        viewBinding.typeRv.adapter = adapter
-        context?.let { c ->
-            val topOffset = c.appCompatActionBarHeight()
-            viewBinding.root.heightOffset = topOffset
-        }
-        viewBinding
-    }
-
-    private val assetsBottomSheet: BottomSheet by lazy {
-        val builder = BottomSheet.Builder(requireActivity(), needFocus = true, softInputResize = false)
-        val bottomSheet = builder.create()
-        builder.setCustomView(assetsViewBinding.root)
-        bottomSheet.setOnDismissListener {
-            if (isAdded) {
-                assetsViewBinding.searchEt.et.text?.clear()
-                operateKeyboard(true)
-            }
-        }
-        bottomSheet
+    private fun selectAsset() {
+        AssetListBottomSheetDialogFragment.newInstance(true)
+            .setOnAssetClick { asset ->
+                currentAsset = asset
+                updateAssetUI(asset)
+            }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
     }
 
     // for testing
@@ -271,15 +248,6 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                     }
                 }
         }
-        assetsViewBinding.searchEt.listener =
-            object : SearchView.OnSearchViewListener {
-                override fun afterTextChanged(s: Editable?) {
-                    filter(s.toString())
-                }
-
-                override fun onSearch() {
-                }
-            }
 
         binding.titleView.rightAnimator.isVisible = true
         binding.titleView.rightIb.setImageResource(R.drawable.ic_transaction)
@@ -446,35 +414,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         if (supportSwitchAsset) {
             binding.assetRl.setOnClickListener {
                 operateKeyboard(false)
-                context?.let {
-                    if (assets.isEmpty()) {
-                        assetsViewBinding.emptyTv.isVisible = true
-                        assetsViewBinding.typeRv.isVisible = false
-                    } else {
-                        assetsViewBinding.emptyTv.isVisible = false
-                        assetsViewBinding.typeRv.isVisible = true
-                    }
-                    adapter.submitList(assets)
-                    adapter.setTypeListener(
-                        object : OnTypeClickListener {
-                            @SuppressLint("NotifyDataSetChanged")
-                            override fun onTypeClick(asset: TokenItem) {
-                                currentAsset = asset
-                                updateAssetUI(asset)
-                                adapter.notifyDataSetChanged()
-                                assetsBottomSheet.dismiss()
-                            }
-                        },
-                    )
-
-                    assetsViewBinding.closeIv.setOnClickListener {
-                        assetsBottomSheet.dismiss()
-                    }
-                    assetsBottomSheet.show()
-                    assetsViewBinding.searchEt.remainFocusable()
-                }
-
-                assetsBottomSheet.setCustomViewHeight(assetsBottomSheet.getMaxCustomViewHeight())
+                selectAsset()
             }
         } else {
             binding.expandIv.isVisible = false
@@ -512,7 +452,6 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                         return@Observer
                     }
                     assets = r
-                    adapter.submitList(r)
                     r.find {
                         it.assetId == activity?.defaultSharedPreferences!!.getString(ASSET_PREFERENCE, "")
                     }.let { asset ->
@@ -529,14 +468,6 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 }
             },
         )
-    }
-
-    private fun filter(s: String) {
-        val assetList =
-            assets.filter {
-                it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
-            }.sortedByDescending { it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) }
-        adapter.submitList(assetList)
     }
 
     @SuppressLint("SetTextI18n")
