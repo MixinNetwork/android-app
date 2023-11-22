@@ -44,6 +44,7 @@ import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.databinding.FragmentTransferBinding
 import one.mixin.android.databinding.ItemTransferTypeBinding
 import one.mixin.android.databinding.ViewWalletTransferTypeBottomBinding
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.clearCharacterStyle
@@ -289,13 +290,13 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         } else {
             handleAddressTransfer()
         }
-        if (mainnetAddress == null) {
-            binding.titleView.rightIb.setOnClickListener {
-                currentAsset?.let { asset ->
-                    TransferOutViewFragment.newInstance(asset.assetId, userId, user?.avatarUrl, asset.symbol, address)
-                        .show(parentFragmentManager, TransferOutViewFragment.TAG)
-                }
-            }
+        if (userId != null) {
+            activity?.addFragment(
+                this,
+                UserTransactionsFragment.newInstance(userId!!),
+                UserTransactionsFragment.TAG,
+            )
+            binding.titleView.rightIb.isVisible = true
         } else {
             binding.titleView.rightIb.isVisible = false
         }
