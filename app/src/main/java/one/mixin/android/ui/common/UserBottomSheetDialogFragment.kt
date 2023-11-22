@@ -72,10 +72,10 @@ import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
-import one.mixin.android.ui.conversation.UserTransactionsFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
+import one.mixin.android.ui.wallet.UserTransactionBottomSheetFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.addPinShortcut
@@ -330,11 +330,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         showUserTransactionAction?.invoke()
                     } else {
                         RxBus.publish(BotCloseEvent())
-                        activity?.addFragment(
-                            this@UserBottomSheetDialogFragment,
-                            UserTransactionsFragment.newInstance(u.userId),
-                            UserTransactionsFragment.TAG,
-                        )
+                        UserTransactionBottomSheetFragment.newInstance(u.userId)
+                            .showNow(parentFragmentManager, UserTransactionBottomSheetFragment.TAG)
                     }
                     dismiss()
                 }

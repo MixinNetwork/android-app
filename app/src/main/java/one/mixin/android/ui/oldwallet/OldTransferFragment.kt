@@ -262,14 +262,7 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
         } else {
             handleAddressTransfer()
         }
-        binding.titleView.rightIb.setOnClickListener {
-            currentAsset?.let { asset ->
-                // TODO need copy this?
-//                TransferOutViewFragment.newInstance(asset.assetId, userId, user?.avatarUrl, asset.symbol, address)
-//                    .show(parentFragmentManager, TransferOutViewFragment.TAG)
-            }
-        }
-
+        binding.titleView.rightIb.isVisible = false
         binding.continueTv.setOnClickListener {
             if (!isAdded) return@setOnClickListener
 

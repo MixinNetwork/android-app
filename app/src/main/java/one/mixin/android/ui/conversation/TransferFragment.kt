@@ -82,7 +82,7 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.
 import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.NetworkFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
-import one.mixin.android.ui.wallet.TransferOutViewFragment
+import one.mixin.android.ui.wallet.UserTransactionBottomSheetFragment
 import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getChainName
@@ -258,12 +258,10 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         } else {
             handleAddressTransfer()
         }
-        if (mainnetAddress == null) {
+        if (userId != null) {
             binding.titleView.rightIb.setOnClickListener {
-                currentAsset?.let { asset ->
-                    TransferOutViewFragment.newInstance(asset.assetId, userId, user?.avatarUrl, asset.symbol, address)
-                        .show(parentFragmentManager, TransferOutViewFragment.TAG)
-                }
+                UserTransactionBottomSheetFragment.newInstance(userId!!)
+                    .showNow(parentFragmentManager, UserTransactionBottomSheetFragment.TAG)
             }
         } else {
             binding.titleView.rightIb.isVisible = false
