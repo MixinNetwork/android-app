@@ -35,19 +35,23 @@ import java.util.concurrent.TimeUnit
 class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "AssetListBottomSheetDialogFragment"
-        const val ARGS_FOR_SEND = "args_for_send"
+        const val ARGS_FOR_TYPE = "args_for_type"
         const val ARGS_ASSETS = "args_assets"
 
         const val POS_RV = 0
         const val POS_EMPTY_RECEIVE = 1
         const val POS_EMPTY_SEND = 2
 
+        const val TYPE_FROM_SEND = 0
+        const val TYPE_FROM_RECEIVE = 1
+        const val TYPE_FROM_TRANSFER = 2
+
         fun newInstance(
-            forSend: Boolean,
+            fromType: Int,
             assets: ArrayList<String>? = null,
         ) =
             AssetListBottomSheetDialogFragment().withArgs {
-                putBoolean(ARGS_FOR_SEND, forSend)
+                putInt(ARGS_FOR_TYPE, fromType)
                 putStringArrayList(ARGS_ASSETS, assets)
             }
     }
@@ -56,8 +60,8 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private val adapter = SearchAdapter()
 
-    private val forSend: Boolean by lazy {
-        requireArguments().getBoolean(ARGS_FOR_SEND)
+    private val fromType: Int by lazy {
+        requireArguments().getInt(ARGS_FOR_TYPE)
     }
 
     private val assetIds by lazy {
@@ -101,7 +105,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
             searchEt.setHint(getString(R.string.search_placeholder_asset))
-            if (forSend) {
+            if (fromType == TYPE_FROM_SEND) {
                 depositTv.setOnClickListener {
                     onDeposit?.invoke()
                     dismiss()
@@ -138,7 +142,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
 
-        if (forSend) {
+        if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {
             bottomViewModel.assetItemsWithBalance()
         } else {
             bottomViewModel.assetItems()
@@ -151,7 +155,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         list
                     }
                 }
-            if (forSend) {
+            if (fromType == TYPE_FROM_SEND) {
                 adapter.submitList(defaultAssets)
                 if (defaultAssets.isEmpty()) {
                     binding.rvVa.displayedChild = POS_EMPTY_SEND

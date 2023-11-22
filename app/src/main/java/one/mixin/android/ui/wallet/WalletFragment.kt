@@ -54,6 +54,8 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.setting.getCurrencyData
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
@@ -270,7 +272,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                         toBuy()
                     }
                     sendReceiveView.send.setOnClickListener {
-                        AssetListBottomSheetDialogFragment.newInstance(true)
+                        AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
                             .setOnAssetClick {
                                 sendBottomSheet.show(it)
                             }.setOnDepositClick {
@@ -573,7 +575,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     }
 
     private fun showReceiveAssetList(view: View) {
-        AssetListBottomSheetDialogFragment.newInstance(false)
+        AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE)
             .setOnAssetClick { asset ->
                 view.navigate(
                     R.id.action_wallet_to_deposit,
