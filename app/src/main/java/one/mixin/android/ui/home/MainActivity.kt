@@ -124,11 +124,13 @@ import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.FullVerifyBottomSheetDialogFragment
+import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
 import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
+import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.biometric.buildEmptyTransferBiometricItem
 import one.mixin.android.ui.common.editDialog
@@ -323,8 +325,15 @@ class MainActivity : BlazeBaseActivity() {
             if (Session.hasSafe()) {
                 jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
                 if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)) {
-                    FullVerifyBottomSheetDialogFragment.newInstance()
-                        .showNow(supportFragmentManager, FullVerifyBottomSheetDialogFragment.TAG)
+                    LoginVerifyBottomSheetDialogFragment.newInstance().apply {
+                        onDismissCallback = { success ->
+                            if (success) {
+                                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+                            } else {
+                                this@MainActivity.finish()
+                            }
+                        }
+                    }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
                 }
             } else {
                 CheckRegisterBottomSheetDialogFragment.newInstance()
