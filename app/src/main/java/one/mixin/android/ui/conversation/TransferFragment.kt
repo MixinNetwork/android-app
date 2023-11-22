@@ -44,7 +44,6 @@ import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.databinding.FragmentTransferBinding
 import one.mixin.android.databinding.ItemTransferTypeBinding
 import one.mixin.android.databinding.ViewWalletTransferTypeBottomBinding
-import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.clearCharacterStyle
@@ -86,6 +85,7 @@ import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.NetworkFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferOutViewFragment
+import one.mixin.android.ui.wallet.UserTransactionBottomSheetFragment
 import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getChainName
@@ -103,7 +103,7 @@ import java.math.RoundingMode
 import java.util.UUID
 import javax.inject.Inject
 
-@AndroidEntryPoint
+@UnstableApi @AndroidEntryPoint
 @SuppressLint("InflateParams")
 class TransferFragment() : MixinBottomSheetDialogFragment() {
     companion object {
@@ -291,12 +291,17 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             handleAddressTransfer()
         }
         if (userId != null) {
-            activity?.addFragment(
-                this,
-                UserTransactionsFragment.newInstance(userId!!),
-                UserTransactionsFragment.TAG,
-            )
-            binding.titleView.rightIb.isVisible = true
+            binding.titleView.rightIb.setOnClickListener {
+                UserTransactionBottomSheetFragment.newInstance(userId!!)
+                    .showNow(parentFragmentManager, UserTransactionBottomSheetFragment.TAG)
+            }
+        } else if (address != null) {
+            binding.titleView.rightIb.setOnClickListener {
+                currentAsset?.let { asset ->
+                    TransferOutViewFragment.newInstance(asset.assetId, userId, user?.avatarUrl, asset.symbol, address)
+                        .show(parentFragmentManager, TransferOutViewFragment.TAG)
+                }
+            }
         } else {
             binding.titleView.rightIb.isVisible = false
         }
