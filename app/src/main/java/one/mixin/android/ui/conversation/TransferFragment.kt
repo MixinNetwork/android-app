@@ -66,9 +66,11 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.session.Session
 import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.OutputBottomSheetDialogFragment
+import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricItem
@@ -92,6 +94,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.displayAddress
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.toUser
 import one.mixin.android.widget.BottomSheet
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -271,7 +274,9 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             if (!isAdded) return@setOnClickListener
 
             operateKeyboard(false)
-            prepareTransferBottom()
+            checkUtxo {
+                prepareTransferBottom()
+            }
         }
         requireArguments().getString(ARGS_AMOUNT)?.let {
             binding.amountEt.setText(it)
@@ -592,6 +597,24 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 target.showKeyboard()
             } else {
                 target.hideKeyboard()
+            }
+        }
+    }
+
+    private fun checkUtxo(callback: () -> Unit) {
+        lifecycleScope.launch {
+            var amount = getAmount()
+            try {
+                amount = amount.stripAmountZero()
+            } catch (e: NumberFormatException) {
+                return@launch
+            }
+            val consolidationAmount = bottomViewModel.checkUtxoSufficiency(currentAsset!!.assetId, amount)
+            if (consolidationAmount != null) {
+                UtxoConsolidationBottomSheetDialogFragment.newInstance(TransferBiometricItem(Session.getAccount()!!.toUser(), currentAsset!!, consolidationAmount, null, UUID.randomUUID().toString(), null, PaymentStatus.pending.name, null, null))
+                    .show(parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
+            } else {
+                callback.invoke()
             }
         }
     }

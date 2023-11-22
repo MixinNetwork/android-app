@@ -26,3 +26,20 @@ fun changeToOutput(
         outputId, change.hash, change.index.toInt(), asset, 0, change.amount, mask, keys, lastOutput.receivers, lastOutput.receiversHash, 1, "", "unspent", nowInUtc(), "", "", "", "",
     )
 }
+
+fun consolidationOutput(
+    hash:String,
+    asset: String,
+    amount:String,
+    mask: String,
+    keys: List<String>,
+    lastOutput: Output,
+): Output {
+    if (mask.isEmpty() || keys.isEmpty()) {
+        throw Exception("bad mask and keys")
+    }
+    val outputId = UUID.nameUUIDFromBytes("$hash:0".toByteArray()).toString()
+    return Output(
+        outputId, hash, 0, asset, 0, amount, mask, keys, lastOutput.receivers, lastOutput.receiversHash, 1, "", "unspent", nowInUtc(), "", "", "", "",
+    )
+}

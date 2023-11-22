@@ -1333,4 +1333,6 @@
     <string name="Withdrawal_Suspended_Content">%1$s withdrawals are temporarily suspended, possibly due to node failure, blockchain network hard fork, or congestion. Please try again later.</string>
     <string name="Contact_Support">Contact Support</string>
     <string name="withdrawal_pending">Pending</string>
+    <string name="consolidation_utxo">Consolidation UTXO</string>
+    <string name="consolidation_utxo_description">Your wallet has become fragmented with too many UTXOs. Please enter your PIN to consolidate them before proceeding with transfer or withdrawal operations</string>
 </resources>
