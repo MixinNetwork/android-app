@@ -35,10 +35,9 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             dismissClickOutside = false
         }
         setBiometricLayout()
-        binding.apply {
-            titleView.rightIv.isVisible = false
-            biometricLayout.biometricTv.isVisible = false
-            biometricLayout.measureAllChildren = false
+        binding.biometricLayout.apply {
+            biometricTv.isVisible = false
+            measureAllChildren = false
         }
     }
 

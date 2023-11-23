@@ -8,14 +8,15 @@
     <one.mixin.android.widget.RoundTitleView
         android:id="@+id/title_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginTop="32dp"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:textColor="?attr/text_primary"
         android:text="@string/Enter_your_PIN"
@@ -31,6 +32,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
+        android:layout_marginStart="54dp"
+        android:layout_marginEnd="54dp"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="20dp"
         android:text="@string/login_verify_pin"
