@@ -48,11 +48,28 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
             else -> {
                 if (type == SafeSnapshotType.deposit) {
                     binding.avatar.setDeposit()
+                    val sender = snapshot.deposit?.sender
+                    binding.name.text =
+                        (
+                            if (sender.isNullOrBlank()) {
+                                snapshot.transactionHash
+                            } else {
+                                sender
+                            }
+                        )?.formatPublicKey()
                 } else {
                     binding.avatar.setWithdrawal()
+                    val receiver = snapshot.withdrawal?.receiver
+                    binding.name.text =
+                        (
+                            if (receiver.isNullOrBlank()) {
+                                snapshot.transactionHash
+                            } else {
+                                receiver
+                            }
+                        )?.formatPublicKey()
                 }
                 binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_primary)
-                binding.name.text = snapshot.transactionHash?.formatPublicKey()
                 binding.bg.setConfirmation(0, 0)
             }
         }
