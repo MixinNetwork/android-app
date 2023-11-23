@@ -52,8 +52,8 @@ class AddressChangedBottomSheet : MixinBottomSheetDialogFragment() {
         bottomSendBinding.apply {
             assetIcon.bg.loadImage(token.iconUrl, R.drawable.ic_avatar_place_holder)
             assetIcon.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            title.text = getString(R.string.Address_changed, token.symbol)
-            content.text = getString(R.string.Address_changed_Content, token.symbol)
+            title.text = getString(R.string.depost_address_updated, token.symbol)
+            content.text = getString(R.string.depost_address_updated_description, token.symbol)
             gotItTv.setOnClickListener { dismiss() }
             contactSupport.setOnClickListener {
                 lifecycleScope.launch {

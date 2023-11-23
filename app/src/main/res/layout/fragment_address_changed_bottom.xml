@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:text="@string/Address_changed"
+        android:text="@string/depost_address_updated"
         android:textColor="?attr/text_primary"
         android:textSize="18sp" />
 
@@ -26,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:text="@string/Address_changed_Content"
+        android:text="@string/depost_address_updated_description"
         android:textColor="?attr/text_primary"
         android:textSize="14sp" />
 
