@@ -91,6 +91,11 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (t.state == PaymentStatus.pending.name) {
             lifecycleScope.launch {
                 if (t is TransferBiometricItem) {
+                    if (t.users.size > 1) {
+                        callback?.onSuccess()
+                        binding.root.post { dismiss() }
+                        return@launch
+                    }
                     if (shouldShowStrangerTransferTip(t)) {
                         binding.assetBalance.setInfoWithUser(t)
                         showStrangerTip(t)
@@ -136,7 +141,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         val time = trace.createdAt.getRelativeTimeSpan()
-        val amount = "${t.amount} ${t.asset.symbol}"
+        val amount = "${t.amount} ${t.asset?.symbol}"
         binding.titleTv.text = getString(R.string.Duplicate_Transfer_Confirmation)
         binding.warningTv.text = getString(R.string.wallet_transfer_recent_tip, time, t.users.first().fullName, amount)
         binding.continueTv.setOnClickListener {
@@ -180,7 +185,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         val time = trace.createdAt.getRelativeTimeSpan()
-        val amount = "${t.amount} ${t.asset.symbol}"
+        val amount = "${t.amount} ${t.asset?.symbol}"
         binding.titleTv.text = getString(R.string.Duplicate_Withdraw_Confirmation)
         binding.warningTv.text =
             getString(
@@ -218,9 +223,10 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showLargeAmountTip(t: AssetBiometricItem) {
+        val asset = t.asset ?: return
         binding.titleTv.text = getString(R.string.Large_Amount_Confirmation)
         val fiatAmount =
-            (BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()
+            (BigDecimal(t.amount) * asset.priceFiat()).numberFormat2()
         binding.warningTv.text =
             getString(
                 R.string.wallet_transaction_tip,
@@ -231,7 +237,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     t.address
                 },
                 "${Fiats.getSymbol()}$fiatAmount",
-                t.asset.symbol,
+                asset.symbol,
             )
         binding.continueTv.setOnClickListener {
             callback?.onSuccess()
@@ -241,7 +247,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showFirstWithdrawalTip(t: WithdrawBiometricItem) {
-        binding.titleTv.text = getString(R.string.symbol_withdrawal, t.asset.symbol)
+        binding.titleTv.text = getString(R.string.symbol_withdrawal, t.asset?.symbol)
         binding.warningTv.text = getString(R.string.withdrawal_address_tips)
         binding.continueTv.text = getString(R.string.Change_Amount)
         binding.continueTv.textColor = ContextCompat.getColor(requireContext(), R.color.white)
@@ -260,7 +266,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun shouldShowWithdrawalTip(t: WithdrawBiometricItem): Boolean {
-        val price = t.asset.priceUsd.toBigDecimalOrNull() ?: return false
+        val price = t.asset?.priceUsd?.toBigDecimalOrNull() ?: return false
         val amount = BigDecimal(t.amount).multiply(price)
         if (amount <= BigDecimal(10)) {
             return false
@@ -269,14 +275,14 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         return if (hasWithdrawalAddressSet == null) {
             true
         } else {
-            !hasWithdrawalAddressSet.contains(t.addressId)
+            !hasWithdrawalAddressSet.contains(t.address.addressId)
         }
     }
 
     private fun shouldShowTransferTip(t: AssetBiometricItem): Boolean {
         val threshold = BigDecimal(Session.getAccount()!!.transferConfirmationThreshold)
         if (threshold == BigDecimal.ZERO) return false
-        val price = t.asset.priceUsd.toBigDecimalOrNull() ?: return false
+        val price = t.asset?.priceUsd?.toBigDecimalOrNull() ?: return false
         val amount = BigDecimal(t.amount).multiply(price)
         return amount > BigDecimal.ZERO && amount >= threshold
     }

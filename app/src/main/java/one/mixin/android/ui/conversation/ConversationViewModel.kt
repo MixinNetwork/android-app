@@ -585,6 +585,8 @@ class ConversationViewModel
 
         suspend fun findAppById(id: String) = userRepository.findAppById(id)
 
+        fun assetItem(id: String) = tokenRepository.assetItem(id)
+
         fun assetItemsWithBalance(): LiveData<List<TokenItem>> =
             tokenRepository.assetItemsWithBalance()
 
