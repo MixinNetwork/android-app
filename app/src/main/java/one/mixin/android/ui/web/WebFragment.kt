@@ -910,16 +910,20 @@ class WebFragment : BaseFragment() {
 
     private fun getAssets(ids: Array<String>, callbackFunction: String) {
         if (viewDestroyed()) return
+        app ?: return
         lifecycleScope.launch {
-            val tokens = if (ids.isEmpty()) {
-                bottomViewModel.tokenEntry()
+            val auth = bottomViewModel.getAuthorizationByAppId(app!!.appId)
+            val result = if (auth?.scopes?.contains("ASSETS:READ") == true) {
+                val tokens = if (ids.isEmpty()) {
+                    bottomViewModel.tokenEntry()
+                } else {
+                    bottomViewModel.tokenEntry(ids)
+                }
+                GsonHelper.customGson.toJson(tokens)
             } else {
-                bottomViewModel.tokenEntry(ids)
+                "[]"
             }
-            lifecycleScope.launch {
-                val result = GsonHelper.customGson.toJson(tokens)
-                webView.evaluateJavascript("$callbackFunction('$result')") {}
-            }
+            webView.evaluateJavascript("$callbackFunction('$result')") {}
         }
     }
 

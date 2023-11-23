@@ -1,25 +1,25 @@
 package one.mixin.android.vo
 
 import androidx.room.ColumnInfo
-import kotlinx.serialization.SerialName
+import com.google.gson.annotations.SerializedName
 
 data class TokenEntry(
-    @SerialName("asset_id")
+    @SerializedName("asset_id")
     @ColumnInfo(name = "asset_id")
     val assetId: String,
-    @SerialName("balance")
+    @SerializedName("balance")
     @ColumnInfo(name = "balance")
     val balance: String,
-    @SerialName("chain_id")
+    @SerializedName("chain_id")
     @ColumnInfo(name = "chain_id")
     val chainId: String,
-    @SerialName("symbol")
+    @SerializedName("symbol")
     @ColumnInfo(name = "symbol")
     val symbol: String,
-    @SerialName("name")
+    @SerializedName("name")
     @ColumnInfo(name = "name")
     val name: String,
-    @SerialName("icon_url")
+    @SerializedName("icon_url")
     @ColumnInfo(name = "icon_url")
     val iconUrl: String,
 )
