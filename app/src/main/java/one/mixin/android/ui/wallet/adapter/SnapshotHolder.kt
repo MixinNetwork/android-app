@@ -37,8 +37,10 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                         listener?.onUserClick(snapshot.opponentId)
                     }
                 }
+                binding.bg.setConfirmation(0, 0)
             }
             SafeSnapshotType.pending -> {
+                binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_primary)
                 binding.name.text = itemView.context.resources.getQuantityString(R.plurals.pending_confirmation, snapshot.confirmations ?: 0, snapshot.confirmations ?: 0, snapshot.assetConfirmations)
                 binding.avatar.setNet()
                 binding.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
@@ -49,7 +51,9 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                 } else {
                     binding.avatar.setWithdrawal()
                 }
+                binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_primary)
                 binding.name.text = snapshot.transactionHash?.formatPublicKey()
+                binding.bg.setConfirmation(0, 0)
             }
         }
 
