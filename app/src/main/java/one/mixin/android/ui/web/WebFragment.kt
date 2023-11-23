@@ -817,6 +817,9 @@ class WebFragment : BaseFragment() {
                     tipSignAction = { chainId, message, callback ->
                         tipSign(chainId, message, callback)
                     },
+                    getAssetAction = { ids,  callback ->
+                        getAssets(ids, callback)
+                    }
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
@@ -902,6 +905,21 @@ class WebFragment : BaseFragment() {
                     }
                 },
             )
+        }
+    }
+
+    private fun getAssets(ids: Array<String>, callbackFunction: String) {
+        if (viewDestroyed()) return
+        lifecycleScope.launch {
+            val tokens = if (ids.isEmpty()) {
+                bottomViewModel.tokenEntry()
+            } else {
+                bottomViewModel.tokenEntry(ids)
+            }
+            lifecycleScope.launch {
+                val result = GsonHelper.customGson.toJson(tokens)
+                webView.evaluateJavascript("$callbackFunction('$result')") {}
+            }
         }
     }
 
@@ -1581,6 +1599,7 @@ class WebFragment : BaseFragment() {
         var closeAction: (() -> Unit)? = null,
         var getTipAddressAction: ((String, String) -> Unit)? = null,
         var tipSignAction: ((String, String, String) -> Unit)? = null,
+        var getAssetAction: ((Array<String>, String) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1605,6 +1624,11 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun reloadTheme() {
             reloadThemeAction?.invoke()
+        }
+
+        @JavascriptInterface
+        fun getAssets(list: Array<String>, callbackFunction: String) {
+            getAssetAction?.invoke(list, callbackFunction)
         }
 
         @JavascriptInterface

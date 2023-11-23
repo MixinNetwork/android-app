@@ -8,6 +8,7 @@ import androidx.room.Update
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.PriceAndChange
+import one.mixin.android.vo.TokenEntry
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 
@@ -42,6 +43,12 @@ interface TokenDao : BaseDao<Token> {
 
     @Query("SELECT a1.* FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 $POSTFIX")
     suspend fun simpleAssetsWithBalance(): List<Token>
+
+    @Query("SELECT a1.asset_id, a1.chain_id, ae.balance, a1.symbol, a1.name, a1.icon_url, ae.balance FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 $POSTFIX")
+    suspend fun tokenEntry(): List<TokenEntry>
+
+    @Query("SELECT a1.asset_id, a1.chain_id, ae.balance, a1.symbol, a1.name, a1.icon_url, ae.balance FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE a1.asset_id IN (:ids)")
+    suspend fun tokenEntry(ids: Array<String>): List<TokenEntry>
 
     @Query("SELECT asset_id FROM tokens WHERE kernel_asset_id = :asset")
     suspend fun checkAssetExists(asset: String): String?
