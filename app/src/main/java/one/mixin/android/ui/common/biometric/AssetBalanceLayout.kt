@@ -60,10 +60,11 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
         binding.apply {
             avatar.isVisible = true
             assetIcon.isVisible = false
-            val u = t.user
-            avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
-            balance.text = u.fullName
-            balanceAs.text = context.getString(R.string.contact_mixin_id, u.identityNumber)
+            t.users.firstOrNull()?.let { u ->
+                avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
+                balance.text = u.fullName
+                balanceAs.text = context.getString(R.string.contact_mixin_id, u.identityNumber)
+            }
         }
     }
 

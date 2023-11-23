@@ -653,7 +653,8 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             val returnTo = requireArguments().getString(ARGS_RETURN_TO)
             val biometricItem =
                 if (user != null) {
-                    TransferBiometricItem(user!!, currentAsset!!, amount, null, traceId, memo, status, trace, returnTo)
+                    // TODO multi
+                    TransferBiometricItem(listOf(user!!), 1L, currentAsset!!, amount, null, traceId, memo, status, trace, returnTo)
                 } else if (mainnetAddress != null) {
                     AddressTransferBiometricItem(mainnetAddress!!, currentAsset!!, amount, null, traceId, memo, status, returnTo)
                 } else {

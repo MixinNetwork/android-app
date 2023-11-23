@@ -1,6 +1,7 @@
 package one.mixin.android.ui.conversation.link
 
 import androidx.core.net.toUri
+import androidx.media3.common.util.UnstableApi
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.PaymentStatus
@@ -27,6 +28,7 @@ enum class PayType {
     MixAddress,
 }
 
+@UnstableApi
 class NewSchemaParser(
     private val bottomSheet: LinkBottomSheetDialogFragment,
 ) {
@@ -95,16 +97,19 @@ class NewSchemaParser(
             if (payType == PayType.Uuid) {
                 val user = linkViewModel.refreshUser(lastPath) ?: return false
 
-                val biometricItem = TransferBiometricItem(user, token, amount, null, traceId, memo, status, null, returnTo)
+                val biometricItem = TransferBiometricItem(listOf(user), 1, token, amount, null, traceId, memo, status, null, returnTo)
                 showPreconditionBottom(biometricItem)
             } else if (payType == PayType.MixAddress) {
-                val mixinAddress = lastPath.toMixAddress()
-                if (mixinAddress?.uuidMembers?.size == 1) { // TODO Support for multiple uuid
-                    val user = linkViewModel.refreshUser(mixinAddress.uuidMembers.first()) ?: return false
-                    val biometricItem = TransferBiometricItem(user, token, amount, null, traceId, memo, status, null, returnTo)
+                val mixAddress = lastPath.toMixAddress() ?: return false
+                if (mixAddress.uuidMembers.isNotEmpty()) {
+                    val users = linkViewModel.findOrRefreshUsers(mixAddress.uuidMembers)
+                    if (users.isEmpty() || users.size < mixAddress.uuidMembers.size) {
+                        return false
+                    }
+                    val biometricItem = TransferBiometricItem(users, mixAddress.threshold.toLong(), token, amount, null, traceId, memo, status, null, returnTo)
                     showPreconditionBottom(biometricItem)
-                } else if (mixinAddress?.xinMembers?.size == 1) { // TODO Support for multiple address
-                    val addressTransferBiometricItem = AddressTransferBiometricItem(mixinAddress.xinMembers.first().string(), token, amount, null, traceId, memo, status, returnTo)
+                } else if (mixAddress.xinMembers.isNotEmpty()) {
+                    val addressTransferBiometricItem = AddressTransferBiometricItem(mixAddress.xinMembers.first().string(), token, amount, null, traceId, memo, status, returnTo)
                     showPreconditionBottom(addressTransferBiometricItem)
                 } else {
                     return false
@@ -166,8 +171,8 @@ class NewSchemaParser(
     }
 
     private suspend fun showPreconditionBottom(biometricItem: AssetBiometricItem) {
-        if (biometricItem is TransferBiometricItem) {
-            val pair = linkViewModel.findLatestTrace(biometricItem.user.userId, null, null, biometricItem.amount, biometricItem.asset.assetId)
+        if (biometricItem is TransferBiometricItem && biometricItem.users.size == 1) {
+            val pair = linkViewModel.findLatestTrace(biometricItem.users.first().userId, null, null, biometricItem.amount, biometricItem.asset.assetId)
             if (pair.second) {
                 bottomSheet.showError(bottomSheet.getString(R.string.check_trace_failed))
                 return

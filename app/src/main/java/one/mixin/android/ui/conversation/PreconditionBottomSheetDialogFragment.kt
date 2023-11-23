@@ -138,7 +138,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val time = trace.createdAt.getRelativeTimeSpan()
         val amount = "${t.amount} ${t.asset.symbol}"
         binding.titleTv.text = getString(R.string.Duplicate_Transfer_Confirmation)
-        binding.warningTv.text = getString(R.string.wallet_transfer_recent_tip, time, t.user.fullName, amount)
+        binding.warningTv.text = getString(R.string.wallet_transfer_recent_tip, time, t.users.first().fullName, amount)
         binding.continueTv.setOnClickListener {
             if (shouldShowTransferTip(t)) {
                 showLargeAmountTip(t)
@@ -202,7 +202,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         binding.warningTv.isVisible = false
         binding.warningBottomTv.isVisible = true
-        binding.warningBottomTv.text = getString(R.string.bottom_transfer_stranger_tip, t.user.identityNumber)
+        binding.warningBottomTv.text = getString(R.string.bottom_transfer_stranger_tip, t.users.first().identityNumber)
         binding.continueTv.setOnClickListener {
             binding.titleTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 topMargin = 70.dp
@@ -225,7 +225,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             getString(
                 R.string.wallet_transaction_tip,
                 if (t is TransferBiometricItem) {
-                    t.user.fullName
+                    t.users.first().fullName
                 } else {
                     t as AddressTransferBiometricItem
                     t.address
@@ -283,7 +283,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private suspend fun shouldShowStrangerTransferTip(t: TransferBiometricItem): Boolean {
         return from == FROM_TRANSFER &&
-            !isStrangerTransferDisable() && t.user.relationship != UserRelationship.FRIEND.name
+            !isStrangerTransferDisable() && t.users.first().relationship != UserRelationship.FRIEND.name
     }
 
     private suspend fun isDuplicateTransferDisable() =

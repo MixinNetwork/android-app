@@ -27,7 +27,8 @@ open class AssetBiometricItem(
 
 @Parcelize
 class TransferBiometricItem(
-    val user: User,
+    val users: List<User>,
+    val threshold: Long,
     override val asset: TokenItem,
     override val amount: String,
     override var pin: String?,
