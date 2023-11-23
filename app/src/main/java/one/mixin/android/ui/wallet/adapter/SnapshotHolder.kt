@@ -52,22 +52,22 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                     binding.name.text =
                         (
                             if (sender.isNullOrBlank()) {
-                                snapshot.transactionHash
+                                "N/A"
                             } else {
                                 sender
                             }
-                        )?.formatPublicKey()
+                        ).formatPublicKey()
                 } else {
                     binding.avatar.setWithdrawal()
                     val receiver = snapshot.withdrawal?.receiver
                     binding.name.text =
                         (
                             if (receiver.isNullOrBlank()) {
-                                snapshot.transactionHash
+                                "N/A"
                             } else {
                                 receiver
                             }
-                        )?.formatPublicKey()
+                        ).formatPublicKey()
                 }
                 binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_primary)
                 binding.bg.setConfirmation(0, 0)
