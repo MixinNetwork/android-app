@@ -42,7 +42,6 @@
                     android:text="@string/legacy_network_transfer_hint"
                     android:textSize="12sp"
                     android:textColor="@color/black" />
-
             </LinearLayout>
 
             <TextView
