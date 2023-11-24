@@ -1304,5 +1304,5 @@
     <string name="Contact_Support">联系客服</string>
     <string name="withdrawal_pending">提现中</string>
     <string name="consolidation_utxo">合并 UTXO</string>
-    <string name="consolidation_utxo_description">您资产的 UTXO 太零碎了，请输入 PIN 合并后再进行转账或提现操作</string>
+    <string name="consolidation_utxo_description">您的 UTXOs 数量超过了256，为了发送体验，请输入 PIN 整合 UTXOs 后再操作</string>
 </resources>

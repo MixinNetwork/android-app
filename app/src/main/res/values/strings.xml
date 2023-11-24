@@ -1334,5 +1334,5 @@
     <string name="Contact_Support">Contact Support</string>
     <string name="withdrawal_pending">Pending</string>
     <string name="consolidation_utxo">Consolidation UTXO</string>
-    <string name="consolidation_utxo_description">Your wallet has become fragmented with too many UTXOs. Please enter your PIN to consolidate them before proceeding with transfer or withdrawal operations</string>
+    <string name="consolidation_utxo_description">Your number of UTXOs exceeds 256. For sending experience, please enter the PIN to consolidating UTXOs before operating</string>
 </resources>
