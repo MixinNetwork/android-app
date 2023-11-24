@@ -636,6 +636,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 } else if (tx != null) {
                     PaymentStatus.paid.name
                 } else {
+                    binding.continueVa.displayedChild = POST_TEXT
                     return@launch
                 }
             t.traceId = traceId
@@ -774,7 +775,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 if (s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber()) {
                     binding.continueTv.isEnabled = true
                     binding.continueTv.textColor = requireContext().getColor(R.color.white)
-                    if (binding.amountRl.isVisible) {
+                    if (binding.amountRl.isVisible && t.asset != null) {
                         binding.amountEt.hint = ""
                         binding.symbolTv.text = getTopSymbol()
                         binding.amountAsTv.text = getBottomText()
