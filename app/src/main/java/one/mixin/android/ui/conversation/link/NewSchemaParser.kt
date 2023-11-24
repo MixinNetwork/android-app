@@ -122,33 +122,37 @@ class NewSchemaParser(
                 showPreconditionBottom(addressTransferBiometricItem)
             }
         } else {
+            val token: TokenItem? =
+                if (asset != null) {
+                    checkToken(asset) ?: return false // TODO 404?
+                } else {
+                    null
+                }
             if (payType == PayType.Uuid) {
                 val user = linkViewModel.refreshUser(lastPath) ?: return false // TODO 404?
-                TransferFragment.newInstance(buildTransferBiometricItem(user, amount ?: "", trace, memo, returnTo), asset == null)
+                TransferFragment.newInstance(buildTransferBiometricItem(user, token, amount ?: "", trace, memo, returnTo))
             } else if (payType == PayType.MixAddress) {
                 val mixAddress = lastPath.toMixAddress()
                 val members = mixAddress?.uuidMembers
                 if (!members.isNullOrEmpty()) {
                     if (members.size == 1) {
                         val user = linkViewModel.refreshUser(members.first()) ?: return false // TODO 404?
-                        TransferFragment.newInstance(buildTransferBiometricItem(user, amount ?: "", trace, memo, returnTo), asset == null)
+                        TransferFragment.newInstance(buildTransferBiometricItem(user, token, amount ?: "", trace, memo, returnTo))
                     } else {
                         val users = linkViewModel.findOrRefreshUsers(members)
                         if (users.isEmpty() || users.size < members.size) {
                             return false
                         }
-                        val item = TransferBiometricItem(users, mixAddress.threshold.toLong(), null, amount ?: "", null, trace, memo, PaymentStatus.pending.name, null, returnTo)
-                        TransferFragment.newInstance(item, asset == null)
+                        val item = TransferBiometricItem(users, mixAddress.threshold.toLong(), token, amount ?: "", null, trace, memo, PaymentStatus.pending.name, null, returnTo)
+                        TransferFragment.newInstance(item)
                     }
                 } else if (mixAddress?.xinMembers?.size == 1) { // TODO Support for multiple address
-                    val item = buildAddressBiometricItem(mixAddress.xinMembers.first().string(), amount ?: "", trace, memo, returnTo)
-                    TransferFragment.newInstance(item, asset == null)
+                    TransferFragment.newInstance(buildAddressBiometricItem(mixAddress.xinMembers.first().string(), token, amount ?: "", trace, memo, returnTo))
                 } else {
                     null
                 }
             } else {
-                val item = buildAddressBiometricItem(lastPath, amount ?: "", trace, memo, returnTo)
-                TransferFragment.newInstance(item, asset == null)
+                TransferFragment.newInstance(buildAddressBiometricItem(lastPath, token, amount ?: "", trace, memo, returnTo))
             }.let { fragment ->
                 if (fragment == null) return false
                 fragment.show(bottomSheet.parentFragmentManager, TransferFragment.TAG)

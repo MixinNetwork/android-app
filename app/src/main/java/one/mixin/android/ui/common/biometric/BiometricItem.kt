@@ -46,12 +46,13 @@ fun buildEmptyTransferBiometricItem(user: User) =
 
 fun buildTransferBiometricItem(
     user: User,
+    token: TokenItem?,
     amount: String,
     traceId: String?,
     memo: String?,
     returnTo: String?,
 ) =
-    TransferBiometricItem(listOf(user), 1L, null, amount, null, traceId, memo, PaymentStatus.pending.name, null, returnTo)
+    TransferBiometricItem(listOf(user), 1L, token, amount, null, traceId, memo, PaymentStatus.pending.name, null, returnTo)
 
 @Parcelize
 class AddressTransferBiometricItem(
@@ -67,12 +68,13 @@ class AddressTransferBiometricItem(
 
 fun buildAddressBiometricItem(
     mainnetAddress: String,
+    token: TokenItem?,
     amount: String,
     traceId: String?,
     memo: String?,
     returnTo: String?,
 ) =
-    AddressTransferBiometricItem(mainnetAddress, null, amount, null, traceId, memo, PaymentStatus.pending.name, returnTo)
+    AddressTransferBiometricItem(mainnetAddress, token, amount, null, traceId, memo, PaymentStatus.pending.name, returnTo)
 
 @Parcelize
 class WithdrawBiometricItem(

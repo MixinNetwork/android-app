@@ -192,7 +192,8 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
         val response =
             when (val t = this.t) {
                 is TransferBiometricItem -> {
-                    trace = Trace(t.traceId!!, asset.assetId, t.amount, "", null, null, null, nowInUtc())
+                    val opponentId = if (t.users.size == 1) t.users.first().userId else ""
+                    trace = Trace(t.traceId!!, asset.assetId, t.amount, opponentId, null, null, null, nowInUtc())
                     val receiverIds = t.users.map { it.userId }
                     bottomViewModel.kernelTransaction(asset.assetId, receiverIds, t.threshold, t.amount, pin, t.traceId, t.memo)
                 }

@@ -96,18 +96,13 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "TransferFragment"
         const val ASSET_PREFERENCE = "TRANSFER_ASSET"
-        const val ARGS_SWITCH_ASSET = "args_switch_asset"
 
         const val POST_TEXT = 0
         const val POST_PB = 1
 
-        inline fun <reified T : BiometricItem> newInstance(
-            t: T,
-            supportSwitchAsset: Boolean = true,
-        ) =
+        inline fun <reified T : BiometricItem> newInstance(t: T) =
             TransferFragment().withArgs {
                 putParcelable(ARGS_BIOMETRIC_ITEM, t)
-                putBoolean(ARGS_SWITCH_ASSET, supportSwitchAsset)
             }
     }
 
@@ -116,11 +111,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
     private val chatViewModel by viewModels<ConversationViewModel>()
 
-    private val supportSwitchAsset by lazy { requireArguments().getBoolean(ARGS_SWITCH_ASSET) }
-
     private val t: AssetBiometricItem by lazy {
         requireArguments().getParcelableCompat(ARGS_BIOMETRIC_ITEM, AssetBiometricItem::class.java)!!
     }
+    private val supportSwitchAsset: Boolean by lazy { t.asset == null }
 
     private val fees: ArrayList<NetworkFee> = arrayListOf()
     private var currentFee: NetworkFee? = null
