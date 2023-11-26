@@ -1,3 +1,5 @@
+package one.mixin.android.util
+
 import java.nio.ByteBuffer
 import java.util.UUID
 
