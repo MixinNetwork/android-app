@@ -164,6 +164,10 @@ class TokenRepository
                                 depositDao.deleteByChainId(assetItem.chainId)
                                 depositDao.insertList(list)
                             }
+                            list.find { it.isPrimary }?.let {
+                                assetItem.destination = it.destination
+                                assetItem.tag = it.tag
+                            }
                         }
                     },
                 ) ?: return null
