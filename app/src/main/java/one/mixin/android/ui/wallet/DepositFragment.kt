@@ -66,8 +66,6 @@ class DepositFragment : BaseFragment() {
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
-    private var alertDialog: Dialog? = null
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -84,40 +82,15 @@ class DepositFragment : BaseFragment() {
     ) {
         super.onViewCreated(view, savedInstanceState)
         val asset = requireNotNull(requireArguments().getParcelableCompat(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)) { "required TokenItem can not be null" }
-        lifecycleScope.launch {
-            val (depositEntry, different) = walletViewModel.findAndSyncDepositEntry(asset.assetId)
-            if (!notSupportDepositAssets.any { it == asset.assetId }) {
-                lifecycleScope.launch {
-                    DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset)
-                        .apply {
-                            this.callback = {
-                                val noTag = depositEntry?.destination.isNullOrBlank()
-                                if (noTag.not()) {
-                                    alertDialogBuilder()
-                                        .setTitle(R.string.Notice)
-                                        .setCancelable(false)
-                                        .setMessage(getString(R.string.deposit_notice, asset.symbol))
-                                        .setPositiveButton(R.string.OK) { dialog, _ ->
-                                            dialog.dismiss()
-                                        }.show()
-                                }
-                            }
-                        }
-                        .showNow(childFragmentManager, TAG)
-                }
-            }
-            initView(asset, depositEntry, different)
-        }
+        initView(asset)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        alertDialog?.dismiss()
-        alertDialog = null
         _binding = null
     }
 
-    private fun initView(asset: TokenItem, depositEntry: DepositEntry?, different: Boolean) {
+    private fun initView(asset: TokenItem) {
         val notSupport = notSupportDepositAssets.any { it == asset.assetId }
         binding.apply {
             title.apply {
@@ -163,17 +136,11 @@ class DepositFragment : BaseFragment() {
         }
 
         if (!notSupport) {
-            if (depositEntry == null) {
-                refreshDeposit(asset)
-            } else {
-                updateUI(asset, depositEntry)
-            }
-        }
-        if (different) {
-            AddressChangedBottomSheet.newInstance(asset).showNow(parentFragmentManager, AddressChangedBottomSheet.TAG)
+            refreshDeposit(asset)
         }
     }
 
+    private val localMap = mutableMapOf<String,DepositEntry>()
     private fun initUsdtChips(asset: TokenItem) {
         binding.apply {
             networkChipGroup.isSingleSelection = true
@@ -195,25 +162,19 @@ class DepositFragment : BaseFragment() {
                         setOnClickListener {
                             if (same) return@setOnClickListener
                             lifecycleScope.launch {
+                                showLoading()
                                 val newAsset = walletViewModel.findOrSyncAsset(entry.key)
-                                val (deposit, different) = walletViewModel.findAndSyncDepositEntry(entry.key)
-                                if (newAsset == null || deposit?.destination.isNullOrBlank()) {
-                                    alertDialog?.dismiss()
-                                    alertDialog =
-                                        indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                                            show()
-                                        }
-                                    alertDialog?.dismiss()
-                                }
                                 if (newAsset == null) {
-                                    loading.isVisible = false
                                     toast(R.string.Not_found)
                                 } else {
-                                    loading.isVisible = false
-                                    addressView.isVisible = true
-                                    addressTitle.isVisible = true
-                                    tipTv.isVisible = true
-                                    initView(newAsset, deposit, different)
+                                    initUsdtChips(newAsset)
+                                    val localDepositEntry = localMap[newAsset.assetId]
+                                    if (localDepositEntry == null) {
+                                        refreshDeposit(newAsset)
+                                    } else {
+                                        updateUI(newAsset, localDepositEntry)
+                                        hideLoading()
+                                    }
                                 }
                             }
                         }
@@ -222,28 +183,68 @@ class DepositFragment : BaseFragment() {
             }
         }
     }
+    private var showed = false
+    private fun showDepositChooseNetworkBottomSheetDialog(asset: TokenItem, depositEntry: DepositEntry) {
+        if (showed) return
+        showed = true // run only once
+        if (!notSupportDepositAssets.any { it == asset.assetId }) {
+            lifecycleScope.launch {
+                DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset)
+                    .apply {
+                        this.callback = {
+                            val noTag = depositEntry.destination.isBlank()
+                            if (noTag.not()) {
+                                alertDialogBuilder()
+                                    .setTitle(R.string.Notice)
+                                    .setCancelable(false)
+                                    .setMessage(getString(R.string.deposit_notice, asset.symbol))
+                                    .setPositiveButton(R.string.OK) { dialog, _ ->
+                                        dialog.dismiss()
+                                    }.show()
+                            }
+                        }
+                    }
+                    .showNow(childFragmentManager, TAG)
+            }
+        }
+    }
 
     private fun refreshDeposit(asset: TokenItem) {
+        showLoading()
         lifecycleScope.launch {
-            val depositEntry = walletViewModel.syncDepositEntry(asset.chainId)
+            val (depositEntry, different) = walletViewModel.findAndSyncDepositEntry(asset.chainId)
             if (depositEntry == null) {
-                // workaround skip loop
-                if (usdtAssets.contains(asset.assetId)) {
-                    binding.apply {
-                        loading.isVisible = true
-                        memoTitle.isVisible = false
-                        memoView.isVisible = false
-                        addressView.isVisible = false
-                        addressTitle.isVisible = false
-                        tipTv.isVisible = false
-                    }
-                    return@launch
-                }
                 delay(500)
                 refreshDeposit(asset)
             } else {
+                localMap[asset.assetId] = depositEntry
+                showDepositChooseNetworkBottomSheetDialog(asset, depositEntry)
+                if (different) {
+                    AddressChangedBottomSheet.newInstance(asset).showNow(parentFragmentManager, AddressChangedBottomSheet.TAG)
+                }
                 updateUI(asset, depositEntry)
+                hideLoading()
             }
+        }
+    }
+
+    private fun showLoading() {
+        binding.apply {
+            loading.isVisible = true
+            addressView.isVisible = false
+            addressTitle.isVisible = false
+            tipTv.isVisible = false
+            memoTitle.isVisible = false
+            memoView.isVisible = false
+        }
+    }
+
+    private fun hideLoading() {
+        binding.apply {
+            loading.isVisible = false
+            addressView.isVisible = true
+            addressTitle.isVisible = true
+            tipTv.isVisible = true
         }
     }
 
