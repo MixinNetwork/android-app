@@ -231,6 +231,9 @@ class DepositFragment : BaseFragment() {
                 delay(500)
                 refreshAsset(asset)
             } else {
+                if (asset.chainId == assetItem.chainId && !asset.destination.isNullOrBlank() && (asset.destination != assetItem.destination || asset.tag != assetItem.tag)){
+                    AddressChangedBottomSheet.newInstance(assetItem).showNow(parentFragmentManager, AddressChangedBottomSheet.TAG)
+                }
                 updateUI(assetItem)
             }
         }
