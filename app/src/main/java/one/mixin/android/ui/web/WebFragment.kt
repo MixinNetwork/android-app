@@ -90,6 +90,7 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.matchResourcePattern
@@ -878,7 +879,12 @@ class WebFragment : BaseFragment() {
     ) {
         if (viewDestroyed()) return
         if (!WalletConnect.isEnabled(requireContext())) return
-
+        val isValid = chainId.isUUID()
+        if (!isValid) {
+            lifecycleScope.launch {
+                webView.evaluateJavascript("$callbackFunction('')") {}
+            }
+        }
         lifecycleScope.launch {
             WalletConnectTIP.peer = getPeerUI()
             showWalletConnectBottomSheetDialogFragment(
@@ -911,6 +917,11 @@ class WebFragment : BaseFragment() {
     private fun getAssets(ids: Array<String>, callbackFunction: String) {
         if (viewDestroyed()) return
         app ?: return
+        val isValid = ids.all { it.isUUID() }
+        if (!isValid) {
+            webView.evaluateJavascript("$callbackFunction('[]')") {}
+            return
+        }
         lifecycleScope.launch {
             val auth = bottomViewModel.getAuthorizationByAppId(app!!.appId)
             val result = if (auth?.scopes?.contains("ASSETS:READ") == true) {
