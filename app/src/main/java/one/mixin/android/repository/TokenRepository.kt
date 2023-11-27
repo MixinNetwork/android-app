@@ -147,15 +147,16 @@ class TokenRepository
             return assetItem
         }
 
-        suspend fun syncDepositEntry(chainId: String): DepositEntry? {
-            return handleMixinResponse(
+        suspend fun syncDepositEntry(chainId: String): Pair<DepositEntry?, Int> {
+            var code = 200
+            val depositEntry = handleMixinResponse(
                 invokeNetwork = {
                     utxoService.createDeposit(
                         DepositEntryRequest(chainId),
                     )
                 },
                 failureBlock = {
-                    depositDao.deleteByChainId(chainId)
+                    code = it.errorCode
                     true
                 },
                 successBlock = { resp ->
@@ -178,12 +179,18 @@ class TokenRepository
                     }
                 },
             )
+            return Pair(depositEntry, code)
         }
 
         suspend fun findAndSyncDepositEntry(chainId: String): Pair<DepositEntry?, Boolean> {
             val oldDeposit = depositDao.findDepositEntry(chainId)
-            val newDeposit = syncDepositEntry(chainId)
-            return Pair(newDeposit, newDeposit != null && oldDeposit != null && (oldDeposit.destination != newDeposit.destination || oldDeposit.tag != newDeposit.tag))
+            val (newDeposit,code) = syncDepositEntry(chainId)
+            val result = if (code != 200) {
+                null // response error
+            } else {
+                newDeposit ?: oldDeposit
+            }
+            return Pair(result, newDeposit != null && oldDeposit != null && (oldDeposit.destination != newDeposit.destination || oldDeposit.tag != newDeposit.tag))
         }
 
         suspend fun syncAsset(assetId: String): TokenItem? {

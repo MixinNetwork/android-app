@@ -152,7 +152,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
 
         walletViewModel.refreshAsset(asset.assetId)
         lifecycleScope.launch {
-            val depositEntry = walletViewModel.syncDepositEntry(asset.chainId)
+            val (depositEntry, _) = walletViewModel.syncDepositEntry(asset.chainId)
             if (depositEntry != null && depositEntry.destination.isNotBlank())
                 {
                     refreshPendingDeposits(asset, depositEntry)
