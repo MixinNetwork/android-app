@@ -108,7 +108,7 @@ class NewSchemaParser(
                     if (users.isEmpty() || users.size < mixAddress.uuidMembers.size) {
                         return false
                     }
-                    val biometricItem = TransferBiometricItem(users, mixAddress.threshold.toLong(), token, amount, null, traceId, memo, status, null, returnTo)
+                    val biometricItem = TransferBiometricItem(users, mixAddress.threshold, token, amount, null, traceId, memo, status, null, returnTo)
                     showPreconditionBottom(biometricItem)
                 } else if (mixAddress.xinMembers.isNotEmpty()) {
                     val addressTransferBiometricItem = AddressTransferBiometricItem(mixAddress.xinMembers.first().string(), token, amount, null, traceId, memo, status, returnTo)
@@ -143,7 +143,7 @@ class NewSchemaParser(
                         if (users.isEmpty() || users.size < members.size) {
                             return false
                         }
-                        val item = TransferBiometricItem(users, mixAddress.threshold.toLong(), token, amount ?: "", null, trace, memo, PaymentStatus.pending.name, null, returnTo)
+                        val item = TransferBiometricItem(users, mixAddress.threshold, token, amount ?: "", null, trace, memo, PaymentStatus.pending.name, null, returnTo)
                         TransferFragment.newInstance(item)
                     }
                 } else if (mixAddress?.xinMembers?.size == 1) { // TODO Support for multiple address

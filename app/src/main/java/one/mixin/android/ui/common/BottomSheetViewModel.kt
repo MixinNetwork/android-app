@@ -151,7 +151,7 @@ class BottomSheetViewModel
             val asset = assetIdToAsset(assetId)
             val feeAsset = assetIdToAsset(feeAssetId)
             val senderId = Session.getAccountId()!!
-            val threshold = 1L
+            val threshold = 1.toByte()
             val feeTraceId = uniqueObjectId(traceId, "FEE")
 
             val withdrawalUtxos =
@@ -334,7 +334,7 @@ class BottomSheetViewModel
         suspend fun kernelTransaction(
             assetId: String,
             receiverIds: List<String>,
-            threshold: Long,
+            threshold: Byte,
             amount: String,
             pin: String,
             trace: String?,

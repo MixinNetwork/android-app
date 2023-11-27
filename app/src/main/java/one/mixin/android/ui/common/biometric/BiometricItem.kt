@@ -30,7 +30,7 @@ open class AssetBiometricItem(
 @Parcelize
 class TransferBiometricItem(
     var users: List<User>,
-    val threshold: Long,
+    val threshold: Byte,
     override var asset: TokenItem?,
     override var amount: String,
     override var pin: String?,
@@ -42,7 +42,7 @@ class TransferBiometricItem(
 ) : AssetBiometricItem(asset, traceId, amount, pin, memo, state)
 
 fun buildEmptyTransferBiometricItem(user: User) =
-    TransferBiometricItem(listOf(user), 1L, null, "", null, null, null, PaymentStatus.pending.name, null, null)
+    TransferBiometricItem(listOf(user), 1.toByte(), null, "", null, null, null, PaymentStatus.pending.name, null, null)
 
 fun buildTransferBiometricItem(
     user: User,
@@ -52,7 +52,7 @@ fun buildTransferBiometricItem(
     memo: String?,
     returnTo: String?,
 ) =
-    TransferBiometricItem(listOf(user), 1L, token, amount, null, traceId, memo, PaymentStatus.pending.name, null, returnTo)
+    TransferBiometricItem(listOf(user), 1.toByte(), token, amount, null, traceId, memo, PaymentStatus.pending.name, null, returnTo)
 
 @Parcelize
 class AddressTransferBiometricItem(
