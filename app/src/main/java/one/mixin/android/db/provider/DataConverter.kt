@@ -581,22 +581,19 @@ fun callableTokenItem(
             val cursorIndexOfName = 2
             val cursorIndexOfIconUrl = 3
             val cursorIndexOfBalance = 4
-            val cursorIndexOfDestination = 5
-            val cursorIndexOfTag = 6
-            val cursorIndexOfPriceBtc = 7
-            val cursorIndexOfPriceUsd = 8
-            val cursorIndexOfChainId = 9
-            val cursorIndexOfChangeUsd = 10
-            val cursorIndexOfChangeBtc = 11
-            val cursorIndexOfHidden = 12
-            val cursorIndexOfChainPriceUsd = 13
-            val cursorIndexOfConfirmations = 14
-            val cursorIndexOfChainIconUrl = 15
-            val cursorIndexOfChainSymbol = 16
-            val cursorIndexOfChainName = 17
-            val cursorIndexOfAssetKey = 18
-            val cursorIndexOfWithdrawalMemoPossibility = 19
-            val cursorIndexOfSignature = 20
+            val cursorIndexOfPriceBtc = 5
+            val cursorIndexOfPriceUsd = 6
+            val cursorIndexOfChainId = 7
+            val cursorIndexOfChangeUsd = 8
+            val cursorIndexOfChangeBtc = 9
+            val cursorIndexOfHidden = 10
+            val cursorIndexOfChainPriceUsd = 11
+            val cursorIndexOfConfirmations = 12
+            val cursorIndexOfChainIconUrl = 13
+            val cursorIndexOfChainSymbol = 14
+            val cursorIndexOfChainName = 16
+            val cursorIndexOfAssetKey = 17
+            val cursorIndexOfWithdrawalMemoPossibility = 18
 
             val result: MutableList<TokenItem> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
@@ -630,18 +627,6 @@ fun callableTokenItem(
                         null
                     } else {
                         cursor.getString(cursorIndexOfBalance)
-                    }
-                val tmpDestination: String? =
-                    if (cursor.isNull(cursorIndexOfDestination)) {
-                        null
-                    } else {
-                        cursor.getString(cursorIndexOfDestination)
-                    }
-                val tmpTag: String? =
-                    if (cursor.isNull(cursorIndexOfTag)) {
-                        null
-                    } else {
-                        cursor.getString(cursorIndexOfTag)
                     }
                 val tmpPriceBtc: String? =
                     if (cursor.isNull(cursorIndexOfPriceBtc)) {
@@ -718,12 +703,6 @@ fun callableTokenItem(
                     } else {
                         WithdrawalMemoPossibilityConverter().revertDate(cursor.getString(cursorIndexOfWithdrawalMemoPossibility))
                     }
-                val tmpSignature: String? =
-                    if (cursor.isNull(cursorIndexOfSignature)) {
-                        null
-                    } else {
-                        cursor.getString(cursorIndexOfSignature)
-                    }
 
                 item =
                     TokenItem(
@@ -732,8 +711,6 @@ fun callableTokenItem(
                         tmpName!!,
                         tmpIconUrl!!,
                         tmpBalance!!,
-                        tmpDestination,
-                        tmpTag,
                         tmpPriceBtc!!,
                         tmpPriceUsd!!,
                         tmpChainId!!,
@@ -747,7 +724,6 @@ fun callableTokenItem(
                         tmpChainPriceUsd,
                         tmpAssetKey,
                         tmpDepositWithdrawalMemoPossibility,
-                        tmpSignature,
                     )
                 result.add(item)
             }

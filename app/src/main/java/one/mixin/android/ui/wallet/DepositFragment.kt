@@ -39,6 +39,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
@@ -83,24 +84,29 @@ class DepositFragment : BaseFragment() {
     ) {
         super.onViewCreated(view, savedInstanceState)
         val asset = requireNotNull(requireArguments().getParcelableCompat(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)) { "required TokenItem can not be null" }
-        initView(asset)
-        if (!notSupportDepositAssets.any { it == asset.assetId }) {
-            DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset)
-                .apply {
-                    this.callback = {
-                        val noTag = asset.tag.isNullOrBlank()
-                        if (noTag.not()) {
-                            alertDialogBuilder()
-                                .setTitle(R.string.Notice)
-                                .setCancelable(false)
-                                .setMessage(getString(R.string.deposit_notice, asset.symbol))
-                                .setPositiveButton(R.string.OK) { dialog, _ ->
-                                    dialog.dismiss()
-                                }.show()
+        lifecycleScope.launch {
+            val (depositEntry, different) = walletViewModel.findAndSyncDepositEntry(asset.assetId)
+            if (!notSupportDepositAssets.any { it == asset.assetId }) {
+                lifecycleScope.launch {
+                    DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset)
+                        .apply {
+                            this.callback = {
+                                val noTag = depositEntry?.destination.isNullOrBlank()
+                                if (noTag.not()) {
+                                    alertDialogBuilder()
+                                        .setTitle(R.string.Notice)
+                                        .setCancelable(false)
+                                        .setMessage(getString(R.string.deposit_notice, asset.symbol))
+                                        .setPositiveButton(R.string.OK) { dialog, _ ->
+                                            dialog.dismiss()
+                                        }.show()
+                                }
+                            }
                         }
-                    }
+                        .showNow(childFragmentManager, TAG)
                 }
-                .showNow(childFragmentManager, TAG)
+            }
+            initView(asset, depositEntry, different)
         }
     }
 
@@ -111,7 +117,7 @@ class DepositFragment : BaseFragment() {
         _binding = null
     }
 
-    private fun initView(asset: TokenItem) {
+    private fun initView(asset: TokenItem, depositEntry: DepositEntry?, different: Boolean) {
         val notSupport = notSupportDepositAssets.any { it == asset.assetId }
         binding.apply {
             title.apply {
@@ -157,8 +163,11 @@ class DepositFragment : BaseFragment() {
         }
 
         if (!notSupport) {
-            updateUI(asset)
-            refreshAsset(asset)
+            if (depositEntry == null) {
+                refreshDeposit(asset)
+            } else {
+                updateUI(asset, depositEntry)
+            }
         }
     }
 
@@ -182,16 +191,15 @@ class DepositFragment : BaseFragment() {
                         }
                         setOnClickListener {
                             if (same) return@setOnClickListener
-
                             lifecycleScope.launch {
-                                var newAsset = walletViewModel.findAssetItemById(entry.key)
-                                if (newAsset == null || newAsset.destination.isNullOrBlank()) {
+                                val newAsset = walletViewModel.findOrSyncAsset(entry.key)
+                                val (deposit, different) = walletViewModel.findAndSyncDepositEntry(entry.key)
+                                if (newAsset == null || deposit?.destination.isNullOrBlank()) {
                                     alertDialog?.dismiss()
                                     alertDialog =
                                         indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                                             show()
                                         }
-                                    newAsset = walletViewModel.findOrSyncAsset(entry.key)
                                     alertDialog?.dismiss()
                                 }
                                 if (newAsset == null) {
@@ -202,7 +210,7 @@ class DepositFragment : BaseFragment() {
                                     addressView.isVisible = true
                                     addressTitle.isVisible = true
                                     tipTv.isVisible = true
-                                    initView(newAsset)
+                                    initView(newAsset, deposit, different)
                                 }
                             }
                         }
@@ -212,10 +220,10 @@ class DepositFragment : BaseFragment() {
         }
     }
 
-    private fun refreshAsset(asset: TokenItem) {
+    private fun refreshDeposit(asset: TokenItem) {
         lifecycleScope.launch {
-            val assetItem = walletViewModel.findOrSyncAsset(asset.assetId, forceRefresh = true)
-            if (assetItem == null) {
+            val depositEntry = walletViewModel.syncDepositEntry(asset.chainId)
+            if (depositEntry == null) {
                 // workaround skip loop
                 if (usdtAssets.contains(asset.assetId)) {
                     binding.apply {
@@ -229,21 +237,21 @@ class DepositFragment : BaseFragment() {
                     return@launch
                 }
                 delay(500)
-                refreshAsset(asset)
+                refreshDeposit(asset)
             } else {
-                updateUI(assetItem)
+                updateUI(asset, depositEntry)
             }
         }
     }
 
-    private fun updateUI(asset: TokenItem) {
+    private fun updateUI(asset: TokenItem, depositEntry: DepositEntry) {
         if (viewDestroyed()) return
 
-        val destination = asset.destination
-        val tag = asset.tag
-        val signature = asset.signature?.hexStringToByteArray()
+        val destination = depositEntry.destination
+        val tag = depositEntry.tag
+        val signature = depositEntry.signature.hexStringToByteArray()
 
-        if (destination.isNullOrBlank() || signature.isNullOrEmpty()) return
+        if (destination.isBlank() || signature.isNullOrEmpty()) return
         val pub = Constants.SAFE_PUBLIC_KEY.hexStringToByteArray()
         val message =
             if (tag.isNullOrBlank()) {
@@ -251,7 +259,7 @@ class DepositFragment : BaseFragment() {
             } else {
                 "$destination:$tag"
             }.toByteArray().sha3Sum256()
-        val verify = verifyCurve25519Signature(message, signature!!, pub)
+        val verify = verifyCurve25519Signature(message, signature, pub)
         if (verify) {
             val noTag = tag.isNullOrBlank()
             binding.apply {
@@ -274,7 +282,7 @@ class DepositFragment : BaseFragment() {
                     memoView.setAsset(
                         parentFragmentManager,
                         scopeProvider,
-                        asset,
+                        asset, depositEntry,
                         null,
                         true,
                         if (asset.assetId == Constants.ChainId.RIPPLE_CHAIN_ID) {
@@ -288,6 +296,7 @@ class DepositFragment : BaseFragment() {
                     parentFragmentManager,
                     scopeProvider,
                     asset,
+                    depositEntry,
                     null,
                     false,
                     if (noTag) {

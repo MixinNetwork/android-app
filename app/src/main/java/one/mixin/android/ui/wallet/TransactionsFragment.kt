@@ -51,6 +51,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.notMessengerUser
+import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
@@ -149,9 +150,13 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         }
 
         walletViewModel.refreshAsset(asset.assetId)
-        if (!asset.destination.isNullOrBlank()) {
-            refreshPendingDeposits(asset)
+        lifecycleScope.launch {
+            val depositEntry = walletViewModel.syncDepositEntry(asset.chainId)
+            if (depositEntry != null && depositEntry.destination.isNotBlank()){
+                refreshPendingDeposits(asset, depositEntry)
+            }
         }
+
     }
 
     override fun onDestroyView() {
@@ -162,13 +167,12 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         super.onDestroyView()
     }
 
-    private fun refreshPendingDeposits(asset: TokenItem) {
+    private fun refreshPendingDeposits(asset: TokenItem, depositEntry:DepositEntry) {
         if (viewDestroyed()) return
-
         lifecycleScope.launch {
             handleMixinResponse(
                 invokeNetwork = {
-                    walletViewModel.refreshPendingDeposits(asset)
+                    walletViewModel.refreshPendingDeposits(asset.assetId, depositEntry)
                 },
                 successBlock = { list ->
                     withContext(Dispatchers.IO) {

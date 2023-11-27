@@ -1,7 +1,11 @@
 package one.mixin.android.db
 
 import androidx.room.Dao
+import androidx.room.Query
 import one.mixin.android.vo.safe.DepositEntry
 
 @Dao
-interface DepositDao : BaseDao<DepositEntry>
+interface DepositDao : BaseDao<DepositEntry> {
+    @Query("SELECT * FROM deposit_entries WHERE chain_id = :chainId ORDER BY rowid DESC LIMIT 1")
+    suspend fun findDepositEntry(chainId: String): DepositEntry?
+}

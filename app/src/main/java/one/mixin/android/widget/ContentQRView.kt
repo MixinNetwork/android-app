@@ -21,6 +21,7 @@ import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment
+import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
 
 class ContentQRView : ViewAnimator {
@@ -35,6 +36,7 @@ class ContentQRView : ViewAnimator {
         parentFragmentManager: FragmentManager,
         scopeProvider: ScopeProvider,
         asset: TokenItem,
+        depositEntry: DepositEntry,
         selectedDestination: String?,
         isTag: Boolean,
         warning: String? = null,
@@ -42,9 +44,9 @@ class ContentQRView : ViewAnimator {
         binding.apply {
             val showPb =
                 if (isTag) {
-                    asset.tag.isNullOrBlank()
+                    depositEntry.tag.isNullOrBlank()
                 } else {
-                    asset.destination.isNullOrBlank()
+                    depositEntry.destination.isBlank()
                 }
 
             (binding.root as ViewAnimator).displayedChild = if (showPb) 1 else 0
@@ -56,8 +58,8 @@ class ContentQRView : ViewAnimator {
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
                 setBorder()
             }
-            val destination = selectedDestination ?: asset.destination
-            val content = if (isTag) asset.tag else destination
+            val destination = selectedDestination ?: depositEntry.destination
+            val content = if (isTag) depositEntry.tag else destination
             contentTv.text = content
             copyIv.setOnClickListener {
                 context.heavyClickVibrate()
@@ -71,17 +73,16 @@ class ContentQRView : ViewAnimator {
                 warningTv.isVisible = true
             }
             qrFl.setOnClickListener {
-                DepositQrBottomFragment.newInstance(asset, if (isTag) DepositQrBottomFragment.TYPE_TAG else DepositQrBottomFragment.TYPE_ADDRESS, selectedDestination)
+                DepositQrBottomFragment.newInstance(asset, depositEntry, if (isTag) DepositQrBottomFragment.TYPE_TAG else DepositQrBottomFragment.TYPE_ADDRESS, selectedDestination)
                     .show(parentFragmentManager, DepositQrBottomFragment.TAG)
             }
             qr.post {
                 Observable.create<Pair<Bitmap, Int>> { e ->
                     val r =
                         if (isTag) {
-                            requireNotNull(asset.tag)
+                            requireNotNull(depositEntry.tag)
                         } else {
-                            // Todo check
-                            destination!!
+                            destination
                         }.generateQRCode(qr.width)
                     e.onNext(r)
                 }.subscribeOn(Schedulers.io())

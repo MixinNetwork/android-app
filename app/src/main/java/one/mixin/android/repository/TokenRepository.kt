@@ -131,40 +131,11 @@ class TokenRepository
 
         suspend fun findOrSyncAsset(
             assetId: String,
-            forceRefresh: Boolean = false,
         ): TokenItem? {
             var assetItem = tokenDao.findAssetItemById(assetId)
-            if (!forceRefresh && assetItem != null && !assetItem.destination.isNullOrBlank()) {
-                return assetItem
-            }
             if (assetItem == null) {
                 assetItem = syncAsset(assetId)
             }
-            if (assetItem != null) {
-                handleMixinResponse(
-                    invokeNetwork = {
-                        utxoService.createDeposit(
-                            DepositEntryRequest(assetItem.chainId),
-                        )
-                    },
-                    successBlock = { resp ->
-                        val pub = SAFE_PUBLIC_KEY.hexStringToByteArray()
-                        resp.data?.filter {
-                            val message =
-                                if (it.tag.isNullOrBlank()) {
-                                    it.destination
-                                } else {
-                                    "${it.destination}:${it.tag}"
-                                }.toByteArray().sha3Sum256()
-                            val signature = it.signature.hexStringToByteArray()
-                            verifyCurve25519Signature(message, signature, pub)
-                        }?.let { list ->
-                            depositDao.insertList(list)
-                        }
-                    },
-                ) ?: return null
-            }
-
             if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
                 val chain = syncAsset(assetItem.chainId)
                 assetItem.chainIconUrl = chain?.chainIconUrl
@@ -173,6 +144,38 @@ class TokenRepository
                 assetItem.chainPriceUsd = chain?.chainPriceUsd
             }
             return assetItem
+        }
+
+        suspend fun syncDepositEntry(chainId: String): DepositEntry? {
+            handleMixinResponse(
+                invokeNetwork = {
+                    utxoService.createDeposit(
+                        DepositEntryRequest(chainId),
+                    )
+                },
+                successBlock = { resp ->
+                    val pub = SAFE_PUBLIC_KEY.hexStringToByteArray()
+                    resp.data?.filter {
+                        val message =
+                            if (it.tag.isNullOrBlank()) {
+                                it.destination
+                            } else {
+                                "${it.destination}:${it.tag}"
+                            }.toByteArray().sha3Sum256()
+                        val signature = it.signature.hexStringToByteArray()
+                        verifyCurve25519Signature(message, signature, pub)
+                    }?.let { list ->
+                        depositDao.insertList(list)
+                    }
+                },
+            )
+            return depositDao.findDepositEntry(chainId)
+        }
+
+        suspend fun findAndSyncDepositEntry(chainId: String): Pair<DepositEntry?, Boolean> {
+            val oldDeposit = depositDao.findDepositEntry(chainId)
+            val newDeposit = syncDepositEntry(chainId)
+            return Pair(newDeposit, oldDeposit!= null && newDeposit != oldDeposit)
         }
 
         suspend fun syncAsset(assetId: String): TokenItem? {
