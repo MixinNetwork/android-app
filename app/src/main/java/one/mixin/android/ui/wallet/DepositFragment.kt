@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
@@ -33,7 +32,6 @@ import one.mixin.android.extension.getTipsByAsset
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.highlightStarTag
-import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
@@ -140,7 +138,8 @@ class DepositFragment : BaseFragment() {
         }
     }
 
-    private val localMap = mutableMapOf<String,DepositEntry>()
+    private val localMap = mutableMapOf<String, DepositEntry>()
+
     private fun initUsdtChips(asset: TokenItem) {
         binding.apply {
             networkChipGroup.isSingleSelection = true
@@ -183,8 +182,13 @@ class DepositFragment : BaseFragment() {
             }
         }
     }
+
     private var showed = false
-    private fun showDepositChooseNetworkBottomSheetDialog(asset: TokenItem, depositEntry: DepositEntry) {
+
+    private fun showDepositChooseNetworkBottomSheetDialog(
+        asset: TokenItem,
+        depositEntry: DepositEntry,
+    ) {
         if (showed) return
         showed = true // run only once
         if (!notSupportDepositAssets.any { it == asset.assetId }) {
@@ -248,7 +252,10 @@ class DepositFragment : BaseFragment() {
         }
     }
 
-    private fun updateUI(asset: TokenItem, depositEntry: DepositEntry) {
+    private fun updateUI(
+        asset: TokenItem,
+        depositEntry: DepositEntry,
+    ) {
         if (viewDestroyed()) return
 
         val destination = depositEntry.destination
@@ -286,7 +293,8 @@ class DepositFragment : BaseFragment() {
                     memoView.setAsset(
                         parentFragmentManager,
                         scopeProvider,
-                        asset, depositEntry,
+                        asset,
+                        depositEntry,
                         null,
                         true,
                         if (asset.assetId == Constants.ChainId.RIPPLE_CHAIN_ID) {

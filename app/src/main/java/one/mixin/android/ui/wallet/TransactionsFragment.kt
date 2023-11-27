@@ -152,11 +152,11 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         walletViewModel.refreshAsset(asset.assetId)
         lifecycleScope.launch {
             val depositEntry = walletViewModel.syncDepositEntry(asset.chainId)
-            if (depositEntry != null && depositEntry.destination.isNotBlank()){
-                refreshPendingDeposits(asset, depositEntry)
-            }
+            if (depositEntry != null && depositEntry.destination.isNotBlank())
+                {
+                    refreshPendingDeposits(asset, depositEntry)
+                }
         }
-
     }
 
     override fun onDestroyView() {
@@ -167,7 +167,10 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
         super.onDestroyView()
     }
 
-    private fun refreshPendingDeposits(asset: TokenItem, depositEntry:DepositEntry) {
+    private fun refreshPendingDeposits(
+        asset: TokenItem,
+        depositEntry: DepositEntry,
+    ) {
         if (viewDestroyed()) return
         lifecycleScope.launch {
             handleMixinResponse(
