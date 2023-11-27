@@ -166,7 +166,10 @@ class TokenRepository
                         val signature = it.signature.hexStringToByteArray()
                         verifyCurve25519Signature(message, signature, pub)
                     }?.let { list ->
-                        depositDao.insertList(list)
+                        runInTransaction {
+                            depositDao.deleteByChainId(chainId)
+                            depositDao.insertList(list)
+                        }
                     }
                 },
             )
@@ -176,7 +179,7 @@ class TokenRepository
         suspend fun findAndSyncDepositEntry(chainId: String): Pair<DepositEntry?, Boolean> {
             val oldDeposit = depositDao.findDepositEntry(chainId)
             val newDeposit = syncDepositEntry(chainId)
-            return Pair(newDeposit, oldDeposit!= null && newDeposit != oldDeposit)
+            return Pair(newDeposit, newDeposit != null && oldDeposit != null && (oldDeposit.destination != newDeposit.destination || oldDeposit.tag != newDeposit.tag))
         }
 
         suspend fun syncAsset(assetId: String): TokenItem? {
