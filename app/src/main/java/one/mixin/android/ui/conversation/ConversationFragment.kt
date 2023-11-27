@@ -160,6 +160,7 @@ import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment.Companion.G
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.buildEmptyTransferBiometricItem
 import one.mixin.android.ui.common.message.ChatRoomHelper
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
@@ -2590,7 +2591,8 @@ class ConversationFragment() :
                             binding.chatControl.reset()
                             if (Session.getAccount()?.hasPin == true) {
                                 recipient?.let {
-                                    TransferFragment.newInstance(it.userId, supportSwitchAsset = true).showNow(parentFragmentManager, TransferFragment.TAG)
+                                    TransferFragment.newInstance(buildEmptyTransferBiometricItem(it))
+                                        .showNow(parentFragmentManager, TransferFragment.TAG)
                                     // FIXME sync
                                     // jobManager.addJobInBackground(SyncOutputJob())
                                 }

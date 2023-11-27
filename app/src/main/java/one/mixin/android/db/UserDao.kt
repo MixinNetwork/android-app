@@ -40,6 +40,9 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE user_id = :id")
     suspend fun suspendFindUserById(id: String): User?
 
+    @Query("SELECT * FROM users WHERE user_id IN (:ids)")
+    suspend fun suspendFindUserByIds(ids: List<String>): List<User>
+
     @Query("SELECT user_id FROM users WHERE user_id IN (:userIds)")
     suspend fun findUserExist(userIds: List<String>): List<String>
 

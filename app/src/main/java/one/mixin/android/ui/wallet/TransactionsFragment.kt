@@ -43,6 +43,7 @@ import one.mixin.android.tip.tipPrivToAddress
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.buildWithdrawalBiometricItem
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotAdapter
@@ -329,7 +330,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                     ) ?: return@launch
 
                 val mockAddress = Address("", "address", asset.assetId, addressFeeResponse.destination, "TIP Wallet", nowInUtc(), "0", addressFeeResponse.fee, null, null, asset.chainId)
-                val transferFragment = TransferFragment.newInstance(asset = asset, address = mockAddress)
+                val withdrawalBiometricItem = buildWithdrawalBiometricItem(mockAddress, asset)
+                val transferFragment = TransferFragment.newInstance(withdrawalBiometricItem)
                 transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)
             }
         }

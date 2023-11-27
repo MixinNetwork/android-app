@@ -128,6 +128,7 @@ import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
 import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.ui.common.biometric.buildEmptyTransferBiometricItem
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
@@ -670,10 +671,13 @@ class MainActivity : BlazeBaseActivity() {
             navigationController.pushWallet()
             clearCodeAfterConsume(intent, WALLET)
         } else if (intent.hasExtra(TRANSFER)) {
-            val userId = intent.getStringExtra(TRANSFER)
+            val userId = intent.getStringExtra(TRANSFER) ?: return
             if (Session.getAccount()?.hasPin == true) {
-                TransferFragment.newInstance(userId, supportSwitchAsset = true)
-                    .showNow(supportFragmentManager, TransferFragment.TAG)
+                lifecycleScope.launch {
+                    val user = userRepo.refreshUser(userId) ?: return@launch
+                    TransferFragment.newInstance(buildEmptyTransferBiometricItem(user))
+                        .showNow(supportFragmentManager, TransferFragment.TAG)
+                }
             } else {
                 toast(R.string.transfer_without_pin)
             }

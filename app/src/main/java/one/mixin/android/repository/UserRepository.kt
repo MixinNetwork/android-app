@@ -92,6 +92,32 @@ class UserRepository
 
         suspend fun findUserExist(userIds: List<String>): List<String> = userDao.findUserExist(userIds)
 
+        suspend fun findOrRefreshUsers(ids: List<String>): List<User> {
+            val users = userDao.suspendFindUserByIds(ids)
+            if (users.size == ids.size) return users
+
+            val notExistsUserIds = ids.subtract(users.map { it.userId }.toSet())
+            val success =
+                handleMixinResponse(
+                    invokeNetwork = {
+                        userService.getUserByIdsSuspend(notExistsUserIds.toList())
+                    },
+                    successBlock = {
+                        it.data?.let { us ->
+                            us.forEach { u ->
+                                upsert(u)
+                            }
+                            return@handleMixinResponse true
+                        }
+                    },
+                ) == true
+            return if (success) {
+                userDao.suspendFindUserByIds(ids)
+            } else {
+                emptyList()
+            }
+        }
+
         suspend fun refreshUser(id: String): User? {
             val user = userDao.suspendFindUserById(id)
             if (user != null) return user
