@@ -1,7 +1,7 @@
 package one.mixin.android.api.request
 
 import com.google.gson.annotations.SerializedName
-import uniqueObjectId
+import one.mixin.android.util.uniqueObjectId
 
 data class GhostKeyRequest(
     @SerializedName("receivers")

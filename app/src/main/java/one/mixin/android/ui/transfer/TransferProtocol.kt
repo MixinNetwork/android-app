@@ -1,6 +1,5 @@
 package one.mixin.android.ui.transfer
 
-import UUIDUtils
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
@@ -9,6 +8,7 @@ import one.mixin.android.api.ChecksumException
 import one.mixin.android.event.SpeedEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.ui.transfer.vo.TransferCommand
+import one.mixin.android.util.UUIDUtils
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.EOFException

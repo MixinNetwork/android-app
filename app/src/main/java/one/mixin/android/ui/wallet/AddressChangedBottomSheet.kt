@@ -9,7 +9,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.databinding.FragmentWithdralSuspendedBottomBinding
+import one.mixin.android.databinding.FragmentAddressChangedBottomBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.toast
@@ -21,13 +21,13 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
-class WithdrawalSuspendedBottomSheet : MixinBottomSheetDialogFragment() {
+class AddressChangedBottomSheet : MixinBottomSheetDialogFragment() {
     companion object {
-        const val TAG = "WithdrawalSuspendedBottomSheet"
+        const val TAG = "AddressChangedBottomSheet"
 
         fun newInstance(
             tokenItem: TokenItem,
-        ) = WithdrawalSuspendedBottomSheet().apply {
+        ) = AddressChangedBottomSheet().apply {
             arguments =
                 Bundle().apply {
                     putParcelable("token", tokenItem)
@@ -39,7 +39,7 @@ class WithdrawalSuspendedBottomSheet : MixinBottomSheetDialogFragment() {
         requireArguments().getParcelableCompat("token", TokenItem::class.java)!!
     }
     private val viewModel by viewModels<SettingViewModel>()
-    private val bottomSendBinding by viewBinding(FragmentWithdralSuspendedBottomBinding::inflate)
+    private val bottomSendBinding by viewBinding(FragmentAddressChangedBottomBinding::inflate)
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(
@@ -52,8 +52,8 @@ class WithdrawalSuspendedBottomSheet : MixinBottomSheetDialogFragment() {
         bottomSendBinding.apply {
             assetIcon.bg.loadImage(token.iconUrl, R.drawable.ic_avatar_place_holder)
             assetIcon.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            title.text = getString(R.string.Withdrawal_Suspended, token.symbol)
-            content.text = getString(R.string.Withdrawal_Suspended_Content, token.symbol)
+            title.text = getString(R.string.depost_address_updated, token.symbol)
+            content.text = getString(R.string.depost_address_updated_description, token.symbol)
             gotItTv.setOnClickListener { dismiss() }
             contactSupport.setOnClickListener {
                 lifecycleScope.launch {

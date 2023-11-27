@@ -1333,4 +1333,6 @@
     <string name="Withdrawal_Suspended_Content">%1$s withdrawals are temporarily suspended, possibly due to node failure, blockchain network hard fork, or congestion. Please try again later.</string>
     <string name="Contact_Support">Contact Support</string>
     <string name="withdrawal_pending">Pending</string>
+    <string name="depost_address_updated">%1$s Deposit Address Updated</string>
+    <string name="depost_address_updated_description">Your %1$s deposit address has been updated. The deposit address will automatically update with system or network upgrades. Old addresses are still valid for deposits, but it is not recommended for further use.</string>
 </resources>

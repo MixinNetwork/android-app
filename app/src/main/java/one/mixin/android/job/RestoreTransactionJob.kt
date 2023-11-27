@@ -16,6 +16,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
+import one.mixin.android.util.uniqueObjectId
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
@@ -29,7 +30,6 @@ import one.mixin.android.vo.safe.OutputState
 import one.mixin.android.vo.safe.RawTransactionType
 import one.mixin.android.vo.safe.SafeSnapshot
 import timber.log.Timber
-import uniqueObjectId
 import java.util.UUID
 
 class RestoreTransactionJob : BaseJob(

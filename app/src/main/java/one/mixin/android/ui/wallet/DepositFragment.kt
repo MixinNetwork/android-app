@@ -169,6 +169,9 @@ class DepositFragment : BaseFragment() {
                 updateUI(asset, depositEntry)
             }
         }
+        if (different) {
+            AddressChangedBottomSheet.newInstance(asset).showNow(parentFragmentManager, AddressChangedBottomSheet.TAG)
+        }
     }
 
     private fun initUsdtChips(asset: TokenItem) {
