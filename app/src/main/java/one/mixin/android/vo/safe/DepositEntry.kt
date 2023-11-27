@@ -1,14 +1,17 @@
 package one.mixin.android.vo.safe
 
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 import one.mixin.android.vo.ListConverter
 
 @Entity(tableName = "deposit_entries")
 @TypeConverters(ListConverter::class)
+@Parcelize
 data class DepositEntry(
     @PrimaryKey
     @ColumnInfo(name = "entry_id")
@@ -35,4 +38,4 @@ data class DepositEntry(
     @ColumnInfo(name = "is_primary")
     @SerializedName("is_primary")
     val isPrimary: Boolean,
-)
+) : Parcelable

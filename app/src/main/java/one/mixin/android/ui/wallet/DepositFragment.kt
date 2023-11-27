@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
@@ -33,12 +32,12 @@ import one.mixin.android.extension.getTipsByAsset
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.highlightStarTag
-import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
@@ -65,8 +64,6 @@ class DepositFragment : BaseFragment() {
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
-    private var alertDialog: Dialog? = null
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -84,30 +81,10 @@ class DepositFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         val asset = requireNotNull(requireArguments().getParcelableCompat(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)) { "required TokenItem can not be null" }
         initView(asset)
-        if (!notSupportDepositAssets.any { it == asset.assetId }) {
-            DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset)
-                .apply {
-                    this.callback = {
-                        val noTag = asset.tag.isNullOrBlank()
-                        if (noTag.not()) {
-                            alertDialogBuilder()
-                                .setTitle(R.string.Notice)
-                                .setCancelable(false)
-                                .setMessage(getString(R.string.deposit_notice, asset.symbol))
-                                .setPositiveButton(R.string.OK) { dialog, _ ->
-                                    dialog.dismiss()
-                                }.show()
-                        }
-                    }
-                }
-                .showNow(childFragmentManager, TAG)
-        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        alertDialog?.dismiss()
-        alertDialog = null
         _binding = null
     }
 
@@ -138,7 +115,13 @@ class DepositFragment : BaseFragment() {
 
                 notSupportLl.isVisible = false
                 sv.isVisible = true
-                val reserveTip = SpannableStringBuilder()
+                val dustTip =
+                    if (asset.hasDust()) {
+                        getString(R.string.deposit_dust, asset.dust, asset.symbol)
+                            .highLight(requireContext(), "${asset.dust} ${asset.symbol}")
+                    } else {
+                        SpannableStringBuilder()
+                    }
                 val confirmation =
                     requireContext().resources.getQuantityString(
                         R.plurals.deposit_confirmation,
@@ -151,16 +134,17 @@ class DepositFragment : BaseFragment() {
                         requireContext(),
                         SpannableStringBuilder(getTipsByAsset(asset)),
                         confirmation,
-                        reserveTip,
+                        dustTip,
                     )
             }
         }
 
         if (!notSupport) {
-            updateUI(asset)
-            refreshAsset(asset)
+            refreshDeposit(asset)
         }
     }
+
+    private val localMap = mutableMapOf<String, DepositEntry>()
 
     private fun initUsdtChips(asset: TokenItem) {
         binding.apply {
@@ -182,27 +166,20 @@ class DepositFragment : BaseFragment() {
                         }
                         setOnClickListener {
                             if (same) return@setOnClickListener
-
                             lifecycleScope.launch {
-                                var newAsset = walletViewModel.findAssetItemById(entry.key)
-                                if (newAsset == null || newAsset.destination.isNullOrBlank()) {
-                                    alertDialog?.dismiss()
-                                    alertDialog =
-                                        indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                                            show()
-                                        }
-                                    newAsset = walletViewModel.findOrSyncAsset(entry.key)
-                                    alertDialog?.dismiss()
-                                }
+                                showLoading()
+                                val newAsset = walletViewModel.findOrSyncAsset(entry.key)
                                 if (newAsset == null) {
-                                    loading.isVisible = false
                                     toast(R.string.Not_found)
                                 } else {
-                                    loading.isVisible = false
-                                    addressView.isVisible = true
-                                    addressTitle.isVisible = true
-                                    tipTv.isVisible = true
-                                    initView(newAsset)
+                                    initUsdtChips(newAsset)
+                                    val localDepositEntry = localMap[newAsset.assetId]
+                                    if (localDepositEntry == null) {
+                                        refreshDeposit(newAsset)
+                                    } else {
+                                        updateUI(newAsset, localDepositEntry)
+                                        hideLoading()
+                                    }
                                 }
                             }
                         }
@@ -212,41 +189,98 @@ class DepositFragment : BaseFragment() {
         }
     }
 
-    private fun refreshAsset(asset: TokenItem) {
-        lifecycleScope.launch {
-            val assetItem = walletViewModel.findOrSyncAsset(asset.assetId, forceRefresh = true)
-            if (assetItem == null) {
-                // workaround skip loop
-                if (usdtAssets.contains(asset.assetId)) {
-                    binding.apply {
-                        loading.isVisible = true
-                        memoTitle.isVisible = false
-                        memoView.isVisible = false
-                        addressView.isVisible = false
-                        addressTitle.isVisible = false
-                        tipTv.isVisible = false
+    private var showed = false
+
+    private fun showDepositChooseNetworkBottomSheetDialog(
+        asset: TokenItem,
+        depositEntry: DepositEntry,
+    ) {
+        if (showed) return
+        showed = true // run only once
+        if (!notSupportDepositAssets.any { it == asset.assetId }) {
+            lifecycleScope.launch {
+                DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset)
+                    .apply {
+                        this.callback = {
+                            val existTag = !depositEntry.tag.isNullOrBlank()
+                            if (existTag) {
+                                alertDialogBuilder()
+                                    .setTitle(R.string.Notice)
+                                    .setCancelable(false)
+                                    .setMessage(
+                                        getString(
+                                            if (asset.assetId == Constants.ChainId.RIPPLE_CHAIN_ID) {
+                                                R.string.deposit_notice_tag
+                                            } else if (asset.assetId == Constants.ChainId.EOS_CHAIN_ID)
+                                                {
+                                                    R.string.deposit_notice_eos
+                                                } else {
+                                                R.string.deposit_notice
+                                            },
+                                            asset.symbol,
+                                        ),
+                                    )
+                                    .setPositiveButton(R.string.OK) { dialog, _ ->
+                                        dialog.dismiss()
+                                    }.show()
+                            }
+                        }
                     }
-                    return@launch
-                }
-                delay(500)
-                refreshAsset(asset)
-            } else {
-                if (asset.chainId == assetItem.chainId && !asset.destination.isNullOrBlank() && (asset.destination != assetItem.destination || asset.tag != assetItem.tag)){
-                    AddressChangedBottomSheet.newInstance(assetItem).showNow(parentFragmentManager, AddressChangedBottomSheet.TAG)
-                }
-                updateUI(assetItem)
+                    .showNow(childFragmentManager, TAG)
             }
         }
     }
 
-    private fun updateUI(asset: TokenItem) {
+    private fun refreshDeposit(asset: TokenItem) {
+        showLoading()
+        lifecycleScope.launch {
+            val (depositEntry, different) = walletViewModel.findAndSyncDepositEntry(asset.chainId)
+            if (depositEntry == null) {
+                delay(500)
+                refreshDeposit(asset)
+            } else {
+                localMap[asset.assetId] = depositEntry
+                showDepositChooseNetworkBottomSheetDialog(asset, depositEntry)
+                if (different) {
+                    AddressChangedBottomSheet.newInstance(asset).showNow(parentFragmentManager, AddressChangedBottomSheet.TAG)
+                }
+                updateUI(asset, depositEntry)
+                hideLoading()
+            }
+        }
+    }
+
+    private fun showLoading() {
+        binding.apply {
+            loading.isVisible = true
+            addressView.isVisible = false
+            addressTitle.isVisible = false
+            tipTv.isVisible = false
+            memoTitle.isVisible = false
+            memoView.isVisible = false
+        }
+    }
+
+    private fun hideLoading() {
+        binding.apply {
+            loading.isVisible = false
+            addressView.isVisible = true
+            addressTitle.isVisible = true
+            tipTv.isVisible = true
+        }
+    }
+
+    private fun updateUI(
+        asset: TokenItem,
+        depositEntry: DepositEntry,
+    ) {
         if (viewDestroyed()) return
 
-        val destination = asset.destination
-        val tag = asset.tag
-        val signature = asset.signature?.hexStringToByteArray()
+        val destination = depositEntry.destination
+        val tag = depositEntry.tag
+        val signature = depositEntry.signature.hexStringToByteArray()
 
-        if (destination.isNullOrBlank() || signature.isNullOrEmpty()) return
+        if (destination.isBlank() || signature.isNullOrEmpty()) return
         val pub = Constants.SAFE_PUBLIC_KEY.hexStringToByteArray()
         val message =
             if (tag.isNullOrBlank()) {
@@ -254,7 +288,7 @@ class DepositFragment : BaseFragment() {
             } else {
                 "$destination:$tag"
             }.toByteArray().sha3Sum256()
-        val verify = verifyCurve25519Signature(message, signature!!, pub)
+        val verify = verifyCurve25519Signature(message, signature, pub)
         if (verify) {
             val noTag = tag.isNullOrBlank()
             binding.apply {
@@ -278,6 +312,7 @@ class DepositFragment : BaseFragment() {
                         parentFragmentManager,
                         scopeProvider,
                         asset,
+                        depositEntry,
                         null,
                         true,
                         if (asset.assetId == Constants.ChainId.RIPPLE_CHAIN_ID) {
@@ -291,6 +326,7 @@ class DepositFragment : BaseFragment() {
                     parentFragmentManager,
                     scopeProvider,
                     asset,
+                    depositEntry,
                     null,
                     false,
                     if (noTag) {

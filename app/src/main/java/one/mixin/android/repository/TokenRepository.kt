@@ -132,21 +132,33 @@ class TokenRepository
 
         suspend fun findOrSyncAsset(
             assetId: String,
-            forceRefresh: Boolean = false,
         ): TokenItem? {
             var assetItem = tokenDao.findAssetItemById(assetId)
-            if (!forceRefresh && assetItem != null && !assetItem.destination.isNullOrBlank()) {
-                return assetItem
-            }
             if (assetItem == null) {
                 assetItem = syncAsset(assetId)
             }
-            if (assetItem != null) {
+            if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
+                val chain = syncAsset(assetItem.chainId)
+                assetItem.chainIconUrl = chain?.chainIconUrl
+                assetItem.chainSymbol = chain?.chainSymbol
+                assetItem.chainName = chain?.chainName
+                assetItem.chainPriceUsd = chain?.chainPriceUsd
+            }
+            return assetItem
+        }
+
+        suspend fun syncDepositEntry(chainId: String): Pair<DepositEntry?, Int> {
+            var code = 200
+            val depositEntry =
                 handleMixinResponse(
                     invokeNetwork = {
                         utxoService.createDeposit(
-                            DepositEntryRequest(assetItem.chainId),
+                            DepositEntryRequest(chainId),
                         )
+                    },
+                    failureBlock = {
+                        code = it.errorCode
+                        true
                     },
                     successBlock = { resp ->
                         val pub = SAFE_PUBLIC_KEY.hexStringToByteArray()
@@ -161,26 +173,26 @@ class TokenRepository
                             verifyCurve25519Signature(message, signature, pub)
                         }?.let { list ->
                             runInTransaction {
-                                depositDao.deleteByChainId(assetItem.chainId)
+                                depositDao.deleteByChainId(chainId)
                                 depositDao.insertList(list)
                             }
-                            list.find { it.isPrimary }?.let {
-                                assetItem.destination = it.destination
-                                assetItem.tag = it.tag
-                            }
+                            list.find { it.isPrimary }
                         }
                     },
-                ) ?: return null
-            }
+                )
+            return Pair(depositEntry, code)
+        }
 
-            if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
-                val chain = syncAsset(assetItem.chainId)
-                assetItem.chainIconUrl = chain?.chainIconUrl
-                assetItem.chainSymbol = chain?.chainSymbol
-                assetItem.chainName = chain?.chainName
-                assetItem.chainPriceUsd = chain?.chainPriceUsd
-            }
-            return assetItem
+        suspend fun findAndSyncDepositEntry(chainId: String): Pair<DepositEntry?, Boolean> {
+            val oldDeposit = depositDao.findDepositEntry(chainId)
+            val (newDeposit, code) = syncDepositEntry(chainId)
+            val result =
+                if (code != 200) {
+                    null // response error
+                } else {
+                    newDeposit ?: oldDeposit
+                }
+            return Pair(result, newDeposit != null && oldDeposit != null && (oldDeposit.destination != newDeposit.destination || oldDeposit.tag != newDeposit.tag))
         }
 
         suspend fun syncAsset(assetId: String): TokenItem? {

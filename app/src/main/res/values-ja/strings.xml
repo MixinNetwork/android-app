@@ -295,7 +295,6 @@
     </plurals>
     <string name="deposit_memo_notice">メモが必要です、メモを添付せずに送金した場合に資産を失うおそれがあります</string>
     <string name="deposit_notice">%1$sをあなたのアドレスに入金するためには、メモと入金先アドレスの両方の記入が必要です</string>
-    <string name="deposit_reserve">最初は、%1$s以上の金額を入金してください</string>
     <string name="deposit_tip_btc">このアドレスはビットコインのみサポートしています</string>
     <string name="deposit_tip_common">このアドレスは%1$sのみサポートしています</string>
     <string name="deposit_tip_eos">このアドレスはEOSベースの全てのトークンをサポートしています</string>
