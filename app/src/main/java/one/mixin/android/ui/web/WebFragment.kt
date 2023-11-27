@@ -917,12 +917,23 @@ class WebFragment : BaseFragment() {
     private fun getAssets(ids: Array<String>, callbackFunction: String) {
         if (viewDestroyed()) return
         app ?: return
-        val isValid = ids.all { it.isUUID() }
-        if (!isValid) {
-            webView.evaluateJavascript("$callbackFunction('[]')") {}
-            return
-        }
+
         lifecycleScope.launch {
+            val sameHost = try {
+                Uri.parse(webView.url).host == Uri.parse(app?.homeUri ?: "").host
+                true
+            } catch (e: Exception) {
+                false
+            }
+            if (!sameHost) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+            val isValid = ids.isEmpty() || ids.all { it.isUUID() }
+            if (!isValid) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
             val auth = bottomViewModel.getAuthorizationByAppId(app!!.appId)
             val result = if (auth?.scopes?.contains("ASSETS:READ") == true) {
                 val tokens = if (ids.isEmpty()) {
