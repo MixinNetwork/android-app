@@ -149,47 +149,49 @@ class TokenRepository
 
         suspend fun syncDepositEntry(chainId: String): Pair<DepositEntry?, Int> {
             var code = 200
-            val depositEntry = handleMixinResponse(
-                invokeNetwork = {
-                    utxoService.createDeposit(
-                        DepositEntryRequest(chainId),
-                    )
-                },
-                failureBlock = {
-                    code = it.errorCode
-                    true
-                },
-                successBlock = { resp ->
-                    val pub = SAFE_PUBLIC_KEY.hexStringToByteArray()
-                    resp.data?.filter {
-                        val message =
-                            if (it.tag.isNullOrBlank()) {
-                                it.destination
-                            } else {
-                                "${it.destination}:${it.tag}"
-                            }.toByteArray().sha3Sum256()
-                        val signature = it.signature.hexStringToByteArray()
-                        verifyCurve25519Signature(message, signature, pub)
-                    }?.let { list ->
-                        runInTransaction {
-                            depositDao.deleteByChainId(chainId)
-                            depositDao.insertList(list)
+            val depositEntry =
+                handleMixinResponse(
+                    invokeNetwork = {
+                        utxoService.createDeposit(
+                            DepositEntryRequest(chainId),
+                        )
+                    },
+                    failureBlock = {
+                        code = it.errorCode
+                        true
+                    },
+                    successBlock = { resp ->
+                        val pub = SAFE_PUBLIC_KEY.hexStringToByteArray()
+                        resp.data?.filter {
+                            val message =
+                                if (it.tag.isNullOrBlank()) {
+                                    it.destination
+                                } else {
+                                    "${it.destination}:${it.tag}"
+                                }.toByteArray().sha3Sum256()
+                            val signature = it.signature.hexStringToByteArray()
+                            verifyCurve25519Signature(message, signature, pub)
+                        }?.let { list ->
+                            runInTransaction {
+                                depositDao.deleteByChainId(chainId)
+                                depositDao.insertList(list)
+                            }
+                            list.find { it.isPrimary }
                         }
-                        list.find { it.isPrimary }
-                    }
-                },
-            )
+                    },
+                )
             return Pair(depositEntry, code)
         }
 
         suspend fun findAndSyncDepositEntry(chainId: String): Pair<DepositEntry?, Boolean> {
             val oldDeposit = depositDao.findDepositEntry(chainId)
-            val (newDeposit,code) = syncDepositEntry(chainId)
-            val result = if (code != 200) {
-                null // response error
-            } else {
-                newDeposit ?: oldDeposit
-            }
+            val (newDeposit, code) = syncDepositEntry(chainId)
+            val result =
+                if (code != 200) {
+                    null // response error
+                } else {
+                    newDeposit ?: oldDeposit
+                }
             return Pair(result, newDeposit != null && oldDeposit != null && (oldDeposit.destination != newDeposit.destination || oldDeposit.tag != newDeposit.tag))
         }
 

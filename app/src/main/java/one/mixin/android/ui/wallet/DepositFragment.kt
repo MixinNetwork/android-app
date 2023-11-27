@@ -115,7 +115,13 @@ class DepositFragment : BaseFragment() {
 
                 notSupportLl.isVisible = false
                 sv.isVisible = true
-                val reserveTip = SpannableStringBuilder()
+                val dustTip =
+                    if (asset.hasDust()) {
+                        getString(R.string.deposit_dust, asset.dust, asset.symbol)
+                            .highLight(requireContext(), "${asset.dust} ${asset.symbol}")
+                    } else {
+                        SpannableStringBuilder()
+                    }
                 val confirmation =
                     requireContext().resources.getQuantityString(
                         R.plurals.deposit_confirmation,
@@ -128,7 +134,7 @@ class DepositFragment : BaseFragment() {
                         requireContext(),
                         SpannableStringBuilder(getTipsByAsset(asset)),
                         confirmation,
-                        reserveTip,
+                        dustTip,
                     )
             }
         }
@@ -205,11 +211,15 @@ class DepositFragment : BaseFragment() {
                                         getString(
                                             if (asset.assetId == Constants.ChainId.RIPPLE_CHAIN_ID) {
                                                 R.string.deposit_notice_tag
-                                            } else if(asset.assetId == Constants.ChainId.EOS_CHAIN_ID){
-                                                R.string.deposit_notice_eos
-                                            } else {
+                                            } else if (asset.assetId == Constants.ChainId.EOS_CHAIN_ID)
+                                                {
+                                                    R.string.deposit_notice_eos
+                                                } else {
                                                 R.string.deposit_notice
-                                            }, asset.symbol))
+                                            },
+                                            asset.symbol,
+                                        ),
+                                    )
                                     .setPositiveButton(R.string.OK) { dialog, _ ->
                                         dialog.dismiss()
                                     }.show()

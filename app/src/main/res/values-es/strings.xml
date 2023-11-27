@@ -316,7 +316,6 @@
     </plurals>
     <string name="deposit_memo_notice">Se requiere Memo, o perderás tus monedas.</string>
     <string name="deposit_notice">Tanto el memorándum como la dirección son necesarios para depositar tu %1$s en tu cuenta.</string>
-    <string name="deposit_reserve">Deposita al menos %1$s por primera vez.</string>
     <string name="deposit_tip_btc">Esta dirección solo admite BTC.</string>
     <string name="deposit_tip_common">Esta dirección solo admite %1$s.</string>
     <string name="deposit_tip_eos">Esta dirección es compatible con todos los tokens basados en EOS.</string>

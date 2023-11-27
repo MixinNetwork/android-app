@@ -29,6 +29,7 @@ data class TokenItem(
     var chainName: String?,
     var chainPriceUsd: String?,
     val assetKey: String?,
+    val dust: String?,
     val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
 ) : Parcelable {
     fun fiat(): BigDecimal {
@@ -59,6 +60,13 @@ data class TokenItem(
         } else {
             BigDecimal(balance).multiply(BigDecimal(priceBtc))
         }
+
+    fun hasDust(): Boolean {
+        if (dust.isNullOrBlank()) return false
+
+        val dustVal = dust.toDoubleOrNull() ?: return false
+        return dustVal > 0
+    }
 
     companion object {
         val DIFF_CALLBACK =

@@ -330,7 +330,7 @@
     <string name="deposit_notice">Both Memo and Address are required to deposit your %1$s to you account.</string>
     <string name="deposit_notice_tag">Both Tag and Address are required to deposit your %1$s to you account.</string>
     <string name="deposit_notice_eos">Both Memo and Account are required to deposit your %1$s to you account.</string>
-    <string name="deposit_reserve">Deposit at least %1$s for the first time.</string>
+    <string name="deposit_dust">Minimum deposit: %1$s %2$s</string>
     <string name="deposit_tip_btc">This address only supports BTC.</string>
     <string name="deposit_tip_common">This address only supports %1$s.</string>
     <string name="deposit_tip_eos">This address supports all base on EOS tokens.</string>

@@ -204,7 +204,6 @@
     <plurals name="deposit_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="other">Deposit akan tiba setelah setidaknya %1$d konfirmasi block</item>
     </plurals>
-    <string name="deposit_reserve">Deposit minimal %1$s untuk pertama kali.</string>
     <string name="deposit_tip_btc">Alamat ini hanya mendukung BTC.</string>
     <string name="deposit_tip_common">Alamat ini hanya mendukung %1$s.</string>
     <string name="deposit_tip_eos">Alamat ini mendukung semua token berbasis EOS, seperti EOS, IQ, dll.</string>
