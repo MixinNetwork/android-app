@@ -128,7 +128,7 @@ class NewSchemaParser(
                 } else {
                     null
                 }
-            if (payType == PayType.Uuid) {
+            val transferFragment: TransferFragment? = if (payType == PayType.Uuid) {
                 val user = linkViewModel.refreshUser(lastPath) ?: return false // TODO 404?
                 TransferFragment.newInstance(buildTransferBiometricItem(user, token, amount ?: "", trace, memo, returnTo))
             } else if (payType == PayType.MixAddress) {
@@ -153,10 +153,9 @@ class NewSchemaParser(
                 }
             } else {
                 TransferFragment.newInstance(buildAddressBiometricItem(lastPath, token, amount ?: "", trace, memo, returnTo))
-            }.let { fragment ->
-                if (fragment == null) return false
-                fragment.show(bottomSheet.parentFragmentManager, TransferFragment.TAG)
             }
+            if (transferFragment == null) return false
+            transferFragment.show(bottomSheet.parentFragmentManager, TransferFragment.TAG)
         }
         return true
     }
