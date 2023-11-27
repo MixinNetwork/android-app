@@ -23,7 +23,7 @@ interface TokenDao : BaseDao<Token> {
             a1.asset_key AS assetKey, c.withdrawal_memo_possibility AS withdrawalMemoPossibility, d.signature AS signature
             FROM tokens a1 
             LEFT JOIN tokens a2 ON a1.chain_id = a2.asset_id
-            LEFT JOIN deposit_entries d ON (a1.chain_id = d.chain_id AND d.is_primary = 1) 
+            LEFT JOIN (SELECT * FROM deposit_entries WHERE is_primary = 1 ORDER BY rowid DESC LIMIT 1) d
             LEFT JOIN chains c ON a1.chain_id = c.chain_id
             LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id 
            """
