@@ -389,7 +389,7 @@ class BottomSheetViewModel
                     tokenRepository.insertOutput(changeOutput)
                 }
                 if (isConsolidation) {
-                    val consolidationOutput = consolidationOutput(sign.hash, asset, amount, receiverKeys, data.last().keys, utxoWrapper.lastOutput)
+                    val consolidationOutput = consolidationOutput(sign.hash, asset, amount, receiverMask, data.first().keys, utxoWrapper.lastOutput)
                     tokenRepository.insertOutput(consolidationOutput)
                 }
                 tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverIds.joinToString(","), RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc()))
