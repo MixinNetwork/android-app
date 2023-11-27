@@ -83,6 +83,11 @@ interface UserService {
         @Path("id") id: String,
     ): MixinResponse<User>
 
+    @POST("users/fetch")
+    suspend fun getUserByIdsSuspend(
+        @Body ids: List<String>,
+    ): MixinResponse<List<User>>
+
     @POST("users/{id}/circles")
     suspend fun updateCircles(
         @Path("id") id: String,

@@ -24,6 +24,7 @@ import one.mixin.android.ui.address.adapter.AddressAdapter
 import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.buildWithdrawalBiometricItem
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.DELETE
@@ -101,7 +102,8 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
 
                 override fun onAddrClick(addr: Address) {
                     if (Session.getAccount()?.hasPin == true) {
-                        val transferFragment = TransferFragment.newInstance(asset = asset, address = addr)
+                        val item = buildWithdrawalBiometricItem(addr, asset)
+                        val transferFragment = TransferFragment.newInstance(item)
                         transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)
                         transferFragment.callback =
                             object : TransferFragment.Callback {

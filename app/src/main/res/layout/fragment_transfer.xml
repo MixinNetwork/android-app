@@ -41,6 +41,17 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/margin12"/>
 
+            <one.mixin.android.widget.AvatarsView
+                android:id="@+id/receivers_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:layout_gravity="center_horizontal"
+                app:avatar_border_width="1dp"
+                android:visibility="gone"
+                app:avatar_size="64dp" />
+
             <RelativeLayout
                 android:id="@+id/asset_rl"
                 android:layout_width="match_parent"

@@ -10,17 +10,12 @@ import android.text.Editable
 import android.text.InputFilter
 import android.text.TextPaint
 import android.text.TextWatcher
-import android.view.LayoutInflater
-import android.view.View
 import android.view.View.GONE
-import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.OptIn
-import androidx.annotation.VisibleForTesting
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
@@ -29,20 +24,16 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.databinding.FragmentTransferBinding
-import one.mixin.android.databinding.ItemTransferTypeBinding
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.clearCharacterStyle
 import one.mixin.android.extension.defaultSharedPreferences
@@ -55,7 +46,6 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.sp
 import one.mixin.android.extension.statusBarHeight
@@ -66,14 +56,17 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshUserJob
-import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.OutputBottomSheetDialogFragment
+import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
+import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
+import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment.Companion.ARGS_BIOMETRIC_ITEM
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
+import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_TRANSFER
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
@@ -81,7 +74,6 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
 import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.NetworkFeeBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.UserTransactionBottomSheetFragment
 import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
 import one.mixin.android.util.ErrorHandler
@@ -100,51 +92,18 @@ import javax.inject.Inject
 
 @UnstableApi @AndroidEntryPoint
 @SuppressLint("InflateParams")
-class TransferFragment() : MixinBottomSheetDialogFragment() {
+class TransferFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "TransferFragment"
         const val ASSET_PREFERENCE = "TRANSFER_ASSET"
-        const val ARGS_SWITCH_ASSET = "args_switch_asset"
-        const val ARGS_MAINNET_ADDRSS = "args_mainnet_address"
-        const val ARGS_AMOUNT = "args_amount"
-        const val ARGS_MEMO = "args_memo"
-        const val ARGS_TRACE = "args_trace"
-        const val ARGS_RETURN_TO = "args_return_to"
 
         const val POST_TEXT = 0
         const val POST_PB = 1
 
-        fun newInstance(
-            userId: String? = null,
-            asset: TokenItem? = null,
-            address: Address? = null,
-            mainnetAddress: String? = null,
-            amount: String? = null,
-            memo: String? = null,
-            trace: String? = null,
-            returnTo: String? = null,
-            supportSwitchAsset: Boolean = false,
-        ) = TransferFragment().withArgs {
-            userId?.let { putString(ARGS_USER_ID, it) }
-            asset?.let { putParcelable(ARGS_ASSET, it) }
-            address?.let { putParcelable(ARGS_ADDRESS, it) }
-            mainnetAddress?.let { putString(ARGS_MAINNET_ADDRSS, it) }
-            amount?.let { putString(ARGS_AMOUNT, it) }
-            memo?.let { putString(ARGS_MEMO, it) }
-            trace?.let { putString(ARGS_TRACE, it) }
-            returnTo?.let { putString(ARGS_RETURN_TO, it) }
-            putBoolean(ARGS_SWITCH_ASSET, supportSwitchAsset)
-        }
-
-        @VisibleForTesting(otherwise = VisibleForTesting.NONE)
-        fun newInstance(testRegistry: ActivityResultRegistry) = TransferFragment(testRegistry)
-    }
-
-    override fun onDismiss(dialog: DialogInterface) {
-        if (isAdded) {
-            operateKeyboard(false)
-        }
-        super.onDismiss(dialog)
+        inline fun <reified T : BiometricItem> newInstance(t: T) =
+            TransferFragment().withArgs {
+                putParcelable(ARGS_BIOMETRIC_ITEM, t)
+            }
     }
 
     @Inject
@@ -152,54 +111,24 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
     private val chatViewModel by viewModels<ConversationViewModel>()
 
-    private var assets = listOf<TokenItem>()
-    private var currentAsset: TokenItem? = null
-        set(value) {
-            field = value
-            activity?.defaultSharedPreferences!!.putString(ASSET_PREFERENCE, value?.assetId)
-        }
-
-    private val userId: String? by lazy { requireArguments().getString(ARGS_USER_ID) }
-    private var address: Address? = null
-    private val mainnetAddress: String? by lazy { requireArguments().getString(ARGS_MAINNET_ADDRSS) }
-    private val supportSwitchAsset by lazy { requireArguments().getBoolean(ARGS_SWITCH_ASSET) }
+    private val t: AssetBiometricItem by lazy {
+        requireArguments().getParcelableCompat(ARGS_BIOMETRIC_ITEM, AssetBiometricItem::class.java)!!
+    }
+    private val supportSwitchAsset: Boolean by lazy { t.asset == null }
 
     private val fees: ArrayList<NetworkFee> = arrayListOf()
     private var currentFee: NetworkFee? = null
-
-    private var user: User? = null
 
     private var swapped = false
     private var bottomValue = BigDecimal.ZERO
 
     private var transferBottomOpened = false
 
-    private fun selectAsset() {
-        AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
-            .setOnAssetClick { asset ->
-                currentAsset = asset
-                updateAssetUI(asset)
-            }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
-    }
-
-    // for testing
-    private lateinit var resultRegistry: ActivityResultRegistry
-
-    // testing constructor
-    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
-    constructor(
-        testRegistry: ActivityResultRegistry,
-    ) : this() {
-        resultRegistry = testRegistry
-    }
-
-    lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
+    private lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
-
-        getScanResult = registerForActivityResult(CaptureActivity.CaptureContract(), resultRegistry, ::callbackScan)
+        getScanResult = registerForActivityResult(CaptureActivity.CaptureContract(), requireActivity().activityResultRegistry, ::callbackScan)
     }
 
     private fun callbackScan(data: Intent?) {
@@ -232,7 +161,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         binding.amountEt.setAdapter(autoCompleteAdapter)
         binding.amountRl.setOnClickListener { operateKeyboard(true) }
         binding.swapIv.setOnClickListener {
-            currentAsset?.let {
+            t.asset?.let {
                 swapped = !swapped
                 updateAssetUI(it)
             }
@@ -252,15 +181,15 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
         binding.titleView.rightAnimator.isVisible = true
         binding.titleView.rightIb.setImageResource(R.drawable.ic_transaction)
-        address = requireArguments().getParcelableCompat(ARGS_ADDRESS, Address::class.java)
+        val t = this.t
         if (isInnerTransfer()) {
-            handleInnerTransfer()
+            handleInnerTransfer(t)
         } else {
-            handleAddressTransfer()
+            handleAddressTransfer(t as WithdrawBiometricItem)
         }
-        if (userId != null) {
+        if (t is TransferBiometricItem && t.users.size == 1) {
             binding.titleView.rightIb.setOnClickListener {
-                UserTransactionBottomSheetFragment.newInstance(userId!!)
+                UserTransactionBottomSheetFragment.newInstance(t.users.first().userId)
                     .showNow(parentFragmentManager, UserTransactionBottomSheetFragment.TAG)
             }
         } else {
@@ -273,54 +202,133 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             operateKeyboard(false)
             prepareTransferBottom()
         }
-        requireArguments().getString(ARGS_AMOUNT)?.let {
-            binding.amountEt.setText(it)
+        val amount = t.amount.toDoubleOrNull()
+        if (amount != null && amount > 0) {
+            binding.amountEt.setText(t.amount)
             binding.amountEt.isEnabled = false
         }
-        requireArguments().getString(ARGS_MEMO)?.let {
-            binding.transferMemo.setText(it)
+        val memo = t.memo
+        if (!memo.isNullOrBlank()) {
+            binding.transferMemo.setText(memo)
             binding.transferMemo.isEnabled = false
             binding.memoIv.isEnabled = false
         }
+
+        chatViewModel.assetItemsWithBalance().observe(
+            this,
+            Observer { r: List<TokenItem>? ->
+                if (transferBottomOpened) return@Observer
+                if (r.isNullOrEmpty()) return@Observer
+
+                r.find {
+                    it.assetId == (t.asset?.assetId ?: activity?.defaultSharedPreferences!!.getString(ASSET_PREFERENCE, ""))
+                }.let { asset ->
+                    t.asset =
+                        if (asset != null) {
+                            updateAssetUI(asset)
+                            asset
+                        } else {
+                            val a = r[0]
+                            updateAssetUI(a)
+                            a
+                        }
+                }
+            },
+        )
     }
 
-    private fun handleAddressTransfer() {
+    override fun onDismiss(dialog: DialogInterface) {
+        if (isAdded) {
+            operateKeyboard(false)
+        }
+        super.onDismiss(dialog)
+    }
+
+    private fun isInnerTransfer() = t !is WithdrawBiometricItem
+
+    @OptIn(UnstableApi::class)
+    private fun handleInnerTransfer(t: AssetBiometricItem) {
+        if (supportSwitchAsset) {
+            binding.assetRl.setOnClickListener {
+                operateKeyboard(false)
+                selectAsset()
+            }
+        } else {
+            binding.expandIv.isVisible = false
+        }
+        if (t is TransferBiometricItem) {
+            handleUuidTransfer(t)
+        } else {
+            t as AddressTransferBiometricItem
+            handleMainnetAddressTransfer(t)
+        }
+    }
+
+    private fun handleUuidTransfer(t: TransferBiometricItem) {
+        if (t.users.size == 1) {
+            val uid = t.users.first().userId
+            chatViewModel.findUserById(uid).observe(
+                this,
+            ) { u ->
+                if (u == null) {
+                    jobManager.addJobInBackground(RefreshUserJob(listOf(uid)))
+                } else {
+                    t.users = listOf(u)
+                    binding.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
+                    binding.titleView.setSubTitle(
+                        getString(R.string.send_to, u.fullName),
+                        u.identityNumber,
+                    )
+                }
+            }
+        } else {
+            binding.avatar.isVisible = false
+            binding.receiversView.isVisible = true
+            binding.receiversView.addList(t.users)
+            binding.receiversView.setOnClickListener {
+                showUserList(t.users, false)
+            }
+        }
+    }
+
+    private fun handleMainnetAddressTransfer(t: AddressTransferBiometricItem) {
+        binding.avatar.isVisible = false
+        binding.titleView.setSubTitle(
+            getString(R.string.Transfer),
+            t.address.formatPublicKey(),
+        )
+    }
+
+    private fun handleAddressTransfer(t: WithdrawBiometricItem) {
         binding.avatar.isVisible = false
         binding.expandIv.isVisible = false
         binding.assetRl.setOnClickListener(null)
-        val currentAsset = requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)
-        this.currentAsset = currentAsset
-        currentAsset?.let { updateAssetUI(it) }
-
-        val address = this.address
-        if (address == null || currentAsset == null) return
-
-        if (address.addressId.isBlank()) { // mock address
+        t.asset?.let { updateAssetUI(it) }
+        if (t.address.addressId.isBlank()) { // mock address
             binding.titleView.setSubTitle(
-                getString(R.string.send_to, address.label),
-                address.displayAddress().formatPublicKey(),
+                getString(R.string.send_to, t.address.label),
+                t.displayAddress().formatPublicKey(),
             )
-            updateFeeUI(currentAsset, address)
+            updateFeeUI(t)
         } else {
-            chatViewModel.observeAddress(address.addressId).observe(
+            chatViewModel.observeAddress(t.address.addressId).observe(
                 this,
             ) {
-                this.address = it
+                t.address = it
                 binding.titleView.setSubTitle(
                     getString(R.string.send_to, it.label),
                     it.displayAddress().formatPublicKey(),
                 )
-                updateFeeUI(currentAsset, it)
+                updateFeeUI(t)
             }
         }
     }
 
     @SuppressLint("SetTextI18n")
-    private fun updateFeeUI(
-        token: TokenItem,
-        address: Address,
-    ) =
+    private fun updateFeeUI(t: WithdrawBiometricItem) =
         lifecycleScope.launch {
+            val token = t.asset ?: return@launch
+            val address = t.address
             if (address.feeAssetId.isBlank()) {
                 binding.apply {
                     memoRl.isVisible = false
@@ -408,67 +416,6 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         }
     }
 
-    @OptIn(UnstableApi::class)
-    private fun handleInnerTransfer() {
-        if (supportSwitchAsset) {
-            binding.assetRl.setOnClickListener {
-                operateKeyboard(false)
-                selectAsset()
-            }
-        } else {
-            binding.expandIv.isVisible = false
-        }
-        val uid = userId
-        if (uid != null) {
-            chatViewModel.findUserById(uid).observe(
-                this,
-            ) { u ->
-                if (u == null) {
-                    jobManager.addJobInBackground(RefreshUserJob(listOf(uid)))
-                } else {
-                    user = u
-                    binding.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
-                    binding.titleView.setSubTitle(
-                        getString(R.string.send_to, u.fullName),
-                        u.identityNumber,
-                    )
-                }
-            }
-        } else {
-            binding.avatar.isVisible = false
-            binding.titleView.setSubTitle(
-                getString(R.string.Transfer),
-                mainnetAddress?.formatPublicKey() ?: "",
-            )
-        }
-
-        chatViewModel.assetItemsWithBalance().observe(
-            this,
-            Observer { r: List<TokenItem>? ->
-                if (transferBottomOpened) return@Observer
-                if (!r.isNullOrEmpty()) {
-                    if (assets == r) {
-                        return@Observer
-                    }
-                    assets = r
-                    r.find {
-                        it.assetId == activity?.defaultSharedPreferences!!.getString(ASSET_PREFERENCE, "")
-                    }.let { asset ->
-                        currentAsset =
-                            if (asset != null) {
-                                updateAssetUI(asset)
-                                asset
-                            } else {
-                                val a = assets[0]
-                                updateAssetUI(a)
-                                a
-                            }
-                    }
-                }
-            },
-        )
-    }
-
     @SuppressLint("SetTextI18n")
     private fun updateAssetUI(asset: TokenItem) {
         val price = asset.priceUsd.toFloatOrNull()
@@ -512,14 +459,35 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         updateAssetAutoComplete(asset)
     }
 
-    private fun isInnerTransfer() = address == null
-
     private val autoCompleteAdapter by lazy {
         ArrayAdapter(
             requireContext(),
             R.layout.item_dropdown,
             mutableListOf(""),
         )
+    }
+
+    private fun selectAsset() {
+        AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
+            .setOnAssetClick { asset ->
+                t.asset = asset
+                updateAssetUI(asset)
+            }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+    }
+
+    private fun showUserList(
+        userList: List<User>,
+        isSender: Boolean,
+    ) {
+        val t = t as TransferBiometricItem
+        val title =
+            if (isSender) {
+                getString(R.string.Senders)
+            } else {
+                getString(R.string.multisig_receivers_threshold, "${t.threshold}/${t.users.size}")
+            }
+        UserListBottomSheetDialogFragment.newInstance(ArrayList(userList), title)
+            .showNow(parentFragmentManager, UserListBottomSheetDialogFragment.TAG)
     }
 
     private fun updateAssetAutoComplete(asset: TokenItem) {
@@ -546,7 +514,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             bottomValue.toString()
         } else {
             val s = binding.amountEt.text.toString()
-            val symbol = if (swapped) currentAsset?.symbol ?: "" else Fiats.getAccountCurrencyAppearance()
+            val symbol = if (swapped) t.asset?.symbol ?: "" else Fiats.getAccountCurrencyAppearance()
             val index = s.indexOf(symbol)
             return if (index != -1) {
                 s.substring(0, index)
@@ -557,20 +525,21 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     }
 
     private fun getTopSymbol(): String {
-        return if (swapped) Fiats.getAccountCurrencyAppearance() else currentAsset?.symbol ?: ""
+        return if (swapped) Fiats.getAccountCurrencyAppearance() else t.asset?.symbol ?: ""
     }
 
     private fun getBottomText(): String {
+        val asset = t.asset ?: return ""
         val amount = binding.amountEt.text.toString().toDoubleOrNull() ?: 0.0
-        val rightSymbol = if (swapped) currentAsset!!.symbol else Fiats.getAccountCurrencyAppearance()
+        val rightSymbol = if (swapped) asset.symbol else Fiats.getAccountCurrencyAppearance()
         val value =
             try {
-                if (currentAsset == null || currentAsset!!.priceFiat().toDouble() == 0.0) {
+                if (asset.priceFiat().toDouble() == 0.0) {
                     BigDecimal.ZERO
                 } else if (swapped) {
-                    BigDecimal(amount).divide(currentAsset!!.priceFiat(), 8, RoundingMode.HALF_UP)
+                    BigDecimal(amount).divide(asset.priceFiat(), 8, RoundingMode.HALF_UP)
                 } else {
-                    BigDecimal(amount) * currentAsset!!.priceFiat()
+                    BigDecimal(amount) * asset.priceFiat()
                 }
             } catch (e: ArithmeticException) {
                 BigDecimal.ZERO
@@ -599,21 +568,27 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
     @OptIn(UnstableApi::class)
     private fun prepareTransferBottom() =
         lifecycleScope.launch {
-            if (currentAsset == null || (user == null && (address == null || currentFee == null) && mainnetAddress == null)) {
+            val t = this@TransferFragment.t
+            if (t !is TransferBiometricItem && t !is AddressTransferBiometricItem && t !is WithdrawBiometricItem) {
                 return@launch
             }
+            val asset = t.asset ?: return@launch
+
             var amount = getAmount()
             try {
                 amount = amount.stripAmountZero()
             } catch (e: NumberFormatException) {
                 return@launch
             }
+            t.amount = amount
 
             if (!isInnerTransfer()) {
-                val dust = address!!.dust?.toBigDecimalOrNull()
+                t as WithdrawBiometricItem
+                val address = t.address
+                val dust = address.dust?.toBigDecimalOrNull()
                 val amountDouble = amount.toBigDecimalOrNull()
                 if (dust != null && amountDouble != null && amountDouble < dust) {
-                    toast(getString(R.string.withdrawal_minimum_amount, address!!.dust, currentAsset!!.symbol))
+                    toast(getString(R.string.withdrawal_minimum_amount, address.dust, asset.symbol))
                     return@launch
                 }
             }
@@ -623,13 +598,28 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 toast("${binding.transferMemo.hint} ${getString(R.string.Content_too_long)}")
                 return@launch
             }
+            t.memo = memo
+
             binding.continueVa.displayedChild = POST_PB
-            val traceId = requireArguments().getString(ARGS_TRACE) ?: UUID.randomUUID().toString()
-            val pair = chatViewModel.findLatestTrace(user?.userId, address?.destination, address?.tag, amount, currentAsset!!.assetId)
+            val traceId = t.traceId ?: UUID.randomUUID().toString()
+            val pair =
+                if (t is TransferBiometricItem && t.users.size == 1) {
+                    chatViewModel.findLatestTrace(t.users.first().userId, null, null, amount, asset.assetId)
+                } else if (t is WithdrawBiometricItem) {
+                    chatViewModel.findLatestTrace(null, t.address.destination, t.address.tag, amount, asset.assetId)
+                } else {
+                    Pair(null, false)
+                }
             if (pair.second) {
                 binding.continueVa.displayedChild = POST_TEXT
                 return@launch
             }
+            if (t is TransferBiometricItem && t.users.size == 1) {
+                t.trace = pair.first
+            } else if (t is WithdrawBiometricItem) {
+                t.trace = pair.first
+            }
+
             var isTraceNotFound = false
             val tx =
                 handleMixinResponse(
@@ -640,36 +630,28 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                         return@handleMixinResponse isTraceNotFound
                     },
                 )
-            val status =
+            t.state =
                 if (isTraceNotFound) {
                     PaymentStatus.pending.name
                 } else if (tx != null) {
                     PaymentStatus.paid.name
                 } else {
+                    binding.continueVa.displayedChild = POST_TEXT
                     return@launch
                 }
+            t.traceId = traceId
 
-            val trace = pair.first
-            val returnTo = requireArguments().getString(ARGS_RETURN_TO)
-            val biometricItem =
-                if (user != null) {
-                    TransferBiometricItem(user!!, currentAsset!!, amount, null, traceId, memo, status, trace, returnTo)
-                } else if (mainnetAddress != null) {
-                    AddressTransferBiometricItem(mainnetAddress!!, currentAsset!!, amount, null, traceId, memo, status, returnTo)
-                } else {
-                    val fee = requireNotNull(currentFee) { "withdrawal currentFee can not be null" }
-                    WithdrawBiometricItem(
-                        address!!.destination, address!!.tag, address!!.addressId, address!!.label, fee.fee, fee.token.assetId, fee.token.symbol, fee.token.priceFiat(),
-                        currentAsset!!, amount, null, traceId, memo, status, trace,
-                    )
-                }
+            if (t is WithdrawBiometricItem) {
+                val fee = requireNotNull(currentFee) { "withdrawal currentFee can not be null" }
+                t.fee = fee
+            }
+
             binding.continueVa.displayedChild = POST_TEXT
-
-            val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, FROM_TRANSFER)
+            val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(t, FROM_TRANSFER)
             preconditionBottom.callback =
                 object : PreconditionBottomSheetDialogFragment.Callback {
                     override fun onSuccess() {
-                        showTransferBottom(biometricItem)
+                        showTransferBottom(t)
                     }
 
                     override fun onCancel() {
@@ -793,7 +775,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 if (s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber()) {
                     binding.continueTv.isEnabled = true
                     binding.continueTv.textColor = requireContext().getColor(R.color.white)
-                    if (binding.amountRl.isVisible && currentAsset != null) {
+                    if (binding.amountRl.isVisible && t.asset != null) {
                         binding.amountEt.hint = ""
                         binding.symbolTv.text = getTopSymbol()
                         binding.amountAsTv.text = getBottomText()
@@ -802,54 +784,13 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                     binding.continueTv.isEnabled = false
                     binding.continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                     if (binding.amountRl.isVisible) {
-                        binding.amountEt.hint = "0.00 ${if (swapped) Fiats.getAccountCurrencyAppearance() else currentAsset?.symbol}"
+                        binding.amountEt.hint = "0.00 ${if (swapped) Fiats.getAccountCurrencyAppearance() else t.asset?.symbol}"
                         binding.symbolTv.text = ""
-                        binding.amountAsTv.text = "0.00 ${if (swapped) currentAsset?.symbol else Fiats.getAccountCurrencyAppearance()}"
+                        binding.amountAsTv.text = "0.00 ${if (swapped) t.asset?.symbol else Fiats.getAccountCurrencyAppearance()}"
                     }
                 }
             }
         }
-
-    class TypeAdapter : ListAdapter<TokenItem, ItemHolder>(TokenItem.DIFF_CALLBACK) {
-        private var typeListener: OnTypeClickListener? = null
-
-        override fun onCreateViewHolder(
-            parent: ViewGroup,
-            viewType: Int,
-        ): ItemHolder =
-            ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_transfer_type, parent, false))
-
-        override fun onBindViewHolder(
-            holder: ItemHolder,
-            position: Int,
-        ) {
-            val itemAssert = getItem(position)
-            val binding = ItemTransferTypeBinding.bind(holder.itemView)
-            binding.typeAvatar.bg.loadImage(itemAssert.iconUrl, R.drawable.ic_avatar_place_holder)
-            binding.typeAvatar.badge.loadImage(itemAssert.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            binding.name.text = itemAssert.name
-            binding.value.text = itemAssert.balance.numberFormat()
-            binding.valueEnd.text = itemAssert.symbol
-            currentAsset?.let {
-                binding.checkIv.visibility = if (itemAssert.assetId == currentAsset?.assetId) VISIBLE else INVISIBLE
-            }
-            holder.itemView.setOnClickListener {
-                typeListener?.onTypeClick(itemAssert)
-            }
-        }
-
-        fun setTypeListener(listener: OnTypeClickListener) {
-            typeListener = listener
-        }
-
-        var currentAsset: TokenItem? = null
-    }
-
-    interface OnTypeClickListener {
-        fun onTypeClick(asset: TokenItem)
-    }
-
-    class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     var callback: Callback? = null
 
