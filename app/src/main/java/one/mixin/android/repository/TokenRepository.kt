@@ -148,11 +148,15 @@ class TokenRepository
         }
 
         suspend fun syncDepositEntry(chainId: String): DepositEntry? {
-            handleMixinResponse(
+            return handleMixinResponse(
                 invokeNetwork = {
                     utxoService.createDeposit(
                         DepositEntryRequest(chainId),
                     )
+                },
+                failureBlock = {
+                    depositDao.deleteByChainId(chainId)
+                    true
                 },
                 successBlock = { resp ->
                     val pub = SAFE_PUBLIC_KEY.hexStringToByteArray()
@@ -170,10 +174,10 @@ class TokenRepository
                             depositDao.deleteByChainId(chainId)
                             depositDao.insertList(list)
                         }
+                        list.find { it.isPrimary }
                     }
                 },
             )
-            return depositDao.findDepositEntry(chainId)
         }
 
         suspend fun findAndSyncDepositEntry(chainId: String): Pair<DepositEntry?, Boolean> {
