@@ -196,8 +196,8 @@ class DepositFragment : BaseFragment() {
                 DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset)
                     .apply {
                         this.callback = {
-                            val noTag = depositEntry.destination.isBlank()
-                            if (noTag.not()) {
+                            val existTag = !depositEntry.tag.isNullOrBlank()
+                            if (existTag) {
                                 alertDialogBuilder()
                                     .setTitle(R.string.Notice)
                                     .setCancelable(false)
