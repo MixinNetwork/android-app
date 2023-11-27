@@ -53,6 +53,7 @@ import one.mixin.android.db.TraceDao
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
@@ -159,7 +160,14 @@ class TokenRepository
                             val signature = it.signature.hexStringToByteArray()
                             verifyCurve25519Signature(message, signature, pub)
                         }?.let { list ->
-                            depositDao.insertList(list)
+                            runInTransaction {
+                                depositDao.deleteByChainId(assetItem.chainId)
+                                depositDao.insertList(list)
+                            }
+                            list.find { it.isPrimary }?.let {
+                                assetItem.destination = it.destination
+                                assetItem.tag = it.tag
+                            }
                         }
                     },
                 ) ?: return null
@@ -693,10 +701,12 @@ class TokenRepository
         ) {
             val snapshotId = data.getSnapshotId
             val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-$amount", data.userId, opponentId, memo?.toHex() ?: "", data.transactionHash, data.createdAt, data.requestId, null, null, null, null, null)
-            val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, snapshot.type, null, snapshot.snapshotId)
             safeSnapshotDao.insert(snapshot)
-            appDatabase.insertMessage(message)
-            MessageFlow.insert(message.conversationId, message.messageId)
+            if (conversationId != "") {
+                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, snapshot.type, null, snapshot.snapshotId)
+                appDatabase.insertMessage(message)
+                MessageFlow.insert(message.conversationId, message.messageId)
+            }
         }
 
         fun findRawTransaction(traceId: String) = rawTransactionDao.findRawTransaction(traceId)

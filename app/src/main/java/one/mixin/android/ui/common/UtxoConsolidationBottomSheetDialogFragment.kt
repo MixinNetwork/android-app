@@ -72,11 +72,11 @@ class UtxoConsolidationBottomSheetDialogFragment : ValuableBiometricBottomSheetD
         return BiometricInfo(
             getString(
                 R.string.transfer_to,
-                t.user.fullName,
+                t.users.first().fullName,
             ),
             getString(
                 R.string.contact_mixin_id,
-                t.user.identityNumber,
+                t.users.first().identityNumber,
             ),
             getDescription(),
         )
@@ -85,8 +85,11 @@ class UtxoConsolidationBottomSheetDialogFragment : ValuableBiometricBottomSheetD
     override fun getBiometricItem() = t
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
-        val trace = Trace(t.traceId!!, t.asset.assetId, t.amount, t.user.userId, null, null, null, nowInUtc())
-        val response = bottomViewModel.kernelTransaction(t.asset.assetId, t.user.userId, t.amount, pin, t.traceId, t.memo)
+        val asset = requireNotNull(t.asset) { "required token can not be null" }
+        val opponentId = if (t.users.size == 1) t.users.first().userId else ""
+        val trace = Trace(t.traceId!!, asset.assetId, t.amount, opponentId, null, null, null, nowInUtc())
+        val receiverIds = t.users.map { it.userId }
+        val response = bottomViewModel.kernelTransaction(asset.assetId, receiverIds, t.threshold, t.amount, pin, t.traceId, t.memo)
         bottomViewModel.insertTrace(trace)
         bottomViewModel.deletePreviousTraces()
         return response

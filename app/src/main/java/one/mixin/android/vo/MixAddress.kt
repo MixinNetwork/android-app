@@ -1,10 +1,10 @@
 package one.mixin.android.vo
 
-import UUIDUtils
 import kernel.Address
 import kernel.Kernel
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.isUUID
+import one.mixin.android.util.UUIDUtils
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import timber.log.Timber

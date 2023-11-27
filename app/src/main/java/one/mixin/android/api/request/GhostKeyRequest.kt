@@ -1,7 +1,7 @@
 package one.mixin.android.api.request
 
 import com.google.gson.annotations.SerializedName
-import uniqueObjectId
+import one.mixin.android.util.uniqueObjectId
 
 data class GhostKeyRequest(
     @SerializedName("receivers")
@@ -21,15 +21,15 @@ fun buildKernelTransferGhostKeyRequest(
 }
 
 fun buildGhostKeyRequest(
-    receiverId: String,
-    senderId: String,
+    receiverIds: List<String>,
+    senderIds: List<String>,
     traceId: String,
 ): List<GhostKeyRequest> {
     val output = uniqueObjectId(traceId, "OUTPUT", "0")
     val change = uniqueObjectId(traceId, "OUTPUT", "1")
     return listOf(
-        GhostKeyRequest(listOf(receiverId), 0, output),
-        GhostKeyRequest(listOf(senderId), 1, change),
+        GhostKeyRequest(receiverIds, 0, output),
+        GhostKeyRequest(senderIds, 1, change),
     )
 }
 

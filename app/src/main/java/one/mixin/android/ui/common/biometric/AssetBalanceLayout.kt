@@ -27,7 +27,7 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
 
     @SuppressLint("SetTextI18n")
     fun setInfo(t: AssetBiometricItem) {
-        val asset = t.asset
+        val asset = t.asset ?: return
         val amount = t.amount
         binding.apply {
             assetIcon.isVisible = true
@@ -37,6 +37,7 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
             val balanceText = amount.numberFormat() + " " + asset.symbol
             balance.text = balanceText
             if (t is WithdrawBiometricItem) {
+                val fee = t.fee ?: return
                 val subText =
                     SpannableStringBuilder()
                         .append(context.getString(R.string.Amount))
@@ -47,8 +48,8 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
                         .append("\n")
                         .append(context.getString(R.string.Fee))
                         .append(" ")
-                        .bold { append(t.fee.numberFormat()).append(" ").append(t.feeSymbol).append(" ") }
-                        .append(getValueText(t.fee, t.feePriceFiat))
+                        .bold { append(fee.fee.numberFormat()).append(" ").append(fee.token.symbol).append(" ") }
+                        .append(getValueText(fee.fee, fee.token.priceFiat()))
                 balanceAs.text = subText
             } else {
                 balanceAs.text = getValueText(amount, asset.priceFiat())
@@ -60,10 +61,11 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
         binding.apply {
             avatar.isVisible = true
             assetIcon.isVisible = false
-            val u = t.user
-            avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
-            balance.text = u.fullName
-            balanceAs.text = context.getString(R.string.contact_mixin_id, u.identityNumber)
+            t.users.firstOrNull()?.let { u ->
+                avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
+                balance.text = u.fullName
+                balanceAs.text = context.getString(R.string.contact_mixin_id, u.identityNumber)
+            }
         }
     }
 

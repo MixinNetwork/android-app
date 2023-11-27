@@ -17,7 +17,6 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
-import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
@@ -80,7 +79,7 @@ class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment
     private var continueCallback: ((DialogFragment) -> Unit)? = null
 
     class TypeAdapter : ListAdapter<TokenItem, ItemHolder>(TokenItem.DIFF_CALLBACK) {
-        private var typeListener: TransferFragment.OnTypeClickListener? = null
+        private var typeListener: OnTypeClickListener? = null
 
         override fun onCreateViewHolder(
             parent: ViewGroup,
@@ -112,4 +111,8 @@ class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment
     }
 
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
+    interface OnTypeClickListener {
+        fun onTypeClick(asset: TokenItem)
+    }
 }

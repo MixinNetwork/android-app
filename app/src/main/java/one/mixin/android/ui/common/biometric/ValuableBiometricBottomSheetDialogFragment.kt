@@ -27,8 +27,9 @@ abstract class ValuableBiometricBottomSheetDialogFragment<T : AssetBiometricItem
 
     protected fun getDescription(): String {
         val t = getBiometricItem()
-        val pre = "${t.amount} ${t.asset.symbol}"
-        val post = "≈ ${Fiats.getSymbol()}${(BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()}"
+        val asset = t.asset ?: return ""
+        val pre = "${t.amount} ${asset.symbol}"
+        val post = "≈ ${Fiats.getSymbol()}${(BigDecimal(t.amount) * asset.priceFiat()).numberFormat2()}"
         return "$pre ($post)"
     }
 

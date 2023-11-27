@@ -63,6 +63,7 @@ import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallActivity
+import one.mixin.android.ui.common.biometric.buildEmptyTransferBiometricItem
 import one.mixin.android.ui.common.info.MenuStyle
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
@@ -223,7 +224,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         )
         binding.transferFl.setOnClickListener {
             if (Session.getAccount()?.hasPin == true) {
-                TransferFragment.newInstance(user.userId, supportSwitchAsset = true)
+                TransferFragment.newInstance(buildEmptyTransferBiometricItem(user))
                     .showNow(parentFragmentManager, TransferFragment.TAG)
                 RxBus.publish(BotCloseEvent())
                 dismiss()

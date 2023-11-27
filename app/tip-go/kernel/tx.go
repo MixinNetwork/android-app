@@ -74,7 +74,7 @@ func BuildTxToKernelAddress(asset string, amount string, kenelAddress string, in
 	return buildTransaction(asset, amount, 1, []*crypto.Key{keys}, receiverMask, ins, cks, changeMask, extra, "")
 }
 
-func BuildTx(asset string, amount string, threshold int, receiverKeys string, receiverMask string, inputs []byte, changeKeys, changeMask, extra, reference string) (string, error) {
+func BuildTx(asset string, amount string, threshold uint8, receiverKeys string, receiverMask string, inputs []byte, changeKeys, changeMask, extra, reference string) (string, error) {
 	keys := strings.Split(receiverKeys, ",")
 	rks := []*crypto.Key{}
 	for _, k := range keys {
@@ -269,7 +269,7 @@ func buildWithrawalTransaction(asset, amount string, inputs []*common.UTXO, addr
 	return t, nil
 }
 
-func buildTransaction(asset string, amount string, threshold int, receiverKeys []*crypto.Key, receiverMask crypto.Key, inputs []*common.UTXO, changeKeys []*crypto.Key, changeMask string, extra, reference string) (string, error) {
+func buildTransaction(asset string, amount string, threshold uint8, receiverKeys []*crypto.Key, receiverMask crypto.Key, inputs []*common.UTXO, changeKeys []*crypto.Key, changeMask string, extra, reference string) (string, error) {
 	assetHash, err := crypto.HashFromString(asset)
 	if err != nil {
 		return "", err
@@ -296,7 +296,7 @@ func buildTransaction(asset string, amount string, threshold int, receiverKeys [
 		Amount: amountValue,
 		Keys:   receiverKeys,
 		Mask:   receiverMask,
-		Script: common.NewThresholdScript(uint8(threshold)),
+		Script: common.NewThresholdScript(threshold),
 	}
 	tx.Outputs = append(tx.Outputs, output)
 
@@ -391,7 +391,7 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string, withoutFee bool) (
 
 		i, found := keysFilter[key.Public().String()]
 		if !found {
-			return nil, fmt.Errorf("invalid public key for the input %s", key.Public().String())
+			return nil, fmt.Errorf("invalid public key for the input %s, %s", input, key.Public().String())
 		}
 		sig := key.Sign(msg)
 		sigs := make(map[uint16]*crypto.Signature)
