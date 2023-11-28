@@ -9,6 +9,7 @@ import androidx.room.RoomSQLiteQuery
 import androidx.room.getQueryDispatcher
 import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.TokenDao.Companion.PREFIX_ASSET_ITEM
 import one.mixin.android.db.datasource.MixinLimitOffsetDataSource
 import one.mixin.android.db.datasource.NoCountLimitOffsetDataSource
 import one.mixin.android.fts.FtsDataSource
@@ -150,18 +151,10 @@ class DataProvider {
         ): List<TokenItem> {
             val _sql =
                 """
-            SELECT a1.asset_id AS assetId, a1.symbol, a1.name, a1.icon_url AS iconUrl, COALESCE(ae.balance,'0') as balance,
-            a1.price_btc AS priceBtc, a1.price_usd AS priceUsd,
-            a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden,
-            a1.confirmations,c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName, a2.price_usd as chainPriceUsd,
-            a1.asset_key AS assetKey, a1.dust AS dust, c.withdrawal_memo_possibility AS withdrawalMemoPossibility
-            FROM tokens a1 
-            LEFT JOIN tokens a2 ON a1.chain_id = a2.asset_id
-            LEFT JOIN chains c ON a1.chain_id = c.chain_id
-            LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id 
-        WHERE ae.balance > 0 
-        AND (a1.symbol LIKE '%' || ? || '%'  ESCAPE '\' OR a1.name LIKE '%' || ? || '%'  ESCAPE '\')
-        ORDER BY 
+            $PREFIX_ASSET_ITEM
+            WHERE ae.balance > 0 
+            AND (a1.symbol LIKE '%' || ? || '%'  ESCAPE '\' OR a1.name LIKE '%' || ? || '%'  ESCAPE '\')
+            ORDER BY 
             a1.symbol = ? COLLATE NOCASE OR a1.name = ? COLLATE NOCASE DESC,
             a1.price_usd*ae.balance DESC
                 """
