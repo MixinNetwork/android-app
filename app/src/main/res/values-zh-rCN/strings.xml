@@ -1304,7 +1304,7 @@
     <string name="Withdrawal_Suspended_Content">%1$s 提现已暂停，可能的原因是因为节点故障、区块链网络硬分叉或者拥堵，请耐心等候并稍后重试</string>
     <string name="Contact_Support">联系客服</string>
     <string name="withdrawal_pending">提现中</string>
-    <string name="consolidation_utxo">合并 UTXO</string>
+    <string name="consolidation_utxo">整合 UTXO</string>
     <string name="consolidation_utxo_description">您的 UTXOs 数量超过了256，为了发送体验，请输入 PIN 整合 UTXOs 后再操作</string>
     <string name="depost_address_updated">%1$s 充值地址已更新</string>
     <string name="depost_address_updated_description">您的 %1$s 充值地址已更新，充值地址将随着系统或网络升级而自动更新，旧的地址仍可充值并会自动入账，但是不推荐使用。</string>
