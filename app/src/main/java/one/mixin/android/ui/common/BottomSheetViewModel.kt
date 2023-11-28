@@ -205,7 +205,7 @@ class BottomSheetViewModel
                 if (isDifferentFee) {
                     val feeChangeKeys = data[2].keys.joinToString(",")
                     val feeChangeMask = data[2].mask
-                    val feeTx = Kernel.buildTx(feeAsset, feeAmount, threshold.toLong(), feeOutputKeys, feeOutputMask, feeUtxos!!.input, feeChangeKeys, feeChangeMask, memo, withdrawalTx.hash)
+                    val feeTx = Kernel.buildTx(feeAsset, feeAmount, threshold.toInt(), feeOutputKeys, feeOutputMask, feeUtxos!!.input, feeChangeKeys, feeChangeMask, memo, withdrawalTx.hash)
                     withdrawalRequests.add(TransactionRequest(feeTx, feeTraceId))
                     feeTx
                 } else {
@@ -367,7 +367,7 @@ class BottomSheetViewModel
             val changeKeys = data.last().keys.joinToString(",")
             val changeMask = data.last().mask
 
-            val tx = Kernel.buildTx(asset, amount, threshold.toLong(), receiverKeys, receiverMask, input, changeKeys, changeMask, memo, "")
+            val tx = Kernel.buildTx(asset, amount, threshold.toInt(), receiverKeys, receiverMask, input, changeKeys, changeMask, memo, "")
             val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, traceId)))
             if (transactionResponse.error != null) {
                 return transactionResponse
