@@ -290,7 +290,6 @@
     </plurals>
     <string name="deposit_memo_notice">充值時務必填寫 Memo（備註），否則您會丟失您的數字幣</string>
     <string name="deposit_notice">地址 和 Memo（備註）同時使用才能充值 %1$s 到你的賬號。</string>
-    <string name="deposit_reserve">首次充值至少 %1$s ！</string>
     <string name="deposit_tip_btc">該充值地址僅支援 BTC。</string>
     <string name="deposit_tip_common">該充值地址僅支援 %1$s。</string>
     <string name="deposit_tip_eos">支援所有基於 EOS 發行的代幣。</string>

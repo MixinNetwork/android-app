@@ -26,6 +26,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 
@@ -34,6 +35,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "DepositQrBottomFragment"
         const val ARGS_TYPE = "args_type"
+        const val ARGS_DEPOSIT_ENTRY = "args_deposit_entry"
         const val ARGS_SELECTED_DESTINATION = "args_selected_destination"
 
         const val TYPE_TAG = 0
@@ -41,12 +43,14 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
 
         fun newInstance(
             asset: TokenItem,
+            depositEntry: DepositEntry,
             type: Int,
             selectedDestination: String?,
         ) = DepositQrBottomFragment().apply {
             arguments =
                 bundleOf(
                     ARGS_ASSET to asset,
+                    ARGS_DEPOSIT_ENTRY to depositEntry,
                     ARGS_TYPE to type,
                     ARGS_SELECTED_DESTINATION to selectedDestination,
                 )
@@ -56,6 +60,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentDepositQrBottomBinding::inflate)
 
     private val asset: TokenItem by lazy { requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)!! }
+    private val depositEntry: DepositEntry by lazy { requireArguments().getParcelableCompat(ARGS_DEPOSIT_ENTRY, DepositEntry::class.java)!! }
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
     private val selectedDestination: String? by lazy { requireArguments().getString(ARGS_SELECTED_DESTINATION) }
 
@@ -73,11 +78,11 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
             when (type) {
                 TYPE_TAG -> {
                     title.titleTv.text = getString(R.string.withdrawal_memo)
-                    addrTv.text = asset.tag
+                    addrTv.text = depositEntry.tag
                 }
                 else -> {
                     title.titleTv.text = getString(R.string.Address)
-                    addrTv.text = selectedDestination ?: asset.destination
+                    addrTv.text = selectedDestination ?: depositEntry.destination
                 }
             }
             badgeView.apply {
@@ -121,8 +126,8 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                 Observable.create<Pair<Bitmap, Int>?> { e ->
                     val code =
                         when (type) {
-                            TYPE_TAG -> asset.tag
-                            else -> selectedDestination ?: asset.destination
+                            TYPE_TAG -> depositEntry.tag
+                            else -> selectedDestination ?: depositEntry.destination
                         }
                     val r = code?.generateQRCode(qr.width)
                     r?.let { e.onNext(it) }

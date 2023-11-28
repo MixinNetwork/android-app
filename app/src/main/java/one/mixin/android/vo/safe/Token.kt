@@ -10,8 +10,6 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import one.mixin.android.vo.Asset
-import one.mixin.android.vo.assetIdToAsset
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -93,8 +91,6 @@ fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem =
         name,
         iconUrl,
         "0",
-        "",
-        "",
         priceBtc,
         priceUsd,
         chainId,
@@ -107,8 +103,6 @@ fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem =
         null,
         null,
         assetKey,
-        null, null,
+        dust,
+        null,
     )
-
-fun Asset.toToken(): Token =
-    Token(assetId, assetIdToAsset(assetId), symbol, name, iconUrl, priceBtc, priceUsd, chainId, changeUsd, changeBtc, confirmations, assetKey ?: "", "")

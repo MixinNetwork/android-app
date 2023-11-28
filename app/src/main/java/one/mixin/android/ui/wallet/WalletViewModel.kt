@@ -161,7 +161,10 @@ class WalletViewModel
                 .setInitialLoadKey(initialLoadKey)
                 .build()
 
-        suspend fun refreshPendingDeposits(asset: TokenItem) = tokenRepository.pendingDeposits(asset.assetId, requireNotNull(asset.destination) { "refreshPendingDeposit required destination not null" }, asset.tag)
+        suspend fun refreshPendingDeposits(
+            assetId: String,
+            depositEntry: DepositEntry,
+        ) = tokenRepository.pendingDeposits(assetId, requireNotNull(depositEntry.destination) { "refreshPendingDeposit required destination not null" }, depositEntry.tag)
 
         suspend fun clearPendingDepositsByAssetId(assetId: String) = tokenRepository.clearPendingDepositsByAssetId(assetId)
 
@@ -197,12 +200,21 @@ class WalletViewModel
 
         suspend fun findOrSyncAsset(
             assetId: String,
-            forceRefresh: Boolean = false,
         ): TokenItem? {
             return withContext(Dispatchers.IO) {
-                tokenRepository.findOrSyncAsset(assetId, forceRefresh)
+                tokenRepository.findOrSyncAsset(assetId)
             }
         }
+
+        suspend fun findAndSyncDepositEntry(chainId: String) =
+            withContext(Dispatchers.IO) {
+                tokenRepository.findAndSyncDepositEntry(chainId)
+            }
+
+        suspend fun syncDepositEntry(chainId: String) =
+            withContext(Dispatchers.IO) {
+                tokenRepository.syncDepositEntry(chainId)
+            }
 
         suspend fun syncNoExistAsset(assetIds: List<String>) =
             withContext(Dispatchers.IO) {

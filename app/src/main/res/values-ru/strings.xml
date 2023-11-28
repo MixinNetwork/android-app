@@ -302,7 +302,6 @@
     </plurals>
     <string name="deposit_memo_notice">Памятка требуется, или вы потеряете свои монеты.</string>
     <string name="deposit_notice">И памятка, и адрес необходимы для внесения %1$s в ваш аккаунт.</string>
-    <string name="deposit_reserve">Внесите не менее %1$s в первый раз.</string>
     <string name="deposit_tip_btc">Этот адрес поддерживает только BTC.</string>
     <string name="deposit_tip_common">Этот адрес поддерживает только %1$s.</string>
     <string name="deposit_tip_eos">Этот адрес поддерживает всю базу токенов EOS.</string>
