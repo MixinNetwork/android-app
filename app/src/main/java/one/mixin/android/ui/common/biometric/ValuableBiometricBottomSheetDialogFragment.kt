@@ -1,9 +1,9 @@
 package one.mixin.android.ui.common.biometric
 
+import java.math.BigDecimal
 import one.mixin.android.R
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.Fiats
-import java.math.BigDecimal
 
 abstract class ValuableBiometricBottomSheetDialogFragment<T : AssetBiometricItem> : BiometricBottomSheetDialogFragment() {
     companion object {
@@ -11,17 +11,17 @@ abstract class ValuableBiometricBottomSheetDialogFragment<T : AssetBiometricItem
     }
 
     private val assetBalance by lazy {
-        contentView.findViewById<AssetBalanceLayout>(R.id.asset_balance)
+        contentView.findViewById<AssetBalanceLayout?>(R.id.asset_balance)
     }
 
     override fun onResume() {
         super.onResume()
-        assetBalance.parent.requestLayout()
+        assetBalance?.parent?.requestLayout()
     }
 
     protected fun setBiometricItem() {
         val t = getBiometricItem()
-        assetBalance.setInfo(t)
+        assetBalance?.setInfo(t)
         checkState(t)
     }
 

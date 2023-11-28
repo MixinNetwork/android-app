@@ -56,8 +56,10 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.OutputBottomSheetDialogFragment
+import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
@@ -66,6 +68,7 @@ import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment.Companion.ARGS_BIOMETRIC_ITEM
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
+import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_TRANSFER
 import one.mixin.android.ui.qr.CaptureActivity
@@ -84,6 +87,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.displayAddress
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.toUser
 import one.mixin.android.widget.BottomSheet
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -200,7 +204,9 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             if (!isAdded) return@setOnClickListener
 
             operateKeyboard(false)
-            prepareTransferBottom()
+            checkUtxo {
+                prepareTransferBottom()
+            }
         }
         val amount = t.amount.toDoubleOrNull()
         if (amount != null && amount > 0) {
@@ -561,6 +567,24 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 target.showKeyboard()
             } else {
                 target.hideKeyboard()
+            }
+        }
+    }
+
+    private fun checkUtxo(callback: () -> Unit) {
+        lifecycleScope.launch {
+            var amount = getAmount()
+            try {
+                amount = amount.stripAmountZero()
+            } catch (e: NumberFormatException) {
+                return@launch
+            }
+            val consolidationAmount = bottomViewModel.checkUtxoSufficiency(t.asset!!.assetId, amount)
+            if (consolidationAmount != null) {
+                UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), t.asset, consolidationAmount, UUID.randomUUID().toString(), null, null))
+                    .show(parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
+            } else {
+                callback.invoke()
             }
         }
     }

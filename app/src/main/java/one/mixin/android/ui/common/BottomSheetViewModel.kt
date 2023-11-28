@@ -91,6 +91,7 @@ import one.mixin.android.vo.safe.formatDestination
 import one.mixin.android.vo.toSimpleChat
 import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
+import one.mixin.android.vo.utxo.consolidationOutput
 import java.io.File
 import java.math.BigDecimal
 import java.util.UUID
@@ -340,6 +341,7 @@ class BottomSheetViewModel
             trace: String?,
             memo: String?,
         ): MixinResponse<*> {
+            val isConsolidation = receiverIds.size == 1 && receiverIds.first() == Session.getAccountId()
             val asset = assetIdToAsset(assetId)
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
@@ -386,11 +388,15 @@ class BottomSheetViewModel
                     val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxoWrapper.lastOutput)
                     tokenRepository.insertOutput(changeOutput)
                 }
+                if (isConsolidation) {
+                    val consolidationOutput = consolidationOutput(sign.hash, asset, amount, receiverMask, data.first().keys, utxoWrapper.lastOutput)
+                    tokenRepository.insertOutput(consolidationOutput)
+                }
                 tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverIds.joinToString(","), RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc()))
                 tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
             }
             jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
-            return innerTransaction(signResult.raw, traceId, receiverIds, assetId, amount, memo)
+            return innerTransaction(signResult.raw, traceId, receiverIds, assetId, amount, memo, isConsolidation)
         }
 
         private suspend fun innerTransaction(
@@ -400,6 +406,7 @@ class BottomSheetViewModel
             assetId: String,
             amount: String,
             memo: String?,
+            isConsolidation: Boolean = false
         ): MixinResponse<List<TransactionResponse>> {
             val transactionRsp = tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
             if (transactionRsp.error != null) {
@@ -409,7 +416,7 @@ class BottomSheetViewModel
             } else {
                 tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, OutputState.signed.name)
             }
-            if (receiverIds.size == 1) {
+            if (receiverIds.size == 1 && !isConsolidation) {
                 // Workaround with only the case of a single transfer
                 val receiverId = receiverIds.first()
                 val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)
@@ -479,7 +486,41 @@ class BottomSheetViewModel
             throw Exception("Impossible")
         }
 
-        suspend fun authorize(
+    suspend fun checkUtxoSufficiency(
+        assetId: String,
+        amount: String,
+    ): String? {
+        val desiredAmount = BigDecimal(amount)
+        val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, assetIdToAsset(assetId))
+
+        if (candidateOutputs.isEmpty()) {
+            return null
+        }
+
+        val selectedOutputs = mutableListOf<Output>()
+        var totalSelectedAmount = BigDecimal.ZERO
+
+        candidateOutputs.forEach { output ->
+            val outputAmount = BigDecimal(output.amount)
+            selectedOutputs.add(output)
+            totalSelectedAmount += outputAmount
+            if (totalSelectedAmount >= desiredAmount) {
+                return null
+            }
+        }
+
+        if (selectedOutputs.size >= maxUtxoCount) {
+            return totalSelectedAmount.toPlainString()
+        }
+
+        if (totalSelectedAmount < desiredAmount) {
+            return null
+        }
+
+        throw Exception("Impossible")
+    }
+
+    suspend fun authorize(
             authorizationId: String,
             scopes: List<String>,
             pin: String?,
