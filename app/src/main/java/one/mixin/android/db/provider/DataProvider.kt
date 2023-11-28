@@ -8,6 +8,7 @@ import androidx.room.CoroutinesRoom
 import androidx.room.RoomSQLiteQuery
 import androidx.room.getQueryDispatcher
 import kotlinx.coroutines.withContext
+import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.TokenDao.Companion.PREFIX_ASSET_ITEM
 import one.mixin.android.db.datasource.MixinLimitOffsetDataSource
@@ -29,26 +30,7 @@ class DataProvider {
         fun observeConversations(database: MixinDatabase) =
             object : DataSource.Factory<Int, ConversationItem>() {
                 override fun create(): DataSource<Int, ConversationItem> {
-                    val sql =
-                        """
-                    SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,
-                    c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId,
-                    c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, c.pin_time AS pinTime, c.mute_until AS muteUntil,
-                    ou.avatar_url AS avatarUrl, ou.full_name AS name, ou.is_verified AS ownerVerified,
-                    ou.mute_until AS ownerMuteUntil, ou.app_id AS appId,
-                    m.content AS content, m.category AS contentType, m.created_at AS createdAt,
-                    m.user_id AS senderId, m.action AS actionName, m.status AS messageStatus,
-                    mu.full_name AS senderFullName,
-                    pu.full_name AS participantFullName, pu.user_id AS participantUserId,
-                    (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) as mentionCount,  
-                    mm.mentions AS mentions 
-                    FROM conversations c
-                    INNER JOIN users ou ON ou.user_id = c.owner_id
-                    LEFT JOIN messages m ON c.last_message_id = m.id
-                    LEFT JOIN message_mentions mm ON mm.message_id = m.id
-                    LEFT JOIN users mu ON mu.user_id = m.user_id
-                    LEFT JOIN users pu ON pu.user_id = m.participant_id 
-                    """
+                    val sql = ConversationDao.PREFIX_CONVERSATION_ITEM
                     val countStatement = RoomSQLiteQuery.acquire("SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE c.category IS NOT NULL", 0)
                     val offsetStatement = RoomSQLiteQuery.acquire("SELECT c.rowid FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id ORDER BY c.pin_time DESC, c.last_message_created_at DESC LIMIT ? OFFSET ?", 2)
                     val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {
@@ -68,28 +50,7 @@ class DataProvider {
         ) =
             object : DataSource.Factory<Int, ConversationItem>() {
                 override fun create(): DataSource<Int, ConversationItem> {
-                    val sql =
-                        """
-                        SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,
-                        c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId,
-                        c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, cc.pin_time AS pinTime, c.mute_until AS muteUntil,
-                        ou.avatar_url AS avatarUrl, ou.full_name AS name, ou.is_verified AS ownerVerified,
-                        ou.mute_until AS ownerMuteUntil, ou.app_id AS appId,
-                        m.content AS content, m.category AS contentType, m.created_at AS createdAt,
-                        m.user_id AS senderId, m.`action` AS actionName, m.status AS messageStatus,
-                        mu.full_name AS senderFullName,
-                        pu.full_name AS participantFullName, pu.user_id AS participantUserId,
-                        (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) AS mentionCount,  
-                        mm.mentions AS mentions  
-                        FROM circle_conversations cc
-                        INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
-                        INNER JOIN circles ci ON ci.circle_id = cc.circle_id
-                        INNER JOIN users ou ON ou.user_id = c.owner_id
-                        LEFT JOIN messages m ON c.last_message_id = m.id
-                        LEFT JOIN message_mentions mm ON mm.message_id = m.id
-                        LEFT JOIN users mu ON mu.user_id = m.user_id
-                        LEFT JOIN users pu ON pu.user_id = m.participant_id 
-                        """
+                    val sql = ConversationDao.PREFIX_CONVERSATION_ITEM
                     val countStatement =
                         RoomSQLiteQuery.acquire(
                             """
