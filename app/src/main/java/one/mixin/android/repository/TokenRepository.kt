@@ -117,6 +117,8 @@ class TokenRepository
         fun assets() = tokenService.assets()
 
         suspend fun simpleAssetsWithBalance() = tokenDao.simpleAssetsWithBalance()
+        suspend fun tokenEntry(ids: Array<String>) = tokenDao.tokenEntry(ids)
+        suspend fun tokenEntry() = tokenDao.tokenEntry()
 
         fun insert(asset: Token) {
             tokenDao.insert(asset)

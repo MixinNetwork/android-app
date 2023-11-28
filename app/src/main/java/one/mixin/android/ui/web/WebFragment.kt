@@ -90,6 +90,7 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.matchResourcePattern
@@ -817,6 +818,9 @@ class WebFragment : BaseFragment() {
                     tipSignAction = { chainId, message, callback ->
                         tipSign(chainId, message, callback)
                     },
+                    getAssetAction = { ids,  callback ->
+                        getAssets(ids, callback)
+                    }
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
@@ -875,7 +879,12 @@ class WebFragment : BaseFragment() {
     ) {
         if (viewDestroyed()) return
         if (!WalletConnect.isEnabled(requireContext())) return
-
+        val isValid = chainId.isUUID()
+        if (!isValid) {
+            lifecycleScope.launch {
+                webView.evaluateJavascript("$callbackFunction('')") {}
+            }
+        }
         lifecycleScope.launch {
             WalletConnectTIP.peer = getPeerUI()
             showWalletConnectBottomSheetDialogFragment(
@@ -902,6 +911,41 @@ class WebFragment : BaseFragment() {
                     }
                 },
             )
+        }
+    }
+
+    private fun getAssets(ids: Array<String>, callbackFunction: String) {
+        if (viewDestroyed()) return
+        app ?: return
+
+        lifecycleScope.launch {
+            val sameHost = try {
+                Uri.parse(webView.url).host == Uri.parse(app?.homeUri ?: "").host
+                true
+            } catch (e: Exception) {
+                false
+            }
+            if (!sameHost) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+            val isValid = ids.isEmpty() || ids.all { it.isUUID() }
+            if (!isValid) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+            val auth = bottomViewModel.getAuthorizationByAppId(app!!.appId)
+            val result = if (auth?.scopes?.contains("ASSETS:READ") == true) {
+                val tokens = if (ids.isEmpty()) {
+                    bottomViewModel.tokenEntry()
+                } else {
+                    bottomViewModel.tokenEntry(ids)
+                }
+                GsonHelper.customGson.toJson(tokens)
+            } else {
+                "[]"
+            }
+            webView.evaluateJavascript("$callbackFunction('$result')") {}
         }
     }
 
@@ -1581,6 +1625,7 @@ class WebFragment : BaseFragment() {
         var closeAction: (() -> Unit)? = null,
         var getTipAddressAction: ((String, String) -> Unit)? = null,
         var tipSignAction: ((String, String, String) -> Unit)? = null,
+        var getAssetAction: ((Array<String>, String) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1605,6 +1650,11 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun reloadTheme() {
             reloadThemeAction?.invoke()
+        }
+
+        @JavascriptInterface
+        fun getAssets(list: Array<String>, callbackFunction: String) {
+            getAssetAction?.invoke(list, callbackFunction)
         }
 
         @JavascriptInterface
