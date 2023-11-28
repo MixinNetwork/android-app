@@ -587,14 +587,14 @@ fun callableTokenItem(
             val cursorIndexOfChangeUsd = 8
             val cursorIndexOfChangeBtc = 9
             val cursorIndexOfHidden = 10
-            val cursorIndexOfChainPriceUsd = 11
-            val cursorIndexOfConfirmations = 12
-            val cursorIndexOfChainIconUrl = 13
-            val cursorIndexOfChainSymbol = 14
-            val cursorIndexOfChainName = 16
-            val cursorIndexOfAssetKey = 17
-            val cursorIndexOfDust = 18
-            val cursorIndexOfWithdrawalMemoPossibility = 19
+            val cursorIndexOfConfirmations = 11
+            val cursorIndexOfChainIconUrl = 12
+            val cursorIndexOfChainSymbol = 13
+            val cursorIndexOfChainName = 14
+            val cursorIndexOfChainPriceUsd = 15
+            val cursorIndexOfAssetKey = 16
+            val cursorIndexOfDust = 17
+            val cursorIndexOfWithdrawalMemoPossibility = 18
 
             val result: MutableList<TokenItem> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
