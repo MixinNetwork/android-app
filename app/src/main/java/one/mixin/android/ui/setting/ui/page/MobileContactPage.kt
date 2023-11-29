@@ -27,8 +27,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import ir.mirrajabi.rxcontacts.Contact
-import ir.mirrajabi.rxcontacts.RxContacts
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -45,6 +43,8 @@ import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
 import one.mixin.android.ui.setting.ui.compose.SettingTile
 import one.mixin.android.ui.setting.ui.compose.rememberComposeScope
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.util.rxcontact.Contact
+import one.mixin.android.util.rxcontact.RxContacts
 import timber.log.Timber
 
 @Composable

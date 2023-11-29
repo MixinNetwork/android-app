@@ -4,12 +4,12 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import com.birbit.android.jobqueue.Params
-import ir.mirrajabi.rxcontacts.Contact
-import ir.mirrajabi.rxcontacts.RxContacts
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.createContactsRequests
+import one.mixin.android.util.rxcontact.Contact
+import one.mixin.android.util.rxcontact.RxContacts
 
 class UploadContactsJob : BaseJob(Params(PRIORITY_BACKGROUND).requireNetwork()) {
     @SuppressLint("CheckResult")

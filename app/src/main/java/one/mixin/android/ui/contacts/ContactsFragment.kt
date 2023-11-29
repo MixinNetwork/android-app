@@ -14,8 +14,6 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import ir.mirrajabi.rxcontacts.Contact
-import ir.mirrajabi.rxcontacts.RxContacts
 import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentContactsBinding
@@ -36,6 +34,8 @@ import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.util.rxcontact.Contact
+import one.mixin.android.util.rxcontact.RxContacts
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
