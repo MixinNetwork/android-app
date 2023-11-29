@@ -1,9 +1,9 @@
 package one.mixin.android.ui.common.biometric
 
-import java.math.BigDecimal
 import one.mixin.android.R
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.Fiats
+import java.math.BigDecimal
 
 abstract class ValuableBiometricBottomSheetDialogFragment<T : AssetBiometricItem> : BiometricBottomSheetDialogFragment() {
     companion object {

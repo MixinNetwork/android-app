@@ -1,11 +1,8 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
-import androidx.room.RoomWarnings
-import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.PinMessageItem
 import one.mixin.android.vo.PinMessageMinimal

@@ -818,9 +818,9 @@ class WebFragment : BaseFragment() {
                     tipSignAction = { chainId, message, callback ->
                         tipSign(chainId, message, callback)
                     },
-                    getAssetAction = { ids,  callback ->
+                    getAssetAction = { ids, callback ->
                         getAssets(ids, callback)
-                    }
+                    },
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
@@ -914,17 +914,21 @@ class WebFragment : BaseFragment() {
         }
     }
 
-    private fun getAssets(ids: Array<String>, callbackFunction: String) {
+    private fun getAssets(
+        ids: Array<String>,
+        callbackFunction: String,
+    ) {
         if (viewDestroyed()) return
         app ?: return
 
         lifecycleScope.launch {
-            val sameHost = try {
-                Uri.parse(webView.url).host == Uri.parse(app?.homeUri ?: "").host
-                true
-            } catch (e: Exception) {
-                false
-            }
+            val sameHost =
+                try {
+                    Uri.parse(webView.url).host == Uri.parse(app?.homeUri ?: "").host
+                    true
+                } catch (e: Exception) {
+                    false
+                }
             if (!sameHost) {
                 webView.evaluateJavascript("$callbackFunction('[]')") {}
                 return@launch
@@ -935,16 +939,18 @@ class WebFragment : BaseFragment() {
                 return@launch
             }
             val auth = bottomViewModel.getAuthorizationByAppId(app!!.appId)
-            val result = if (auth?.scopes?.contains("ASSETS:READ") == true) {
-                val tokens = if (ids.isEmpty()) {
-                    bottomViewModel.tokenEntry()
+            val result =
+                if (auth?.scopes?.contains("ASSETS:READ") == true) {
+                    val tokens =
+                        if (ids.isEmpty()) {
+                            bottomViewModel.tokenEntry()
+                        } else {
+                            bottomViewModel.tokenEntry(ids)
+                        }
+                    GsonHelper.customGson.toJson(tokens)
                 } else {
-                    bottomViewModel.tokenEntry(ids)
+                    "[]"
                 }
-                GsonHelper.customGson.toJson(tokens)
-            } else {
-                "[]"
-            }
             webView.evaluateJavascript("$callbackFunction('$result')") {}
         }
     }
@@ -1653,7 +1659,10 @@ class WebFragment : BaseFragment() {
         }
 
         @JavascriptInterface
-        fun getAssets(list: Array<String>, callbackFunction: String) {
+        fun getAssets(
+            list: Array<String>,
+            callbackFunction: String,
+        ) {
             getAssetAction?.invoke(list, callbackFunction)
         }
 

@@ -211,10 +211,9 @@ class DepositFragment : BaseFragment() {
                                         getString(
                                             if (asset.assetId == Constants.ChainId.RIPPLE_CHAIN_ID) {
                                                 R.string.deposit_notice_tag
-                                            } else if (asset.assetId == Constants.ChainId.EOS_CHAIN_ID)
-                                                {
-                                                    R.string.deposit_notice_eos
-                                                } else {
+                                            } else if (asset.assetId == Constants.ChainId.EOS_CHAIN_ID) {
+                                                R.string.deposit_notice_eos
+                                            } else {
                                                 R.string.deposit_notice
                                             },
                                             asset.symbol,
