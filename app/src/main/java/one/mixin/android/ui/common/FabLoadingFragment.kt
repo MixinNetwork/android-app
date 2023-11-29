@@ -3,11 +3,11 @@ package one.mixin.android.ui.common
 import android.os.Bundle
 import android.view.View
 import androidx.annotation.LayoutRes
-import com.github.jorgecastilloprz.FABProgressCircle
 import one.mixin.android.R
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
+import one.mixin.android.widget.fabprogresscircle.FABProgressCircle
 
 abstract class FabLoadingFragment : BaseFragment {
     constructor() : super()

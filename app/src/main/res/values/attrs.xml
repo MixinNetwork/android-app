@@ -228,4 +228,23 @@
             <enum name="popular" value="1"/>
         </attr>
     </declare-styleable>
+    <declare-styleable name="FABProgressCircle">
+        <attr name="arcColor"
+            format="color"/>
+        <attr name="arcWidth"
+            format="dimension"/>
+        <attr name="finalIcon"
+            format="reference"/>
+        <attr name="circleSize"
+            format="enum">
+            <enum name="normal"
+                value="1"/>
+            <enum name="mini"
+                value="2"/>
+        </attr>
+        <attr name="roundedStroke"
+            format="boolean"/>
+        <attr name="reusable"
+            format="boolean"/>
+    </declare-styleable>
 </resources>
