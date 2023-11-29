@@ -17,7 +17,6 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import com.warkiz.widget.IndicatorSeekBar
 import com.warkiz.widget.OnSeekChangeListener
@@ -46,6 +45,7 @@ import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_EDITO
 import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_IMAGE_URI
 import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_NEXT_TITLE
 import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_NOT_COMPRESS
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.widget.PrevNextView
 import one.mixin.android.widget.imageeditor.ColorableRenderer
 import one.mixin.android.widget.imageeditor.ImageEditorView

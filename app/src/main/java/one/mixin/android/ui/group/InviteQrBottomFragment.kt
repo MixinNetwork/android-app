@@ -6,7 +6,6 @@ import android.graphics.Bitmap
 import android.os.Build
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Observable
@@ -22,6 +21,7 @@ import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 

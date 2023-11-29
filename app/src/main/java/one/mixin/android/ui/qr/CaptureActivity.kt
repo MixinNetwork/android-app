@@ -9,7 +9,6 @@ import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContract
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
@@ -19,6 +18,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.conversation.ConversationActivity.Companion.ARGS_SHORTCUT
 import one.mixin.android.util.isCameraCanUse
+import one.mixin.android.util.rxpermission.RxPermissions
 
 @AndroidEntryPoint
 class CaptureActivity : BlazeBaseActivity() {

@@ -28,9 +28,9 @@ fun changeToOutput(
 }
 
 fun consolidationOutput(
-    hash:String,
+    hash: String,
     asset: String,
-    amount:String,
+    amount: String,
     mask: String,
     keys: List<String>,
     lastOutput: Output,

@@ -6,11 +6,8 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import ir.mirrajabi.rxcontacts.Contact
-import ir.mirrajabi.rxcontacts.RxContacts
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
@@ -25,6 +22,9 @@ import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.rxcontact.Contact
+import one.mixin.android.util.rxcontact.RxContacts
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint

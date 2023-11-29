@@ -29,7 +29,6 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.jakewharton.rxbinding3.view.clicks
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -81,6 +80,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.addPinShortcut
 import one.mixin.android.util.debug.debugLongClick
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory

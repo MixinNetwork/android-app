@@ -406,7 +406,7 @@ class BottomSheetViewModel
             assetId: String,
             amount: String,
             memo: String?,
-            isConsolidation: Boolean = false
+            isConsolidation: Boolean = false,
         ): MixinResponse<List<TransactionResponse>> {
             val transactionRsp = tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
             if (transactionRsp.error != null) {
@@ -486,41 +486,41 @@ class BottomSheetViewModel
             throw Exception("Impossible")
         }
 
-    suspend fun checkUtxoSufficiency(
-        assetId: String,
-        amount: String,
-    ): String? {
-        val desiredAmount = BigDecimal(amount)
-        val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, assetIdToAsset(assetId))
+        suspend fun checkUtxoSufficiency(
+            assetId: String,
+            amount: String,
+        ): String? {
+            val desiredAmount = BigDecimal(amount)
+            val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, assetIdToAsset(assetId))
 
-        if (candidateOutputs.isEmpty()) {
-            return null
-        }
-
-        val selectedOutputs = mutableListOf<Output>()
-        var totalSelectedAmount = BigDecimal.ZERO
-
-        candidateOutputs.forEach { output ->
-            val outputAmount = BigDecimal(output.amount)
-            selectedOutputs.add(output)
-            totalSelectedAmount += outputAmount
-            if (totalSelectedAmount >= desiredAmount) {
+            if (candidateOutputs.isEmpty()) {
                 return null
             }
+
+            val selectedOutputs = mutableListOf<Output>()
+            var totalSelectedAmount = BigDecimal.ZERO
+
+            candidateOutputs.forEach { output ->
+                val outputAmount = BigDecimal(output.amount)
+                selectedOutputs.add(output)
+                totalSelectedAmount += outputAmount
+                if (totalSelectedAmount >= desiredAmount) {
+                    return null
+                }
+            }
+
+            if (selectedOutputs.size >= maxUtxoCount) {
+                return totalSelectedAmount.toPlainString()
+            }
+
+            if (totalSelectedAmount < desiredAmount) {
+                return null
+            }
+
+            throw Exception("Impossible")
         }
 
-        if (selectedOutputs.size >= maxUtxoCount) {
-            return totalSelectedAmount.toPlainString()
-        }
-
-        if (totalSelectedAmount < desiredAmount) {
-            return null
-        }
-
-        throw Exception("Impossible")
-    }
-
-    suspend fun authorize(
+        suspend fun authorize(
             authorizationId: String,
             scopes: List<String>,
             pin: String?,
@@ -1100,5 +1100,6 @@ class BottomSheetViewModel
         suspend fun getTransactionsById(traceId: String) = tokenRepository.getTransactionsById(traceId)
 
         suspend fun tokenEntry(ids: Array<String>) = tokenRepository.tokenEntry(ids)
+
         suspend fun tokenEntry() = tokenRepository.tokenEntry()
     }

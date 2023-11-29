@@ -2,8 +2,8 @@ package one.mixin.android.api.request
 
 import com.google.gson.annotations.SerializedName
 import com.google.i18n.phonenumbers.PhoneNumberUtil
-import ir.mirrajabi.rxcontacts.Contact
 import one.mixin.android.util.isValidNumber
+import one.mixin.android.util.rxcontact.Contact
 import java.util.Locale
 
 data class ContactRequest(

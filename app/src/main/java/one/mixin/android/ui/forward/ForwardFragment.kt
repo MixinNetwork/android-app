@@ -23,7 +23,6 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -64,6 +63,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.ShortcutInfo
 import one.mixin.android.util.generateDynamicShortcut
 import one.mixin.android.util.maxDynamicShortcutCount
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.updateShortcuts
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AttachmentExtra

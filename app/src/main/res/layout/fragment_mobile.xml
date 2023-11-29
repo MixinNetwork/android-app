@@ -119,7 +119,7 @@
             app:layout_constraintTop_toBottomOf="@+id/mobile_et" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.github.jorgecastilloprz.FABProgressCircle
+    <one.mixin.android.widget.fabprogresscircle.FABProgressCircle
         android:id="@+id/mobile_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -137,7 +137,7 @@
             android:src="@drawable/ic_arrow_forward_white_24dp"
             app:backgroundTint="@color/colorBlue"
             android:contentDescription="@string/Next" />
-    </com.github.jorgecastilloprz.FABProgressCircle>
+    </one.mixin.android.widget.fabprogresscircle.FABProgressCircle>
 
     <one.mixin.android.widget.Keyboard
         android:id="@+id/keyboard"

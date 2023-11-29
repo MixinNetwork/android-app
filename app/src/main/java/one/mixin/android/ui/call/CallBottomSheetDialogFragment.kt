@@ -27,7 +27,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.jakewharton.rxbinding3.view.clicks
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -53,6 +52,7 @@ import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.ParticipantRole

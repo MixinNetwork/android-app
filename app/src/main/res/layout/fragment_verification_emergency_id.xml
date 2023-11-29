@@ -53,7 +53,7 @@
             tools:ignore="Autofill" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <com.github.jorgecastilloprz.FABProgressCircle
+    <one.mixin.android.widget.fabprogresscircle.FABProgressCircle
         android:id="@+id/verification_next_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -69,7 +69,7 @@
             android:src="@drawable/ic_arrow_forward_white_24dp"
             app:backgroundTint="@color/colorBlue"
             android:contentDescription="@string/Next" />
-    </com.github.jorgecastilloprz.FABProgressCircle>
+    </one.mixin.android.widget.fabprogresscircle.FABProgressCircle>
 
     <one.mixin.android.widget.Keyboard
         android:id="@+id/verification_keyboard"

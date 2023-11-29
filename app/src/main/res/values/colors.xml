@@ -221,4 +221,10 @@
     <color name="viewfinder_laser">@color/colorLightBlue</color>
     <color name="viewfinder_point">@color/colorBlue</color>
     <color name="viewfinder_text_color">#FFC0C0C0</color>
+
+    <!--  FABProgressCircle  -->
+    <color name="fab_orange_dark">#f97910</color>
+    <color name="fab_orange_light">#ffb54c</color>
+    <color name="fab_orange_bright">#FFC674</color>
+    <color name="blue">#0000ff</color>
 </resources>

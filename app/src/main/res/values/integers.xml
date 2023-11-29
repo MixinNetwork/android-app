@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer name="splash_screen_duration">600</integer>
+    <integer name="default_cycle_duration">2000</integer>
 </resources>

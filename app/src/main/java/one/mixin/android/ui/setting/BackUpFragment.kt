@@ -16,7 +16,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -48,6 +47,7 @@ import one.mixin.android.util.backup.findBackup
 import one.mixin.android.util.backup.findBackupApi29
 import one.mixin.android.util.backup.getBackupDirectory
 import one.mixin.android.util.reportException
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 import javax.inject.Inject

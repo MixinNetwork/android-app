@@ -56,7 +56,7 @@
             tools:ignore="Autofill,TextFields" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <com.github.jorgecastilloprz.FABProgressCircle
+    <one.mixin.android.widget.fabprogresscircle.FABProgressCircle
         android:id="@+id/name_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -71,7 +71,7 @@
             android:src="@drawable/ic_arrow_forward_white_24dp"
             app:backgroundTint="@color/colorBlue"
             android:contentDescription="@string/Next" />
-    </com.github.jorgecastilloprz.FABProgressCircle>
+    </one.mixin.android.widget.fabprogresscircle.FABProgressCircle>
 
     <View
         android:id="@+id/name_cover"
