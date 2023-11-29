@@ -33,6 +33,11 @@ import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
+import com.google.android.play.core.integrity.IntegrityManager
+import com.google.android.play.core.integrity.IntegrityManagerFactory
+import com.google.android.play.core.integrity.IntegrityTokenRequest
+import com.google.android.play.core.integrity.IntegrityTokenResponse
+import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.microsoft.appcenter.AppCenter
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -540,8 +545,7 @@ class MainActivity : BlazeBaseActivity() {
                 .subscribe(
                     { resp ->
                         resp.data?.let {
-                            val nonce = Base64.decode(it.nonce)
-                            validateSafetyNet(nonce)
+                            validateIntegrity(it.nonce)
                         }
                     },
                     {
@@ -550,17 +554,32 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
-    private fun validateSafetyNet(nonce: ByteArray) {
-        val client = SafetyNet.getClient(this)
-        val task = client.attest(nonce, BuildConfig.SAFETYNET_API_KEY)
-        task.addOnSuccessListener { safetyResp ->
-            accountRepo.updateSession(SessionRequest(deviceCheckToken = safetyResp.jwsResult))
+    private fun validateIntegrity(nonce: String) {
+        val integrityManager = IntegrityManagerFactory.create(this)
+        val projectNumber = FirebaseApp.getInstance().options.gcmSenderId!!
+            .toLong()
+        integrityManager.requestIntegrityToken(
+            IntegrityTokenRequest.builder()
+                .setCloudProjectNumber(projectNumber)
+                .setNonce(nonce)
+                .build()
+        )
+        val integrityTokenResponse = integrityManager.requestIntegrityToken(
+            IntegrityTokenRequest.builder()
+                .setCloudProjectNumber(projectNumber)
+                .setNonce(nonce)
+                .build()
+        )
+        integrityTokenResponse.addOnSuccessListener { response: IntegrityTokenResponse ->
+            // Todo replace api?
+            accountRepo.updateSession(SessionRequest(deviceCheckToken = response.token()))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(stopScope)
                 .subscribe({}, {})
         }
-        task.addOnFailureListener { e ->
+
+        integrityTokenResponse.addOnFailureListener { e: Exception ->
             reportException(e)
         }
     }
