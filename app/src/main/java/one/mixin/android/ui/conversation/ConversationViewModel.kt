@@ -108,7 +108,6 @@ import java.io.File
 import java.util.UUID
 import javax.inject.Inject
 
-@UnstableApi
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 @HiltViewModel
 class ConversationViewModel

@@ -50,7 +50,6 @@ import timber.log.Timber
 import java.io.File
 import kotlin.time.Duration.Companion.milliseconds
 
-@UnstableApi
 class ConvertVideoJob(
     private val conversationId: String,
     private val senderId: String,
@@ -105,7 +104,7 @@ class ConvertVideoJob(
         }
     }
 
-    override fun onRun() =
+    @UnstableApi override fun onRun() =
         runBlocking {
             if (isCancelled) {
                 removeJob()
