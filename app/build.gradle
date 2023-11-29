@@ -327,7 +327,6 @@ dependencies {
     implementation "com.github.tougee:country-picker-android:${countryPickerVersion}"
     implementation "com.googlecode.libphonenumber:libphonenumber:${libphonenumberVersion}"
     implementation "com.github.tougee:android-priority-jobqueue:${jobqueueVersion}"
-    implementation "com.github.tougee:rxpermissions:${rxpermissionsVersion}"
     implementation("com.github.yalantis:ucrop:${ucropVersion}")
     implementation "com.facebook.rebound:rebound:${reboundVersion}"
 

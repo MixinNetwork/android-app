@@ -37,7 +37,6 @@ import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationClickListene
 import com.mapbox.maps.plugin.gestures.OnMoveListener
 import com.mapbox.maps.plugin.gestures.gestures
 import com.mapbox.maps.plugin.locationcomponent.location
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -61,6 +60,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.util.calculationByDistance
 import one.mixin.android.util.distanceFormat
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.getImageUrl
 import timber.log.Timber

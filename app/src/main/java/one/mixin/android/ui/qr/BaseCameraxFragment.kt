@@ -36,7 +36,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.google.mlkit.vision.common.InputImage
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -63,6 +62,7 @@ import one.mixin.android.job.RefreshExternalSchemeJob.Companion.PREF_EXTERNAL_SC
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.reportException
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.widget.gallery.ui.GalleryActivity
 import timber.log.Timber
 import java.util.concurrent.CountDownLatch

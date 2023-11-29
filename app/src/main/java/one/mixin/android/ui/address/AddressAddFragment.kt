@@ -15,7 +15,6 @@ import androidx.core.text.buildSpannedString
 import androidx.core.text.color
 import androidx.core.view.isVisible
 import com.sandro.bitcoinpaymenturi.BitcoinPaymentURI
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
@@ -43,6 +42,7 @@ import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.AD
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.WithdrawalMemoPossibility

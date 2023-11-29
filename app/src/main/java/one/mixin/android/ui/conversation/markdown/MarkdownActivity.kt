@@ -12,7 +12,6 @@ import android.view.View
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.noties.markwon.recycler.MarkwonAdapter
@@ -42,6 +41,7 @@ import one.mixin.android.util.markdown.DefaultEntry
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.markdown.SimpleEntry
 import one.mixin.android.util.markdown.table.TableEntry
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory

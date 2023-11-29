@@ -24,7 +24,6 @@ import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,6 +46,7 @@ import one.mixin.android.ui.player.internal.id
 import one.mixin.android.ui.player.internal.urlLoader
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.FixedMessageDataSource
 import one.mixin.android.webrtc.EXTRA_CONVERSATION_ID

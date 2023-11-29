@@ -20,7 +20,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
@@ -55,6 +54,7 @@ import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.App
 import one.mixin.android.vo.toUser

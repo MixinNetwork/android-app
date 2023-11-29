@@ -10,7 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import com.google.mlkit.vision.barcode.common.Barcode
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
@@ -43,6 +42,7 @@ import one.mixin.android.util.mlkit.scan.analyze.BarcodeResult
 import one.mixin.android.util.mlkit.scan.analyze.BarcodeScanningAnalyzer
 import one.mixin.android.util.mlkit.scan.camera.config.AspectRatioCameraConfig
 import one.mixin.android.util.mlkit.scan.utils.PointUtils
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.ViewfinderView
 import one.mixin.android.widget.gallery.ui.GalleryActivity

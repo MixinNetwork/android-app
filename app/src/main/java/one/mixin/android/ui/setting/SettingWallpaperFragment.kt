@@ -19,7 +19,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
@@ -40,6 +39,7 @@ import one.mixin.android.extension.screenWidth
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.chathistory.holder.TextHolder
 import one.mixin.android.ui.conversation.holder.TimeHolder
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.widget.theme.Coordinate

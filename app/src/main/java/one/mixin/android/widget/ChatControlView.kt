@@ -43,7 +43,6 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import com.jakewharton.rxbinding3.view.clicks
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -63,6 +62,7 @@ import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.getLanguage
 import one.mixin.android.util.reportException
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.isEncrypt
 import one.mixin.android.vo.isSignal

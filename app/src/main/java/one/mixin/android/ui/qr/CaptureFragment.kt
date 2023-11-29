@@ -32,7 +32,6 @@ import androidx.core.util.Consumer
 import androidx.core.view.isVisible
 import androidx.core.view.marginTop
 import androidx.core.view.updateLayoutParams
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
@@ -56,6 +55,7 @@ import one.mixin.android.ui.imageeditor.ImageEditorActivity
 import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_EDITOR_RESULT
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage

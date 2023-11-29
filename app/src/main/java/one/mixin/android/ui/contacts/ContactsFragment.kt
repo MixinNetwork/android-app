@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,6 +35,7 @@ import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.rxcontact.Contact
 import one.mixin.android.util.rxcontact.RxContacts
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship

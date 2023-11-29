@@ -21,7 +21,6 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.google.mlkit.vision.common.InputImage
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -45,6 +44,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardCategory
