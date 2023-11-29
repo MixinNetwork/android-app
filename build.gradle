@@ -175,7 +175,6 @@ allprojects {
         jcenter() {
             content {
                 includeModule("jp.wasabeef", "glide-transformations")
-                includeModule("com.dmitrymalkovich.android", "progress-fab")
                 includeModule("com.github.warkiz.widget", "indicatorseekbar")
             }
         }

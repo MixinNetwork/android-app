@@ -325,7 +325,6 @@ dependencies {
     implementation "jp.wasabeef:glide-transformations:${glideTransformationsVersion}"
     implementation "com.jakewharton.timber:timber:${timberVersion}"
     implementation "com.github.tougee:country-picker-android:${countryPickerVersion}"
-    implementation "com.dmitrymalkovich.android:progress-fab:${fabVersion}"
     implementation "com.googlecode.libphonenumber:libphonenumber:${libphonenumberVersion}"
     implementation "com.github.tougee:android-priority-jobqueue:${jobqueueVersion}"
     implementation "com.github.tougee:rxpermissions:${rxpermissionsVersion}"
