@@ -94,7 +94,7 @@ import java.math.RoundingMode
 import java.util.UUID
 import javax.inject.Inject
 
-@UnstableApi @AndroidEntryPoint
+@AndroidEntryPoint
 @SuppressLint("InflateParams")
 class TransferFragment : MixinBottomSheetDialogFragment() {
     companion object {
