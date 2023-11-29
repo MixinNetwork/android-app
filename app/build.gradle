@@ -324,7 +324,7 @@ dependencies {
 
     implementation "com.google.mlkit:barcode-scanning:${mlkitBarcodeVersion}"
     implementation "com.google.android.play:app-update-ktx:${playVersion}"
-    implementation "com.google.android.gms:play-services-safetynet:${googlePlayServicesVersion}"
+    implementation 'com.google.android.play:integrity:1.4.0'
     implementation "com.google.android.gms:play-services-maps:19.0.0"
     implementation "com.google.android.gms:play-services-location:21.3.0"
     implementation "com.google.android.gms:play-services-cronet:${googlePlayServicesVersion}"
