@@ -192,11 +192,11 @@ open class MixinApplication :
         }
     }
 
-    override fun getWorkManagerConfiguration(): Configuration {
-        return Configuration.Builder()
-            .setWorkerFactory(getWorkerFactory())
-            .build()
-    }
+    override val workManagerConfiguration: Configuration
+        get() =
+            Configuration.Builder()
+                .setWorkerFactory(getWorkerFactory())
+                .build()
 
     override fun getCameraXConfig() = Camera2Config.defaultConfig()
 

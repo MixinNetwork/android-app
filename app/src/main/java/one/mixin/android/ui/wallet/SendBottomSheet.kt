@@ -38,7 +38,12 @@ class SendBottomSheet(
             contact.setOnClickListener {
                 bottomSheet.dismiss()
                 fragment.defaultSharedPreferences.putString(TransferFragment.ASSET_PREFERENCE, asset.assetId)
-                this@SendBottomSheet.fragment.view?.navigate(navContactAction)
+                this@SendBottomSheet.fragment.view?.navigate(
+                    navContactAction,
+                    Bundle().apply {
+                        putParcelable(TransactionsFragment.ARGS_ASSET, asset)
+                    },
+                )
             }
             address.setOnClickListener {
                 bottomSheet.dismiss()

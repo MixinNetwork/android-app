@@ -186,6 +186,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         binding.titleView.rightAnimator.isVisible = true
         binding.titleView.rightIb.setImageResource(R.drawable.ic_transaction)
         val t = this.t
+        val defaultToken = t.asset
+        if (defaultToken != null) {
+            updateAssetUI(defaultToken)
+        }
         if (isInnerTransfer()) {
             handleInnerTransfer(t)
         } else {
@@ -219,25 +223,28 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             binding.transferMemo.isEnabled = false
             binding.memoIv.isEnabled = false
         }
-
         chatViewModel.assetItemsWithBalance().observe(
             this,
             Observer { r: List<TokenItem>? ->
                 if (transferBottomOpened) return@Observer
                 if (r.isNullOrEmpty()) return@Observer
 
-                r.find {
-                    it.assetId == (t.asset?.assetId ?: activity?.defaultSharedPreferences!!.getString(ASSET_PREFERENCE, ""))
-                }.let { asset ->
-                    t.asset =
-                        if (asset != null) {
-                            updateAssetUI(asset)
-                            asset
-                        } else {
-                            val a = r[0]
-                            updateAssetUI(a)
-                            a
-                        }
+                if (defaultToken != null) {
+                    val token = r.firstOrNull { it.assetId == defaultToken.assetId }
+                    if (token != null) {
+                        t.asset = token
+                        updateAssetUI(token)
+                    }
+                } else {
+                    val token = r.firstOrNull { it.assetId == requireActivity().defaultSharedPreferences.getString(ASSET_PREFERENCE, "") }
+                    if (token != null) {
+                        t.asset = token
+                        updateAssetUI(token)
+                    } else {
+                        val a = r[0]
+                        t.asset = a
+                        updateAssetUI(a)
+                    }
                 }
             },
         )
@@ -309,7 +316,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         binding.avatar.isVisible = false
         binding.expandIv.isVisible = false
         binding.assetRl.setOnClickListener(null)
-        t.asset?.let { updateAssetUI(it) }
         if (t.address.addressId.isBlank()) { // mock address
             binding.titleView.setSubTitle(
                 getString(R.string.send_to, t.address.label),
@@ -446,6 +452,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             binding.amountEt.hint = ""
             binding.symbolTv.text = getTopSymbol()
             binding.amountAsTv.text = getBottomText()
+        }
+        val amount = asset.balance.toDoubleOrNull()
+        if (amount != null && amount <= 0) {
+            binding.amountEt.isEnabled = false
         }
 
         if (!isInnerTransfer() && asset.assetId == RIPPLE_CHAIN_ID) {
@@ -625,7 +635,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             t.memo = memo
 
             binding.continueVa.displayedChild = POST_PB
-            val traceId = t.traceId ?: UUID.randomUUID().toString()
+            val traceId = t.traceId.let { if (it.isNullOrBlank()) UUID.randomUUID().toString() else it }
             val pair =
                 if (t is TransferBiometricItem && t.users.size == 1) {
                     chatViewModel.findLatestTrace(t.users.first().userId, null, null, amount, asset.assetId)

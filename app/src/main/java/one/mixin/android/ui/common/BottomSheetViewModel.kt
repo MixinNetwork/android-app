@@ -292,7 +292,7 @@ class BottomSheetViewModel
                 }
             }
 
-            val traceId = trace ?: UUID.randomUUID().toString()
+            val traceId = if (trace.isNullOrBlank()) UUID.randomUUID().toString() else trace
             val senderId = Session.getAccountId()!!
 
             val ghostKeyResponse = tokenRepository.ghostKey(buildKernelTransferGhostKeyRequest(senderId, traceId))
@@ -353,7 +353,7 @@ class BottomSheetViewModel
                 }
             }
 
-            val traceId = trace ?: UUID.randomUUID().toString()
+            val traceId = if (trace.isNullOrBlank())  UUID.randomUUID().toString() else trace
             val senderIds = listOf(Session.getAccountId()!!)
 
             val ghostKeyResponse = tokenRepository.ghostKey(buildGhostKeyRequest(receiverIds, senderIds, traceId))

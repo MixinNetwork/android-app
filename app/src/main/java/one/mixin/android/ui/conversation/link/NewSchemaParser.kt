@@ -20,6 +20,7 @@ import one.mixin.android.vo.MixAddressPrefix
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toMixAddress
 import java.io.UnsupportedEncodingException
+import java.math.BigDecimal
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.util.UUID
@@ -55,10 +56,12 @@ class NewSchemaParser(
             return false
         }
         var amount = uri.getQueryParameter("amount")
-        if (amount != null && amount.toBigDecimalOrNull() == null) {
-            return false
-        } else {
-            amount = amount?.stripAmountZero()
+        if (amount != null) {
+            val a = amount.toBigDecimalOrNull()
+            if (a == null || a <= BigDecimal.ZERO) {
+                return false
+            }
+            amount = a.stripTrailingZeros().toPlainString()
         }
         val memo = uri.getQueryParameter("memo")
         val trace = uri.getQueryParameter("trace")
