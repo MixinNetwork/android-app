@@ -35,7 +35,7 @@ class SingleFriendSelectFragment : BaseFriendsFragment<FriendsViewHolder>(), Fri
     override fun onItemClick(user: User) {
         if (Session.getAccount()?.hasPin == true) {
             val token = requireArguments().getParcelableCompat(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)!!
-            TransferFragment.newInstance(buildTransferBiometricItem(user, token, "", "", "", ""))
+            TransferFragment.newInstance(buildTransferBiometricItem(user, token, "", null, null, null))
                 .showNow(parentFragmentManager, TransferFragment.TAG)
             view?.findNavController()?.navigateUp()
         } else {
