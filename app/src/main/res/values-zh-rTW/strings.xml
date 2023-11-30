@@ -1006,7 +1006,6 @@
     <string name="withdrawal_label">地址名稱，例如 OceanOne</string>
     <string name="withdrawal_memo">Memo（備註）</string>
     <string name="withdrawal_minimum_amount">提現金額最小 %1$s %2$s</string>
-    <string name="withdrawal_minimum_reserve">最少保留數量：</string>
     <string name="withdrawal_minimum_withdrawal">最小提現數量：</string>
     <string name="withdrawal_network_fee">網路手續費：</string>
     <string name="withdrawal_no_memo">點選不使用 Memo（備註）</string>

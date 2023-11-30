@@ -1026,7 +1026,6 @@
     <string name="withdrawal_label">ラベル (例. 取引所, ウォレットなど)</string>
     <string name="withdrawal_memo">メモ</string>
     <string name="withdrawal_minimum_amount">最小出金額は %1$s %2$sです</string>
-    <string name="withdrawal_minimum_reserve">最低準備金 </string>
     <string name="withdrawal_minimum_withdrawal">最低出金額：</string>
     <string name="withdrawal_network_fee">ネットワーク手数料：</string>
     <string name="withdrawal_no_memo">メモなし</string>

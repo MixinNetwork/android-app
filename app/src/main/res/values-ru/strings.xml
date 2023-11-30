@@ -1032,7 +1032,6 @@
     <string name="withdrawal_label">Ярлык (например, биржи, кошельки и т.д.)</string>
     <string name="withdrawal_memo">Памятка</string>
     <string name="withdrawal_minimum_amount">Минимальная сумма вывода: %1$s %2$s.</string>
-    <string name="withdrawal_minimum_reserve">Минимальный резерв: </string>
     <string name="withdrawal_minimum_withdrawal">Минимальный вывод: </string>
     <string name="withdrawal_network_fee">Комиссия за сеть: </string>
     <string name="withdrawal_no_memo">Нет памятки</string>
