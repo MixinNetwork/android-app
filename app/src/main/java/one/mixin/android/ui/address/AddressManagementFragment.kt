@@ -7,15 +7,19 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentAddressManagementBinding
 import one.mixin.android.databinding.ItemAddressBinding
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -25,10 +29,12 @@ import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.buildWithdrawalBiometricItem
+import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.DELETE
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.safe.TokenItem
@@ -46,6 +52,8 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
     private val adapter: AddressAdapter by lazy { AddressAdapter() }
 
     private val binding by viewBinding(FragmentAddressManagementBinding::bind)
+
+    private val walletViewModel by viewModels<WalletViewModel>()
 
     override fun onViewCreated(
         view: View,
@@ -102,20 +110,42 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
 
                 override fun onAddrClick(addr: Address) {
                     if (Session.getAccount()?.hasPin == true) {
-                        val item = buildWithdrawalBiometricItem(addr, asset)
-                        val transferFragment = TransferFragment.newInstance(item)
-                        transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)
-                        transferFragment.callback =
-                            object : TransferFragment.Callback {
-                                override fun onSuccess() {
-                                    if (viewDestroyed()) return
-
-                                    view.navigate(
-                                        R.id.action_address_management_to_transactions,
-                                        Bundle().apply { putParcelable(ARGS_ASSET, asset) },
-                                    )
+                        lifecycleScope.launch {
+                            val dialog =
+                                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                    setCancelable(false)
                                 }
+                            dialog.show()
+                            val addressFeeResponse =
+                                handleMixinResponse(
+                                    invokeNetwork = {
+                                        walletViewModel.getExternalAddressFee(asset.assetId, addr.destination, addr.tag)
+                                    },
+                                    successBlock = {
+                                        it
+                                    }, endBlock = {
+                                        dialog.dismiss()
+                                    }
+                                )
+                            if (addressFeeResponse == null || addressFeeResponse.error != null) {
+                                toast(R.string.verification_failed)
+                                return@launch
                             }
+                            val item = buildWithdrawalBiometricItem(addr, asset)
+                            val transferFragment = TransferFragment.newInstance(item)
+                            transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)
+                            transferFragment.callback =
+                                object : TransferFragment.Callback {
+                                    override fun onSuccess() {
+                                        if (viewDestroyed()) return
+
+                                        view.navigate(
+                                            R.id.action_address_management_to_transactions,
+                                            Bundle().apply { putParcelable(ARGS_ASSET, asset) },
+                                        )
+                                    }
+                                }
+                        }
                     } else {
                         toast(R.string.transfer_without_pin)
                     }

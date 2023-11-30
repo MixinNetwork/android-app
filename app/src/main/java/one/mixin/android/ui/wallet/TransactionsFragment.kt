@@ -36,6 +36,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.tip.Tip
@@ -318,11 +319,15 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                             walletViewModel.getExternalAddressFee(asset.assetId, destination, null)
                         },
                         successBlock = {
-                            it.data
+                            it
                         },
-                    ) ?: return@launch
-
-                val mockAddress = Address("", "address", asset.assetId, addressFeeResponse.destination, "TIP Wallet", nowInUtc(), "0", addressFeeResponse.fee, null, null, asset.chainId)
+                    )
+                if (addressFeeResponse == null || addressFeeResponse.error != null) {
+                    toast(R.string.verification_failed)
+                    return@launch
+                }
+                val address = addressFeeResponse.data ?: return@launch
+                val mockAddress = Address("", "address", asset.assetId, address.destination, "TIP Wallet", nowInUtc(), "0", address.fee, null, null, asset.chainId)
                 val withdrawalBiometricItem = buildWithdrawalBiometricItem(mockAddress, asset)
                 val transferFragment = TransferFragment.newInstance(withdrawalBiometricItem)
                 transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)
