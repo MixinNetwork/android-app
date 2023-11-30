@@ -15,7 +15,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.extension.navigate
@@ -126,12 +125,6 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                     .showNow(parentFragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)
             } else {
                 val f = UserBottomSheetDialogFragment.newInstance(user)
-                f?.showUserTransactionAction = {
-                    view?.navigate(
-                        R.id.action_all_transactions_to_user_transactions,
-                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) },
-                    )
-                }
                 f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
             }
         }

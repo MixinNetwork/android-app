@@ -244,12 +244,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                     .showNow(parentFragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)
             } else {
                 val f = UserBottomSheetDialogFragment.newInstance(user)
-                f?.showUserTransactionAction = {
-                    view?.navigate(
-                        R.id.action_transactions_to_user_transactions,
-                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) },
-                    )
-                }
                 f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
             }
         }

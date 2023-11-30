@@ -94,12 +94,6 @@
             app:popExitAnim="@anim/slide_out_right" />
 
         <action
-            android:id="@+id/action_transactions_to_user_transactions"
-            app:destination="@id/user_transactions_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
-
-        <action
             android:id="@+id/action_transactions_to_address_management"
             app:destination="@id/address_management_fragment"
             app:enterAnim="@anim/slide_in_right"
@@ -117,13 +111,6 @@
             app:destination="@id/transaction_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right" />
-
-        <action
-            android:id="@+id/action_all_transactions_to_user_transactions"
-            app:destination="@id/user_transactions_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
-
     </fragment>
 
     <fragment
@@ -189,22 +176,11 @@
     <fragment
         android:id="@+id/single_friend_select_fragment"
         android:name="one.mixin.android.ui.wallet.SingleFriendSelectFragment"
-        tools:layout="@layout/fragment_friends" />
-
-    <fragment
-        android:id="@+id/user_transactions_fragment"
-        android:name="one.mixin.android.ui.conversation.UserTransactionsFragment"
-        tools:layout="@layout/fragment_transactions_user">
+        tools:layout="@layout/fragment_friends" >
 
         <argument
-            android:name="args_user_id"
-            app:argType="string" />
-
-        <action
-            android:id="@+id/action_user_transactions_to_transaction"
-            app:destination="@id/transaction_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
     </fragment>
 
     <fragment

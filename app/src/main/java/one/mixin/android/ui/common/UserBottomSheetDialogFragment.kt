@@ -157,7 +157,6 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     private var menuListLayout: ViewGroup? = null
 
-    var showUserTransactionAction: (() -> Unit)? = null
     var sharedMediaCallback: (() -> Unit)? = null
 
     override fun getLayoutId() = R.layout.fragment_user_bottom_sheet
@@ -327,13 +326,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             menu {
                 title = getString(R.string.Transactions)
                 action = {
-                    if (showUserTransactionAction != null) {
-                        showUserTransactionAction?.invoke()
-                    } else {
-                        RxBus.publish(BotCloseEvent())
-                        UserTransactionBottomSheetFragment.newInstance(u.userId)
-                            .showNow(parentFragmentManager, UserTransactionBottomSheetFragment.TAG)
-                    }
+                    RxBus.publish(BotCloseEvent())
+                    UserTransactionBottomSheetFragment.newInstance(u.userId)
+                        .showNow(parentFragmentManager, UserTransactionBottomSheetFragment.TAG)
                     dismiss()
                 }
             }

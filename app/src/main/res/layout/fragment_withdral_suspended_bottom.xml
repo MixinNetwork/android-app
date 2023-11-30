@@ -10,7 +10,7 @@
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="70dp"
         android:text="@string/Withdrawal_Suspended"
         android:textColor="?attr/text_primary"
         android:textSize="18sp" />
@@ -19,13 +19,17 @@
         android:id="@+id/asset_icon"
         android:layout_width="70dp"
         android:layout_height="70dp"
-        android:layout_marginTop="24dp" />
+        android:layout_marginTop="32dp" />
 
     <TextView
         android:id="@+id/content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="32dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:gravity="center_horizontal"
         android:text="@string/Withdrawal_Suspended_Content"
         android:textColor="?attr/text_primary"
         android:textSize="14sp" />
@@ -38,7 +42,7 @@
         android:paddingEnd="32dp"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginBottom="24dp"
         android:background="@drawable/bg_round_blue_btn"
         android:layout_gravity="center"
         android:gravity="center"
@@ -54,14 +58,10 @@
         android:paddingEnd="32dp"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginBottom="32dp"
         android:layout_gravity="center"
         android:gravity="center"
         android:text="@string/Contact_Support"
         android:textSize="14sp"
         android:textColor="@color/selector_blue_tv"/>
-
-    <View
-        android:layout_width="0dp"
-        android:layout_height="40dp" />
 </LinearLayout>
