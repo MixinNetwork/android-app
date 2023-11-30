@@ -94,7 +94,6 @@ import one.mixin.android.vo.utxo.changeToOutput
 import one.mixin.android.vo.utxo.consolidationOutput
 import java.io.File
 import java.math.BigDecimal
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -278,24 +277,21 @@ class BottomSheetViewModel
             kernelAddress: String,
             amount: String,
             pin: String,
-            trace: String?,
+            trace: String,
             memo: String?,
         ): MixinResponse<*> {
             val asset = assetIdToAsset(assetId)
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
             val utxoWrapper = UtxoWrapper(packUtxo(asset, amount))
-            if (trace != null) {
-                val rawTransaction = tokenRepository.findRawTransaction(trace)
-                if (rawTransaction?.state == OutputState.unspent) {
-                    return innerTransaction(rawTransaction.rawTransaction, trace, listOf(), assetId, amount, memo)
-                }
+
+            val rawTransaction = tokenRepository.findRawTransaction(trace)
+            if (rawTransaction?.state == OutputState.unspent) {
+                return innerTransaction(rawTransaction.rawTransaction, trace, listOf(), assetId, amount, memo)
             }
 
-            val traceId = if (trace.isNullOrBlank()) UUID.randomUUID().toString() else trace
             val senderId = Session.getAccountId()!!
-
-            val ghostKeyResponse = tokenRepository.ghostKey(buildKernelTransferGhostKeyRequest(senderId, traceId))
+            val ghostKeyResponse = tokenRepository.ghostKey(buildKernelTransferGhostKeyRequest(senderId, trace))
             if (ghostKeyResponse.error != null) {
                 return ghostKeyResponse
             }
@@ -307,7 +303,7 @@ class BottomSheetViewModel
             val changeMask = data.first().mask
 
             val tx = Kernel.buildTxToKernelAddress(asset, amount, kernelAddress, input, changeKeys, changeMask, memo)
-            val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, traceId)))
+            val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, trace)))
             if (transactionResponse.error != null) {
                 return transactionResponse
             } else if ((transactionResponse.data?.size ?: 0) > 1) {
@@ -329,7 +325,7 @@ class BottomSheetViewModel
                 tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
             }
             jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
-            return innerTransaction(signResult.raw, traceId, listOf(), assetId, amount, memo)
+            return innerTransaction(signResult.raw, trace, listOf(), assetId, amount, memo)
         }
 
         suspend fun kernelTransaction(
@@ -338,7 +334,7 @@ class BottomSheetViewModel
             threshold: Byte,
             amount: String,
             pin: String,
-            trace: String?,
+            trace: String,
             memo: String?,
         ): MixinResponse<*> {
             val isConsolidation = receiverIds.size == 1 && receiverIds.first() == Session.getAccountId()
@@ -346,17 +342,14 @@ class BottomSheetViewModel
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
             val utxoWrapper = UtxoWrapper(packUtxo(asset, amount))
-            if (trace != null) {
-                val rawTransaction = tokenRepository.findRawTransaction(trace)
-                if (rawTransaction != null) {
-                    return innerTransaction(rawTransaction.rawTransaction, trace, receiverIds, assetId, amount, memo)
-                }
+
+            val rawTransaction = tokenRepository.findRawTransaction(trace)
+            if (rawTransaction != null) {
+                return innerTransaction(rawTransaction.rawTransaction, trace, receiverIds, assetId, amount, memo)
             }
 
-            val traceId = if (trace.isNullOrBlank())  UUID.randomUUID().toString() else trace
             val senderIds = listOf(Session.getAccountId()!!)
-
-            val ghostKeyResponse = tokenRepository.ghostKey(buildGhostKeyRequest(receiverIds, senderIds, traceId))
+            val ghostKeyResponse = tokenRepository.ghostKey(buildGhostKeyRequest(receiverIds, senderIds, trace))
             if (ghostKeyResponse.error != null) {
                 return ghostKeyResponse
             }
@@ -370,7 +363,7 @@ class BottomSheetViewModel
             val changeMask = data.last().mask
 
             val tx = Kernel.buildTx(asset, amount, threshold.toInt(), receiverKeys, receiverMask, input, changeKeys, changeMask, memo, "")
-            val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, traceId)))
+            val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, trace)))
             if (transactionResponse.error != null) {
                 return transactionResponse
             } else if ((transactionResponse.data?.size ?: 0) > 1) {
@@ -396,7 +389,7 @@ class BottomSheetViewModel
                 tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
             }
             jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
-            return innerTransaction(signResult.raw, traceId, receiverIds, assetId, amount, memo, isConsolidation)
+            return innerTransaction(signResult.raw, trace, receiverIds, assetId, amount, memo, isConsolidation)
         }
 
         private suspend fun innerTransaction(

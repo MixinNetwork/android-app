@@ -193,19 +193,19 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             when (val t = this.t) {
                 is TransferBiometricItem -> {
                     val opponentId = if (t.users.size == 1) t.users.first().userId else ""
-                    trace = Trace(t.traceId!!, asset.assetId, t.amount, opponentId, null, null, null, nowInUtc())
+                    trace = Trace(t.traceId, asset.assetId, t.amount, opponentId, null, null, null, nowInUtc())
                     val receiverIds = t.users.map { it.userId }
                     bottomViewModel.kernelTransaction(asset.assetId, receiverIds, t.threshold, t.amount, pin, t.traceId, t.memo)
                 }
                 is AddressTransferBiometricItem -> {
-                    trace = Trace(t.traceId!!, asset.assetId, t.amount, null, t.address, null, null, nowInUtc())
+                    trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address, null, null, nowInUtc())
                     bottomViewModel.kernelAddressTransaction(asset.assetId, t.address, t.amount, pin, t.traceId, t.memo)
                 }
                 else -> {
                     t as WithdrawBiometricItem
-                    trace = Trace(t.traceId!!, asset.assetId, t.amount, null, t.address.destination, t.address.tag, null, nowInUtc())
+                    trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address.destination, t.address.tag, null, nowInUtc())
                     val fee = requireNotNull(t.fee) { "required fee can not be null" }
-                    bottomViewModel.kernelWithdrawalTransaction(MIXIN_FEE_USER_ID, t.traceId!!, asset.assetId, fee.token.assetId, t.amount, fee.fee, t.address.destination, t.address.tag, t.memo, pin)
+                    bottomViewModel.kernelWithdrawalTransaction(MIXIN_FEE_USER_ID, t.traceId, asset.assetId, fee.token.assetId, t.amount, fee.fee, t.address.destination, t.address.tag, t.memo, pin)
                 }
             }
         bottomViewModel.insertTrace(trace)

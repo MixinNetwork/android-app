@@ -2306,6 +2306,7 @@ class ConversationFragment() :
             viewLifecycleOwner,
         ) { info ->
             info ?: return@observe
+            groupName = info.name
             binding.actionBar.setSubTitle(
                 info.name ?: "",
                 requireContext().resources.getQuantityString(

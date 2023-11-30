@@ -87,7 +87,7 @@ class UtxoConsolidationBottomSheetDialogFragment : ValuableBiometricBottomSheetD
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
         val asset = requireNotNull(t.asset) { "required token can not be null" }
         val opponentId = if (t.users.size == 1) t.users.first().userId else ""
-        val trace = Trace(t.traceId!!, asset.assetId, t.amount, opponentId, null, null, null, nowInUtc())
+        val trace = Trace(t.traceId, asset.assetId, t.amount, opponentId, null, null, null, nowInUtc())
         val receiverIds = t.users.map { it.userId }
         val response = bottomViewModel.kernelTransaction(asset.assetId, receiverIds, t.threshold, t.amount, pin, t.traceId, t.memo)
         bottomViewModel.insertTrace(trace)
