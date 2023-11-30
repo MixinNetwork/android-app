@@ -162,7 +162,7 @@ class TokenRepository
                     },
                     failureBlock = {
                         code = it.errorCode
-                        true
+                        false
                     },
                     successBlock = { resp ->
                         val pub = SAFE_PUBLIC_KEY.hexStringToByteArray()
