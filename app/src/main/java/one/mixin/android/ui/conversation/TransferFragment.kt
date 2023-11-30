@@ -635,7 +635,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             t.memo = memo
 
             binding.continueVa.displayedChild = POST_PB
-            val traceId = t.traceId.let { if (it.isNullOrBlank()) UUID.randomUUID().toString() else it }
+            val traceId = t.traceId
             val pair =
                 if (t is TransferBiometricItem && t.users.size == 1) {
                     chatViewModel.findLatestTrace(t.users.first().userId, null, null, amount, asset.assetId)
@@ -673,7 +673,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                     binding.continueVa.displayedChild = POST_TEXT
                     return@launch
                 }
-            t.traceId = traceId
 
             if (t is WithdrawBiometricItem) {
                 val fee = requireNotNull(currentFee) { "withdrawal currentFee can not be null" }

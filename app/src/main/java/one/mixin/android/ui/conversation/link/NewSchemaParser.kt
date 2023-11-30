@@ -6,7 +6,6 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.isUUID
-import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.ui.common.OutputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
@@ -77,8 +76,8 @@ class NewSchemaParser(
                 }
             }
 
+        val traceId = trace ?: UUID.randomUUID().toString()
         if (asset != null && amount != null) {
-            val traceId = trace ?: UUID.randomUUID().toString()
             var isTraceNotFound = false
             val tx =
                 handleMixinResponse(
@@ -102,7 +101,7 @@ class NewSchemaParser(
             if (payType == PayType.Uuid) {
                 val user = linkViewModel.refreshUser(lastPath) ?: return false
 
-                val biometricItem = TransferBiometricItem(listOf(user), 1, token, amount, null, traceId, memo, status, null, returnTo)
+                val biometricItem = TransferBiometricItem(listOf(user), 1, traceId, token, amount, memo, status, null, returnTo)
                 showPreconditionBottom(biometricItem)
             } else if (payType == PayType.MixAddress) {
                 val mixAddress = lastPath.toMixAddress() ?: return false
@@ -111,17 +110,17 @@ class NewSchemaParser(
                     if (users.isEmpty() || users.size < mixAddress.uuidMembers.size) {
                         return false
                     }
-                    val biometricItem = TransferBiometricItem(users, mixAddress.threshold, token, amount, null, traceId, memo, status, null, returnTo)
+                    val biometricItem = TransferBiometricItem(users, mixAddress.threshold, traceId, token, amount, memo, status, null, returnTo)
                     showPreconditionBottom(biometricItem)
                 } else if (mixAddress.xinMembers.isNotEmpty()) {
-                    val addressTransferBiometricItem = AddressTransferBiometricItem(mixAddress.xinMembers.first().string(), token, amount, null, traceId, memo, status, returnTo)
+                    val addressTransferBiometricItem = AddressTransferBiometricItem(mixAddress.xinMembers.first().string(), traceId, token, amount, memo, status, returnTo)
                     showPreconditionBottom(addressTransferBiometricItem)
                 } else {
                     return false
                 }
             } else {
                 // TODO verify address?
-                val addressTransferBiometricItem = AddressTransferBiometricItem(lastPath, token, amount, null, traceId, memo, status, returnTo)
+                val addressTransferBiometricItem = AddressTransferBiometricItem(lastPath, traceId, token, amount, memo, status, returnTo)
                 showPreconditionBottom(addressTransferBiometricItem)
             }
         } else {
@@ -134,29 +133,29 @@ class NewSchemaParser(
             val transferFragment: TransferFragment? =
                 if (payType == PayType.Uuid) {
                     val user = linkViewModel.refreshUser(lastPath) ?: return false // TODO 404?
-                    TransferFragment.newInstance(buildTransferBiometricItem(user, token, amount ?: "", trace, memo, returnTo))
+                    TransferFragment.newInstance(buildTransferBiometricItem(user, token, amount ?: "", traceId, memo, returnTo))
                 } else if (payType == PayType.MixAddress) {
                     val mixAddress = lastPath.toMixAddress()
                     val members = mixAddress?.uuidMembers
                     if (!members.isNullOrEmpty()) {
                         if (members.size == 1) {
                             val user = linkViewModel.refreshUser(members.first()) ?: return false // TODO 404?
-                            TransferFragment.newInstance(buildTransferBiometricItem(user, token, amount ?: "", trace, memo, returnTo))
+                            TransferFragment.newInstance(buildTransferBiometricItem(user, token, amount ?: "", traceId, memo, returnTo))
                         } else {
                             val users = linkViewModel.findOrRefreshUsers(members)
                             if (users.isEmpty() || users.size < members.size) {
                                 return false
                             }
-                            val item = TransferBiometricItem(users, mixAddress.threshold, token, amount ?: "", null, trace, memo, PaymentStatus.pending.name, null, returnTo)
+                            val item = TransferBiometricItem(users, mixAddress.threshold, traceId, token, amount ?: "", memo, PaymentStatus.pending.name, null, returnTo)
                             TransferFragment.newInstance(item)
                         }
                     } else if (mixAddress?.xinMembers?.size == 1) { // TODO Support for multiple address
-                        TransferFragment.newInstance(buildAddressBiometricItem(mixAddress.xinMembers.first().string(), token, amount ?: "", trace, memo, returnTo))
+                        TransferFragment.newInstance(buildAddressBiometricItem(mixAddress.xinMembers.first().string(), traceId, token, amount ?: "", memo, returnTo))
                     } else {
                         null
                     }
                 } else {
-                    TransferFragment.newInstance(buildAddressBiometricItem(lastPath, token, amount ?: "", trace, memo, returnTo))
+                    TransferFragment.newInstance(buildAddressBiometricItem(lastPath, traceId, token, amount ?: "", memo, returnTo))
                 }
             if (transferFragment == null) return false
             transferFragment.show(bottomSheet.parentFragmentManager, TransferFragment.TAG)
