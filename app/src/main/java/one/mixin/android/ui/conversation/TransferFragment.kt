@@ -453,6 +453,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             binding.symbolTv.text = getTopSymbol()
             binding.amountAsTv.text = getBottomText()
         }
+        val amount = asset.balance.toDoubleOrNull()
+        if (amount != null && amount <= 0) {
+            binding.amountEt.isEnabled = false
+        }
 
         if (!isInnerTransfer() && asset.assetId == RIPPLE_CHAIN_ID) {
             binding.transferMemo.setHint(R.string.Tag)
