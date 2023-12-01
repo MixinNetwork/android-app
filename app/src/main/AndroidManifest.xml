@@ -428,8 +428,7 @@
             android:exported="false" />
         <service
             android:name=".fcm.FcmService"
-            android:exported="false"
-            android:directBootAware="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
@@ -474,13 +473,27 @@
             android:enabled="true" />
         <receiver
             android:name=".receiver.ExitBroadcastReceiver"
-            android:enabled="true" />
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="mixin.intent.action.TO_BACKGROUND" />
+            </intent-filter>
+        </receiver>
         <receiver
             android:name=".receiver.TimezoneChangedReceiver"
             android:exported="false"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".receiver.BootReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+
+                <!-- MIUI -->
+                <action android:name="android.intent.action.REBOOT"/>
             </intent-filter>
         </receiver>
 
