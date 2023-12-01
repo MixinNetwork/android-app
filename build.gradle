@@ -122,7 +122,7 @@ buildscript {
         maven { url "https://maven.sumsub.com/repository/maven-public/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.4'
+        classpath 'com.android.tools.build:gradle:8.2.0'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
         classpath 'com.google.gms:google-services:4.4.0'
