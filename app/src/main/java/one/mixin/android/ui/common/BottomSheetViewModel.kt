@@ -42,6 +42,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.ConversationJob
+import one.mixin.android.job.ForceSyncOutputJob
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
@@ -219,6 +220,11 @@ class BottomSheetViewModel
                 throw IllegalArgumentException("Parameter exception")
             } else if (withdrawalRequestResponse.data?.first()?.state != OutputState.unspent.name) {
                 throw IllegalArgumentException("Transfer is already paid")
+            } else if (withdrawalRequestResponse.errorCode == 10105) {
+                jobManager.addJobInBackground(ForceSyncOutputJob(withdrawalUtxos.firstSequence, asset))
+                feeUtxos?.let {
+                    jobManager.addJobInBackground(ForceSyncOutputJob(it.firstSequence, feeAsset))
+                }
             }
             val (withdrawalData, feeData) = getTransactionResult(withdrawalRequestResponse.data, traceId, feeTraceId)
             val withdrawalViews = withdrawalData.views.joinToString(",")
@@ -365,6 +371,9 @@ class BottomSheetViewModel
             val tx = Kernel.buildTx(asset, amount, threshold.toInt(), receiverKeys, receiverMask, input, changeKeys, changeMask, memo, "")
             val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, trace)))
             if (transactionResponse.error != null) {
+                if (transactionResponse.errorCode == 10105) {
+                    jobManager.addJobInBackground(ForceSyncOutputJob(utxoWrapper.firstSequence, asset))
+                }
                 return transactionResponse
             } else if ((transactionResponse.data?.size ?: 0) > 1) {
                 throw IllegalArgumentException("Parameter exception")
