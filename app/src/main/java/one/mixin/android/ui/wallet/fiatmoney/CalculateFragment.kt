@@ -37,6 +37,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.shaking
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.AppearanceFragment
@@ -254,7 +255,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         if (amount == null) {
                             toast("number error")
                         } else {
-                            lifecycleScope.launch {
+                            lifecycleScope.launch inner@{
+                                if (viewDestroyed()) return@inner
                                 try {
                                     binding.continueVa.displayedChild = 1
                                     initSafeBox()
@@ -308,7 +310,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     @SuppressLint("SetTextI18n")
     private fun updateUI() {
-        if (!isAdded) return
+        if (viewDestroyed()) return
         val currency = fiatMoneyViewModel.currency ?: return
         val asset = fiatMoneyViewModel.asset ?: return
         if (fiatMoneyViewModel.isReverse) {
@@ -335,6 +337,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     private var loadingShown = false
 
     private fun showLoading() {
+        if (viewDestroyed()) return
         if (!loadingShown) {
             loadingShown = true
             loading.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
@@ -342,6 +345,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     }
 
     private fun dismissLoading() {
+        if (viewDestroyed()) return
         if (loadingShown) {
             loadingShown = false
             loading.dismiss()
@@ -350,6 +354,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     @SuppressLint("SetTextI18n")
     private fun updateValue() {
+        if (viewDestroyed()) return
         val currency = fiatMoneyViewModel.currency ?: return
         val asset = fiatMoneyViewModel.asset ?: return
         val state = fiatMoneyViewModel.calculateState ?: return
@@ -417,6 +422,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     }
 
     private fun updatePrimarySize() {
+        if (viewDestroyed()) return
         binding.apply {
             val length = primaryTv.text.length
             val size =
@@ -605,6 +611,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     private fun checkData() {
         lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
             showLoading()
             flow {
                 emit(ROUTE_BOT_USER_ID)
