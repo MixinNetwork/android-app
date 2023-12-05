@@ -134,14 +134,14 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
                 onBack = {
                     dismissLoading()
                 }
-                onSuccess = { token, scheme ->
+                onSuccess = { token, scheme, cardholderName ->
                     parentFragmentManager.beginTransaction()
                         .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
                         .remove(this).commitNow()
                     lifecycleScope.launch {
                         requestRouteAPI(
                             invokeNetwork = {
-                                fiatMoneyViewModel.createInstrument(RouteInstrumentRequest(token))
+                                fiatMoneyViewModel.createInstrument(RouteInstrumentRequest(token, cardholderName))
                             },
                             endBlock = {
                                 dismissLoading()

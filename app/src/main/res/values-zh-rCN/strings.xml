@@ -156,6 +156,7 @@
     <string name="cant_talk_self">不能和自己对话</string>
     <string name="cant_transfer_self">不能给自己转账</string>
     <string name="Card">卡片</string>
+    <string name="Cardholder_empty">持卡人姓名为空</string>
     <string name="Chain">所属公链</string>
     <string name="Change">更改</string>
     <string name="Change_Amount">修改金额</string>
@@ -1236,7 +1237,7 @@
     <string name="identity_info">继续操作即表示您同意隐私政策和服务条款。</string>
     <string name="Start_Verification">开始验证</string>
     <string name="Identity_Verifying">身份验证中</string>
-    <string name="identity_verifying_tip">正在验证您的身份。一旦您的验证完成，我们将通过 Mixin Messenger 向您发送消息。</string>
+    <string name="identity_verifying_description">正在验证您的身份。一旦您的验证完成，我们将通过 Mixin Messenger 向您发送消息。</string>
     <string name="verification_failed">验证失败</string>
     <string name="verification_failed_description">您的验证失败，可能是因为未提交所有必需的身份证明文件或某些文件存在问题。</string>
     <string name="verification_blocked_description">你的验证失败，可能是因为提交的文件有问题，请点击下面按钮联系客服。</string>
@@ -1308,4 +1309,5 @@
     <string name="consolidation_utxo_description">您的 UTXOs 数量超过了256，为了发送体验，请输入 PIN 整合 UTXOs 后再操作</string>
     <string name="depost_address_updated">%1$s 充值地址已更新</string>
     <string name="depost_address_updated_description">您的 %1$s 充值地址已更新，充值地址将随着系统或网络升级而自动更新，旧的地址仍可充值并会自动入账，但是不推荐使用。</string>
+    <string name="login_verify_pin">我们会定期向您询问，以帮助您记忆。</string>
 </resources>

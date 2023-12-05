@@ -15,6 +15,10 @@ data class UtxoWrapper(val outputs: List<Output>) {
         GsonHelper.customGson.toJson(generateUtxos()).toByteArray()
     }
 
+    val firstSequence by lazy {
+        outputs.first().sequence
+    }
+
     private fun generateKeys(): List<List<String>> {
         return outputs.map { it.keys }
     }

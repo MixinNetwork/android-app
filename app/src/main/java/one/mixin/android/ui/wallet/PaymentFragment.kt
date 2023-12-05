@@ -26,7 +26,11 @@ class PaymentFragment : BaseFragment() {
             }
 
             override fun onSuccess(tokenDetails: TokenDetails) {
-                onSuccess?.invoke(tokenDetails.token, tokenDetails.scheme?.lowercase())
+                if (tokenDetails.name.isNullOrEmpty()) {
+                    onFailure?.invoke("cardholder empty")
+                } else {
+                    onSuccess?.invoke(tokenDetails.token, tokenDetails.scheme?.lowercase(), tokenDetails.name)
+                }
             }
 
             override fun onFailure(errorMessage: String) {
@@ -66,7 +70,7 @@ class PaymentFragment : BaseFragment() {
         return paymentFormMediator.provideFragmentContent(this)
     }
 
-    var onSuccess: ((String, String?) -> Unit)? = null
+    var onSuccess: ((String, String?, String?) -> Unit)? = null
     var onFailure: ((String) -> Unit)? = null
     var onBack: (() -> Unit)? = null
     var onLoading: (() -> Unit)? = null

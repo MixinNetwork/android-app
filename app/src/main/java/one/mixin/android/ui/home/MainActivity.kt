@@ -50,6 +50,7 @@ import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
+import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
@@ -75,6 +76,7 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.event.SessionEvent
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.areBubblesAllowedCompat
@@ -121,6 +123,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.EditDialog
+import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
@@ -132,6 +135,7 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
+import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.landing.InitializeActivity
@@ -214,6 +218,8 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private lateinit var binding: ActivityMainBinding
+
+    private var isDesktopLogin = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -312,6 +318,13 @@ class MainActivity : BlazeBaseActivity() {
                     WalletConnectActivity.show(this, it.error)
                 }
             }
+        RxBus.listen(SessionEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe {
+                isDesktopLogin = Session.getExtensionSessionId() != null
+                binding.searchBar.updateDesktop(isDesktopLogin)
+            }
 
         if (Session.getAccount()?.hasPin != true) {
             TipActivity.show(this, TipType.Create, shouldWatch = true)
@@ -320,6 +333,17 @@ class MainActivity : BlazeBaseActivity() {
         } else {
             if (Session.hasSafe()) {
                 jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
+                if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)) {
+                    LoginVerifyBottomSheetDialogFragment.newInstance().apply {
+                        onDismissCallback = { success ->
+                            if (success) {
+                                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+                            } else {
+                                this@MainActivity.finish()
+                            }
+                        }
+                    }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+                }
             } else {
                 CheckRegisterBottomSheetDialogFragment.newInstance()
                     .showNow(supportFragmentManager, CheckRegisterBottomSheetDialogFragment.TAG)
@@ -866,6 +890,9 @@ class MainActivity : BlazeBaseActivity() {
             (supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as? CirclesFragment)?.cancelSort()
         }
         binding.searchBar.logo.text = defaultSharedPreferences.getString(CIRCLE_NAME, "Mixin")
+        binding.searchBar.desktop.setOnClickListener {
+            DeviceFragment.newInstance().showNow(supportFragmentManager, DeviceFragment.TAG)
+        }
         binding.rootView.setOnKeyListener { _, keyCode, _ ->
             if (keyCode == KeyEvent.KEYCODE_BACK && binding.searchBar.isOpen) {
                 binding.searchBar.closeSearch()
@@ -876,6 +903,8 @@ class MainActivity : BlazeBaseActivity() {
         }
         supportFragmentManager.beginTransaction().add(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
         observeOtherCircleUnread(defaultSharedPreferences.getString(CIRCLE_ID, null))
+        isDesktopLogin = Session.getExtensionSessionId() != null
+        binding.searchBar.updateDesktop(isDesktopLogin)
     }
 
     fun openSearch() {

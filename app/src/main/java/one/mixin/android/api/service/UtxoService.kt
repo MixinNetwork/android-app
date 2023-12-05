@@ -24,6 +24,7 @@ interface UtxoService {
         @Query("offset") offset: Long? = null,
         @Query("limit") limit: Int = 500,
         @Query("state") state: String? = null,
+        @Query("asset") asset: String? = null,
     ): MixinResponse<List<Output>>
 
     @POST("safe/deposit/entries")

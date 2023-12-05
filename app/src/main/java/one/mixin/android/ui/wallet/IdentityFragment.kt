@@ -58,7 +58,7 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
                     KycState.PENDING.value -> {
                         imageView.setImageResource(R.drawable.ic_identity_verifying)
                         tipTitle.setText(R.string.Identity_Verifying)
-                        tipTv.setText(R.string.identity_verifying_tip)
+                        tipTv.setText(R.string.identity_verifying_description)
                         okTv.setText(R.string.OK)
                         updateTip(false)
                         okTv.setOnClickListener {
