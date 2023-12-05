@@ -50,6 +50,7 @@ import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
+import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
@@ -121,6 +122,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.EditDialog
+import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
@@ -320,6 +322,17 @@ class MainActivity : BlazeBaseActivity() {
         } else {
             if (Session.hasSafe()) {
                 jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
+                if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)) {
+                    LoginVerifyBottomSheetDialogFragment.newInstance().apply {
+                        onDismissCallback = { success ->
+                            if (success) {
+                                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+                            } else {
+                                this@MainActivity.finish()
+                            }
+                        }
+                    }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+                }
             } else {
                 CheckRegisterBottomSheetDialogFragment.newInstance()
                     .showNow(supportFragmentManager, CheckRegisterBottomSheetDialogFragment.TAG)

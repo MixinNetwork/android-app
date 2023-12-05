@@ -1309,4 +1309,5 @@
     <string name="consolidation_utxo_description">您的 UTXOs 数量超过了256，为了发送体验，请输入 PIN 整合 UTXOs 后再操作</string>
     <string name="depost_address_updated">%1$s 充值地址已更新</string>
     <string name="depost_address_updated_description">您的 %1$s 充值地址已更新，充值地址将随着系统或网络升级而自动更新，旧的地址仍可充值并会自动入账，但是不推荐使用。</string>
+    <string name="login_verify_pin">我们会定期向您询问，以帮助您记忆。</string>
 </resources>

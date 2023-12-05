@@ -1339,4 +1339,5 @@
     <string name="consolidation_utxo_description">Your number of UTXOs exceeds 256. For sending experience, please enter the PIN to consolidating UTXOs before operating</string>
     <string name="depost_address_updated">%1$s Deposit Address Updated</string>
     <string name="depost_address_updated_description">Your %1$s deposit address has been updated. The deposit address will automatically update with system or network upgrades. Old addresses are still valid for deposits, but it is not recommended for further use.</string>
+    <string name="login_verify_pin">You’ll be asked for it periodically to help you remember it.</string>
 </resources>

@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.Constants.TEAM_BOT_ID
 import one.mixin.android.Constants.TEAM_BOT_NAME
@@ -98,6 +99,10 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             jobManager.addJobInBackground(InitializeJob(TEAM_MIXIN_USER_ID, TEAM_MIXIN_USER_NAME))
             if (TEAM_BOT_ID.isNotEmpty()) {
                 jobManager.addJobInBackground(InitializeJob(TEAM_BOT_ID, TEAM_BOT_NAME))
+            }
+
+            if (Session.hasSafe()) {
+                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, true)
             }
             MainActivity.show(requireContext())
             activity?.finish()
