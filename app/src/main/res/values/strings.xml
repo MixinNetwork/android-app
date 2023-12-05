@@ -21,7 +21,7 @@
     <string name="access_your_snapshots">access your snapshots</string>
     <string name="Account">Account</string>
     <string name="Add">Add</string>
-    <string name="Add_address">Add address</string>
+    <string name="Add_address">Add Address</string>
     <string name="Add_bot">Add Bot</string>
     <string name="Add_circle">Add Circle</string>
     <string name="Add_Contact">Add Contact</string>
@@ -483,9 +483,9 @@
     <string name="Follow_us_on_twitter">Follow us on Twitter</string>
     <string name="Format_not_supported">Format not supported</string>
     <string name="Forward">Forward</string>
-    <string name="Forward_message">Forward message</string>
-    <string name="Forward_success">Forward success</string>
-    <string name="Forward_to_friend">Forward to friend</string>
+    <string name="Forward_message">Forward a message</string>
+    <string name="Forward_success">Forwarded successfully</string>
+    <string name="Forward_to_friend">Forward to a friend</string>
     <string name="fourth_pin_confirm_hint">Yes, there is a fourth PIN confirmation, and I promise it\'s the last one to ensure you have remembered your PIN. The PIN is unrecoverable if lost.</string>
     <string name="Friday">Friday</string>
     <string name="From">From</string>
@@ -496,7 +496,7 @@
     <string name="Go_settings">Go settings</string>
     <string name="Got_it">Got it</string>
     <string name="got_it_count_down">Got it (%1$d)</string>
-    <string name="group_already_in">You already in the group</string>
+    <string name="group_already_in">You are already in the group.</string>
     <string name="Group_Call">Group Call</string>
     <string name="group_call_end_with_duration">Group call ended, duration: %1$s</string>
     <string name="Group_call_participants_limit_hint">Group calling allows up to %1$d participants to call each other</string>
@@ -511,13 +511,13 @@
     <string name="group_pop_menu_remove">Remove %1$s</string>
     <string name="group_pop_menu_view">View %1$s</string>
     <string name="group_role">You\' re now an admin</string>
-    <string name="Groups_In_Common">Groups In Common</string>
+    <string name="Groups_In_Common">Groups in Common</string>
     <string name="Hang_up">Hang up</string>
     <string name="Help_center">Help center</string>
     <string name="Hidden">Hidden</string>
     <string name="Hidden_Assets">Hidden Assets</string>
     <string name="Hide">Hide</string>
-    <string name="hold_to_record_audio">Hold to record, release to send</string>
+    <string name="hold_to_record_audio">Hold to record, release to send.</string>
     <plurals name="Hour">
         <item quantity="one">%d Hour</item>
         <item quantity="other">%d Hours</item>
@@ -600,7 +600,7 @@
     <string name="Media">Media</string>
     <string name="Memo">Memo</string>
     <string name="message">message</string>
-    <string name="message_e2ee">Messages to this conversation are encrypted end-to-end, tap for more info.</string>
+    <string name="message_e2ee">Messages to this conversation are end-to-end encrypted, tap for more info.</string>
     <string name="Message_not_found">Message not found</string>
     <string name="message_not_support">This type of message is not supported, please upgrade Mixin to the latest version.</string>
     <string name="Message_Notification">Message Notification</string>
@@ -610,7 +610,7 @@
     <string name="Messages">Messages</string>
     <string name="Messaging_Node">Messaging Node</string>
     <string name="Messaging_node_running">Messaging node running</string>
-    <string name="message_shareable_false">The message has been set to not allow sharing</string>
+    <string name="message_shareable_false">The message has been set to not allow sharing.</string>
     <plurals name="Minute">
         <item quantity="one">%d Minute</item>
         <item quantity="other">%d Minutes</item>
@@ -636,8 +636,8 @@
     <string name="My_Stickers">My Stickers</string>
     <string name="NA">N/A</string>
     <string name="Name">Name</string>
-    <string name="need_background_permission">Requires start in background permission for continue</string>
-    <string name="need_camera_permission">Requires camera permission for continue</string>
+    <string name="need_background_permission">Requires start in background permission to continue.</string>
+    <string name="need_camera_permission">Requires camera permission to continue.</string>
     <string name="Need_help">Need help?</string>
     <string name="Net_Diagnosis">Net Diagnosis</string>
     <string name="Network_error">Network error</string>
@@ -905,14 +905,14 @@
     <string name="setting_desktop_logout_failed">Logout of desktop failed.</string>
     <string name="setting_duplicate_transfer_desc">Display confirmation dialog when you transfer the same amount to the same person within 6 hours.</string>
     <string name="setting_emergency_change_mobile">Do you want to change your mobile number now?</string>
-    <string name="setting_emergency_content">The emergency contact is designed to help you log in to your account if you are lost and can not retrieve your mobile number.</string>
+    <string name="setting_emergency_content">The emergency contact is designed to help you log in to your account when you are unable to access your phone number.</string>
     <string name="setting_emergency_create_success">Create emergency contact successfully</string>
-    <string name="setting_emergency_desc">When your lost your mobile number, please contact your emergency contact by phone or other means to get the Mixin ID and verification code. Read our Emergency Contact to **learn more**.</string>
+    <string name="setting_emergency_desc">When you lose your mobile number, please contact your emergency contact by phone or other means to get the Mixin ID and verification code. Visit the support center to **learn more**.</string>
     <string name="setting_emergency_pin_tip">Your emergency contact is protected by PIN</string>
     <string name="setting_emergency_send_code">Enter the 4-digit code sent to Mixin ID: %1$s</string>
     <string name="setting_emergency_set">Set emergency contact</string>
     <string name="setting_emergency_set_message">Confirm to set Mixin ID %1$s as your emergency contact? Please note that the other party must add you as a contact to set up successfully.</string>
-    <string name="setting_emergency_warning">Attention: the Emergency Contact cannot help you to recover PIN</string>
+    <string name="setting_emergency_warning">The emergency contact cannot help you to recover your PIN.</string>
     <string name="setting_enable_biometric_pay">Enable Biometric Pay?</string>
     <string name="setting_incognito_prompt">Disable keyboard personalized learning</string>
     <string name="setting_mobile_contact_warning">This will remove your contacts from the Mixin servers.</string>
@@ -1260,9 +1260,9 @@
         <item quantity="other">%1$d Items Selected</item>
     </plurals>
     <string name="Identity_Verifying">Identity Verifying</string>
-    <string name="identity_verifying_tip">Your identity is being verified. We will send you message on once your verification has completed by Mixin Messenger.</string>
+    <string name="identity_verifying_tip">Your identity is being verified. We will send you a message once your verification has completed.</string>
     <string name="verification_failed">Verification Failed</string>
-    <string name="verification_failed_description">Your verification failed, possibly because all required identification documents were not submitted or there was a problem with some documents.</string>
+    <string name="verification_failed_description">Your verification failed, possibly because some required identification documents were not submitted or there was a problem with some documents.</string>
     <string name="verification_blocked_description">Your verification failed, possibly because there was a problem with some documents, please click the button below to contact with us.</string>
     <string name="Additional_Verification">Additional Verification</string>
     <string name="identity_additional_verification_tip">We need you to submit additional information to meet regulatory requirements, thank you for your understanding and support.</string>
@@ -1270,7 +1270,7 @@
     <string name="Google_Pay" translatable="false">Google Pay</string>
     <string name="Debit_Credit_Card">Debit / Credit Card</string>
     <string name="Add_debit_or_credit_card">Add credit or debit card</string>
-    <string name="user_deleted_hint">The user has deleted his own account.</string>
+    <string name="user_deleted_hint">The user has deleted the account.</string>
     <string name="Order_Preview">Order Preview</string>
     <string name="Total">Total</string>
     <string name="Pay_with">Pay with</string>
