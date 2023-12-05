@@ -94,7 +94,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     companion object {
         const val CHANNEL_NODE = "channel_node"
         const val FOREGROUND_ID = 666666
-        const val ACTION_TO_BACKGROUND = "action_to_background"
+        const val ACTION_TO_BACKGROUND = "mixin.intent.action.TO_BACKGROUND"
         const val ACTION_ACTIVITY_RESUME = "action_activity_resume"
         const val ACTION_ACTIVITY_PAUSE = "action_activity_pause"
 

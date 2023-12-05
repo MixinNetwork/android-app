@@ -6,7 +6,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
 import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
@@ -323,7 +323,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
             notificationManager.createNotificationChannel(channel)
             CallNotificationBuilder.getCallNotification(this, callState)?.let {
                 try {
-                    ServiceCompat.startForeground(this, CallNotificationBuilder.WEBRTC_NOTIFICATION, it, FOREGROUND_SERVICE_TYPE_PHONE_CALL)
+                    ServiceCompat.startForeground(this, CallNotificationBuilder.WEBRTC_NOTIFICATION, it, FOREGROUND_SERVICE_TYPE_MICROPHONE)
                 } catch (e: Exception) {
                     Timber.e(e)
                 }

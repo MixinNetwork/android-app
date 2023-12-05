@@ -19,9 +19,7 @@
         tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -430,7 +428,6 @@
             android:exported="false" />
         <service
             android:name=".fcm.FcmService"
-            android:foregroundServiceType="remoteMessaging"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -442,10 +439,10 @@
             android:permission="android.permission.BIND_JOB_SERVICE" />
         <service
             android:name=".webrtc.VoiceCallService"
-            android:foregroundServiceType="phoneCall" />
+            android:foregroundServiceType="microphone" />
         <service
             android:name=".webrtc.GroupCallService"
-            android:foregroundServiceType="phoneCall" />
+            android:foregroundServiceType="microphone" />
         <service
             android:name=".job.BlazeMessageService"
             android:foregroundServiceType="dataSync"
@@ -476,13 +473,27 @@
             android:enabled="true" />
         <receiver
             android:name=".receiver.ExitBroadcastReceiver"
-            android:enabled="true" />
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="mixin.intent.action.TO_BACKGROUND" />
+            </intent-filter>
+        </receiver>
         <receiver
             android:name=".receiver.TimezoneChangedReceiver"
             android:exported="false"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".receiver.BootReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+
+                <!-- MIUI -->
+                <action android:name="android.intent.action.REBOOT"/>
             </intent-filter>
         </receiver>
 
