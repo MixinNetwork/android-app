@@ -156,6 +156,7 @@
     <string name="cant_talk_self">不能和自己对话</string>
     <string name="cant_transfer_self">不能给自己转账</string>
     <string name="Card">卡片</string>
+    <string name="Cardholder_empty">持卡人姓名为空</string>
     <string name="Chain">所属公链</string>
     <string name="Change">更改</string>
     <string name="Change_Amount">修改金额</string>

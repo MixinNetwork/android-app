@@ -158,6 +158,7 @@
     <string name="cant_talk_self">You can\'t talk to yourself</string>
     <string name="cant_transfer_self">You can\'t transfer to yourself</string>
     <string name="Card">Card</string>
+    <string name="Cardholder_empty">cardholder empty</string>
     <string name="Chain">Chain</string>
     <string name="Change">Change</string>
     <string name="Change_Amount">Change Amount</string>
