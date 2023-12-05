@@ -1237,7 +1237,7 @@
     <string name="identity_info">继续操作即表示您同意隐私政策和服务条款。</string>
     <string name="Start_Verification">开始验证</string>
     <string name="Identity_Verifying">身份验证中</string>
-    <string name="identity_verifying_tip">正在验证您的身份。一旦您的验证完成，我们将通过 Mixin Messenger 向您发送消息。</string>
+    <string name="identity_verifying_description">正在验证您的身份。一旦您的验证完成，我们将通过 Mixin Messenger 向您发送消息。</string>
     <string name="verification_failed">验证失败</string>
     <string name="verification_failed_description">您的验证失败，可能是因为未提交所有必需的身份证明文件或某些文件存在问题。</string>
     <string name="verification_blocked_description">你的验证失败，可能是因为提交的文件有问题，请点击下面按钮联系客服。</string>

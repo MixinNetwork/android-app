@@ -1260,7 +1260,7 @@
         <item quantity="other">%1$d Items Selected</item>
     </plurals>
     <string name="Identity_Verifying">Identity Verifying</string>
-    <string name="identity_verifying_tip">Your identity is being verified. We will send you a message once your verification has completed.</string>
+    <string name="identity_verifying_description">Your identity is being verified. We will send you a message once your verification has completed.</string>
     <string name="verification_failed">Verification Failed</string>
     <string name="verification_failed_description">Your verification failed, possibly because some required identification documents were not submitted or there was a problem with some documents.</string>
     <string name="verification_blocked_description">Your verification failed, possibly because there was a problem with some documents, please click the button below to contact with us.</string>
