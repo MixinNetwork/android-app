@@ -436,6 +436,88 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string, withoutFee bool) (
 	return transaction, nil
 }
 
+func SignTransaction(raw, viewKeys string, spendKey string, index uint16, withoutFee bool) (*Tx, error) {
+	views := strings.Split(viewKeys, ",")
+	rawBytes, err := hex.DecodeString(raw)
+	if err != nil {
+		return nil, err
+	}
+	ver, err := common.UnmarshalVersionedTransaction(rawBytes)
+	if err != nil {
+		return nil, err
+	}
+	msg := ver.PayloadHash()
+	spendSeed, err := hex.DecodeString(spendKey)
+	if err != nil {
+		return nil, err
+	}
+	h := sha512.Sum512(spendSeed)
+	s, err := edwards25519.NewScalar().SetBytesWithClamping(h[:32])
+	if err != nil {
+		return nil, err
+	}
+	y, err := edwards25519.NewScalar().SetCanonicalBytes(s.Bytes())
+	if err != nil {
+		return nil, err
+	}
+
+	for _, view := range views {
+		viewBytes, err := hex.DecodeString(view)
+		if err != nil {
+			return nil, err
+		}
+		x, err := edwards25519.NewScalar().SetCanonicalBytes(viewBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		t := edwards25519.NewScalar().Add(x, y)
+		var key crypto.Key
+		copy(key[:], t.Bytes())
+
+		sig := key.Sign(msg)
+		sigs := make(map[uint16]*crypto.Signature)
+		sigs[index] = &sig
+		ver.SignaturesMap = append(ver.SignaturesMap, sigs)
+	}
+	var changeUtxo *Utxo
+	if ver.Outputs[0].Withdrawal != nil {
+		if len(ver.Outputs) == 3 {
+			changeIndex := len(ver.Outputs) - 1
+			changeUtxo = &Utxo{
+				Hash:   ver.PayloadHash().String(),
+				Amount: ver.Outputs[changeIndex].Amount.String(),
+				Index:  changeIndex,
+			}
+		} else if len(ver.Outputs) == 2 {
+			if withoutFee {
+				changeIndex := len(ver.Outputs) - 1
+				changeUtxo = &Utxo{
+					Hash:   ver.PayloadHash().String(),
+					Amount: ver.Outputs[changeIndex].Amount.String(),
+					Index:  changeIndex,
+				}
+			}
+		}
+	} else {
+		if len(ver.Outputs) > 1 {
+			changeIndex := len(ver.Outputs) - 1
+			changeUtxo = &Utxo{
+				Hash:   ver.PayloadHash().String(),
+				Amount: ver.Outputs[changeIndex].Amount.String(),
+				Index:  changeIndex,
+			}
+		}
+	}
+
+	transaction := &Tx{
+		Hash:   ver.PayloadHash().String(),
+		Raw:    hex.EncodeToString(ver.Marshal()),
+		Change: changeUtxo,
+	}
+	return transaction, nil
+}
+
 func DecodeRawTx(raw string, _ int) (string, error) {
 	rawBytes, err := hex.DecodeString(raw)
 	if err != nil {

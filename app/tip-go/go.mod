@@ -2,7 +2,7 @@ module mixin
 
 go 1.21
 
-toolchain go1.21.4
+toolchain go1.21.5
 
 require (
 	filippo.io/edwards25519 v1.0.0
