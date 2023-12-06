@@ -582,6 +582,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun checkUtxo(callback: () -> Unit) {
+        val token = t.asset ?: return
         lifecycleScope.launch {
             var amount = getAmount()
             try {
@@ -589,7 +590,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             } catch (e: NumberFormatException) {
                 return@launch
             }
-            val consolidationAmount = bottomViewModel.checkUtxoSufficiency(t.asset!!.assetId, amount)
+            val consolidationAmount = bottomViewModel.checkUtxoSufficiency(token.assetId, amount)
             if (consolidationAmount != null) {
                 UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), t.asset, consolidationAmount, UUID.randomUUID().toString(), null, null))
                     .show(parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
