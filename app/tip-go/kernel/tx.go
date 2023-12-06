@@ -436,7 +436,7 @@ func SignTx(raw, inputKeys, viewKeys string, spendKey string, withoutFee bool) (
 	return transaction, nil
 }
 
-func SignTransaction(raw, viewKeys string, spendKey string, index uint16, withoutFee bool) (*Tx, error) {
+func SignTransaction(raw, viewKeys string, spendKey string, index int, withoutFee bool) (*Tx, error) {
 	views := strings.Split(viewKeys, ",")
 	rawBytes, err := hex.DecodeString(raw)
 	if err != nil {
@@ -477,7 +477,7 @@ func SignTransaction(raw, viewKeys string, spendKey string, index uint16, withou
 
 		sig := key.Sign(msg)
 		sigs := make(map[uint16]*crypto.Signature)
-		sigs[index] = &sig
+		sigs[uint16(index)] = &sig
 		ver.SignaturesMap = append(ver.SignaturesMap, sigs)
 	}
 	var changeUtxo *Utxo
