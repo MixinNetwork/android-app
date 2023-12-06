@@ -36,6 +36,7 @@ import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewWalletBottomBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.config
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -44,6 +45,7 @@ import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -171,6 +173,20 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 .not()
                     }
                     Pair(walletActivity.supportCurrencies, walletActivity.supportAssetIds)
+                } else if (profileResponse.errorCode == ErrorHandler.OLD_VERSION){
+                    alertDialogBuilder()
+                        .setTitle(R.string.Update_Mixin)
+                        .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
+                        .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                            dialog.dismiss()
+                        }.setPositiveButton(R.string.Update) { dialog, _ ->
+                            requireContext().openMarket()
+                            dialog.dismiss()
+                        }.create().show()
+                    throw MixinResponseException(
+                        profileResponse.errorCode,
+                        profileResponse.errorDescription,
+                    )
                 } else {
                     throw MixinResponseException(
                         profileResponse.errorCode,
@@ -222,7 +238,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 }
             }.catch { e ->
                 if (e is MixinResponseException) {
-                    if (e.errorCode == ErrorHandler.AUTHENTICATION) {
+                    if (e.errorCode == ErrorHandler.OLD_VERSION) {
+                        // do nothing
+                    } else if (e.errorCode == ErrorHandler.AUTHENTICATION) {
                         walletViewModel.deleteSessionByUserId(
                             generateConversationId(
                                 ROUTE_BOT_USER_ID,
