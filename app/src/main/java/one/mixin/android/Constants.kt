@@ -105,6 +105,7 @@ object Constants {
         const val HTTPS_TRANSFER = "https://mixin.one/transfer"
         const val HTTPS_ADDRESS = "https://mixin.one/address"
         const val HTTPS_APPS = "https://mixin.one/apps"
+        const val HTTPS_MULTISIGS = "https://mixin.one/safe/multisigs"
 
         const val WALLET_CONNECT_PREFIX = "wc:"
     }

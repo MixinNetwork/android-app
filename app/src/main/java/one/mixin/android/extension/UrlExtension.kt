@@ -74,7 +74,8 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.CONVERSATIONS, true) ||
         startsWith(Constants.Scheme.TIP, true) ||
         startsWith(Constants.Scheme.BUY, true) ||
-        startsWith(Constants.Scheme.MIXIN_PAY, true)
+        startsWith(Constants.Scheme.MIXIN_PAY, true) ||
+        startsWith(Constants.Scheme.HTTPS_MULTISIGS, true)
     ) {
         true
     } else {

@@ -87,6 +87,8 @@ import one.mixin.android.vo.safe.toPriceAndChange
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.Call
+import retrofit2.http.Body
+import retrofit2.http.Path
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -731,4 +733,8 @@ class TokenRepository
             id: String,
             destination: String,
         ) = tokenService.getFees(id, destination)
-    }
+
+        suspend fun getMultisigs(requestId: String) = utxoService.getMultisigs(requestId)
+
+        suspend fun transactionMultisigs(requestId:String, action:String, transactionRequest: TransactionRequest) = utxoService.transactionMultisigs(requestId, action, transactionRequest)
+}

@@ -16,6 +16,8 @@ data class TransactionResponse(
     @SerializedName("snapshot_id")
     val snapshotId: String?,
     val asset: String,
+    @SerializedName("asset_id")
+    val assetId: String?,
     @SerializedName("senders_hash")
     val sendersHash: String,
     @SerializedName("senders_threshold")
@@ -35,7 +37,7 @@ data class TransactionResponse(
     @SerializedName("snapshot_at")
     val snapshotAt: String,
     @SerializedName("views")
-    val views: List<String>,
+    val views: List<String>?,
 ) {
     val getSnapshotId: String
         get() {
