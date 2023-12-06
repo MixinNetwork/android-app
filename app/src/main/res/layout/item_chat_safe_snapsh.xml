@@ -71,7 +71,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:singleLine="true"
-            android:textColor="@color/gray_50"
+            android:textColor="@color/snapshot_memo"
             android:textSize="13sp"
             android:layout_marginTop="12dp"
             android:layout_below="@id/bill_tv"
