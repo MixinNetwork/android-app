@@ -386,9 +386,6 @@ interface TransactionInterface {
                         }
                     }
                 }
-                else -> {
-                    // left empty
-                }
             }
         }
     }
@@ -405,7 +402,7 @@ interface TransactionInterface {
 
         val amountVal = snapshot.amount.toFloatOrNull()
         val isPositive = if (amountVal == null) false else amountVal > 0
-        val isWithdrawal = snapshot.opponentId.isNullOrBlank() && !isPositive
+        val isWithdrawal = snapshot.opponentId.isBlank() && !isPositive
         if (isWithdrawal && snapshot.withdrawal?.withdrawalHash?.isBlank() == true) {
             lifecycleScope.launch {
                 walletViewModel.refreshSnapshot(snapshot.snapshotId)?.let {

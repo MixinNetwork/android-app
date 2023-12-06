@@ -90,6 +90,7 @@
     <color name="color_record_circle_bg">#EE1987FF</color>
     <color name="call_green">#46d23c</color>
     <color name="call_red">#e7575c</color>
+    <color name="snapshot_memo">#86909D</color>
 
     <color name="text_gray">#9B9B9B</color>
     <color name="wallet_text_gray">#bbbec3</color>
