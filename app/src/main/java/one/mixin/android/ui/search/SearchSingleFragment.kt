@@ -87,7 +87,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         searchChatPopupMenu =
-            SearchChatPopupMenu(requireContext(), lifecycleScope, searchViewModel) {
+            SearchChatPopupMenu(requireActivity(), lifecycleScope, searchViewModel) {
                 onTextChanged(binding.searchEt.text.toString())
             }
         binding.backIb.setOnClickListener {
