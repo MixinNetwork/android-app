@@ -1083,7 +1083,7 @@
     <string name="wallet_transaction_that_time_value_tip">交易时的价值</string>
     <string name="wallet_transaction_tip">确定给 %1$s 转价值 %2$s 的 %3$s ？</string>
     <string name="wallet_transactions_asset_key_warning">资产标识不是充值地址！</string>
-    <string name="wallet_transfer_recent_tip">你已经在 %1$s 前给 %2$s 转账了 %3$s，确认还要再转一次吗？</string>
+    <string name="wallet_transfer_recent_tip">你已经在 %1$s 给 %2$s 转账了 %3$s，确认还要再转一次吗？</string>
     <string name="wallet_withdrawal_changed">手续费已从 %1$s 变更为 %2$s，要更新手续费并继续提现吗？</string>
     <string name="wallet_withdrawal_not_in_addresses">%1$s 该地址不在提现地址白名单，请仔细核对地址。</string>
     <string name="wallet_withdrawal_recent_tip">你已经在 %1$s 前提现 %3$s 到 %2$s，确认还要再提一次吗？</string>
