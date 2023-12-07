@@ -111,7 +111,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         searchChatPopupMenu =
-            SearchChatPopupMenu(requireContext(), lifecycleScope, searchViewModel) {
+            SearchChatPopupMenu(requireActivity(), lifecycleScope, searchViewModel) {
                 fuzzySearchChat(keyword)
             }
         view.setOnClickListener {

@@ -2,7 +2,7 @@ package one.mixin.android.ui.search
 
 import android.content.Context
 import android.view.View
-import android.widget.PopupMenu
+import androidx.appcompat.widget.PopupMenu
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants

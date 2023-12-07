@@ -81,8 +81,10 @@ import one.mixin.android.websocket.PinMessagePayload
 import one.mixin.android.websocket.RecallMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.widget.gallery.MimeType
+import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
+import java.io.IOException
 import java.util.UUID
 import javax.inject.Inject
 
@@ -687,21 +689,26 @@ class SendMessageHelper
                     }
                     temp
                 } else {
-                    Compressor()
-                        .setCompressFormat(
-                            if (fromInput) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                    Bitmap.CompressFormat.WEBP_LOSSLESS
+                    try {
+                        Compressor()
+                            .setCompressFormat(
+                                if (fromInput) {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                        Bitmap.CompressFormat.WEBP_LOSSLESS
+                                    } else {
+                                        @Suppress("DEPRECATION")
+                                        Bitmap.CompressFormat.WEBP
+                                    }
                                 } else {
-                                    @Suppress("DEPRECATION")
-                                    Bitmap.CompressFormat.WEBP
-                                }
-                            } else {
-                                Bitmap.CompressFormat.JPEG
-                            },
-                        )
-                        .setQuality(if (notCompress) 100 else 85)
-                        .compressToFile(uri, temp.absolutePath)
+                                    Bitmap.CompressFormat.JPEG
+                                },
+                            )
+                            .setQuality(if (notCompress) 100 else 85)
+                            .compressToFile(uri, temp.absolutePath)
+                    } catch (e: IOException) {
+                        Timber.e("compress image ${e.stackTraceToString()}")
+                        return -1
+                    }
                 }
             val length = imageFile.length()
             if (length <= 0) {

@@ -328,9 +328,13 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     }
 
     private fun showCountry() {
-        activity?.supportFragmentManager?.inTransaction {
-            setCustomAnimations(R.anim.slide_in_bottom, 0, 0, R.anim.slide_out_bottom)
-                .add(R.id.container, countryPicker).addToBackStack(null)
+        try {
+            activity?.supportFragmentManager?.inTransaction {
+                setCustomAnimations(R.anim.slide_in_bottom, 0, 0, R.anim.slide_out_bottom)
+                    .add(R.id.container, countryPicker).addToBackStack(null)
+            }
+        } catch (e: Exception) {
+            Timber.e("open countryPicker ${e.stackTraceToString()}")
         }
     }
 

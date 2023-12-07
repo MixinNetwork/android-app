@@ -41,6 +41,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import org.whispersystems.libsignal.ecc.Curve
 import retrofit2.Response
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -66,7 +67,13 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
             action: ((Boolean, Boolean) -> Unit)? = null,
         ) {
             val uri = Uri.parse(url)
-            val ephemeralId = uri.getQueryParameter("id")
+            val ephemeralId: String? =
+                try {
+                    uri.getQueryParameter("id")
+                } catch (e: Exception) {
+                    Timber.e("getQueryParameter ${e.stackTraceToString()}")
+                    null
+                }
             if (ephemeralId == null) {
                 toast(R.string.desktop_upgrade)
             } else if (Session.getAccount()?.hasPin == false) {
