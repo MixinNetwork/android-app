@@ -61,9 +61,9 @@ interface UtxoService {
     @GET("safe/multisigs/{id}")
     suspend fun getMultisigs(@Path("id") requestId:String):MixinResponse<TransactionResponse>
 
-    @POST("safe/multisigs/{id}/{action}")
-    suspend fun transactionMultisigs(@Path("id") requestId:String, @Path("action") action:String, @Body transactionRequest: TransactionRequest):MixinResponse<TransactionResponse>
+    @POST("safe/multisigs/{id}/sign")
+    suspend fun signTransactionMultisigs(@Path("id") requestId:String, @Body transactionRequest: TransactionRequest):MixinResponse<TransactionResponse>
 
-    @POST("safe/multisigs/{id}/{action}")
-    suspend fun transactionMultisigs(@Path("id") requestId:String, @Path("action") action:String):MixinResponse<TransactionResponse>
+    @POST("safe/multisigs/{id}/unlock")
+    suspend fun unlockTransactionMultisigs(@Path("id") requestId:String):MixinResponse<TransactionResponse>
 }
