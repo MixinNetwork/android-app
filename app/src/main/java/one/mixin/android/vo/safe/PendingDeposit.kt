@@ -9,7 +9,6 @@ data class PendingDeposit(
     val transactionHash: String,
     val amount: String,
     val confirmations: Int,
-    val threshold: Int,
     @SerializedName("created_at")
     val createdAt: String,
 )
