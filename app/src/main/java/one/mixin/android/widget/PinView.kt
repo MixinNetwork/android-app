@@ -87,6 +87,7 @@ class PinView : LinearLayout {
     }
 
     fun append(s: String) {
+        if (!isEnabled) return
         if (index >= views.size) return
         if (tipVisible && binding.tipTv.visibility == View.VISIBLE) {
             binding.tipTv.visibility = View.INVISIBLE
@@ -105,6 +106,7 @@ class PinView : LinearLayout {
     }
 
     fun set(s: String) {
+        if (!isEnabled) return
         if (s.length != count) return
         for (i in 0 until count) {
             val c = s[i]
@@ -117,6 +119,7 @@ class PinView : LinearLayout {
     }
 
     fun delete() {
+        if (!isEnabled) return
         if (index <= 0) return
         index--
         val codeView = views[index]

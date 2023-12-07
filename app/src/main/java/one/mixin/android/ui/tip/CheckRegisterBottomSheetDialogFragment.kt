@@ -68,6 +68,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
         setBiometricLayout()
         binding.titleView.rightIv.isVisible = false
         binding.biometricLayout.measureAllChildren = false
+        binding.biometricLayout.pin.isEnabled = false
         syncAccount()
     }
 
@@ -131,6 +132,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
 
                 if (!isAdded) return
                 withContext(Dispatchers.Main) {
+                    binding.biometricLayout.pin.isEnabled = true
                     binding.biometricLayout.showPin(true)
                 }
             }
