@@ -23,7 +23,8 @@ data class TransactionResponse(
     @SerializedName("senders_threshold")
     val sendersThreshold: Int,
     val senders: List<String>,
-    val signers: List<String>,
+    val receivers: List<String>?,
+    val signers: List<String>?,
     val extra: String,
     val state: String,
     @SerializedName("raw_transaction")

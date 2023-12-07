@@ -32,6 +32,7 @@ import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
 import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
+import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.getScopes
 import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentBottomSheetBinding
@@ -259,24 +260,36 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     showError(R.string.Invalid_payment_link)
                 }
                 val action = uri.getQueryParameter("action")
-                if (action == null) showError()
+                if (action == null || !(action.equals("sign", true) || action.equals("unlock", true))) {
+                    showError()
+                    return@launch
+                }
                 val transactionResponse = linkViewModel.getMultisigs(requestId)
                 if (transactionResponse.isSuccess) {
                     val multisigs = transactionResponse.data!!
                     val asset = checkToken(multisigs.assetId!!)
                     if (asset != null) {
                         val state:String
-                        if (multisigs.signers.contains(Session.getAccountId())) {
+                        if (multisigs.signers?.contains(Session.getAccountId()) == true && action == "sign") {
                             state = SignatureState.signed.name
+                        } else if (multisigs.signers?.contains(Session.getAccountId()) == false && action == "unlock") {
+                            state = SignatureState.unlocked.name
+                        } else if ((multisigs.signers?.size ?: 0) >= multisigs.sendersThreshold) {
+                            state = PaymentStatus.paid.name
                         } else {
                             state = SignatureState.initial.name
+                        }
+                        val receivers = multisigs.receivers
+                        if (receivers.isNullOrEmpty()) {
+                            showError()
+                            return@launch
                         }
                         val multisigsBiometricItem =
                             SafeMultisigsBiometricItem(
                                 action = action,
                                 traceId = multisigs.requestId,
                                 senders = multisigs.senders.toTypedArray(),
-                                receivers = multisigs.senders.toTypedArray(),// Todo
+                                receivers = receivers.toTypedArray(),
                                 threshold = multisigs.sendersThreshold,
                                 asset = asset,
                                 amount = multisigs.amount,

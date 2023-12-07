@@ -96,6 +96,14 @@ class SafeMultisigsBottomSheetDialogFragment :
                 binding.biometricLayout.errorBtn.visibility = GONE
                 showErrorInfo(getString(R.string.multisig_state_signed))
             }
+            SignatureState.unlocked.name -> {
+                binding.biometricLayout.errorBtn.visibility = GONE
+                showErrorInfo(getString(R.string.multisig_state_unlocked))
+            }
+            PaymentStatus.paid.name -> {
+                binding.biometricLayout.errorBtn.visibility = GONE
+                showErrorInfo(getString(R.string.pay_paid))
+            }
         }
     }
 
