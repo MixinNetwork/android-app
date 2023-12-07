@@ -1115,7 +1115,7 @@ class BottomSheetViewModel
                 val sign = Kernel.signTransaction(t.raw, t.views, spendKey.toHex(), t.index.toLong(), false)
                 tokenRepository.transactionMultisigs(t.traceId, t.action, TransactionRequest(sign.raw, t.traceId))
             } else {
-                tokenRepository.transactionMultisigs(t.traceId, t.action, TransactionRequest("", t.traceId))
+                tokenRepository.transactionMultisigs(t.traceId, t.action)
             }
         }
 

@@ -737,4 +737,6 @@ class TokenRepository
         suspend fun getMultisigs(requestId: String) = utxoService.getMultisigs(requestId)
 
         suspend fun transactionMultisigs(requestId:String, action:String, transactionRequest: TransactionRequest) = utxoService.transactionMultisigs(requestId, action, transactionRequest)
+
+        suspend fun transactionMultisigs(requestId:String, action:String) = utxoService.transactionMultisigs(requestId, action)
 }

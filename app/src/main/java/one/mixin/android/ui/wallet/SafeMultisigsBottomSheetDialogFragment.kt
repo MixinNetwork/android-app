@@ -96,16 +96,6 @@ class SafeMultisigsBottomSheetDialogFragment :
                 binding.biometricLayout.errorBtn.visibility = GONE
                 showErrorInfo(getString(R.string.multisig_state_signed))
             }
-
-            SignatureState.unlocked.name -> {
-                binding.biometricLayout.errorBtn.visibility = GONE
-                showErrorInfo(getString(R.string.multisig_state_unlocked))
-            }
-
-            PaymentStatus.paid.name -> {
-                binding.biometricLayout.errorBtn.visibility = GONE
-                showErrorInfo(getString(R.string.pay_paid))
-            }
         }
     }
 
@@ -153,16 +143,4 @@ class SafeMultisigsBottomSheetDialogFragment :
         return false
     }
 
-    override fun onDismiss(dialog: DialogInterface) {
-        super.onDismiss(dialog)
-        val t = this.t
-        if (!success &&
-            t.state != SignatureState.signed.name &&
-            t.state != SignatureState.unlocked.name
-        ) {
-            MixinApplication.get().applicationScope.launch {
-                bottomViewModel.cancelMultisigs(t.traceId)
-            }
-        }
-    }
 }

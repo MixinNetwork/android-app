@@ -251,22 +251,25 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } else if (url.startsWith(Scheme.HTTPS_MULTISIGS, true)) {
             if (checkHasPin()) return
             lifecycleScope.launch(errorHandler) {
+                val uri = Uri.parse(url)
                 val segments = Uri.parse(url).pathSegments
                 if (segments.isEmpty()) return@launch
                 val requestId = segments[2]
                 if (!requestId.isUUID()) {
                     showError(R.string.Invalid_payment_link)
                 }
+                val action = uri.getQueryParameter("action")
+                if (action == null) showError()
                 val transactionResponse = linkViewModel.getMultisigs(requestId)
                 if (transactionResponse.isSuccess) {
                     val multisigs = transactionResponse.data!!
                     val asset = checkToken(multisigs.assetId!!)
                     if (asset != null) {
-                        val action: String
+                        val state:String
                         if (multisigs.signers.contains(Session.getAccountId())) {
-                            action = "unlock"
+                            state = SignatureState.signed.name
                         } else {
-                            action = "sign"
+                            state = SignatureState.initial.name
                         }
                         val multisigsBiometricItem =
                             SafeMultisigsBiometricItem(
@@ -281,7 +284,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 raw = multisigs.rawTransaction,
                                 index = multisigs.senders.indexOf(Session.getAccountId()),
                                 views = if (multisigs.views.isNullOrEmpty()) null else multisigs.views.joinToString(","),
-                                state = SignatureState.initial.name // Todo
+                                state = state
                             )
                         SafeMultisigsBottomSheetDialogFragment.newInstance(multisigsBiometricItem).showNow(
                             parentFragmentManager,
