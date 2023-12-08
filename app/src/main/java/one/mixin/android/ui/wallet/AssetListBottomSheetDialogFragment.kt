@@ -50,7 +50,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         fun newInstance(
             fromType: Int,
             assets: ArrayList<String>? = null,
-            currentAssetId: String? = null
+            currentAssetId: String? = null,
         ) =
             AssetListBottomSheetDialogFragment().withArgs {
                 putInt(ARGS_FOR_TYPE, fromType)
