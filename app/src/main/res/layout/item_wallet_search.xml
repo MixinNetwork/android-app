@@ -89,6 +89,6 @@
         android:layout_marginEnd="@dimen/margin20"
         android:layout_marginTop="2dp"
         android:layout_alignParentEnd="true"
-        android:src="@drawable/ic_asset_add_checked" />
+        android:src="@drawable/ic_check_blue_24dp" />
 
 </RelativeLayout>
