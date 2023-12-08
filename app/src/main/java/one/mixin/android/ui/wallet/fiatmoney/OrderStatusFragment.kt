@@ -6,6 +6,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
+import android.webkit.JavascriptInterface
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResult
@@ -29,9 +33,15 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.wallet.PaymentData
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import okio.buffer
+import okio.source
+import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.CRYPTOGRAM_3DS
 import one.mixin.android.Constants.RouteConfig.ENVIRONMENT_3DS
 import one.mixin.android.Constants.RouteConfig.PAN_ONLY
@@ -61,7 +71,9 @@ import one.mixin.android.vo.cardIcon
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
+import java.nio.charset.Charset
 import java.util.Locale
+import kotlin.coroutines.resume
 
 @AndroidEntryPoint
 class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
@@ -322,7 +334,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                                 }
                             if (session.isSuccess) {
                                 if (session.data?.status == RouteSessionStatus.Approved.value) {
-                                    payments(sessionId = sessionResponse.sessionId, instrumentId = sessionResponse.instrumentId, null)
+                                    paymentsPrecondition(sessionId = sessionResponse.sessionId, instrumentId = sessionResponse.instrumentId, null)
                                     break
                                 } else if (session.data?.status != RouteSessionStatus.Pending.value && session.data?.status != RouteSessionStatus.Processing.value) {
                                     showError(session.data?.status ?: session.errorDescription)
@@ -420,12 +432,56 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         token: String?,
         expectancyAssetAmount: String,
     ) {
-        payments(sessionId, instrumentId, token, expectancyAssetAmount)
+        paymentsPrecondition(sessionId, instrumentId, token, expectancyAssetAmount)
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun paymentsPrecondition(
+        sessionId: String?,
+        instrumentId: String?,
+        token: String?,
+        expectancyAssetAmount: String? = null,
+    ) {
+        lifecycleScope.launch(Dispatchers.Main) {
+            val webView = WebView(requireContext())
+            webView.settings.javaScriptEnabled = true
+            webView.webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    super.onPageFinished(view, url)
+                    view?.evaluateJavascript("riskDeviceSessionId()") { _ ->
+                    }
+                }
+            }
+            class WebAppInterface {
+                @JavascriptInterface
+                fun deviceSessionIdCallback(deviceSessionId: String) {
+                    payments(
+                        sessionId,
+                        if (deviceSessionId.startsWith("dsid")) {
+                            deviceSessionId
+                        } else {
+                            null
+                        },
+                        instrumentId,
+                        token,
+                        expectancyAssetAmount,
+                        )
+                }
+            }
+
+            val webAppInterface = WebAppInterface()
+            webView.addJavascriptInterface(webAppInterface, "MixinContext")
+            binding.root.addView(webView, FrameLayout.LayoutParams(1, 1))
+            val input = requireContext().assets.open("risk.html")
+            val html = input.source().buffer().readByteString().string(Charset.forName("utf-8")).replace("#CHCEKOUT_ID", BuildConfig.CHCEKOUT_ID)
+            webView.loadDataWithBaseURL(Constants.API.DOMAIN, html, "text/html", "UTF-8", null)
+        }
     }
 
     @SuppressLint("SetTextI18n")
     private fun payments(
         sessionId: String?,
+        deviceSessionId: String?,
         instrumentId: String?,
         token: String?,
         expectancyAssetAmount: String? = null,
@@ -442,6 +498,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         sessionId,
                         instrumentId,
                         getCountryCodeFromPhoneNumber(Session.getAccount()?.phone),
+                        deviceSessionId
                     ),
                 )
             if (response.isSuccess) {
@@ -532,7 +589,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             if (tokenData.tokenFormat.equals(PAN_ONLY, true)) {
                 createSession(tokenData.scheme, tokenData.token)
             } else if (tokenData.tokenFormat.equals(CRYPTOGRAM_3DS, true)) {
-                payments(null, null, tokenData.token, expectancy)
+                paymentsPrecondition(null, null, tokenData.token, expectancy)
             } else {
                 showError(R.string.Unsupported_payment_method)
             }
