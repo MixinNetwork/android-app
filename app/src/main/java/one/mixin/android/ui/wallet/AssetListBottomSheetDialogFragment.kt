@@ -58,11 +58,11 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private val binding by viewBinding(FragmentAssetListBottomSheetBinding::inflate)
 
-    private val adapter = SearchAdapter()
-
     private val fromType: Int by lazy {
         requireArguments().getInt(ARGS_FOR_TYPE)
     }
+
+    private val adapter by lazy { SearchAdapter(fromType == TYPE_FROM_TRANSFER) }
 
     private val assetIds by lazy {
         requireArguments().getStringArrayList(ARGS_ASSETS)

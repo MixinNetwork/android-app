@@ -146,13 +146,18 @@ class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
     fun bind(
         asset: TokenItem,
         callback: WalletSearchCallback? = null,
+        showAmount: Boolean = false,
     ) {
         bindView(
             asset.assetId,
             asset.iconUrl,
             asset.chainIconUrl,
             asset.chainId,
-            asset.name,
+            if (showAmount) {
+                asset.balance
+            } else {
+                asset.name
+            },
             asset.symbol,
             asset.assetKey,
             asset.priceUsd,
