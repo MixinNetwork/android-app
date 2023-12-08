@@ -37,6 +37,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val TAG = "AssetListBottomSheetDialogFragment"
         const val ARGS_FOR_TYPE = "args_for_type"
         const val ARGS_ASSETS = "args_assets"
+        const val ARGS_ASSET_ID = "args_asset_id"
 
         const val POS_RV = 0
         const val POS_EMPTY_RECEIVE = 1
@@ -49,20 +50,22 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         fun newInstance(
             fromType: Int,
             assets: ArrayList<String>? = null,
+            currentAssetId: String? = null,
         ) =
             AssetListBottomSheetDialogFragment().withArgs {
                 putInt(ARGS_FOR_TYPE, fromType)
                 putStringArrayList(ARGS_ASSETS, assets)
+                putString(ARGS_ASSET_ID, currentAssetId)
             }
     }
 
     private val binding by viewBinding(FragmentAssetListBottomSheetBinding::inflate)
 
-    private val adapter = SearchAdapter()
-
     private val fromType: Int by lazy {
         requireArguments().getInt(ARGS_FOR_TYPE)
     }
+
+    private val adapter by lazy { SearchAdapter(requireArguments().getString(ARGS_ASSET_ID)) }
 
     private val assetIds by lazy {
         requireArguments().getStringArrayList(ARGS_ASSETS)

@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -166,28 +167,32 @@ class DepositFragment : BaseFragment() {
                         }
                         setOnClickListener {
                             if (same) return@setOnClickListener
-                            lifecycleScope.launch {
-                                showLoading()
-                                val newAsset = walletViewModel.findOrSyncAsset(entry.key)
-                                if (newAsset == null) {
-                                    toast(R.string.Not_found)
-                                } else {
-                                    initUsdtChips(newAsset)
-                                    val localDepositEntry = localMap[newAsset.assetId]
-                                    if (localDepositEntry == null) {
-                                        refreshDeposit(newAsset)
+                            syncJob?.cancel()
+                            syncJob =
+                                lifecycleScope.launch {
+                                    showLoading()
+                                    val newAsset = walletViewModel.findOrSyncAsset(entry.key)
+                                    if (newAsset == null) {
+                                        toast(R.string.Not_found)
                                     } else {
-                                        updateUI(newAsset, localDepositEntry)
-                                        hideLoading()
+                                        initUsdtChips(newAsset)
+                                        val localDepositEntry = localMap[newAsset.assetId]
+                                        if (localDepositEntry == null) {
+                                            refreshDeposit(newAsset)
+                                        } else {
+                                            updateUI(newAsset, localDepositEntry)
+                                            hideLoading()
+                                        }
                                     }
                                 }
-                            }
                         }
                     }
                 networkChipGroup.addView(chip)
             }
         }
     }
+
+    private var syncJob: Job? = null
 
     private var showed = false
 

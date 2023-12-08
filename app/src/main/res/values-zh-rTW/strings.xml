@@ -984,7 +984,7 @@
     <string name="wallet_transaction_that_time_value_tip">交易時的價值</string>
     <string name="wallet_transaction_tip">確定給 %1$s 轉價值 %2$s 的 %3$s ？</string>
     <string name="wallet_transactions_asset_key_warning">資產標識不是充值地址！</string>
-    <string name="wallet_transfer_recent_tip">你已經在 %1$s 前給 %2$s 轉賬了 %3$s，確認還要再轉一次嗎？</string>
+    <string name="wallet_transfer_recent_tip">你已經在 %1$s 給 %2$s 轉賬了 %3$s，確認還要再轉一次嗎？</string>
     <string name="wallet_withdrawal_changed">手續費已從 %1$s 變更為 %2$s，要更新手續費並繼續提現嗎？</string>
     <string name="wallet_withdrawal_recent_tip">你已經在 %1$s 前提現 %3$s 到 %2$s，確認還要再提一次嗎？</string>
     <string name="web_cannot_reached_desc">無法訪問 %1$s，請檢查你的網路並嘗試切換 4G、Wi-Fi 或 VPN 後重新載入頁面。</string>
