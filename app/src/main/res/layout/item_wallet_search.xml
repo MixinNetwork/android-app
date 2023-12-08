@@ -79,4 +79,16 @@
         android:maxLines="1"
         android:textSize="12sp"
         android:textColor="?attr/text_minor"/>
+
+    <ImageView
+        android:id="@+id/check_iv"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="@dimen/margin20"
+        android:layout_marginTop="2dp"
+        android:layout_alignParentEnd="true"
+        android:src="@drawable/ic_asset_add_checked" />
+
 </RelativeLayout>

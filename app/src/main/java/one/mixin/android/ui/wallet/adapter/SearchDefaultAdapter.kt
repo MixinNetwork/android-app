@@ -146,24 +146,32 @@ class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
     fun bind(
         asset: TokenItem,
         callback: WalletSearchCallback? = null,
-        showAmount: Boolean = false,
+        currentAssetId: String? = null,
     ) {
         bindView(
             asset.assetId,
             asset.iconUrl,
             asset.chainIconUrl,
             asset.chainId,
-            if (showAmount) {
-                asset.balance
+            if (currentAssetId != null) {
+                "${asset.balance} ${asset.symbol}"
             } else {
                 asset.name
             },
-            asset.symbol,
+            if (currentAssetId != null) {
+                asset.name
+            } else {
+                asset.symbol
+            },
             asset.assetKey,
             asset.priceUsd,
             asset.changeUsd,
-            asset.priceFiat(),
-        )
+            asset.priceFiat())
+        binding.apply {
+            priceTv.isVisible = currentAssetId == null
+            changeTv.isVisible = currentAssetId == null
+            checkIv.isVisible = asset.assetId == currentAssetId
+        }
         itemView.setOnClickListener {
             callback?.onAssetClick(asset.assetId, asset)
         }
