@@ -1065,7 +1065,7 @@
     <string name="wallet_transaction_that_time_value_tip">valor histórico en el momento de la transacción</string>
     <string name="wallet_transaction_tip">¿Estás seguro de que quieres transferir %3$s por valor de %2$s a %1$s?</string>
     <string name="wallet_transactions_asset_key_warning">¡La clave de activo NO es una dirección de depósito!</string>
-    <string name="wallet_transfer_recent_tip">Ya has transferido %3$s a %2$s hace %1$s. ¿Quieres transferirlo de nuevo?</string>
+    <string name="wallet_transfer_recent_tip">Ya has transferido %3$s a %2$s %1$s. ¿Quieres transferirlo de nuevo?</string>
     <string name="wallet_withdrawal_changed">La tarifa de retiro se ha cambiado de %1$s a %2$s, ¿quieres continuar con la solicitud?</string>
     <string name="wallet_withdrawal_not_in_addresses">%1$s Esta dirección no está en la lista blanca de direcciones de retiro, verifíquela cuidadosamente.</string>
     <string name="wallet_withdrawal_recent_tip">Ya has retirado %3$s a %2$s hace %1$s, ¿quieres retirarlo de nuevo?</string>

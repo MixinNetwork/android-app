@@ -1107,7 +1107,7 @@
     <string name="wallet_transaction_that_time_value_tip">historical value at the time of transaction</string>
     <string name="wallet_transaction_tip">Are you sure you want to transfer %3$s worth %2$s to %1$s?</string>
     <string name="wallet_transactions_asset_key_warning">Asset key is NOT a deposit address!</string>
-    <string name="wallet_transfer_recent_tip">You have already transferred %3$s to %2$s %1$s ago. Do you want to transfer it again?</string>
+    <string name="wallet_transfer_recent_tip">You have already transferred %3$s to %2$s %1$s. Do you want to transfer it again?</string>
     <string name="wallet_withdrawal_changed">The withdrawal fee has been changed from %1$s to %2$s, would you like to proceed with the request?</string>
     <string name="wallet_withdrawal_not_in_addresses">%1$s This address is not in the white list of withdrawal addresses, please check the address carefully.</string>
     <string name="wallet_withdrawal_recent_tip">You have already withdrawn %3$s to %2$s %1$s ago, Do you want to withdraw it again?</string>
