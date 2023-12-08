@@ -166,7 +166,8 @@ class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
             asset.assetKey,
             asset.priceUsd,
             asset.changeUsd,
-            asset.priceFiat())
+            asset.priceFiat(),
+        )
         binding.apply {
             priceTv.isVisible = currentAssetId == null
             changeTv.isVisible = currentAssetId == null

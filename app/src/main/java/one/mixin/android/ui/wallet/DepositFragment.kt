@@ -168,22 +168,23 @@ class DepositFragment : BaseFragment() {
                         setOnClickListener {
                             if (same) return@setOnClickListener
                             syncJob?.cancel()
-                            syncJob = lifecycleScope.launch {
-                                showLoading()
-                                val newAsset = walletViewModel.findOrSyncAsset(entry.key)
-                                if (newAsset == null) {
-                                    toast(R.string.Not_found)
-                                } else {
-                                    initUsdtChips(newAsset)
-                                    val localDepositEntry = localMap[newAsset.assetId]
-                                    if (localDepositEntry == null) {
-                                        refreshDeposit(newAsset)
+                            syncJob =
+                                lifecycleScope.launch {
+                                    showLoading()
+                                    val newAsset = walletViewModel.findOrSyncAsset(entry.key)
+                                    if (newAsset == null) {
+                                        toast(R.string.Not_found)
                                     } else {
-                                        updateUI(newAsset, localDepositEntry)
-                                        hideLoading()
+                                        initUsdtChips(newAsset)
+                                        val localDepositEntry = localMap[newAsset.assetId]
+                                        if (localDepositEntry == null) {
+                                            refreshDeposit(newAsset)
+                                        } else {
+                                            updateUI(newAsset, localDepositEntry)
+                                            hideLoading()
+                                        }
                                     }
                                 }
-                            }
                         }
                     }
                 networkChipGroup.addView(chip)

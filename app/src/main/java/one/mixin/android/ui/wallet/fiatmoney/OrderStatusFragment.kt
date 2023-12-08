@@ -37,7 +37,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import okio.buffer
 import okio.source
 import one.mixin.android.BuildConfig
@@ -73,7 +72,6 @@ import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.nio.charset.Charset
 import java.util.Locale
-import kotlin.coroutines.resume
 
 @AndroidEntryPoint
 class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
@@ -445,19 +443,24 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         lifecycleScope.launch(Dispatchers.Main) {
             val webView = WebView(requireContext())
             webView.settings.javaScriptEnabled = true
-            webView.webViewClient = object : WebViewClient() {
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    super.onPageFinished(view, url)
-                    view?.evaluateJavascript("riskDeviceSessionId()") { _ ->
+            webView.webViewClient =
+                object : WebViewClient() {
+                    override fun onPageFinished(
+                        view: WebView?,
+                        url: String?,
+                    ) {
+                        super.onPageFinished(view, url)
+                        view?.evaluateJavascript("riskDeviceSessionId()") { _ ->
+                        }
                     }
                 }
-            }
+
             class WebAppInterface {
                 @JavascriptInterface
                 fun deviceSessionIdCallback(deviceSessionId: String) {
                     payments(
                         sessionId,
-                        if (deviceSessionId.startsWith("dsid")) {
+                        if (deviceSessionId.startsWith("dsid_")) {
                             deviceSessionId
                         } else {
                             null
@@ -465,7 +468,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         instrumentId,
                         token,
                         expectancyAssetAmount,
-                        )
+                    )
                 }
             }
 
@@ -498,7 +501,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         sessionId,
                         instrumentId,
                         getCountryCodeFromPhoneNumber(Session.getAccount()?.phone),
-                        deviceSessionId
+                        deviceSessionId,
                     ),
                 )
             if (response.isSuccess) {
