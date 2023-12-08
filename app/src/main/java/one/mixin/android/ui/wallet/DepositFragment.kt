@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -166,7 +167,8 @@ class DepositFragment : BaseFragment() {
                         }
                         setOnClickListener {
                             if (same) return@setOnClickListener
-                            lifecycleScope.launch {
+                            syncJob?.cancel()
+                            syncJob = lifecycleScope.launch {
                                 showLoading()
                                 val newAsset = walletViewModel.findOrSyncAsset(entry.key)
                                 if (newAsset == null) {
@@ -188,6 +190,8 @@ class DepositFragment : BaseFragment() {
             }
         }
     }
+
+    private var syncJob: Job? = null
 
     private var showed = false
 
