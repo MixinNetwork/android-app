@@ -484,7 +484,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun selectAsset() {
-        AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
+        AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER, currentAssetId = t.asset?.assetId)
             .setOnAssetClick { asset ->
                 t.asset = asset
                 updateAssetUI(asset)
