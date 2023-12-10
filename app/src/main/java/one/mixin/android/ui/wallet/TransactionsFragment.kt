@@ -59,6 +59,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.ConcatHeadersDecoration
+import one.mixin.android.widget.DebugClickListener
 import javax.inject.Inject
 
 @OptIn(ExperimentalPagingApi::class)
@@ -457,15 +458,21 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                         bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
                         badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
                     }
-                    avatar.setOnLongClickListener {
-                        view?.navigate(
-                            R.id.action_transactions_to_utxo,
-                            Bundle().apply {
-                                putParcelable(ARGS_ASSET, asset)
-                            },
-                        )
-                        true
-                    }
+                    avatar.setOnClickListener(
+                        object : DebugClickListener() {
+                            override fun onDebugClick() {
+                                view?.navigate(
+                                    R.id.action_transactions_to_utxo,
+                                    Bundle().apply {
+                                        putParcelable(ARGS_ASSET, asset)
+                                    }
+                                )
+                            }
+
+                            override fun onSingleClick() {
+                            }
+                        }
+                    )
                 }
             }
         }

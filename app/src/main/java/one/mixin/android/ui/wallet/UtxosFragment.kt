@@ -2,12 +2,11 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.content.ClipData
-import android.content.ClipboardManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.ui.graphics.ClipOp
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagingDataAdapter
@@ -18,17 +17,21 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentUtxosBinding
 import one.mixin.android.databinding.ItemWalletUtxoBinding
+import one.mixin.android.databinding.ViewWalletUtxoBottomBinding
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
+import one.mixin.android.job.ForceSyncOutputJob
+import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.safe.TokenItem
-import timber.log.Timber
+import one.mixin.android.widget.BottomSheet
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class UtxosFragment : BaseFragment() {
@@ -82,6 +85,9 @@ class UtxosFragment : BaseFragment() {
         binding.titleView.apply {
             titleTv.text = "${asset.name} UTXO"
             leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            rightAnimator.setOnClickListener {
+                showBottom()
+            }
         }
         binding.apply {
             utxoRv.adapter = adapter
@@ -96,7 +102,6 @@ class UtxosFragment : BaseFragment() {
     class UtxoAdapter :
         PagingDataAdapter<UtxoItem, UtxoHolder>(UtxoItemDiffCallBack) {
         override fun onBindViewHolder(holder: UtxoHolder, position: Int) {
-            Timber.e("aaa $position")
             getItem(position)?.let {
                 holder.bind(it)
             }
@@ -123,5 +128,25 @@ class UtxosFragment : BaseFragment() {
                 true
             }
         }
+    }
+
+
+    @Inject
+    lateinit var jobManager: MixinJobManager
+
+    @SuppressLint("InflateParams")
+    private fun showBottom() {
+        val builder = BottomSheet.Builder(requireActivity())
+        val bottomBinding = ViewWalletUtxoBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_utxo_bottom, null))
+        builder.setCustomView(bottomBinding.root)
+        val bottomSheet = builder.create()
+        bottomBinding.apply {
+            refresh.setOnClickListener {
+                jobManager.addJobInBackground(ForceSyncOutputJob(0, assetIdToAsset(asset.assetId)))
+                bottomSheet.dismiss()
+            }
+            cancel.setOnClickListener { bottomSheet.dismiss() }
+        }
+        bottomSheet.show()
     }
 }
