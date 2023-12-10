@@ -72,6 +72,7 @@ import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.Trace
+import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.route.RoutePaymentRequest
@@ -740,4 +741,18 @@ class TokenRepository
         ) = utxoService.signTransactionMultisigs(requestId, transactionRequest)
 
         suspend fun unlockTransactionMultisigs(requestId: String) = utxoService.unlockTransactionMultisigs(requestId)
+
+        fun utxoItem(asset: String): LiveData<PagingData<UtxoItem>> {
+            return Pager(
+                config =
+                PagingConfig(
+                    pageSize = Constants.PAGE_SIZE,
+                    enablePlaceholders = true,
+                ),
+                pagingSourceFactory = {
+                    outputDao.utxoItem(asset)
+
+                },
+            ).liveData
+        }
     }

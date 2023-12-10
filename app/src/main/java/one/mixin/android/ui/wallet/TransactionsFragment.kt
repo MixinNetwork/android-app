@@ -31,6 +31,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat
@@ -455,6 +456,15 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                     ViewBadgeCircleImageBinding.bind(avatar).apply {
                         bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
                         badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+                    }
+                    avatar.setOnLongClickListener {
+                        view?.navigate(
+                            R.id.action_transactions_to_utxo,
+                            Bundle().apply {
+                                putParcelable(ARGS_ASSET, asset)
+                            },
+                        )
+                        true
                     }
                 }
             }

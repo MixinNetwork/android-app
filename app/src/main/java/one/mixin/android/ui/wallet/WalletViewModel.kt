@@ -37,6 +37,7 @@ import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
@@ -371,4 +372,8 @@ class WalletViewModel
         }
 
         suspend fun findBondBotUrl() = userRepository.findOrSyncApp(MIXIN_BOND_USER_ID)
-    }
+
+        fun utxoItem(asset: String): LiveData<PagingData<UtxoItem>> {
+            return tokenRepository.utxoItem(asset)
+        }
+}
