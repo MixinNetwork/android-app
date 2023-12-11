@@ -3,7 +3,6 @@ package one.mixin.android.api.service
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.DepositEntryRequest
 import one.mixin.android.api.request.GhostKeyRequest
-import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.response.GhostKey
@@ -59,11 +58,18 @@ interface UtxoService {
     ): MixinResponse<TransactionResponse>
 
     @GET("safe/multisigs/{id}")
-    suspend fun getMultisigs(@Path("id") requestId:String):MixinResponse<TransactionResponse>
+    suspend fun getMultisigs(
+        @Path("id") requestId: String,
+    ): MixinResponse<TransactionResponse>
 
     @POST("safe/multisigs/{id}/sign")
-    suspend fun signTransactionMultisigs(@Path("id") requestId:String, @Body transactionRequest: TransactionRequest):MixinResponse<TransactionResponse>
+    suspend fun signTransactionMultisigs(
+        @Path("id") requestId: String,
+        @Body transactionRequest: TransactionRequest,
+    ): MixinResponse<TransactionResponse>
 
     @POST("safe/multisigs/{id}/unlock")
-    suspend fun unlockTransactionMultisigs(@Path("id") requestId:String):MixinResponse<TransactionResponse>
+    suspend fun unlockTransactionMultisigs(
+        @Path("id") requestId: String,
+    ): MixinResponse<TransactionResponse>
 }

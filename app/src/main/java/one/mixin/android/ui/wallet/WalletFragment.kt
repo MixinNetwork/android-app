@@ -173,21 +173,22 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 .not()
                     }
                     Pair(walletActivity.supportCurrencies, walletActivity.supportAssetIds)
-                } else if (profileResponse.errorCode == ErrorHandler.OLD_VERSION){
-                    alertDialogBuilder()
-                        .setTitle(R.string.Update_Mixin)
-                        .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
-                        .setNegativeButton(R.string.Cancel) { dialog, _ ->
-                            dialog.dismiss()
-                        }.setPositiveButton(R.string.Update) { dialog, _ ->
-                            requireContext().openMarket()
-                            dialog.dismiss()
-                        }.create().show()
-                    throw MixinResponseException(
-                        profileResponse.errorCode,
-                        profileResponse.errorDescription,
-                    )
-                } else {
+                } else if (profileResponse.errorCode == ErrorHandler.OLD_VERSION)
+                    {
+                        alertDialogBuilder()
+                            .setTitle(R.string.Update_Mixin)
+                            .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
+                            .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                                dialog.dismiss()
+                            }.setPositiveButton(R.string.Update) { dialog, _ ->
+                                requireContext().openMarket()
+                                dialog.dismiss()
+                            }.create().show()
+                        throw MixinResponseException(
+                            profileResponse.errorCode,
+                            profileResponse.errorDescription,
+                        )
+                    } else {
                     throw MixinResponseException(
                         profileResponse.errorCode,
                         profileResponse.errorDescription,

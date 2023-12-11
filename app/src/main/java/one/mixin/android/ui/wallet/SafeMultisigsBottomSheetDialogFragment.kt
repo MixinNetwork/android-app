@@ -2,13 +2,10 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.DialogInterface
 import android.view.View.GONE
-import androidx.compose.ui.res.booleanResource
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.PaymentStatus
@@ -129,7 +126,7 @@ class SafeMultisigsBottomSheetDialogFragment :
                     R.string.Revoke_multisig_transaction
                 } else {
                     R.string.Multisig_Transaction
-                }
+                },
             ),
             t.memo ?: "",
             getDescription(),
@@ -150,5 +147,4 @@ class SafeMultisigsBottomSheetDialogFragment :
         showDone()
         return false
     }
-
 }

@@ -1108,7 +1108,10 @@ class BottomSheetViewModel
 
         suspend fun getMultisigs(requestId: String) = tokenRepository.getMultisigs(requestId)
 
-        suspend fun transactionMultisigs(t: SafeMultisigsBiometricItem, pin: String): MixinResponse<TransactionResponse> {
+        suspend fun transactionMultisigs(
+            t: SafeMultisigsBiometricItem,
+            pin: String,
+        ): MixinResponse<TransactionResponse> {
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
             return if (t.action == "sign") {
                 val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
@@ -1117,7 +1120,7 @@ class BottomSheetViewModel
             } else if (t.action == "unlock") {
                 tokenRepository.unlockTransactionMultisigs(t.traceId)
             } else {
-               throw Exception("no support action" + t.action)
+                throw Exception("no support action" + t.action)
             }
         }
-}
+    }
