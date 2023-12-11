@@ -15,6 +15,7 @@ import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.util.UnstableApi
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -31,7 +32,9 @@ import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
 import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
+import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.getScopes
+import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentBottomSheetBinding
 import one.mixin.android.extension.appendQueryParamsFromOtherUri
 import one.mixin.android.extension.base64RawURLDecode
@@ -61,6 +64,7 @@ import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.ConfirmBottomFragment
@@ -81,6 +85,7 @@ import one.mixin.android.ui.oldwallet.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.TransferBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.ui.wallet.SafeMultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
@@ -89,6 +94,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.io.IOException
 import java.io.UnsupportedEncodingException
@@ -99,7 +105,7 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.util.UUID
 import javax.inject.Inject
 
-@AndroidEntryPoint
+@UnstableApi @AndroidEntryPoint
 class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "LinkBottomSheetDialogFragment"
@@ -241,6 +247,71 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     OldTransferFragment.newInstance(userId, supportSwitchAsset = true)
                         .showNow(parentFragmentManager, OldTransferFragment.TAG)
                     dismiss()
+                }
+            }
+        } else if (url.startsWith(Scheme.HTTPS_MULTISIGS, true)) {
+            if (checkHasPin()) return
+            lifecycleScope.launch(errorHandler) {
+                val uri = Uri.parse(url)
+                val segments = Uri.parse(url).pathSegments
+                if (segments.isEmpty()) return@launch
+                val requestId = segments[2]
+                if (!requestId.isUUID()) {
+                    showError(R.string.Invalid_payment_link)
+                }
+                val action = uri.getQueryParameter("action")
+                if (action == null || !(action.equals("sign", true) || action.equals("unlock", true))) {
+                    showError()
+                    return@launch
+                }
+                val transactionResponse = linkViewModel.getMultisigs(requestId)
+                if (transactionResponse.isSuccess) {
+                    val multisigs = transactionResponse.data!!
+                    val asset = checkToken(multisigs.assetId!!)
+                    if (asset != null) {
+                        val state:String
+                        if (multisigs.signers?.contains(Session.getAccountId()) == true && action == "sign") {
+                            state = SignatureState.signed.name
+                        } else if (multisigs.signers?.contains(Session.getAccountId()) == false && action == "unlock") {
+                            state = SignatureState.unlocked.name
+                        } else if ((multisigs.signers?.size ?: 0) >= multisigs.sendersThreshold) {
+                            state = PaymentStatus.paid.name
+                        } else {
+                            state = SignatureState.initial.name
+                        }
+                        val receivers = multisigs.receivers?.flatMap {
+                            it.members
+                        }
+                        if (receivers.isNullOrEmpty()) {
+                            showError()
+                            return@launch
+                        }
+                        val multisigsBiometricItem =
+                            SafeMultisigsBiometricItem(
+                                action = action,
+                                traceId = multisigs.requestId,
+                                senders = multisigs.senders.toTypedArray(),
+                                receivers = receivers.toTypedArray(),
+                                sendersThreshold = multisigs.sendersThreshold,
+                                receiverThreshold = multisigs.receivers.sumOf { it.threshold },
+                                asset = asset,
+                                amount = multisigs.amount,
+                                memo = null,
+                                raw = multisigs.rawTransaction,
+                                index = multisigs.senders.indexOf(Session.getAccountId()),
+                                views = if (multisigs.views.isNullOrEmpty()) null else multisigs.views.joinToString(","),
+                                state = state
+                            )
+                        SafeMultisigsBottomSheetDialogFragment.newInstance(multisigsBiometricItem).showNow(
+                            parentFragmentManager,
+                            SafeMultisigsBottomSheetDialogFragment.TAG,
+                        )
+                        dismiss()
+                    } else {
+                        showError()
+                    }
+                } else {
+                    showError()
                 }
             }
         } else if (url.startsWith(Scheme.HTTPS_PAY, true) || url.startsWith(Scheme.PAY, true)) {
@@ -975,6 +1046,17 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         return oldLinkViewModel.findAssetItemById(assetId)
     }
 
+    private suspend fun checkToken(assetId: String): TokenItem? {
+        var asset = linkViewModel.findAssetItemById(assetId)
+        if (asset == null) {
+            asset = linkViewModel.refreshAsset(assetId)
+        }
+        if (asset != null && asset.assetId != asset.chainId && linkViewModel.findAssetItemById(asset.chainId) == null) {
+            linkViewModel.refreshAsset(asset.chainId)
+        }
+        return linkViewModel.findAssetItemById(assetId)
+    }
+
     @SuppressLint("SetTextI18n")
     private fun showError(
         @StringRes errorRes: Int = R.string.Invalid_Link,
@@ -1032,6 +1114,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 is IOException -> showError(R.string.No_network_connection)
                 else -> {
                     ErrorHandler.handleError(error)
+                    Timber.e(error)
                     showError(R.string.Network_error)
                 }
             }

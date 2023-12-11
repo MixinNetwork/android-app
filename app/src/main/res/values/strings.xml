@@ -623,6 +623,7 @@
     <string name="Monday">Monday</string>
     <string name="More">More</string>
     <string name="Multisig_by_PIN">Multisig by PIN</string>
+    <string name="multisig_senders_threshold">Senders (%1$s)</string>
     <string name="multisig_receivers_threshold">Receivers (%1$s)</string>
     <string name="multisig_state_signed">This multisig link has already been signed by yourself, you can not make a duplicate operation.</string>
     <string name="multisig_state_unlocked">This multisig link has already been unlocked by someone, you can not make a duplicate operation.</string>

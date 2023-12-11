@@ -102,42 +102,21 @@ fun buildWithdrawalBiometricItem(
 fun WithdrawBiometricItem.hasAddress() = address.addressId.isNotBlank()
 
 @Parcelize
-open class MultisigsBiometricItem(
+open class SafeMultisigsBiometricItem(
+    val action: String,
+    val raw: String,
+    val views: String?,
+    val index: Int,
     open val senders: Array<String>,
     open val receivers: Array<String>,
-    open val threshold: Int,
+    open val receiverThreshold: Int,
+    open val sendersThreshold: Int,
     override val traceId: String,
     override var asset: TokenItem?,
     override var amount: String,
     override var memo: String?,
     override var state: String,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state)
-
-@Parcelize
-class Multi2MultiBiometricItem(
-    val requestId: String,
-    val action: String,
-    override val senders: Array<String>,
-    override val receivers: Array<String>,
-    override val threshold: Int,
-    override val traceId: String,
-    override var asset: TokenItem?,
-    override var amount: String,
-    override var memo: String?,
-    override var state: String,
-) : MultisigsBiometricItem(senders, receivers, threshold, traceId, asset, amount, memo, state)
-
-@Parcelize
-class One2MultiBiometricItem(
-    override val senders: Array<String>,
-    override val receivers: Array<String>,
-    override val threshold: Int,
-    override val traceId: String,
-    override var asset: TokenItem?,
-    override var amount: String,
-    override var memo: String?,
-    override var state: String,
-) : MultisigsBiometricItem(senders, receivers, threshold, traceId, asset, amount, memo, state)
 
 @Parcelize
 class NftBiometricItem(

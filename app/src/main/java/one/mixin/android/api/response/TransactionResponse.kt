@@ -16,12 +16,15 @@ data class TransactionResponse(
     @SerializedName("snapshot_id")
     val snapshotId: String?,
     val asset: String,
+    @SerializedName("asset_id")
+    val assetId: String?,
     @SerializedName("senders_hash")
     val sendersHash: String,
     @SerializedName("senders_threshold")
     val sendersThreshold: Int,
     val senders: List<String>,
-    val signers: List<String>,
+    val receivers: List<Receiver>?,
+    val signers: List<String>?,
     val extra: String,
     val state: String,
     @SerializedName("raw_transaction")
@@ -35,7 +38,7 @@ data class TransactionResponse(
     @SerializedName("snapshot_at")
     val snapshotAt: String,
     @SerializedName("views")
-    val views: List<String>,
+    val views: List<String>?,
 ) {
     val getSnapshotId: String
         get() {
@@ -45,6 +48,18 @@ data class TransactionResponse(
             return snapshotId
         }
 }
+
+data class Receiver(
+    @SerializedName("members")
+    val members: List<String>,
+    @SerializedName("members_hash")
+    val membersHash: String,
+    val threshold: Int,
+    val destination: String?,
+    val tag: String?,
+    @SerializedName("withdrawal_hash")
+    val withdrawalHash: String?,
+)
 
 fun getTransactionResult(
     transactionList: List<TransactionResponse>?,

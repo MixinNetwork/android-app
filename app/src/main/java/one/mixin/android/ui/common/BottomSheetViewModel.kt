@@ -60,6 +60,7 @@ import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.common.biometric.MaxCountNotEnoughUtxoException
 import one.mixin.android.ui.common.biometric.NotEnoughUtxoException
+import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.util.reportException
@@ -227,14 +228,14 @@ class BottomSheetViewModel
                 }
             }
             val (withdrawalData, feeData) = getTransactionResult(withdrawalRequestResponse.data, traceId, feeTraceId)
-            val withdrawalViews = withdrawalData.views.joinToString(",")
+            val withdrawalViews = withdrawalData.views!!.joinToString(",")
             val signWithdrawal = Kernel.signTx(withdrawalTx.raw, withdrawalUtxos.formatKeys, withdrawalViews, spendKey.toHex(), isDifferentFee)
             val signWithdrawalResult = SignResult(signWithdrawal.raw, signWithdrawal.change)
             val rawRequest = mutableListOf(TransactionRequest(signWithdrawalResult.raw, traceId))
             if (isDifferentFee) {
                 feeUtxos ?: throw NullPointerException("Lost fee UTXO")
                 feeData ?: throw NullPointerException("Lost fee fee data")
-                val feeViews = feeData.views.joinToString(",")
+                val feeViews = feeData.views!!.joinToString(",")
                 val signFee = Kernel.signTx(feeTx, feeUtxos.formatKeys, feeViews, spendKey.toHex(), false)
                 val signFeeResult = SignResult(signFee.raw, signFee.change)
                 rawRequest.add(TransactionRequest(signFeeResult.raw, feeTraceId))
@@ -318,7 +319,7 @@ class BottomSheetViewModel
                 throw IllegalArgumentException("Transfer is already paid")
             }
             // Workaround with only the case of a single transfer
-            val views = transactionResponse.data!!.first().views.joinToString(",")
+            val views = transactionResponse.data!!.first().views!!.joinToString(",")
             val keys = utxoWrapper.formatKeys
             val sign = Kernel.signTx(tx, keys, views, spendKey.toHex(), false)
             val signResult = SignResult(sign.raw, sign.change)
@@ -381,7 +382,7 @@ class BottomSheetViewModel
                 throw IllegalArgumentException("Transfer is already paid")
             }
             // Workaround with only the case of a single transfer
-            val views = transactionResponse.data!!.first().views.joinToString(",")
+            val views = transactionResponse.data!!.first().views!!.joinToString(",")
             val keys = utxoWrapper.formatKeys
             val sign = Kernel.signTx(tx, keys, views, spendKey.toHex(), false)
             val signResult = SignResult(sign.raw, sign.change)
@@ -1104,4 +1105,19 @@ class BottomSheetViewModel
         suspend fun tokenEntry(ids: Array<String>) = tokenRepository.tokenEntry(ids)
 
         suspend fun tokenEntry() = tokenRepository.tokenEntry()
-    }
+
+        suspend fun getMultisigs(requestId: String) = tokenRepository.getMultisigs(requestId)
+
+        suspend fun transactionMultisigs(t: SafeMultisigsBiometricItem, pin: String): MixinResponse<TransactionResponse> {
+            val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
+            return if (t.action == "sign") {
+                val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
+                val sign = Kernel.signTransaction(t.raw, t.views, spendKey.toHex(), t.index.toLong(), false)
+                tokenRepository.signTransactionMultisigs(t.traceId, TransactionRequest(sign.raw, t.traceId))
+            } else if (t.action == "unlock") {
+                tokenRepository.unlockTransactionMultisigs(t.traceId)
+            } else {
+               throw Exception("no support action" + t.action)
+            }
+        }
+}
