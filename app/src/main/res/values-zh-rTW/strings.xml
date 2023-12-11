@@ -550,6 +550,7 @@
     <string name="Monday">星期一</string>
     <string name="More">更多</string>
     <string name="Multisig_by_PIN">透過 PIN 簽名</string>
+    <string name="multisig_senders_threshold">交易發起人（%1$s）</string>
     <string name="multisig_receivers_threshold">交易接收人（%1$s）</string>
     <string name="multisig_state_signed">您已經對這筆交易進行了簽名，您無法再次簽名。</string>
     <string name="multisig_state_unlocked">這筆交易已經被其他人撤銷了，您無法再次撤銷。</string>

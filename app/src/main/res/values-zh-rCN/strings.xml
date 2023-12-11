@@ -605,6 +605,7 @@
     <string name="Monday">星期一</string>
     <string name="More">更多</string>
     <string name="Multisig_by_PIN">通过 PIN 签名</string>
+    <string name="multisig_senders_threshold">交易发起人 (%1$s)</string>
     <string name="multisig_receivers_threshold">交易接收人（%1$s）</string>
     <string name="multisig_state_signed">您已经对这笔交易进行了签名，您无法再次签名。</string>
     <string name="multisig_state_unlocked">这笔交易已经被其他人撤销了，您无法再次撤销。</string>

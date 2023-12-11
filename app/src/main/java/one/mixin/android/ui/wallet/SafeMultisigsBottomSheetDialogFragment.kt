@@ -113,9 +113,9 @@ class SafeMultisigsBottomSheetDialogFragment :
     ) {
         val title =
             if (isSender) {
-                getString(R.string.Senders)
+                getString(R.string.multisig_senders_threshold, "${t.sendersThreshold}/${t.senders.size}")
             } else {
-                getString(R.string.multisig_receivers_threshold, "${t.threshold}/${t.receivers.size}")
+                getString(R.string.multisig_receivers_threshold, "${t.receiverThreshold}/${t.receivers.size}")
             }
         UserListBottomSheetDialogFragment.newInstance(userList, title)
             .showNow(parentFragmentManager, UserListBottomSheetDialogFragment.TAG)
