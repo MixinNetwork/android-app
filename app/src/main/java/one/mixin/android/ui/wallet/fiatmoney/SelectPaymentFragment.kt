@@ -19,6 +19,7 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.round
 import one.mixin.android.extension.toast
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
@@ -141,7 +142,7 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
                     lifecycleScope.launch {
                         requestRouteAPI(
                             invokeNetwork = {
-                                fiatMoneyViewModel.createInstrument(RouteInstrumentRequest(token, cardholderName))
+                                fiatMoneyViewModel.createInstrument(RouteInstrumentRequest(token, cardholderName, Session.getAccount()?.phone))
                             },
                             endBlock = {
                                 dismissLoading()

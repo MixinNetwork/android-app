@@ -500,7 +500,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         token,
                         sessionId,
                         instrumentId,
-                        getCountryCodeFromPhoneNumber(Session.getAccount()?.phone),
+                        Session.getAccount()?.phone,
                         deviceSessionId,
                     ),
                 )

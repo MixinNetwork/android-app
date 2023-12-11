@@ -376,4 +376,4 @@ class WalletViewModel
         fun utxoItem(asset: String): LiveData<PagingData<UtxoItem>> {
             return tokenRepository.utxoItem(asset)
         }
-}
+    }

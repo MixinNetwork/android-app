@@ -7,4 +7,6 @@ class RouteInstrumentRequest(
     val token: String,
     @SerializedName("name")
     val name: String?,
+    @SerializedName("phone")
+    val phone: String?,
 )

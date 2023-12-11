@@ -31,7 +31,6 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat
@@ -465,13 +464,13 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                                     R.id.action_transactions_to_utxo,
                                     Bundle().apply {
                                         putParcelable(ARGS_ASSET, asset)
-                                    }
+                                    },
                                 )
                             }
 
                             override fun onSingleClick() {
                             }
-                        }
+                        },
                     )
                 }
             }

@@ -17,8 +17,8 @@ class RoutePaymentRequest(
     val sessionId: String?,
     @SerializedName("instrument_id")
     val instrumentId: String?,
-    @SerializedName("country_code")
-    val countryCode: String?,
+    @SerializedName("phone")
+    val phone: String?,
     @SerializedName("device_session_id")
     val deviceSessionId: String?,
 )

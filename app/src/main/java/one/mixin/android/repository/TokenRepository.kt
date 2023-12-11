@@ -745,13 +745,12 @@ class TokenRepository
         fun utxoItem(asset: String): LiveData<PagingData<UtxoItem>> {
             return Pager(
                 config =
-                PagingConfig(
-                    pageSize = Constants.PAGE_SIZE,
-                    enablePlaceholders = true,
-                ),
+                    PagingConfig(
+                        pageSize = Constants.PAGE_SIZE,
+                        enablePlaceholders = true,
+                    ),
                 pagingSourceFactory = {
                     outputDao.utxoItem(asset)
-
                 },
             ).liveData
         }

@@ -36,10 +36,10 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class UtxosFragment : BaseFragment() {
     companion object {
-
-        fun newInstance(asset: TokenItem) = UtxosFragment().withArgs {
-            putParcelable(ARGS_ASSET, asset)
-        }
+        fun newInstance(asset: TokenItem) =
+            UtxosFragment().withArgs {
+                putParcelable(ARGS_ASSET, asset)
+            }
 
         private val UtxoItemDiffCallBack =
             object : DiffUtil.ItemCallback<UtxoItem>() {
@@ -101,16 +101,21 @@ class UtxosFragment : BaseFragment() {
 
     class UtxoAdapter :
         PagingDataAdapter<UtxoItem, UtxoHolder>(UtxoItemDiffCallBack) {
-        override fun onBindViewHolder(holder: UtxoHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: UtxoHolder,
+            position: Int,
+        ) {
             getItem(position)?.let {
                 holder.bind(it)
             }
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UtxoHolder {
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): UtxoHolder {
             return UtxoHolder(ItemWalletUtxoBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
-
     }
 
     class UtxoHolder(val binding: ItemWalletUtxoBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -121,7 +126,7 @@ class UtxosFragment : BaseFragment() {
                 value.text = item.amount
                 value.textColorResource = if (item.state == "unspent") R.color.wallet_green else R.color.wallet_pink
             }
-            binding.root.setOnLongClickListener{
+            binding.root.setOnLongClickListener {
                 it.context?.getClipboardManager()
                     ?.setPrimaryClip(ClipData.newPlainText(null, item.transactionHash))
                 toast(R.string.copied_to_clipboard)
@@ -129,7 +134,6 @@ class UtxosFragment : BaseFragment() {
             }
         }
     }
-
 
     @Inject
     lateinit var jobManager: MixinJobManager
