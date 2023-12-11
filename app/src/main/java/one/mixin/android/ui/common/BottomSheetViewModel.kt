@@ -1114,10 +1114,10 @@ class BottomSheetViewModel
                 val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
                 val sign = Kernel.signTransaction(t.raw, t.views, spendKey.toHex(), t.index.toLong(), false)
                 tokenRepository.signTransactionMultisigs(t.traceId, TransactionRequest(sign.raw, t.traceId))
-            } else {
+            } else if (t.action == "unlock") {
                 tokenRepository.unlockTransactionMultisigs(t.traceId)
+            } else {
+               throw Exception("no support action" + t.action)
             }
         }
-
-
 }
