@@ -309,6 +309,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     } else {
                         showError()
                     }
+                } else {
+                    showError()
                 }
             }
         } else if (url.startsWith(Scheme.HTTPS_PAY, true) || url.startsWith(Scheme.PAY, true)) {
