@@ -279,7 +279,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         } else {
                             state = SignatureState.initial.name
                         }
-                        val receivers = multisigs.receivers
+                        val receivers = multisigs.receivers?.flatMap {
+                            it.members
+                        }
                         if (receivers.isNullOrEmpty()) {
                             showError()
                             return@launch
