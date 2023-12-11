@@ -1,7 +1,10 @@
 package one.mixin.android.db
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
+import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.safe.Output
 
 @Dao
@@ -27,4 +30,7 @@ interface OutputDao : BaseDao<Output> {
 
     @Query("UPDATE outputs SET state = 'signed' WHERE state = 'unspent' AND output_id IN (:outputIds)")
     fun updateUtxoToSigned(outputIds: List<String>)
+
+    @Query("SELECT * FROM outputs WHERE asset = :asset ORDER BY sequence DESC")
+    fun utxoItem(asset: String):PagingSource<Int,UtxoItem>
 }
