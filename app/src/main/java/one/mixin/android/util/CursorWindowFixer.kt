@@ -28,7 +28,11 @@ class CursorWindowFixer {
             val activityManager = context.getSystemService<ActivityManager>() ?: return 10
             val memoryInfo = MemoryInfo()
             activityManager.getMemoryInfo(memoryInfo)
-            val memorySize = max(memoryInfo.totalMem / 1024 / 1024 / 1024, 2)
+            val total = memoryInfo.totalMem / 1024 / 1024 / 1024
+            if (total < 6) {  // for device memory less than 6GB, use 10MB for cursor window size
+                return 10
+            }
+            val memorySize = max(total, 2)
             return min(100, (memorySize * 12.5).toInt()) // 8G Memory set window size to 100MB, 1G Memory set to 12.5MB
         }
     }
