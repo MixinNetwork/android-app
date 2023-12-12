@@ -265,8 +265,12 @@ class BottomSheetViewModel
                 }
                 jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
             }
-            val transactionRsp = tokenRepository.transactions(rawRequest)
-            if (transactionRsp.error != null) {
+            val transactionRsp = try {
+                tokenRepository.transactions(rawRequest)
+            } catch (_: Exception) {
+                tokenRepository.getTransactionsById(traceId)
+            }
+            if (transactionRsp?.error != null) {
                 reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
                 tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
                 tokenRepository.updateRawTransaction(feeTraceId, OutputState.signed.name)
@@ -343,7 +347,7 @@ class BottomSheetViewModel
             pin: String,
             trace: String,
             memo: String?,
-        ): MixinResponse<*> {
+        ): MixinResponse<out List<Any>>? {
             val isConsolidation = receiverIds.size == 1 && receiverIds.first() == Session.getAccountId()
             val asset = assetIdToAsset(assetId)
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
@@ -410,23 +414,33 @@ class BottomSheetViewModel
             amount: String,
             memo: String?,
             isConsolidation: Boolean = false,
-        ): MixinResponse<List<TransactionResponse>> {
-            val transactionRsp = tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
+        ): MixinResponse<*> {
+            val transactionRsp = try {
+                tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
+            } catch (_: Exception) {
+                tokenRepository.getTransactionsById(traceId)
+            }
+
             if (transactionRsp.error != null) {
                 reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
-                tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, OutputState.signed.name)
+                tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
                 return transactionRsp
             } else {
-                tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, OutputState.signed.name)
+                tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
+            }
+            val data = if (transactionRsp.data is List<*>) {
+                (transactionRsp.data as List<*>).first() as TransactionResponse
+            } else {
+                transactionRsp.data as TransactionResponse
             }
             if (receiverIds.size == 1 && !isConsolidation) {
                 // Workaround with only the case of a single transfer
                 val receiverId = receiverIds.first()
-                val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)
-                initConversation(conversationId, transactionRsp.data!!.first().userId, receiverId)
-                tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), conversationId, assetId, amount, receiverId, memo)
+                val conversationId = generateConversationId(data.userId, receiverId)
+                initConversation(conversationId, data.userId, receiverId)
+                tokenRepository.insertSnapshotMessage(data, conversationId, assetId, amount, receiverId, memo)
             } else if (receiverIds.size > 1) {
-                tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), "", assetId, amount, "", memo)
+                tokenRepository.insertSnapshotMessage(data, "", assetId, amount, "", memo)
             }
             jobManager.addJobInBackground(SyncOutputJob())
             return transactionRsp
