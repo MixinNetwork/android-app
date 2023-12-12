@@ -270,12 +270,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val asset = checkToken(multisigs.assetId!!)
                     if (asset != null) {
                         val state: String
-                        if (multisigs.signers?.contains(Session.getAccountId()) == true && action == "sign") {
+                        if ((multisigs.signers?.size ?: 0) >= multisigs.sendersThreshold) {
+                            state = PaymentStatus.paid.name
+                        } else if (multisigs.signers?.contains(Session.getAccountId()) == true && action == "sign") {
                             state = SignatureState.signed.name
                         } else if (multisigs.signers?.contains(Session.getAccountId()) == false && action == "unlock") {
                             state = SignatureState.unlocked.name
-                        } else if ((multisigs.signers?.size ?: 0) >= multisigs.sendersThreshold) {
-                            state = PaymentStatus.paid.name
                         } else {
                             state = SignatureState.initial.name
                         }
