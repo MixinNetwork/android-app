@@ -5,6 +5,7 @@ import android.app.ActivityManager
 import android.app.ActivityManager.MemoryInfo
 import android.content.Context
 import android.database.CursorWindow
+import android.os.Build
 import androidx.core.content.getSystemService
 import timber.log.Timber
 import java.lang.reflect.Field
@@ -15,22 +16,28 @@ class CursorWindowFixer {
     companion object {
         @SuppressLint("DiscouragedPrivateApi")
         fun fix(context: Context) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+
             try {
+                val targetSize = getCursorWindowSize(context)
+                if (targetSize <= 2) {
+                    return
+                }
                 val field: Field = CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
                 field.isAccessible = true
-                field.set(null, getCursorWindowSize(context) * 1024 * 1024)
+                field.set(null, targetSize * 1024 * 1024)
             } catch (e: Exception) {
                 Timber.e(e)
             }
         }
 
         private fun getCursorWindowSize(context: Context): Int {
-            val activityManager = context.getSystemService<ActivityManager>() ?: return 10
+            val activityManager = context.getSystemService<ActivityManager>() ?: return 2
             val memoryInfo = MemoryInfo()
             activityManager.getMemoryInfo(memoryInfo)
             val total = memoryInfo.totalMem / 1024 / 1024 / 1024
-            if (total < 6) { // for device memory less than 6GB, use 10MB for cursor window size
-                return 10
+            if (total < 8) {
+                return 2
             }
             val memorySize = max(total, 2)
             return min(100, (memorySize * 12.5).toInt()) // 8G Memory set window size to 100MB, 1G Memory set to 12.5MB
