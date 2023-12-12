@@ -31,12 +31,14 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.wallet.PaymentData
+import com.squareup.sqldelight.internal.AtomicBoolean
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import okio.buffer
 import okio.source
 import one.mixin.android.BuildConfig
@@ -433,6 +435,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         paymentsPrecondition(sessionId, instrumentId, token, expectancyAssetAmount)
     }
 
+    private val paymentExecuted = AtomicBoolean(false)
+
     @SuppressLint("SetJavaScriptEnabled")
     private fun paymentsPrecondition(
         sessionId: String?,
@@ -442,6 +446,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     ) {
         lifecycleScope.launch(Dispatchers.Main) {
             val webView = WebView(requireContext())
+            val paymentMutex = Mutex()
             webView.settings.javaScriptEnabled = true
             webView.webViewClient =
                 object : WebViewClient() {
@@ -451,6 +456,17 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     ) {
                         super.onPageFinished(view, url)
                         view?.evaluateJavascript("riskDeviceSessionId()") { _ ->
+                            launch {
+                                delay(15000)
+                                if (paymentExecuted.compareAndSet(false, true)) {
+                                    payments(
+                                        sessionId, null,
+                                        instrumentId,
+                                        token,
+                                        expectancyAssetAmount,
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -458,17 +474,19 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             class WebAppInterface {
                 @JavascriptInterface
                 fun deviceSessionIdCallback(deviceSessionId: String) {
-                    payments(
-                        sessionId,
-                        if (deviceSessionId.startsWith("dsid_")) {
-                            deviceSessionId
-                        } else {
-                            null
-                        },
-                        instrumentId,
-                        token,
-                        expectancyAssetAmount,
-                    )
+                    if (paymentExecuted.compareAndSet(false, true)) {
+                        payments(
+                            sessionId,
+                            if (deviceSessionId.startsWith("dsid_")) {
+                                deviceSessionId
+                            } else {
+                                null
+                            },
+                            instrumentId,
+                            token,
+                            expectancyAssetAmount,
+                        )
+                    }
                 }
             }
 
