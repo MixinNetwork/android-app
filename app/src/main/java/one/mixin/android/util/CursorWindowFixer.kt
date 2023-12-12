@@ -19,9 +19,13 @@ class CursorWindowFixer {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
 
             try {
+                val targetSize = getCursorWindowSize(context)
+                if (targetSize <= 2) {
+                    return
+                }
                 val field: Field = CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
                 field.isAccessible = true
-                field.set(null, getCursorWindowSize(context) * 1024 * 1024)
+                field.set(null, targetSize * 1024 * 1024)
             } catch (e: Exception) {
                 Timber.e(e)
             }
@@ -32,7 +36,7 @@ class CursorWindowFixer {
             val memoryInfo = MemoryInfo()
             activityManager.getMemoryInfo(memoryInfo)
             val total = memoryInfo.totalMem / 1024 / 1024 / 1024
-            if (total < 8) { // for device memory less than 8GB, use 2MB for cursor window size
+            if (total < 8) {
                 return 2
             }
             val memorySize = max(total, 2)
