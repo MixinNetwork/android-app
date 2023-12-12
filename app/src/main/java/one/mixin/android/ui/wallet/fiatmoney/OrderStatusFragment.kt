@@ -31,7 +31,6 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.wallet.PaymentData
-import com.squareup.sqldelight.internal.AtomicBoolean
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -73,6 +72,7 @@ import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.nio.charset.Charset
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
 
 @AndroidEntryPoint
 class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
