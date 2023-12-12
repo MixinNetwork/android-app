@@ -38,7 +38,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 import okio.buffer
 import okio.source
 import one.mixin.android.BuildConfig
@@ -447,7 +446,6 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     ) {
         lifecycleScope.launch(Dispatchers.Main) {
             val webView = WebView(requireContext())
-            val paymentMutex = Mutex()
             webView.settings.javaScriptEnabled = true
             webView.webViewClient =
                 object : WebViewClient() {
