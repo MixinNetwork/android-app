@@ -72,6 +72,7 @@ import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.nio.charset.Charset
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
 
 @AndroidEntryPoint
 class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
@@ -430,8 +431,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         token: String?,
         expectancyAssetAmount: String,
     ) {
+        paymentExecuted.set(false)
         paymentsPrecondition(sessionId, instrumentId, token, expectancyAssetAmount)
     }
+
+    private val paymentExecuted = AtomicBoolean(false)
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun paymentsPrecondition(
@@ -451,6 +455,17 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     ) {
                         super.onPageFinished(view, url)
                         view?.evaluateJavascript("riskDeviceSessionId()") { _ ->
+                            launch {
+                                delay(15000)
+                                if (paymentExecuted.compareAndSet(false, true)) {
+                                    payments(
+                                        sessionId, null,
+                                        instrumentId,
+                                        token,
+                                        expectancyAssetAmount,
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -458,17 +473,19 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             class WebAppInterface {
                 @JavascriptInterface
                 fun deviceSessionIdCallback(deviceSessionId: String) {
-                    payments(
-                        sessionId,
-                        if (deviceSessionId.startsWith("dsid_")) {
-                            deviceSessionId
-                        } else {
-                            null
-                        },
-                        instrumentId,
-                        token,
-                        expectancyAssetAmount,
-                    )
+                    if (paymentExecuted.compareAndSet(false, true)) {
+                        payments(
+                            sessionId,
+                            if (deviceSessionId.startsWith("dsid_")) {
+                                deviceSessionId
+                            } else {
+                                null
+                            },
+                            instrumentId,
+                            token,
+                            expectancyAssetAmount,
+                        )
+                    }
                 }
             }
 
