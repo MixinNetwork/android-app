@@ -169,11 +169,6 @@ class WalletViewModel
 
         suspend fun clearPendingDepositsByAssetId(assetId: String) = tokenRepository.clearPendingDepositsByAssetId(assetId)
 
-        suspend fun findPendingSnapshotsByIds(
-            assetId: String,
-            ids: List<String>,
-        ) = tokenRepository.findPendingSnapshotsByIds(assetId, ids)
-
         suspend fun insertPendingDeposit(snapshot: List<SafeSnapshot>) = tokenRepository.insertPendingDeposit(snapshot)
 
         suspend fun getAsset(assetId: String) =

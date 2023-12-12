@@ -593,12 +593,6 @@ class TokenRepository
         suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> =
             routeService.ticker(tickerRequest)
 
-        suspend fun findPendingSnapshotsByIds(
-            assetId: String,
-            ids: List<String>,
-        ): List<String> =
-            safeSnapshotDao.findPendingSnapshotsByIds(assetId, ids)
-
         suspend fun suspendUpdatePrices(priceAndChange: List<PriceAndChange>) =
             tokenDao.suspendUpdatePrices(priceAndChange)
 
