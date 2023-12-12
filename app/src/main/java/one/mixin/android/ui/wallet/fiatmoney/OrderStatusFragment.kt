@@ -432,6 +432,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         token: String?,
         expectancyAssetAmount: String,
     ) {
+        paymentExecuted.set(false)
         paymentsPrecondition(sessionId, instrumentId, token, expectancyAssetAmount)
     }
 
