@@ -59,6 +59,7 @@ class RestoreTransactionJob : BaseJob(
                         val rawTx = Kernel.decodeRawTx(transaction.rawTransaction, 0)
                         val transactionsData = GsonHelper.customGson.fromJson(rawTx, TransactionsData::class.java)
                         runInTransaction {
+                            outputDao.updateUtxoToSignedByHash(transactionsData.inputs.map { it.hash })
                             rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
                             rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
                         }
@@ -90,6 +91,12 @@ class RestoreTransactionJob : BaseJob(
                         if (transactionRsp.error == null) {
                             val transactionResponse = transactionRsp.data!!.first()
                             runInTransaction {
+                                outputDao.updateUtxoToSignedByHash(transactionsData.inputs.map { it.hash })
+                                if (feeTransaction != null) {
+                                    val feeRawTx = Kernel.decodeRawTx(transaction.rawTransaction, 0)
+                                    val feeTransactionsData = GsonHelper.customGson.fromJson(feeRawTx, TransactionsData::class.java)
+                                    outputDao.updateUtxoToSignedByHash(feeTransactionsData.inputs.map { it.hash })
+                                }
                                 rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
                                 rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
                             }

@@ -30,6 +30,9 @@ interface OutputDao : BaseDao<Output> {
     @Query("UPDATE outputs SET state = 'signed' WHERE state = 'unspent' AND output_id IN (:outputIds)")
     fun updateUtxoToSigned(outputIds: List<String>)
 
+    @Query("UPDATE outputs SET state = 'signed' WHERE state = 'unspent' AND transaction_hash IN (:hashs)")
+    fun updateUtxoToSignedByHash(hashs: List<String>)
+
     @Query("SELECT * FROM outputs WHERE asset = :asset ORDER BY sequence DESC")
     fun utxoItem(asset: String): PagingSource<Int, UtxoItem>
 }

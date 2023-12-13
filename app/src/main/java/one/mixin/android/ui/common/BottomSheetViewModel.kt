@@ -347,7 +347,7 @@ class BottomSheetViewModel
             pin: String,
             trace: String,
             memo: String?,
-        ): MixinResponse<out List<Any>>? {
+        ): MixinResponse<*> {
             val isConsolidation = receiverIds.size == 1 && receiverIds.first() == Session.getAccountId()
             val asset = assetIdToAsset(assetId)
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
