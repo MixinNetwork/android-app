@@ -7,6 +7,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -32,6 +33,7 @@ import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogF
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.ui.common.biometric.hasAddress
+import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.BLOCKCHAIN_ERROR
@@ -47,7 +49,7 @@ import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.BottomSheet
 
-@AndroidEntryPoint
+@UnstableApi @AndroidEntryPoint
 class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<AssetBiometricItem>() {
     companion object {
         const val TAG = "OutputBottomSheetDialogFragment"
@@ -230,12 +232,15 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
         pin: String,
     ): Boolean {
         var returnTo: String? = null
+        var from = LinkBottomSheetDialogFragment.FROM_INTERNAL
         when (val t = this@OutputBottomSheetDialogFragment.t) {
             is TransferBiometricItem -> {
                 returnTo = t.returnTo
+                from = t.from
             }
             is AddressTransferBiometricItem -> {
                 returnTo = t.returnTo
+                from = t.from
             }
             else -> {
                 t as WithdrawBiometricItem
@@ -259,7 +264,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             }
         }
 
-        showDone(returnTo)
+        showDone(returnTo, from)
         return false
     }
 
