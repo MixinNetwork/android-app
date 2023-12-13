@@ -101,12 +101,6 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     @Query("DELETE FROM safe_snapshots WHERE type = 'pending' AND deposit LIKE '%' || :depositHash || '%' $ESCAPE_SUFFIX")
     fun deletePendingSnapshotByHash(depositHash: String)
 
-    @Query("SELECT transaction_hash FROM safe_snapshots WHERE asset_id = :assetId AND snapshot_id IN (:ids)")
-    suspend fun findPendingSnapshotsByIds(
-        assetId: String,
-        ids: List<String>,
-    ): List<String>
-
     @Query("SELECT sn.* FROM safe_snapshots sn WHERE sn.rowid > :rowId ORDER BY sn.rowid ASC LIMIT :limit")
     fun getSnapshotByLimitAndRowId(
         limit: Int,

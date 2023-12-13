@@ -181,15 +181,14 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                 successBlock = { list ->
                     withContext(Dispatchers.IO) {
                         walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
-                        val pendingDeposits = list.data ?: return@withContext
+                        val pendingDeposits = list.data
+                        if (pendingDeposits.isNullOrEmpty()) {
+                            return@withContext
+                        }
 
-                        pendingDeposits.chunked(100) { trunk ->
+                        pendingDeposits.chunked(100) { chunk ->
                             lifecycleScope.launch(Dispatchers.IO) {
-                                val ids = trunk.map { it.depositId }
-                                val existIds = walletViewModel.findPendingSnapshotsByIds(asset.assetId, ids)
-                                trunk.filter {
-                                    it.depositId !in existIds
-                                }.map {
+                                chunk.map {
                                     it.toSnapshot(asset.assetId)
                                 }.let {
                                     walletViewModel.insertPendingDeposit(it)
