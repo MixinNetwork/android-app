@@ -41,6 +41,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.isAnonymousNumber
 import one.mixin.android.util.isValidNumber
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.util.xinDialCode
 import one.mixin.android.widget.CaptchaView
@@ -251,6 +252,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                 { t: Throwable ->
                     hideLoading()
                     ErrorHandler.handleError(t)
+                    reportException("$TAG loginVerification", t)
                 },
             )
     }
@@ -334,7 +336,9 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                     .add(R.id.container, countryPicker).addToBackStack(null)
             }
         } catch (e: Exception) {
-            Timber.e("open countryPicker ${e.stackTraceToString()}")
+            val msg = "open countryPicker ${e.stackTraceToString()}"
+            Timber.e(msg)
+            reportException("$TAG show country picker", RuntimeException(msg))
         }
     }
 

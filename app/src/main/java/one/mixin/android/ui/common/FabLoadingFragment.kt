@@ -6,6 +6,7 @@ import androidx.annotation.LayoutRes
 import one.mixin.android.R
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.reportException
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.fabprogresscircle.FABProgressCircle
 
@@ -48,6 +49,7 @@ abstract class FabLoadingFragment : BaseFragment {
         verificationNextFab.hide()
         verificationCover.visibility = View.GONE
         ErrorHandler.handleError(t)
+        reportException("FabLoadingFragment $this ", t)
     }
 
     protected fun showLoading() {
