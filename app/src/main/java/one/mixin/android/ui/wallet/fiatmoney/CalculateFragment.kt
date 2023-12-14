@@ -40,6 +40,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.setting.AppearanceFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.setting.getCurrencyData
@@ -151,6 +152,16 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             binding.apply {
                 titleView.leftIb.setOnClickListener {
                     activity?.onBackPressedDispatcher?.onBackPressed()
+                }
+                titleView.rightIb.setOnClickListener {
+                    lifecycleScope.launch {
+                        val userTeamMixin = fiatMoneyViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
+                        if (userTeamMixin == null) {
+                            toast(R.string.Data_error)
+                        } else {
+                            ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
+                        }
+                    }
                 }
                 titleView.setSubTitle(getString(R.string.Buy), "")
                 titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
