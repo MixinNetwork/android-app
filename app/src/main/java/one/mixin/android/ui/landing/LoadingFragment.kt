@@ -140,7 +140,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                     }
                 }
             } catch (t: Throwable) {
-                reportException("Update EdDSA key", t)
+                reportException("$TAG Update EdDSA key", t)
                 ErrorHandler.handleError(t)
             }
 
@@ -155,6 +155,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             putIsSyncSession(requireContext(), true)
         } catch (e: Exception) {
             ErrorHandler.handleError(e)
+            reportException("$TAG syncSession", e)
         }
     }
 
@@ -201,6 +202,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 }
             } catch (e: Exception) {
                 ErrorHandler.handleError(e)
+                reportException("$TAG pushAsyncSignalKeys", e)
                 load()
             }
         }

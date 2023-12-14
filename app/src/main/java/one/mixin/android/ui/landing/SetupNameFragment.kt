@@ -29,6 +29,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
@@ -88,6 +89,7 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                             nameFab.hide()
                             nameCover.visibility = INVISIBLE
                             ErrorHandler.handleError(t)
+                            reportException("SetupNameFragment update", t)
                         },
                     )
             }
