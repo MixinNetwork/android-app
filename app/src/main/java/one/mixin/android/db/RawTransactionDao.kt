@@ -9,6 +9,9 @@ interface RawTransactionDao : BaseDao<RawTransaction> {
     @Query("SELECT * FROM raw_transactions WHERE state = 'unspent' AND (type = 0 OR type = 1) ORDER BY rowid ASC LIMIT 1")
     fun findUnspentTransaction(): RawTransaction?
 
+    @Query("SELECT count(1) FROM raw_transactions WHERE state = 'unspent' AND (type = 0 OR type = 1)")
+    suspend fun countUnspentTransaction(): Int
+
     @Query("SELECT * FROM raw_transactions WHERE request_id = :requestId")
     fun findRawTransaction(requestId: String): RawTransaction?
 

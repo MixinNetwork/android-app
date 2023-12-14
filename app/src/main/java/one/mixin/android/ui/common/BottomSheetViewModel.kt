@@ -274,6 +274,7 @@ class BottomSheetViewModel
             } else {
                 tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
                 tokenRepository.updateRawTransaction(feeTraceId, OutputState.signed.name)
+                tokenRepository.insertSafeSnapshot(transactionRsp.data!!.first(), assetId, amount, receiverId, memo)
             }
             jobManager.addJobInBackground(SyncOutputJob())
             return withdrawalRequestResponse
@@ -1121,6 +1122,12 @@ class BottomSheetViewModel
                 tokenRepository.unlockTransactionMultisigs(t.traceId)
             } else {
                 throw Exception("no support action" + t.action)
+            }
+        }
+
+        suspend fun checkTransaction(restoreAction: () -> Unit) {
+            if (tokenRepository.hasPendingTransaction()) {
+                restoreAction.invoke()
             }
         }
     }
