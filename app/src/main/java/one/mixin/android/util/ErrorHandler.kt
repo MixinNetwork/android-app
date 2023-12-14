@@ -17,6 +17,7 @@ import retrofit2.HttpException
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import java.util.concurrent.ExecutionException
 
 open class ErrorHandler {
     companion object {
@@ -44,6 +45,9 @@ open class ErrorHandler {
                     }
                     is TipNodeException -> {
                         toast(throwable.getTipExceptionMsg(ctx))
+                    }
+                    is ExecutionException -> {
+                        toast("ExecutionException: ${throwable.cause?.message ?: throwable.message}")
                     }
                     else -> toast(getString(R.string.error_unknown_with_message, throwable.message))
                 }
