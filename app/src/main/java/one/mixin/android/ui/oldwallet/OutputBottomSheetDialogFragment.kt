@@ -21,6 +21,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putStringSet
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.biometric.AssetBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.BiometricInfo
 import one.mixin.android.ui.oldwallet.biometric.BiometricItem
@@ -159,9 +160,12 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
         pin: String,
     ): Boolean {
         var returnTo: String? = null
+        var from = LinkBottomSheetDialogFragment.FROM_INTERNAL
+
         when (val t = this@OutputBottomSheetDialogFragment.t) {
             is TransferBiometricItem -> {
                 returnTo = t.returnTo
+                from = t.from
             }
             else -> {
                 t as WithdrawBiometricItem
@@ -185,7 +189,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             }
         }
 
-        showDone(returnTo)
+        showDone(returnTo, from)
         return false
     }
 
