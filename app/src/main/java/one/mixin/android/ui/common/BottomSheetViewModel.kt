@@ -1125,9 +1125,8 @@ class BottomSheetViewModel
             }
         }
 
-        suspend fun checkTransaction(restoreAction: () -> Unit) {
-            if (tokenRepository.hasPendingTransaction()) {
-                restoreAction.invoke()
-            }
+        suspend fun firstUnspentTransaction() = withContext(Dispatchers.IO) {
+            tokenRepository.firstUnspentTransaction()
         }
+
     }

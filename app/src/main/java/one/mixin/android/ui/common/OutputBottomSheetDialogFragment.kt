@@ -22,8 +22,6 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putStringSet
 import one.mixin.android.extension.withArgs
-import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RestoreTransactionJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
@@ -48,7 +46,6 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.BottomSheet
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<AssetBiometricItem>() {
@@ -68,9 +65,6 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
     var onDestroyListener: OnDestroyListener? = null
 
     private val binding by viewBinding(FragmentTransferBottomSheetBinding::inflate)
-
-    @Inject
-    lateinit var jobManager: MixinJobManager
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun setupDialog(
@@ -135,15 +129,6 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             }
         }
         setBiometricItem()
-        checkTransaction()
-    }
-
-    private fun checkTransaction() {
-        lifecycleScope.launch {
-            bottomViewModel.checkTransaction {
-                jobManager.addJobInBackground(RestoreTransactionJob())
-            }
-        }
     }
 
     override fun checkState(t: BiometricItem) {

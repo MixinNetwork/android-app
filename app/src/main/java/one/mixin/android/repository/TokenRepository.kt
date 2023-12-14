@@ -764,5 +764,5 @@ class TokenRepository
             ).liveData
         }
 
-    suspend fun hasPendingTransaction() = rawTransactionDao.countUnspentTransaction() > 0
+    fun firstUnspentTransaction() = rawTransactionDao.findUnspentTransaction()
 }
