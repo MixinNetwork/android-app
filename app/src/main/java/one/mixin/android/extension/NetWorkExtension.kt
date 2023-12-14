@@ -7,6 +7,7 @@ import android.content.Context.CONNECTIVITY_SERVICE
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkInfo
+import android.os.Build
 import android.telephony.TelephonyManager
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Download.MOBILE_DEFAULT
@@ -75,7 +76,7 @@ suspend fun Context.autoDownload(
     support: suspend (value: Int) -> Boolean,
     action: () -> Unit,
 ) {
-    if (hasWritePermission()) {
+    if (hasWritePermission() || Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         differentNetWorkAction(
             {
                 if (support(getAutoDownloadWifiValue())) {
