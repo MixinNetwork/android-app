@@ -1080,7 +1080,7 @@ fun Context.isPlayStoreInstalled(): Boolean {
     return try {
         packageManager.getPackageInfoCompat(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE, 0)
         true
-    } catch (e: PackageManager.NameNotFoundException) {
+    } catch (e: Exception) {
         false
     }
 }

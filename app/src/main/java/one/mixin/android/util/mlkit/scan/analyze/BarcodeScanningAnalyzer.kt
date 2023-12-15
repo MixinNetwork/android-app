@@ -14,10 +14,6 @@ import one.mixin.android.util.reportException
 class BarcodeScanningAnalyzer : Analyzer<BarcodeResult> {
     private var mDetector: BarcodeScanner? = null
 
-    constructor() {
-        mDetector = BarcodeScanning.getClient()
-    }
-
     constructor(
         @Barcode.BarcodeFormat barcodeFormat: Int,
         @Barcode.BarcodeFormat vararg barcodeFormats: Int,
@@ -25,16 +21,19 @@ class BarcodeScanningAnalyzer : Analyzer<BarcodeResult> {
         BarcodeScannerOptions.Builder()
             .setBarcodeFormats(barcodeFormat, *barcodeFormats)
             .build(),
-    ) {
-    }
+    )
 
     constructor(options: BarcodeScannerOptions?) {
-        mDetector =
+        mDetector = try {
             if (options != null) {
                 BarcodeScanning.getClient(options)
             } else {
                 BarcodeScanning.getClient()
             }
+        } catch (e: Exception) {
+            reportException(e)
+            null
+        }
     }
 
     override fun analyze(
@@ -44,14 +43,14 @@ class BarcodeScanningAnalyzer : Analyzer<BarcodeResult> {
         try {
             val bitmap = BitmapUtils.getBitmap(imageProxy)
             val inputImage = InputImage.fromBitmap(bitmap!!, 0)
-            mDetector!!.process(inputImage)
-                .addOnSuccessListener { result: List<Barcode>? ->
+            mDetector?.process(inputImage)
+                ?.addOnSuccessListener { result: List<Barcode>? ->
                     if (result.isNullOrEmpty()) {
                         listener.onFailure()
                     } else {
                         listener.onSuccess(AnalyzeResult(bitmap, BarcodeResult(result, null)))
                     }
-                }.addOnFailureListener { e: Exception? -> listener.onFailure() }
+                }?.addOnFailureListener { e: Exception? -> listener.onFailure() }
         } catch (e: Exception) {
             val bitmap = BitmapUtils.getBitmap(imageProxy)
             val result = bitmap?.decodeQR()
