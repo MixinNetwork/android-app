@@ -215,8 +215,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             lifecycleScope.launch {
                 val rawTransaction = bottomViewModel.firstUnspentTransaction()
                 if (rawTransaction!=null) {
-                    // Todo 
-                    // WaitingBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
+                    WaitingBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
                 } else {
                     checkUtxo {
                         prepareTransferBottom()

@@ -35,23 +35,9 @@
         android:layout_height="40dp"
         android:layout_gravity="center_horizontal|bottom"
         android:layout_marginTop="42dp"
+        android:layout_marginBottom="32dp"
         android:text="@string/Got_it"
         android:textColor="@color/white"
         android:textSize="14sp" />
 
-    <TextView
-        android:id="@+id/contact_support"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingStart="32dp"
-        android:paddingEnd="32dp"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginBottom="32dp"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:text="@string/View_Transaction"
-        android:textSize="14sp"
-        android:textColor="@color/selector_blue_tv"/>
 </LinearLayout>
