@@ -3,6 +3,7 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.app.Dialog
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.databinding.FragmentWarningBottomSheetBinding
 import one.mixin.android.databinding.FragmentWatingBottomSheetBinding
 import one.mixin.android.extension.addFragment
@@ -14,7 +15,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.widget.BottomSheet
 import javax.inject.Inject
-
+@AndroidEntryPoint
 class WaitingBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "WaitingBottomSheetDialogFragment"
