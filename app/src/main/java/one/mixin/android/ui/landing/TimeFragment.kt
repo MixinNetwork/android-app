@@ -14,6 +14,7 @@ import one.mixin.android.extension.shaking
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -68,6 +69,7 @@ class TimeFragment : BaseFragment(R.layout.fragment_time) {
                                     info.shaking()
                                 } else {
                                     ErrorHandler.handleError(exception)
+                                    reportException("$TAG pingServer", exception)
                                 }
                             }
                         },
