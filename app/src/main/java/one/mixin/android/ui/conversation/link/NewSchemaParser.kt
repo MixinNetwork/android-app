@@ -36,7 +36,7 @@ class NewSchemaParser(
 ) {
     private val linkViewModel = bottomSheet.linkViewModel
 
-    suspend fun parse(text: String): Boolean {
+    suspend fun parse(text: String, from: Int): Boolean {
         val uri = text.toUri()
         val lastPath = uri.lastPathSegment ?: return false
 
@@ -113,14 +113,14 @@ class NewSchemaParser(
                     val biometricItem = TransferBiometricItem(users, mixAddress.threshold, traceId, token, amount, memo, status, null, returnTo)
                     showPreconditionBottom(biometricItem)
                 } else if (mixAddress.xinMembers.isNotEmpty()) {
-                    val addressTransferBiometricItem = AddressTransferBiometricItem(mixAddress.xinMembers.first().string(), traceId, token, amount, memo, status, returnTo)
+                    val addressTransferBiometricItem = AddressTransferBiometricItem(mixAddress.xinMembers.first().string(), traceId, token, amount, memo, status, returnTo, from)
                     showPreconditionBottom(addressTransferBiometricItem)
                 } else {
                     return false
                 }
             } else {
                 // TODO verify address?
-                val addressTransferBiometricItem = AddressTransferBiometricItem(lastPath, traceId, token, amount, memo, status, returnTo)
+                val addressTransferBiometricItem = AddressTransferBiometricItem(lastPath, traceId, token, amount, memo, status, returnTo, from)
                 showPreconditionBottom(addressTransferBiometricItem)
             }
         } else {
@@ -150,12 +150,12 @@ class NewSchemaParser(
                             TransferFragment.newInstance(item)
                         }
                     } else if (mixAddress?.xinMembers?.size == 1) { // TODO Support for multiple address
-                        TransferFragment.newInstance(buildAddressBiometricItem(mixAddress.xinMembers.first().string(), traceId, token, amount ?: "", memo, returnTo))
+                        TransferFragment.newInstance(buildAddressBiometricItem(mixAddress.xinMembers.first().string(), traceId, token, amount ?: "", memo, returnTo, from))
                     } else {
                         null
                     }
                 } else {
-                    TransferFragment.newInstance(buildAddressBiometricItem(lastPath, traceId, token, amount ?: "", memo, returnTo))
+                    TransferFragment.newInstance(buildAddressBiometricItem(lastPath, traceId, token, amount ?: "", memo, returnTo, from))
                 }
             if (transferFragment == null) return false
             transferFragment.show(bottomSheet.parentFragmentManager, TransferFragment.TAG)

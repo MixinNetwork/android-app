@@ -110,10 +110,16 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "LinkBottomSheetDialogFragment"
         const val CODE = "code"
+        const val FROM = "from"
 
-        fun newInstance(code: String) =
+        const val FROM_EXTERNAL = 0
+        const val FROM_INTERNAL = 1
+        const val FROM_SCAN = 2
+
+        fun newInstance(code: String, from: Int = FROM_INTERNAL) =
             LinkBottomSheetDialogFragment().withArgs {
                 putString(CODE, code)
+                putInt(FROM, from)
             }
     }
 
@@ -134,6 +140,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private lateinit var contentView: View
 
     private val url: String by lazy { requireArguments().getString(CODE)!! }
+    private val from: Int by lazy { requireArguments().getInt(FROM, FROM_EXTERNAL) }
 
     private val newSchemaParser: NewSchemaParser by lazy { NewSchemaParser(this) }
 
@@ -326,7 +333,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         showError(R.string.Invalid_payment_link)
                     }
                 } else if (segments.size == (if (url.startsWith(Scheme.HTTPS_PAY, true)) 2 else 1)) {
-                    if (!newSchemaParser.parse(url)) {
+                    if (!newSchemaParser.parse(url, from)) {
                         showError(R.string.Invalid_payment_link)
                     } else {
                         dismiss()
@@ -969,7 +976,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             },
             successBlock = { r ->
                 val response = r.data ?: return@handleMixinResponse false
-
                 showOldTransferBottom(user, amount, asset, trace, response.status, memo, returnTo)
                 return@handleMixinResponse true
             },
@@ -990,7 +996,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             showError(getString(R.string.check_trace_failed))
             return
         }
-        val biometricItem = TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first, returnTo)
+        val biometricItem = TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first, returnTo, from)
         showOldPreconditionBottom(biometricItem)
     }
 
