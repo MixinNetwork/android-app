@@ -116,7 +116,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val FROM_INTERNAL = 1
         const val FROM_SCAN = 2
 
-        fun newInstance(code: String, from: Int = FROM_INTERNAL) =
+        fun newInstance(
+            code: String,
+            from: Int = FROM_INTERNAL,
+        ) =
             LinkBottomSheetDialogFragment().withArgs {
                 putString(CODE, code)
                 putInt(FROM, from)

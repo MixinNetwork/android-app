@@ -22,7 +22,6 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard

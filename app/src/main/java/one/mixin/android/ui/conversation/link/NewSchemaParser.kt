@@ -36,7 +36,10 @@ class NewSchemaParser(
 ) {
     private val linkViewModel = bottomSheet.linkViewModel
 
-    suspend fun parse(text: String, from: Int): Boolean {
+    suspend fun parse(
+        text: String,
+        from: Int,
+    ): Boolean {
         val uri = text.toUri()
         val lastPath = uri.lastPathSegment ?: return false
 
