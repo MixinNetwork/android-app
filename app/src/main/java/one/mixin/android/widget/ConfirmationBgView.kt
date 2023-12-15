@@ -14,7 +14,7 @@ import one.mixin.android.extension.dpToPx
 
 class ConfirmationBgView : RelativeLayout {
     private val colorWhite by lazy { context.colorFromAttribute(R.attr.bg_white) }
-    private val colorBlue by lazy { context.colorFromAttribute(R.attr.bg_confirmation) }
+    private val colorConfirmation by lazy { context.colorFromAttribute(R.attr.bg_confirmation) }
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
@@ -37,7 +37,7 @@ class ConfirmationBgView : RelativeLayout {
             val blueWidth = (cur.toFloat() / all) * w
             paint.color = colorWhite
             canvas.drawRect(0f, 0f, w - blueWidth, h, paint)
-            paint.color = colorBlue
+            paint.color = colorConfirmation
             canvas.drawRect(w - blueWidth, 0f, w, h, paint)
         }
     }
