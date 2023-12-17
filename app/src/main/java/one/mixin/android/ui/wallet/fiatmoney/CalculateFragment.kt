@@ -452,12 +452,14 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 onSuccess.invoke()
                 return@launch
             }
+            if (viewDestroyed()) return@launch
             binding.continueVa.displayedChild = 1
             requestRouteAPI(
                 invokeNetwork = {
                     fiatMoneyViewModel.token()
                 },
                 endBlock = {
+                    if (viewDestroyed()) return@requestRouteAPI
                     binding.continueVa.displayedChild = 0
                 },
                 successBlock = { resp ->

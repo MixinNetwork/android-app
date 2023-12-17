@@ -201,6 +201,8 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                         requireContext(),
                         object : CaptchaView.Callback {
                             override fun onStop() {
+                                if (viewDestroyed()) return
+
                                 binding.deleteCover.isVisible = false
                             }
 
