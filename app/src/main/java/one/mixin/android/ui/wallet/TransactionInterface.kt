@@ -411,7 +411,7 @@ interface TransactionInterface {
         if (sw.withdrawalHash.isBlank()) {
             lifecycleScope.launch {
                 walletViewModel.refreshSnapshot(snapshot.snapshotId)?.let {
-                    updateUI(fragment, contentBinding, asset, snapshot)
+                    updateUI(fragment, contentBinding, asset, it)
                 }
             }
         }
