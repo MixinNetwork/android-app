@@ -917,7 +917,7 @@ class TransferServer
                         null
                     } ?: return
                 Timber.e("Sync ${f.absolutePath}")
-                if (f.exists() && f.length() > 0) {
+                if (f.isFile && f.exists() && f.length() > 0) {
                     protocol.write(outputStream, f, message.messageId)
                     count++
                 }
@@ -938,7 +938,7 @@ class TransferServer
                         null
                     } ?: return
                 Timber.e("Sync ${f.absolutePath}")
-                if (f.exists() && f.length() > 0) {
+                if (f.isFile && f.exists() && f.length() > 0) {
                     protocol.write(outputStream, f, message.messageId)
                     count++
                 }
