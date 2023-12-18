@@ -445,7 +445,7 @@
     <string name="error_transfer_is_already_paid">ERROR 20125: Transfer is already paid.</string>
     <string name="error_unable_to_open_link">Can\'t find an app able to open this link.\n%1$s</string>
     <string name="error_unable_to_open_media">Can\'t find an app able to open this media.</string>
-    <string name="error_unknown_with_code">ERROR: %1$d</string>
+    <string name="error_unknown_with_code">ERROR %1$d</string>
     <string name="error_unknown_with_message">ERROR: %1$s</string>
     <string name="error_used_phone">ERROR 20122: This phone number is already associated with another account.</string>
     <string name="error_user_invalid_format">Invalid user id</string>
