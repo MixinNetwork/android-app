@@ -406,7 +406,7 @@
     <string name="error_unable_to_open_link">Не могу найти приложение, которое может открыть эту ссылку.
 \n%1$s</string>
     <string name="error_unable_to_open_media">Не удается найти приложение, способное открыть этот носитель.</string>
-    <string name="error_unknown_with_code">ОШИБКА: %1$d</string>
+    <string name="error_unknown_with_code">ОШИБКА %1$d</string>
     <string name="error_unknown_with_message">ОШИБКА: %1$s</string>
     <string name="error_used_phone">ОШИБКА 20122: этот номер телефона уже связан с другой учетной записью.</string>
     <string name="error_user_invalid_format">Недопустимый идентификатор пользователя</string>

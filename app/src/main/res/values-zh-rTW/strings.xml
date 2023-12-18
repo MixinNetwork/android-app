@@ -390,7 +390,7 @@
     <string name="error_transfer_is_already_paid">錯誤 20125：轉賬已被支付</string>
     <string name="error_unable_to_open_link">未找到能開啟該連結的應用\n%1$s</string>
     <string name="error_unable_to_open_media">無法找到能開啟該媒體的應用</string>
-    <string name="error_unknown_with_code">錯誤：%1$d</string>
+    <string name="error_unknown_with_code">錯誤 %1$d</string>
     <string name="error_unknown_with_message">錯誤：%1$s</string>
     <string name="error_used_phone">錯誤 20122：電話號碼已經被佔用。</string>
     <string name="error_user_invalid_format">使用者資料不合法</string>
