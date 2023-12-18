@@ -68,7 +68,7 @@ interface TransactionInterface {
                             asset.assetId,
                             snapshot,
                         )
-                        refreshNoTransactionHashWithdrawal(
+                        refreshPendingWithdrawal(
                             fragment,
                             contentBinding,
                             lifecycleScope,
@@ -93,6 +93,14 @@ interface TransactionInterface {
                 contentBinding,
                 tokenItem.assetId,
                 snapshotItem,
+            )
+            refreshPendingWithdrawal(
+                fragment,
+                contentBinding,
+                lifecycleScope,
+                walletViewModel,
+                snapshotItem,
+                tokenItem,
             )
         }
     }
@@ -390,7 +398,7 @@ interface TransactionInterface {
         }
     }
 
-    private fun refreshNoTransactionHashWithdrawal(
+    private fun refreshPendingWithdrawal(
         fragment: Fragment,
         contentBinding: FragmentTransactionBinding,
         lifecycleScope: CoroutineScope,
@@ -398,12 +406,9 @@ interface TransactionInterface {
         snapshot: SnapshotItem,
         asset: TokenItem,
     ) {
-        if (snapshot.type == SafeSnapshotType.pending.name) return
+        val sw = snapshot.withdrawal ?: return
 
-        val amountVal = snapshot.amount.toFloatOrNull()
-        val isPositive = if (amountVal == null) false else amountVal > 0
-        val isWithdrawal = snapshot.opponentId.isBlank() && !isPositive
-        if (isWithdrawal && snapshot.withdrawal?.withdrawalHash?.isBlank() == true) {
+        if (sw.withdrawalHash.isBlank()) {
             lifecycleScope.launch {
                 walletViewModel.refreshSnapshot(snapshot.snapshotId)?.let {
                     updateUI(fragment, contentBinding, asset, snapshot)
