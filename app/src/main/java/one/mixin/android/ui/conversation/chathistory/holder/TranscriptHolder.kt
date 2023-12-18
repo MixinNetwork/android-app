@@ -116,11 +116,11 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
             }
             if (binding.chatTv.tag != messageItem.messageId) {
                 if (!messageItem.content.isNullOrEmpty()) {
-                    val transcripts =
-                        GsonHelper.customGson.fromJson(
-                            messageItem.content,
-                            Array<TranscriptMinimal>::class.java,
-                        )
+                    val transcripts = try {
+                        GsonHelper.customGson.fromJson(messageItem.content, Array<TranscriptMinimal>::class.java)
+                    } catch (e: Exception) {
+                        return
+                    }
                     val str = StringBuilder()
                     transcripts.forEach {
                         when {

@@ -59,7 +59,7 @@ class SafeMultisigsBottomSheetDialogFragment :
             if (t.action == SignatureAction.unlock.name) {
                 title.text = getString(R.string.Revoke_multisig_transaction)
                 arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_ban)
-            } else {
+            } else if (t.action == SignatureAction.sign.name) {
                 title.text = getString(R.string.Multisig_Transaction)
                 arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
             }

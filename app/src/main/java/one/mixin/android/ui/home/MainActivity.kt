@@ -688,7 +688,7 @@ class MainActivity : BlazeBaseActivity() {
         } else if (intent.hasExtra(URL) || (intent.action == Intent.ACTION_VIEW && intent.categories.contains(Intent.CATEGORY_BROWSABLE))) {
             val url = intent.getStringExtra(URL) ?: intent.data?.toString() ?: return
             bottomSheet?.dismiss()
-            bottomSheet = LinkBottomSheetDialogFragment.newInstance(url)
+            bottomSheet = LinkBottomSheetDialogFragment.newInstance(url, LinkBottomSheetDialogFragment.FROM_SCAN)
             bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             clearCodeAfterConsume(intent, URL)
         } else if (intent.hasExtra(WALLET)) {

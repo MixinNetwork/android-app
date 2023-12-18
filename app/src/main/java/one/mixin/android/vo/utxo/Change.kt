@@ -3,6 +3,7 @@ package one.mixin.android.vo.utxo
 import kernel.Utxo
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.vo.safe.Output
+import one.mixin.android.vo.safe.OutputState
 import java.util.UUID
 
 class Change(
@@ -23,7 +24,7 @@ fun changeToOutput(
     }
     val outputId = UUID.nameUUIDFromBytes("${change.hash}:${change.index}".toByteArray()).toString()
     return Output(
-        outputId, change.hash, change.index.toInt(), asset, 0, change.amount, mask, keys, lastOutput.receivers, lastOutput.receiversHash, 1, "", "unspent", nowInUtc(), "", "", "", "",
+        outputId, change.hash, change.index.toInt(), asset, 0, change.amount, mask, keys, lastOutput.receivers, lastOutput.receiversHash, 1, "", OutputState.unspent.name, nowInUtc(), "", "", "", "",
     )
 }
 

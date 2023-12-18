@@ -714,7 +714,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             failureBlock = {
                 if (it.errorCode == ErrorHandler.WITHDRAWAL_SUSPEND) {
                     WithdrawalSuspendedBottomSheet.newInstance(token).show(parentFragmentManager, WithdrawalSuspendedBottomSheet.TAG)
-                    dismissNow()
+                    dismiss()
                     true
                 } else {
                     false

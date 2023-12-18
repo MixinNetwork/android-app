@@ -267,7 +267,7 @@
     <string name="error_too_small_transfer_amount">KESALAHAN 20120: Jumlahnya terlalu kecil</string>
     <string name="error_too_small_withdraw_amount">KESALAHAN 20127: Jumlah penarikan dana terlalu kecil</string>
     <string name="error_unable_to_open_media">Tidak dapat menemukan aplikasi yang dapat membuka media ini.</string>
-    <string name="error_unknown_with_code">KESALAHAN: %1$d</string>
+    <string name="error_unknown_with_code">KESALAHAN %1$d</string>
     <string name="error_unknown_with_message">KESALAHAN: %1$s</string>
     <string name="error_used_phone">KESALAHAN 20122: Ponsel digunakan oleh orang lain.</string>
     <string name="error_user_invalid_format">ID pengguna tidak valid</string>

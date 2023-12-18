@@ -19,7 +19,9 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.tickVibrate
+import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
@@ -136,6 +138,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
 
     fun showDone(
         returnTo: String? = null,
+        from: Int,
         doneAction: () -> Unit,
     ) {
         displayedChild = POS_DONE
@@ -161,8 +164,11 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
             binding.doneBtn.setOnClickListener {
                 doneAction()
                 val context = this@BiometricLayout.context
-                // To be optimized: Internal bot link jump
-                context.openExternalUrl(returnTo)
+                if (from == LinkBottomSheetDialogFragment.FROM_INTERNAL || from == LinkBottomSheetDialogFragment.FROM_SCAN) {
+                    WebActivity.show(getContext(), returnTo, null)
+                } else {
+                    context.openExternalUrl(returnTo)
+                }
             }
             enableBiometricTv.setText(R.string.Stay_in_Mixin)
             enableBiometricTv.isVisible = true

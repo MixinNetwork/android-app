@@ -75,7 +75,7 @@ class UrlInterpreterActivity : BaseActivity() {
         }
 
         if (data.toString().startsWith("https://", true)) {
-            val bottomSheet = LinkBottomSheetDialogFragment.newInstance(data.toString())
+            val bottomSheet = LinkBottomSheetDialogFragment.newInstance(data.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
             bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else if (data.scheme == WC) {
             if (WalletConnect.isEnabled(this)) {
@@ -107,7 +107,7 @@ class UrlInterpreterActivity : BaseActivity() {
         when (uri.host) {
             USER, APPS -> uri.checkUserOrApp(this, supportFragmentManager, lifecycleScope)
             CODE, PAY, WITHDRAWAL, ADDRESS, SNAPSHOTS, CONVERSATIONS, TIP -> {
-                val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
+                val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
             TRANSFER -> {

@@ -2,6 +2,7 @@ package one.mixin.android.ui.oldwallet.biometric
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
@@ -35,6 +36,7 @@ class TransferBiometricItem(
     override val state: String,
     val trace: Trace?,
     val returnTo: String?,
+    val from: Int = LinkBottomSheetDialogFragment.FROM_INTERNAL,
 ) : AssetBiometricItem(asset, traceId, amount, pin, memo, state)
 
 @Parcelize
