@@ -451,6 +451,7 @@
     <string name="error_user_invalid_format">Invalid user id</string>
     <string name="error_withdrawal_memo_format_incorrect">ERROR 20131: Withdrawal memo format incorrect.</string>
     <string name="error_withdrawal_suspend">ERROR 20137: Withdrawal suspend.</string>
+    <string name="error_invalid_utxo">ERROR 10106: UTXO to be confirmed. Please try again later.</string>
     <string name="Everybody">Everybody</string>
     <string name="Exchanging_data">Synchronization key shards in progress %1$s%%…</string>
     <string name="Exit">Exit</string>
@@ -1341,4 +1342,6 @@
     <string name="depost_address_updated">%1$s Deposit Address Updated</string>
     <string name="depost_address_updated_description">Your %1$s deposit address has been updated. The deposit address will automatically update with system or network upgrades. Old addresses are still valid for deposits, but it is not recommended for further use.</string>
     <string name="login_verify_pin">You’ll be asked for it periodically to help you remember it.</string>
+    <string name="Waiting_transaction_description">You have a transfer or withdrawal has not been completed, please try again later</string>
+    <string name="Waiting_transaction">Waiting Transaction</string>
 </resources>

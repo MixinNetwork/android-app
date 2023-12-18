@@ -122,6 +122,7 @@ open class ErrorHandler {
         const val RECAPTCHA_IS_INVALID = 10004
         const val NEED_CAPTCHA = 10005
         const val OLD_VERSION = 10006
+        const val INVALID_UTXO = 10106
         const val USER_NOT_FOUND = 10404
         const val EXPIRED_CARD = 10601
         const val EXPIRED_PRICE = 10602
@@ -246,6 +247,9 @@ fun Context.getMixinErrorStringByCode(
         }
         ErrorHandler.WITHDRAWAL_AMOUNT_SMALL -> {
             getString(R.string.error_too_small_withdraw_amount)
+        }
+        ErrorHandler.INVALID_UTXO -> {
+            getString(R.string.error_invalid_utxo)
         }
         ErrorHandler.TOO_MANY_FRIENDS -> {
             getString(R.string.error_too_many_friends)
