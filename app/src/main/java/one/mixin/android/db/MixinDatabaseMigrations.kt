@@ -442,6 +442,16 @@ class MixinDatabaseMigrations private constructor() {
                     db.execSQL("CREATE INDEX IF NOT EXISTS `index_raw_transactions_state_type` ON `raw_transactions` (`state`, `type`)")
                 }
             }
+
+        val MIGRATION_53_54: Migration =
+            object : Migration(53, 54) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("ALTER TABLE `addresses` RENAME TO `addresses_old`")
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `addresses` (`address_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `label` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `fee` TEXT NOT NULL, `tag` TEXT, `dust` TEXT, PRIMARY KEY(`address_id`))")
+                    db.execSQL("INSERT INTO `addresses` (address_id, type, asset_id, destination, label, updated_at, fee, tag, dust) SELECT address_id, type, asset_id, destination, label, updated_at, fee, tag, dust FROM `addresses_old`")
+                    db.execSQL("DROP TABLE `addresses_old`")
+                }
+            }
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }

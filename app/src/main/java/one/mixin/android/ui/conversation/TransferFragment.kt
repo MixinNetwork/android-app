@@ -340,44 +340,29 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     private fun updateFeeUI(t: WithdrawBiometricItem) =
         lifecycleScope.launch {
             val token = t.asset ?: return@launch
-            val address = t.address
-            if (address.feeAssetId.isBlank()) {
-                binding.apply {
-                    memoRl.isVisible = false
-                    networkHtv.isVisible = false
-                    dustHtv.isVisible = false
-                    reserveHtv.isVisible = false
-                    feeHtv.isVisible = false
-                    continueVa.displayedChild = POST_PB
-                    continueVa.setBackgroundResource(R.drawable.selector_round_bn_gray)
+            val feeToken = t.fee
+
+            binding.continueVa.displayedChild = POST_PB
+            binding.apply {
+                memoRl.isVisible = isInnerTransfer()
+                networkHtv.isVisible = true
+                feeHtv.isVisible = true
+                continueVa.setBackgroundResource(R.drawable.bg_round_blue_btn)
+                networkHtv.tail.text = getChainName(token.chainId, token.chainName, token.assetKey)
+                val dustDouble = BigDecimal(token.dust)
+                if (dustDouble != BigDecimal.ZERO) {
+                    dustHtv.isVisible = true
+                    dustHtv.tail.text = "${token.dust} ${token.symbol}"
                 }
+            }
+            if (feeToken != null) {
+                currentFee = feeToken
+                binding.continueVa.displayedChild = POST_TEXT
+                updateFeeUI()
             } else {
-                binding.continueVa.displayedChild = POST_PB
-                val feeAsset = chatViewModel.refreshAsset(address.feeAssetId)
-                if (feeAsset == null) {
-                    jobManager.addJobInBackground(RefreshTokensJob(address.feeAssetId))
-                    return@launch
-                }
-                val reserveDouble = address.reserve.toBigDecimalOrNull()
-                val dustDouble = address.dust?.toBigDecimalOrNull()
-                binding.apply {
-                    memoRl.isVisible = isInnerTransfer()
-                    networkHtv.isVisible = true
-                    feeHtv.isVisible = true
-                    continueVa.setBackgroundResource(R.drawable.bg_round_blue_btn)
-                    networkHtv.tail.text = getChainName(token.chainId, token.chainName, token.assetKey)
-                    if (dustDouble != null && dustDouble != BigDecimal.ZERO) {
-                        dustHtv.isVisible = true
-                        dustHtv.tail.text = "${address.dust} ${token.symbol}"
-                    }
-                    if (reserveDouble != null && reserveDouble != BigDecimal.ZERO) {
-                        reserveHtv.isVisible = true
-                        reserveHtv.tail.text = "${address.reserve} ${token.symbol}"
-                    }
-                }
-                var success = refreshFees(token, address)
+                var success = refreshFees(token, t.address)
                 while (!success) {
-                    success = refreshFees(token, address)
+                    success = refreshFees(token, t.address)
                     delay(500)
                 }
                 updateFeeUI()

@@ -252,16 +252,6 @@
                 app:head="@string/withdrawal_minimum_withdrawal"/>
 
             <one.mixin.android.widget.HeadTailView
-                android:id="@+id/reserve_htv"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="28dp"
-                android:layout_marginEnd="28dp"
-                android:layout_marginBottom="8dp"
-                android:visibility="gone"
-                app:head="@string/withdrawal_minimum_reserve"/>
-
-            <one.mixin.android.widget.HeadTailView
                 android:id="@+id/fee_htv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
