@@ -42,7 +42,6 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.ConversationJob
-import one.mixin.android.job.ForceSyncOutputJob
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
