@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import androidx.core.content.getSystemService
+import androidx.core.view.get
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -23,6 +24,8 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.safetynet.SafetyNet
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.InstallStateUpdatedListener
@@ -840,6 +843,36 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun initView() {
+        binding.apply {
+            bottomTab.setSelectedTabIndicator(null)
+            bottomTab.getTabAt(1)?.select()
+            bottomTab.addOnTabSelectedListener(object : OnTabSelectedListener {
+                override fun onTabSelected(tab: TabLayout.Tab?) {
+                    when(tab?.position){
+                        0 -> {
+                            // todo replace
+                        }
+
+                        1 -> {
+                            // todo replace
+                        }
+
+                        2 -> {
+                            // todo replace
+                        }
+
+                        else -> {
+                        }
+                    }
+                }
+
+                override fun onTabUnselected(tab: TabLayout.Tab?) {
+                }
+
+                override fun onTabReselected(tab: TabLayout.Tab?) {
+                }
+            })
+        }
         // binding.searchBar.setOnLeftClickListener {
         //     openSearch()
         // }

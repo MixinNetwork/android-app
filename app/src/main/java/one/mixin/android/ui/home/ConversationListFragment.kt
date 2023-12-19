@@ -177,8 +177,6 @@ class ConversationListFragment : LinkFragment() {
 
     private var isTop = true
     private var firstPosition = 0
-    private var distance = 0
-    private var shadowVisible = true
     private val touchSlop: Int by lazy {
         ViewConfiguration.get(requireContext()).scaledTouchSlop
     }
@@ -234,20 +232,6 @@ class ConversationListFragment : LinkFragment() {
                     dx: Int,
                     dy: Int,
                 ) {
-                    if (distance < -touchSlop && !shadowVisible) {
-                        binding.shadowFl.animate().translationY(0f).duration = 200
-                        distance = 0
-                        shadowVisible = true
-                    } else if (distance > touchSlop && shadowVisible) {
-                        binding.shadowFl.animate()
-                            .translationY(binding.shadowFl.height.toFloat()).duration = 200
-                        distance = 0
-                        shadowVisible = false
-                    }
-                    if ((dy > 0 && shadowVisible) || (dy < 0 && !shadowVisible)) {
-                        distance += dy
-                    }
-
                     firstPosition = (binding.messageRv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
                     if (firstPosition > 0) {
                         if (isTop) {
@@ -317,10 +301,6 @@ class ConversationListFragment : LinkFragment() {
                     }
                 }
             }
-        binding.shadowView.more.setOnClickListener {
-            BotManagerBottomSheetDialogFragment()
-                .show(parentFragmentManager, BotManagerBottomSheetDialogFragment.TAG)
-        }
 
         messageAdapter.onItemListener =
             object : PagedHeaderAdapter.OnItemListener<ConversationItem> {
@@ -380,13 +360,6 @@ class ConversationListFragment : LinkFragment() {
                 if (it.circleId == this.circleId) {
                     (requireActivity() as MainActivity).selectCircle(null, null)
                 }
-            }
-        refreshBot()
-        RxBus.listen(BotEvent::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(destroyScope)
-            .subscribe {
-                refreshBot()
             }
     }
 
@@ -452,9 +425,6 @@ class ConversationListFragment : LinkFragment() {
         liveData.observe(viewLifecycleOwner, observer)
         scrollTop = true
         this.conversationLiveData = liveData
-        binding.shadowFl.animate().translationY(0f).duration = 200
-        distance = 0
-        shadowVisible = true
     }
 
     private fun animDownIcon(expand: Boolean) {
@@ -504,13 +474,6 @@ class ConversationListFragment : LinkFragment() {
                 }
                 .setPositiveButton(R.string.Confirm) { _, _ ->
                     val lm = binding.messageRv.layoutManager as LinearLayoutManager
-                    val lastCompleteVisibleItem = lm.findLastCompletelyVisibleItemPosition()
-                    val firstCompleteVisibleItem = lm.findFirstCompletelyVisibleItemPosition()
-                    if (lastCompleteVisibleItem - firstCompleteVisibleItem <= messageAdapter.itemCount &&
-                        lm.findFirstVisibleItemPosition() == 0
-                    ) {
-                        binding.shadowFl.animate().translationY(0f).duration = 200
-                    }
                     conversationListViewModel.deleteConversation(conversationId)
                     bottomSheet.dismiss()
                 }
@@ -561,89 +524,6 @@ class ConversationListFragment : LinkFragment() {
                 false
             }
         messageAdapter.setShowHeader(shown, binding.messageRv)
-    }
-
-    private fun refreshBot() {
-        lifecycleScope.launch {
-            binding.shadowView.firstIv.isGone = true
-            binding.shadowView.secondIv.isGone = true
-            binding.shadowView.thirdIv.isGone = true
-            requireContext().defaultSharedPreferences.getString(TOP_BOT, DefaultTopBots)?.let {
-                val bots = GsonHelper.customGson.fromJson(it, Array<String>::class.java)
-                bots.forEachIndexed { index, id ->
-                    if (index > 2) return@launch
-                    val view: ImageView =
-                        when (index) {
-                            0 -> {
-                                binding.shadowView.firstIv
-                            }
-                            1 -> {
-                                binding.shadowView.secondIv
-                            }
-                            else -> {
-                                binding.shadowView.thirdIv
-                            }
-                        }
-
-                    when (id) {
-                        INTERNAL_WALLET_ID -> {
-                            view.isVisible = true
-                            view.setImageResource(R.drawable.ic_bot_category_wallet)
-                            view.setOnClickListener {
-                                (requireActivity() as MainActivity).openWallet()
-                            }
-                        }
-                        INTERNAL_CAMERA_ID -> {
-                            view.isVisible = true
-                            view.setImageResource(R.drawable.ic_bot_category_camera)
-                            view.setOnClickListener {
-                                openCamera(false)
-                            }
-                        }
-                        INTERNAL_SCAN_ID -> {
-                            view.isVisible = true
-                            view.setImageResource(R.drawable.ic_bot_category_scan)
-                            view.setOnClickListener {
-                                openCamera(true)
-                            }
-                        }
-                        else -> {
-                            val app = conversationListViewModel.findAppById(id)
-                            if (app != null) {
-                                view.isVisible = true
-                                view.setImageResource(app.getCategoryIcon())
-                                view.setOnClickListener {
-                                    WebActivity.show(requireContext(), app.homeUri, null, app)
-                                }
-                            } else {
-                                view.isInvisible = true
-                            }
-                        }
-                    }
-                }
-                if (bots.size < 3) {
-                    val dp88 = 88.dp
-                    val dp32 = 32.dp
-                    binding.shadowView.children.forEach { v ->
-                        v.updateLayoutParams<LinearLayoutCompat.LayoutParams> {
-                            width = dp88
-                            height = dp88
-                        }
-                        v.setPadding(dp32)
-                    }
-                } else {
-                    val dp80 = 80.dp
-                    val dp28 = 28.dp
-                    binding.shadowView.children.forEach { v ->
-                        v.updateLayoutParams<LinearLayoutCompat.LayoutParams> {
-                            width = dp80
-                            height = dp80
-                        }
-                        v.setPadding(dp28)
-                    }
-                }
-            }
-        }
     }
 
     private fun openCamera(scan: Boolean) {

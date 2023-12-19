@@ -48,19 +48,4 @@
         app:layout_constraintTop_toBottomOf="@id/top_fl"
         tools:listitem="@layout/item_list_conversation" />
 
-    <FrameLayout
-        android:id="@+id/shadow_fl"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/shadow_bottom"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <one.mixin.android.widget.ShadowCircleView
-            android:id="@+id/shadow_view"
-            android:layout_width="wrap_content"
-            android:layout_height="72dp"
-            android:layout_gravity="center_horizontal"/>
-    </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
