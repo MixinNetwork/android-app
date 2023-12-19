@@ -144,7 +144,7 @@ class UrlInterpreterActivity : BaseActivity() {
             }
             MIXIN -> {
                 if (uri.pathSegments.first().equals(PAY)) {
-                    val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString().replace("$MIXIN/", ""), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
+                    val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
                     bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
                 } else {
                     toast(R.string.Invalid_Link)
