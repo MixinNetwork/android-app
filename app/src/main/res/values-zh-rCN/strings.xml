@@ -851,7 +851,7 @@
     <string name="Send_Message">发消息</string>
     <string name="Send_This_Location">发送这个位置</string>
     <string name="send_to">发送给 %1$s</string>
-    <string name="Send_to_contact">转账给联系人</string>
+    <string name="Send_to_Contact">转账给联系人</string>
     <string name="Send_transfer">转出</string>
     <string name="send_without_compression">发送原始文件</string>
     <string name="Send_Without_Sound">静音发送</string>

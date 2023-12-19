@@ -871,7 +871,7 @@
     <string name="Send_Message">Send Message</string>
     <string name="Send_This_Location">Send This Location</string>
     <string name="send_to">Send to %1$s</string>
-    <string name="Send_to_contact">Send to contact</string>
+    <string name="Send_to_Contact">Send to Contact</string>
     <string name="Send_transfer">Send</string>
     <string name="send_without_compression">Send without compression</string>
     <string name="Send_Without_Sound">Send Without Sound</string>
