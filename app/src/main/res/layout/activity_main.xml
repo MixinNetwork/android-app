@@ -1,28 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:context="one.mixin.android.ui.home.MainActivity">
 
-    <FrameLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/bottom_tab"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true">
+
+            <com.google.android.material.tabs.TabItem
+                android:icon="@drawable/ic_tab_wallet"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <com.google.android.material.tabs.TabItem
+                android:icon="@drawable/ic_tab_chat"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <com.google.android.material.tabs.TabItem
+                android:icon="@drawable/ic_tab_app"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.tabs.TabLayout>
+
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/container"
+            android:layout_above="@+id/bottom_tab"
+            android:layout_alignParentTop="true"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="56dp" />
+            android:layout_height="match_parent" />
 
-        <one.mixin.android.widget.MaterialSearchView
-            android:id="@+id/search_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-    </FrameLayout>
+    </RelativeLayout>
 
     <FrameLayout
         android:id="@+id/container_password"

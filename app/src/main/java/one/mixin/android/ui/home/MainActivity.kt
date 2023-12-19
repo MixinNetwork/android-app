@@ -12,13 +12,9 @@ import android.content.IntentSender
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
-import android.view.KeyEvent
 import androidx.core.content.getSystemService
-import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.room.util.readVersion
@@ -135,7 +131,6 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.landing.InitializeActivity
@@ -143,7 +138,6 @@ import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
-import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.search.SearchSingleFragment
 import one.mixin.android.ui.tip.CheckRegisterBottomSheetDialogFragment
@@ -166,7 +160,6 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
-import one.mixin.android.widget.MaterialSearchView
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -322,8 +315,8 @@ class MainActivity : BlazeBaseActivity() {
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe {
-                isDesktopLogin = Session.getExtensionSessionId() != null
-                binding.searchBar.updateDesktop(isDesktopLogin)
+                // isDesktopLogin = Session.getExtensionSessionId() != null
+                // binding.searchBar.updateDesktop(isDesktopLogin)
             }
 
         if (Session.getAccount()?.hasPin != true) {
@@ -847,68 +840,68 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun initView() {
-        binding.searchBar.setOnLeftClickListener {
-            openSearch()
-        }
-        binding.searchBar.setOnGroupClickListener {
-            navigationController.pushContacts()
-        }
-        binding.searchBar.setOnAddClickListener {
-            addCircle()
-        }
-        binding.searchBar.setOnConfirmClickListener {
-            val circlesFragment =
-                supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
-            circlesFragment.cancelSort()
-            binding.searchBar.actionVa.showPrevious()
-        }
-        binding.searchBar.setOnBackClickListener {
-            binding.searchBar.closeSearch()
-        }
-        binding.searchBar.mOnQueryTextListener =
-            object : MaterialSearchView.OnQueryTextListener {
-                override fun onQueryTextChange(newText: String): Boolean {
-                    (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(
-                        newText,
-                    )
-                    return true
-                }
-            }
-
-        binding.searchBar.setSearchViewListener(
-            object : MaterialSearchView.SearchViewListener {
-                override fun onSearchViewClosed() {
-                    navigationController.hideSearch()
-                }
-
-                override fun onSearchViewOpened() {
-                    navigationController.showSearch()
-                }
-            },
-        )
-        binding.searchBar.hideAction = {
-            (supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as? CirclesFragment)?.cancelSort()
-        }
-        binding.searchBar.logo.text = defaultSharedPreferences.getString(CIRCLE_NAME, "Mixin")
-        binding.searchBar.desktop.setOnClickListener {
-            DeviceFragment.newInstance().showNow(supportFragmentManager, DeviceFragment.TAG)
-        }
-        binding.rootView.setOnKeyListener { _, keyCode, _ ->
-            if (keyCode == KeyEvent.KEYCODE_BACK && binding.searchBar.isOpen) {
-                binding.searchBar.closeSearch()
-                true
-            } else {
-                false
-            }
-        }
-        supportFragmentManager.beginTransaction().add(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
-        observeOtherCircleUnread(defaultSharedPreferences.getString(CIRCLE_ID, null))
-        isDesktopLogin = Session.getExtensionSessionId() != null
-        binding.searchBar.updateDesktop(isDesktopLogin)
+        // binding.searchBar.setOnLeftClickListener {
+        //     openSearch()
+        // }
+        // binding.searchBar.setOnGroupClickListener {
+        //     navigationController.pushContacts()
+        // }
+        // binding.searchBar.setOnAddClickListener {
+        //     addCircle()
+        // }
+        // binding.searchBar.setOnConfirmClickListener {
+        //     val circlesFragment =
+        //         supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
+        //     circlesFragment.cancelSort()
+        //     binding.searchBar.actionVa.showPrevious()
+        // }
+        // binding.searchBar.setOnBackClickListener {
+        //     binding.searchBar.closeSearch()
+        // }
+        // binding.searchBar.mOnQueryTextListener =
+        //     object : MaterialSearchView.OnQueryTextListener {
+        //         override fun onQueryTextChange(newText: String): Boolean {
+        //             (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(
+        //                 newText,
+        //             )
+        //             return true
+        //         }
+        //     }
+        //
+        // binding.searchBar.setSearchViewListener(
+        //     object : MaterialSearchView.SearchViewListener {
+        //         override fun onSearchViewClosed() {
+        //             navigationController.hideSearch()
+        //         }
+        //
+        //         override fun onSearchViewOpened() {
+        //             navigationController.showSearch()
+        //         }
+        //     },
+        // )
+        // binding.searchBar.hideAction = {
+        //     (supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as? CirclesFragment)?.cancelSort()
+        // }
+        // binding.searchBar.logo.text = defaultSharedPreferences.getString(CIRCLE_NAME, "Mixin")
+        // binding.searchBar.desktop.setOnClickListener {
+        //     DeviceFragment.newInstance().showNow(supportFragmentManager, DeviceFragment.TAG)
+        // }
+        // binding.rootView.setOnKeyListener { _, keyCode, _ ->
+        //     if (keyCode == KeyEvent.KEYCODE_BACK && binding.searchBar.isOpen) {
+        //         binding.searchBar.closeSearch()
+        //         true
+        //     } else {
+        //         false
+        //     }
+        // }
+        // supportFragmentManager.beginTransaction().add(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
+        // observeOtherCircleUnread(defaultSharedPreferences.getString(CIRCLE_ID, null))
+        // isDesktopLogin = Session.getExtensionSessionId() != null
+        // binding.searchBar.updateDesktop(isDesktopLogin)
     }
 
     fun openSearch() {
-        binding.searchBar.openSearch()
+        // binding.searchBar.openSearch()
     }
 
     fun openWallet() {
@@ -920,19 +913,19 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     fun closeSearch() {
-        binding.searchBar.closeSearch()
+        // binding.searchBar.closeSearch()
     }
 
     fun dragSearch(progress: Float) {
-        binding.searchBar.dragSearch(progress)
+        // binding.searchBar.dragSearch(progress)
     }
 
     fun showSearchLoading() {
-        binding.searchBar.showLoading()
+        // binding.searchBar.showLoading()
     }
 
     fun hideSearchLoading() {
-        binding.searchBar.hideLoading()
+        // binding.searchBar.hideLoading()
     }
 
     fun selectCircle(
@@ -942,13 +935,13 @@ class MainActivity : BlazeBaseActivity() {
         setCircleName(name)
         defaultSharedPreferences.putString(CIRCLE_NAME, name)
         defaultSharedPreferences.putString(CIRCLE_ID, circleId)
-        binding.searchBar.hideContainer()
+        // binding.searchBar.hideContainer()
         (supportFragmentManager.findFragmentByTag(ConversationListFragment.TAG) as? ConversationListFragment)?.circleId = circleId
-        observeOtherCircleUnread(circleId)
+        // observeOtherCircleUnread(circleId)
     }
 
     fun setCircleName(name: String?) {
-        binding.searchBar.logo.text = name ?: "Mixin"
+        // binding.searchBar.logo.text = name ?: "Mixin"
     }
 
     fun openCircleEdit(circleId: String) {
@@ -963,25 +956,25 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     fun sortAction() {
-        binding.searchBar.actionVa.showNext()
+        // binding.searchBar.actionVa.showNext()
     }
 
-    private var dotObserver =
-        Observer<Boolean> {
-            binding.searchBar.dot.isVisible = it
-        }
-    private var dotLiveData: LiveData<Boolean>? = null
+    // private var dotObserver =
+    //     Observer<Boolean> {
+    //         binding.searchBar.dot.isVisible = it
+    //     }
+    // private var dotLiveData: LiveData<Boolean>? = null
 
-    private fun observeOtherCircleUnread(circleId: String?) =
-        lifecycleScope.launch {
-            dotLiveData?.removeObserver(dotObserver)
-            if (circleId == null) {
-                binding.searchBar.dot.isVisible = false
-                return@launch
-            }
-            dotLiveData = userRepo.hasUnreadMessage(circleId = circleId)
-            dotLiveData?.observe(this@MainActivity, dotObserver)
-        }
+    // private fun observeOtherCircleUnread(circleId: String?) =
+    //     lifecycleScope.launch {
+    //         dotLiveData?.removeObserver(dotObserver)
+    //         if (circleId == null) {
+    //             binding.searchBar.dot.isVisible = false
+    //             return@launch
+    //         }
+    //         dotLiveData = userRepo.hasUnreadMessage(circleId = circleId)
+    //         dotLiveData?.observe(this@MainActivity, dotObserver)
+    //     }
 
     private fun addCircle() {
         editDialog {
@@ -1041,14 +1034,14 @@ class MainActivity : BlazeBaseActivity() {
             searchMessageFragment != null -> onBackPressedDispatcher.onBackPressed()
             searchSingleFragment != null -> onBackPressedDispatcher.onBackPressed()
             conversationCircleEditFragment != null -> onBackPressedDispatcher.onBackPressed()
-            binding.searchBar.isOpen -> binding.searchBar.closeSearch()
-            binding.searchBar.containerDisplay -> {
-                if (!circlesFragment.onBackPressed()) {
-                    binding.searchBar.hideContainer()
-                } else {
-                    binding.searchBar.actionVa.showPrevious()
-                }
-            }
+            // binding.searchBar.isOpen -> binding.searchBar.closeSearch()
+            // binding.searchBar.containerDisplay -> {
+            //     if (!circlesFragment.onBackPressed()) {
+            //         binding.searchBar.hideContainer()
+            //     } else {
+            //         binding.searchBar.actionVa.showPrevious()
+            //     }
+            // }
             else -> {
                 // https://issuetracker.google.com/issues/139738913
                 if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q && isTaskRoot) {
