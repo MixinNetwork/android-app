@@ -854,11 +854,11 @@ class MainActivity : BlazeBaseActivity() {
                         }
 
                         1 -> {
-                            // todo replace
+                            navigationController.navigateToMessage()
                         }
 
                         2 -> {
-                            // todo replace
+                            navigationController.navigateToBotManager()
                         }
 
                         else -> {

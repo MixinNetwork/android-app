@@ -11,6 +11,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.home.bot.BotManagerFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
@@ -45,6 +46,14 @@ class NavigationController
                 .replace(containerId, conversationListFragment, ConversationListFragment.TAG)
                 .commitAllowingStateLoss()
         }
+
+        fun navigateToBotManager() {
+            val botManagerFragment = BotManagerFragment.newInstance()
+            fragmentManager.beginTransaction()
+                .replace(containerId, botManagerFragment, BotManagerFragment.TAG)
+                .commitAllowingStateLoss()
+        }
+
 
         fun showSearch() {
             var searchFragment = fragmentManager.findFragmentByTag(SearchFragment.TAG)
