@@ -832,7 +832,7 @@
     <string name="Send_Message">Enviar mensaje</string>
     <string name="Send_This_Location">Enviar esta ubicación</string>
     <string name="send_to">Enviar a %1$s</string>
-    <string name="Send_to_contact">Enviar a contacto</string>
+    <string name="Send_to_Contact">Enviar a contacto</string>
     <string name="Send_transfer">Enviar</string>
     <string name="send_without_compression">Enviar sin compresión</string>
     <string name="Send_Without_Sound">Enviar sin sonido</string>
