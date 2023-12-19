@@ -109,10 +109,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
     protected fun showDone(
         returnTo: String? = null,
-        from: Int = LinkBottomSheetDialogFragment.FROM_INTERNAL,
     ) {
         if (!isAdded) return
-        biometricLayout.showDone(returnTo, from) {
+        biometricLayout.showDone(returnTo) {
             isSuccess = true
             dismiss()
             dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)

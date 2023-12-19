@@ -36,7 +36,6 @@ class TransferBiometricItem(
     override val state: String,
     val trace: Trace?,
     val returnTo: String?,
-    val from: Int = LinkBottomSheetDialogFragment.FROM_INTERNAL,
 ) : AssetBiometricItem(asset, traceId, amount, pin, memo, state)
 
 @Parcelize
