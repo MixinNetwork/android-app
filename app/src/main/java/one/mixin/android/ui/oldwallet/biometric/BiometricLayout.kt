@@ -138,7 +138,6 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
 
     fun showDone(
         returnTo: String? = null,
-        from: Int,
         doneAction: () -> Unit,
     ) {
         displayedChild = POS_DONE
@@ -164,11 +163,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
             binding.doneBtn.setOnClickListener {
                 doneAction()
                 val context = this@BiometricLayout.context
-                if (from == LinkBottomSheetDialogFragment.FROM_INTERNAL || from == LinkBottomSheetDialogFragment.FROM_SCAN) {
-                    WebActivity.show(getContext(), returnTo, null)
-                } else {
-                    context.openExternalUrl(returnTo)
-                }
+                context.openExternalUrl(returnTo)
             }
             enableBiometricTv.setText(R.string.Stay_in_Mixin)
             enableBiometricTv.isVisible = true

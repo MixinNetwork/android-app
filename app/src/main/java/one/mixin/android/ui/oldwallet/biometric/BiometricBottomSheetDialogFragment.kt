@@ -20,7 +20,6 @@ import one.mixin.android.tip.exception.TipCounterNotSyncedException
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.tip.isTipNodeException
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.MixinBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -109,10 +108,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
     protected fun showDone(
         returnTo: String? = null,
-        from: Int = LinkBottomSheetDialogFragment.FROM_INTERNAL,
     ) {
         if (!isAdded) return
-        biometricLayout.showDone(returnTo, from) {
+        biometricLayout.showDone(returnTo) {
             isSuccess = true
             dismiss()
             dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)

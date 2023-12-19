@@ -452,7 +452,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         }
                     }
                     QrCodeType.multisig_request.name -> {
-                        if (checkHasPin())return@launch
+                        if (checkHasPin()) return@launch
 
                         val multisigs = result.second as MultisigsResponse
                         val asset = checkAsset(multisigs.assetId)
@@ -961,10 +961,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         val returnTo =
             uri.getQueryParameter("return_to")?.run {
-                try {
-                    URLDecoder.decode(this, UTF_8.name())
-                } catch (e: UnsupportedEncodingException) {
-                    this
+                if (from == FROM_EXTERNAL) {
+                    try {
+                        URLDecoder.decode(this, UTF_8.name())
+                    } catch (e: UnsupportedEncodingException) {
+                        this
+                    }
+                } else {
+                    null
                 }
             }
 
@@ -999,7 +1003,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             showError(getString(R.string.check_trace_failed))
             return
         }
-        val biometricItem = TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first, returnTo, from)
+        val biometricItem = TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first, returnTo)
         showOldPreconditionBottom(biometricItem)
     }
 

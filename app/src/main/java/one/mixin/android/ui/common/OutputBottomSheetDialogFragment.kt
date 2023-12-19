@@ -232,15 +232,12 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
         pin: String,
     ): Boolean {
         var returnTo: String? = null
-        var from = LinkBottomSheetDialogFragment.FROM_INTERNAL
         when (val t = this@OutputBottomSheetDialogFragment.t) {
             is TransferBiometricItem -> {
                 returnTo = t.returnTo
-                from = t.from
             }
             is AddressTransferBiometricItem -> {
                 returnTo = t.returnTo
-                from = t.from
             }
             else -> {
                 t as WithdrawBiometricItem
@@ -264,7 +261,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             }
         }
 
-        showDone(returnTo, from)
+        showDone(returnTo)
         return false
     }
 
