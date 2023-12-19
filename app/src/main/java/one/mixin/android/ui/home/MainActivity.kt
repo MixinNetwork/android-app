@@ -871,60 +871,7 @@ class MainActivity : BlazeBaseActivity() {
                     }
                 }
         }
-        // binding.searchBar.setOnLeftClickListener {
-        //     openSearch()
-        // }
-        // binding.searchBar.setOnGroupClickListener {
-        //     navigationController.pushContacts()
-        // }
-        // binding.searchBar.setOnAddClickListener {
-        //     addCircle()
-        // }
-        // binding.searchBar.setOnConfirmClickListener {
-        //     val circlesFragment =
-        //         supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
-        //     circlesFragment.cancelSort()
-        //     binding.searchBar.actionVa.showPrevious()
-        // }
-        // binding.searchBar.setOnBackClickListener {
-        //     binding.searchBar.closeSearch()
-        // }
-        // binding.searchBar.mOnQueryTextListener =
-        //     object : MaterialSearchView.OnQueryTextListener {
-        //         override fun onQueryTextChange(newText: String): Boolean {
-        //             (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(
-        //                 newText,
-        //             )
-        //             return true
-        //         }
-        //     }
-        //
-        // binding.searchBar.setSearchViewListener(
-        //     object : MaterialSearchView.SearchViewListener {
-        //         override fun onSearchViewClosed() {
-        //             navigationController.hideSearch()
-        //         }
-        //
-        //         override fun onSearchViewOpened() {
-        //             navigationController.showSearch()
-        //         }
-        //     },
-        // )
-        // binding.searchBar.hideAction = {
-        //     (supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as? CirclesFragment)?.cancelSort()
-        // }
-        // binding.searchBar.logo.text = defaultSharedPreferences.getString(CIRCLE_NAME, "Mixin")
-        // binding.searchBar.desktop.setOnClickListener {
-        //     DeviceFragment.newInstance().showNow(supportFragmentManager, DeviceFragment.TAG)
-        // }
-        // binding.rootView.setOnKeyListener { _, keyCode, _ ->
-        //     if (keyCode == KeyEvent.KEYCODE_BACK && binding.searchBar.isOpen) {
-        //         binding.searchBar.closeSearch()
-        //         true
-        //     } else {
-        //         false
-        //     }
-        // }
+
         // supportFragmentManager.beginTransaction().add(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
         // observeOtherCircleUnread(defaultSharedPreferences.getString(CIRCLE_ID, null))
         // isDesktopLogin = Session.getExtensionSessionId() != null

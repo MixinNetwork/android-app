@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.drawable.Animatable
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -32,6 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
+import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
 import one.mixin.android.Constants.Mute.MUTE_1_HOUR
 import one.mixin.android.Constants.Mute.MUTE_1_WEEK
 import one.mixin.android.Constants.Mute.MUTE_1_YEAR
@@ -67,6 +69,9 @@ import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.device.DeviceFragment
+import one.mixin.android.ui.home.circle.CirclesFragment
+import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.BulletinBoard
 import one.mixin.android.util.EmergencyContactBulletin
 import one.mixin.android.util.GsonHelper
@@ -107,6 +112,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BulletinView
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
+import one.mixin.android.widget.MaterialSearchView
 import one.mixin.android.widget.picker.toTimeInterval
 import java.io.File
 import javax.inject.Inject
@@ -347,6 +353,67 @@ class ConversationListFragment : LinkFragment() {
                     (requireActivity() as MainActivity).selectCircle(null, null)
                 }
             }
+        initSearch()
+    }
+
+    private fun initSearch() {
+        binding.apply {
+
+            searchBar.setOnLeftClickListener {
+                // openSearch()
+            }
+            searchBar.setOnGroupClickListener {
+                navigationController.pushContacts()
+            }
+            searchBar.setOnAddClickListener {
+                // addCircle()
+            }
+            searchBar.setOnConfirmClickListener {
+                // val circlesFragment =
+                //     parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
+                // circlesFragment.cancelSort()
+                // searchBar.actionVa.showPrevious()
+            }
+            searchBar.setOnBackClickListener {
+                searchBar.closeSearch()
+            }
+            searchBar.mOnQueryTextListener =
+                object : MaterialSearchView.OnQueryTextListener {
+                    override fun onQueryTextChange(newText: String): Boolean {
+                        (parentFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(
+                            newText,
+                        )
+                        return true
+                    }
+                }
+
+            searchBar.setSearchViewListener(
+                object : MaterialSearchView.SearchViewListener {
+                    override fun onSearchViewClosed() {
+                        navigationController.hideSearch()
+                    }
+
+                    override fun onSearchViewOpened() {
+                        navigationController.showSearch()
+                    }
+                },
+            )
+            searchBar.hideAction = {
+                (parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) as? CirclesFragment)?.cancelSort()
+            }
+            searchBar.logo.text = defaultSharedPreferences.getString(CIRCLE_NAME, "Mixin")
+            searchBar.desktop.setOnClickListener {
+                DeviceFragment.newInstance().showNow(parentFragmentManager, DeviceFragment.TAG)
+            }
+            root.setOnKeyListener { _, keyCode, _ ->
+                if (keyCode == KeyEvent.KEYCODE_BACK && searchBar.isOpen) {
+                    binding.searchBar.closeSearch()
+                    true
+                } else {
+                    false
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {

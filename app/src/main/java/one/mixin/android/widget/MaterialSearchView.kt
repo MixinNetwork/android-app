@@ -29,6 +29,8 @@ import com.jakewharton.rxbinding3.view.clicks
 import com.jakewharton.rxbinding3.widget.textChanges
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import one.mixin.android.MixinApp
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewMaterialSearchBinding
 import one.mixin.android.extension.ANIMATION_DURATION_SHORT
@@ -221,7 +223,7 @@ class MaterialSearchView : FrameLayout {
                     override fun onAnimationEnd(animation: Animator) {
                         binding.containerShadow.isVisible = false
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            (context as Activity).window.navigationBarColor = context.colorFromAttribute(R.attr.bg_white)
+                            MixinApplication.get().currentActivity?.window?.navigationBarColor = context.colorFromAttribute(R.attr.bg_white)
                         }
                     }
                 },
@@ -230,7 +232,7 @@ class MaterialSearchView : FrameLayout {
                 val c = Color.BLACK.withAlpha(0.32f * it.animatedValue as Float)
                 binding.containerShadow.setBackgroundColor(c)
                 if (c > 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    (context as Activity).window.navigationBarColor = c
+                    MixinApplication.get().currentActivity?.window?.navigationBarColor = c
                 }
             }
             interpolator = AccelerateInterpolator()
@@ -264,7 +266,7 @@ class MaterialSearchView : FrameLayout {
                 val c = Color.BLACK.withAlpha(0.32f * it.animatedValue as Float)
                 binding.containerShadow.setBackgroundColor(c)
                 if (c > 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    (context as Activity).window.navigationBarColor = c
+                    MixinApplication.get().currentActivity?.window?.navigationBarColor = c
                 }
             }
             interpolator = DecelerateInterpolator()
