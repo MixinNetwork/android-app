@@ -1923,6 +1923,8 @@ class ConversationFragment() :
             MessageFlow.collect({ event ->
                 event.conversationId == ANY_ID || event.conversationId == conversationId
             }, { event ->
+                if (viewDestroyed()) return@collect
+
                 when (event.action) {
                     MessageEventAction.INSERT -> {
                         if (messageFetcher.isBottom()) {
