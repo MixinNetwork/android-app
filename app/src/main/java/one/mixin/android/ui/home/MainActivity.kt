@@ -23,6 +23,7 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.safetynet.SafetyNet
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
@@ -163,6 +164,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -844,34 +846,30 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun initView() {
         binding.apply {
-            bottomTab.setSelectedTabIndicator(null)
-            bottomTab.getTabAt(1)?.select()
-            bottomTab.addOnTabSelectedListener(object : OnTabSelectedListener {
-                override fun onTabSelected(tab: TabLayout.Tab?) {
-                    when(tab?.position){
-                        0 -> {
+            bottomNav.itemIconTintList = null
+            bottomNav.menu.findItem(R.id.nav_chat).setChecked(true)
+            bottomNav.setOnItemSelectedListener {
+                when(it.itemId){
+                        R.id.nav_wallet -> {
                             // todo replace
+                            true
                         }
 
-                        1 -> {
+                        R.id.nav_chat -> {
                             navigationController.navigateToMessage()
+                            true
                         }
 
-                        2 -> {
+                        R.id.nav_app -> {
                             navigationController.navigateToBotManager()
+                            true
                         }
 
                         else -> {
+                            false
                         }
                     }
                 }
-
-                override fun onTabUnselected(tab: TabLayout.Tab?) {
-                }
-
-                override fun onTabReselected(tab: TabLayout.Tab?) {
-                }
-            })
         }
         // binding.searchBar.setOnLeftClickListener {
         //     openSearch()

@@ -12,32 +12,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/bottom_tab"
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_nav"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:background="?attr/bg_white">
-
-            <com.google.android.material.tabs.TabItem
-                android:icon="@drawable/ic_tab_wallet"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <com.google.android.material.tabs.TabItem
-                android:icon="@drawable/ic_tab_chat"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <com.google.android.material.tabs.TabItem
-                android:icon="@drawable/ic_tab_app"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </com.google.android.material.tabs.TabLayout>
+            app:labelVisibilityMode="unlabeled"
+            app:menu="@menu/bottom_navigation"
+            android:background="?attr/bg_white"/>
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/container"
-            android:layout_above="@+id/bottom_tab"
+            android:layout_above="@+id/bottom_nav"
             android:layout_alignParentTop="true"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
