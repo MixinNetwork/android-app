@@ -125,6 +125,7 @@ import one.mixin.android.ui.common.biometric.buildEmptyTransferBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
+import one.mixin.android.ui.home.bot.BotManagerFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
@@ -272,7 +273,7 @@ class MainActivity : BlazeBaseActivity() {
         setContentView(binding.root)
 
         if (savedInstanceState == null) {
-            navigationController.navigateToMessage()
+            navigationController.navigateToMessage(conversationListFragment)
         }
 
         val account = Session.getAccount()
@@ -831,6 +832,14 @@ class MainActivity : BlazeBaseActivity() {
         bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
     }
 
+    private val conversationListFragment by lazy {
+        ConversationListFragment()
+    }
+
+    private val botManagerFragment by lazy {
+        BotManagerFragment()
+    }
+
     private fun initView() {
         binding.apply {
             bottomNav.itemIconTintList = null
@@ -843,12 +852,12 @@ class MainActivity : BlazeBaseActivity() {
                         }
 
                         R.id.nav_chat -> {
-                            navigationController.navigateToMessage()
+                            navigationController.navigateToMessage(conversationListFragment)
                             true
                         }
 
                         R.id.nav_app -> {
-                            navigationController.navigateToBotManager()
+                            navigationController.navigateToBotManager(botManagerFragment)
                             true
                         }
 
@@ -865,24 +874,26 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     fun hideSearchLoading() {
+        conversationListFragment.hideSearchLoading()
     }
 
     fun closeSearch() {
+        conversationListFragment.closeSearch()
     }
 
     fun showSearchLoading() {
+        conversationListFragment.showSearchLoading()
     }
 
     fun selectCircle(
         name: String?,
         circleId: String?,
     ) {
+        conversationListFragment.selectCircle(name, circleId)
     }
 
     fun setCircleName(name: String?) {
-    }
-
-    fun setCircleName() {
+        conversationListFragment.setCircleName(name)
     }
 
     fun openCircleEdit(circleId: String) {

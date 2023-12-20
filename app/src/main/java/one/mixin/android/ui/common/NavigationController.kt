@@ -40,15 +40,13 @@ class NavigationController
             }
         }
 
-        fun navigateToMessage() {
-            val conversationListFragment = ConversationListFragment.newInstance()
+        fun navigateToMessage(conversationListFragment: ConversationListFragment) {
             fragmentManager.beginTransaction()
                 .replace(containerId, conversationListFragment, ConversationListFragment.TAG)
                 .commitAllowingStateLoss()
         }
 
-        fun navigateToBotManager() {
-            val botManagerFragment = BotManagerFragment.newInstance()
+        fun navigateToBotManager(botManagerFragment: BotManagerFragment) {
             fragmentManager.beginTransaction()
                 .replace(containerId, botManagerFragment, BotManagerFragment.TAG)
                 .commitAllowingStateLoss()
