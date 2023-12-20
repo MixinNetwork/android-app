@@ -86,6 +86,7 @@
                 <data android:scheme="mixin" />
                 <data android:host="codes" />
                 <data android:host="pay" />
+                <data android:host="mixin.one" />
                 <data android:host="users" />
                 <data android:host="apps" />
                 <data android:host="transfer" />
