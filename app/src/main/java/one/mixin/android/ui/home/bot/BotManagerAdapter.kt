@@ -70,9 +70,6 @@ class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : Recyc
         return list.notEmptyWithElse({ it.size }, 0)
     }
 
-    val dragInstance: BotManagerDragListener
-        get() = BotManagerDragListener()
-
     class ListViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView!!)
 
     override fun onLongClick(v: View): Boolean {

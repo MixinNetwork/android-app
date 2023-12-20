@@ -64,7 +64,6 @@ class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
         return binding.root
     }
 
-
     @SuppressLint("RestrictedApi")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -94,45 +93,16 @@ class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
         }
     }
 
-
     private fun initView() {
-        binding.botDock.setOnDragListener(bottomListAdapter.dragInstance)
         binding.botRv.layoutManager = GridLayoutManager(requireContext(), 4)
         binding.botRv.adapter = bottomListAdapter
-        binding.botRv.setOnDragListener(bottomListAdapter.dragInstance)
         binding.botDock.setOnDockListener(this)
     }
 
     private fun loadData() {
         lifecycleScope.launch {
-            val defaultApps = mutableListOf<BotInterface>(InternalWallet, InternalCamera, InternalScan)
-            val topApps = mutableListOf<BotInterface>()
-            val topIds = mutableListOf<String>()
-            defaultSharedPreferences.getString(TOP_BOT, DefaultTopBots)?.let {
-                val ids = GsonHelper.customGson.fromJson(it, Array<String>::class.java)
-                ids.forEach { id ->
-                    topIds.add(id)
-                    when (id) {
-                        INTERNAL_WALLET_ID -> {
-                            topApps.add(InternalWallet)
-                            defaultApps.remove(InternalWallet)
-                        }
-                        INTERNAL_CAMERA_ID -> {
-                            topApps.add(InternalCamera)
-                            defaultApps.remove(InternalCamera)
-                        }
-                        INTERNAL_SCAN_ID -> {
-                            topApps.add(InternalScan)
-                            defaultApps.remove(InternalScan)
-                        }
-                        else -> {
-                            botManagerViewModel.findAppById(id)?.let { app ->
-                                topApps.add(app)
-                            }
-                        }
-                    }
-                }
-            }
+            val topApps = mutableListOf<BotInterface>(InternalWallet, InternalCamera, InternalScan, InternalSupport)
+            val topIds = mutableListOf(INTERNAL_WALLET_ID, INTERNAL_CAMERA_ID, INTERNAL_SCAN_ID, INTERNAL_SUPPORT_ID)
 
             binding.botDock.apps = topApps
             val notTopApps = botManagerViewModel.getNotTopApps(topIds)
@@ -143,19 +113,13 @@ class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
                 }
             } else {
                 binding.emptyFl.isVisible = false
-                defaultApps.addAll(notTopApps)
             }
-            bottomListAdapter.list = defaultApps
+            bottomListAdapter.list = notTopApps
         }
     }
 
     private val bottomListAdapter by lazy {
         BotManagerAdapter(clickAction)
-    }
-
-    override fun onDockChange(apps: List<BotInterface>) {
-        saveTopApps(apps)
-        RxBus.publish(BotEvent())
     }
 
     override fun onDockClick(app: BotInterface) {
@@ -178,11 +142,17 @@ class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
                         TipActivity.show(requireActivity(), TipType.Create, false)
                     }
                 }
+
                 INTERNAL_CAMERA_ID -> {
                     openCamera(false)
                 }
+
                 INTERNAL_SCAN_ID -> {
                     openCamera(true)
+                }
+
+                INTERNAL_SUPPORT_ID -> {
+                    // Todo
                 }
             }
         }
@@ -199,11 +169,5 @@ class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
                     context?.openPermissionSetting()
                 }
             }
-    }
-
-    private fun saveTopApps(apps: List<BotInterface>) {
-        apps.map { it.getBotId() }.apply {
-            defaultSharedPreferences.putString(TOP_BOT, GsonHelper.customGson.toJson(this))
-        }
     }
 }

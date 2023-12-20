@@ -137,12 +137,6 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         val isEmpty = apps.isEmpty()
         currentShoveIndex = -1
         getChildAt(0).isVisible = isEmpty
-        for (animator in animatorSet) {
-            try {
-                animator.cancel()
-            } catch (e: Exception) {
-            }
-        }
         for (i in 1..4) {
             val avatar =
                 getItemDock(getChildAt(i)).apply {
@@ -168,117 +162,9 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         requestLayout()
     }
 
-    fun addApp(
-        position: Int,
-        app: BotInterface,
-    ) {
-        if (!apps.contains(app) && apps.size < 4) {
-            if (position < apps.size) {
-                apps.add(position, app)
-            } else {
-                apps.add(app)
-            }
-            render()
-            onDockListener?.onDockChange(apps)
-        }
-    }
-
-    fun remove(app: BotInterface) {
-        if (apps.contains(app)) {
-            apps.remove(app)
-            render()
-            onDockListener?.onDockChange(apps)
-        }
-    }
-
-    fun switch(
-        index: Int,
-        app: BotInterface,
-    ) {
-        if (apps.contains(app)) {
-            apps.remove(app)
-            if (index < apps.size) {
-                apps.add(index, app)
-            } else {
-                apps.add(app)
-            }
-            render()
-            onDockListener?.onDockChange(apps)
-        }
-    }
 
     private var currentShoveIndex = -1
 
-    fun shove(index: Int) {
-        if (apps.size in 1 until 4 && currentShoveIndex != index) {
-            currentShoveIndex = index
-            for (i in 1..4) {
-                if (i <= index) {
-                    viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).start()
-                } else {
-                    viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).translationX(itemWidth.toFloat()).start()
-                }
-            }
-        }
-    }
-
-    fun shove(
-        index: Int,
-        bot: BotInterface,
-    ) {
-        val appIndex = apps.indexOf(bot)
-        if (appIndex != -1 && currentShoveIndex != index) {
-            currentShoveIndex = index
-            when {
-                appIndex + 1 > index -> {
-                    for (i in 1..4) { // forward
-                        if (i >= appIndex + 1 || i < index) {
-                            viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).start()
-                        } else {
-                            viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).translationX(itemWidth.toFloat()).start()
-                        }
-                    }
-                }
-                appIndex + 1 < index -> { // backward
-                    for (i in 1..4) {
-                        if (i <= appIndex + 1 || i > index) {
-                            viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).start()
-                        } else {
-                            viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).translationX(-itemWidth.toFloat()).start()
-                        }
-                    }
-                }
-                else -> { // hold
-                    for (i in 1..4) {
-                        viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).start()
-                    }
-                }
-            }
-        }
-    }
-
-    private val animatorSet = arraySetOf<ViewPropertyAnimatorCompat>()
-
-    private fun viewPropertyAnimator(view: View) =
-        ViewCompat.animate(view).setDuration(120).apply {
-            val animator = this
-            setListener(
-                object : ViewPropertyAnimatorListener {
-                    override fun onAnimationStart(view: View) {
-                        animatorSet.add(animator)
-                    }
-
-                    override fun onAnimationEnd(view: View) {
-                        animatorSet.remove(animator)
-                    }
-
-                    override fun onAnimationCancel(view: View) {
-                        view.translationX = 0f
-                        animatorSet.remove(animator)
-                    }
-                },
-            )
-        }
 
     private var onDockListener: OnDockListener? = null
 
@@ -287,8 +173,6 @@ class BotDock : ViewGroup, View.OnLongClickListener {
     }
 
     interface OnDockListener {
-        fun onDockChange(apps: List<BotInterface>)
-
         fun onDockClick(app: BotInterface)
     }
 }
