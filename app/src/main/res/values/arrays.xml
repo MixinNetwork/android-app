@@ -17,6 +17,7 @@
         <item>@drawable/ic_flag_hkd</item>
         <item>@drawable/ic_flag_idr</item>
         <item>@drawable/ic_flag_inr</item>
+        <item>@drawable/ic_flag_lbp</item>
         <item>@drawable/ic_flag_jpy</item>
         <item>@drawable/ic_flag_krw</item>
         <item>@drawable/ic_flag_myr</item>
@@ -37,6 +38,7 @@
         <item>HKD</item>
         <item>IDR</item>
         <item>INR</item>
+        <item>LBP</item>
         <item>JPY</item>
         <item>KRW</item>
         <item>MYR</item>
@@ -57,6 +59,7 @@
         <item>HK$</item>
         <item>Rp</item>
         <item>₹</item>
+        <item>ل.ل</item>
         <item>¥</item>
         <item>₩</item>
         <item>RM</item>
