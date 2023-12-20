@@ -112,6 +112,7 @@ import one.mixin.android.tip.wc.WCErrorEvent
 import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
@@ -916,12 +917,22 @@ class MainActivity : BlazeBaseActivity() {
             supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG)
         val searchSingleFragment =
             supportFragmentManager.findFragmentByTag(SearchSingleFragment.TAG)
+        val circlesFragment =
+            supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as BaseFragment
         val conversationCircleEditFragment =
             supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG)
         when {
             searchMessageFragment != null -> onBackPressedDispatcher.onBackPressed()
             searchSingleFragment != null -> onBackPressedDispatcher.onBackPressed()
             conversationCircleEditFragment != null -> onBackPressedDispatcher.onBackPressed()
+            conversationListFragment.isOpen() -> conversationListFragment.closeSearch()
+            conversationListFragment.containerDisplay() -> {
+                if (!circlesFragment.onBackPressed()) {
+                    conversationListFragment.hideContainer()
+                } else {
+                    conversationListFragment.showPrevious()
+                }
+            }
             else -> {
                 // https://issuetracker.google.com/issues/139738913
                 if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q && isTaskRoot) {

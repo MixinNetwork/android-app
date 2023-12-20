@@ -390,6 +390,20 @@ class ConversationListFragment : LinkFragment() {
 
     private var isDesktopLogin = false
 
+    fun isOpen() =
+        binding.searchBar.isOpen
+
+    fun containerDisplay() =
+        binding.searchBar.containerDisplay
+
+    fun hideContainer() {
+        binding.searchBar.hideContainer()
+    }
+
+    fun showPrevious(){
+        binding.searchBar.actionVa.showPrevious()
+    }
+
     private fun initSearch() {
         binding.apply {
             searchBar.setOnLeftClickListener {
