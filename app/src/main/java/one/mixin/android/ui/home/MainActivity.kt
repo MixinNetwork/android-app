@@ -74,6 +74,7 @@ import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.areBubblesAllowedCompat
 import one.mixin.android.extension.checkStorageNotLow
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.inTransaction
@@ -845,27 +846,27 @@ class MainActivity : BlazeBaseActivity() {
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).setChecked(true)
             bottomNav.setOnItemSelectedListener {
-                when(it.itemId){
-                        R.id.nav_wallet -> {
-                            // todo replace
-                            true
-                        }
+                when (it.itemId) {
+                    R.id.nav_chat -> {
+                        navigationController.navigateToMessage(conversationListFragment)
+                        true
+                    }
 
-                        R.id.nav_chat -> {
-                            navigationController.navigateToMessage(conversationListFragment)
-                            true
-                        }
+                    R.id.nav_wallet -> {
+                        // todo replace
+                        true
+                    }
 
-                        R.id.nav_app -> {
-                            navigationController.navigateToBotManager(botManagerFragment)
-                            true
-                        }
+                    R.id.nav_app -> {
+                        navigationController.navigateToBotManager(botManagerFragment)
+                        true
+                    }
 
-                        else -> {
-                            false
-                        }
+                    else -> {
+                        false
                     }
                 }
+            }
         }
     }
 
@@ -943,6 +944,24 @@ class MainActivity : BlazeBaseActivity() {
             }
         }
     }
+
+    fun tintColor(c: Int?) {
+        val s = colorFromAttribute(R.attr.bg_white)
+        if (c == null) {
+            binding.bottomNav.setBackgroundColor(s)
+        } else {
+            binding.bottomNav.setBackgroundColor(mixColor(s, c))
+        }
+    }
+
+    private fun mixColor(color1: Int, color2: Int): Int {
+        val a = (color1 ushr 24) * 0.5f + (color2 ushr 24) * 0.5f
+        val r = ((color1 shr 16) and 0xFF) * 0.5f + ((color2 shr 16) and 0xFF) * 0.5f
+        val g = ((color1 shr 8) and 0xFF) * 0.5f + ((color2 shr 8) and 0xFF) * 0.5f
+        val b = (color1 and 0xFF) * 0.5f + (color2 and 0xFF) * 0.5f
+        return ((a.toInt() shl 24) or (r.toInt() shl 16) or (g.toInt() shl 8) or b.toInt())
+    }
+
 
     companion object {
         const val URL = "url"

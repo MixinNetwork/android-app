@@ -46,6 +46,7 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.translationX
 import one.mixin.android.extension.withAlpha
 import one.mixin.android.session.Session
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import one.mixin.android.vo.toUser
 import org.jetbrains.annotations.NotNull
@@ -225,12 +226,14 @@ class MaterialSearchView : FrameLayout {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             MixinApplication.get().currentActivity?.window?.navigationBarColor = context.colorFromAttribute(R.attr.bg_white)
                         }
+                        (MixinApplication.get().currentActivity as MainActivity).tintColor(null)
                     }
                 },
             )
             addUpdateListener {
                 val c = Color.BLACK.withAlpha(0.32f * it.animatedValue as Float)
                 binding.containerShadow.setBackgroundColor(c)
+                if (c > 0) (MixinApplication.get().currentActivity as MainActivity?)?.tintColor(c)
                 if (c > 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     MixinApplication.get().currentActivity?.window?.navigationBarColor = c
                 }
@@ -265,6 +268,7 @@ class MaterialSearchView : FrameLayout {
             addUpdateListener {
                 val c = Color.BLACK.withAlpha(0.32f * it.animatedValue as Float)
                 binding.containerShadow.setBackgroundColor(c)
+                if (c > 0) (MixinApplication.get().currentActivity as MainActivity?)?.tintColor(c)
                 if (c > 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     MixinApplication.get().currentActivity?.window?.navigationBarColor = c
                 }
