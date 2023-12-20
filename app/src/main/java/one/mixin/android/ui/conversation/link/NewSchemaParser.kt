@@ -1,11 +1,13 @@
 package one.mixin.android.ui.conversation.link
 
+import android.net.Uri
 import androidx.core.net.toUri
 import androidx.media3.common.util.UnstableApi
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.ui.common.OutputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
@@ -65,14 +67,17 @@ class NewSchemaParser(
             }
             amount = a.stripTrailingZeros().toPlainString()
         }
-        val memo = uri.getQueryParameter("memo")
+        val memo =
+            uri.getQueryParameter("memo")?.run {
+                Uri.decode(this)
+            }
         val trace = uri.getQueryParameter("trace")
         if (trace != null && !trace.isUUID()) {
             return false
         }
         val returnTo =
             uri.getQueryParameter("return_to")?.run {
-                if (from == LinkBottomSheetDialogFragment.FROM_EXTERNAL) { 
+                if (from == LinkBottomSheetDialogFragment.FROM_EXTERNAL) {
                     try {
                         URLDecoder.decode(this, StandardCharsets.UTF_8.name())
                     } catch (e: UnsupportedEncodingException) {
@@ -85,25 +90,7 @@ class NewSchemaParser(
 
         val traceId = trace ?: UUID.randomUUID().toString()
         if (asset != null && amount != null) {
-            var isTraceNotFound = false
-            val tx =
-                handleMixinResponse(
-                    invokeNetwork = { linkViewModel.getTransactionsById(traceId) },
-                    successBlock = { r -> r.data },
-                    failureBlock = {
-                        isTraceNotFound = it.errorCode == ErrorHandler.NOT_FOUND
-                        return@handleMixinResponse isTraceNotFound
-                    },
-                )
-            val status =
-                if (isTraceNotFound) {
-                    PaymentStatus.pending.name
-                } else if (tx != null) {
-                    PaymentStatus.paid.name
-                } else {
-                    return false
-                }
-
+            val status = getPaymentStatus(traceId) ?: return false
             val token: TokenItem = checkToken(asset) ?: return false // TODO 404?
             if (payType == PayType.Uuid) {
                 val user = linkViewModel.refreshUser(lastPath) ?: return false
@@ -170,6 +157,50 @@ class NewSchemaParser(
         return true
     }
 
+    suspend fun parseUniversalTransferUrl(
+        text: String,
+        from: Int,
+    ): Boolean {
+        val uri = text.toUri()
+        val amount = uri.getQueryParameter("amount")?.stripAmountZero() ?: return false
+        if (amount.toBigDecimalOrNull() == null) return false
+        val userId = uri.getQueryParameter("recipient")
+        if (userId == null || !userId.isUUID()) {
+            return false
+        }
+        val asset = uri.getQueryParameter("asset")
+        if (asset == null || !asset.isUUID()) {
+            return false
+        }
+        val memo =
+            uri.getQueryParameter("memo")?.run {
+                Uri.decode(this)
+            }
+        val trace = uri.getQueryParameter("trace")
+        if (trace != null && !trace.isUUID()) {
+            return false
+        }
+        val returnTo =
+            uri.getQueryParameter("return_to")?.run {
+                if (from == LinkBottomSheetDialogFragment.FROM_EXTERNAL) {
+                    try {
+                        URLDecoder.decode(this, StandardCharsets.UTF_8.name())
+                    } catch (e: UnsupportedEncodingException) {
+                        this
+                    }
+                } else {
+                    null
+                }
+            }
+        val traceId = trace ?: UUID.randomUUID().toString()
+        val status = getPaymentStatus(traceId) ?: return false
+        val token: TokenItem = checkToken(asset) ?: return false
+        val user = linkViewModel.refreshUser(userId) ?: return false
+        val biometricItem = TransferBiometricItem(listOf(user), 1, traceId, token, amount, memo, status, null, returnTo)
+        showPreconditionBottom(biometricItem)
+        return true
+    }
+
     private suspend fun showPreconditionBottom(biometricItem: AssetBiometricItem) {
         if (biometricItem is TransferBiometricItem && biometricItem.users.size == 1) {
             val pair = linkViewModel.findLatestTrace(biometricItem.users.first().userId, null, null, biometricItem.amount, biometricItem.asset?.assetId ?: "")
@@ -204,5 +235,25 @@ class NewSchemaParser(
             linkViewModel.refreshAsset(asset.chainId)
         }
         return linkViewModel.findAssetItemById(assetId)
+    }
+
+    private suspend fun getPaymentStatus(traceId: String): String? {
+        var isTraceNotFound = false
+        val tx =
+            handleMixinResponse(
+                invokeNetwork = { linkViewModel.getTransactionsById(traceId) },
+                successBlock = { r -> r.data },
+                failureBlock = {
+                    isTraceNotFound = it.errorCode == ErrorHandler.NOT_FOUND
+                    return@handleMixinResponse isTraceNotFound
+                },
+            )
+        return if (isTraceNotFound) {
+            PaymentStatus.pending.name
+        } else if (tx != null) {
+            PaymentStatus.paid.name
+        } else {
+            null
+        }
     }
 }

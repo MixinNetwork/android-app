@@ -26,7 +26,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kernel.Kernel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
@@ -56,7 +55,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshUserJob
-import one.mixin.android.job.TransactionsData
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.OutputBottomSheetDialogFragment
@@ -82,7 +80,6 @@ import one.mixin.android.ui.wallet.NetworkFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.UserTransactionBottomSheetFragment
 import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
@@ -214,7 +211,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             operateKeyboard(false)
             lifecycleScope.launch {
                 val rawTransaction = bottomViewModel.firstUnspentTransaction()
-                if (rawTransaction!=null) {
+                if (rawTransaction != null) {
                     WaitingBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
                 } else {
                     checkUtxo {

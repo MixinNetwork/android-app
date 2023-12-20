@@ -42,11 +42,11 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.handleSchemeSend
-import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isExternalScheme
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.isUniversalTransferAsset
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -731,14 +731,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val uri = Uri.parse(url)
             handleTipScheme(uri)
         } else {
-            val isDonateUrl = url.isDonateUrl()
+            val isUniversalTransferUrl = url.isUniversalTransferAsset()
             val isExternalTransferUrl = url.isExternalTransferUrl()
-            if (isDonateUrl || isExternalTransferUrl) {
+            if (isUniversalTransferUrl || isExternalTransferUrl) {
                 if (checkHasPin()) return
 
                 lifecycleScope.launch(errorHandler) {
                     val newUrl = url.addSlashesIfNeeded()
-                    if (isDonateUrl && showOldTransfer(newUrl)) {
+                    if (isUniversalTransferUrl && newSchemaParser.parseUniversalTransferUrl(newUrl, from)) {
                         dismiss()
                     } else {
                         showError()
