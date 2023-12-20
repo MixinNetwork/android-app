@@ -126,6 +126,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.bot.BotManagerFragment
+import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
@@ -204,8 +205,6 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private lateinit var binding: ActivityMainBinding
-
-    private var isDesktopLogin = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -625,7 +624,7 @@ class MainActivity : BlazeBaseActivity() {
     private fun popupSnackbarForCompleteUpdate() {
         if (isFinishing) return
         Snackbar.make(
-            binding.rootView,
+            binding.container,
             getString(R.string.update_downloaded),
             Snackbar.LENGTH_INDEFINITE,
         ).apply {
@@ -897,9 +896,17 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     fun openCircleEdit(circleId: String) {
+        lifecycleScope.launch {
+            userRepo.findCircleItemByCircleIdSuspend(circleId)?.let { circleItem ->
+                val circlesFragment =
+                    supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment?
+                circlesFragment?.edit(circleItem)
+            }
+        }
     }
 
     fun sortAction() {
+        conversationListFragment.sortAction()
     }
 
     @Deprecated("Deprecated in Java")

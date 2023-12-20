@@ -368,6 +368,10 @@ class ConversationListFragment : LinkFragment() {
     private fun openCircleEdit(circleId: String) {
     }
 
+    fun sortAction() {
+        binding.searchBar.actionVa.showNext()
+    }
+
     fun hideSearchLoading() {
         binding.searchBar.hideLoading()
     }
@@ -379,6 +383,12 @@ class ConversationListFragment : LinkFragment() {
     private fun dragSearch(progress: Float) {
         binding.searchBar.dragSearch(progress)
     }
+
+    private val circlesFragment by lazy {
+        CirclesFragment.newInstance()
+    }
+
+    private var isDesktopLogin = false
 
     private fun initSearch() {
         binding.apply {
@@ -392,10 +402,10 @@ class ConversationListFragment : LinkFragment() {
                 // addCircle()
             }
             searchBar.setOnConfirmClickListener {
-                // val circlesFragment =
-                //     parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
-                // circlesFragment.cancelSort()
-                // searchBar.actionVa.showPrevious()
+                val circlesFragment =
+                    parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
+                circlesFragment.cancelSort()
+                searchBar.actionVa.showPrevious()
             }
             searchBar.setOnBackClickListener {
                 searchBar.closeSearch()
@@ -417,7 +427,7 @@ class ConversationListFragment : LinkFragment() {
                     }
 
                     override fun onSearchViewOpened() {
-                        navigationController.showSearch()
+                        navigationController.showSearch(parentFragmentManager)
                     }
                 },
             )
@@ -436,6 +446,10 @@ class ConversationListFragment : LinkFragment() {
                     false
                 }
             }
+            if (parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) == null)
+                parentFragmentManager.beginTransaction().add(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
+            isDesktopLogin = Session.getExtensionSessionId() != null
+            binding.searchBar.updateDesktop(isDesktopLogin)
         }
     }
 

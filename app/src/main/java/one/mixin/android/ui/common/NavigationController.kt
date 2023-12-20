@@ -42,24 +42,23 @@ class NavigationController
 
         fun navigateToMessage(conversationListFragment: ConversationListFragment) {
             fragmentManager.beginTransaction()
-                .replace(containerId, conversationListFragment, ConversationListFragment.TAG)
+                .replace(R.id.root_view, conversationListFragment, ConversationListFragment.TAG)
                 .commitAllowingStateLoss()
         }
 
         fun navigateToBotManager(botManagerFragment: BotManagerFragment) {
             fragmentManager.beginTransaction()
-                .replace(containerId, botManagerFragment, BotManagerFragment.TAG)
+                .replace(R.id.root_view, botManagerFragment, BotManagerFragment.TAG)
                 .commitAllowingStateLoss()
         }
 
-
-        fun showSearch() {
-            var searchFragment = fragmentManager.findFragmentByTag(SearchFragment.TAG)
+        fun showSearch(fm: FragmentManager) {
+            var searchFragment = fm.findFragmentByTag(SearchFragment.TAG)
             if (searchFragment == null) {
                 searchFragment = SearchFragment()
-                fragmentManager.beginTransaction()
+                fm.beginTransaction()
                     .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
-                    .add(containerId, searchFragment, SearchFragment.TAG)
+                    .add(R.id.container_search, searchFragment, SearchFragment.TAG)
                     .commitAllowingStateLoss()
             } else {
                 searchFragment.view?.isVisible = true
