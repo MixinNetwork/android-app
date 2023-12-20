@@ -913,7 +913,7 @@ class MainActivity : BlazeBaseActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        super.onBackPressed()
+        // super.onBackPressed()
         val searchMessageFragment =
             supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG)
         val searchSingleFragment =

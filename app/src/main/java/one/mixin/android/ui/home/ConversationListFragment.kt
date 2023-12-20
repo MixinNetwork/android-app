@@ -377,7 +377,7 @@ class ConversationListFragment : LinkFragment() {
     }
 
     fun showSearchLoading() {
-        binding.searchBar.closeSearch()
+        binding.searchBar.showLoading()
     }
 
     private fun dragSearch(progress: Float) {
