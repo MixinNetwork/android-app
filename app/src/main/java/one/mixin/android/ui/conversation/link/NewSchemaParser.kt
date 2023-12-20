@@ -1,7 +1,6 @@
 package one.mixin.android.ui.conversation.link
 
 import androidx.core.net.toUri
-import androidx.media3.common.util.UnstableApi
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.PaymentStatus
@@ -30,7 +29,6 @@ enum class PayType {
     MixAddress,
 }
 
-@UnstableApi
 class NewSchemaParser(
     private val bottomSheet: LinkBottomSheetDialogFragment,
 ) {

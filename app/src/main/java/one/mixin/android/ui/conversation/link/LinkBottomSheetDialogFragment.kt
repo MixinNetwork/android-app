@@ -105,7 +105,7 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.util.UUID
 import javax.inject.Inject
 
-@UnstableApi @AndroidEntryPoint
+@AndroidEntryPoint
 class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "LinkBottomSheetDialogFragment"

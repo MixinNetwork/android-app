@@ -13,7 +13,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import androidx.core.content.getSystemService
-import androidx.core.view.get
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -23,10 +22,7 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.safetynet.SafetyNet
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.InstallStateUpdatedListener
@@ -52,8 +48,6 @@ import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
 import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
-import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
-import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
@@ -64,7 +58,6 @@ import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
@@ -119,10 +112,8 @@ import one.mixin.android.tip.wc.WCErrorEvent
 import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
-import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
-import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
@@ -131,11 +122,9 @@ import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.biometric.buildEmptyTransferBiometricItem
-import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
@@ -152,7 +141,6 @@ import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.reportException
@@ -164,7 +152,6 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -871,130 +858,37 @@ class MainActivity : BlazeBaseActivity() {
                     }
                 }
         }
-
-        // supportFragmentManager.beginTransaction().add(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
-        // observeOtherCircleUnread(defaultSharedPreferences.getString(CIRCLE_ID, null))
-        // isDesktopLogin = Session.getExtensionSessionId() != null
-        // binding.searchBar.updateDesktop(isDesktopLogin)
-    }
-
-    fun openSearch() {
-        // binding.searchBar.openSearch()
     }
 
     fun openWallet() {
         navigationController.pushWallet()
     }
 
-    private val circlesFragment by lazy {
-        CirclesFragment.newInstance()
+    fun hideSearchLoading() {
     }
 
     fun closeSearch() {
-        // binding.searchBar.closeSearch()
-    }
-
-    fun dragSearch(progress: Float) {
-        // binding.searchBar.dragSearch(progress)
     }
 
     fun showSearchLoading() {
-        // binding.searchBar.showLoading()
-    }
-
-    fun hideSearchLoading() {
-        // binding.searchBar.hideLoading()
     }
 
     fun selectCircle(
         name: String?,
         circleId: String?,
     ) {
-        setCircleName(name)
-        defaultSharedPreferences.putString(CIRCLE_NAME, name)
-        defaultSharedPreferences.putString(CIRCLE_ID, circleId)
-        // binding.searchBar.hideContainer()
-        (supportFragmentManager.findFragmentByTag(ConversationListFragment.TAG) as? ConversationListFragment)?.circleId = circleId
-        // observeOtherCircleUnread(circleId)
     }
 
     fun setCircleName(name: String?) {
-        // binding.searchBar.logo.text = name ?: "Mixin"
+    }
+
+    fun setCircleName() {
     }
 
     fun openCircleEdit(circleId: String) {
-        conversationDao
-        lifecycleScope.launch {
-            userRepo.findCircleItemByCircleIdSuspend(circleId)?.let { circleItem ->
-                val circlesFragment =
-                    supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment?
-                circlesFragment?.edit(circleItem)
-            }
-        }
     }
 
     fun sortAction() {
-        // binding.searchBar.actionVa.showNext()
-    }
-
-    // private var dotObserver =
-    //     Observer<Boolean> {
-    //         binding.searchBar.dot.isVisible = it
-    //     }
-    // private var dotLiveData: LiveData<Boolean>? = null
-
-    // private fun observeOtherCircleUnread(circleId: String?) =
-    //     lifecycleScope.launch {
-    //         dotLiveData?.removeObserver(dotObserver)
-    //         if (circleId == null) {
-    //             binding.searchBar.dot.isVisible = false
-    //             return@launch
-    //         }
-    //         dotLiveData = userRepo.hasUnreadMessage(circleId = circleId)
-    //         dotLiveData?.observe(this@MainActivity, dotObserver)
-    //     }
-
-    private fun addCircle() {
-        editDialog {
-            titleText = this@MainActivity.getString(R.string.Add_circle)
-            maxTextCount = 64
-            defaultEditEnable = false
-            editMaxLines = EditDialog.MAX_LINE.toInt()
-            allowEmpty = false
-            rightText = android.R.string.ok
-            rightAction = {
-                createCircle(it)
-            }
-        }
-    }
-
-    private fun createCircle(name: String) {
-        lifecycleScope.launch(errorHandler) {
-            val dialog =
-                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                    setCancelable(false)
-                }
-            handleMixinResponse(
-                invokeNetwork = {
-                    userRepo.createCircle(name)
-                },
-                successBlock = { response ->
-                    response.data?.let { circle ->
-                        userRepo.insertCircle(circle)
-                        openCircleEdit(circle.circleId)
-                    }
-                },
-                exceptionBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                },
-                failureBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                },
-            )
-            dialog.dismiss()
-        }
     }
 
     @Deprecated("Deprecated in Java")
@@ -1004,22 +898,12 @@ class MainActivity : BlazeBaseActivity() {
             supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG)
         val searchSingleFragment =
             supportFragmentManager.findFragmentByTag(SearchSingleFragment.TAG)
-        val circlesFragment =
-            supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as BaseFragment
         val conversationCircleEditFragment =
             supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG)
         when {
             searchMessageFragment != null -> onBackPressedDispatcher.onBackPressed()
             searchSingleFragment != null -> onBackPressedDispatcher.onBackPressed()
             conversationCircleEditFragment != null -> onBackPressedDispatcher.onBackPressed()
-            // binding.searchBar.isOpen -> binding.searchBar.closeSearch()
-            // binding.searchBar.containerDisplay -> {
-            //     if (!circlesFragment.onBackPressed()) {
-            //         binding.searchBar.hideContainer()
-            //     } else {
-            //         binding.searchBar.actionVa.showPrevious()
-            //     }
-            // }
             else -> {
                 // https://issuetracker.google.com/issues/139738913
                 if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q && isTaskRoot) {

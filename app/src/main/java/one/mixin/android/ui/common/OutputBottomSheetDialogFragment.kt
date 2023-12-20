@@ -49,7 +49,7 @@ import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.BottomSheet
 
-@UnstableApi @AndroidEntryPoint
+@AndroidEntryPoint
 class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<AssetBiometricItem>() {
     companion object {
         const val TAG = "OutputBottomSheetDialogFragment"

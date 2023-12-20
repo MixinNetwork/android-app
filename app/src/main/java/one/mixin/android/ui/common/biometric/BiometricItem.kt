@@ -28,7 +28,7 @@ open class AssetBiometricItem(
     override var state: String,
 ) : BiometricItem(amount, memo, state)
 
-@UnstableApi @Parcelize
+@Parcelize
 class TransferBiometricItem(
     var users: List<User>,
     val threshold: Byte,
@@ -41,11 +41,9 @@ class TransferBiometricItem(
     val returnTo: String?,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state)
 
-@UnstableApi
 fun buildEmptyTransferBiometricItem(user: User) =
     TransferBiometricItem(listOf(user), 1.toByte(), UUID.randomUUID().toString(), null, "", null, PaymentStatus.pending.name, null, null)
 
-@UnstableApi
 fun buildTransferBiometricItem(
     user: User,
     token: TokenItem?,

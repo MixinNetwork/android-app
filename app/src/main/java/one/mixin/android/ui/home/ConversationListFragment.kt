@@ -57,6 +57,7 @@ import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
@@ -262,7 +263,7 @@ class ConversationListFragment : LinkFragment() {
                         }
                     }
                     val progress = min(targetH / vibrateDis.toFloat(), 1f)
-                    (requireActivity() as MainActivity).dragSearch(progress)
+                    dragSearch(progress)
                 }
 
                 override fun onRelease(fling: Int) {
@@ -275,9 +276,9 @@ class ConversationListFragment : LinkFragment() {
 
                     val open = (fling == FLING_DOWN && shouldVibrate) || topFl?.height ?: 0 >= vibrateDis
                     if (open) {
-                        (requireActivity() as MainActivity).openSearch()
+                        openSearch()
                     } else {
-                        (requireActivity() as MainActivity).closeSearch()
+                        closeSearch()
                     }
 
                     topFl?.animateHeight(
@@ -334,7 +335,7 @@ class ConversationListFragment : LinkFragment() {
         binding.emptyView.startBn.setOnClickListener {
             val cid = circleId
             if (cid != null) {
-                (requireActivity() as MainActivity).openCircleEdit(cid)
+                openCircleEdit(cid)
             } else {
                 navigationController.pushContacts()
             }
@@ -350,17 +351,39 @@ class ConversationListFragment : LinkFragment() {
             .autoDispose(destroyScope)
             .subscribe {
                 if (it.circleId == this.circleId) {
-                    (requireActivity() as MainActivity).selectCircle(null, null)
+                    selectCircle(null, null)
                 }
             }
         initSearch()
     }
 
+    private fun openSearch() {
+        binding.searchBar.openSearch()
+    }
+
+    fun closeSearch() {
+        binding.searchBar.closeSearch()
+    }
+
+    private fun openCircleEdit(circleId: String) {
+    }
+
+    fun hideSearchLoading() {
+        binding.searchBar.hideLoading()
+    }
+
+    fun showSearchLoading() {
+        binding.searchBar.closeSearch()
+    }
+
+    private fun dragSearch(progress: Float) {
+        binding.searchBar.dragSearch(progress)
+    }
+
     private fun initSearch() {
         binding.apply {
-
             searchBar.setOnLeftClickListener {
-                // openSearch()
+                openSearch()
             }
             searchBar.setOnGroupClickListener {
                 navigationController.pushContacts()
@@ -471,6 +494,22 @@ class ConversationListFragment : LinkFragment() {
         }
 
     private var scrollTop = false
+
+    fun selectCircle(
+        name: String?,
+        circleId: String?,
+    ) {
+        setCircleName(name)
+        defaultSharedPreferences.putString(CIRCLE_NAME, name)
+        defaultSharedPreferences.putString(CIRCLE_ID, circleId)
+        binding.searchBar.hideContainer()
+        this.circleId = circleId
+        // observeOtherCircleUnread(circleId)
+    }
+
+    fun setCircleName(name: String?) {
+        binding.searchBar.logo.text = name ?: "Mixin"
+    }
 
     private fun selectCircle(circleId: String?) {
         conversationLiveData?.removeObserver(observer)
