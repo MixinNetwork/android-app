@@ -325,6 +325,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     showError()
                 }
             }
+        } else if (url.startsWith(Scheme.MIXIN_PAY)) {
+            if (checkHasPin()) return
+            lifecycleScope.launch(errorHandler) {
+                if (!newSchemaParser.parse(url, from)) {
+                    showError(R.string.Invalid_payment_link)
+                } else {
+                    dismiss()
+                }
+            }
         } else if (url.startsWith(Scheme.HTTPS_PAY, true) || url.startsWith(Scheme.PAY, true)) {
             if (checkHasPin()) return
 

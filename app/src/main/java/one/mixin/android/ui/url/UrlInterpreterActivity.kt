@@ -40,6 +40,7 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val DEVICE_TRANSFER = "device-transfer"
         private const val BUY = "buy"
         private const val TIP = "tip"
+        private const val MIXIN = "mixin.one"
         const val WC = "wc"
 
         fun show(
@@ -140,6 +141,17 @@ class UrlInterpreterActivity : BaseActivity() {
             BUY -> {
                 WalletActivity.show(this, buy = true)
                 finish()
+            }
+            MIXIN -> {
+                if (uri.pathSegments.first().equals(PAY)) {
+                    val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
+                    bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+                } else {
+                    toast(R.string.Invalid_Link)
+                }
+            }
+            else -> {
+                toast(R.string.Invalid_Link)
             }
         }
     }
