@@ -72,10 +72,14 @@ class NewSchemaParser(
         }
         val returnTo =
             uri.getQueryParameter("return_to")?.run {
-                try {
-                    URLDecoder.decode(this, StandardCharsets.UTF_8.name())
-                } catch (e: UnsupportedEncodingException) {
-                    this
+                if (from == LinkBottomSheetDialogFragment.FROM_EXTERNAL) { 
+                    try {
+                        URLDecoder.decode(this, StandardCharsets.UTF_8.name())
+                    } catch (e: UnsupportedEncodingException) {
+                        this
+                    }
+                } else {
+                    null
                 }
             }
 
@@ -116,14 +120,14 @@ class NewSchemaParser(
                     val biometricItem = TransferBiometricItem(users, mixAddress.threshold, traceId, token, amount, memo, status, null, returnTo)
                     showPreconditionBottom(biometricItem)
                 } else if (mixAddress.xinMembers.isNotEmpty()) {
-                    val addressTransferBiometricItem = AddressTransferBiometricItem(mixAddress.xinMembers.first().string(), traceId, token, amount, memo, status, returnTo, from)
+                    val addressTransferBiometricItem = AddressTransferBiometricItem(mixAddress.xinMembers.first().string(), traceId, token, amount, memo, status, returnTo)
                     showPreconditionBottom(addressTransferBiometricItem)
                 } else {
                     return false
                 }
             } else {
                 // TODO verify address?
-                val addressTransferBiometricItem = AddressTransferBiometricItem(lastPath, traceId, token, amount, memo, status, returnTo, from)
+                val addressTransferBiometricItem = AddressTransferBiometricItem(lastPath, traceId, token, amount, memo, status, returnTo)
                 showPreconditionBottom(addressTransferBiometricItem)
             }
         } else {

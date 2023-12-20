@@ -39,7 +39,6 @@ class TransferBiometricItem(
     override var state: String,
     var trace: Trace?,
     val returnTo: String?,
-    val from: Int = LinkBottomSheetDialogFragment.FROM_INTERNAL,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state)
 
 @UnstableApi
@@ -66,7 +65,6 @@ class AddressTransferBiometricItem(
     override var memo: String?,
     override var state: String,
     val returnTo: String?,
-    val from: Int,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state)
 
 fun buildAddressBiometricItem(
@@ -78,7 +76,7 @@ fun buildAddressBiometricItem(
     returnTo: String?,
     from: Int,
 ) =
-    AddressTransferBiometricItem(mainnetAddress, traceId ?: UUID.randomUUID().toString(), token, amount, memo, PaymentStatus.pending.name, returnTo, from)
+    AddressTransferBiometricItem(mainnetAddress, traceId ?: UUID.randomUUID().toString(), token, amount, memo, PaymentStatus.pending.name, returnTo)
 
 @Parcelize
 class WithdrawBiometricItem(
