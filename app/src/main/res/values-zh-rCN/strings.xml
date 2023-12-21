@@ -441,7 +441,7 @@
     <string name="error_user_invalid_format">用户数据不合法</string>
     <string name="error_withdrawal_memo_format_incorrect">错误 20131：提现备注格式不正确</string>
     <string name="error_withdrawal_suspend">错误 20137：提现暂停</string>
-    <string name="error_invalid_utxo">错误 10106: UTXO 待确认，请稍后重试</string>
+    <string name="error_invalid_utxo">错误 10106: 您有未确认交易，请稍后重试</string>
     <string name="Everybody">任何人</string>
     <string name="Exchanging_data">正在同步密钥分片，进度 %1$s%%…</string>
     <string name="Exit">退出</string>

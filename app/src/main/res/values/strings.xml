@@ -451,7 +451,7 @@
     <string name="error_user_invalid_format">Invalid user id</string>
     <string name="error_withdrawal_memo_format_incorrect">ERROR 20131: Withdrawal memo format incorrect.</string>
     <string name="error_withdrawal_suspend">ERROR 20137: Withdrawal suspend.</string>
-    <string name="error_invalid_utxo">ERROR 10106: UTXO to be confirmed. Please try again later.</string>
+    <string name="error_invalid_utxo">ERROR 10106: You have unconfirmed transactions, please try again later.</string>
     <string name="Everybody">Everybody</string>
     <string name="Exchanging_data">Synchronization key shards in progress %1$s%%…</string>
     <string name="Exit">Exit</string>
