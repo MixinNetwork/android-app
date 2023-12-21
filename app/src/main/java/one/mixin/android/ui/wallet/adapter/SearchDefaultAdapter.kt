@@ -112,6 +112,7 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
         chainId: String,
         name: String,
         symbol: String,
+        balance: String,
         assetKey: String?,
         priceUsd: String,
         changeUsd: String,
@@ -120,7 +121,7 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
         binding.badgeCircleIv.bg.loadImage(iconUrl, R.drawable.ic_avatar_place_holder)
         binding.badgeCircleIv.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
         binding.nameTv.text = name
-        binding.symbolTv.text = symbol
+        binding.balanceTv.text = "$balance $symbol"
         val chainNetwork = getChainNetwork(assetId, chainId, assetKey)
         binding.networkTv.isVisible = chainNetwork != null
         if (chainNetwork != null) {
@@ -153,16 +154,9 @@ class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
             asset.iconUrl,
             asset.chainIconUrl,
             asset.chainId,
-            if (currentAssetId != null) {
-                "${asset.balance} ${asset.symbol}"
-            } else {
-                asset.name
-            },
-            if (currentAssetId != null) {
-                asset.name
-            } else {
-                asset.symbol
-            },
+            asset.name,
+            asset.symbol,
+            asset.balance,
             asset.assetKey,
             asset.priceUsd,
             asset.changeUsd,
@@ -191,6 +185,7 @@ class TopAssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding)
             asset.chainId,
             asset.name,
             asset.symbol,
+            "0",
             asset.assetKey,
             asset.priceUsd,
             asset.changeUsd,

@@ -113,7 +113,8 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     onDeposit?.invoke()
                     dismiss()
                 }
-
+            }
+            if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {
                 searchEt.listener =
                     object : SearchView.OnSearchViewListener {
                         override fun afterTextChanged(s: Editable?) {
