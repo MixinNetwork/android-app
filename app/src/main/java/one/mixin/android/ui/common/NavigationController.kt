@@ -18,6 +18,7 @@ import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletFragment
 
 class NavigationController
     constructor(mainActivity: MainActivity) {
@@ -29,13 +30,13 @@ class NavigationController
             ContactsActivity.show(context)
         }
 
-        fun pushWallet(deviceId: String? = null) {
+        fun pushWallet(walletFragment: WalletFragment) {
             if (Session.getAccount()?.hasPin == true) {
-                WalletActivity.show(context)
+                fragmentManager.beginTransaction()
+                    .replace(R.id.root_view, walletFragment, WalletFragment.TAG)
+                    .commitAllowingStateLoss()
             } else {
-                val id =
-                    deviceId
-                        ?: requireNotNull(context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null)) { "required deviceId can not be null" }
+                val id = requireNotNull(context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null)) { "required deviceId can not be null" }
                 TipActivity.show(context, TipBundle(TipType.Create, id, TryConnecting))
             }
         }

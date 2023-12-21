@@ -55,14 +55,13 @@ import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
+import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.setting.getCurrencyData
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
-import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
-import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment.Companion.CALCULATE_STATE
 import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
 import one.mixin.android.ui.wallet.fiatmoney.getDefaultCurrency
 import one.mixin.android.ui.web.WebActivity
@@ -72,6 +71,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.sumsub.KycState
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
@@ -80,6 +80,12 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.math.abs
+
+// TODO
+var kycState: String = KycState.INITIAL.value
+var hideGooglePay = false
+var supportCurrencies: List<Currency> = emptyList()
+var supportAssetIds: List<String> = emptyList()
 
 @AndroidEntryPoint
 class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnItemListener {
@@ -96,7 +102,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     private var _bottomBinding: ViewWalletBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding)
 
-    private val sendBottomSheet = SendBottomSheet(this, R.id.action_wallet_to_single_friend_select, R.id.action_wallet_to_address_management)
+    private val sendBottomSheet = SendBottomSheet(this, -1, -1)
 
     private val walletViewModel by viewModels<WalletViewModel>()
     private val binding by viewBinding(FragmentWalletBinding::bind, destroyTask = { b ->
@@ -160,19 +166,16 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 val profileResponse =
                     walletViewModel.profile()
                 if (profileResponse.isSuccess) {
-                    val walletActivity = (requireActivity() as WalletActivity)
-                    walletActivity.apply {
-                        supportCurrencies =
-                            getCurrencyData(requireContext().resources).filter {
-                                profileResponse.data!!.currencies.contains(it.name)
-                            }
-                        supportAssetIds = profileResponse.data!!.assetIds
-                        kycState = profileResponse.data!!.kycState
-                        hideGooglePay =
-                            profileResponse.data!!.supportPayments.contains(GOOGLE_PAY)
-                                .not()
-                    }
-                    Pair(walletActivity.supportCurrencies, walletActivity.supportAssetIds)
+                    supportCurrencies =
+                        getCurrencyData(requireContext().resources).filter {
+                            profileResponse.data!!.currencies.contains(it.name)
+                        }
+                    supportAssetIds = profileResponse.data!!.assetIds
+                    kycState = profileResponse.data!!.kycState
+                    hideGooglePay =
+                        profileResponse.data!!.supportPayments.contains(GOOGLE_PAY)
+                            .not()
+                    Pair(supportCurrencies, supportAssetIds)
                 } else if (profileResponse.errorCode == ErrorHandler.OLD_VERSION) {
                     alertDialogBuilder()
                         .setTitle(R.string.Update_Mixin)
@@ -262,10 +265,11 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 sendReceiveView.buy.displayedChild = 0
                 sendReceiveView.buy.isEnabled = true
             }.collectLatest { state ->
-                view?.navigate(
-                    R.id.action_wallet_to_calculate,
-                    Bundle().apply { putParcelable(CALCULATE_STATE, state) },
-                )
+                WalletActivity.showBuy(requireActivity(), state)
+//                view?.navigate(
+//                    R.id.action_wallet_to_calculate,
+//                    Bundle().apply { putParcelable(CALCULATE_STATE, state) },
+//                )
                 sendReceiveView.buy.displayedChild = 0
                 sendReceiveView.buy.isEnabled = true
             }
@@ -280,8 +284,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         jobManager.addJobInBackground(SyncOutputJob())
         binding.apply {
             titleView.rightAnimator.setOnClickListener { showBottom() }
-            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-            searchIb.setOnClickListener { view.navigate(R.id.action_wallet_to_wallet_search) }
+            titleView.leftIb.isVisible = false
+            searchIb.setOnClickListener {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.Search)
+            }
 
             _headBinding =
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
@@ -575,17 +581,16 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         _bottomBinding = ViewWalletBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_bottom, null))
         builder.setCustomView(bottomBinding.root)
         val bottomSheet = builder.create()
-        val rootView = this.view
         bottomBinding.hide.setOnClickListener {
-            rootView?.navigate(R.id.action_wallet_fragment_to_hidden_assets_fragment)
+            WalletActivity.show(requireActivity(), WalletActivity.Destination.Hidden)
             bottomSheet.dismiss()
         }
         bottomBinding.transactionsTv.setOnClickListener {
-            rootView?.navigate(R.id.action_wallet_fragment_to_all_transactions_fragment)
+            WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions)
             bottomSheet.dismiss()
         }
         bottomBinding.connectedTv.setOnClickListener {
-            rootView?.navigate(R.id.action_wallet_to_wallet_connect)
+            WalletActivity.show(requireActivity(), WalletActivity.Destination.WalletConnect)
             bottomSheet.dismiss()
         }
 
@@ -595,18 +600,11 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     private fun showReceiveAssetList(view: View) {
         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE)
             .setOnAssetClick { asset ->
-                view.navigate(
-                    R.id.action_wallet_to_deposit,
-                    Bundle().apply { putParcelable(ARGS_ASSET, asset) },
-                )
+                WalletActivity.showWithToken(requireActivity(), asset, WalletActivity.Destination.Deposit)
             }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        item as TokenItem
-        view?.navigate(
-            R.id.action_wallet_fragment_to_transactions_fragment,
-            Bundle().apply { putParcelable(ARGS_ASSET, item) },
-        )
+        WalletActivity.showWithToken(requireActivity(), item as TokenItem, WalletActivity.Destination.Transactions)
     }
 }

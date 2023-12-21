@@ -143,6 +143,7 @@ import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
+import one.mixin.android.ui.wallet.WalletFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.RomUtil
@@ -679,7 +680,7 @@ class MainActivity : BlazeBaseActivity() {
             bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             clearCodeAfterConsume(intent, URL)
         } else if (intent.hasExtra(WALLET)) {
-            navigationController.pushWallet()
+            navigationController.pushWallet(walletFragment)
             clearCodeAfterConsume(intent, WALLET)
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER) ?: return
@@ -837,6 +838,10 @@ class MainActivity : BlazeBaseActivity() {
         ConversationListFragment()
     }
 
+    private val walletFragment by lazy {
+        WalletFragment()
+    }
+
     private val botManagerFragment by lazy {
         BotManagerFragment()
     }
@@ -853,7 +858,7 @@ class MainActivity : BlazeBaseActivity() {
                     }
 
                     R.id.nav_wallet -> {
-                        // todo replace
+                        openWallet()
                         true
                     }
 
@@ -871,7 +876,7 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     fun openWallet() {
-        navigationController.pushWallet()
+        navigationController.pushWallet(walletFragment)
     }
 
     fun hideSearchLoading() {

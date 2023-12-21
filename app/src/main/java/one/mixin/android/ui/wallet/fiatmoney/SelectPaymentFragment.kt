@@ -26,6 +26,7 @@ import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.wallet.PaymentFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.hideGooglePay
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.safe.TokenItem
@@ -88,7 +89,7 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
             titleView.setSubTitle(getString(R.string.Select_Payment_Method), "")
             firstRl.round(8.dp)
             secondRl.round(8.dp)
-            firstRl.isVisible = requireContext().isGooglePlayServicesAvailable() && !(requireActivity() as WalletActivity).hideGooglePay
+            firstRl.isVisible = requireContext().isGooglePlayServicesAvailable() && !hideGooglePay
             firstRl.setOnClickListener {
                 if (fiatMoneyViewModel.state.value.googlePayAvailable != true) {
                     // toast(R.string.Google_Pay_error)
