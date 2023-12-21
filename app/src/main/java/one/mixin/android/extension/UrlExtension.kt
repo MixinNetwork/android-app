@@ -153,7 +153,7 @@ User-agent: ${WebView(context).settings.userAgentString}
     } else if (startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX) && WalletConnect.isEnabled(context)) {
         WalletConnect.connect(this)
     } else {
-        if (isMixinUrl() || isUniversalTransferAsset() || isExternalScheme(context) || isExternalTransferUrl()) {
+        if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
             LinkBottomSheetDialogFragment.newInstance(this)
                 .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else {
@@ -225,15 +225,6 @@ fun String.checkUserOrApp(
         }
     }
 }
-
-val universalTransferAssets =
-    arrayOf(
-        "bitcoin:", "bitcoincash:", "ethereum:", "litecoin:",
-        "dash:", "ripple:", "zcash:", "horizen:", "monero:",
-        "binancecoin:", "stellar:", "dogecoin:", "mobilecoin:",
-    )
-
-fun String.isUniversalTransferAsset() = universalTransferAssets.any { startsWith(it) }
 
 fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith("$it:") }
 

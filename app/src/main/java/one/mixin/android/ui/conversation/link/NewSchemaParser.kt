@@ -7,8 +7,10 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.isUUID
-import one.mixin.android.extension.stripAmountZero
+import one.mixin.android.extension.nowInUtc
+import one.mixin.android.pay.parseExternalTransferUri
 import one.mixin.android.ui.common.OutputBottomSheetDialogFragment
+import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
@@ -16,7 +18,9 @@ import one.mixin.android.ui.common.biometric.buildAddressBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
+import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.vo.Address
 import one.mixin.android.vo.MixAddressPrefix
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toMixAddress
@@ -157,48 +161,73 @@ class NewSchemaParser(
         return true
     }
 
-    suspend fun parseUniversalTransferUrl(
-        text: String,
-        from: Int,
-    ): Boolean {
-        val uri = text.toUri()
-        val amount = uri.getQueryParameter("amount")?.stripAmountZero() ?: return false
-        if (amount.toBigDecimalOrNull() == null) return false
-        val userId = uri.getQueryParameter("recipient")
-        if (userId == null || !userId.isUUID()) {
-            return false
-        }
-        val asset = uri.getQueryParameter("asset")
-        if (asset == null || !asset.isUUID()) {
-            return false
-        }
-        val memo =
-            uri.getQueryParameter("memo")?.run {
-                Uri.decode(this)
-            }
-        val trace = uri.getQueryParameter("trace")
-        if (trace != null && !trace.isUUID()) {
-            return false
-        }
-        val returnTo =
-            uri.getQueryParameter("return_to")?.run {
-                if (from == LinkBottomSheetDialogFragment.FROM_EXTERNAL) {
-                    try {
-                        URLDecoder.decode(this, StandardCharsets.UTF_8.name())
-                    } catch (e: UnsupportedEncodingException) {
-                        this
-                    }
-                } else {
-                    null
+    suspend fun parseExternalTransferUrl(url: String) {
+        var errorMsg: String? = null
+        val result =
+            parseExternalTransferUri(url, { assetId, destination ->
+                handleMixinResponse(
+                    invokeNetwork = {
+                        linkViewModel.getExternalAddressFee(assetId, destination, null)
+                    },
+                    successBlock = {
+                        return@handleMixinResponse it.data
+                    },
+                )
+            }, { assetKey ->
+                val assetId = linkViewModel.findAssetIdByAssetKey(assetKey)
+                if (assetId == null) {
+                    errorMsg = bottomSheet.getString(R.string.external_pay_no_asset_found)
                 }
+                return@parseExternalTransferUri assetId
+            }, { assetId ->
+                handleMixinResponse(
+                    invokeNetwork = {
+                        linkViewModel.getAssetPrecisionById(assetId)
+                    },
+                    successBlock = {
+                        return@handleMixinResponse it.data
+                    },
+                )
+            })
+
+        errorMsg?.let {
+            bottomSheet.showError(it)
+            return
+        }
+
+        if (result == null) {
+            QrScanBottomSheetDialogFragment.newInstance(url)
+                .show(bottomSheet.parentFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+        } else {
+            val asset = checkToken(result.assetId)
+            if (asset == null) {
+                bottomSheet.showError(R.string.Asset_not_found)
+                bottomSheet.dismiss()
+                return
             }
-        val traceId = trace ?: UUID.randomUUID().toString()
-        val status = getPaymentStatus(traceId) ?: return false
-        val token: TokenItem = checkToken(asset) ?: return false
-        val user = linkViewModel.refreshUser(userId) ?: return false
-        val biometricItem = TransferBiometricItem(listOf(user), 1, traceId, token, amount, memo, status, null, returnTo)
-        showPreconditionBottom(biometricItem)
-        return true
+            val chain = checkToken(asset.chainId)
+            if (chain == null) {
+                bottomSheet.showError(R.string.Asset_not_found)
+                bottomSheet.dismiss()
+                return
+            }
+
+            val traceId = UUID.randomUUID().toString()
+            val status = getPaymentStatus(traceId)
+            if (status == null) {
+                bottomSheet.showError()
+                bottomSheet.dismiss()
+                return
+            }
+            val amount = result.amount
+            val destination = result.destination
+
+            val address = Address("", "address", asset.assetId, destination, "ExternalAddress", nowInUtc(), "0", result.fee?.toPlainString() ?: "", null, null, asset.chainId)
+            val fee = NetworkFee(chain, result.fee!!.toPlainString())
+            val withdrawBiometricItem = one.mixin.android.ui.common.biometric.WithdrawBiometricItem(address, fee, traceId, asset, amount, result.memo, status, null)
+            showPreconditionBottom(withdrawBiometricItem)
+        }
+        bottomSheet.dismiss()
     }
 
     private suspend fun showPreconditionBottom(biometricItem: AssetBiometricItem) {

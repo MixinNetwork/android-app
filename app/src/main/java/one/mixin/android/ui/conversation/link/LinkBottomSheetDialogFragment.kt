@@ -46,13 +46,10 @@ import one.mixin.android.extension.isExternalScheme
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
-import one.mixin.android.extension.isUniversalTransferAsset
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.getIconUrlName
-import one.mixin.android.pay.addSlashesIfNeeded
-import one.mixin.android.pay.parseExternalTransferUri
 import one.mixin.android.repository.QrCodeType
 import one.mixin.android.session.Session
 import one.mixin.android.tip.TAG_TIP_SIGN
@@ -63,7 +60,6 @@ import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
-import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -731,18 +727,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val uri = Uri.parse(url)
             handleTipScheme(uri)
         } else {
-            val isUniversalTransferUrl = url.isUniversalTransferAsset()
             val isExternalTransferUrl = url.isExternalTransferUrl()
-            if (isUniversalTransferUrl || isExternalTransferUrl) {
+            if (isExternalTransferUrl) {
                 if (checkHasPin()) return
 
                 lifecycleScope.launch(errorHandler) {
-                    val newUrl = url.addSlashesIfNeeded()
-                    if (isUniversalTransferUrl && newSchemaParser.parseUniversalTransferUrl(newUrl, from)) {
-                        dismiss()
-                    } else {
-                        showError()
-                    }
+                    newSchemaParser.parseExternalTransferUrl(url)
                 }
             } else if (url.isExternalScheme(requireContext())) {
                 WebActivity.show(requireContext(), url, null)
@@ -799,88 +789,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
         }
-    }
-
-    private suspend fun parseExternalTransferUrl(url: String) {
-        var errorMsg: String? = null
-        val result =
-            parseExternalTransferUri(url, { assetId, destination ->
-                handleMixinResponse(
-                    invokeNetwork = {
-                        oldLinkViewModel.getExternalAddressFee(assetId, destination, null)
-                    },
-                    successBlock = {
-                        return@handleMixinResponse it.data
-                    },
-                )
-            }, { assetKey ->
-                val assetId = oldLinkViewModel.findAssetIdByAssetKey(assetKey)
-                if (assetId == null) {
-                    errorMsg = getString(R.string.external_pay_no_asset_found)
-                }
-                return@parseExternalTransferUri assetId
-            }, { assetId ->
-                handleMixinResponse(
-                    invokeNetwork = {
-                        oldLinkViewModel.getAssetPrecisionById(assetId)
-                    },
-                    successBlock = {
-                        return@handleMixinResponse it.data
-                    },
-                )
-            })
-
-        errorMsg?.let {
-            showError(it)
-            return
-        }
-
-        if (result == null) {
-            QrScanBottomSheetDialogFragment.newInstance(url)
-                .show(parentFragmentManager, QrScanBottomSheetDialogFragment.TAG)
-        } else {
-            val asset = checkAsset(result.assetId)
-            if (asset == null) {
-                showError(R.string.Asset_not_found)
-                dismiss()
-                return
-            }
-
-            val traceId = UUID.randomUUID().toString()
-            val amount = result.amount
-            val destination = result.destination
-            handleMixinResponse(
-                invokeNetwork = {
-                    // raw_payment_url support
-                    val transferRequest = TransferRequest(result.assetId, null, amount, null, traceId, result.memo, null, destination)
-                    oldLinkViewModel.paySuspend(transferRequest)
-                },
-                successBlock = { r ->
-                    val response = r.data ?: return@handleMixinResponse false
-                    showOldWithdrawalBottom(
-                        null,
-                        destination,
-                        null,
-                        null,
-                        result.fee?.toPlainString() ?: "0",
-                        amount,
-                        asset,
-                        traceId,
-                        response.status,
-                        result.memo,
-                    )
-                },
-                failureBlock = {
-                    showError(R.string.Invalid_payment_link)
-                    return@handleMixinResponse false
-                },
-                exceptionBlock = {
-                    showError(R.string.Checking_payment_info)
-                    return@handleMixinResponse false
-                },
-            )
-        }
-        dismiss()
     }
 
     private fun handleTipScheme(uri: Uri) {
@@ -1081,7 +989,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun showError(
+    fun showError(
         @StringRes errorRes: Int = R.string.Invalid_Link,
     ) {
         if (!isAdded) return
