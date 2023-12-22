@@ -384,12 +384,16 @@ class TokenRepository
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
 
+        suspend fun allPendingDeposit() = tokenService.allPendingDeposits()
+
         suspend fun pendingDeposits(
             asset: String,
             destination: String,
             tag: String? = null,
         ) =
             tokenService.pendingDeposits(asset, destination, tag)
+
+        suspend fun clearAllPendingDeposits() = safeSnapshotDao.clearAllPendingDeposits()
 
         suspend fun clearPendingDepositsByAssetId(assetId: String) =
             safeSnapshotDao.clearPendingDepositsByAssetId(assetId)

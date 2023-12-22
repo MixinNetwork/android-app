@@ -189,7 +189,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                         pendingDeposits.chunked(100) { chunk ->
                             lifecycleScope.launch(Dispatchers.IO) {
                                 chunk.map {
-                                    it.toSnapshot(asset.assetId)
+                                    it.toSnapshot()
                                 }.let {
                                     walletViewModel.insertPendingDeposit(it)
                                 }
