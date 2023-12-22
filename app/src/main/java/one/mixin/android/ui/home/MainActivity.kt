@@ -896,16 +896,6 @@ class MainActivity : BlazeBaseActivity() {
         conversationListFragment.setCircleName(name)
     }
 
-    fun openCircleEdit(circleId: String) {
-        lifecycleScope.launch {
-            userRepo.findCircleItemByCircleIdSuspend(circleId)?.let { circleItem ->
-                val circlesFragment =
-                    supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment?
-                circlesFragment?.edit(circleItem)
-            }
-        }
-    }
-
     fun sortAction() {
         conversationListFragment.sortAction()
     }

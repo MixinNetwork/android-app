@@ -53,6 +53,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
@@ -66,8 +67,10 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.NavigationController
+import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -76,6 +79,7 @@ import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.BulletinBoard
 import one.mixin.android.util.EmergencyContactBulletin
+import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.NewWalletBulletin
 import one.mixin.android.util.NotificationBulletin
@@ -373,9 +377,6 @@ class ConversationListFragment : LinkFragment() {
         binding.searchBar.closeSearch()
     }
 
-    private fun openCircleEdit(circleId: String) {
-    }
-
     fun sortAction() {
         binding.searchBar.actionVa.showNext()
     }
@@ -421,7 +422,7 @@ class ConversationListFragment : LinkFragment() {
                 navigationController.pushContacts()
             }
             searchBar.setOnAddClickListener {
-                // addCircle()
+                addCircle(it.context)
             }
             searchBar.setOnConfirmClickListener {
                 val circlesFragment =
@@ -472,6 +473,59 @@ class ConversationListFragment : LinkFragment() {
                 parentFragmentManager.beginTransaction().add(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
             isDesktopLogin = Session.getExtensionSessionId() != null
             binding.searchBar.updateDesktop(isDesktopLogin)
+        }
+    }
+
+    private fun addCircle(context: Context) {
+        editDialog {
+            titleText = context.getString(R.string.Add_circle)
+            maxTextCount = 64
+            defaultEditEnable = false
+            editMaxLines = EditDialog.MAX_LINE.toInt()
+            allowEmpty = false
+            rightText = android.R.string.ok
+            rightAction = {
+                createCircle(it)
+            }
+        }
+    }
+
+    private fun openCircleEdit(circleId: String) {
+        lifecycleScope.launch {
+            conversationListViewModel.findCircleItemByCircleIdSuspend(circleId)?.let { circleItem ->
+                val circlesFragment =
+                    parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment?
+                circlesFragment?.edit(circleItem)
+            }
+        }
+    }
+
+    private fun createCircle(name: String) {
+        lifecycleScope.launch(errorHandler) {
+            val dialog =
+                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                    setCancelable(false)
+                }
+            handleMixinResponse(
+                invokeNetwork = {
+                    conversationListViewModel.createCircle(name)
+                },
+                successBlock = { response ->
+                    response.data?.let { circle ->
+                        conversationListViewModel.insertCircle(circle)
+                        openCircleEdit(circle.circleId)
+                    }
+                },
+                exceptionBlock = {
+                    dialog.dismiss()
+                    return@handleMixinResponse false
+                },
+                failureBlock = {
+                    dialog.dismiss()
+                    return@handleMixinResponse false
+                },
+            )
+            dialog.dismiss()
         }
     }
 
