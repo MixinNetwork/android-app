@@ -4,9 +4,11 @@ import android.annotation.SuppressLint
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.view.ContextThemeWrapper
@@ -97,6 +99,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     @Inject
     lateinit var jobManager: MixinJobManager
 
+    private var _binding: FragmentWalletBinding? = null
+    private val binding get() = requireNotNull(_binding)
     private var _headBinding: ViewWalletFragmentHeaderBinding? = null
     private var _bottomBinding: ViewWalletBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding)
@@ -104,9 +108,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     private val sendBottomSheet = SendBottomSheet(this, -1, -1)
 
     private val walletViewModel by viewModels<WalletViewModel>()
-    private val binding by viewBinding(FragmentWalletBinding::bind, destroyTask = { b ->
-        b.coinsRv.adapter = null
-    })
     private var assets: List<TokenItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
 
@@ -116,6 +117,11 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         jobManager.addJobInBackground(RefreshTokensJob())
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentWalletBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     private fun toBuy() {
@@ -402,6 +408,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     override fun onDestroyView() {
         assetsAdapter.headerView = null
         assetsAdapter.onItemListener = null
+        _binding = null
         _headBinding = null
         _bottomBinding = null
         sendBottomSheet.release()
