@@ -19,9 +19,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentBotManagerBinding
 import one.mixin.android.event.BotEvent
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.putString
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
@@ -31,7 +29,6 @@ import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface

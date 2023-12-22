@@ -25,7 +25,6 @@ import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.wallet.PaymentFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
-import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.hideGooglePay
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Card

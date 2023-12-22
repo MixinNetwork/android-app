@@ -1,10 +1,8 @@
 package one.mixin.android.ui.common.biometric
 
 import android.os.Parcelable
-import androidx.media3.common.util.UnstableApi
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.api.response.PaymentStatus
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Trace
