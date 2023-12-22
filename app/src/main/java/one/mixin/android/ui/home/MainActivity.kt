@@ -306,13 +306,7 @@ class MainActivity : BlazeBaseActivity() {
                     WalletConnectActivity.show(this, it.error)
                 }
             }
-        RxBus.listen(SessionEvent::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(destroyScope)
-            .subscribe {
-                // isDesktopLogin = Session.getExtensionSessionId() != null
-                // binding.searchBar.updateDesktop(isDesktopLogin)
-            }
+
 
         if (Session.getAccount()?.hasPin != true) {
             TipActivity.show(this, TipType.Create, shouldWatch = true)

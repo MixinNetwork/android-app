@@ -45,6 +45,7 @@ import one.mixin.android.databinding.FragmentConversationListBinding
 import one.mixin.android.databinding.ItemListConversationBinding
 import one.mixin.android.databinding.ViewConversationBottomBinding
 import one.mixin.android.event.CircleDeleteEvent
+import one.mixin.android.event.SessionEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.clickVibrate
@@ -354,6 +355,13 @@ class ConversationListFragment : LinkFragment() {
                     selectCircle(null, null)
                 }
             }
+        RxBus.listen(SessionEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe {
+                isDesktopLogin = Session.getExtensionSessionId() != null
+                binding.searchBar.updateDesktop(isDesktopLogin)
+            }
         initSearch()
     }
 
@@ -467,6 +475,23 @@ class ConversationListFragment : LinkFragment() {
         }
     }
 
+    private var dotObserver =
+        Observer<Boolean> {
+            binding.searchBar.dot.isVisible = it
+        }
+    private var dotLiveData: LiveData<Boolean>? = null
+
+    private fun observeOtherCircleUnread(circleId: String?) =
+        lifecycleScope.launch {
+            dotLiveData?.removeObserver(dotObserver)
+            if (circleId == null) {
+                binding.searchBar.dot.isVisible = false
+                return@launch
+            }
+            dotLiveData = conversationListViewModel.hasUnreadMessage(circleId = circleId)
+            dotLiveData?.observe(this@ConversationListFragment.viewLifecycleOwner, dotObserver)
+        }
+
     override fun onDestroyView() {
         if (isAdded) {
             messageAdapter.unregisterAdapterDataObserver(messageAdapterDataObserver)
@@ -532,7 +557,7 @@ class ConversationListFragment : LinkFragment() {
         defaultSharedPreferences.putString(CIRCLE_ID, circleId)
         binding.searchBar.hideContainer()
         this.circleId = circleId
-        // observeOtherCircleUnread(circleId)
+        observeOtherCircleUnread(circleId)
     }
 
     fun setCircleName(name: String?) {
