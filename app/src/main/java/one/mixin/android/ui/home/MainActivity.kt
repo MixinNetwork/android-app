@@ -918,7 +918,7 @@ class MainActivity : BlazeBaseActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        // super.onBackPressed()
+        super.onBackPressed()
         val searchMessageFragment =
             supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG)
         val searchSingleFragment =
@@ -931,8 +931,8 @@ class MainActivity : BlazeBaseActivity() {
             searchMessageFragment != null -> onBackPressedDispatcher.onBackPressed()
             searchSingleFragment != null -> onBackPressedDispatcher.onBackPressed()
             conversationCircleEditFragment != null -> onBackPressedDispatcher.onBackPressed()
-            conversationListFragment.isOpen() -> conversationListFragment.closeSearch()
-            conversationListFragment.containerDisplay() -> {
+            conversationListFragment.isAdded && conversationListFragment.isOpen() -> conversationListFragment.closeSearch()
+            conversationListFragment.isAdded && conversationListFragment.containerDisplay() -> {
                 if (!circlesFragment.onBackPressed()) {
                     conversationListFragment.hideContainer()
                 } else {
