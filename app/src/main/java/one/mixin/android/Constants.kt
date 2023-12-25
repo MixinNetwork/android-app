@@ -103,7 +103,7 @@ object Constants {
         const val HTTPS_ADDRESS = "https://mixin.one/address"
         const val HTTPS_APPS = "https://mixin.one/apps"
         const val HTTPS_PAY = "https://mixin.one/pay"
-        const val HTTPS_MULTISIGS = "https://mixin.one/safe/multisigs"
+        const val HTTPS_MULTISIGS = "https://mixin.one/multisigs"
 
         // deprecated
         const val HTTPS_TRANSFER = "https://mixin.one/transfer"

@@ -265,7 +265,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val uri = Uri.parse(url)
                 val segments = Uri.parse(url).pathSegments
                 if (segments.isEmpty()) return@launch
-                val requestId = segments[2]
+                val requestId = segments[1]
                 if (!requestId.isUUID()) {
                     showError(R.string.Invalid_payment_link)
                 }
