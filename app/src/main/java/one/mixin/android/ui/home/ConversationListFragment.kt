@@ -480,7 +480,7 @@ class ConversationListFragment : LinkFragment() {
     }
 
     fun hideCircles(){
-        if (parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) != null)
+        if (isAdded && parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) != null)
             parentFragmentManager.beginTransaction().remove(circlesFragment).commit()
     }
 
