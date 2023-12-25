@@ -7,6 +7,7 @@ data class PendingDeposit(
     val depositId: String,
     @SerializedName("asset_id")
     val assetId: String,
+    val destination: String,
     @SerializedName("transaction_hash")
     val transactionHash: String,
     val amount: String,

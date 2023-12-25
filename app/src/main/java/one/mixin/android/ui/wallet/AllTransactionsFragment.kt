@@ -74,7 +74,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                         pagedList.filter {
                             !it?.opponentId.isNullOrBlank()
                         }.map {
-                            it.opponentId!!
+                            it.opponentId
                         }
                     walletViewModel.checkAndRefreshUsers(opponentIds)
                 } else {
@@ -155,15 +155,18 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                     if (pendingDeposits.isNullOrEmpty()) {
                         return@handleMixinResponse
                     }
-                    pendingDeposits.chunked(100) { chunk ->
-                        lifecycleScope.launch {
-                            chunk.map { pd ->
-                                pd.toSnapshot()
-                            }.let { list ->
-                                walletViewModel.insertPendingDeposit(list)
+                    val destinations = walletViewModel.findDepositEntryDestinations()
+                    pendingDeposits
+                        .filter { pd -> destinations.contains(pd.destination) }
+                        .chunked(100) { chunk ->
+                            lifecycleScope.launch {
+                                chunk.map { pd ->
+                                    pd.toSnapshot()
+                                }.let { list ->
+                                    walletViewModel.insertPendingDeposit(list)
+                                }
                             }
                         }
-                    }
                 },
             )
         }

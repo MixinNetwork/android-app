@@ -9,6 +9,9 @@ interface DepositDao : BaseDao<DepositEntry> {
     @Query("SELECT * FROM deposit_entries WHERE chain_id = :chainId AND is_primary = 1 ORDER BY rowid DESC LIMIT 1")
     suspend fun findDepositEntry(chainId: String): DepositEntry?
 
+    @Query("SELECT destination FROM deposit_entries")
+    suspend fun findDepositEntryDestinations(): List<String>
+
     @Query("DELETE FROM deposit_entries WHERE chain_id=:chainId")
     fun deleteByChainId(chainId: String)
 }
