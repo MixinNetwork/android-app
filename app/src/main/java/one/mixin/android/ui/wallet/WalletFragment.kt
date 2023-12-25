@@ -270,10 +270,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 sendReceiveView.buy.isEnabled = true
             }.collectLatest { state ->
                 WalletActivity.showBuy(requireActivity(), state)
-//                view?.navigate(
-//                    R.id.action_wallet_to_calculate,
-//                    Bundle().apply { putParcelable(CALCULATE_STATE, state) },
-//                )
                 sendReceiveView.buy.displayedChild = 0
                 sendReceiveView.buy.isEnabled = true
             }
@@ -287,8 +283,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(SyncOutputJob())
         binding.apply {
-            titleView.rightAnimator.setOnClickListener { showBottom() }
-            titleView.leftIb.isVisible = false
+            moreIb.setOnClickListener { showBottom() }
             searchIb.setOnClickListener {
                 WalletActivity.show(requireActivity(), WalletActivity.Destination.Search)
             }

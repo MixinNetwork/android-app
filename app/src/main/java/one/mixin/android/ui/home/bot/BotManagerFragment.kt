@@ -21,14 +21,10 @@ import one.mixin.android.databinding.FragmentBotManagerBinding
 import one.mixin.android.event.BotEvent
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.job.TipCounterSyncedLiveData
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.tip.TipActivity
-import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
@@ -98,8 +94,8 @@ class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
 
     private fun loadData() {
         lifecycleScope.launch {
-            val topApps = mutableListOf<BotInterface>(InternalWallet, InternalCamera, InternalScan, InternalSupport)
-            val topIds = mutableListOf(INTERNAL_WALLET_ID, INTERNAL_CAMERA_ID, INTERNAL_SCAN_ID, INTERNAL_SUPPORT_ID)
+            val topApps = mutableListOf<BotInterface>(InternalCamera, InternalScan, InternalSupport)
+            val topIds = mutableListOf(INTERNAL_CAMERA_ID, INTERNAL_SCAN_ID, INTERNAL_SUPPORT_ID)
 
             binding.botDock.apps = topApps
             val notTopApps = botManagerViewModel.getNotTopApps(topIds)
@@ -132,14 +128,6 @@ class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
             }
         } else if (app is Bot) {
             when (app.id) {
-                INTERNAL_WALLET_ID -> {
-                    if (Session.getAccount()?.hasPin == true) {
-                        WalletActivity.show(requireActivity())
-                    } else {
-                        TipActivity.show(requireActivity(), TipType.Create, false)
-                    }
-                }
-
                 INTERNAL_CAMERA_ID -> {
                     openCamera(false)
                 }

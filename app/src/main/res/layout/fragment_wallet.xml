@@ -7,31 +7,48 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical">
 
-    <FrameLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="?actionBarSize"
+        android:background="?attr/bg_white">
 
-        <one.mixin.android.widget.TitleView
-            android:id="@+id/title_view"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/title_tv"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:rightIcon="@drawable/ic_more"
-            app:leftIcon="@null"
-            app:need_divider="false"
-            app:titleText="@string/Wallet" />
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="12dp"
+            android:text="@string/Wallet"
+            android:textColor="?attr/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:ignore="RelativeOverlap" />
 
         <ImageButton
             android:id="@+id/search_ib"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical|end"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="48dp"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/more_ib"
+            android:layout_marginEnd="4dp"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
             app:srcCompat="@drawable/ic_search_home"
             tools:ignore="ContentDescription" />
-    </FrameLayout>
+
+        <ImageButton
+            android:id="@+id/more_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            app:srcCompat="@drawable/ic_more"
+            tools:ignore="ContentDescription" />
+    </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/coins_rv"
