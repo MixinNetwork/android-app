@@ -67,7 +67,6 @@ import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
 import one.mixin.android.ui.wallet.fiatmoney.getDefaultCurrency
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId

@@ -69,7 +69,6 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.event.SessionEvent
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.areBubblesAllowedCompat
