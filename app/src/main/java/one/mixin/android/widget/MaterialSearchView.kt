@@ -232,6 +232,7 @@ class MaterialSearchView : FrameLayout {
     }
 
     var hideAction: (() -> Unit)? = null
+    var showAction: (() -> Unit)? = null
 
     fun showContainer() {
         containerDisplay = true
@@ -242,6 +243,7 @@ class MaterialSearchView : FrameLayout {
         binding.avatar.fadeOut()
         binding.actionVa.fadeIn()
         binding.containerCircle.isVisible = true
+        showAction?.invoke()
         ValueAnimator.ofFloat(0f, 1f).apply {
             addListener(
                 object : AnimatorListenerAdapter() {

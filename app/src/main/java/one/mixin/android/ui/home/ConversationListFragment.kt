@@ -456,6 +456,7 @@ class ConversationListFragment : LinkFragment() {
             )
             searchBar.hideAction = {
                 (parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) as? CirclesFragment)?.cancelSort()
+                hideCircles()
             }
             searchBar.logo.text = defaultSharedPreferences.getString(CIRCLE_NAME, "Mixin")
             searchBar.desktop.setOnClickListener {
@@ -469,11 +470,18 @@ class ConversationListFragment : LinkFragment() {
                     false
                 }
             }
-            if (parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) == null)
-                parentFragmentManager.beginTransaction().add(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
+            searchBar.showAction = {
+                if (parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) == null)
+                    parentFragmentManager.beginTransaction().replace(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
+            }
             isDesktopLogin = Session.getExtensionSessionId() != null
             binding.searchBar.updateDesktop(isDesktopLogin)
         }
+    }
+
+    fun hideCircles(){
+        if (parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) != null)
+            parentFragmentManager.beginTransaction().remove(circlesFragment).commit()
     }
 
     private fun addCircle(context: Context) {

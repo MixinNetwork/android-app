@@ -852,15 +852,18 @@ class MainActivity : BlazeBaseActivity() {
 
                     R.id.nav_wallet -> {
                         openWallet()
+                        conversationListFragment.hideCircles()
                         true
                     }
 
                     R.id.nav_app -> {
                         navigationController.navigateToBotManager(botManagerFragment)
+                        conversationListFragment.hideCircles()
                         true
                     }
 
                     else -> {
+                        conversationListFragment.hideCircles()
                         false
                     }
                 }
