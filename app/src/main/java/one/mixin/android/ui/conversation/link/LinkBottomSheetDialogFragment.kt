@@ -269,8 +269,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 if (!requestId.isUUID()) {
                     showError(R.string.Invalid_payment_link)
                 }
-                val action = uri.getQueryParameter("action")
-                if (action == null || !(action.equals("sign", true) || action.equals("unlock", true))) {
+                val action = uri.getQueryParameter("action") ?: "sign"
+                if (!(action.equals("sign", true) || action.equals("unlock", true))) {
                     showError()
                     return@launch
                 }
