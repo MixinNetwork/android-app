@@ -156,6 +156,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -904,22 +905,25 @@ class MainActivity : BlazeBaseActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        super.onBackPressed()
         val searchMessageFragment =
             supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG)
         val searchSingleFragment =
             supportFragmentManager.findFragmentByTag(SearchSingleFragment.TAG)
         val circlesFragment =
-            supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as BaseFragment
+            supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as BaseFragment?
         val conversationCircleEditFragment =
             supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG)
         when {
             searchMessageFragment != null -> onBackPressedDispatcher.onBackPressed()
             searchSingleFragment != null -> onBackPressedDispatcher.onBackPressed()
             conversationCircleEditFragment != null -> onBackPressedDispatcher.onBackPressed()
-            conversationListFragment.isAdded && conversationListFragment.isOpen() -> conversationListFragment.closeSearch()
+            conversationListFragment.isAdded && conversationListFragment.isOpen() -> {
+                conversationListFragment.closeSearch()
+            }
             conversationListFragment.isAdded && conversationListFragment.containerDisplay() -> {
-                if (!circlesFragment.onBackPressed()) {
+                if (circlesFragment == null) {
+                    super.onBackPressed()
+                } else if (!circlesFragment.onBackPressed()) {
                     conversationListFragment.hideContainer()
                 } else {
                     conversationListFragment.showPrevious()
@@ -930,7 +934,7 @@ class MainActivity : BlazeBaseActivity() {
                 if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q && isTaskRoot) {
                     finishAfterTransition()
                 } else {
-                    onBackPressedDispatcher.onBackPressed()
+                    super.onBackPressed()
                 }
             }
         }
