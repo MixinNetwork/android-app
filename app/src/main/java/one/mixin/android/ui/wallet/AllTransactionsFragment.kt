@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.viewDestroyed
@@ -28,6 +29,7 @@ import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.SafeSnapshotType
+import one.mixin.android.vo.safe.toSnapshot
 
 @AndroidEntryPoint
 class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
@@ -72,7 +74,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                         pagedList.filter {
                             !it?.opponentId.isNullOrBlank()
                         }.map {
-                            it.opponentId!!
+                            it.opponentId
                         }
                     walletViewModel.checkAndRefreshUsers(opponentIds)
                 } else {
@@ -86,6 +88,8 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 }
             }
         bindLiveData()
+
+        refreshAllPendingDeposit()
     }
 
     override fun onDestroyView() {
@@ -139,6 +143,37 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         bindLiveData()
         filtersSheet.dismiss()
     }
+
+    private fun refreshAllPendingDeposit() =
+        lifecycleScope.launch {
+            handleMixinResponse(
+                invokeNetwork = { walletViewModel.allPendingDeposit() },
+                successBlock = {
+                    walletViewModel.clearAllPendingDeposits()
+
+                    val pendingDeposits = it.data
+                    if (pendingDeposits.isNullOrEmpty()) {
+                        return@handleMixinResponse
+                    }
+                    val destinationTags = walletViewModel.findDepositEntryDestinations()
+                    pendingDeposits
+                        .filter { pd ->
+                            destinationTags.any { dt ->
+                                dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
+                            }
+                        }
+                        .chunked(100) { chunk ->
+                            lifecycleScope.launch {
+                                chunk.map { pd ->
+                                    pd.toSnapshot()
+                                }.let { list ->
+                                    walletViewModel.insertPendingDeposit(list)
+                                }
+                            }
+                        }
+                },
+            )
+        }
 
     private fun bindLiveData() {
         val orderByAmount = currentOrder == R.id.sort_amount
