@@ -190,6 +190,8 @@ class TokenRepository
 
         suspend fun findDepositEntry(chainId: String) = depositDao.findDepositEntry(chainId)
 
+        suspend fun findDepositEntryDestinations() = depositDao.findDepositEntryDestinations()
+
         suspend fun findAndSyncDepositEntry(chainId: String): Pair<DepositEntry?, Boolean> {
             val oldDeposit = depositDao.findDepositEntry(chainId)
             val (newDeposit, code) = syncDepositEntry(chainId)
@@ -384,12 +386,16 @@ class TokenRepository
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
 
+        suspend fun allPendingDeposit() = tokenService.allPendingDeposits()
+
         suspend fun pendingDeposits(
             asset: String,
             destination: String,
             tag: String? = null,
         ) =
             tokenService.pendingDeposits(asset, destination, tag)
+
+        suspend fun clearAllPendingDeposits() = safeSnapshotDao.clearAllPendingDeposits()
 
         suspend fun clearPendingDepositsByAssetId(assetId: String) =
             safeSnapshotDao.clearPendingDepositsByAssetId(assetId)
@@ -726,12 +732,11 @@ class TokenRepository
             data: TransactionResponse,
             assetId: String,
             amount: String,
-            opponentId: String,
             memo: String?,
             type: String = SnapshotType.withdrawal.name,
         ) {
             val snapshotId = data.getSnapshotId
-            val snapshot = SafeSnapshot(snapshotId, type, assetId, "-$amount", data.userId, opponentId, memo?.toHex() ?: "", data.transactionHash, data.createdAt, data.requestId, null, null, null, null, null)
+            val snapshot = SafeSnapshot(snapshotId, type, assetId, "-$amount", data.userId, "", memo?.toHex() ?: "", data.transactionHash, data.createdAt, data.requestId, null, null, null, null, null)
             safeSnapshotDao.insert(snapshot)
         }
 
