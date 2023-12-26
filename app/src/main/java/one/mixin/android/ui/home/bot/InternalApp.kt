@@ -3,6 +3,7 @@ package one.mixin.android.ui.home.bot
 import androidx.annotation.DrawableRes
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.getLocalString
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
@@ -22,6 +23,9 @@ const val INTERNAL_SUPPORT_ID = "77443b1f-bbr4-4aad-8b6b-b8f58761e2e9"
 val InternalCamera = Bot(INTERNAL_CAMERA_ID, getLocalString(MixinApplication.appContext, R.string.Camera), R.drawable.ic_bot_camera)
 val InternalScan = Bot(INTERNAL_SCAN_ID, getLocalString(MixinApplication.appContext, R.string.Scan_QR), R.drawable.ic_bot_scan)
 val InternalSupport = Bot(INTERNAL_SUPPORT_ID, getLocalString(MixinApplication.appContext, R.string.Scan_QR), R.drawable.ic_bot_support)
+
+const val TOP_BOT = "top_bot"
+val DefaultTopBots: String = GsonHelper.customGson.toJson(arrayOf(INTERNAL_SCAN_ID, INTERNAL_CAMERA_ID, INTERNAL_SUPPORT_ID))
 
 enum class BotCategory(
     @DrawableRes val icon: Int,

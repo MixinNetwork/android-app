@@ -21,14 +21,21 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentBotManagerBinding
 import one.mixin.android.event.BotEvent
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
@@ -37,6 +44,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
+
     companion object {
         const val TAG = "BorManagerBottomSheetDialogFragment"
 
@@ -60,11 +68,9 @@ class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
         return binding.root
     }
 
+
     @SuppressLint("RestrictedApi")
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initView()
         loadData()
@@ -92,16 +98,45 @@ class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
         }
     }
 
+
     private fun initView() {
+        binding.botDock.setOnDragListener(bottomListAdapter.dragInstance)
         binding.botRv.layoutManager = GridLayoutManager(requireContext(), 4)
         binding.botRv.adapter = bottomListAdapter
+        binding.botRv.setOnDragListener(bottomListAdapter.dragInstance)
         binding.botDock.setOnDockListener(this)
     }
 
     private fun loadData() {
         lifecycleScope.launch {
-            val topApps = mutableListOf<BotInterface>(InternalCamera, InternalScan, InternalSupport)
-            val topIds = mutableListOf(INTERNAL_CAMERA_ID, INTERNAL_SCAN_ID, INTERNAL_SUPPORT_ID)
+            val defaultApps = mutableListOf<BotInterface>(InternalScan, InternalCamera, InternalSupport)
+            val topApps = mutableListOf<BotInterface>()
+            val topIds = mutableListOf<String>()
+            defaultSharedPreferences.getString(TOP_BOT, DefaultTopBots)?.let {
+                val ids = GsonHelper.customGson.fromJson(it, Array<String>::class.java)
+                ids.forEach { id ->
+                    topIds.add(id)
+                    when (id) {
+                        INTERNAL_SCAN_ID -> {
+                            topApps.add(InternalScan)
+                            defaultApps.remove(InternalScan)
+                        }
+                        INTERNAL_CAMERA_ID -> {
+                            topApps.add(InternalCamera)
+                            defaultApps.remove(InternalCamera)
+                        }
+                        INTERNAL_SUPPORT_ID -> {
+                            topApps.add(InternalSupport)
+                            defaultApps.remove(InternalSupport)
+                        }
+                        else -> {
+                            botManagerViewModel.findAppById(id)?.let { app ->
+                                topApps.add(app)
+                            }
+                        }
+                    }
+                }
+            }
 
             binding.botDock.apps = topApps
             val notTopApps = botManagerViewModel.getNotTopApps(topIds)
@@ -112,13 +147,19 @@ class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
                 }
             } else {
                 binding.emptyFl.isVisible = false
+                defaultApps.addAll(notTopApps)
             }
-            bottomListAdapter.list = notTopApps
+            bottomListAdapter.list = defaultApps
         }
     }
 
     private val bottomListAdapter by lazy {
         BotManagerAdapter(clickAction)
+    }
+
+    override fun onDockChange(apps: List<BotInterface>) {
+        saveTopApps(apps)
+        RxBus.publish(BotEvent())
     }
 
     override fun onDockClick(app: BotInterface) {
@@ -137,7 +178,6 @@ class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
                 INTERNAL_CAMERA_ID -> {
                     openCamera(false)
                 }
-
                 INTERNAL_SCAN_ID -> {
                     openCamera(true)
                 }
@@ -167,5 +207,11 @@ class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
                     context?.openPermissionSetting()
                 }
             }
+    }
+
+    private fun saveTopApps(apps: List<BotInterface>) {
+        apps.map { it.getBotId() }.apply {
+            defaultSharedPreferences.putString(TOP_BOT, GsonHelper.customGson.toJson(this))
+        }
     }
 }
