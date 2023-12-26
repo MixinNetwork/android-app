@@ -16,13 +16,17 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
+import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentBotManagerBinding
 import one.mixin.android.event.BotEvent
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.showUserBottom
+import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -139,7 +143,14 @@ class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
                 }
 
                 INTERNAL_SUPPORT_ID -> {
-                    // Todo
+                    lifecycleScope.launch {
+                        val userTeamMixin = botManagerViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
+                        if (userTeamMixin == null) {
+                            toast(R.string.Data_error)
+                        } else {
+                            ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
+                        }
+                    }
                 }
             }
         }
