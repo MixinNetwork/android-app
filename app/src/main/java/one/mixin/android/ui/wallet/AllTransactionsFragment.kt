@@ -155,9 +155,13 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                     if (pendingDeposits.isNullOrEmpty()) {
                         return@handleMixinResponse
                     }
-                    val destinations = walletViewModel.findDepositEntryDestinations()
+                    val destinationTags = walletViewModel.findDepositEntryDestinations()
                     pendingDeposits
-                        .filter { pd -> destinations.contains(pd.destination) }
+                        .filter { pd ->
+                            destinationTags.any { dt ->
+                                dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
+                            }
+                        }
                         .chunked(100) { chunk ->
                             lifecycleScope.launch {
                                 chunk.map { pd ->

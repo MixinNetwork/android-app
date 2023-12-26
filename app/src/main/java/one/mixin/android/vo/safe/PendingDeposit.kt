@@ -8,6 +8,7 @@ data class PendingDeposit(
     @SerializedName("asset_id")
     val assetId: String,
     val destination: String,
+    val tag: String?,
     @SerializedName("transaction_hash")
     val transactionHash: String,
     val amount: String,
@@ -21,3 +22,8 @@ fun PendingDeposit.toSnapshot(): SafeSnapshot =
         this.depositId, SafeSnapshotType.pending.name, this.assetId, this.amount, "",
         "", "", "", this.createdAt, "", this.confirmations, "", "", SafeDeposit(this.transactionHash), null,
     )
+
+data class DestinationTag(
+    val destination: String,
+    val tag: String?,
+)
