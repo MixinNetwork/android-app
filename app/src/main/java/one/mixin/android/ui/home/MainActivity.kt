@@ -667,7 +667,7 @@ class MainActivity : BlazeBaseActivity() {
             bottomSheet?.dismiss()
             showScanBottom(scan)
             clearCodeAfterConsume(intent, SCAN)
-        } else if (intent.hasExtra(URL) || (intent.action == Intent.ACTION_VIEW && intent.categories.contains(Intent.CATEGORY_BROWSABLE))) {
+        } else if (intent.hasExtra(URL) || (intent.action == Intent.ACTION_VIEW && intent.categories?.contains(Intent.CATEGORY_BROWSABLE) == true)) {
             val url = intent.getStringExtra(URL) ?: intent.data?.toString() ?: return
             bottomSheet?.dismiss()
             bottomSheet = LinkBottomSheetDialogFragment.newInstance(url, LinkBottomSheetDialogFragment.FROM_SCAN)
