@@ -31,7 +31,6 @@ import one.mixin.android.ui.landing.VerificationFragment
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
-import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CaptchaView

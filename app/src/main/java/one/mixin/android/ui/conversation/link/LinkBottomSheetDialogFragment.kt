@@ -85,7 +85,6 @@ import one.mixin.android.ui.oldwallet.biometric.TransferBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.SafeMultisigsBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager

@@ -409,7 +409,7 @@ class ConversationListFragment : LinkFragment() {
         binding.searchBar.hideContainer()
     }
 
-    fun showPrevious(){
+    fun showPrevious() {
         binding.searchBar.actionVa.showPrevious()
     }
 
@@ -471,17 +471,19 @@ class ConversationListFragment : LinkFragment() {
                 }
             }
             searchBar.showAction = {
-                if (parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) == null)
+                if (parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) == null) {
                     parentFragmentManager.beginTransaction().replace(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
+                }
             }
             isDesktopLogin = Session.getExtensionSessionId() != null
             binding.searchBar.updateDesktop(isDesktopLogin)
         }
     }
 
-    fun hideCircles(){
-        if (isAdded && parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) != null)
+    fun hideCircles() {
+        if (isAdded && parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) != null) {
             parentFragmentManager.beginTransaction().remove(circlesFragment).commit()
+        }
     }
 
     private fun addCircle(context: Context) {

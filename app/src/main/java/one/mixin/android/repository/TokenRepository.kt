@@ -728,7 +728,7 @@ class TokenRepository
             amount: String,
             opponentId: String,
             memo: String?,
-            type: String = SnapshotType.withdrawal.name
+            type: String = SnapshotType.withdrawal.name,
         ) {
             val snapshotId = data.getSnapshotId
             val snapshot = SafeSnapshot(snapshotId, type, assetId, "-$amount", data.userId, opponentId, memo?.toHex() ?: "", data.transactionHash, data.createdAt, data.requestId, null, null, null, null, null)
@@ -764,5 +764,5 @@ class TokenRepository
             ).liveData
         }
 
-    fun firstUnspentTransaction() = rawTransactionDao.findUnspentTransaction()
-}
+        fun firstUnspentTransaction() = rawTransactionDao.findUnspentTransaction()
+    }

@@ -211,7 +211,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             operateKeyboard(false)
             lifecycleScope.launch {
                 val rawTransaction = bottomViewModel.firstUnspentTransaction()
-                if (rawTransaction!=null) {
+                if (rawTransaction != null) {
                     WaitingBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
                 } else {
                     checkUtxo {

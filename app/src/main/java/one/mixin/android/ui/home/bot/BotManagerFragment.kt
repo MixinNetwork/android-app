@@ -33,7 +33,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
-
     companion object {
         const val TAG = "BorManagerBottomSheetDialogFragment"
 
@@ -58,7 +57,10 @@ class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
     }
 
     @SuppressLint("RestrictedApi")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         initView()
         loadData()

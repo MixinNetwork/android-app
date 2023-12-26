@@ -62,5 +62,4 @@ class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : Recyc
     }
 
     class ListViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView!!)
-
 }

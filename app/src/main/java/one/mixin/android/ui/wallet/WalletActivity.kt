@@ -87,13 +87,21 @@ class WalletActivity : BlazeBaseActivity() {
             Destination.Buy -> {
                 navGraph.setStartDestination(R.id.wallet_calculate)
                 val state = intent.getParcelableExtraCompat(CalculateFragment.CALCULATE_STATE, FiatMoneyViewModel.CalculateState::class.java)
-                navController.setGraph(navGraph, Bundle().apply { state?.let { s -> putParcelable(CalculateFragment.CALCULATE_STATE, s) }})
+                navController.setGraph(navGraph, Bundle().apply { state?.let { s -> putParcelable(CalculateFragment.CALCULATE_STATE, s) } })
             }
         }
     }
 
     enum class Destination {
-        Transactions, Search, AllTransactions, Hidden, Deposit, Address, Contact, WalletConnect, Buy
+        Transactions,
+        Search,
+        AllTransactions,
+        Hidden,
+        Deposit,
+        Address,
+        Contact,
+        WalletConnect,
+        Buy,
     }
 
     companion object {
@@ -101,24 +109,40 @@ class WalletActivity : BlazeBaseActivity() {
         const val ASSET = "ASSET"
         const val BUY = "buy"
 
-        fun showWithToken(activity: Activity, tokenItem: TokenItem, destination: Destination) {
-            activity.startActivity(Intent(activity, WalletActivity::class.java).apply {
-                putExtra(DESTINATION, destination)
-                putExtra(ASSET, tokenItem)
-            })
+        fun showWithToken(
+            activity: Activity,
+            tokenItem: TokenItem,
+            destination: Destination,
+        ) {
+            activity.startActivity(
+                Intent(activity, WalletActivity::class.java).apply {
+                    putExtra(DESTINATION, destination)
+                    putExtra(ASSET, tokenItem)
+                },
+            )
         }
 
-        fun showBuy(activity: Activity, state: FiatMoneyViewModel.CalculateState?) {
-            activity.startActivity(Intent(activity, WalletActivity::class.java).apply {
-                putExtra(DESTINATION, Destination.Buy)
-                state?.let { putExtra(CalculateFragment.CALCULATE_STATE, it) }
-            })
+        fun showBuy(
+            activity: Activity,
+            state: FiatMoneyViewModel.CalculateState?,
+        ) {
+            activity.startActivity(
+                Intent(activity, WalletActivity::class.java).apply {
+                    putExtra(DESTINATION, Destination.Buy)
+                    state?.let { putExtra(CalculateFragment.CALCULATE_STATE, it) }
+                },
+            )
         }
 
-        fun show(activity: Activity, destination: Destination) {
-            activity.startActivity(Intent(activity, WalletActivity::class.java).apply {
-                putExtra(DESTINATION, destination)
-            })
+        fun show(
+            activity: Activity,
+            destination: Destination,
+        ) {
+            activity.startActivity(
+                Intent(activity, WalletActivity::class.java).apply {
+                    putExtra(DESTINATION, destination)
+                },
+            )
         }
     }
 }

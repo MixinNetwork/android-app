@@ -76,7 +76,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import one.mixin.android.widget.calcPercent
-import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
@@ -119,7 +118,11 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         jobManager.addJobInBackground(RefreshTokensJob())
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
         _binding = FragmentWalletBinding.inflate(inflater, container, false)
         return binding.root
     }

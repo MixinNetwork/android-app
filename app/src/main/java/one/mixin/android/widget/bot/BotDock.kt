@@ -86,7 +86,6 @@ class BotDock : ViewGroup {
         }
     }
 
-
     override fun generateDefaultLayoutParams(): MarginLayoutParams {
         return MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
     }
@@ -133,9 +132,7 @@ class BotDock : ViewGroup {
         requestLayout()
     }
 
-
     private var currentShoveIndex = -1
-
 
     private var onDockListener: OnDockListener? = null
 

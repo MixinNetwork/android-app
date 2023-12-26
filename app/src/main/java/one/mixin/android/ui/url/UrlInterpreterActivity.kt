@@ -19,7 +19,6 @@ import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.oldwallet.OldTransferFragment
 import one.mixin.android.ui.transfer.TransferActivity
-import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import timber.log.Timber
 

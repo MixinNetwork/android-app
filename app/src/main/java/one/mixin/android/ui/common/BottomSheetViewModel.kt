@@ -1116,8 +1116,8 @@ class BottomSheetViewModel
             }
         }
 
-        suspend fun firstUnspentTransaction() = withContext(Dispatchers.IO) {
-            tokenRepository.firstUnspentTransaction()
-        }
-
+        suspend fun firstUnspentTransaction() =
+            withContext(Dispatchers.IO) {
+                tokenRepository.firstUnspentTransaction()
+            }
     }

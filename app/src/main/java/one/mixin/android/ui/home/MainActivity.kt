@@ -158,7 +158,6 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -308,7 +307,6 @@ class MainActivity : BlazeBaseActivity() {
                     WalletConnectActivity.show(this, it.error)
                 }
             }
-
 
         if (Session.getAccount()?.hasPin != true) {
             TipActivity.show(this, TipType.Create, shouldWatch = true)
@@ -955,14 +953,16 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
-    private fun mixColor(color1: Int, color2: Int): Int {
+    private fun mixColor(
+        color1: Int,
+        color2: Int,
+    ): Int {
         val a = (color1 ushr 24) * 0.5f + (color2 ushr 24) * 0.5f
         val r = ((color1 shr 16) and 0xFF) * 0.5f + ((color2 shr 16) and 0xFF) * 0.5f
         val g = ((color1 shr 8) and 0xFF) * 0.5f + ((color2 shr 8) and 0xFF) * 0.5f
         val b = (color1 and 0xFF) * 0.5f + (color2 and 0xFF) * 0.5f
         return ((a.toInt() shl 24) or (r.toInt() shl 16) or (g.toInt() shl 8) or b.toInt())
     }
-
 
     companion object {
         const val URL = "url"
@@ -971,7 +971,10 @@ class MainActivity : BlazeBaseActivity() {
         private const val WALLET = "wallet"
         const val WALLET_CONNECT = "wallet_connect"
 
-        fun showWallet(context: Context, buy: Boolean = false) {
+        fun showWallet(
+            context: Context,
+            buy: Boolean = false,
+        ) {
             Intent(context, MainActivity::class.java).apply {
                 putExtra(WALLET, true)
                 putExtra(BUY, buy)

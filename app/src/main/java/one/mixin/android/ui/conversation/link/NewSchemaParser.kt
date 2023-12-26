@@ -70,7 +70,7 @@ class NewSchemaParser(
         }
         val returnTo =
             uri.getQueryParameter("return_to")?.run {
-                if (from == LinkBottomSheetDialogFragment.FROM_EXTERNAL) { 
+                if (from == LinkBottomSheetDialogFragment.FROM_EXTERNAL) {
                     try {
                         URLDecoder.decode(this, StandardCharsets.UTF_8.name())
                     } catch (e: UnsupportedEncodingException) {

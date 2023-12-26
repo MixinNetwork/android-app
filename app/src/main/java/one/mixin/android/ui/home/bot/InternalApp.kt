@@ -3,7 +3,6 @@ package one.mixin.android.ui.home.bot
 import androidx.annotation.DrawableRes
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.getLocalString
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
