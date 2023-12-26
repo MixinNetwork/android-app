@@ -732,12 +732,11 @@ class TokenRepository
             data: TransactionResponse,
             assetId: String,
             amount: String,
-            opponentId: String,
             memo: String?,
             type: String = SnapshotType.withdrawal.name
         ) {
             val snapshotId = data.getSnapshotId
-            val snapshot = SafeSnapshot(snapshotId, type, assetId, "-$amount", data.userId, opponentId, memo?.toHex() ?: "", data.transactionHash, data.createdAt, data.requestId, null, null, null, null, null)
+            val snapshot = SafeSnapshot(snapshotId, type, assetId, "-$amount", data.userId, "", memo?.toHex() ?: "", data.transactionHash, data.createdAt, data.requestId, null, null, null, null, null)
             safeSnapshotDao.insert(snapshot)
         }
 

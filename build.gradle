@@ -97,7 +97,7 @@ buildscript {
         ext.appCenterSdkVersion = '4.3.1'
         ext.audioSwitchVersion = '1.1.8'
         ext.balloonVersion = '1.6.3'
-        ext.markdownVersion = '0.6.0'
+        ext.markdownVersion = '0.6.1'
 
         ext.bcVersion = '1.70'
         ext.jsonVersion = '20230618'
@@ -105,7 +105,7 @@ buildscript {
         ext.accompanistVersion = '0.32.0'
         ext.web3jVersion = '4.8.7-android'
 
-        ext.sumsubVersion = '1.28.0'
+        ext.sumsubVersion = '1.29.0'
         ext.checkoutFramesVersion = '4.2.0'
         
         ext.checkoutSecureVersion = '3.2.0'

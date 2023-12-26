@@ -265,12 +265,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val uri = Uri.parse(url)
                 val segments = Uri.parse(url).pathSegments
                 if (segments.isEmpty()) return@launch
-                val requestId = segments[2]
+                val requestId = segments[1]
                 if (!requestId.isUUID()) {
                     showError(R.string.Invalid_payment_link)
                 }
-                val action = uri.getQueryParameter("action")
-                if (action == null || !(action.equals("sign", true) || action.equals("unlock", true))) {
+                val action = uri.getQueryParameter("action") ?: "sign"
+                if (!action.equals("sign", true) && !action.equals("unlock", true)) {
                     showError()
                     return@launch
                 }

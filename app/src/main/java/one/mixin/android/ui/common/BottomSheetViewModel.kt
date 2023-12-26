@@ -268,7 +268,7 @@ class BottomSheetViewModel
             } else {
                 tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
                 tokenRepository.updateRawTransaction(feeTraceId, OutputState.signed.name)
-                tokenRepository.insertSafeSnapshot(transactionRsp.data!!.first(), assetId, amount, receiverId, memo)
+                tokenRepository.insertSafeSnapshot(transactionRsp.data!!.first(), assetId, amount, memo)
             }
             jobManager.addJobInBackground(SyncOutputJob())
             return withdrawalRequestResponse
