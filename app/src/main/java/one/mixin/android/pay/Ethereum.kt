@@ -89,13 +89,13 @@ internal suspend fun parseEthereum(
     }
 
     val am = amount?.toPlainString()?.stripAmountZero() ?: return null
-    val addressFeeResponse = validateAddress(assetId, destination) ?: return null
-    if (!addressFeeResponse.destination.equals(destination, true)) {
+    val addressResponse = validateAddress(assetId, destination) ?: return null
+    if (!addressResponse.destination.equals(destination, true)) {
         return null
     }
     val feeResponse = getFee(assetId, destination) ?: return null
     val fee = feeResponse.find { it.assetId == assetId } ?: return null
-    return ExternalTransfer(addressFeeResponse.destination, am, assetId, fee.amount?.toBigDecimalOrNull())
+    return ExternalTransfer(addressResponse.destination, am, assetId, fee.amount?.toBigDecimalOrNull())
 }
 
 fun String?.uint256ToBigDecimal(): BigDecimal? {
