@@ -167,7 +167,16 @@ class NewSchemaParser(
             parseExternalTransferUri(url, { assetId, destination ->
                 handleMixinResponse(
                     invokeNetwork = {
-                        linkViewModel.getExternalAddressFee(assetId, destination, null)
+                        linkViewModel.validateExternalAddress(assetId, destination, null)
+                    },
+                    successBlock = {
+                        return@handleMixinResponse it.data
+                    },
+                )
+            }, { assetId, destination ->
+                handleMixinResponse(
+                    invokeNetwork = {
+                        linkViewModel.getFees(assetId, destination)
                     },
                     successBlock = {
                         return@handleMixinResponse it.data

@@ -315,14 +315,15 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                 val addressFeeResponse =
                     handleMixinResponse(
                         invokeNetwork = {
-                            walletViewModel.getExternalAddressFee(asset.assetId, destination, null)
+                            walletViewModel.getFees(asset.assetId, destination)
                         },
                         successBlock = {
                             it.data
                         },
                     ) ?: return@launch
+                val fee = addressFeeResponse.find { it.assetId == Constants.ChainId.ETHEREUM_CHAIN_ID }
 
-                val mockAddress = Address("", "address", asset.assetId, addressFeeResponse.destination, "TIP Wallet", nowInUtc(), "0", addressFeeResponse.fee, null, null, asset.chainId)
+                val mockAddress = Address("", "address", asset.assetId, destination, "TIP Wallet", nowInUtc(), "0", fee?.amount ?: "0", null, null, asset.chainId)
                 val withdrawalBiometricItem = buildWithdrawalBiometricItem(mockAddress, asset)
                 val transferFragment = TransferFragment.newInstance(withdrawalBiometricItem)
                 transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)

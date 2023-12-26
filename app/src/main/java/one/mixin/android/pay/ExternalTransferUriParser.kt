@@ -2,7 +2,8 @@ package one.mixin.android.pay
 
 import android.net.Uri
 import one.mixin.android.Constants
-import one.mixin.android.api.response.AddressFeeResponse
+import one.mixin.android.api.response.AddressResponse
+import one.mixin.android.api.response.WithdrawalResponse
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toUri
 import one.mixin.android.pay.erc831.isEthereumURLString
@@ -10,12 +11,13 @@ import one.mixin.android.vo.AssetPrecision
 
 suspend fun parseExternalTransferUri(
     url: String,
-    getAddressFee: suspend (String, String) -> AddressFeeResponse?,
+    validateAddress: suspend (String, String) -> AddressResponse?,
+    getFee: suspend (String, String) -> List<WithdrawalResponse>?,
     findAssetIdByAssetKey: suspend (String) -> String?,
     getAssetPrecisionById: suspend (String) -> AssetPrecision?,
 ): ExternalTransfer? {
     if (url.isEthereumURLString()) {
-        return parseEthereum(url, getAddressFee, findAssetIdByAssetKey, getAssetPrecisionById)
+        return parseEthereum(url, validateAddress, getFee, findAssetIdByAssetKey, getAssetPrecisionById)
     }
 
     val uri = url.addSlashesIfNeeded().toUri()
@@ -30,10 +32,12 @@ suspend fun parseExternalTransferUri(
     }
 
     val destination = uri.host ?: return null
-    val addressFeeResponse = getAddressFee(assetId, destination) ?: return null
+    val addressFeeResponse = validateAddress(assetId, destination) ?: return null
     if (!addressFeeResponse.destination.equals(destination, true)) {
         return null
     }
+    val feeResponse = getFee(assetId, destination) ?: return null
+    val fee = feeResponse.find { it.assetId == assetId } ?: return null
 
     var amount = uri.getQueryParameter("amount")
     if (amount == null) {
@@ -51,7 +55,7 @@ suspend fun parseExternalTransferUri(
         uri.getQueryParameter("memo")?.run {
             Uri.decode(this)
         }
-    return ExternalTransfer(addressFeeResponse.destination, amount, assetId, addressFeeResponse.fee.toBigDecimalOrNull(), memo)
+    return ExternalTransfer(addressFeeResponse.destination, amount, assetId, fee.amount?.toBigDecimalOrNull(), memo)
 }
 
 // check amount has scientific E
