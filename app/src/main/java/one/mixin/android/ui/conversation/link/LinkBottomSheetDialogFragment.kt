@@ -724,7 +724,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 dismiss()
             }
         } else if (url.startsWith(Scheme.BUY, true)) {
-            WalletActivity.show(requireActivity(), buy = true)
+            MainActivity.showWallet(requireContext(), buy = true)
             dismiss()
         } else if (url.startsWith(Scheme.TIP, true)) {
             val uri = Uri.parse(url)

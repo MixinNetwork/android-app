@@ -142,6 +142,8 @@ import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
+import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -674,7 +676,11 @@ class MainActivity : BlazeBaseActivity() {
             bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             clearCodeAfterConsume(intent, URL)
         } else if (intent.hasExtra(WALLET)) {
-            navigationController.pushWallet(walletFragment)
+            binding.bottomNav.selectedItemId = R.id.nav_wallet
+            if (intent.getBooleanExtra(BUY, false)) {
+                WalletActivity.showBuy(this, null)
+                clearCodeAfterConsume(intent, BUY)
+            }
             clearCodeAfterConsume(intent, WALLET)
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER) ?: return
@@ -965,10 +971,12 @@ class MainActivity : BlazeBaseActivity() {
         private const val WALLET = "wallet"
         const val WALLET_CONNECT = "wallet_connect"
 
-        fun showWallet(context: Context) {
+        fun showWallet(context: Context, buy: Boolean = false) {
             Intent(context, MainActivity::class.java).apply {
                 putExtra(WALLET, true)
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                putExtra(BUY, buy)
+                addCategory(Intent.CATEGORY_LAUNCHER)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             }.run {
                 context.startActivity(this)
             }

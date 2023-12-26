@@ -86,20 +86,9 @@ class WalletActivity : BlazeBaseActivity() {
             }
             Destination.Buy -> {
                 navGraph.setStartDestination(R.id.wallet_calculate)
-                val state = requireNotNull(intent.getParcelableExtraCompat(CalculateFragment.CALCULATE_STATE, FiatMoneyViewModel.CalculateState::class.java)) { "required state can not be null" }
-                navController.setGraph(navGraph, Bundle().apply { putParcelable(CalculateFragment.CALCULATE_STATE, state) })
+                val state = intent.getParcelableExtraCompat(CalculateFragment.CALCULATE_STATE, FiatMoneyViewModel.CalculateState::class.java)
+                navController.setGraph(navGraph, Bundle().apply { state?.let { s -> putParcelable(CalculateFragment.CALCULATE_STATE, s) }})
             }
-        }
-    }
-
-    private val bottomAnim: Boolean by lazy {
-        intent.extras?.getBoolean(BOTTOM_ANIM) ?: true
-    }
-
-    override fun finish() {
-        super.finish()
-        if (bottomAnim) {
-            overridePendingTransition(R.anim.stay, R.anim.slide_out_bottom)
         }
     }
 
@@ -110,28 +99,7 @@ class WalletActivity : BlazeBaseActivity() {
     companion object {
         const val DESTINATION = "destination"
         const val ASSET = "ASSET"
-        const val BOTTOM_ANIM = "bottom_anim"
         const val BUY = "buy"
-
-        fun show(
-            activity: Activity,
-            tokenItem: TokenItem? = null,
-            bottomAnim: Boolean = true,
-            buy: Boolean = false,
-        ) {
-            val myIntent = Intent(activity, WalletActivity::class.java)
-            val bundle = Bundle()
-            tokenItem?.let {
-                bundle.putParcelable(ASSET, tokenItem)
-            }
-            bundle.putBoolean(BOTTOM_ANIM, bottomAnim)
-            bundle.putBoolean(BUY, buy)
-            myIntent.putExtras(bundle)
-            activity.startActivity(myIntent)
-            if (bottomAnim) {
-                activity.overridePendingTransition(R.anim.slide_in_bottom, R.anim.stay)
-            }
-        }
 
         fun showWithToken(activity: Activity, tokenItem: TokenItem, destination: Destination) {
             activity.startActivity(Intent(activity, WalletActivity::class.java).apply {
@@ -140,10 +108,10 @@ class WalletActivity : BlazeBaseActivity() {
             })
         }
 
-        fun showBuy(activity: Activity, state: FiatMoneyViewModel.CalculateState) {
+        fun showBuy(activity: Activity, state: FiatMoneyViewModel.CalculateState?) {
             activity.startActivity(Intent(activity, WalletActivity::class.java).apply {
                 putExtra(DESTINATION, Destination.Buy)
-                putExtra(CalculateFragment.CALCULATE_STATE, state)
+                state?.let { putExtra(CalculateFragment.CALCULATE_STATE, it) }
             })
         }
 

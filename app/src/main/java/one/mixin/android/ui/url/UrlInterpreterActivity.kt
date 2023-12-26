@@ -139,7 +139,7 @@ class UrlInterpreterActivity : BaseActivity() {
                 TransferActivity.parseUri(this, uri, { finish() }) { finish() }
             }
             BUY -> {
-                WalletActivity.show(this, buy = true)
+                MainActivity.showWallet(this, buy = true)
                 finish()
             }
             MIXIN -> {

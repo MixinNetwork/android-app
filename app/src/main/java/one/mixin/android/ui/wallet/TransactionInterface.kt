@@ -120,7 +120,7 @@ interface TransactionInterface {
                 fragment.view?.navigateUp()
             }
         } else {
-            WalletActivity.show(curActivity, asset, false)
+            WalletActivity.showWithToken(curActivity, asset, WalletActivity.Destination.Transactions)
         }
     }
 

@@ -25,6 +25,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_DELETE_ACCOUNT
 import one.mixin.android.ui.landing.VerificationFragment
 import one.mixin.android.ui.setting.SettingViewModel
@@ -82,7 +83,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
         } else {
             if (Session.getAccount()?.hasPin == true) {
-                WalletActivity.show(requireActivity())
+                MainActivity.showWallet(requireContext())
             } else {
                 TipActivity.show(requireActivity(), TipType.Create, false)
             }

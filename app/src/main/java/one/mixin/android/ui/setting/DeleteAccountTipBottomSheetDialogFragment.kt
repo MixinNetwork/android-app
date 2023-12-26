@@ -5,6 +5,7 @@ import android.app.Dialog
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.databinding.FragmentDeleteAccountTipBottomSheetBinding
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
@@ -38,7 +39,7 @@ class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment
             }
             viewWalletTv.setOnClickListener {
                 dismiss()
-                WalletActivity.show(requireActivity())
+                MainActivity.showWallet(requireContext())
             }
         }
     }
