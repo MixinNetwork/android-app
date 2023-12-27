@@ -329,12 +329,10 @@ class WalletViewModel
         suspend fun findSnapshot(snapshotId: String): SnapshotItem? =
             tokenRepository.findSnapshotById(snapshotId)
 
-        suspend fun getExternalAddressFee(
+        suspend fun getFees(
             assetId: String,
             destination: String,
-            tag: String?,
-        ) =
-            accountRepository.getExternalAddressFee(assetId, destination, tag)
+        ) = tokenRepository.getFees(assetId, destination)
 
         suspend fun profile(): MixinResponse<ProfileResponse> = tokenRepository.profile()
 

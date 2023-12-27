@@ -95,7 +95,6 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.opponent_id = :opponentId AND s.type != 'pending' ORDER BY s.created_at DESC, s.snapshot_id DESC")
     fun snapshotsByUserId(opponentId: String): DataSource.Factory<Int, SnapshotItem>
 
-
     @Query("DELETE FROM safe_snapshots WHERE type = 'pending'")
     suspend fun clearAllPendingDeposits()
 

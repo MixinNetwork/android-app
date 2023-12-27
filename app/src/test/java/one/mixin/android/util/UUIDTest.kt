@@ -1,6 +1,5 @@
 package one.mixin.android.util
 
-import UUIDUtils
 import org.junit.Test
 import kotlin.test.assertEquals
 

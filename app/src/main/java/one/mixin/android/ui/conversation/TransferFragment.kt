@@ -45,6 +45,7 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.sp
 import one.mixin.android.extension.statusBarHeight
@@ -495,6 +496,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER, currentAssetId = t.asset?.assetId)
             .setOnAssetClick { asset ->
                 t.asset = asset
+                activity?.defaultSharedPreferences!!.putString(ASSET_PREFERENCE, asset.assetId)
                 updateAssetUI(asset)
             }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
     }

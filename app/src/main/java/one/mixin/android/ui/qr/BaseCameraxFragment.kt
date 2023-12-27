@@ -51,7 +51,6 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getStackTraceString
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.matchResourcePattern
 import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
@@ -498,20 +497,9 @@ abstract class BaseCameraxFragment : VisionFragment() {
         requireContext().heavyClickVibrate()
         requireContext().defaultSharedPreferences.putBoolean(CaptureActivity.SHOW_QR_CODE, false)
         if (forScanResult) {
-            val scanResult =
-                if (analysisResult.isDonateUrl()) {
-                    val index = analysisResult.indexOf("?")
-                    if (index != -1) {
-                        analysisResult.take(index)
-                    } else {
-                        analysisResult
-                    }
-                } else {
-                    analysisResult
-                }
             val result =
                 Intent().apply {
-                    putExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT, scanResult)
+                    putExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT, analysisResult)
                 }
             activity?.setResult(Activity.RESULT_OK, result)
             activity?.finish()
@@ -679,10 +667,3 @@ abstract class BaseCameraxFragment : VisionFragment() {
         }
     }
 }
-
-val donateSupported =
-    arrayOf(
-        "bitcoin:", "bitcoincash:", "bitcoinsv:", "ethereum:",
-        "litecoin:", "dash:", "ripple:", "zcash:", "horizen:", "monero:", "binancecoin:",
-        "stellar:", "dogecoin:", "mobilecoin:",
-    )

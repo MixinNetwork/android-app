@@ -13,7 +13,6 @@ import androidx.core.content.res.ResourcesCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewPseudoNotificationBinding
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isMixinUrl
 
@@ -43,7 +42,7 @@ class PseudoNotificationView : RelativeLayout {
         contentSet.add(s)
         currContent = s
         binding.contentTv.text =
-            if (s.isMixinUrl() || s.isDonateUrl() || s.isExternalTransferUrl()) {
+            if (s.isMixinUrl() || s.isExternalTransferUrl()) {
                 context.getString(R.string.detect_qr_tip)
             } else {
                 s

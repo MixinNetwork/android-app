@@ -2,7 +2,8 @@ package one.mixin.android.pay
 
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
-import one.mixin.android.api.response.AddressFeeResponse
+import one.mixin.android.api.response.AddressResponse
+import one.mixin.android.api.response.WithdrawalResponse
 import one.mixin.android.vo.AssetPrecision
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -221,7 +222,10 @@ class ExternalTransferUriParserTest {
         parseExternalTransferUri(
             url,
             { assetId, destination ->
-                mockGetAddressFeeResponse(assetId, destination)
+                mockGetAddressResponse(assetId, destination)
+            },
+            { assetId, destination ->
+                mockGetFeeResponse(assetId, destination)
             },
             { assetKey ->
                 return@parseExternalTransferUri mockAssetKeyAssetId[assetKey]
@@ -231,8 +235,12 @@ class ExternalTransferUriParserTest {
             },
         )
 
-    private val mockGetAddressFeeResponse: suspend (String, String) -> AddressFeeResponse? = { assetId, destination ->
-        AddressFeeResponse(destination, null, assetId, "0")
+    private val mockGetAddressResponse: suspend (String, String) -> AddressResponse? = { assetId, destination ->
+        AddressResponse(destination, null, assetId)
+    }
+
+    private val mockGetFeeResponse: suspend (String, String) -> List<WithdrawalResponse>? = { assetId, destination ->
+        listOf(WithdrawalResponse(assetId, "0"))
     }
 
     private val mockAssetKeyAssetId =
