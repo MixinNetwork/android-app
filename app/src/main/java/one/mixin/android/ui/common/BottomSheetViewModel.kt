@@ -1070,12 +1070,12 @@ class BottomSheetViewModel
             }
         }
 
-        suspend fun getExternalAddressFee(
+        suspend fun validateExternalAddress(
             assetId: String,
             destination: String,
             tag: String?,
         ) =
-            accountRepository.getExternalAddressFee(assetId, destination, tag)
+            accountRepository.validateExternalAddress(assetId, destination, tag)
 
         suspend fun findAssetIdByAssetKey(assetKey: String): String? =
             tokenRepository.findAssetIdByAssetKey(assetKey)
@@ -1116,8 +1116,8 @@ class BottomSheetViewModel
             }
         }
 
-        suspend fun firstUnspentTransaction() = withContext(Dispatchers.IO) {
-            tokenRepository.firstUnspentTransaction()
-        }
-
+        suspend fun firstUnspentTransaction() =
+            withContext(Dispatchers.IO) {
+                tokenRepository.firstUnspentTransaction()
+            }
     }

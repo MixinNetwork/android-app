@@ -21,7 +21,6 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putStringSet
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.biometric.AssetBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.BiometricInfo
 import one.mixin.android.ui.oldwallet.biometric.BiometricItem

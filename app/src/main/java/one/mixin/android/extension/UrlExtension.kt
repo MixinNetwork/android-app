@@ -30,7 +30,6 @@ import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.qr.donateSupported
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.App
@@ -154,7 +153,7 @@ User-agent: ${WebView(context).settings.userAgentString}
     } else if (startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX) && WalletConnect.isEnabled(context)) {
         WalletConnect.connect(this)
     } else {
-        if (isMixinUrl() || isDonateUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
+        if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
             LinkBottomSheetDialogFragment.newInstance(this)
                 .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else {
@@ -226,8 +225,6 @@ fun String.checkUserOrApp(
         }
     }
 }
-
-fun String.isDonateUrl() = donateSupported.any { startsWith(it) }
 
 fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith("$it:") }
 
