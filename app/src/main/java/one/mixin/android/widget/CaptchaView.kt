@@ -2,7 +2,6 @@ package one.mixin.android.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -15,11 +14,8 @@ import one.mixin.android.extension.cancelRunOnUiThread
 import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.translationX
 import one.mixin.android.extension.translationY
-import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.util.reportException
-import timber.log.Timber
 import java.nio.charset.Charset
 
 @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
