@@ -51,12 +51,9 @@ import one.mixin.android.ui.wallet.IdentityFragment.Companion.ARGS_KYC_STATE
 import one.mixin.android.ui.wallet.IdentityFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_AMOUNT
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_CURRENCY
-import one.mixin.android.ui.wallet.hideGooglePay
-import one.mixin.android.ui.wallet.kycState
-import one.mixin.android.ui.wallet.supportAssetIds
-import one.mixin.android.ui.wallet.supportCurrencies
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.isFollowSystem
 import one.mixin.android.util.viewBinding
@@ -84,7 +81,12 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
 
     private suspend fun initData() {
-        if (supportCurrencies.isEmpty()) {
+        val routeProfile = (requireActivity() as WalletActivity).routeProfile
+        if (routeProfile == null) {
+            checkData()
+            return
+        }
+        if (routeProfile.supportCurrencies.isEmpty()) {
             checkData()
             return
         }
@@ -92,7 +94,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         if (fiatMoneyViewModel.asset != null && fiatMoneyViewModel.currency != null) {
             return
         }
-        val supportCurrencies = supportCurrencies
+        val supportCurrencies = routeProfile.supportCurrencies
         val currencyName = getDefaultCurrency(requireContext(), supportCurrencies)
         val assetId =
             requireContext().defaultSharedPreferences.getString(
@@ -104,7 +106,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             it.name == currencyName
         } ?: supportCurrencies.lastOrNull()
         fiatMoneyViewModel.asset =
-            fiatMoneyViewModel.findAssetsByIds(supportAssetIds).let { list ->
+            fiatMoneyViewModel.findAssetsByIds(routeProfile.supportAssetIds).let { list ->
                 list.find { it.assetId == assetId } ?: list.firstOrNull()
             }
         if (fiatMoneyViewModel.calculateState == null) {
@@ -169,6 +171,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 titleView.setSubTitle(getString(R.string.Buy), "")
                 titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
                 assetRl.setOnClickListener {
+                    val routeProfile = (requireActivity() as WalletActivity).routeProfile
+                    val supportAssetIds = routeProfile?.supportAssetIds ?: return@setOnClickListener
                     AssetListFixedBottomSheetDialogFragment.newInstance(
                         ArrayList(supportAssetIds),
                     ).setOnAssetClick { asset ->
@@ -181,6 +185,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     }.showNow(parentFragmentManager, AssetListFixedBottomSheetDialogFragment.TAG)
                 }
                 fiatRl.setOnClickListener {
+                    val routeProfile = (requireActivity() as WalletActivity).routeProfile
+                    val supportCurrencies = routeProfile?.supportCurrencies ?: return@setOnClickListener
                     FiatListBottomSheetDialogFragment.newInstance(fiatMoneyViewModel.currency!!, supportCurrencies).apply {
                         callback =
                             object : FiatListBottomSheetDialogFragment.Callback {
@@ -451,6 +457,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     private fun checkKyc(onSuccess: () -> Unit) =
         lifecycleScope.launch {
+            val kycState = (requireActivity() as WalletActivity).routeProfile?.kycState ?: return@launch
             if (kycState == KycState.SUCCESS.value || kycState == KycState.IGNORE.value) {
                 onSuccess.invoke()
                 return@launch
@@ -671,34 +678,34 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 val profileResponse =
                     fiatMoneyViewModel.profile()
                 if (profileResponse.isSuccess) {
-                    supportCurrencies =
+                    val supportCurrencies =
                         getCurrencyData(requireContext().resources).filter {
                             profileResponse.data!!.currencies.contains(it.name)
                         }
-                    supportAssetIds = profileResponse.data!!.assetIds
-                    kycState = profileResponse.data!!.kycState
-                    hideGooglePay =
+                    val supportAssetIds = profileResponse.data!!.assetIds
+                    val kycState = profileResponse.data!!.kycState
+                    val hideGooglePay =
                         profileResponse.data!!.supportPayments.contains(Constants.RouteConfig.GOOGLE_PAY)
                             .not()
-                    Pair(supportCurrencies, supportAssetIds)
+                    val routeProfile = RouteProfile(kycState, hideGooglePay, supportCurrencies, supportAssetIds)
+                    (requireActivity() as WalletActivity).routeProfile = routeProfile
+                    routeProfile
                 } else {
                     throw MixinResponseException(
                         profileResponse.errorCode,
                         profileResponse.errorDescription,
                     )
                 }
-            }.map { data ->
-                val (_, assetIds) = data
-                fiatMoneyViewModel.syncNoExistAsset(assetIds)
-                data
-            }.map { data ->
-                val (supportCurrencies, assetIds) = data
+            }.map { routeProfile ->
+                fiatMoneyViewModel.syncNoExistAsset(routeProfile.supportAssetIds)
+                routeProfile
+            }.map { routeProfile ->
                 val assetId =
                     requireContext().defaultSharedPreferences.getString(
                         CURRENT_ASSET_ID,
                         USDT_ASSET_ID,
-                    ) ?: assetIds.first()
-                val currency = getDefaultCurrency(requireContext(), supportCurrencies)
+                    ) ?: routeProfile.supportAssetIds.first()
+                val currency = getDefaultCurrency(requireContext(), routeProfile.supportCurrencies)
                 val tickerResponse =
                     fiatMoneyViewModel.ticker(
                         RouteTickerRequest(

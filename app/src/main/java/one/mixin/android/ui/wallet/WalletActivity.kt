@@ -15,6 +15,7 @@ import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
 import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
+import one.mixin.android.ui.wallet.fiatmoney.RouteProfile
 import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
 
@@ -87,10 +88,13 @@ class WalletActivity : BlazeBaseActivity() {
             Destination.Buy -> {
                 navGraph.setStartDestination(R.id.wallet_calculate)
                 val state = intent.getParcelableExtraCompat(CalculateFragment.CALCULATE_STATE, FiatMoneyViewModel.CalculateState::class.java)
+                routeProfile = intent.getParcelableExtraCompat(ARGS_ROUTE_PROFILE, RouteProfile::class.java)
                 navController.setGraph(navGraph, Bundle().apply { state?.let { s -> putParcelable(CalculateFragment.CALCULATE_STATE, s) } })
             }
         }
     }
+
+    var routeProfile: RouteProfile? = null
 
     enum class Destination {
         Transactions,
@@ -108,6 +112,7 @@ class WalletActivity : BlazeBaseActivity() {
         const val DESTINATION = "destination"
         const val ASSET = "ASSET"
         const val BUY = "buy"
+        const val ARGS_ROUTE_PROFILE = "args_route_profile"
 
         fun showWithToken(
             activity: Activity,
@@ -125,11 +130,13 @@ class WalletActivity : BlazeBaseActivity() {
         fun showBuy(
             activity: Activity,
             state: FiatMoneyViewModel.CalculateState?,
+            routeProfile: RouteProfile?,
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, Destination.Buy)
                     state?.let { putExtra(CalculateFragment.CALCULATE_STATE, it) }
+                    routeProfile?.let { putExtra(ARGS_ROUTE_PROFILE, it) }
                 },
             )
         }

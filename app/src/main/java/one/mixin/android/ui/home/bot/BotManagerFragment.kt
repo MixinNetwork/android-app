@@ -26,15 +26,11 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.tip.TipActivity
-import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.App
@@ -44,7 +40,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
-
     companion object {
         const val TAG = "BorManagerBottomSheetDialogFragment"
 
@@ -68,9 +63,11 @@ class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
         return binding.root
     }
 
-
     @SuppressLint("RestrictedApi")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         initView()
         loadData()
@@ -97,7 +94,6 @@ class BotManagerFragment : BaseFragment(), BotDock.OnDockListener {
             }
         }
     }
-
 
     private fun initView() {
         binding.botDock.setOnDragListener(bottomListAdapter.dragInstance)

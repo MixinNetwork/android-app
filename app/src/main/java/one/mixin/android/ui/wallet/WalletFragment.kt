@@ -56,7 +56,6 @@ import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
-import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.setting.getCurrencyData
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
@@ -64,6 +63,7 @@ import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
 import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
+import one.mixin.android.ui.wallet.fiatmoney.RouteProfile
 import one.mixin.android.ui.wallet.fiatmoney.getDefaultCurrency
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
@@ -71,7 +71,6 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.vo.sumsub.KycState
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
@@ -80,12 +79,6 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.math.abs
-
-// TODO
-var kycState: String = KycState.INITIAL.value
-var hideGooglePay = false
-var supportCurrencies: List<Currency> = emptyList()
-var supportAssetIds: List<String> = emptyList()
 
 @AndroidEntryPoint
 class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnItemListener {
@@ -174,16 +167,16 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 val profileResponse =
                     walletViewModel.profile()
                 if (profileResponse.isSuccess) {
-                    supportCurrencies =
+                    val supportCurrencies =
                         getCurrencyData(requireContext().resources).filter {
                             profileResponse.data!!.currencies.contains(it.name)
                         }
-                    supportAssetIds = profileResponse.data!!.assetIds
-                    kycState = profileResponse.data!!.kycState
-                    hideGooglePay =
+                    val supportAssetIds = profileResponse.data!!.assetIds
+                    val kycState = profileResponse.data!!.kycState
+                    val hideGooglePay =
                         profileResponse.data!!.supportPayments.contains(GOOGLE_PAY)
                             .not()
-                    Pair(supportCurrencies, supportAssetIds)
+                    RouteProfile(kycState, hideGooglePay, supportCurrencies, supportAssetIds)
                 } else if (profileResponse.errorCode == ErrorHandler.OLD_VERSION) {
                     alertDialogBuilder()
                         .setTitle(R.string.Update_Mixin)
@@ -204,18 +197,16 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                         profileResponse.errorDescription,
                     )
                 }
-            }.map { data ->
-                val (_, assetIds) = data
-                walletViewModel.syncNoExistAsset(assetIds)
-                data
-            }.map { data ->
-                val (supportCurrencies, assetIds) = data
+            }.map { routeProfile ->
+                walletViewModel.syncNoExistAsset(routeProfile.supportAssetIds)
+                routeProfile
+            }.map { routeProfile ->
                 val assetId =
                     requireContext().defaultSharedPreferences.getString(
                         CalculateFragment.CURRENT_ASSET_ID,
                         Constants.AssetId.USDT_ASSET_ID,
-                    ) ?: assetIds.first()
-                val currency = getDefaultCurrency(requireContext(), supportCurrencies)
+                    ) ?: routeProfile.supportAssetIds.first()
+                val currency = getDefaultCurrency(requireContext(), routeProfile.supportCurrencies)
                 val tickerResponse =
                     walletViewModel.ticker(
                         RouteTickerRequest(
@@ -240,7 +231,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 tickerResponse.data!!.feePercent.toFloatOrNull()
                                     ?: 0f,
                         )
-                    state
+                    Pair(state, routeProfile)
                 } else {
                     throw MixinResponseException(
                         tickerResponse.errorCode,
@@ -272,8 +263,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 }
                 sendReceiveView.buy.displayedChild = 0
                 sendReceiveView.buy.isEnabled = true
-            }.collectLatest { state ->
-                WalletActivity.showBuy(requireActivity(), state)
+            }.collectLatest { pair ->
+                WalletActivity.showBuy(requireActivity(), pair.first, pair.second)
                 sendReceiveView.buy.displayedChild = 0
                 sendReceiveView.buy.isEnabled = true
             }
@@ -303,12 +294,12 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                             .setOnAssetClick {
                                 sendBottomSheet.show(it)
                             }.setOnDepositClick {
-                                showReceiveAssetList(view)
+                                showReceiveAssetList()
                             }
                             .showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                     }
                     sendReceiveView.receive.setOnClickListener {
-                        showReceiveAssetList(view)
+                        showReceiveAssetList()
                     }
                 }
             assetsAdapter.headerView = _headBinding!!.root
@@ -601,7 +592,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         bottomSheet.show()
     }
 
-    private fun showReceiveAssetList(view: View) {
+    private fun showReceiveAssetList() {
         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE)
             .setOnAssetClick { asset ->
                 WalletActivity.showWithToken(requireActivity(), asset, WalletActivity.Destination.Deposit)
