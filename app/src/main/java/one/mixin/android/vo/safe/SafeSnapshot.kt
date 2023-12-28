@@ -81,4 +81,4 @@ data class SafeSnapshot(
 }
 
 @Suppress("ktlint:standard:enum-entry-name-case", "EnumEntryName")
-enum class SafeSnapshotType { transfer, deposit, withdrawal, pending }
+enum class SafeSnapshotType { snapshot, deposit, withdrawal, pending }

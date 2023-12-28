@@ -184,7 +184,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             R.id.filters_radio_transfer -> {
                 bindLiveData(
                     walletViewModel.allSnapshots(
-                        SafeSnapshotType.transfer.name,
+                        SafeSnapshotType.snapshot.name,
                         SafeSnapshotType.pending.name,
                         initialLoadKey = initialLoadKey,
                         orderByAmount = orderByAmount,
