@@ -15,6 +15,8 @@ import one.mixin.android.extension.cancelRunOnUiThread
 import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
+import one.mixin.android.ui.landing.MobileFragment
+import one.mixin.android.util.reportException
 import java.nio.charset.Charset
 
 @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
@@ -38,6 +40,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     private val stopWebViewRunnable =
         Runnable {
             if (captchaType.isG()) {
+                reportException(RuntimeException("CaptchaView load recaptcha timeout"))
                 loadCaptcha(CaptchaType.HCaptcha)
             } else {
                 webView.loadUrl("about:blank")
@@ -45,6 +48,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                 webView.webViewClient = object : WebViewClient() {}
                 toast(R.string.Recaptcha_timeout)
                 callback.onStop()
+                reportException(RuntimeException("CaptchaView load HCaptcha timeout"))
             }
         }
 
@@ -55,15 +59,6 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         val isG = captchaType.isG()
         webView.webViewClient =
             object : WebViewClient() {
-                override fun onPageStarted(
-                    view: WebView?,
-                    url: String?,
-                    favicon: Bitmap?,
-                ) {
-                    super.onPageStarted(view, url, favicon)
-                    runOnUiThread(stopWebViewRunnable, WEB_VIEW_TIME_OUT)
-                }
-
                 override fun onPageFinished(
                     view: WebView?,
                     url: String?,
@@ -86,6 +81,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         html = html.replace("#apiKey", apiKey)
         webView.clearCache(true)
         webView.loadDataWithBaseURL(Constants.API.DOMAIN, html, "text/html", "UTF-8", null)
+        runOnUiThread(stopWebViewRunnable, WEB_VIEW_TIME_OUT)
     }
 
     fun isVisible() = webView.translationY == 0f
