@@ -2,7 +2,12 @@ package one.mixin.android.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.net.http.SslError
 import android.webkit.JavascriptInterface
+import android.webkit.SslErrorHandler
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import okio.buffer
@@ -22,6 +27,8 @@ import java.nio.charset.Charset
 class CaptchaView(private val context: Context, private val callback: Callback) {
     companion object {
         private const val WEB_VIEW_TIME_OUT = 15000L
+
+        private const val TAG = "CaptchaView"
     }
 
     val webView: WebView by lazy {
@@ -39,7 +46,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     private val stopWebViewRunnable =
         Runnable {
             if (captchaType.isG()) {
-                reportException(RuntimeException("CaptchaView load recaptcha timeout"))
+                reportException(CaptchaException("$TAG load $captchaType timeout"))
                 loadCaptcha(CaptchaType.HCaptcha)
             } else {
                 webView.loadUrl("about:blank")
@@ -47,7 +54,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                 webView.webViewClient = object : WebViewClient() {}
                 toast(R.string.Recaptcha_timeout)
                 callback.onStop()
-                reportException(RuntimeException("CaptchaView load HCaptcha timeout"))
+                reportException(CaptchaException("$TAG load $captchaType timeout"))
             }
         }
 
@@ -65,6 +72,21 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                     super.onPageFinished(view, url)
                     cancelRunOnUiThread(stopWebViewRunnable)
                     view?.translationY(0f)
+                }
+
+                override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
+                    super.onReceivedHttpError(view, request, errorResponse)
+                    reportException(CaptchaException("$TAG load $captchaType onReceivedHttpError ${errorResponse?.statusCode} ${errorResponse?.reasonPhrase}"))
+                }
+
+                override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
+                    super.onReceivedSslError(view, handler, error)
+                    reportException(CaptchaException("$TAG load $captchaType onReceivedSslError ${error?.toString()}"))
+                }
+
+                override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+                    super.onReceivedError(view, request, error)
+                    reportException(CaptchaException("$TAG load $captchaType onReceivedError ${error?.errorCode} ${error?.description}"))
                 }
             }
         val input = context.assets.open("captcha.html")
@@ -122,5 +144,11 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         fun onStop()
 
         fun onPostToken(value: Pair<CaptchaType, String>)
+    }
+}
+
+class CaptchaException(message: String) : RuntimeException(message) {
+    companion object {
+        private const val serialVersionUID: Long = 1L
     }
 }
