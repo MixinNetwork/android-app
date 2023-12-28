@@ -938,7 +938,7 @@ class MainActivity : BlazeBaseActivity() {
                 if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q && isTaskRoot) {
                     finishAfterTransition()
                 } else {
-                    super.onBackPressed()
+                    onBackPressedDispatcher.onBackPressed()
                 }
             }
         }
