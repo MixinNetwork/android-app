@@ -24,6 +24,7 @@ internal suspend fun parseEthereum(
 
     val chainId = erc681.chainId?.toInt() ?: 1
     var assetId = ethereumChainIdMap[chainId] ?: return null
+    val withdrawalChainId = assetId
 
     val value = erc681.value
     var address: String? = null
@@ -94,7 +95,7 @@ internal suspend fun parseEthereum(
         return null
     }
     val feeResponse = getFee(assetId, destination) ?: return null
-    val fee = feeResponse.find { it.assetId == assetId } ?: return null
+    val fee = feeResponse.find { it.assetId == withdrawalChainId } ?: return null
     return ExternalTransfer(addressResponse.destination, am, assetId, fee.amount?.toBigDecimalOrNull())
 }
 
