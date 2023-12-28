@@ -15,8 +15,11 @@ import one.mixin.android.extension.cancelRunOnUiThread
 import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.translationX
+import one.mixin.android.extension.translationY
 import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.util.reportException
+import timber.log.Timber
 import java.nio.charset.Charset
 
 @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
@@ -65,7 +68,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                 ) {
                     super.onPageFinished(view, url)
                     cancelRunOnUiThread(stopWebViewRunnable)
-                    webView.animate().translationY(0f)
+                    view?.translationY(0f)
                 }
             }
         val input = context.assets.open("captcha.html")
@@ -87,7 +90,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     fun isVisible() = webView.translationY == 0f
 
     fun hide() {
-        webView.animate().translationY(context.screenHeight().toFloat())
+        webView.translationY(context.screenHeight().toFloat())
     }
 
     @Suppress("unused")
