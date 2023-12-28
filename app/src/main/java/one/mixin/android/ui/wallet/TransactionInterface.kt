@@ -324,7 +324,7 @@ interface TransactionInterface {
             }
             val type = snapshot.simulateType()
             when (type) {
-                SafeSnapshotType.transfer -> {
+                SafeSnapshotType.snapshot -> {
                     fromTv.text =
                         if (snapshot.opponentId.isBlank()) {
                             fromTv.textColor = fromTv.context.colorFromAttribute(R.attr.text_minor)

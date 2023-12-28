@@ -24,7 +24,7 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
     ) {
         val isPositive = snapshot.amount.toFloat() > 0
         when (val type = snapshot.simulateType()) {
-            SafeSnapshotType.transfer -> {
+            SafeSnapshotType.snapshot -> {
                 if (snapshot.opponentId.isBlank()) {
                     binding.name.text = "N/A"
                     binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_minor)

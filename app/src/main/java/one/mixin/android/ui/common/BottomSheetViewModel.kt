@@ -329,7 +329,7 @@ class BottomSheetViewModel
                     tokenRepository.insertOutput(changeOutput)
                 }
                 val transactionHash = sign.hash
-                tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, trace, assetId, amount, memo, SafeSnapshotType.transfer)
+                tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, trace, assetId, amount, memo, SafeSnapshotType.snapshot)
                 tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, "", RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc()))
                 tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
             }
@@ -395,7 +395,7 @@ class BottomSheetViewModel
                     tokenRepository.insertOutput(consolidationOutput)
                 }
                 val transactionHash = sign.hash
-                tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("${senderIds.first()}:$transactionHash".toByteArray()).toString(), senderIds.first(), receiverIds.first(), transactionHash, trace, assetId, amount, memo, SafeSnapshotType.transfer)
+                tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("${senderIds.first()}:$transactionHash".toByteArray()).toString(), senderIds.first(), receiverIds.first(), transactionHash, trace, assetId, amount, memo, SafeSnapshotType.snapshot)
                 tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverIds.joinToString(","), RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc()))
                 tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
             }

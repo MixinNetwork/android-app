@@ -139,7 +139,7 @@ data class SnapshotItem(
         } else if (withdrawal != null) {
             SafeSnapshotType.withdrawal
         } else {
-            SafeSnapshotType.transfer
+            SafeSnapshotType.snapshot
         }
 }
 
