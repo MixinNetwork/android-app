@@ -272,7 +272,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                     bindLiveData(
                         walletViewModel.snapshots(
                             asset.assetId,
-                            SafeSnapshotType.transfer.name,
+                            SafeSnapshotType.snapshot.name,
                             SafeSnapshotType.pending.name,
                             initialLoadKey = initialLoadKey,
                             orderByAmount = orderByAmount,

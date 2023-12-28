@@ -125,7 +125,7 @@ class RestoreTransactionJob : BaseJob(
     ) {
         val conversationId = generateConversationId(data.userId, opponentId)
         initConversation(conversationId, data.userId, opponentId)
-        val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.transfer.name, null, data.snapshotId)
+        val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, data.getSnapshotId)
         appDatabase.insertMessage(message)
         MessageFlow.insert(message.conversationId, message.messageId)
     }
