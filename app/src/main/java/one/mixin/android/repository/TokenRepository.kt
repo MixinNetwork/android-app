@@ -80,6 +80,7 @@ import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.safe.SafeSnapshot
+import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
@@ -713,30 +714,27 @@ class TokenRepository
         fun insertSnapshotMessage(
             data: TransactionResponse,
             conversationId: String,
-            assetId: String,
-            amount: String,
-            opponentId: String,
-            memo: String?,
         ) {
             val snapshotId = data.getSnapshotId
-            val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-$amount", data.userId, opponentId, memo?.toHex() ?: "", data.transactionHash, data.createdAt, data.requestId, null, null, null, null, null)
-            safeSnapshotDao.insert(snapshot)
             if (conversationId != "") {
-                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, snapshot.type, null, snapshot.snapshotId)
+                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.transfer.name, null, snapshotId)
                 appDatabase.insertMessage(message)
                 MessageFlow.insert(message.conversationId, message.messageId)
             }
         }
 
         fun insertSafeSnapshot(
-            data: TransactionResponse,
+            snapshotId: String,
+            userId: String,
+            opponentId: String,
+            transactionHash: String,
+            requestId:String,
             assetId: String,
             amount: String,
             memo: String?,
-            type: String = SnapshotType.withdrawal.name,
+            type: SafeSnapshotType,
         ) {
-            val snapshotId = data.getSnapshotId
-            val snapshot = SafeSnapshot(snapshotId, type, assetId, "-$amount", data.userId, "", memo?.toHex() ?: "", data.transactionHash, data.createdAt, data.requestId, null, null, null, null, null)
+            val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toHex() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, null)
             safeSnapshotDao.insert(snapshot)
         }
 

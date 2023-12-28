@@ -29,6 +29,7 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.OutputState
 import one.mixin.android.vo.safe.RawTransactionType
 import one.mixin.android.vo.safe.SafeSnapshot
+import one.mixin.android.vo.safe.SafeSnapshotType
 import timber.log.Timber
 import java.util.UUID
 
@@ -69,7 +70,7 @@ class RestoreTransactionJob : BaseJob(
                         if (feeTransaction == null) {
                             val data = response.data!!
                             if (transaction.receiverId.isNotBlank()) {
-                                insertSnapshotMessage(data, token.assetId, data.amount, transaction.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
+                                insertSnapshotMessage(data, transaction.receiverId)
                             }
                         }
                     } else if (response.errorCode == 404) {
@@ -94,7 +95,7 @@ class RestoreTransactionJob : BaseJob(
                                 rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
                             }
                             if (feeTransaction == null && transaction.receiverId.isNotBlank()) {
-                                insertSnapshotMessage(transactionResponse, token.assetId, transactionResponse.amount, transaction.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
+                                insertSnapshotMessage(transactionResponse, transaction.receiverId)
                             }
                         } else {
                             reportException(e = Throwable("Transaction Error ${transactionRsp.errorDescription}"))
@@ -120,17 +121,11 @@ class RestoreTransactionJob : BaseJob(
 
     private fun insertSnapshotMessage(
         data: TransactionResponse,
-        assetId: String,
-        amount: String,
         opponentId: String,
-        memo: String?,
     ) {
-        val snapshotId = data.getSnapshotId
         val conversationId = generateConversationId(data.userId, opponentId)
         initConversation(conversationId, data.userId, opponentId)
-        val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-$amount", data.userId, opponentId, memo?.toHex() ?: "", "", data.createdAt, data.requestId, null, null, null, null, null)
-        val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, snapshot.type, null, snapshot.snapshotId)
-        safeSnapshotDao.insert(snapshot)
+        val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.transfer.name, null, data.snapshotId)
         appDatabase.insertMessage(message)
         MessageFlow.insert(message.conversationId, message.messageId)
     }
