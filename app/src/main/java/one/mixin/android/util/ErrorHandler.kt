@@ -13,6 +13,7 @@ import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.toast
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
+import org.chromium.net.CronetException
 import retrofit2.HttpException
 import java.io.IOException
 import java.net.SocketTimeoutException
@@ -38,6 +39,9 @@ open class ErrorHandler {
                             }
                             is NetworkException -> toast(R.string.No_network_connection)
                             is DataErrorException -> toast(R.string.Data_error)
+                            is CronetException -> {
+                                handleCronetException(throwable)
+                            }
                             else -> toast(getString(R.string.error_unknown_with_message, throwable.message))
                         }
                     is CancellationException -> {
@@ -47,7 +51,11 @@ open class ErrorHandler {
                         toast(throwable.getTipExceptionMsg(ctx))
                     }
                     is ExecutionException -> {
-                        toast("ExecutionException: ${throwable.cause?.message ?: throwable.message}")
+                        if (throwable.cause is CronetException) {
+                            handleCronetException(throwable.cause as CronetException)
+                        } else {
+                            toast("ExecutionException: ${throwable.cause?.message ?: throwable.message}")
+                        }
                     }
                     else -> toast(getString(R.string.error_unknown_with_message, throwable.message))
                 }
@@ -101,6 +109,14 @@ open class ErrorHandler {
                     }
                 }
             }
+        }
+
+        private fun handleCronetException(e: CronetException) {
+            val ctx = MixinApplication.appContext
+            val extra = if (e is org.chromium.net.NetworkException) {
+                "${e.errorCode}, ${e.cronetInternalErrorCode}"
+            } else ""
+            toast("${ctx.getString(R.string.error_connection_error)} $extra")
         }
 
         val errorHandler =
