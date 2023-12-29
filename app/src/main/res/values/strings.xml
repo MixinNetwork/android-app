@@ -403,6 +403,7 @@
     <string name="error_bad_data">ERROR 10002: The request data has invalid field</string>
     <string name="error_blockchain">ERROR 30100: Blockchain not in sync, please try again later.</string>
     <string name="error_connection_timeout">Network connection timeout, please try again</string>
+    <string name="error_connection_error">Network connection error, please try again or check you network</string>
     <string name="error_expired_authorization_code">ERROR 20121: Expired authorization code</string>
     <string name="error_full_group">ERROR 20116: The group chat is full.</string>
     <string name="error_insufficient_balance">ERROR 20117: Insufficient balance</string>
