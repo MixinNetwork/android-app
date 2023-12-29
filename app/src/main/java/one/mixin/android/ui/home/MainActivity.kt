@@ -320,8 +320,6 @@ class MainActivity : BlazeBaseActivity() {
                         onDismissCallback = { success ->
                             if (success) {
                                 defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
-                            } else {
-                                this@MainActivity.finish()
                             }
                         }
                     }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)

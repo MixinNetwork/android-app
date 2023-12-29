@@ -186,7 +186,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 biometricLayout.showPin(true)
                 if (t.isTipNodeException()) {
-                    showErrorInfo(t.getTipExceptionMsg(requireContext(), null), true, errorAction = BiometricLayout.ErrorAction.Close)
+                    showErrorInfo(t.getTipExceptionMsg(requireContext(), null), true, errorAction = BiometricLayout.ErrorAction.RetryPin)
                 } else if (t.isUtxoException()) {
                     showErrorInfo(t.getUtxoExceptionMsg(requireContext()), true, errorAction = BiometricLayout.ErrorAction.Close)
                 } else {
