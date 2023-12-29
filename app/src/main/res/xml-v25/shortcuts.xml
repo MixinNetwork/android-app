@@ -8,7 +8,10 @@
         <intent
             android:action="android.intent.action.VIEW"
             android:targetPackage="one.mixin.messenger"
-            android:targetClass="one.mixin.android.ui.wallet.WalletActivity" />
+            android:targetClass="one.mixin.android.ui.home.MainActivity" >
+
+            <extra android:name="wallet" android:value="true" />
+        </intent>
         <categories android:name="android.shortcut.conversation" />
     </shortcut>
 

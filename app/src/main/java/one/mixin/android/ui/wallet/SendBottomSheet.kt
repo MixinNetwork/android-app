@@ -38,21 +38,29 @@ class SendBottomSheet(
             contact.setOnClickListener {
                 bottomSheet.dismiss()
                 fragment.defaultSharedPreferences.putString(TransferFragment.ASSET_PREFERENCE, asset.assetId)
-                this@SendBottomSheet.fragment.view?.navigate(
-                    navContactAction,
-                    Bundle().apply {
-                        putParcelable(TransactionsFragment.ARGS_ASSET, asset)
-                    },
-                )
+                if (navContactAction == -1) {
+                    WalletActivity.showWithToken(fragment.requireActivity(), asset, WalletActivity.Destination.Contact)
+                } else {
+                    this@SendBottomSheet.fragment.view?.navigate(
+                        navContactAction,
+                        Bundle().apply {
+                            putParcelable(TransactionsFragment.ARGS_ASSET, asset)
+                        },
+                    )
+                }
             }
             address.setOnClickListener {
                 bottomSheet.dismiss()
-                this@SendBottomSheet.fragment.view?.navigate(
-                    navAddressAction,
-                    Bundle().apply {
-                        putParcelable(TransactionsFragment.ARGS_ASSET, asset)
-                    },
-                )
+                if (navAddressAction == -1) {
+                    WalletActivity.showWithToken(fragment.requireActivity(), asset, WalletActivity.Destination.Address)
+                } else {
+                    this@SendBottomSheet.fragment.view?.navigate(
+                        navAddressAction,
+                        Bundle().apply {
+                            putParcelable(TransactionsFragment.ARGS_ASSET, asset)
+                        },
+                    )
+                }
             }
             sendCancel.setOnClickListener { bottomSheet.dismiss() }
         }

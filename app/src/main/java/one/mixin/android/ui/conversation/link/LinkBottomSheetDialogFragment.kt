@@ -15,7 +15,6 @@ import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -82,7 +81,6 @@ import one.mixin.android.ui.oldwallet.biometric.TransferBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.SafeMultisigsBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
@@ -101,7 +99,7 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.util.UUID
 import javax.inject.Inject
 
-@UnstableApi @AndroidEntryPoint
+@AndroidEntryPoint
 class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "LinkBottomSheetDialogFragment"
@@ -721,7 +719,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 dismiss()
             }
         } else if (url.startsWith(Scheme.BUY, true)) {
-            WalletActivity.show(requireActivity(), buy = true)
+            MainActivity.showWallet(requireContext(), buy = true)
             dismiss()
         } else if (url.startsWith(Scheme.TIP, true)) {
             val uri = Uri.parse(url)

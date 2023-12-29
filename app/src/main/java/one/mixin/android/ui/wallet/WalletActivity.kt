@@ -7,14 +7,16 @@ import androidx.annotation.VisibleForTesting
 import androidx.navigation.fragment.NavHostFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
-import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getParcelableExtraCompat
+import one.mixin.android.extension.getSerializableExtraCompat
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
-import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
+import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
+import one.mixin.android.ui.wallet.fiatmoney.RouteProfile
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.vo.sumsub.KycState
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -37,65 +39,117 @@ class WalletActivity : BlazeBaseActivity() {
                 .findFragmentById(R.id.container) as? NavHostFragment?
         val navController = navHostFragment?.navController ?: return
         val navGraph = navController.navInflater.inflate(R.navigation.nav_wallet)
-        val currentAsset = asset
-        if (currentAsset != null) {
-            navGraph.setStartDestination(R.id.transactions_fragment) // change start destination
-            navController.setGraph(navGraph, Bundle().apply { putParcelable(ARGS_ASSET, currentAsset) })
-        } else if (isBuy) {
+
+        val isBuy = intent.extras?.getBoolean(BUY)
+        if (isBuy == true) {
             navGraph.setStartDestination(R.id.wallet_calculate)
             navController.setGraph(navGraph, null)
-        } else {
-            navController.setGraph(navGraph, null)
+            return
+        }
+
+        val destination = requireNotNull(intent.getSerializableExtraCompat(DESTINATION, Destination::class.java)) { "required destination can not be null" }
+        when (destination) {
+            Destination.Transactions -> {
+                navGraph.setStartDestination(R.id.transactions_fragment)
+                val token = requireNotNull(intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)) { "required token can not be null" }
+                navController.setGraph(navGraph, Bundle().apply { putParcelable(ARGS_ASSET, token) })
+            }
+            Destination.Search -> {
+                navGraph.setStartDestination(R.id.wallet_search_fragment)
+                navController.setGraph(navGraph, null)
+            }
+            Destination.AllTransactions -> {
+                navGraph.setStartDestination(R.id.all_transactions_fragment)
+                navController.setGraph(navGraph, null)
+            }
+            Destination.Hidden -> {
+                navGraph.setStartDestination(R.id.hidden_assets_fragment)
+                navController.setGraph(navGraph, null)
+            }
+            Destination.Deposit -> {
+                navGraph.setStartDestination(R.id.deposit_fragment)
+                val token = requireNotNull(intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)) { "required token can not be null" }
+                navController.setGraph(navGraph, Bundle().apply { putParcelable(ARGS_ASSET, token) })
+            }
+            Destination.Address -> {
+                navGraph.setStartDestination(R.id.address_management_fragment)
+                val token = requireNotNull(intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)) { "required token can not be null" }
+                navController.setGraph(navGraph, Bundle().apply { putParcelable(ARGS_ASSET, token) })
+            }
+            Destination.Contact -> {
+                navGraph.setStartDestination(R.id.single_friend_select_fragment)
+                val token = requireNotNull(intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)) { "required token can not be null" }
+                navController.setGraph(navGraph, Bundle().apply { putParcelable(ARGS_ASSET, token) })
+            }
+            Destination.WalletConnect -> {
+                navGraph.setStartDestination(R.id.wallet_connect_fragment)
+                navController.setGraph(navGraph, null)
+            }
+            Destination.Buy -> {
+                navGraph.setStartDestination(R.id.wallet_calculate)
+                val state = intent.getParcelableExtraCompat(CalculateFragment.CALCULATE_STATE, FiatMoneyViewModel.CalculateState::class.java)
+                routeProfile = intent.getParcelableExtraCompat(ARGS_ROUTE_PROFILE, RouteProfile::class.java)
+                navController.setGraph(navGraph, Bundle().apply { state?.let { s -> putParcelable(CalculateFragment.CALCULATE_STATE, s) } })
+            }
         }
     }
 
-    private val asset: TokenItem? by lazy {
-        intent.extras?.getParcelableCompat(ASSET, TokenItem::class.java)
-    }
+    var routeProfile: RouteProfile? = null
 
-    private val bottomAnim: Boolean by lazy {
-        intent.extras?.getBoolean(BOTTOM_ANIM) ?: true
-    }
-
-    private val isBuy: Boolean by lazy {
-        intent.extras?.getBoolean(BUY) ?: false
-    }
-
-    var kycState: String = KycState.INITIAL.value
-    var hideGooglePay = false
-    var supportCurrencies: List<Currency> = emptyList()
-    var supportAssetIds: List<String> = emptyList()
-
-    override fun finish() {
-        super.finish()
-        if (bottomAnim) {
-            overridePendingTransition(R.anim.stay, R.anim.slide_out_bottom)
-        }
+    enum class Destination {
+        Transactions,
+        Search,
+        AllTransactions,
+        Hidden,
+        Deposit,
+        Address,
+        Contact,
+        WalletConnect,
+        Buy,
     }
 
     companion object {
+        const val DESTINATION = "destination"
         const val ASSET = "ASSET"
-        const val BOTTOM_ANIM = "bottom_anim"
         const val BUY = "buy"
+        const val ARGS_ROUTE_PROFILE = "args_route_profile"
+
+        fun showWithToken(
+            activity: Activity,
+            tokenItem: TokenItem,
+            destination: Destination,
+        ) {
+            activity.startActivity(
+                Intent(activity, WalletActivity::class.java).apply {
+                    putExtra(DESTINATION, destination)
+                    putExtra(ASSET, tokenItem)
+                },
+            )
+        }
+
+        fun showBuy(
+            activity: Activity,
+            state: FiatMoneyViewModel.CalculateState?,
+            routeProfile: RouteProfile?,
+        ) {
+            activity.startActivity(
+                Intent(activity, WalletActivity::class.java).apply {
+                    putExtra(DESTINATION, Destination.Buy)
+                    state?.let { putExtra(CalculateFragment.CALCULATE_STATE, it) }
+                    routeProfile?.let { putExtra(ARGS_ROUTE_PROFILE, it) }
+                },
+            )
+        }
 
         fun show(
             activity: Activity,
-            tokenItem: TokenItem? = null,
-            bottomAnim: Boolean = true,
-            buy: Boolean = false,
+            destination: Destination,
         ) {
-            val myIntent = Intent(activity, WalletActivity::class.java)
-            val bundle = Bundle()
-            tokenItem?.let {
-                bundle.putParcelable(ASSET, tokenItem)
-            }
-            bundle.putBoolean(BOTTOM_ANIM, bottomAnim)
-            bundle.putBoolean(BUY, buy)
-            myIntent.putExtras(bundle)
-            activity.startActivity(myIntent)
-            if (bottomAnim) {
-                activity.overridePendingTransition(R.anim.slide_in_bottom, R.anim.stay)
-            }
+            activity.startActivity(
+                Intent(activity, WalletActivity::class.java).apply {
+                    putExtra(DESTINATION, destination)
+                },
+            )
         }
     }
 }

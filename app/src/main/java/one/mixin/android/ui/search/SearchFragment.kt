@@ -136,7 +136,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                                 },
                                 keyword ?: "",
                             )
-                        requireActivity().addFragment(this@SearchFragment, f, SearchSingleFragment.TAG, R.id.root_view)
+                        requireActivity().addFragment(this@SearchFragment, f, SearchSingleFragment.TAG, R.id.container)
                         binding.searchRv.hideKeyboard()
                     }
                 }
@@ -192,7 +192,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                 }
 
                 override fun onAsset(tokenItem: TokenItem) {
-                    activity?.let { WalletActivity.show(it, tokenItem) }
+                    activity?.let { WalletActivity.showWithToken(it, tokenItem, WalletActivity.Destination.Transactions) }
                 }
 
                 override fun onMessageClick(message: SearchMessageItem) {

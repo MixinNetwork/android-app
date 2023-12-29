@@ -81,6 +81,7 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
                     Currency::class.java,
                 ),
             )
+        val routeProfile = requireNotNull((requireActivity() as WalletActivity).routeProfile) { "required RouteProfile can not be null" }
         binding.apply {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
@@ -88,7 +89,7 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
             titleView.setSubTitle(getString(R.string.Select_Payment_Method), "")
             firstRl.round(8.dp)
             secondRl.round(8.dp)
-            firstRl.isVisible = requireContext().isGooglePlayServicesAvailable() && !(requireActivity() as WalletActivity).hideGooglePay
+            firstRl.isVisible = requireContext().isGooglePlayServicesAvailable() && !routeProfile.hideGooglePay
             firstRl.setOnClickListener {
                 if (fiatMoneyViewModel.state.value.googlePayAvailable != true) {
                     // toast(R.string.Google_Pay_error)

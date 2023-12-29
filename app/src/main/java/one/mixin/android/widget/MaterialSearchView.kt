@@ -4,10 +4,8 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.graphics.Color
-import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
 import android.text.InputType
@@ -33,7 +31,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewMaterialSearchBinding
 import one.mixin.android.extension.ANIMATION_DURATION_SHORT
 import one.mixin.android.extension.appCompatActionBarHeight
-import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
@@ -220,18 +217,12 @@ class MaterialSearchView : FrameLayout {
                 object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         binding.containerShadow.isVisible = false
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            (context as Activity).window.navigationBarColor = context.colorFromAttribute(R.attr.bg_white)
-                        }
                     }
                 },
             )
             addUpdateListener {
                 val c = Color.BLACK.withAlpha(0.32f * it.animatedValue as Float)
                 binding.containerShadow.setBackgroundColor(c)
-                if (c > 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    (context as Activity).window.navigationBarColor = c
-                }
             }
             interpolator = AccelerateInterpolator()
             duration = ANIMATION_DURATION_SHORT
@@ -241,6 +232,7 @@ class MaterialSearchView : FrameLayout {
     }
 
     var hideAction: (() -> Unit)? = null
+    var showAction: (() -> Unit)? = null
 
     fun showContainer() {
         containerDisplay = true
@@ -251,6 +243,7 @@ class MaterialSearchView : FrameLayout {
         binding.avatar.fadeOut()
         binding.actionVa.fadeIn()
         binding.containerCircle.isVisible = true
+        showAction?.invoke()
         ValueAnimator.ofFloat(0f, 1f).apply {
             addListener(
                 object : AnimatorListenerAdapter() {
@@ -263,9 +256,6 @@ class MaterialSearchView : FrameLayout {
             addUpdateListener {
                 val c = Color.BLACK.withAlpha(0.32f * it.animatedValue as Float)
                 binding.containerShadow.setBackgroundColor(c)
-                if (c > 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    (context as Activity).window.navigationBarColor = c
-                }
             }
             interpolator = DecelerateInterpolator()
             duration = ANIMATION_DURATION_SHORT

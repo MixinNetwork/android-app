@@ -16,7 +16,12 @@
 
 package one.mixin.android.ui.qr;
 
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapRegionDecoder;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.util.Size;
 import androidx.annotation.Nullable;
 import androidx.camera.core.ImageProxy;

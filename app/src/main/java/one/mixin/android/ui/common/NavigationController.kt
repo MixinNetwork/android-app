@@ -11,12 +11,13 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.home.bot.BotManagerFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
-import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletFragment
 
 class NavigationController
     constructor(mainActivity: MainActivity) {
@@ -28,31 +29,36 @@ class NavigationController
             ContactsActivity.show(context)
         }
 
-        fun pushWallet(deviceId: String? = null) {
+        fun pushWallet(walletFragment: WalletFragment) {
             if (Session.getAccount()?.hasPin == true) {
-                WalletActivity.show(context)
+                fragmentManager.beginTransaction()
+                    .replace(R.id.root_view, walletFragment, WalletFragment.TAG)
+                    .commitAllowingStateLoss()
             } else {
-                val id =
-                    deviceId
-                        ?: requireNotNull(context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null)) { "required deviceId can not be null" }
+                val id = requireNotNull(context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null)) { "required deviceId can not be null" }
                 TipActivity.show(context, TipBundle(TipType.Create, id, TryConnecting))
             }
         }
 
-        fun navigateToMessage() {
-            val conversationListFragment = ConversationListFragment.newInstance()
+        fun navigateToMessage(conversationListFragment: ConversationListFragment) {
             fragmentManager.beginTransaction()
-                .replace(containerId, conversationListFragment, ConversationListFragment.TAG)
+                .replace(R.id.root_view, conversationListFragment, ConversationListFragment.TAG)
                 .commitAllowingStateLoss()
         }
 
-        fun showSearch() {
-            var searchFragment = fragmentManager.findFragmentByTag(SearchFragment.TAG)
+        fun navigateToBotManager(botManagerFragment: BotManagerFragment) {
+            fragmentManager.beginTransaction()
+                .replace(R.id.root_view, botManagerFragment, BotManagerFragment.TAG)
+                .commitAllowingStateLoss()
+        }
+
+        fun showSearch(fm: FragmentManager) {
+            var searchFragment = fm.findFragmentByTag(SearchFragment.TAG)
             if (searchFragment == null) {
                 searchFragment = SearchFragment()
-                fragmentManager.beginTransaction()
+                fm.beginTransaction()
                     .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
-                    .add(containerId, searchFragment, SearchFragment.TAG)
+                    .add(R.id.container_search, searchFragment, SearchFragment.TAG)
                     .commitAllowingStateLoss()
             } else {
                 searchFragment.view?.isVisible = true

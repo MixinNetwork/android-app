@@ -12,13 +12,9 @@ import android.content.IntentSender
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
-import android.view.KeyEvent
 import androidx.core.content.getSystemService
-import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.room.util.readVersion
@@ -52,8 +48,6 @@ import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
 import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
-import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
-import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
@@ -64,7 +58,6 @@ import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
@@ -76,11 +69,11 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.event.SessionEvent
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.areBubblesAllowedCompat
 import one.mixin.android.extension.checkStorageNotLow
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.inTransaction
@@ -122,7 +115,6 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
-import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
@@ -131,11 +123,10 @@ import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.biometric.buildEmptyTransferBiometricItem
-import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.device.DeviceFragment
+import one.mixin.android.ui.home.bot.BotManagerFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.landing.InitializeActivity
@@ -143,7 +134,6 @@ import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
-import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.search.SearchSingleFragment
 import one.mixin.android.ui.tip.CheckRegisterBottomSheetDialogFragment
@@ -152,9 +142,11 @@ import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
+import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
+import one.mixin.android.ui.wallet.WalletFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.reportException
@@ -166,7 +158,6 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
-import one.mixin.android.widget.MaterialSearchView
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -218,8 +209,6 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private lateinit var binding: ActivityMainBinding
-
-    private var isDesktopLogin = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -287,7 +276,7 @@ class MainActivity : BlazeBaseActivity() {
         setContentView(binding.root)
 
         if (savedInstanceState == null) {
-            navigationController.navigateToMessage()
+            navigationController.navigateToMessage(conversationListFragment)
         }
 
         val account = Session.getAccount()
@@ -317,13 +306,6 @@ class MainActivity : BlazeBaseActivity() {
                 if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                     WalletConnectActivity.show(this, it.error)
                 }
-            }
-        RxBus.listen(SessionEvent::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(destroyScope)
-            .subscribe {
-                isDesktopLogin = Session.getExtensionSessionId() != null
-                binding.searchBar.updateDesktop(isDesktopLogin)
             }
 
         if (Session.getAccount()?.hasPin != true) {
@@ -639,7 +621,7 @@ class MainActivity : BlazeBaseActivity() {
     private fun popupSnackbarForCompleteUpdate() {
         if (isFinishing) return
         Snackbar.make(
-            binding.rootView,
+            binding.container,
             getString(R.string.update_downloaded),
             Snackbar.LENGTH_INDEFINITE,
         ).apply {
@@ -685,14 +667,18 @@ class MainActivity : BlazeBaseActivity() {
             bottomSheet?.dismiss()
             showScanBottom(scan)
             clearCodeAfterConsume(intent, SCAN)
-        } else if (intent.hasExtra(URL) || (intent.action == Intent.ACTION_VIEW && intent.categories.contains(Intent.CATEGORY_BROWSABLE))) {
+        } else if (intent.hasExtra(URL) || (intent.action == Intent.ACTION_VIEW && intent.categories?.contains(Intent.CATEGORY_BROWSABLE) == true)) {
             val url = intent.getStringExtra(URL) ?: intent.data?.toString() ?: return
             bottomSheet?.dismiss()
             bottomSheet = LinkBottomSheetDialogFragment.newInstance(url, LinkBottomSheetDialogFragment.FROM_SCAN)
             bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             clearCodeAfterConsume(intent, URL)
         } else if (intent.hasExtra(WALLET)) {
-            navigationController.pushWallet()
+            binding.bottomNav.selectedItemId = R.id.nav_wallet
+            if (intent.getBooleanExtra(BUY, false)) {
+                WalletActivity.showBuy(this, null, null)
+                clearCodeAfterConsume(intent, BUY)
+            }
             clearCodeAfterConsume(intent, WALLET)
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER) ?: return
@@ -846,207 +832,105 @@ class MainActivity : BlazeBaseActivity() {
         bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
     }
 
-    private fun initView() {
-        binding.searchBar.setOnLeftClickListener {
-            openSearch()
-        }
-        binding.searchBar.setOnGroupClickListener {
-            navigationController.pushContacts()
-        }
-        binding.searchBar.setOnAddClickListener {
-            addCircle()
-        }
-        binding.searchBar.setOnConfirmClickListener {
-            val circlesFragment =
-                supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
-            circlesFragment.cancelSort()
-            binding.searchBar.actionVa.showPrevious()
-        }
-        binding.searchBar.setOnBackClickListener {
-            binding.searchBar.closeSearch()
-        }
-        binding.searchBar.mOnQueryTextListener =
-            object : MaterialSearchView.OnQueryTextListener {
-                override fun onQueryTextChange(newText: String): Boolean {
-                    (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(
-                        newText,
-                    )
-                    return true
-                }
-            }
-
-        binding.searchBar.setSearchViewListener(
-            object : MaterialSearchView.SearchViewListener {
-                override fun onSearchViewClosed() {
-                    navigationController.hideSearch()
-                }
-
-                override fun onSearchViewOpened() {
-                    navigationController.showSearch()
-                }
-            },
-        )
-        binding.searchBar.hideAction = {
-            (supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as? CirclesFragment)?.cancelSort()
-        }
-        binding.searchBar.logo.text = defaultSharedPreferences.getString(CIRCLE_NAME, "Mixin")
-        binding.searchBar.desktop.setOnClickListener {
-            DeviceFragment.newInstance().showNow(supportFragmentManager, DeviceFragment.TAG)
-        }
-        binding.rootView.setOnKeyListener { _, keyCode, _ ->
-            if (keyCode == KeyEvent.KEYCODE_BACK && binding.searchBar.isOpen) {
-                binding.searchBar.closeSearch()
-                true
-            } else {
-                false
-            }
-        }
-        supportFragmentManager.beginTransaction().add(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
-        observeOtherCircleUnread(defaultSharedPreferences.getString(CIRCLE_ID, null))
-        isDesktopLogin = Session.getExtensionSessionId() != null
-        binding.searchBar.updateDesktop(isDesktopLogin)
+    private val conversationListFragment by lazy {
+        ConversationListFragment()
     }
 
-    fun openSearch() {
-        binding.searchBar.openSearch()
+    private val walletFragment by lazy {
+        WalletFragment()
+    }
+
+    private val botManagerFragment by lazy {
+        BotManagerFragment()
+    }
+
+    private fun initView() {
+        binding.apply {
+            bottomNav.itemIconTintList = null
+            bottomNav.menu.findItem(R.id.nav_chat).setChecked(true)
+            bottomNav.setOnItemSelectedListener {
+                when (it.itemId) {
+                    R.id.nav_chat -> {
+                        navigationController.navigateToMessage(conversationListFragment)
+                        true
+                    }
+
+                    R.id.nav_wallet -> {
+                        openWallet()
+                        conversationListFragment.hideCircles()
+                        true
+                    }
+
+                    R.id.nav_app -> {
+                        navigationController.navigateToBotManager(botManagerFragment)
+                        conversationListFragment.hideCircles()
+                        true
+                    }
+
+                    else -> {
+                        conversationListFragment.hideCircles()
+                        false
+                    }
+                }
+            }
+        }
     }
 
     fun openWallet() {
-        navigationController.pushWallet()
-    }
-
-    private val circlesFragment by lazy {
-        CirclesFragment.newInstance()
-    }
-
-    fun closeSearch() {
-        binding.searchBar.closeSearch()
-    }
-
-    fun dragSearch(progress: Float) {
-        binding.searchBar.dragSearch(progress)
-    }
-
-    fun showSearchLoading() {
-        binding.searchBar.showLoading()
+        navigationController.pushWallet(walletFragment)
     }
 
     fun hideSearchLoading() {
-        binding.searchBar.hideLoading()
+        conversationListFragment.hideSearchLoading()
+    }
+
+    fun closeSearch() {
+        conversationListFragment.closeSearch()
+    }
+
+    fun showSearchLoading() {
+        conversationListFragment.showSearchLoading()
     }
 
     fun selectCircle(
         name: String?,
         circleId: String?,
     ) {
-        setCircleName(name)
-        defaultSharedPreferences.putString(CIRCLE_NAME, name)
-        defaultSharedPreferences.putString(CIRCLE_ID, circleId)
-        binding.searchBar.hideContainer()
-        (supportFragmentManager.findFragmentByTag(ConversationListFragment.TAG) as? ConversationListFragment)?.circleId = circleId
-        observeOtherCircleUnread(circleId)
+        conversationListFragment.selectCircle(name, circleId)
     }
 
     fun setCircleName(name: String?) {
-        binding.searchBar.logo.text = name ?: "Mixin"
-    }
-
-    fun openCircleEdit(circleId: String) {
-        conversationDao
-        lifecycleScope.launch {
-            userRepo.findCircleItemByCircleIdSuspend(circleId)?.let { circleItem ->
-                val circlesFragment =
-                    supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment?
-                circlesFragment?.edit(circleItem)
-            }
-        }
+        conversationListFragment.setCircleName(name)
     }
 
     fun sortAction() {
-        binding.searchBar.actionVa.showNext()
-    }
-
-    private var dotObserver =
-        Observer<Boolean> {
-            binding.searchBar.dot.isVisible = it
-        }
-    private var dotLiveData: LiveData<Boolean>? = null
-
-    private fun observeOtherCircleUnread(circleId: String?) =
-        lifecycleScope.launch {
-            dotLiveData?.removeObserver(dotObserver)
-            if (circleId == null) {
-                binding.searchBar.dot.isVisible = false
-                return@launch
-            }
-            dotLiveData = userRepo.hasUnreadMessage(circleId = circleId)
-            dotLiveData?.observe(this@MainActivity, dotObserver)
-        }
-
-    private fun addCircle() {
-        editDialog {
-            titleText = this@MainActivity.getString(R.string.Add_circle)
-            maxTextCount = 64
-            defaultEditEnable = false
-            editMaxLines = EditDialog.MAX_LINE.toInt()
-            allowEmpty = false
-            rightText = android.R.string.ok
-            rightAction = {
-                createCircle(it)
-            }
-        }
-    }
-
-    private fun createCircle(name: String) {
-        lifecycleScope.launch(errorHandler) {
-            val dialog =
-                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                    setCancelable(false)
-                }
-            handleMixinResponse(
-                invokeNetwork = {
-                    userRepo.createCircle(name)
-                },
-                successBlock = { response ->
-                    response.data?.let { circle ->
-                        userRepo.insertCircle(circle)
-                        openCircleEdit(circle.circleId)
-                    }
-                },
-                exceptionBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                },
-                failureBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                },
-            )
-            dialog.dismiss()
-        }
+        conversationListFragment.sortAction()
     }
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        super.onBackPressed()
         val searchMessageFragment =
             supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG)
         val searchSingleFragment =
             supportFragmentManager.findFragmentByTag(SearchSingleFragment.TAG)
         val circlesFragment =
-            supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as BaseFragment
+            supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as BaseFragment?
         val conversationCircleEditFragment =
             supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG)
         when {
             searchMessageFragment != null -> onBackPressedDispatcher.onBackPressed()
             searchSingleFragment != null -> onBackPressedDispatcher.onBackPressed()
             conversationCircleEditFragment != null -> onBackPressedDispatcher.onBackPressed()
-            binding.searchBar.isOpen -> binding.searchBar.closeSearch()
-            binding.searchBar.containerDisplay -> {
-                if (!circlesFragment.onBackPressed()) {
-                    binding.searchBar.hideContainer()
+            conversationListFragment.isAdded && conversationListFragment.isOpen() -> {
+                conversationListFragment.closeSearch()
+            }
+            conversationListFragment.isAdded && conversationListFragment.containerDisplay() -> {
+                if (circlesFragment == null) {
+                    super.onBackPressed()
+                } else if (!circlesFragment.onBackPressed()) {
+                    conversationListFragment.hideContainer()
                 } else {
-                    binding.searchBar.actionVa.showPrevious()
+                    conversationListFragment.showPrevious()
                 }
             }
             else -> {
@@ -1060,6 +944,26 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
+    fun tintColor(c: Int?) {
+        val s = colorFromAttribute(R.attr.bg_white)
+        if (c == null) {
+            binding.bottomNav.setBackgroundColor(s)
+        } else {
+            binding.bottomNav.setBackgroundColor(mixColor(s, c))
+        }
+    }
+
+    private fun mixColor(
+        color1: Int,
+        color2: Int,
+    ): Int {
+        val a = (color1 ushr 24) * 0.5f + (color2 ushr 24) * 0.5f
+        val r = ((color1 shr 16) and 0xFF) * 0.5f + ((color2 shr 16) and 0xFF) * 0.5f
+        val g = ((color1 shr 8) and 0xFF) * 0.5f + ((color2 shr 8) and 0xFF) * 0.5f
+        val b = (color1 and 0xFF) * 0.5f + (color2 and 0xFF) * 0.5f
+        return ((a.toInt() shl 24) or (r.toInt() shl 16) or (g.toInt() shl 8) or b.toInt())
+    }
+
     companion object {
         const val URL = "url"
         const val SCAN = "scan"
@@ -1067,10 +971,15 @@ class MainActivity : BlazeBaseActivity() {
         private const val WALLET = "wallet"
         const val WALLET_CONNECT = "wallet_connect"
 
-        fun showWallet(context: Context) {
+        fun showWallet(
+            context: Context,
+            buy: Boolean = false,
+        ) {
             Intent(context, MainActivity::class.java).apply {
                 putExtra(WALLET, true)
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                putExtra(BUY, buy)
+                addCategory(Intent.CATEGORY_LAUNCHER)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             }.run {
                 context.startActivity(this)
             }

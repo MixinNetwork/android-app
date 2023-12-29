@@ -225,4 +225,10 @@ class ConversationListViewModel
         suspend fun findAppById(appId: String) = userRepository.findAppById(appId)
 
         suspend fun findTotalUSDBalance() = tokenRepository.findTotalUSDBalance()
+
+        fun hasUnreadMessage(circleId: String) = userRepository.hasUnreadMessage(circleId)
+
+        suspend fun createCircle(name: String) = userRepository.createCircle(name)
+
+        suspend fun findCircleItemByCircleIdSuspend(circleId: String) = userRepository.findCircleItemByCircleIdSuspend(circleId)
     }

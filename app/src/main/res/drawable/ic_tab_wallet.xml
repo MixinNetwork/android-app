@@ -1,0 +1,4 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_tab_wallet_selected" android:state_selected="true" />
+    <item android:drawable="@drawable/ic_tab_wallet_unselected" />
+</selector>

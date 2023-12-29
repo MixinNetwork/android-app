@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="26dp"
     android:background="@color/colorBlue"
-    android:visibility="gone">
+    android:visibility="gone"
+    app:layout_constraintTop_toBottomOf="@id/search_bar">
 
     <ProgressBar
         android:id="@+id/progressBar"

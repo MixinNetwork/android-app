@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.drawable.Animatable
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -12,16 +13,11 @@ import android.view.View.VISIBLE
 import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.animation.BounceInterpolator
-import android.widget.ImageView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
-import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.children
 import androidx.core.view.isGone
-import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
-import androidx.core.view.setPadding
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
@@ -37,6 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
+import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
 import one.mixin.android.Constants.Mute.MUTE_1_HOUR
 import one.mixin.android.Constants.Mute.MUTE_1_WEEK
 import one.mixin.android.Constants.Mute.MUTE_1_YEAR
@@ -47,8 +44,8 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentConversationListBinding
 import one.mixin.android.databinding.ItemListConversationBinding
 import one.mixin.android.databinding.ViewConversationBottomBinding
-import one.mixin.android.event.BotEvent
 import one.mixin.android.event.CircleDeleteEvent
+import one.mixin.android.event.SessionEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.clickVibrate
@@ -56,11 +53,13 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
@@ -68,21 +67,19 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.NavigationController
+import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.home.bot.BotManagerBottomSheetDialogFragment
-import one.mixin.android.ui.home.bot.DefaultTopBots
-import one.mixin.android.ui.home.bot.INTERNAL_CAMERA_ID
-import one.mixin.android.ui.home.bot.INTERNAL_SCAN_ID
-import one.mixin.android.ui.home.bot.INTERNAL_WALLET_ID
-import one.mixin.android.ui.home.bot.TOP_BOT
-import one.mixin.android.ui.home.bot.getCategoryIcon
-import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.ui.device.DeviceFragment
+import one.mixin.android.ui.home.circle.CirclesFragment
+import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.BulletinBoard
 import one.mixin.android.util.EmergencyContactBulletin
+import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.NewWalletBulletin
 import one.mixin.android.util.NotificationBulletin
@@ -121,6 +118,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BulletinView
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
+import one.mixin.android.widget.MaterialSearchView
 import one.mixin.android.widget.picker.toTimeInterval
 import java.io.File
 import javax.inject.Inject
@@ -177,8 +175,6 @@ class ConversationListFragment : LinkFragment() {
 
     private var isTop = true
     private var firstPosition = 0
-    private var distance = 0
-    private var shadowVisible = true
     private val touchSlop: Int by lazy {
         ViewConfiguration.get(requireContext()).scaledTouchSlop
     }
@@ -234,20 +230,6 @@ class ConversationListFragment : LinkFragment() {
                     dx: Int,
                     dy: Int,
                 ) {
-                    if (distance < -touchSlop && !shadowVisible) {
-                        binding.shadowFl.animate().translationY(0f).duration = 200
-                        distance = 0
-                        shadowVisible = true
-                    } else if (distance > touchSlop && shadowVisible) {
-                        binding.shadowFl.animate()
-                            .translationY(binding.shadowFl.height.toFloat()).duration = 200
-                        distance = 0
-                        shadowVisible = false
-                    }
-                    if ((dy > 0 && shadowVisible) || (dy < 0 && !shadowVisible)) {
-                        distance += dy
-                    }
-
                     firstPosition = (binding.messageRv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
                     if (firstPosition > 0) {
                         if (isTop) {
@@ -286,7 +268,7 @@ class ConversationListFragment : LinkFragment() {
                         }
                     }
                     val progress = min(targetH / vibrateDis.toFloat(), 1f)
-                    (requireActivity() as MainActivity).dragSearch(progress)
+                    dragSearch(progress)
                 }
 
                 override fun onRelease(fling: Int) {
@@ -299,9 +281,9 @@ class ConversationListFragment : LinkFragment() {
 
                     val open = (fling == FLING_DOWN && shouldVibrate) || topFl?.height ?: 0 >= vibrateDis
                     if (open) {
-                        (requireActivity() as MainActivity).openSearch()
+                        openSearch()
                     } else {
-                        (requireActivity() as MainActivity).closeSearch()
+                        closeSearch()
                     }
 
                     topFl?.animateHeight(
@@ -317,10 +299,6 @@ class ConversationListFragment : LinkFragment() {
                     }
                 }
             }
-        binding.shadowView.more.setOnClickListener {
-            BotManagerBottomSheetDialogFragment()
-                .show(parentFragmentManager, BotManagerBottomSheetDialogFragment.TAG)
-        }
 
         messageAdapter.onItemListener =
             object : PagedHeaderAdapter.OnItemListener<ConversationItem> {
@@ -362,7 +340,7 @@ class ConversationListFragment : LinkFragment() {
         binding.emptyView.startBn.setOnClickListener {
             val cid = circleId
             if (cid != null) {
-                (requireActivity() as MainActivity).openCircleEdit(cid)
+                openCircleEdit(cid)
             } else {
                 navigationController.pushContacts()
             }
@@ -378,17 +356,205 @@ class ConversationListFragment : LinkFragment() {
             .autoDispose(destroyScope)
             .subscribe {
                 if (it.circleId == this.circleId) {
-                    (requireActivity() as MainActivity).selectCircle(null, null)
+                    selectCircle(null, null)
                 }
             }
-        refreshBot()
-        RxBus.listen(BotEvent::class.java)
+        RxBus.listen(SessionEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe {
-                refreshBot()
+                isDesktopLogin = Session.getExtensionSessionId() != null
+                binding.searchBar.updateDesktop(isDesktopLogin)
             }
+        initSearch()
     }
+
+    private fun openSearch() {
+        binding.searchBar.openSearch()
+    }
+
+    fun closeSearch() {
+        binding.searchBar.closeSearch()
+    }
+
+    fun sortAction() {
+        binding.searchBar.actionVa.showNext()
+    }
+
+    fun hideSearchLoading() {
+        binding.searchBar.hideLoading()
+    }
+
+    fun showSearchLoading() {
+        binding.searchBar.showLoading()
+    }
+
+    private fun dragSearch(progress: Float) {
+        binding.searchBar.dragSearch(progress)
+    }
+
+    private val circlesFragment by lazy {
+        CirclesFragment.newInstance()
+    }
+
+    private var isDesktopLogin = false
+
+    fun isOpen() =
+        binding.searchBar.isOpen
+
+    fun containerDisplay() =
+        binding.searchBar.containerDisplay
+
+    fun hideContainer() {
+        binding.searchBar.hideContainer()
+    }
+
+    fun showPrevious() {
+        binding.searchBar.actionVa.showPrevious()
+    }
+
+    private fun initSearch() {
+        binding.apply {
+            searchBar.setOnLeftClickListener {
+                openSearch()
+            }
+            searchBar.setOnGroupClickListener {
+                navigationController.pushContacts()
+            }
+            searchBar.setOnAddClickListener {
+                addCircle(it.context)
+            }
+            searchBar.setOnConfirmClickListener {
+                val circlesFragment =
+                    parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
+                circlesFragment.cancelSort()
+                searchBar.actionVa.showPrevious()
+            }
+            searchBar.setOnBackClickListener {
+                searchBar.closeSearch()
+            }
+            searchBar.mOnQueryTextListener =
+                object : MaterialSearchView.OnQueryTextListener {
+                    override fun onQueryTextChange(newText: String): Boolean {
+                        (parentFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(
+                            newText,
+                        )
+                        return true
+                    }
+                }
+
+            searchBar.setSearchViewListener(
+                object : MaterialSearchView.SearchViewListener {
+                    override fun onSearchViewClosed() {
+                        navigationController.hideSearch()
+                    }
+
+                    override fun onSearchViewOpened() {
+                        navigationController.showSearch(parentFragmentManager)
+                    }
+                },
+            )
+            searchBar.hideAction = {
+                (parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) as? CirclesFragment)?.cancelSort()
+                hideCircles()
+            }
+            searchBar.logo.text = defaultSharedPreferences.getString(CIRCLE_NAME, "Mixin")
+            searchBar.desktop.setOnClickListener {
+                DeviceFragment.newInstance().showNow(parentFragmentManager, DeviceFragment.TAG)
+            }
+            root.setOnKeyListener { _, keyCode, _ ->
+                if (keyCode == KeyEvent.KEYCODE_BACK && searchBar.isOpen) {
+                    binding.searchBar.closeSearch()
+                    true
+                } else {
+                    false
+                }
+            }
+            searchBar.showAction = {
+                if (parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) == null) {
+                    parentFragmentManager.beginTransaction().replace(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
+                }
+            }
+            isDesktopLogin = Session.getExtensionSessionId() != null
+            binding.searchBar.updateDesktop(isDesktopLogin)
+        }
+    }
+
+    fun hideCircles() {
+        if (isAdded && parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) != null) {
+            parentFragmentManager.beginTransaction().remove(circlesFragment).commit()
+        }
+    }
+
+    private fun addCircle(context: Context) {
+        editDialog {
+            titleText = context.getString(R.string.Add_circle)
+            maxTextCount = 64
+            defaultEditEnable = false
+            editMaxLines = EditDialog.MAX_LINE.toInt()
+            allowEmpty = false
+            rightText = android.R.string.ok
+            rightAction = {
+                createCircle(it)
+            }
+        }
+    }
+
+    private fun openCircleEdit(circleId: String) {
+        lifecycleScope.launch {
+            conversationListViewModel.findCircleItemByCircleIdSuspend(circleId)?.let { circleItem ->
+                val circlesFragment =
+                    parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment?
+                circlesFragment?.edit(circleItem)
+            }
+        }
+    }
+
+    private fun createCircle(name: String) {
+        lifecycleScope.launch(errorHandler) {
+            val dialog =
+                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                    setCancelable(false)
+                }
+            handleMixinResponse(
+                invokeNetwork = {
+                    conversationListViewModel.createCircle(name)
+                },
+                successBlock = { response ->
+                    response.data?.let { circle ->
+                        conversationListViewModel.insertCircle(circle)
+                        openCircleEdit(circle.circleId)
+                    }
+                },
+                exceptionBlock = {
+                    dialog.dismiss()
+                    return@handleMixinResponse false
+                },
+                failureBlock = {
+                    dialog.dismiss()
+                    return@handleMixinResponse false
+                },
+            )
+            dialog.dismiss()
+        }
+    }
+
+    private var dotObserver =
+        Observer<Boolean> {
+            binding.searchBar.dot.isVisible = it
+        }
+    private var dotLiveData: LiveData<Boolean>? = null
+
+    private fun observeOtherCircleUnread(circleId: String?) =
+        lifecycleScope.launch {
+            dotLiveData?.removeObserver(dotObserver)
+            if (circleId == null) {
+                binding.searchBar.dot.isVisible = false
+                return@launch
+            }
+            dotLiveData = conversationListViewModel.hasUnreadMessage(circleId = circleId)
+            dotLiveData?.observe(this@ConversationListFragment.viewLifecycleOwner, dotObserver)
+        }
 
     override fun onDestroyView() {
         if (isAdded) {
@@ -446,15 +612,28 @@ class ConversationListFragment : LinkFragment() {
 
     private var scrollTop = false
 
+    fun selectCircle(
+        name: String?,
+        circleId: String?,
+    ) {
+        setCircleName(name)
+        defaultSharedPreferences.putString(CIRCLE_NAME, name)
+        defaultSharedPreferences.putString(CIRCLE_ID, circleId)
+        binding.searchBar.hideContainer()
+        this.circleId = circleId
+        observeOtherCircleUnread(circleId)
+    }
+
+    fun setCircleName(name: String?) {
+        binding.searchBar.logo.text = name ?: "Mixin"
+    }
+
     private fun selectCircle(circleId: String?) {
         conversationLiveData?.removeObserver(observer)
         val liveData = conversationListViewModel.observeConversations(circleId)
         liveData.observe(viewLifecycleOwner, observer)
         scrollTop = true
         this.conversationLiveData = liveData
-        binding.shadowFl.animate().translationY(0f).duration = 200
-        distance = 0
-        shadowVisible = true
     }
 
     private fun animDownIcon(expand: Boolean) {
@@ -504,13 +683,6 @@ class ConversationListFragment : LinkFragment() {
                 }
                 .setPositiveButton(R.string.Confirm) { _, _ ->
                     val lm = binding.messageRv.layoutManager as LinearLayoutManager
-                    val lastCompleteVisibleItem = lm.findLastCompletelyVisibleItemPosition()
-                    val firstCompleteVisibleItem = lm.findFirstCompletelyVisibleItemPosition()
-                    if (lastCompleteVisibleItem - firstCompleteVisibleItem <= messageAdapter.itemCount &&
-                        lm.findFirstVisibleItemPosition() == 0
-                    ) {
-                        binding.shadowFl.animate().translationY(0f).duration = 200
-                    }
                     conversationListViewModel.deleteConversation(conversationId)
                     bottomSheet.dismiss()
                 }
@@ -561,89 +733,6 @@ class ConversationListFragment : LinkFragment() {
                 false
             }
         messageAdapter.setShowHeader(shown, binding.messageRv)
-    }
-
-    private fun refreshBot() {
-        lifecycleScope.launch {
-            binding.shadowView.firstIv.isGone = true
-            binding.shadowView.secondIv.isGone = true
-            binding.shadowView.thirdIv.isGone = true
-            requireContext().defaultSharedPreferences.getString(TOP_BOT, DefaultTopBots)?.let {
-                val bots = GsonHelper.customGson.fromJson(it, Array<String>::class.java)
-                bots.forEachIndexed { index, id ->
-                    if (index > 2) return@launch
-                    val view: ImageView =
-                        when (index) {
-                            0 -> {
-                                binding.shadowView.firstIv
-                            }
-                            1 -> {
-                                binding.shadowView.secondIv
-                            }
-                            else -> {
-                                binding.shadowView.thirdIv
-                            }
-                        }
-
-                    when (id) {
-                        INTERNAL_WALLET_ID -> {
-                            view.isVisible = true
-                            view.setImageResource(R.drawable.ic_bot_category_wallet)
-                            view.setOnClickListener {
-                                (requireActivity() as MainActivity).openWallet()
-                            }
-                        }
-                        INTERNAL_CAMERA_ID -> {
-                            view.isVisible = true
-                            view.setImageResource(R.drawable.ic_bot_category_camera)
-                            view.setOnClickListener {
-                                openCamera(false)
-                            }
-                        }
-                        INTERNAL_SCAN_ID -> {
-                            view.isVisible = true
-                            view.setImageResource(R.drawable.ic_bot_category_scan)
-                            view.setOnClickListener {
-                                openCamera(true)
-                            }
-                        }
-                        else -> {
-                            val app = conversationListViewModel.findAppById(id)
-                            if (app != null) {
-                                view.isVisible = true
-                                view.setImageResource(app.getCategoryIcon())
-                                view.setOnClickListener {
-                                    WebActivity.show(requireContext(), app.homeUri, null, app)
-                                }
-                            } else {
-                                view.isInvisible = true
-                            }
-                        }
-                    }
-                }
-                if (bots.size < 3) {
-                    val dp88 = 88.dp
-                    val dp32 = 32.dp
-                    binding.shadowView.children.forEach { v ->
-                        v.updateLayoutParams<LinearLayoutCompat.LayoutParams> {
-                            width = dp88
-                            height = dp88
-                        }
-                        v.setPadding(dp32)
-                    }
-                } else {
-                    val dp80 = 80.dp
-                    val dp28 = 28.dp
-                    binding.shadowView.children.forEach { v ->
-                        v.updateLayoutParams<LinearLayoutCompat.LayoutParams> {
-                            width = dp80
-                            height = dp80
-                        }
-                        v.setPadding(dp28)
-                    }
-                }
-            }
-        }
     }
 
     private fun openCamera(scan: Boolean) {
