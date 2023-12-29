@@ -19,6 +19,7 @@ import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.AddressResponse
 import one.mixin.android.api.response.DeviceCheckResponse
+import one.mixin.android.api.response.SchemeResponse
 import one.mixin.android.api.response.SessionSecretResponse
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.vo.Account
@@ -96,6 +97,11 @@ interface AccountService {
     suspend fun code(
         @Path("id") id: String,
     ): MixinResponse<JsonObject>
+
+    @GET("schemes/{id}")
+    suspend fun getScheme(
+        @Path("id") id: String,
+    ): MixinResponse<SchemeResponse>
 
     @POST("pin/update")
     suspend fun updatePinSuspend(

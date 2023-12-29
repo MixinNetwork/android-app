@@ -59,6 +59,8 @@ class BottomSheetViewModel
                 accountRepository.searchCode(code)
             }
 
+        suspend fun getScheme(id: String) = accountRepository.getScheme(id)
+
         fun join(code: String): Observable<MixinResponse<ConversationResponse>> =
             accountRepository.join(code).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 

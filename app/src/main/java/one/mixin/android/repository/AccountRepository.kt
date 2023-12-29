@@ -113,6 +113,8 @@ class AccountRepository
             return conversationService.join(conversationId)
         }
 
+        suspend fun getScheme(id: String) = accountService.getScheme(id)
+
         suspend fun searchCode(code: String): Pair<String, Any> {
             val response = accountService.code(code)
             if (!response.isSuccess) {

@@ -139,7 +139,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val url: String by lazy { requireArguments().getString(CODE)!! }
     private val from: Int by lazy { requireArguments().getInt(FROM, FROM_EXTERNAL) }
 
-    private val newSchemaParser: NewSchemaParser by lazy { NewSchemaParser(this) }
+    private val newSchemeParser: NewSchemeParser by lazy { NewSchemeParser(this) }
 
     override fun onStart() {
         try {
@@ -322,7 +322,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } else if (url.startsWith(Scheme.MIXIN_PAY)) {
             if (checkHasPin()) return
             lifecycleScope.launch(errorHandler) {
-                if (!newSchemaParser.parse(url, from)) {
+                if (!newSchemeParser.parse(url, from)) {
                     showError(R.string.Invalid_payment_link)
                 } else {
                     dismiss()
@@ -339,7 +339,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         showError(R.string.Invalid_payment_link)
                     }
                 } else if (segments.size == (if (url.startsWith(Scheme.HTTPS_PAY, true)) 2 else 1)) {
-                    if (!newSchemaParser.parse(url, from)) {
+                    if (!newSchemeParser.parse(url, from)) {
                         showError(R.string.Invalid_payment_link)
                     } else {
                         dismiss()
@@ -348,6 +348,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     dismiss()
                 }
             }
+        } else if (url.startsWith(Scheme.HTTPS_SCHEMES, true) || url.startsWith(Scheme.SCHEMES, true)) {
+            
+
         } else if (url.startsWith(Scheme.HTTPS_CODES, true) || url.startsWith(Scheme.CODES, true)) {
             val segments = Uri.parse(url).pathSegments
             if (segments.isEmpty()) return
@@ -730,7 +733,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 if (checkHasPin()) return
 
                 lifecycleScope.launch(errorHandler) {
-                    newSchemaParser.parseExternalTransferUrl(url)
+                    newSchemeParser.parseExternalTransferUrl(url)
                 }
             } else if (url.isExternalScheme(requireContext())) {
                 WebActivity.show(requireContext(), url, null)

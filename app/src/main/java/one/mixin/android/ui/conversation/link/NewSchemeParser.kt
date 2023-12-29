@@ -35,7 +35,7 @@ enum class PayType {
     MixAddress,
 }
 
-class NewSchemaParser(
+class NewSchemeParser(
     private val bottomSheet: LinkBottomSheetDialogFragment,
 ) {
     private val linkViewModel = bottomSheet.linkViewModel
