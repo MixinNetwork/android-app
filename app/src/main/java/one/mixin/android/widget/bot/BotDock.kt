@@ -148,6 +148,9 @@ class BotDock : ViewGroup, View.OnLongClickListener {
                 getItemDock(getChildAt(i)).apply {
                     avatar.alpha = 1f
                     avatar.translationX = 0f
+                    root.setOnClickListener {
+                        // do nothing
+                    }
                 }.avatar
             if (i - 1 < apps.size) {
                 avatar.isVisible = true
