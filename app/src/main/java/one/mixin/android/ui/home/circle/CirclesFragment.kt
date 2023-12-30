@@ -320,7 +320,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
             this@CirclesFragment,
             ConversationCircleEditFragment.newInstance(conversationCircleItem),
             ConversationCircleEditFragment.TAG,
-            R.id.root_view,
+            R.id.container,
         )
     }
 

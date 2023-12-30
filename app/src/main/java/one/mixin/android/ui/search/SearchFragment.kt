@@ -198,7 +198,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                 override fun onMessageClick(message: SearchMessageItem) {
                     binding.searchRv.hideKeyboard()
                     val f = SearchMessageFragment.newInstance(message, keyword ?: "")
-                    requireActivity().addFragment(this@SearchFragment, f, SearchMessageFragment.TAG, R.id.root_view)
+                    requireActivity().addFragment(this@SearchFragment, f, SearchMessageFragment.TAG, R.id.container)
                 }
 
                 override fun onChatClick(chatMinimal: ChatMinimal) {
