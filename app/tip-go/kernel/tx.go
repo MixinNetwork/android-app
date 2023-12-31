@@ -517,19 +517,3 @@ func SignTransaction(raw, viewKeys string, spendKey string, index int, withoutFe
 	}
 	return transaction, nil
 }
-
-func DecodeRawTx(raw string, _ int) (string, error) {
-	rawBytes, err := hex.DecodeString(raw)
-	if err != nil {
-		return "", err
-	}
-	ver, err := common.UnmarshalVersionedTransaction(rawBytes)
-	if err != nil {
-		return "", err
-	}
-	tx, err := json.Marshal(ver)
-	if err != nil {
-		return "", err
-	}
-	return string(tx), nil
-}

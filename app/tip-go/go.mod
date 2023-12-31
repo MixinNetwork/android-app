@@ -5,18 +5,18 @@ go 1.21
 toolchain go1.21.5
 
 require (
-	filippo.io/edwards25519 v1.0.0
-	github.com/MixinNetwork/mixin v0.17.3
+	filippo.io/edwards25519 v1.1.0
+	github.com/MixinNetwork/mixin v0.17.10
 	github.com/btcsuite/btcd/btcutil v1.1.3
 	github.com/drand/kyber v1.1.18
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/crypto v0.16.0
+	golang.org/x/crypto v0.17.0
 )
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.6 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
