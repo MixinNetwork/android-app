@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.os.Build
 import android.security.keystore.UserNotAuthenticatedException
 import androidx.core.os.bundleOf
 import dagger.hilt.android.AndroidEntryPoint
@@ -65,6 +66,11 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                     return false
                 }
             } catch (e: UserNotAuthenticatedException) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    // https://issuetracker.google.com/issues/301069939
+                    BiometricUtil.deleteKey(requireContext())
+                }
+
                 val biometricDialog =
                     BiometricDialog(
                         requireActivity(),

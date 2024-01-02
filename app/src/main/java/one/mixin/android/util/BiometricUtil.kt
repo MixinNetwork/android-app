@@ -28,6 +28,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.toast
+import timber.log.Timber
 import java.nio.charset.Charset
 import java.security.InvalidKeyException
 import java.security.KeyStore
@@ -151,9 +152,11 @@ object BiometricUtil {
         try {
             key = ks.getKey(BIOMETRICS_ALIAS, null) as? SecretKey
         } catch (e: Exception) {
+            Timber.e("$CRASHLYTICS_BIOMETRIC-getKey ${e.stackTraceToString()}")
             reportException("$CRASHLYTICS_BIOMETRIC-getKey", e)
         }
         try {
+            Timber.e("$CRASHLYTICS_BIOMETRIC-getKey key == null is ${key == null}")
             if (key == null) {
                 val keyGenerator =
                     KeyGenerator.getInstance(
@@ -174,6 +177,7 @@ object BiometricUtil {
                             KeyProperties.ENCRYPTION_PADDING_PKCS7,
                             KeyProperties.ENCRYPTION_PADDING_NONE,
                         ).apply {
+                            Timber.e("$CRASHLYTICS_BIOMETRIC-setUserAuthenticationRequired sdk version: ${Build.VERSION.SDK_INT}")
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                                 // https://issuetracker.google.com/issues/301069939
                                 setUserAuthenticationRequired(false)
@@ -192,6 +196,7 @@ object BiometricUtil {
                 key = keyGenerator.generateKey()
             }
         } catch (e: Exception) {
+            Timber.e("$CRASHLYTICS_BIOMETRIC-generateKey ${e.stackTraceToString()}")
             reportException("$CRASHLYTICS_BIOMETRIC-generateKey", e)
         }
         return key
