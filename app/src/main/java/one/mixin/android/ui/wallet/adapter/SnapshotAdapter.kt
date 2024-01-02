@@ -2,7 +2,7 @@ package one.mixin.android.ui.wallet.adapter
 
 import android.content.ClipData
 import android.view.ViewGroup
-import androidx.paging.PagingDataAdapter
+import androidx.paging.PagedListAdapter
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.extension.getClipboardManager
@@ -13,7 +13,7 @@ import one.mixin.android.vo.SnapshotItem
 import kotlin.math.abs
 
 class SnapshotAdapter :
-    PagingDataAdapter<SnapshotItem, SnapshotHolder>(SnapshotItem.DIFF_CALLBACK),
+    PagedListAdapter<SnapshotItem, SnapshotHolder>(SnapshotItem.DIFF_CALLBACK),
     StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
     var listener: OnSnapshotListener? = null
 

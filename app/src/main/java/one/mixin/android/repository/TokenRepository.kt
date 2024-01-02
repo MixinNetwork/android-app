@@ -70,7 +70,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
@@ -728,7 +727,7 @@ class TokenRepository
             userId: String,
             opponentId: String,
             transactionHash: String,
-            requestId:String,
+            requestId: String,
             assetId: String,
             amount: String,
             memo: String?,

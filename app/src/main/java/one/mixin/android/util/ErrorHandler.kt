@@ -113,9 +113,12 @@ open class ErrorHandler {
 
         private fun handleCronetException(e: CronetException) {
             val ctx = MixinApplication.appContext
-            val extra = if (e is org.chromium.net.NetworkException) {
-                "${e.errorCode}, ${e.cronetInternalErrorCode}"
-            } else ""
+            val extra =
+                if (e is org.chromium.net.NetworkException) {
+                    "${e.errorCode}, ${e.cronetInternalErrorCode}"
+                } else {
+                    ""
+                }
             toast("${ctx.getString(R.string.error_connection_error)} $extra")
         }
 

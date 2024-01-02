@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.LayoutRes
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
@@ -20,7 +21,9 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CheckedFlowLayout
 import javax.inject.Inject
 
-abstract class BaseTransactionsFragment<C> : BaseFragment() {
+abstract class BaseTransactionsFragment<C>(
+    @LayoutRes contentLayoutId: Int,
+) : BaseFragment(contentLayoutId) {
     @Inject
     lateinit var jobManager: MixinJobManager
 
