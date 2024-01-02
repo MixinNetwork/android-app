@@ -1,11 +1,9 @@
 package one.mixin.android.ui.wallet
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
@@ -26,30 +24,21 @@ import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.toSnapshot
 
 @AndroidEntryPoint
-class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
+class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R.layout.fragment_all_transactions), OnSnapshotListener {
     companion object {
         const val TAG = "AllTransactionsFragment"
     }
 
-    private var _binding: FragmentAllTransactionsBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private val binding by viewBinding(FragmentAllTransactionsBinding::bind)
 
     private val adapter = SnapshotPagedAdapter()
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View {
-        _binding = FragmentAllTransactionsBinding.inflate(layoutInflater, container, false)
-        return binding.root
-    }
 
     override fun onViewCreated(
         view: View,
@@ -90,11 +79,6 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         bindLiveData()
 
         refreshAllPendingDeposit()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     override fun <T> onNormalItemClick(item: T) {

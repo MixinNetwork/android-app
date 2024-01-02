@@ -74,17 +74,29 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                     view?.translationY(0f)
                 }
 
-                override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
+                override fun onReceivedHttpError(
+                    view: WebView?,
+                    request: WebResourceRequest?,
+                    errorResponse: WebResourceResponse?,
+                ) {
                     super.onReceivedHttpError(view, request, errorResponse)
                     reportException(CaptchaException("$TAG load $captchaType onReceivedHttpError ${errorResponse?.statusCode} ${errorResponse?.reasonPhrase}"))
                 }
 
-                override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
+                override fun onReceivedSslError(
+                    view: WebView?,
+                    handler: SslErrorHandler?,
+                    error: SslError?,
+                ) {
                     super.onReceivedSslError(view, handler, error)
                     reportException(CaptchaException("$TAG load $captchaType onReceivedSslError ${error?.toString()}"))
                 }
 
-                override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+                override fun onReceivedError(
+                    view: WebView?,
+                    request: WebResourceRequest?,
+                    error: WebResourceError?,
+                ) {
                     super.onReceivedError(view, request, error)
                     reportException(CaptchaException("$TAG load $captchaType onReceivedError ${error?.errorCode} ${error?.description}"))
                 }
