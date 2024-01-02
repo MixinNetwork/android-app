@@ -80,6 +80,7 @@ import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.SafeSnapshotType
+import one.mixin.android.vo.safe.SafeWithdrawal
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
@@ -732,8 +733,9 @@ class TokenRepository
             amount: String,
             memo: String?,
             type: SafeSnapshotType,
+            withdrawal: SafeWithdrawal? = null,
         ) {
-            val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toHex() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, null)
+            val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toHex() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, withdrawal)
             safeSnapshotDao.insert(snapshot)
         }
 
