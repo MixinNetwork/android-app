@@ -247,7 +247,9 @@ class BottomSheetViewModel
                         tokenRepository.insertOutput(changeOutput)
                     }
                     val transactionHash = signWithdrawal.hash
-                    tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, receiverId, transactionHash, traceId, assetId, amount, memo, SafeSnapshotType.withdrawal)
+                    tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, traceId, assetId, amount, memo, SafeSnapshotType.withdrawal)
+                    val feeTransactionHash = signFee.hash
+                    tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("${senderId}:$feeTransactionHash".toByteArray()).toString(), senderId, receiverId, feeTransactionHash, feeTraceId, feeAssetId, feeAmount, "", SafeSnapshotType.snapshot)
                     tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))
                     tokenRepository.insetRawTransaction(RawTransaction(feeData.requestId, signFeeResult.raw, receiverId, RawTransactionType.FEE, OutputState.unspent, nowInUtc()))
                 }
@@ -260,7 +262,7 @@ class BottomSheetViewModel
                     }
                     tokenRepository.updateUtxoToSigned(withdrawalUtxos.ids)
                     val transactionHash = signWithdrawal.hash
-                    tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, receiverId, transactionHash, traceId, assetId, amount, memo, SafeSnapshotType.withdrawal)
+                    tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, traceId, assetId, amount, memo, SafeSnapshotType.withdrawal)
                     tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))
                 }
                 jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
