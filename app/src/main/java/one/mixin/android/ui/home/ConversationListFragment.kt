@@ -370,27 +370,39 @@ class ConversationListFragment : LinkFragment() {
     }
 
     private fun openSearch() {
-        binding.searchBar.openSearch()
+        if (isAdded) {
+            binding.searchBar.openSearch()
+        }
     }
 
     fun closeSearch() {
-        binding.searchBar.closeSearch()
+        if (isAdded) {
+            binding.searchBar.closeSearch()
+        }
     }
 
     fun sortAction() {
-        binding.searchBar.actionVa.showNext()
+        if (isAdded) {
+            binding.searchBar.actionVa.showNext()
+        }
     }
 
     fun hideSearchLoading() {
-        binding.searchBar.hideLoading()
+        if (isAdded) {
+            binding.searchBar.hideLoading()
+        }
     }
 
     fun showSearchLoading() {
-        binding.searchBar.showLoading()
+        if (isAdded) {
+            binding.searchBar.showLoading()
+        }
     }
 
     private fun dragSearch(progress: Float) {
-        binding.searchBar.dragSearch(progress)
+        if (isAdded) {
+            binding.searchBar.dragSearch(progress)
+        }
     }
 
     private val circlesFragment by lazy {
