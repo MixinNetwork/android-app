@@ -76,7 +76,7 @@ buildscript {
         ext.testCoreVersion = '1.5.0'
         ext.mockitoVersion = '5.8.0'
         ext.androidxJunitVersion = '1.1.5'
-        ext.leakcanaryVerison = '2.12'
+        ext.leakcanaryVerison = '2.13'
         ext.mockitoVersion = '1.10.19'
         ext.hamcrestVersion = '1.3'
         ext.mockitoCoreVersion = '2.7.19'
