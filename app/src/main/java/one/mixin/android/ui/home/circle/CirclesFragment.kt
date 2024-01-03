@@ -108,7 +108,9 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
                 (requireActivity() as MainActivity).sortAction()
             },
             {
-                conversationViewModel.sortCircleConversations(it)
+                lifecycleScope.launch {
+                    conversationViewModel.sortCircleConversations(it)
+                }
             },
         )
     }

@@ -695,7 +695,9 @@ class ConversationListFragment : LinkFragment() {
                 }
                 .setPositiveButton(R.string.Confirm) { _, _ ->
                     val lm = binding.messageRv.layoutManager as LinearLayoutManager
-                    conversationListViewModel.deleteConversation(conversationId)
+                    lifecycleScope.launch {
+                        conversationListViewModel.deleteConversation(conversationId)
+                    }
                     bottomSheet.dismiss()
                 }
                 .show()
@@ -703,17 +705,21 @@ class ConversationListFragment : LinkFragment() {
         if (hasPin) {
             viewBinding.pinTv.setText(R.string.Unpin)
             viewBinding.pinTv.setOnClickListener {
-                conversationListViewModel.updateConversationPinTimeById(conversationId, circleId, null)
+                lifecycleScope.launch {
+                    conversationListViewModel.updateConversationPinTimeById(conversationId, circleId, null)
+                }
                 bottomSheet.dismiss()
             }
         } else {
             viewBinding.pinTv.setText(R.string.pin_title)
             viewBinding.pinTv.setOnClickListener {
-                conversationListViewModel.updateConversationPinTimeById(
-                    conversationId,
-                    circleId,
-                    nowInUtc(),
-                )
+                lifecycleScope.launch {
+                    conversationListViewModel.updateConversationPinTimeById(
+                        conversationId,
+                        circleId,
+                        nowInUtc(),
+                    )
+                }
                 bottomSheet.dismiss()
             }
         }
