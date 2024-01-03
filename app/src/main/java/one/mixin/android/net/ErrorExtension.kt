@@ -6,15 +6,19 @@ import one.mixin.android.api.ServerErrorException
 
 suspend fun <T> executeWithRetry(retries: Int, executeFunc: suspend () -> MixinResponse<T>): MixinResponse<T> {
     return try {
-        val response =  executeFunc()
-        if (response.errorCode == 500){
+        val response = executeFunc()
+        if (retries > 0 && response.errorCode == 500) {
             delay(200)
             executeWithRetry(retries - 1, executeFunc)
-        }else{
+        } else {
             response
         }
     } catch (e: ServerErrorException) {
-        executeWithRetry(retries - 1, executeFunc)
+        if (retries > 0) {
+            executeWithRetry(retries - 1, executeFunc)
+        } else {
+            throw e
+        }
     }
 }
 
