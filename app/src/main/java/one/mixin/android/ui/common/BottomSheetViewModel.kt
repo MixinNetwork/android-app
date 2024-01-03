@@ -49,6 +49,7 @@ import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.UpdateRelationshipJob
+import one.mixin.android.net.executeWithRetry
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.TokenRepository
@@ -282,7 +283,9 @@ class BottomSheetViewModel
                 }
                 jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
             }
-            val transactionRsp = tokenRepository.transactions(rawRequest)
+            val transactionRsp = executeWithRetry(30) {
+                tokenRepository.transactions(rawRequest)
+            }
             if (transactionRsp.error != null) {
                 reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
                 tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
@@ -426,7 +429,9 @@ class BottomSheetViewModel
             receiverIds: List<String>,
             isConsolidation: Boolean = false,
         ): MixinResponse<List<TransactionResponse>> {
-            val transactionRsp = tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
+            val transactionRsp = executeWithRetry(30) {
+                tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
+            }
             if (transactionRsp.error != null) {
                 reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
                 tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, OutputState.signed.name)
