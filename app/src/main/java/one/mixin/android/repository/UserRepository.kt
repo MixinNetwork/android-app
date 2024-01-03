@@ -304,10 +304,10 @@ class UserRepository
 
         suspend fun findUserByAppId(appId: String): User? = userDao.findUserByAppId(appId)
 
-        fun updateMuteUntil(
+        suspend fun updateMuteUntil(
             id: String,
             muteUntil: String,
-        ) = userDao.updateMuteUntil(id, muteUntil)
+        ) = userDao.updateMuteUntilSuspend(id, muteUntil)
 
         suspend fun fetchSessionsSuspend(ids: List<String>) = userService.fetchSessionsSuspend(ids)
 

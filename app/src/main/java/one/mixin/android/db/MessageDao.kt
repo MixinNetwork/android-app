@@ -469,7 +469,7 @@ interface MessageDao : BaseDao<Message> {
     fun findLastMessageId(conversationId: String): String?
 
     @Query("SELECT rowid FROM messages WHERE conversation_id =:conversationId ORDER BY rowid DESC LIMIT 1")
-    fun findLastMessageRowId(conversationId: String): Long?
+    suspend fun findLastMessageRowId(conversationId: String): Long?
 
     @Query(
         """
