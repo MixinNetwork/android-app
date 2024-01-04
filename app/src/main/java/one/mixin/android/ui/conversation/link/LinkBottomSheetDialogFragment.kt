@@ -369,7 +369,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     showError()
                     return@launch
                 }
-                parseUrl(scheme.url)
+                parseUrl(scheme.target)
             }
         } else if (url.startsWith(Scheme.HTTPS_CODES, true) || url.startsWith(Scheme.CODES, true)) {
             val segments = Uri.parse(url).pathSegments
