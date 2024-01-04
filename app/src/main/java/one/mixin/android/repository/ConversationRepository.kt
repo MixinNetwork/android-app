@@ -273,14 +273,13 @@ class ConversationRepository
             conversationId: String,
             circleId: String?,
             pinTime: String?,
-        ) =
-            withContext(SINGLE_DB_THREAD) {
-                if (circleId == null) {
-                    conversationDao.updateConversationPinTimeById(conversationId, pinTime)
-                } else {
-                    circleConversationDao.updateConversationPinTimeById(conversationId, circleId, pinTime)
-                }
+        ) {
+            if (circleId == null) {
+                conversationDao.updateConversationPinTimeById(conversationId, pinTime)
+            } else {
+                circleConversationDao.updateConversationPinTimeById(conversationId, circleId, pinTime)
             }
+        }
 
         fun getGroupAppsByConversationId(conversationId: String) =
             appDao.getGroupAppsByConversationId(conversationId)
@@ -489,10 +488,10 @@ class ConversationRepository
             request: ConversationRequest,
         ): MixinResponse<ConversationResponse> = conversationService.muteSuspend(id, request)
 
-        fun updateGroupMuteUntil(
+        suspend fun updateGroupMuteUntil(
             conversationId: String,
             muteUntil: String,
-        ) = conversationDao.updateGroupMuteUntil(conversationId, muteUntil)
+        ) = conversationDao.updateGroupMuteUntilSuspend(conversationId, muteUntil)
 
         fun updateMediaStatus(
             status: String,

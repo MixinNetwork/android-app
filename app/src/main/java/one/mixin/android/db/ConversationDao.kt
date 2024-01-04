@@ -217,7 +217,7 @@ interface ConversationDao : BaseDao<Conversation> {
     )
 
     @Query("UPDATE conversations SET pin_time = :pinTime WHERE conversation_id = :conversationId")
-    fun updateConversationPinTimeById(
+    suspend fun updateConversationPinTimeById(
         conversationId: String,
         pinTime: String?,
     )
@@ -248,6 +248,12 @@ interface ConversationDao : BaseDao<Conversation> {
     suspend fun updateConversationExpireIn(
         conversationId: String,
         expireIn: Long?,
+    )
+
+    @Query("UPDATE conversations SET mute_until = :muteUntil WHERE conversation_id = :conversationId")
+    suspend fun updateGroupMuteUntilSuspend(
+        conversationId: String,
+        muteUntil: String,
     )
 
     @Query("UPDATE conversations SET mute_until = :muteUntil WHERE conversation_id = :conversationId")
