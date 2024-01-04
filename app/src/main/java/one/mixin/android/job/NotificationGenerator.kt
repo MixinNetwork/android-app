@@ -540,9 +540,15 @@ object NotificationGenerator : Injector() {
                 return@supportsR
             }
             val icon = IconCompat.createWithBitmap(bitmap)
+            val shortcutIntent =
+                ConversationActivity.getShortcutIntent(
+                    MixinApplication.appContext,
+                    conversation.conversationId,
+                    null,
+                )
             val shortcut =
                 ShortcutInfoCompat.Builder(context, "Bubble-${conversation.conversationId}")
-                    .setIntent(Intent(Intent.ACTION_DEFAULT))
+                    .setIntent(shortcutIntent)
                     .setLongLived(true)
                     .setIcon(icon)
                     .setShortLabel(name).apply {
