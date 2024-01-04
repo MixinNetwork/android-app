@@ -136,7 +136,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private lateinit var code: String
     private lateinit var contentView: View
 
-    private val url: String by lazy { requireArguments().getString(CODE)!! }
+    private lateinit var url: String
     private val from: Int by lazy { requireArguments().getInt(FROM, FROM_EXTERNAL) }
 
     private val newSchemeParser: NewSchemeParser by lazy { NewSchemeParser(this) }
@@ -175,6 +175,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
 
+        url = requireNotNull(requireArguments().getString(CODE)) { "required url can not be null" }
+        parseUrl(url)
+    }
+
+    private fun parseUrl(url: String) {
         val isUserScheme = url.startsWith(Scheme.USERS, true) || url.startsWith(Scheme.HTTPS_USERS, true)
         val isAppScheme = url.startsWith(Scheme.APPS, true) || url.startsWith(Scheme.HTTPS_APPS, true)
         if (isUserScheme || isAppScheme) {
@@ -348,9 +353,24 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     dismiss()
                 }
             }
-        } else if (url.startsWith(Scheme.HTTPS_SCHEMES, true) || url.startsWith(Scheme.SCHEMES, true)) {
-            
+        } else if (url.startsWith(Scheme.HTTPS_SCHEME, true) || url.startsWith(Scheme.SCHEME, true)) {
+            val segments = Uri.parse(url).pathSegments
+            if (segments.isEmpty()) return
 
+            val uuid =
+                if (segments.size >= 2) {
+                    segments[1]
+                } else {
+                    segments[0]
+                }
+            lifecycleScope.launch(errorHandler) {
+                val scheme = linkViewModel.getScheme(uuid).data
+                if (scheme == null) {
+                    showError()
+                    return@launch
+                }
+                parseUrl(scheme.url)
+            }
         } else if (url.startsWith(Scheme.HTTPS_CODES, true) || url.startsWith(Scheme.CODES, true)) {
             val segments = Uri.parse(url).pathSegments
             if (segments.isEmpty()) return
