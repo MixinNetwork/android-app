@@ -208,7 +208,7 @@
                 <data
                     android:scheme="https"
                     android:host="mixin.one"
-                    android:pathPrefix="/schemes" />
+                    android:pathPrefix="/scheme" />
             </intent-filter>
             <intent-filter>
                 <data android:scheme="wc" />
