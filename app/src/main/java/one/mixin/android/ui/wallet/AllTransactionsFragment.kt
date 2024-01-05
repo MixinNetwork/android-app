@@ -48,7 +48,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         adapter.listener = this
         binding.apply {
             titleView.apply {
-                leftIb.setOnClickListener { view.findNavController().navigateUp() }
+                leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
                 rightAnimator.setOnClickListener { showFiltersSheet() }
             }
             transactionsRv.itemAnimator = null
