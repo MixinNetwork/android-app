@@ -1148,4 +1148,6 @@ class BottomSheetViewModel
             withContext(Dispatchers.IO) {
                 tokenRepository.firstUnspentTransaction()
             }
+
+        suspend fun getScheme(id: String) = accountRepository.getScheme(id)
     }
