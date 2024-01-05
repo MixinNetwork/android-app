@@ -98,7 +98,7 @@ object Constants {
         const val TIP = "mixin://tip"
         const val BUY = "mixin://buy"
         const val MIXIN_PAY = "mixin://mixin.one/pay/"
-        const val SCHEME = "mixin://scheme"
+        const val SCHEME = "mixin://mixin.one/scheme"
 
         const val HTTPS_USERS = "https://mixin.one/users"
         const val HTTPS_ADDRESS = "https://mixin.one/address"
