@@ -357,12 +357,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val segments = Uri.parse(url).pathSegments
             if (segments.isEmpty()) return
 
-            val uuid =
-                if (segments.size >= 2) {
-                    segments[1]
-                } else {
-                    segments[0]
-                }
+            if (segments.size < 2) {
+                showError()
+                return
+            }
+            val uuid = segments[1]
+            if (!uuid.isUUID()) {
+                showError()
+                return
+            }
             lifecycleScope.launch(errorHandler) {
                 val scheme = linkViewModel.getScheme(uuid).data
                 if (scheme == null) {
