@@ -155,7 +155,7 @@ class MaterialSearchView : FrameLayout {
 
     override fun onRestoreInstanceState(state: Parcelable?) {
         isOpen = (state as? SavedState)?.isOpen ?: false
-        if (isOpen) openSearch() else closeSearch()
+        if (isOpen) openSearch() else closeNoAnimate()
         super.onRestoreInstanceState(state)
     }
 
@@ -398,6 +398,10 @@ class MaterialSearchView : FrameLayout {
                 },
             )
         }.setDuration(150L).alpha(0f).start()
+        closeNoAnimate()
+    }
+
+    private fun closeNoAnimate() {
         binding.rightClear.visibility = View.GONE
         hideLoading()
 
