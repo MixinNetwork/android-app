@@ -57,14 +57,19 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             val layoutManager = LinearLayoutManager(requireContext())
             transactionsRv.layoutManager = layoutManager
             transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
-            adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
-                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                    val firstPos = layoutManager.findFirstVisibleItemPosition()
-                    if (firstPos == 0) {
-                        layoutManager.scrollToPosition(0)
+            adapter.registerAdapterDataObserver(
+                object : RecyclerView.AdapterDataObserver() {
+                    override fun onItemRangeInserted(
+                        positionStart: Int,
+                        itemCount: Int,
+                    ) {
+                        val firstPos = layoutManager.findFirstVisibleItemPosition()
+                        if (firstPos == 0) {
+                            layoutManager.scrollToPosition(0)
+                        }
                     }
-                }
-            })
+                },
+            )
         }
         dataObserver =
             Observer { pagedList ->

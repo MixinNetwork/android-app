@@ -283,9 +283,10 @@ class BottomSheetViewModel
                 }
                 jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
             }
-            val transactionRsp = executeWithRetry(30) {
-                tokenRepository.transactions(rawRequest)
-            }
+            val transactionRsp =
+                executeWithRetry(30) {
+                    tokenRepository.transactions(rawRequest)
+                }
             if (transactionRsp.error != null) {
                 reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
                 tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
@@ -429,9 +430,10 @@ class BottomSheetViewModel
             receiverIds: List<String>,
             isConsolidation: Boolean = false,
         ): MixinResponse<List<TransactionResponse>> {
-            val transactionRsp = executeWithRetry(30) {
-                tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
-            }
+            val transactionRsp =
+                executeWithRetry(30) {
+                    tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
+                }
             if (transactionRsp.error != null) {
                 reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
                 tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, OutputState.signed.name)

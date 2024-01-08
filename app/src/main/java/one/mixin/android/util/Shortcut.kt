@@ -76,7 +76,7 @@ fun updateShortcuts(shortcuts: MutableList<ShortcutInfoCompat>) {
     val keepSize = maxDynamicShortcutCount - shortcuts.size
     if (keepSize <= 0) {
         ShortcutManagerCompat.removeAllDynamicShortcuts(MixinApplication.appContext)
-        ShortcutManagerCompat.addDynamicShortcuts(MixinApplication.appContext,  shortcuts)
+        ShortcutManagerCompat.addDynamicShortcuts(MixinApplication.appContext, shortcuts)
     } else {
         exists.sortBy { it.rank }
         val remain = exists.take(keepSize)
@@ -84,7 +84,7 @@ fun updateShortcuts(shortcuts: MutableList<ShortcutInfoCompat>) {
         // use (remove + update + add) instead of setDynamicShortcuts to avoid system shortcut icon blank
         ShortcutManagerCompat.removeDynamicShortcuts(MixinApplication.appContext, remove.map { it.id })
         ShortcutManagerCompat.updateShortcuts(MixinApplication.appContext, remain)
-        ShortcutManagerCompat.addDynamicShortcuts(MixinApplication.appContext,  shortcuts)
+        ShortcutManagerCompat.addDynamicShortcuts(MixinApplication.appContext, shortcuts)
     }
 }
 
