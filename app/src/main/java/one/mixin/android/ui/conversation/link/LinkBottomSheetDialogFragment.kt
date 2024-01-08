@@ -258,7 +258,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     dismiss()
                 }
             }
-        } else if (url.startsWith(Scheme.HTTPS_MULTISIGS, true)) {
+        } else if (url.startsWith(Scheme.HTTPS_MULTISIGS, true) || url.startsWith(Scheme.MIXIN_MULTISIGS, true)) {
             if (checkHasPin()) return
             lifecycleScope.launch(errorHandler) {
                 val uri = Uri.parse(url)
@@ -353,7 +353,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     dismiss()
                 }
             }
-        } else if (url.startsWith(Scheme.HTTPS_SCHEME, true) || url.startsWith(Scheme.SCHEME, true)) {
+        } else if (url.startsWith(Scheme.HTTPS_SCHEME, true) || url.startsWith(Scheme.MIXIN_SCHEME, true)) {
             val segments = Uri.parse(url).pathSegments
             if (segments.isEmpty()) return
 

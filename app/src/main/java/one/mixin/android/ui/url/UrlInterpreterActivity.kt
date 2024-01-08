@@ -39,6 +39,7 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val DEVICE_TRANSFER = "device-transfer"
         private const val BUY = "buy"
         private const val TIP = "tip"
+        private const val MULTISIGS = "multisigs"
         private const val SCHEME = "scheme"
         private const val MIXIN = "mixin.one"
         const val WC = "wc"
@@ -144,7 +145,7 @@ class UrlInterpreterActivity : BaseActivity() {
             }
             MIXIN -> {
                 val path = uri.pathSegments.first()
-                if (path.equals(PAY, true) || path.equals(SCHEME, true)) {
+                if (path.equals(PAY, true) || path.equals(SCHEME, true) || path.equals(MULTISIGS, true)) {
                     val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
                     bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
                 } else {
