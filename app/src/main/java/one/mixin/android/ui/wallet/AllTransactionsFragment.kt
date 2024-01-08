@@ -6,8 +6,9 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.findNavController
 import androidx.paging.PagedList
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -53,7 +54,17 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             }
             transactionsRv.itemAnimator = null
             transactionsRv.adapter = adapter
+            val layoutManager = LinearLayoutManager(requireContext())
+            transactionsRv.layoutManager = layoutManager
             transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+            adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                    val firstPos = layoutManager.findFirstVisibleItemPosition()
+                    if (firstPos == 0) {
+                        layoutManager.scrollToPosition(0)
+                    }
+                }
+            })
         }
         dataObserver =
             Observer { pagedList ->
