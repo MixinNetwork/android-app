@@ -257,7 +257,7 @@
 
                 <com.google.android.gms.wallet.button.PayButton
                     android:id="@+id/googlePayButton"
-                    android:layout_width="200dp"
+                    android:layout_width="wrap_content"
                     android:layout_gravity="center"
                     android:layout_height="wrap_content" />
 
