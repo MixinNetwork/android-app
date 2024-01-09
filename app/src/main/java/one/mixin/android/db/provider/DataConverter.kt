@@ -196,7 +196,12 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
         val item: MessageItem
         val tmpMessageId: String = cursor.getString(cursorIndexOfMessageId)
         val tmpConversationId: String = cursor.getString(cursorIndexOfConversationId)
-        val tmpUserId: String = cursor.getString(cursorIndexOfUserId)
+        val tmpUserId: String =
+            if (cursor.isNull(cursorIndexOfUserId)) {
+                ""
+            } else {
+                cursor.getString(cursorIndexOfUserId)
+            }
         val tmpUserFullName: String =
             if (cursor.isNull(cursorIndexOfUserFullName)) {
                 ""
