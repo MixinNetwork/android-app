@@ -155,7 +155,7 @@ class MaterialSearchView : FrameLayout {
 
     override fun onRestoreInstanceState(state: Parcelable?) {
         isOpen = (state as? SavedState)?.isOpen ?: false
-        if (isOpen) openSearch() else closeNoAnimate()
+        if (isOpen) openNoAnimate() else closeNoAnimate()
         super.onRestoreInstanceState(state)
     }
 
@@ -335,6 +335,26 @@ class MaterialSearchView : FrameLayout {
                 },
             )
         }.alpha(0f).setDuration(150L).start()
+
+        binding.rightClear.visibility = View.GONE
+
+        binding.searchEt.setText("")
+        oldLeftX = binding.logoLayout.x
+        oldSearchWidth = binding.searchEt.measuredWidth
+        binding.avatar.translationX(context.dpToPx(rightTranslationX).toFloat())
+        binding.searchIb.translationX(context.dpToPx(rightTranslationX).toFloat())
+        if (isDesktopLogin) {
+            binding.desktopIb.translationX(context.dpToPx(rightTranslationX).toFloat())
+        }
+        mSearchViewListener?.onSearchViewOpened()
+        isOpen = true
+    }
+
+    private fun openNoAnimate() {
+        binding.logoLayout.isVisible = false
+        binding.searchEt.isVisible = true
+        binding.searchEt.showKeyboard()
+        binding.backIb.isVisible = true
 
         binding.rightClear.visibility = View.GONE
 
