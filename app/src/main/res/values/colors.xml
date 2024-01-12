@@ -10,10 +10,10 @@
     <color name="colorOnSurface">#212121</color>
 
     <color name="textPrimary">#000000</color>
-    <color name="textMinor">#bbbbbb</color>
-    <color name="textAssist">#B8BDC7</color>
-    <color name="textRemarks">#BCBEC3</color>
-    <color name="textSubtitle">#BBBEC3</color>
+    <color name="textMinor">#333333</color>
+    <color name="textAssist">#999999</color>
+    <color name="textRemarks">#B3B3B3</color>
+    <color name="textSubtitle">#B3B3B3</color>
 
     <color name="textTranscript">#663B3C3E</color>
     <color name="textTranscriptNight">#858f9c</color>
@@ -73,7 +73,7 @@
     <color name="black_70">#B2000000</color>
     <color name="gray_50">#88888888</color>
     <color name="gray_light">#757575</color>
-    <color name="color_chat_date">#ff7799A9</color>
+    <color name="color_chat_date">#83919E</color>
     <color name="text_white">#EFEFF4</color>
     <color name="white_50">#88FFFFFF</color>
     <color name="colorRed">#E55541</color>

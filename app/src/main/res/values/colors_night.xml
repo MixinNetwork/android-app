@@ -4,12 +4,11 @@
     <color name="colorPrimaryDarkNight">#2c3136</color>
     <color name="colorAccentNight">#4191FF</color>
 
-    <color name="textPrimaryNight">#E6FFFFFF</color>
-    <color name="textMinorNight">#AAD8D8D8</color>
-    <color name="textAssistNight">#788691</color>
-    <color name="textRemarksNight">#707883</color>
-
-    <color name="textSubtitleNight">#66FFFFFF</color>
+    <color name="textPrimaryNight">#FFFFFF</color>
+    <color name="textMinorNight">#D3D4D5</color>
+    <color name="textAssistNight">#7F878F</color>
+    <color name="textRemarksNight">#6E7073</color>
+    <color name="textSubtitleNight">#6E7073</color>
 
     <color name="colorIconNight">#EAEAEB</color>
     <color name="colorIconWhiteNight">#22272B</color>
