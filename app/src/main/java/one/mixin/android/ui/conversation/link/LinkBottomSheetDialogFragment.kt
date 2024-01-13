@@ -283,18 +283,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     showError()
                     return@launch
                 }
-                var state = SignatureState.initial.name
-                if ((multisigs.signers?.size ?: 0) >= multisigs.sendersThreshold) {
-                    state = PaymentStatus.paid.name
-                } else {
-                    if (action == "sign") {
-                        if (multisigs.signers?.contains(Session.getAccountId()) == true) {
-                            state = SignatureState.signed.name
-                        }
-                    } else if (action == "unlock") {
-                        if (multisigs.signers.isNullOrEmpty()) {
-                            state = SignatureState.unlocked.name
-                        }
+                var state: String = SignatureState.initial.name
+                multisigs.signers?.let { signers ->
+                    when {
+                        signers.size >= multisigs.sendersThreshold -> state = PaymentStatus.paid.name
+                        action == "sign" && Session.getAccountId() in signers -> state = SignatureState.signed.name
+                        action == "unlock" && signers.isEmpty() -> state = SignatureState.unlocked.name
                     }
                 }
                 val receivers =
