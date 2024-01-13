@@ -78,7 +78,6 @@ import one.mixin.android.ui.oldwallet.biometric.Multi2MultiBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.NftBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.TransferBiometricItem
-import one.mixin.android.ui.oldwallet.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.SafeMultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
@@ -274,55 +273,59 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     return@launch
                 }
                 val transactionResponse = linkViewModel.getMultisigs(requestId)
-                if (transactionResponse.isSuccess) {
-                    val multisigs = transactionResponse.data!!
-                    val asset = checkToken(multisigs.assetId!!)
-                    if (asset != null) {
-                        val state: String
-                        if ((multisigs.signers?.size ?: 0) >= multisigs.sendersThreshold) {
-                            state = PaymentStatus.paid.name
-                        } else if (multisigs.signers?.contains(Session.getAccountId()) == true && action == "sign") {
-                            state = SignatureState.signed.name
-                        } else if (multisigs.signers?.contains(Session.getAccountId()) == false && action == "unlock") {
-                            state = SignatureState.unlocked.name
-                        } else {
-                            state = SignatureState.initial.name
-                        }
-                        val receivers =
-                            multisigs.receivers?.flatMap {
-                                it.members
-                            }
-                        if (receivers.isNullOrEmpty()) {
-                            showError()
-                            return@launch
-                        }
-                        val multisigsBiometricItem =
-                            SafeMultisigsBiometricItem(
-                                action = action,
-                                traceId = multisigs.requestId,
-                                senders = multisigs.senders.toTypedArray(),
-                                receivers = receivers.toTypedArray(),
-                                sendersThreshold = multisigs.sendersThreshold,
-                                receiverThreshold = multisigs.receivers.sumOf { it.threshold },
-                                asset = asset,
-                                amount = multisigs.amount,
-                                memo = null,
-                                raw = multisigs.rawTransaction,
-                                index = multisigs.senders.indexOf(Session.getAccountId()),
-                                views = if (multisigs.views.isNullOrEmpty()) null else multisigs.views.joinToString(","),
-                                state = state,
-                            )
-                        SafeMultisigsBottomSheetDialogFragment.newInstance(multisigsBiometricItem).showNow(
-                            parentFragmentManager,
-                            SafeMultisigsBottomSheetDialogFragment.TAG,
-                        )
-                        dismiss()
-                    } else {
-                        showError()
-                    }
-                } else {
+                if (!transactionResponse.isSuccess) {
                     showError()
+                    return@launch
                 }
+                val multisigs = transactionResponse.data!!
+                val asset = checkToken(multisigs.assetId!!)
+                if (asset == null) {
+                    showError()
+                    return@launch
+                }
+                var state = SignatureState.initial.name
+                if ((multisigs.signers?.size ?: 0) >= multisigs.sendersThreshold) {
+                    state = PaymentStatus.paid.name
+                } else {
+                    if (action == "sign") {
+                        if (multisigs.signers?.contains(Session.getAccountId()) == true) {
+                            state = SignatureState.signed.name
+                        }
+                    } else if (action == "unlock") {
+                        if (multisigs.signers.isNullOrEmpty()) {
+                            state = SignatureState.unlocked.name
+                        }
+                    }
+                }
+                val receivers =
+                    multisigs.receivers?.flatMap {
+                        it.members
+                    }
+                if (receivers.isNullOrEmpty()) {
+                    showError()
+                    return@launch
+                }
+                val multisigsBiometricItem =
+                    SafeMultisigsBiometricItem(
+                        action = action,
+                        traceId = multisigs.requestId,
+                        senders = multisigs.senders.toTypedArray(),
+                        receivers = receivers.toTypedArray(),
+                        sendersThreshold = multisigs.sendersThreshold,
+                        receiverThreshold = multisigs.receivers.sumOf { it.threshold },
+                        asset = asset,
+                        amount = multisigs.amount,
+                        memo = null,
+                        raw = multisigs.rawTransaction,
+                        index = multisigs.senders.indexOf(Session.getAccountId()),
+                        views = if (multisigs.views.isNullOrEmpty()) null else multisigs.views.joinToString(","),
+                        state = state,
+                    )
+                SafeMultisigsBottomSheetDialogFragment.newInstance(multisigsBiometricItem).showNow(
+                    parentFragmentManager,
+                    SafeMultisigsBottomSheetDialogFragment.TAG,
+                )
+                dismiss()
             }
         } else if (url.startsWith(Scheme.MIXIN_PAY)) {
             if (checkHasPin()) return
@@ -945,31 +948,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             return
         }
         val biometricItem = TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first, returnTo)
-        showOldPreconditionBottom(biometricItem)
-    }
-
-    private suspend fun showOldWithdrawalBottom(
-        addressId: String?,
-        destination: String,
-        tag: String?,
-        label: String?,
-        fee: String,
-        amount: String,
-        asset: AssetItem,
-        traceId: String,
-        status: String,
-        memo: String?,
-    ) {
-        val pair = oldLinkViewModel.findLatestTrace(null, destination, tag, amount, asset.assetId)
-        if (pair.second) {
-            showError(getString(R.string.check_trace_failed))
-            return
-        }
-        val biometricItem =
-            WithdrawBiometricItem(
-                destination, tag, addressId, label, fee,
-                asset, amount, null, traceId, memo, status, pair.first,
-            )
         showOldPreconditionBottom(biometricItem)
     }
 

@@ -34,5 +34,8 @@ interface OutputDao : BaseDao<Output> {
     fun utxoItem(asset: String): PagingSource<Int, UtxoItem>
 
     @Query("DELETE FROM outputs WHERE asset = :asset AND sequence >= :offset")
-    suspend fun deleteByKernelAssetIdAndOffset(asset: String, offset: Long)
+    suspend fun deleteByKernelAssetIdAndOffset(
+        asset: String,
+        offset: Long,
+    )
 }
