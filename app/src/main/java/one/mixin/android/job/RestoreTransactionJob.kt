@@ -85,12 +85,12 @@ class RestoreTransactionJob : BaseJob(
                         }
                         jobManager.addJobInBackground(SyncOutputJob())
                     } else if (response.errorCode >= 500) {
-                        reportException(Exception("Restore Transaction Error${transaction.requestId} - ${response.errorCode}"))
+                        reportException(Exception("Restore Transaction Error: ${transaction.requestId} - ${response.errorCode}"))
                         delay(3000)
                     } else {
-                        reportException(Exception("Restore Transaction Error${transaction.requestId} - ${response.errorCode}"))
-                        rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
-                        rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
+                        reportException(Exception("Restore Transaction Error: ${transaction.requestId} - ${response.errorCode}"))
+                        // do nothing, waiting cycle
+                        delay(3000)
                     }
                 } catch (e: Exception) {
                     Timber.e(e)
