@@ -31,7 +31,6 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val TRANSFER = "transfer"
         private const val DEVICE = "device"
         private const val SEND = "send"
-        private const val WITHDRAWAL = "withdrawal"
         private const val ADDRESS = "address"
         private const val APPS = "apps"
         private const val SNAPSHOTS = "snapshots"
@@ -108,7 +107,7 @@ class UrlInterpreterActivity : BaseActivity() {
     private fun interpretIntent(uri: Uri) {
         when (uri.host) {
             USER, APPS -> uri.checkUserOrApp(this, supportFragmentManager, lifecycleScope)
-            CODE, PAY, WITHDRAWAL, ADDRESS, SNAPSHOTS, CONVERSATIONS, TIP -> {
+            CODE, PAY, ADDRESS, SNAPSHOTS, CONVERSATIONS, TIP -> {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }

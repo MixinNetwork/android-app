@@ -292,12 +292,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 }
                 val sendersHash = multisigs.sendersHash
-                val receivers = multisigs.receivers?.firstOrNull {
+                val receiver = multisigs.receivers?.firstOrNull {
                     it.membersHash != sendersHash
                 } ?: multisigs.receivers?.firstOrNull {
                     it.membersHash == sendersHash
                 }
-                if (receivers == null || receivers.members.isEmpty()) {
+                if (receiver == null || receiver.members.isEmpty()) {
                     showError()
                     return@launch
                 }
@@ -306,9 +306,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         action = action,
                         traceId = multisigs.requestId,
                         senders = multisigs.senders.toTypedArray(),
-                        receivers = receivers.members.toTypedArray(),
+                        receivers = receiver.members.toTypedArray(),
                         sendersThreshold = multisigs.sendersThreshold,
-                        receiverThreshold = receivers.threshold,
+                        receiverThreshold = receiver.threshold,
                         asset = asset,
                         amount = multisigs.amount,
                         memo = null,
