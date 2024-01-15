@@ -27,7 +27,7 @@
 
     <TextView
         android:id="@+id/storage_tv"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:layout_width="wrap_content"
         android:layout_centerVertical="true"
         android:layout_alignParentEnd="true"

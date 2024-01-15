@@ -53,7 +53,7 @@
             android:layout_below="@id/center"
             android:layout_marginTop="2dp"
             android:textSize="12sp"
-            android:textColor="?attr/text_minor"/>
+            android:textColor="?attr/text_assist"/>
     </RelativeLayout>
 
     <ImageView

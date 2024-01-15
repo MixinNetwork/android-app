@@ -25,7 +25,7 @@
         android:paddingEnd="@dimen/margin_start"
         android:paddingStart="@dimen/margin_start"
         android:textColor="?attr/text_primary"
-        android:textColorHint="?attr/text_minor"
+        android:textColorHint="?attr/text_assist"
         android:textSize="14sp"
         app:drawableStartCompat="@drawable/ic_search"
         tools:ignore="Autofill" />

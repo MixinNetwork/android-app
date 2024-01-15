@@ -76,7 +76,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:text="@string/NO_AUTHORIZATIONS"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 android:textSize="16sp" />
         </RelativeLayout>
     </ViewAnimator>

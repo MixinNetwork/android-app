@@ -72,7 +72,7 @@
                 android:layout_gravity="center_horizontal"
                 android:padding="@dimen/margin12"
                 android:text="@string/Resend_code"
-                android:textColor="?attr/text_minor" />
+                android:textColor="?attr/text_assist" />
 
             <TextView
                 android:id="@+id/verification_need_help_tv"

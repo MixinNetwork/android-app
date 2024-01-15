@@ -174,7 +174,7 @@ fun MenuList.createMenuLayout(
         listLayout.addView(
             TextView(context).apply {
                 text = createdAt
-                textColor = context.colorFromAttribute(R.attr.text_minor)
+                textColor = context.colorFromAttribute(R.attr.text_assist)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
                 gravity = Gravity.CENTER
             },

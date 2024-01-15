@@ -48,7 +48,7 @@
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginBottom="@dimen/margin16"
                 android:layout_toEndOf="@id/avatar"
-                android:textColor="?attr/text_minor" />
+                android:textColor="?attr/text_assist" />
 
             <ImageView
                 android:id="@+id/contract_iv"
@@ -130,6 +130,6 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="24dp"
             android:text="@string/No_transactions"
-            android:textColor="?attr/text_minor" />
+            android:textColor="?attr/text_assist" />
     </RelativeLayout>
 </RelativeLayout>

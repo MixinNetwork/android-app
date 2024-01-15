@@ -6,5 +6,5 @@
     android:gravity="top|center_horizontal"
     android:orientation="vertical"
     android:padding="16dp"
-    android:textColor="?attr/text_minor"
+    android:textColor="?attr/text_assist"
     android:text="@string/profile_share_bot_hint" />

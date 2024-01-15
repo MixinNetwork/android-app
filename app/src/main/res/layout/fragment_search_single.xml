@@ -63,7 +63,7 @@
             android:inputType="text"
             android:maxLines="1"
             android:textColor="?attr/text_primary"
-            android:textColorHint="?attr/text_minor"
+            android:textColorHint="?attr/text_assist"
             android:textSize="14sp"
             tools:ignore="Autofill,LabelFor" />
     </RelativeLayout>

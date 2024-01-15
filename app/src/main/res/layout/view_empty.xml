@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="@string/chat_list_empty_info"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         app:layout_constraintWidth_default="percent"
         app:layout_constraintWidth_percent=".7"
         app:layout_constraintBottom_toTopOf="@+id/start_bn"

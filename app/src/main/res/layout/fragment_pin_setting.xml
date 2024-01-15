@@ -43,7 +43,7 @@
             android:lineSpacingExtra="2dp"
             android:gravity="center"
             android:text="@string/setting_emergency_content"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp" />
     </LinearLayout>
 
@@ -138,7 +138,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>
 
@@ -155,7 +155,7 @@
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:text="@string/wallet_enable_biometric_pay_prompt"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp" />
     </FrameLayout>
 

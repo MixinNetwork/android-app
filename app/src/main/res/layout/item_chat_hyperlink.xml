@@ -95,7 +95,7 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginEnd="4dp"
                 android:maxLines="3"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 android:textStyle="italic"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0"

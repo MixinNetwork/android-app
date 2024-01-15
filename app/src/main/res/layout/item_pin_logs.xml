@@ -24,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         app:layout_constraintBottom_toBottomOf="@id/log_address"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/log_title" />
@@ -34,7 +34,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/log_desc" />
@@ -43,7 +43,7 @@
         android:id="@+id/log_created"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@id/log_title"
         app:layout_constraintEnd_toEndOf="parent"

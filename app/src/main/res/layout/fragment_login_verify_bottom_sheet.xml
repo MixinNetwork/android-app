@@ -38,7 +38,7 @@
         android:layout_marginBottom="20dp"
         android:text="@string/login_verify_pin"
         android:textSize="14sp"
-        android:textColor="?attr/text_minor" />
+        android:textColor="?attr/text_assist" />
 
     <one.mixin.android.widget.Keyboard
         android:id="@+id/keyboard"

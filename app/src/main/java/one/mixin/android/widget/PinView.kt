@@ -73,7 +73,7 @@ class PinView : LinearLayout {
                 item.textSize = starSize
                 item.textColor = color
                 item.typeface = Typeface.DEFAULT_BOLD
-                item.hintTextColor = context.colorFromAttribute(R.attr.text_minor)
+                item.hintTextColor = context.colorFromAttribute(R.attr.text_assist)
                 item.hint = STAR
                 item.gravity = Gravity.CENTER
 

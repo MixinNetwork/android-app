@@ -60,7 +60,7 @@
 
                     <TextView
                         android:text="@string/Payment_Method"
-                        android:textColor="?attr/text_minor"
+                        android:textColor="?attr/text_assist"
                         android:layout_width="wrap_content"
                         android:layout_alignParentStart="true"
                         android:layout_height="wrap_content" />
@@ -85,7 +85,7 @@
 
                     <TextView
                         android:text="@string/Token_Amount"
-                        android:textColor="?attr/text_minor"
+                        android:textColor="?attr/text_assist"
                         android:layout_width="wrap_content"
                         android:layout_alignParentStart="true"
                         android:layout_height="wrap_content" />
@@ -109,7 +109,7 @@
                     <TextView
                         android:id="@+id/price"
                         android:text="@string/Exchange_Rate"
-                        android:textColor="?attr/text_minor"
+                        android:textColor="?attr/text_assist"
                         android:layout_width="wrap_content"
                         android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
@@ -151,7 +151,7 @@
 
                     <TextView
                         android:text="@string/Fees_by_Gateway"
-                        android:textColor="?attr/text_minor"
+                        android:textColor="?attr/text_assist"
                         android:layout_width="wrap_content"
                         android:layout_alignParentStart="true"
                         android:layout_height="wrap_content"
@@ -176,7 +176,7 @@
 
                     <TextView
                         android:text="@string/Fees_by_Mixin"
-                        android:textColor="?attr/text_minor"
+                        android:textColor="?attr/text_assist"
                         android:layout_width="wrap_content"
                         android:layout_alignParentStart="true"
                         android:layout_height="wrap_content"
@@ -201,7 +201,7 @@
 
                     <TextView
                         android:text="@string/Purchase_Total_Amount"
-                        android:textColor="?attr/text_minor"
+                        android:textColor="?attr/text_assist"
                         android:layout_width="wrap_content"
                         android:layout_alignParentStart="true"
                         android:layout_height="wrap_content"
@@ -222,7 +222,7 @@
             <TextView
                 android:layout_gravity="center_horizontal"
                 android:text="@string/Fees_tip"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"

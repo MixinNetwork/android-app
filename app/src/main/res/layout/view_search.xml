@@ -17,7 +17,7 @@
         android:maxLines="1"
         android:imeOptions="actionSearch"
         android:textColor="?attr/text_primary"
-        android:textColorHint="?attr/text_minor"
+        android:textColorHint="?attr/text_assist"
         android:textSize="14sp"/>
 
     <ImageButton

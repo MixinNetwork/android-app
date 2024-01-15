@@ -49,6 +49,6 @@
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="32dp"
             android:text="@string/circle_info"
-            android:textColor="?attr/text_minor" />
+            android:textColor="?attr/text_assist" />
     </RelativeLayout>
 </LinearLayout>

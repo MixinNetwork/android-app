@@ -44,7 +44,7 @@
         android:layout_marginTop="2dp"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:textSize="13sp"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:ellipsize="end"
         android:singleLine="true" />
 </RelativeLayout>

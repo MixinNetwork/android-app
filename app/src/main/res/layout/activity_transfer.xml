@@ -97,7 +97,7 @@
             <TextView
                 android:id="@+id/progress_desc"
                 android:layout_marginTop="16dp"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 android:layout_marginStart="42dp"
                 android:layout_marginEnd="42dp"
                 android:gravity="center"
@@ -127,7 +127,7 @@
                     android:layout_marginTop="12dp"
                     android:id="@+id/pb_tv"
                     android:textSize="12sp"
-                    android:textColor="?attr/text_minor"
+                    android:textColor="?attr/text_assist"
                     android:text="@string/transferring_chat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -163,7 +163,7 @@
                 android:gravity="center_horizontal"
                 android:textSize="12sp"
                 android:text="@string/transfer_pc_desc"
-                android:textColor="?attr/text_minor" />
+                android:textColor="?attr/text_assist" />
 
             <LinearLayout
                 android:id="@+id/init_scan_desc"
@@ -279,7 +279,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_toStartOf="@+id/conversation_arrow_iv"
-                        android:textColor="?attr/text_minor"
+                        android:textColor="?attr/text_assist"
                         android:textSize="13sp"
                         android:layout_marginEnd="4dp"
                         android:text="@string/All_chat"
@@ -315,7 +315,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_toStartOf="@+id/data_arrow_iv"
-                        android:textColor="?attr/text_minor"
+                        android:textColor="?attr/text_assist"
                         android:textSize="13sp"
                         android:layout_marginEnd="4dp"
                         android:text="@string/all_time"
@@ -331,7 +331,7 @@
                 android:layout_marginTop="12dp"
                 android:layout_marginEnd="36dp"
                 android:textSize="12sp"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 android:text="@string/transfer_waiting_tips"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />

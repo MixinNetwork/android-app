@@ -158,7 +158,7 @@ class AppAuthActivity : BaseActivity() {
     private val resetSwirlRunnable =
         Runnable {
             binding.info.text = getString(R.string.Confirm_fingerprint)
-            binding.info.setTextColor(colorFromAttribute(R.attr.text_minor))
+            binding.info.setTextColor(colorFromAttribute(R.attr.text_assist))
             binding.swirl.setState(SwirlView.State.ON)
         }
 

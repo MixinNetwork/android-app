@@ -46,5 +46,5 @@
         android:layout_toEndOf="@id/cb"
         android:singleLine="true"
         android:ellipsize="end"
-        android:textColor="?attr/text_minor" />
+        android:textColor="?attr/text_assist" />
 </RelativeLayout>

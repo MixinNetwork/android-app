@@ -36,7 +36,7 @@
         android:paddingEnd="4dp"
         android:singleLine="true"
         android:layout_toEndOf="@+id/name_tv"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="12sp"
         android:visibility="gone"
         android:background="@drawable/bg_round_4_solid_light_gray"
@@ -54,7 +54,7 @@
         android:layout_toStartOf="@id/price_tv"
         android:singleLine="true"
         android:ellipsize="end"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="12sp"
         tool:text="1234.56743 ETH"/>
 
@@ -81,7 +81,7 @@
         android:gravity="end"
         android:maxLines="1"
         android:textSize="12sp"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         tool:text="3800.41248"/>
 
     <ImageView

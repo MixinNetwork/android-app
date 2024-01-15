@@ -162,7 +162,7 @@ class DepositFragment : BaseFragment() {
                             setTextColor(Color.WHITE)
                             chipBackgroundColor = ColorStateList.valueOf(Color.BLACK)
                         } else {
-                            setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
+                            setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
                             chipBackgroundColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray_light))
                         }
                         setOnClickListener {

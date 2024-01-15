@@ -37,6 +37,6 @@
         android:layout_marginBottom="2dp"
         android:layout_toEndOf="@id/location_icon"
         android:singleLine="true"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="12sp" />
 </RelativeLayout>

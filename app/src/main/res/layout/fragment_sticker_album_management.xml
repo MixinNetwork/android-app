@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="40dp"
                 android:textSize="14sp"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 android:text="@string/NO_STICKERS" />
         </androidx.appcompat.widget.LinearLayoutCompat>
 

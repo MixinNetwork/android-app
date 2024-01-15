@@ -74,7 +74,7 @@
         android:ellipsize="end"
         android:fontFamily="@font/roboto_light"
         android:singleLine="true"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="12sp"
         android:textStyle="italic"
         app:layout_constrainedWidth="true"

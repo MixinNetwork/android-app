@@ -189,7 +189,7 @@ interface TransactionInterface {
                     )
                 }
             fragment.context?.let { c ->
-                setTextColor(c.colorFromAttribute(R.attr.text_minor))
+                setTextColor(c.colorFromAttribute(R.attr.text_assist))
                 setOnClickListener {
                     if (checkDestroyed(fragment)) return@setOnClickListener
 

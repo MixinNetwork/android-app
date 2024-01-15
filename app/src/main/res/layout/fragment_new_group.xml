@@ -80,7 +80,7 @@
             android:background="@null"
             android:gravity="center_vertical|end"
             android:hint="@string/About"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:textColorHint="?attr/text_remarks"
             tools:ignore="Autofill,TextFields" />
     </RelativeLayout>

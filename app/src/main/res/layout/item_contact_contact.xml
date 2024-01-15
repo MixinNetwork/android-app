@@ -13,7 +13,7 @@
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:background="@drawable/bg_circle_contact"
         android:gravity="center"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="22sp"/>
 
     <TextView

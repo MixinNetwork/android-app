@@ -40,7 +40,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/margin16"
                 android:text="@string/NO_RESULTS"
-                android:textColor="?attr/text_minor" />
+                android:textColor="?attr/text_assist" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

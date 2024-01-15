@@ -62,5 +62,5 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:textColor="?attr/text_minor" />
+        android:textColor="?attr/text_assist" />
 </RelativeLayout>

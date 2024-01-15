@@ -63,7 +63,7 @@
                 android:paddingBottom="2dp"
                 android:importantForAutofill="no"
                 android:textColor="?attr/text_primary"
-                android:textColorHint="?attr/text_minor"
+                android:textColorHint="?attr/text_assist"
                 android:textSize="15sp"
                 tools:ignore="LabelFor,RtlSymmetry" />
 

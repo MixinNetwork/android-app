@@ -85,5 +85,5 @@
         android:layout_toEndOf="@id/avatar_fl"
         android:ellipsize="end"
         android:singleLine="true"
-        android:textColor="?attr/text_minor" />
+        android:textColor="?attr/text_assist" />
 </RelativeLayout>

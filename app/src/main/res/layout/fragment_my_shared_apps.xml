@@ -51,7 +51,7 @@
                 android:text="@string/NO_BOTS"
                 android:textSize="20sp"
                 android:layout_marginBottom="8dp"
-                android:textColor="?attr/text_minor" />
+                android:textColor="?attr/text_assist" />
 
             <TextView
                 android:id="@+id/empty_tv"
@@ -60,7 +60,7 @@
                 android:layout_centerInParent="true"
                 android:gravity="center_horizontal"
                 android:text="@string/profile_share_bot_hint"
-                android:textColor="?attr/text_minor" />
+                android:textColor="?attr/text_assist" />
         </RelativeLayout>
     </FrameLayout>
 </LinearLayout>

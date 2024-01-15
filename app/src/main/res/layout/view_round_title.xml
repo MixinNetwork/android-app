@@ -93,7 +93,7 @@
             android:singleLine="true"
             android:ellipsize="end"
             android:visibility="gone"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp"
             tools:ignore="SmallSp"/>
     </LinearLayout>

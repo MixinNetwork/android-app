@@ -50,7 +50,7 @@
             android:maxLines="1"
             app:circle_clear_icon="true"
             android:textColor="?attr/text_primary"
-            android:textColorHint="?attr/text_minor"
+            android:textColorHint="?attr/text_assist"
             android:textSize="14sp" />
 
         <ProgressBar
@@ -98,7 +98,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/margin16"
                 android:text="@string/NO_RESULTS"
-                android:textColor="?attr/text_minor" />
+                android:textColor="?attr/text_assist" />
         </LinearLayout>
 
         <RelativeLayout

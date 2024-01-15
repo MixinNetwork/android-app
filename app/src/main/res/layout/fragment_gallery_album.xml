@@ -26,7 +26,7 @@
             app:tabBackground="@null"
             app:tabIndicatorHeight="0dp"
             app:tabSelectedTextColor="@color/gray_black"
-            app:tabTextColor="?attr/text_minor"/>
+            app:tabTextColor="?attr/text_assist"/>
     </RelativeLayout>
 
     <ProgressBar
