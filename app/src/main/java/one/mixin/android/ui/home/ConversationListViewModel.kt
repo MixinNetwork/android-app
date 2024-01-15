@@ -2,12 +2,10 @@ package one.mixin.android.ui.home
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.CONVERSATION_PAGE_SIZE
 import one.mixin.android.api.MixinResponse
@@ -61,7 +59,7 @@ class ConversationListViewModel
             ).build()
         }
 
-        fun createGroupConversation(conversationId: String) {
+        suspend fun createGroupConversation(conversationId: String) {
             val c = messageRepository.getConversation(conversationId)
             c?.let {
                 val participants = messageRepository.getGroupParticipants(conversationId)
@@ -74,9 +72,7 @@ class ConversationListViewModel
                         c.announcement, null, c.payType, createAt, null, null,
                         null, 0, ConversationStatus.START.ordinal, null,
                     )
-                viewModelScope.launch {
-                    messageRepository.insertConversation(conversation, mutableList)
-                }
+                messageRepository.insertConversation(conversation, mutableList)
 
                 val participantRequestList = mutableListOf<ParticipantRequest>()
                 mutableList.mapTo(participantRequestList) { ParticipantRequest(it.userId, it.role) }
@@ -93,8 +89,8 @@ class ConversationListViewModel
             }
         }
 
-        fun deleteConversation(conversationId: String) =
-            viewModelScope.launch(Dispatchers.IO) {
+        suspend fun deleteConversation(conversationId: String) =
+            withContext(Dispatchers.IO) {
                 val ids = messageRepository.findTranscriptIdByConversationId(conversationId)
                 if (ids.isNotEmpty()) {
                     jobManager.addJobInBackground(TranscriptDeleteJob(ids))
@@ -102,14 +98,11 @@ class ConversationListViewModel
                 cleanMessageHelper.deleteMessageByConversationId(conversationId, true)
             }
 
-        fun updateConversationPinTimeById(
+        suspend fun updateConversationPinTimeById(
             conversationId: String,
             circleId: String?,
             pinTime: String?,
-        ) =
-            viewModelScope.launch {
-                messageRepository.updateConversationPinTimeById(conversationId, circleId, pinTime)
-            }
+        ) = messageRepository.updateConversationPinTimeById(conversationId, circleId, pinTime)
 
         suspend fun mute(
             duration: Long,
@@ -143,20 +136,12 @@ class ConversationListViewModel
         suspend fun updateGroupMuteUntil(
             conversationId: String,
             muteUntil: String,
-        ) {
-            withContext(Dispatchers.IO) {
-                conversationRepository.updateGroupMuteUntil(conversationId, muteUntil)
-            }
-        }
+        ) = conversationRepository.updateGroupMuteUntil(conversationId, muteUntil)
 
         suspend fun updateMuteUntil(
             id: String,
             muteUntil: String,
-        ) {
-            withContext(Dispatchers.IO) {
-                userRepository.updateMuteUntil(id, muteUntil)
-            }
-        }
+        ) = userRepository.updateMuteUntil(id, muteUntil)
 
         suspend fun suspendFindUserById(query: String) = userRepository.suspendFindUserById(query)
 
@@ -199,7 +184,7 @@ class ConversationListViewModel
                 userRepository.updateCircleConversations(id, circleConversationRequests)
             }
 
-        fun sortCircleConversations(list: List<CircleOrder>?) = viewModelScope.launch { userRepository.sortCircleConversations(list) }
+        suspend fun sortCircleConversations(list: List<CircleOrder>?) = userRepository.sortCircleConversations(list)
 
         suspend fun saveCircle(
             circleId: String,
@@ -225,4 +210,10 @@ class ConversationListViewModel
         suspend fun findAppById(appId: String) = userRepository.findAppById(appId)
 
         suspend fun findTotalUSDBalance() = tokenRepository.findTotalUSDBalance()
+
+        fun hasUnreadMessage(circleId: String) = userRepository.hasUnreadMessage(circleId)
+
+        suspend fun createCircle(name: String) = userRepository.createCircle(name)
+
+        suspend fun findCircleItemByCircleIdSuspend(circleId: String) = userRepository.findCircleItemByCircleIdSuspend(circleId)
     }

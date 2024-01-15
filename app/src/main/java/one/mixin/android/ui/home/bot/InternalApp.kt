@@ -16,17 +16,16 @@ data class Bot(
     override fun getBotId() = id
 }
 
-const val INTERNAL_WALLET_ID = "1462e610-7de1-4865-bc06-d71cfcbd0329"
 const val INTERNAL_CAMERA_ID = "15366a81-077c-414b-8829-552c5c87a2ae"
 const val INTERNAL_SCAN_ID = "1cc9189a-ddcd-4b95-a18b-4411da1b8d80"
+const val INTERNAL_SUPPORT_ID = "77443b1f-bbr4-4aad-8b6b-b8f58761e2e9"
 
-const val TOP_BOT = "top_bot"
-
-val DefaultTopBots: String = GsonHelper.customGson.toJson(arrayOf(INTERNAL_WALLET_ID, INTERNAL_SCAN_ID))
-
-val InternalWallet = Bot(INTERNAL_WALLET_ID, getLocalString(MixinApplication.appContext, R.string.Wallet), R.drawable.ic_bot_wallet)
 val InternalCamera = Bot(INTERNAL_CAMERA_ID, getLocalString(MixinApplication.appContext, R.string.Camera), R.drawable.ic_bot_camera)
 val InternalScan = Bot(INTERNAL_SCAN_ID, getLocalString(MixinApplication.appContext, R.string.Scan_QR), R.drawable.ic_bot_scan)
+val InternalSupport = Bot(INTERNAL_SUPPORT_ID, getLocalString(MixinApplication.appContext, R.string.Customer_Service), R.drawable.ic_bot_support)
+
+const val TOP_BOT = "top_bot"
+val DefaultTopBots: String = GsonHelper.customGson.toJson(arrayOf(INTERNAL_SCAN_ID, INTERNAL_CAMERA_ID, INTERNAL_SUPPORT_ID))
 
 enum class BotCategory(
     @DrawableRes val icon: Int,

@@ -18,6 +18,7 @@ class ForceSyncOutputJob(private val offset: Long, private val kernelAssetId: St
 
     override fun onRun() =
         runBlocking {
+            outputDao.deleteByKernelAssetIdAndOffset(kernelAssetId, offset)
             syncOutputs(offset)
         }
 

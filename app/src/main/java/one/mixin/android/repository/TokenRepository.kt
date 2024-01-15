@@ -70,7 +70,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
@@ -80,6 +79,8 @@ import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.safe.SafeSnapshot
+import one.mixin.android.vo.safe.SafeSnapshotType
+import one.mixin.android.vo.safe.SafeWithdrawal
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
@@ -189,6 +190,8 @@ class TokenRepository
         }
 
         suspend fun findDepositEntry(chainId: String) = depositDao.findDepositEntry(chainId)
+
+        suspend fun findDepositEntryDestinations() = depositDao.findDepositEntryDestinations()
 
         suspend fun findAndSyncDepositEntry(chainId: String): Pair<DepositEntry?, Boolean> {
             val oldDeposit = depositDao.findDepositEntry(chainId)
@@ -384,12 +387,16 @@ class TokenRepository
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
 
+        suspend fun allPendingDeposit() = tokenService.allPendingDeposits()
+
         suspend fun pendingDeposits(
             asset: String,
             destination: String,
             tag: String? = null,
         ) =
             tokenService.pendingDeposits(asset, destination, tag)
+
+        suspend fun clearAllPendingDeposits() = safeSnapshotDao.clearAllPendingDeposits()
 
         suspend fun clearPendingDepositsByAssetId(assetId: String) =
             safeSnapshotDao.clearPendingDepositsByAssetId(assetId)
@@ -707,31 +714,28 @@ class TokenRepository
         fun insertSnapshotMessage(
             data: TransactionResponse,
             conversationId: String,
-            assetId: String,
-            amount: String,
-            opponentId: String,
-            memo: String?,
         ) {
             val snapshotId = data.getSnapshotId
-            val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-$amount", data.userId, opponentId, memo?.toHex() ?: "", data.transactionHash, data.createdAt, data.requestId, null, null, null, null, null)
-            safeSnapshotDao.insert(snapshot)
             if (conversationId != "") {
-                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, snapshot.type, null, snapshot.snapshotId)
+                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, snapshotId)
                 appDatabase.insertMessage(message)
                 MessageFlow.insert(message.conversationId, message.messageId)
             }
         }
 
         fun insertSafeSnapshot(
-            data: TransactionResponse,
+            snapshotId: String,
+            userId: String,
+            opponentId: String,
+            transactionHash: String,
+            requestId: String,
             assetId: String,
             amount: String,
-            opponentId: String,
             memo: String?,
-            type: String = SnapshotType.withdrawal.name
+            type: SafeSnapshotType,
+            withdrawal: SafeWithdrawal? = null,
         ) {
-            val snapshotId = data.getSnapshotId
-            val snapshot = SafeSnapshot(snapshotId, type, assetId, "-$amount", data.userId, opponentId, memo?.toHex() ?: "", data.transactionHash, data.createdAt, data.requestId, null, null, null, null, null)
+            val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toHex() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, withdrawal)
             safeSnapshotDao.insert(snapshot)
         }
 
@@ -764,5 +768,5 @@ class TokenRepository
             ).liveData
         }
 
-    fun firstUnspentTransaction() = rawTransactionDao.findUnspentTransaction()
-}
+        fun firstUnspentTransaction() = rawTransactionDao.findUnspentTransaction()
+    }

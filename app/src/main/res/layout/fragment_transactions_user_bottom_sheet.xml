@@ -29,6 +29,7 @@
             android:id="@+id/transactions_rv"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:scrollbars="vertical"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
 
         <include android:id="@+id/empty" layout="@layout/layout_empty_transaction" />

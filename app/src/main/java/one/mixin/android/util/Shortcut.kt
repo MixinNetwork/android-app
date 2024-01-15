@@ -16,7 +16,7 @@ private const val categoryImageShareTarget = "one.mixin.android.directshare.cate
 private const val categoryVideoShareTarget = "one.mixin.android.directshare.category.VIDEO_SHARE_TARGET"
 private const val categoryAudioShareTarget = "one.mixin.android.directshare.category.AUDIO_SHARE_TARGET"
 private const val categoryApplicationShareTarget = "one.mixin.android.directshare.category.APPLICATION_SHARE_TARGET"
-private const val dynamicShortcutCount = 4
+private const val dynamicShortcutCount = 2
 private const val staticShortcutCount = 2 // wallet and scan
 
 val shareCategories =
@@ -74,13 +74,21 @@ fun generateDynamicShortcut(
 fun updateShortcuts(shortcuts: MutableList<ShortcutInfoCompat>) {
     val exists = ShortcutManagerCompat.getDynamicShortcuts(MixinApplication.appContext)
     val keepSize = maxDynamicShortcutCount - shortcuts.size
-    if (keepSize >= 0 && exists.size > keepSize) {
-        val removeIds = mutableListOf<String>()
-        exists.take(exists.size - keepSize)
-            .mapTo(removeIds) { it.id }
-        ShortcutManagerCompat.removeDynamicShortcuts(MixinApplication.appContext, removeIds)
+    if (keepSize <= 0) {
+        ShortcutManagerCompat.removeAllDynamicShortcuts(MixinApplication.appContext)
+        ShortcutManagerCompat.addDynamicShortcuts(MixinApplication.appContext, shortcuts)
+    } else {
+        exists.sortBy { it.rank }
+        val remain = exists.take(keepSize)
+        // use (remove + update + add) instead of setDynamicShortcuts to avoid system shortcut icon blank
+        val removeCount = exists.size - keepSize
+        if (removeCount > 0) {
+            val remove = exists.takeLast(removeCount)
+            ShortcutManagerCompat.removeDynamicShortcuts(MixinApplication.appContext, remove.map { it.id })
+        }
+        ShortcutManagerCompat.updateShortcuts(MixinApplication.appContext, remain)
+        ShortcutManagerCompat.addDynamicShortcuts(MixinApplication.appContext, shortcuts)
     }
-    ShortcutManagerCompat.addDynamicShortcuts(MixinApplication.appContext, shortcuts)
 }
 
 data class ShortcutInfo(

@@ -82,6 +82,9 @@ interface TokenService {
     ): MixinResponse<SafeSnapshot>
 
     @GET("safe/deposits")
+    suspend fun allPendingDeposits(): MixinResponse<List<PendingDeposit>>
+
+    @GET("safe/deposits")
     suspend fun pendingDeposits(
         @Query("asset") asset: String,
         @Query("destination") key: String,

@@ -32,7 +32,6 @@ import one.mixin.android.ui.home.ConversationListViewModel
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
-import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.ConversationCircleItem
 import one.mixin.android.vo.getCircleColor
@@ -54,14 +53,22 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
 
     private val conversationViewModel by viewModels<ConversationListViewModel>()
 
-    private val binding by viewBinding(FragmentConversationCircleBinding::bind)
+    private var _binding: FragmentConversationCircleBinding? = null
+    private val binding get() = requireNotNull(_binding)
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View? =
-        layoutInflater.inflate(R.layout.fragment_conversation_circle, container, false)
+    ): View {
+        _binding = FragmentConversationCircleBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
+    }
 
     override fun onViewCreated(
         view: View,
@@ -76,18 +83,16 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
         itemTouchHelper.attachToRecyclerView(binding.circleRv)
         conversationViewModel.observeAllCircleItem().observe(
             viewLifecycleOwner,
-            {
-                val list = mutableListOf<ConversationCircleItem>()
-                list.addAll(it)
-                conversationAdapter.conversationCircles = list
-            },
-        )
+        ) {
+            val list = mutableListOf<ConversationCircleItem>()
+            list.addAll(it)
+            conversationAdapter.conversationCircles = list
+        }
         conversationViewModel.observeAllConversationUnread().observe(
             viewLifecycleOwner,
-            {
-                conversationAdapter.allUnread = it
-            },
-        )
+        ) {
+            conversationAdapter.allUnread = it
+        }
     }
 
     private val conversationAdapter by lazy {
@@ -103,7 +108,9 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
                 (requireActivity() as MainActivity).sortAction()
             },
             {
-                conversationViewModel.sortCircleConversations(it)
+                lifecycleScope.launch {
+                    conversationViewModel.sortCircleConversations(it)
+                }
             },
         )
     }
@@ -315,7 +322,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
             this@CirclesFragment,
             ConversationCircleEditFragment.newInstance(conversationCircleItem),
             ConversationCircleEditFragment.TAG,
-            R.id.root_view,
+            R.id.container,
         )
     }
 

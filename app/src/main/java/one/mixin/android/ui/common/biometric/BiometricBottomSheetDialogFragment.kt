@@ -21,7 +21,6 @@ import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.tip.isTipNodeException
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
@@ -187,7 +186,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 biometricLayout.showPin(true)
                 if (t.isTipNodeException()) {
-                    showErrorInfo(t.getTipExceptionMsg(requireContext(), null), true, errorAction = BiometricLayout.ErrorAction.Close)
+                    showErrorInfo(t.getTipExceptionMsg(requireContext(), null), true, errorAction = BiometricLayout.ErrorAction.RetryPin)
                 } else if (t.isUtxoException()) {
                     showErrorInfo(t.getUtxoExceptionMsg(requireContext()), true, errorAction = BiometricLayout.ErrorAction.Close)
                 } else {

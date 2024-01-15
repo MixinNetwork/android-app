@@ -49,6 +49,7 @@ import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.UpdateRelationshipJob
+import one.mixin.android.net.executeWithRetry
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.TokenRepository
@@ -86,6 +87,8 @@ import one.mixin.android.vo.safe.OutputState
 import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.safe.RawTransactionType
 import one.mixin.android.vo.safe.SafeSnapshot
+import one.mixin.android.vo.safe.SafeSnapshotType
+import one.mixin.android.vo.safe.SafeWithdrawal
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.UtxoWrapper
 import one.mixin.android.vo.safe.formatDestination
@@ -95,6 +98,7 @@ import one.mixin.android.vo.utxo.changeToOutput
 import one.mixin.android.vo.utxo.consolidationOutput
 import java.io.File
 import java.math.BigDecimal
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -244,6 +248,17 @@ class BottomSheetViewModel
                         val changeOutput = changeToOutput(signFeeResult.change, feeAsset, changeMask, data[2].keys, feeUtxos.lastOutput)
                         tokenRepository.insertOutput(changeOutput)
                     }
+                    val transactionHash = signWithdrawal.hash
+                    tokenRepository.insertSafeSnapshot(
+                        UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, traceId, assetId, amount, memo, SafeSnapshotType.withdrawal,
+                        withdrawal =
+                            SafeWithdrawal(
+                                "",
+                                destination,
+                            ),
+                    )
+                    val feeTransactionHash = signFee.hash
+                    tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$feeTransactionHash".toByteArray()).toString(), senderId, receiverId, feeTransactionHash, feeTraceId, feeAssetId, feeAmount, "", SafeSnapshotType.snapshot)
                     tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))
                     tokenRepository.insetRawTransaction(RawTransaction(feeData.requestId, signFeeResult.raw, receiverId, RawTransactionType.FEE, OutputState.unspent, nowInUtc()))
                 }
@@ -255,11 +270,23 @@ class BottomSheetViewModel
                         tokenRepository.insertOutput(changeOutput)
                     }
                     tokenRepository.updateUtxoToSigned(withdrawalUtxos.ids)
+                    val transactionHash = signWithdrawal.hash
+                    tokenRepository.insertSafeSnapshot(
+                        UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, traceId, assetId, amount, memo, SafeSnapshotType.withdrawal,
+                        withdrawal =
+                            SafeWithdrawal(
+                                "",
+                                destination,
+                            ),
+                    )
                     tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))
                 }
                 jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
             }
-            val transactionRsp = tokenRepository.transactions(rawRequest)
+            val transactionRsp =
+                executeWithRetry(30) {
+                    tokenRepository.transactions(rawRequest)
+                }
             if (transactionRsp.error != null) {
                 reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
                 tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
@@ -268,7 +295,6 @@ class BottomSheetViewModel
             } else {
                 tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
                 tokenRepository.updateRawTransaction(feeTraceId, OutputState.signed.name)
-                tokenRepository.insertSafeSnapshot(transactionRsp.data!!.first(), assetId, amount, receiverId, memo)
             }
             jobManager.addJobInBackground(SyncOutputJob())
             return withdrawalRequestResponse
@@ -289,7 +315,7 @@ class BottomSheetViewModel
 
             val rawTransaction = tokenRepository.findRawTransaction(trace)
             if (rawTransaction?.state == OutputState.unspent) {
-                return innerTransaction(rawTransaction.rawTransaction, trace, listOf(), assetId, amount, memo)
+                return innerTransaction(rawTransaction.rawTransaction, trace, listOf())
             }
 
             val senderId = Session.getAccountId()!!
@@ -323,11 +349,13 @@ class BottomSheetViewModel
                     val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxoWrapper.lastOutput)
                     tokenRepository.insertOutput(changeOutput)
                 }
+                val transactionHash = sign.hash
+                tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, trace, assetId, amount, memo, SafeSnapshotType.snapshot)
                 tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, "", RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc()))
                 tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
             }
             jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
-            return innerTransaction(signResult.raw, trace, listOf(), assetId, amount, memo)
+            return innerTransaction(signResult.raw, trace, listOf())
         }
 
         suspend fun kernelTransaction(
@@ -347,7 +375,7 @@ class BottomSheetViewModel
 
             val rawTransaction = tokenRepository.findRawTransaction(trace)
             if (rawTransaction != null) {
-                return innerTransaction(rawTransaction.rawTransaction, trace, receiverIds, assetId, amount, memo)
+                return innerTransaction(rawTransaction.rawTransaction, trace, receiverIds)
             }
 
             val senderIds = listOf(Session.getAccountId()!!)
@@ -387,23 +415,25 @@ class BottomSheetViewModel
                     val consolidationOutput = consolidationOutput(sign.hash, asset, amount, receiverMask, data.first().keys, utxoWrapper.lastOutput)
                     tokenRepository.insertOutput(consolidationOutput)
                 }
+                val transactionHash = sign.hash
+                tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("${senderIds.first()}:$transactionHash".toByteArray()).toString(), senderIds.first(), receiverIds.first(), transactionHash, trace, assetId, amount, memo, SafeSnapshotType.snapshot)
                 tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverIds.joinToString(","), RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc()))
                 tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
             }
             jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
-            return innerTransaction(signResult.raw, trace, receiverIds, assetId, amount, memo, isConsolidation)
+            return innerTransaction(signResult.raw, trace, receiverIds, isConsolidation)
         }
 
         private suspend fun innerTransaction(
             raw: String,
             traceId: String,
             receiverIds: List<String>,
-            assetId: String,
-            amount: String,
-            memo: String?,
             isConsolidation: Boolean = false,
         ): MixinResponse<List<TransactionResponse>> {
-            val transactionRsp = tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
+            val transactionRsp =
+                executeWithRetry(30) {
+                    tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
+                }
             if (transactionRsp.error != null) {
                 reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
                 tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, OutputState.signed.name)
@@ -416,9 +446,9 @@ class BottomSheetViewModel
                 val receiverId = receiverIds.first()
                 val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)
                 initConversation(conversationId, transactionRsp.data!!.first().userId, receiverId)
-                tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), conversationId, assetId, amount, receiverId, memo)
+                tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), conversationId)
             } else if (receiverIds.size > 1) {
-                tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), "", assetId, amount, "", memo)
+                tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), "")
             }
             jobManager.addJobInBackground(SyncOutputJob())
             return transactionRsp
@@ -1070,12 +1100,12 @@ class BottomSheetViewModel
             }
         }
 
-        suspend fun getExternalAddressFee(
+        suspend fun validateExternalAddress(
             assetId: String,
             destination: String,
             tag: String?,
         ) =
-            accountRepository.getExternalAddressFee(assetId, destination, tag)
+            accountRepository.validateExternalAddress(assetId, destination, tag)
 
         suspend fun findAssetIdByAssetKey(assetKey: String): String? =
             tokenRepository.findAssetIdByAssetKey(assetKey)
@@ -1116,8 +1146,10 @@ class BottomSheetViewModel
             }
         }
 
-        suspend fun firstUnspentTransaction() = withContext(Dispatchers.IO) {
-            tokenRepository.firstUnspentTransaction()
-        }
+        suspend fun firstUnspentTransaction() =
+            withContext(Dispatchers.IO) {
+                tokenRepository.firstUnspentTransaction()
+            }
 
+        suspend fun getScheme(id: String) = accountRepository.getScheme(id)
     }

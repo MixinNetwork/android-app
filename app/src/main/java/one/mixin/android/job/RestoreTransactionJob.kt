@@ -1,8 +1,6 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
-import com.google.gson.annotations.SerializedName
-import kernel.Kernel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -11,10 +9,7 @@ import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.runInTransaction
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.toHex
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.util.uniqueObjectId
 import one.mixin.android.vo.ConversationCategory
@@ -22,13 +17,12 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
-import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.OutputState
 import one.mixin.android.vo.safe.RawTransactionType
-import one.mixin.android.vo.safe.SafeSnapshot
+import one.mixin.android.vo.safe.SafeSnapshotType
 import timber.log.Timber
 import java.util.UUID
 
@@ -56,29 +50,17 @@ class RestoreTransactionJob : BaseJob(
                 try {
                     val response = utxoService.getTransactionsById(transaction.requestId)
                     if (response.isSuccess) {
-                        val rawTx = Kernel.decodeRawTx(transaction.rawTransaction, 0)
-                        val transactionsData = GsonHelper.customGson.fromJson(rawTx, TransactionsData::class.java)
                         runInTransaction {
                             rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
                             rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
                         }
-                        val token = tokenDao.findTokenByAsset(transactionsData.asset)
-                        if (token?.assetId == null) {
-                            return@runBlocking
-                        }
                         if (feeTransaction == null) {
                             val data = response.data!!
                             if (transaction.receiverId.isNotBlank()) {
-                                insertSnapshotMessage(data, token.assetId, data.amount, transaction.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
+                                insertSnapshotMessage(data, transaction.receiverId)
                             }
                         }
                     } else if (response.errorCode == 404) {
-                        val rawTx = Kernel.decodeRawTx(transaction.rawTransaction, 0)
-                        val transactionsData = GsonHelper.customGson.fromJson(rawTx, TransactionsData::class.java)
-                        val token = tokenDao.findTokenByAsset(transactionsData.asset)
-                        if (token?.assetId == null) {
-                            throw IllegalArgumentException("Lost token ${transactionsData.asset}")
-                        }
                         val transactionRsp =
                             utxoService.transactions(
                                 if (feeTransaction != null) {
@@ -94,7 +76,7 @@ class RestoreTransactionJob : BaseJob(
                                 rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
                             }
                             if (feeTransaction == null && transaction.receiverId.isNotBlank()) {
-                                insertSnapshotMessage(transactionResponse, token.assetId, transactionResponse.amount, transaction.receiverId, transactionsData.extra?.decodeBase64()?.decodeToString())
+                                insertSnapshotMessage(transactionResponse, transaction.receiverId)
                             }
                         } else {
                             reportException(e = Throwable("Transaction Error ${transactionRsp.errorDescription}"))
@@ -120,17 +102,11 @@ class RestoreTransactionJob : BaseJob(
 
     private fun insertSnapshotMessage(
         data: TransactionResponse,
-        assetId: String,
-        amount: String,
         opponentId: String,
-        memo: String?,
     ) {
-        val snapshotId = data.getSnapshotId
         val conversationId = generateConversationId(data.userId, opponentId)
         initConversation(conversationId, data.userId, opponentId)
-        val snapshot = SafeSnapshot(snapshotId, SnapshotType.transfer.name, assetId, "-$amount", data.userId, opponentId, memo?.toHex() ?: "", "", data.createdAt, data.requestId, null, null, null, null, null)
-        val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, snapshot.type, null, snapshot.snapshotId)
-        safeSnapshotDao.insert(snapshot)
+        val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, data.getSnapshotId)
         appDatabase.insertMessage(message)
         MessageFlow.insert(message.conversationId, message.messageId)
     }
@@ -162,19 +138,3 @@ class RestoreTransactionJob : BaseJob(
         jobManager.addJobInBackground(RefreshConversationJob(conversationId))
     }
 }
-
-class TransactionsData(
-    @SerializedName("Asset")
-    val asset: String,
-    @SerializedName("Extra")
-    val extra: String?,
-    @SerializedName("Inputs")
-    val inputs: List<Input>,
-)
-
-class Input(
-    @SerializedName("Hash")
-    val hash: String,
-    @SerializedName("Index")
-    val index: Int,
-)

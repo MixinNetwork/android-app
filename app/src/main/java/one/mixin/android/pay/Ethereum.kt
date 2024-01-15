@@ -1,7 +1,8 @@
 package one.mixin.android.pay
 
 import one.mixin.android.Constants
-import one.mixin.android.api.response.AddressFeeResponse
+import one.mixin.android.api.response.AddressResponse
+import one.mixin.android.api.response.WithdrawalResponse
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.pay.erc681.scientificNumberRegEx
 import one.mixin.android.pay.erc681.toERC681
@@ -13,7 +14,8 @@ data class EthereumURI(val uri: String)
 
 internal suspend fun parseEthereum(
     url: String,
-    getAddressFee: suspend (String, String) -> AddressFeeResponse?,
+    validateAddress: suspend (String, String) -> AddressResponse?,
+    getFee: suspend (String, String) -> List<WithdrawalResponse>?,
     findAssetIdByAssetKey: suspend (String) -> String?,
     getAssetPrecisionById: suspend (String) -> AssetPrecision?,
 ): ExternalTransfer? {
@@ -22,6 +24,7 @@ internal suspend fun parseEthereum(
 
     val chainId = erc681.chainId?.toInt() ?: 1
     var assetId = ethereumChainIdMap[chainId] ?: return null
+    val withdrawalChainId = assetId
 
     val value = erc681.value
     var address: String? = null
@@ -87,11 +90,13 @@ internal suspend fun parseEthereum(
     }
 
     val am = amount?.toPlainString()?.stripAmountZero() ?: return null
-    val addressFeeResponse = getAddressFee(assetId, destination) ?: return null
-    if (!addressFeeResponse.destination.equals(destination, true)) {
+    val addressResponse = validateAddress(assetId, destination) ?: return null
+    if (!addressResponse.destination.equals(destination, true)) {
         return null
     }
-    return ExternalTransfer(addressFeeResponse.destination, am, assetId, addressFeeResponse.fee.toBigDecimalOrNull())
+    val feeResponse = getFee(assetId, destination) ?: return null
+    val fee = feeResponse.find { it.assetId == withdrawalChainId } ?: return null
+    return ExternalTransfer(addressResponse.destination, am, assetId, fee.amount?.toBigDecimalOrNull())
 }
 
 fun String?.uint256ToBigDecimal(): BigDecimal? {

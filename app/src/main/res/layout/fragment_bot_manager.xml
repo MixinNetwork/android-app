@@ -11,7 +11,7 @@
     <RelativeLayout
         android:id="@+id/title_rl"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="?actionBarSize">
 
         <TextView
             android:id="@+id/bot_title"
@@ -19,24 +19,12 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="12dp"
             android:text="@string/bots_title"
             android:textColor="?attr/text_primary"
-            android:textSize="16sp"
+            android:textSize="18sp"
             android:textStyle="bold"
             tools:ignore="RelativeOverlap" />
-
-        <ImageView
-            android:id="@+id/bot_close"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_margin="8dp"
-            android:foreground="@drawable/mixin_ripple"
-            android:padding="8dp"
-            android:src="@drawable/ic_circle_close"
-            android:contentDescription="@string/Close" />
 
     </RelativeLayout>
 
@@ -78,10 +66,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/dock_cl"
+        android:layout_marginTop="12dp"
         android:paddingStart="6dp"
-        android:paddingTop="12dp"
         android:paddingEnd="6dp"
-        android:paddingBottom="12dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="4"
         tools:listitem="@layout/item_bot_manager" />

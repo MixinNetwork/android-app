@@ -4,10 +4,8 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.graphics.Color
-import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
 import android.text.InputType
@@ -33,7 +31,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewMaterialSearchBinding
 import one.mixin.android.extension.ANIMATION_DURATION_SHORT
 import one.mixin.android.extension.appCompatActionBarHeight
-import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
@@ -158,7 +155,7 @@ class MaterialSearchView : FrameLayout {
 
     override fun onRestoreInstanceState(state: Parcelable?) {
         isOpen = (state as? SavedState)?.isOpen ?: false
-        if (isOpen) openSearch() else closeSearch()
+        if (isOpen) openNoAnimate() else closeNoAnimate()
         super.onRestoreInstanceState(state)
     }
 
@@ -220,18 +217,12 @@ class MaterialSearchView : FrameLayout {
                 object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         binding.containerShadow.isVisible = false
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            (context as Activity).window.navigationBarColor = context.colorFromAttribute(R.attr.bg_white)
-                        }
                     }
                 },
             )
             addUpdateListener {
                 val c = Color.BLACK.withAlpha(0.32f * it.animatedValue as Float)
                 binding.containerShadow.setBackgroundColor(c)
-                if (c > 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    (context as Activity).window.navigationBarColor = c
-                }
             }
             interpolator = AccelerateInterpolator()
             duration = ANIMATION_DURATION_SHORT
@@ -241,6 +232,7 @@ class MaterialSearchView : FrameLayout {
     }
 
     var hideAction: (() -> Unit)? = null
+    var showAction: (() -> Unit)? = null
 
     fun showContainer() {
         containerDisplay = true
@@ -251,6 +243,7 @@ class MaterialSearchView : FrameLayout {
         binding.avatar.fadeOut()
         binding.actionVa.fadeIn()
         binding.containerCircle.isVisible = true
+        showAction?.invoke()
         ValueAnimator.ofFloat(0f, 1f).apply {
             addListener(
                 object : AnimatorListenerAdapter() {
@@ -263,9 +256,6 @@ class MaterialSearchView : FrameLayout {
             addUpdateListener {
                 val c = Color.BLACK.withAlpha(0.32f * it.animatedValue as Float)
                 binding.containerShadow.setBackgroundColor(c)
-                if (c > 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    (context as Activity).window.navigationBarColor = c
-                }
             }
             interpolator = DecelerateInterpolator()
             duration = ANIMATION_DURATION_SHORT
@@ -360,6 +350,26 @@ class MaterialSearchView : FrameLayout {
         isOpen = true
     }
 
+    private fun openNoAnimate() {
+        binding.logoLayout.isVisible = false
+        binding.searchEt.isVisible = true
+        binding.searchEt.showKeyboard()
+        binding.backIb.isVisible = true
+
+        binding.rightClear.visibility = View.GONE
+
+        binding.searchEt.setText("")
+        oldLeftX = binding.logoLayout.x
+        oldSearchWidth = binding.searchEt.measuredWidth
+        binding.avatar.translationX(context.dpToPx(rightTranslationX).toFloat())
+        binding.searchIb.translationX(context.dpToPx(rightTranslationX).toFloat())
+        if (isDesktopLogin) {
+            binding.desktopIb.translationX(context.dpToPx(rightTranslationX).toFloat())
+        }
+        mSearchViewListener?.onSearchViewOpened()
+        isOpen = true
+    }
+
     fun closeSearch() {
         binding.searchEt.animate().apply {
             setListener(
@@ -408,6 +418,10 @@ class MaterialSearchView : FrameLayout {
                 },
             )
         }.setDuration(150L).alpha(0f).start()
+        closeNoAnimate()
+    }
+
+    private fun closeNoAnimate() {
         binding.rightClear.visibility = View.GONE
         hideLoading()
 

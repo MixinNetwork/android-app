@@ -9,7 +9,7 @@
     <color name="colorGray">#9B9B9B</color>
     <color name="colorOnSurface">#212121</color>
 
-    <color name="textPrimary">#333333</color>
+    <color name="textPrimary">#000000</color>
     <color name="textMinor">#bbbbbb</color>
     <color name="textAssist">#B8BDC7</color>
     <color name="textRemarks">#BCBEC3</color>

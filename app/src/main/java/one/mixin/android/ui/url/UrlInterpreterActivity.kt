@@ -19,7 +19,6 @@ import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.oldwallet.OldTransferFragment
 import one.mixin.android.ui.transfer.TransferActivity
-import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import timber.log.Timber
 
@@ -40,6 +39,8 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val DEVICE_TRANSFER = "device-transfer"
         private const val BUY = "buy"
         private const val TIP = "tip"
+        private const val MULTISIGS = "multisigs"
+        private const val SCHEME = "scheme"
         private const val MIXIN = "mixin.one"
         const val WC = "wc"
 
@@ -139,11 +140,12 @@ class UrlInterpreterActivity : BaseActivity() {
                 TransferActivity.parseUri(this, uri, { finish() }) { finish() }
             }
             BUY -> {
-                WalletActivity.show(this, buy = true)
+                MainActivity.showWallet(this, buy = true)
                 finish()
             }
             MIXIN -> {
-                if (uri.pathSegments.first().equals(PAY)) {
+                val path = uri.pathSegments.first()
+                if (path.equals(PAY, true) || path.equals(SCHEME, true) || path.equals(MULTISIGS, true)) {
                     val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
                     bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
                 } else {

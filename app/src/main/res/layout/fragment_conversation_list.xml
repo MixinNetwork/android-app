@@ -1,66 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?attr/bg_white">
+    android:layout_height="match_parent">
 
-    <include
-        layout="@layout/view_link_state" />
-
-    <FrameLayout
-        android:id="@+id/top_fl"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/state_layout">
-
-        <ImageView
-            android:id="@+id/down_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            android:layout_gravity="center_horizontal|bottom"
-            android:src="@drawable/ic_keyboard_arrow_down"
-            tools:ignore="ContentDescription"/>
-    </FrameLayout>
-
-    <include
-        android:id="@+id/empty_view"
-        layout="@layout/view_empty"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/top_fl" />
-
-    <one.mixin.android.widget.DraggableRecyclerView
-        android:id="@+id/message_rv"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:drag_direction="-1"
-        android:scrollbars="vertical"
-        app:layoutManager="LinearLayoutManager"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/top_fl"
-        tools:listitem="@layout/item_list_conversation" />
-
-    <FrameLayout
-        android:id="@+id/shadow_fl"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:background="?attr/bg_white"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/shadow_bottom"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:layout_height="match_parent"
+        android:layout_marginTop="56dp">
 
-        <one.mixin.android.widget.ShadowCircleView
-            android:id="@+id/shadow_view"
-            android:layout_width="wrap_content"
-            android:layout_height="72dp"
-            android:layout_gravity="center_horizontal"/>
-    </FrameLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <include layout="@layout/view_link_state" />
+
+        <FrameLayout
+            android:id="@+id/top_fl"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/state_layout">
+
+            <ImageView
+                android:id="@+id/down_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:layout_gravity="center_horizontal|bottom"
+                android:src="@drawable/ic_keyboard_arrow_down"
+                tools:ignore="ContentDescription" />
+        </FrameLayout>
+
+        <include
+            android:id="@+id/empty_view"
+            layout="@layout/view_empty"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/top_fl" />
+
+        <one.mixin.android.widget.DraggableRecyclerView
+            android:id="@+id/message_rv"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:drag_direction="-1"
+            android:scrollbars="vertical"
+            app:layoutManager="LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/top_fl"
+            tools:listitem="@layout/item_list_conversation" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <one.mixin.android.widget.MaterialSearchView
+        android:id="@+id/search_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</FrameLayout>

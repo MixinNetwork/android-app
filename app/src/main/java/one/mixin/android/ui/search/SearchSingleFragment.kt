@@ -117,13 +117,13 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                 }
 
                 override fun onAsset(tokenItem: TokenItem) {
-                    activity?.let { WalletActivity.show(it, tokenItem) }
+                    activity?.let { WalletActivity.showWithToken(it, tokenItem, WalletActivity.Destination.Transactions) }
                 }
 
                 override fun onMessageClick(message: SearchMessageItem) {
                     binding.searchRv.hideKeyboard()
                     val f = SearchMessageFragment.newInstance(message, adapter.query)
-                    requireActivity().addFragment(this@SearchSingleFragment, f, SearchMessageFragment.TAG, R.id.root_view)
+                    requireActivity().addFragment(this@SearchSingleFragment, f, SearchMessageFragment.TAG, R.id.container)
                 }
 
                 override fun onChatClick(chatMinimal: ChatMinimal) {

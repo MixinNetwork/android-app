@@ -207,7 +207,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             bottomVa.setOnClickListener {
                 when (bottomVa.displayedChild) {
                     0 -> {
-                        view.navigate(R.id.action_wallet_status_to_wallet)
+                        requireActivity().finish()
                     }
 
                     1 -> {
@@ -227,7 +227,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 }
             }
             cancelTv.setOnClickListener {
-                view.navigate(R.id.action_wallet_status_to_wallet)
+                requireActivity().finish()
             }
             TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
                 payWith,
@@ -372,7 +372,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 if (status == OrderStatus.PROCESSING) {
                     // do noting
                 } else if (status == OrderStatus.SUCCESS) {
-                    view?.navigate(R.id.action_wallet_status_to_wallet)
+                    requireActivity().finish()
                 } else if (status == OrderStatus.FAILED) {
                     view?.navigate(
                         R.id.action_wallet_status_to_select,
@@ -559,7 +559,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                             this@OrderStatusFragment.retry(sessionId, instrumentId, token, assetAmount)
                         }
                         cancelAction = {
-                            this@OrderStatusFragment.view?.navigate(R.id.action_wallet_status_to_wallet)
+                            requireActivity().finish()
                         }
                     }.showNow(parentFragmentManager, PriceExpiredBottomSheetDialogFragment.TAG)
                     return@launch

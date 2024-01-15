@@ -3,70 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_root"
-    app:startDestination="@+id/wallet_fragment">
-
-    <fragment
-        android:id="@+id/wallet_fragment"
-        android:name="one.mixin.android.ui.wallet.WalletFragment"
-        tools:layout="@layout/fragment_wallet">
-
-        <action
-            android:id="@+id/action_wallet_fragment_to_all_transactions_fragment"
-            app:destination="@id/all_transactions_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
-
-        <action
-            android:id="@+id/action_wallet_fragment_to_hidden_assets_fragment"
-            app:destination="@id/hidden_assets_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
-
-        <action
-            android:id="@+id/action_wallet_fragment_to_transactions_fragment"
-            app:destination="@id/transactions_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
-
-        <action
-            android:id="@+id/action_wallet_to_deposit"
-            app:destination="@id/deposit_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
-
-        <action
-            android:id="@+id/action_wallet_to_wallet_search"
-            app:destination="@id/wallet_search_fragment"
-            app:enterAnim="@anim/fade_in"
-            app:popExitAnim="@anim/fade_out" />
-
-        <action
-            android:id="@+id/action_wallet_to_single_friend_select"
-            app:destination="@id/single_friend_select_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
-
-        <action
-            android:id="@+id/action_wallet_to_address_management"
-            app:destination="@id/address_management_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
-
-        <action
-            android:id="@+id/action_wallet_to_wallet_connect"
-            app:destination="@id/wallet_connect_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
-
-        <action
-            android:id="@+id/action_wallet_to_calculate"
-            app:destination="@id/wallet_calculate"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"
-            app:popEnterAnim="@anim/stay"
-            app:exitAnim="@anim/stay" />
-    </fragment>
-
+    app:startDestination="@+id/transactions_fragment">
+    
     <fragment
         android:id="@+id/transactions_fragment"
         android:name="one.mixin.android.ui.wallet.TransactionsFragment"
@@ -176,12 +114,6 @@
         <argument
             android:name="args_asset"
             app:argType="one.mixin.android.vo.safe.TokenItem" />
-
-        <action
-            android:id="@+id/action_wallet_fragment_to_all_transactions_fragment"
-            app:destination="@id/all_transactions_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -359,13 +291,6 @@
         <argument
             android:name="args_info"
             app:argType="one.mixin.android.ui.wallet.fiatmoney.OrderInfo" />
-
-        <action
-            android:id="@+id/action_wallet_status_to_wallet"
-            app:destination="@id/wallet_fragment"
-            app:popUpTo="@id/wallet_fragment"
-            app:popUpToInclusive="true"
-            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_wallet_status_to_select"

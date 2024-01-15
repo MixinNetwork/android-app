@@ -113,6 +113,8 @@ class AccountRepository
             return conversationService.join(conversationId)
         }
 
+        suspend fun getScheme(id: String) = accountService.getScheme(id)
+
         suspend fun searchCode(code: String): Pair<String, Any> {
             val response = accountService.code(code)
             if (!response.isSuccess) {
@@ -425,12 +427,12 @@ class AccountRepository
 
         suspend fun getExternalSchemes() = accountService.getExternalSchemes()
 
-        suspend fun getExternalAddressFee(
+        suspend fun validateExternalAddress(
             assetId: String,
             destination: String,
             tag: String?,
         ) =
-            accountService.getExternalAddressFee(assetId, destination, tag)
+            accountService.validateExternalAddress(assetId, destination, tag)
 
         suspend fun refreshSticker(id: String): Sticker? {
             val sticker = stickerDao.findStickerById(id)

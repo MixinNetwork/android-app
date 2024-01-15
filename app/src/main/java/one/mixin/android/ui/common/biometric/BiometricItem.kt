@@ -1,10 +1,8 @@
 package one.mixin.android.ui.common.biometric
 
 import android.os.Parcelable
-import androidx.media3.common.util.UnstableApi
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.api.response.PaymentStatus
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Trace
@@ -28,7 +26,7 @@ open class AssetBiometricItem(
     override var state: String,
 ) : BiometricItem(amount, memo, state)
 
-@UnstableApi @Parcelize
+@Parcelize
 class TransferBiometricItem(
     var users: List<User>,
     val threshold: Byte,
@@ -41,11 +39,9 @@ class TransferBiometricItem(
     val returnTo: String?,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state)
 
-@UnstableApi
 fun buildEmptyTransferBiometricItem(user: User) =
     TransferBiometricItem(listOf(user), 1.toByte(), UUID.randomUUID().toString(), null, "", null, PaymentStatus.pending.name, null, null)
 
-@UnstableApi
 fun buildTransferBiometricItem(
     user: User,
     token: TokenItem?,

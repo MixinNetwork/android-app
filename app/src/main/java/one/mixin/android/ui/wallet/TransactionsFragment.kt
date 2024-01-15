@@ -2,7 +2,6 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
@@ -10,8 +9,7 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.ExperimentalPagingApi
-import androidx.paging.PagingData
+import androidx.paging.PagedList
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,6 +45,7 @@ import one.mixin.android.ui.common.biometric.buildWithdrawalBiometricItem
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotAdapter
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
@@ -61,16 +60,14 @@ import one.mixin.android.widget.ConcatHeadersDecoration
 import one.mixin.android.widget.DebugClickListener
 import javax.inject.Inject
 
-@OptIn(ExperimentalPagingApi::class)
 @AndroidEntryPoint
-class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(), OnSnapshotListener {
+class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R.layout.fragment_transactions), OnSnapshotListener {
     companion object {
         const val TAG = "TransactionsFragment"
         const val ARGS_ASSET = "args_asset"
     }
 
-    private var _binding: FragmentTransactionsBinding? = null
-    private val binding get() = requireNotNull(_binding) { "required _binding is null" }
+    private val binding by viewBinding(FragmentTransactionsBinding::bind)
     private var _bottomBinding: ViewWalletTransactionsBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding) { "required _bottomBinding is null" }
     private val sendBottomSheet =
@@ -86,15 +83,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
     private val adapter = SnapshotAdapter()
     private val headerAdapter = HeaderAdapter()
     lateinit var asset: TokenItem
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View {
-        _binding = FragmentTransactionsBinding.inflate(layoutInflater, container, false)
-        return binding.root
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,31 +102,31 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                 showBottom()
             }
         }
-        adapter.listener = this@TransactionsFragment
-        adapter.addOnPagesUpdatedListener {
-            val list = adapter.snapshot().items
-            if (list.isNotEmpty()) {
-                headerAdapter.show = false
-                list.filter {
-                    it.opponentId.isNotBlank()
-                }.map {
-                    it.opponentId
-                }.let { ids ->
-                    walletViewModel.checkAndRefreshUsers(ids)
-                }
-            } else {
-                headerAdapter.show = true
-            }
-        }
         binding.transactionsRv.itemAnimator = null
         binding.transactionsRv.addItemDecoration(ConcatHeadersDecoration(adapter).apply { headerCount = 1 })
         val concatAdapter = ConcatAdapter(headerAdapter, adapter)
         binding.transactionsRv.adapter = concatAdapter
 
+        adapter.listener = this@TransactionsFragment
         dataObserver =
             Observer { pagedList ->
-                lifecycleScope.launch {
-                    adapter.submitData(pagedList)
+                if (pagedList.isNotEmpty()) {
+                    headerAdapter.show = false
+                    val opponentIds =
+                        pagedList.filter {
+                            it?.opponentId != null
+                        }.map {
+                            it.opponentId
+                        }
+                    walletViewModel.checkAndRefreshUsers(opponentIds)
+                } else {
+                    headerAdapter.show = true
+                }
+                adapter.submitList(pagedList)
+
+                if (!refreshedSnapshots) {
+                    walletViewModel.refreshSnapshots(asset.assetId)
+                    refreshedSnapshots = true
                 }
             }
         bindLiveData()
@@ -162,7 +150,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
 
     override fun onDestroyView() {
         adapter.listener = null
-        _binding = null
         _bottomBinding = null
         sendBottomSheet.release()
         super.onDestroyView()
@@ -189,7 +176,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                         pendingDeposits.chunked(100) { chunk ->
                             lifecycleScope.launch(Dispatchers.IO) {
                                 chunk.map {
-                                    it.toSnapshot(asset.assetId)
+                                    it.toSnapshot()
                                 }.let {
                                     walletViewModel.insertPendingDeposit(it)
                                 }
@@ -250,7 +237,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
     }
 
     override fun refreshSnapshots() {
-        // paging3 refresh by mediator
+        walletViewModel.refreshSnapshots(asset.assetId, offset = refreshOffset)
     }
 
     override fun onApplyClick() {
@@ -265,14 +252,14 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
             val orderByAmount = currentOrder == R.id.sort_amount
             when (currentType) {
                 R.id.filters_radio_all -> {
-                    bindLiveData(walletViewModel.snapshots(asset.assetId, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+                    bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
                 }
 
                 R.id.filters_radio_transfer -> {
                     bindLiveData(
-                        walletViewModel.snapshots(
+                        walletViewModel.snapshotsFromDb(
                             asset.assetId,
-                            SafeSnapshotType.transfer.name,
+                            SafeSnapshotType.snapshot.name,
                             SafeSnapshotType.pending.name,
                             initialLoadKey = initialLoadKey,
                             orderByAmount = orderByAmount,
@@ -282,7 +269,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
 
                 R.id.filters_radio_deposit -> {
                     bindLiveData(
-                        walletViewModel.snapshots(
+                        walletViewModel.snapshotsFromDb(
                             asset.assetId,
                             SafeSnapshotType.deposit.name,
                             initialLoadKey = initialLoadKey,
@@ -293,7 +280,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
 
                 R.id.filters_radio_withdrawal -> {
                     bindLiveData(
-                        walletViewModel.snapshots(
+                        walletViewModel.snapshotsFromDb(
                             asset.assetId,
                             SafeSnapshotType.withdrawal.name,
                             initialLoadKey = initialLoadKey,
@@ -315,14 +302,15 @@ class TransactionsFragment : BaseTransactionsFragment<PagingData<SnapshotItem>>(
                 val addressFeeResponse =
                     handleMixinResponse(
                         invokeNetwork = {
-                            walletViewModel.getExternalAddressFee(asset.assetId, destination, null)
+                            walletViewModel.getFees(asset.assetId, destination)
                         },
                         successBlock = {
                             it.data
                         },
                     ) ?: return@launch
+                val fee = addressFeeResponse.find { it.assetId == Constants.ChainId.ETHEREUM_CHAIN_ID }
 
-                val mockAddress = Address("", "address", asset.assetId, addressFeeResponse.destination, "TIP Wallet", nowInUtc(), "0", addressFeeResponse.fee, null, null, asset.chainId)
+                val mockAddress = Address("", "address", asset.assetId, destination, "TIP Wallet", nowInUtc(), "0", fee?.amount ?: "0", null, null, asset.chainId)
                 val withdrawalBiometricItem = buildWithdrawalBiometricItem(mockAddress, asset)
                 val transferFragment = TransferFragment.newInstance(withdrawalBiometricItem)
                 transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)
