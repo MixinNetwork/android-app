@@ -104,7 +104,7 @@ class ChatWebSocket(
     }
 
     @Synchronized
-    fun sendMessage(blazeMessage: BlazeMessage): BlazeMessage? {
+    fun sendMessage(blazeMessage: BlazeMessage, timeout: Long = 5): BlazeMessage? {
         var bm: BlazeMessage? = null
         val latch = CountDownLatch(1)
         val transaction =
@@ -127,7 +127,7 @@ class ChatWebSocket(
             transactions[blazeMessage.id] = transaction
             val result = client!!.send(gson.toJson(blazeMessage).gzip())
             if (result) {
-                latch.await(5, TimeUnit.SECONDS)
+                latch.await(timeout, TimeUnit.SECONDS)
             }
         } else {
             Timber.tag(TAG).e("WebSocket not connect")

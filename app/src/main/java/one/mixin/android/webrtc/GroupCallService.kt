@@ -809,7 +809,7 @@ class GroupCallService : CallService() {
         blazeMessage.params?.conversation_id?.let {
             blazeMessage.params.conversation_checksum = callSenderKey.getCheckSum(it)
         }
-        val bm = chatWebSocket.sendMessage(blazeMessage)
+        val bm = chatWebSocket.sendMessage(blazeMessage, if (blazeMessage.action == LIST_KRAKEN_PEERS) 1 else 3)
         Timber.d("$TAG_CALL webSocketChannel $blazeMessage, bm: $bm")
         if (bm == null) {
             Timber.d("$TAG_CALL callExecutor: $callExecutor")
@@ -817,9 +817,13 @@ class GroupCallService : CallService() {
                 Timber.d("$TAG_CALL chatWebSocket.connected: ${chatWebSocket.connected}")
                 return null
             }
-            SystemClock.sleep(SLEEP_MILLIS)
-            blazeMessage.id = UUID.randomUUID().toString()
-            return webSocketChannel(blazeMessage)
+            return if (blazeMessage.action == LIST_KRAKEN_PEERS) {
+                null
+            } else {
+                SystemClock.sleep(SLEEP_MILLIS)
+                blazeMessage.id = UUID.randomUUID().toString()
+                webSocketChannel(blazeMessage)
+            }
         } else if (bm.error != null) {
             Timber.d("$TAG_CALL $bm")
             return when (bm.error.code) {
