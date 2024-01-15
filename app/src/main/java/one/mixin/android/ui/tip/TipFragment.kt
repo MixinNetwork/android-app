@@ -137,7 +137,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     bottomVa.displayedChild = 0
                     innerVa.displayedChild = 1
                     bottomHintTv.text = getString(R.string.Trying_connect_tip_network)
-                    bottomHintTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
+                    bottomHintTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
                 }
                 is RetryConnect -> {
                     setTitle(forRecover)
@@ -200,7 +200,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 is Processing -> {
                     descTv.setText(R.string.Syncing_and_verifying_TIP)
                     tipsTv.isVisible = false
-                    bottomHintTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
+                    bottomHintTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
 
                     when (tipStep) {
                         is Processing.Creating -> {

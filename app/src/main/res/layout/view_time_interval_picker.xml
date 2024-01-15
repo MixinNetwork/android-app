@@ -16,7 +16,7 @@
         app:wheel_curved="true"
         app:wheel_cyclic="true"
         app:wheel_item_space="8dp"
-        app:wheel_item_text_color="?attr/text_minor"
+        app:wheel_item_text_color="?attr/text_assist"
         app:wheel_item_text_size="20sp"
         app:wheel_selected_item_text_color="?attr/text_primary" />
 
@@ -28,7 +28,7 @@
         app:wheel_curved="true"
         app:wheel_cyclic="true"
         app:wheel_item_space="8dp"
-        app:wheel_item_text_color="?attr/text_minor"
+        app:wheel_item_text_color="?attr/text_assist"
         app:wheel_item_text_size="20sp"
         app:wheel_selected_item_text_color="?attr/text_primary" />
 

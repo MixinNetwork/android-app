@@ -39,14 +39,14 @@
             <TextView
                 android:id="@+id/price_title"
                 android:text="@string/Price"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 android:layout_width="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/asset_price_tv"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 tools:text="≈ 1 USD"
                 android:layout_alignParentEnd="true"
                 android:layout_width="wrap_content"
@@ -60,14 +60,14 @@
 
             <TextView
                 android:text="@string/Payment_Receive"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 android:layout_width="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/asset_amount_tv"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 tools:text="100 USDT"
                 android:layout_alignParentEnd="true"
                 android:layout_width="wrap_content"
@@ -81,14 +81,14 @@
 
             <TextView
                 android:text="@string/Total_Amount"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 android:layout_width="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/pay_amount"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 tools:text="109 USD"
                 android:layout_alignParentEnd="true"
                 android:layout_width="wrap_content"

@@ -13,6 +13,6 @@
         android:layout_centerVertical="true"
         android:paddingStart="@dimen/margin20"
         android:paddingEnd="@dimen/margin20"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="13sp" />
 </RelativeLayout>

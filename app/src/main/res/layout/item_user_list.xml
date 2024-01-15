@@ -37,6 +37,6 @@
         android:layout_marginEnd="@dimen/margin20"
         android:layout_toEndOf="@id/avatar"
         android:ellipsize="end"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="13sp" />
 </RelativeLayout>

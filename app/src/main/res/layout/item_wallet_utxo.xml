@@ -49,7 +49,7 @@
         android:layout_toStartOf="@id/value"
         android:singleLine="true"
         android:gravity="start"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="12sp" />
 
 </RelativeLayout>

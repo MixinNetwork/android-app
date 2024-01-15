@@ -42,7 +42,7 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginEnd="64dp"
                 android:gravity="center"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 android:textSize="@dimen/wallet_balance_as_text" />
 
             <one.mixin.android.widget.BadgeCircleImageView
@@ -70,7 +70,7 @@
                 android:layout_marginEnd="64dp"
                 android:layout_marginBottom="@dimen/activity_vertical_margin"
                 android:gravity="center"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 android:textSize="@dimen/wallet_balance_as_text" />
 
             <one.mixin.android.ui.common.biometric.BiometricLayout

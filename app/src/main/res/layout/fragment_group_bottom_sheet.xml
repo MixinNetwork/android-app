@@ -53,7 +53,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="10dp"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 android:textSize="12sp" />
 
             <one.mixin.android.widget.ExpandableTextView

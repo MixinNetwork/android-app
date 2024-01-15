@@ -41,7 +41,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin16"
                 android:text="@string/No_logs"
-                android:textColor="?attr/text_minor" />
+                android:textColor="?attr/text_assist" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

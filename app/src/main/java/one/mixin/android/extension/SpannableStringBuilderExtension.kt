@@ -61,7 +61,7 @@ internal fun buildBulletLines(
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
                 )
             }
-            val bulletSpan = BulletSpan(8.dp, context.colorFromAttribute(R.attr.text_minor))
+            val bulletSpan = BulletSpan(8.dp, context.colorFromAttribute(R.attr.text_assist))
             l.setSpan(bulletSpan, 0, l.length, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
             builder.append(l)
         }

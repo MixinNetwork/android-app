@@ -209,7 +209,7 @@ interface TransactionInterface {
                     )
                 }
             fragment.context?.let { c ->
-                setTextColor(c.colorFromAttribute(R.attr.text_minor))
+                setTextColor(c.colorFromAttribute(R.attr.text_assist))
                 setOnClickListener {
                     if (checkDestroyed(fragment)) return@setOnClickListener
 
@@ -327,7 +327,7 @@ interface TransactionInterface {
                 SafeSnapshotType.snapshot -> {
                     fromTv.text =
                         if (snapshot.opponentId.isBlank()) {
-                            fromTv.textColor = fromTv.context.colorFromAttribute(R.attr.text_minor)
+                            fromTv.textColor = fromTv.context.colorFromAttribute(R.attr.text_assist)
                             "N/A"
                         } else {
                             fromTv.textColor = fromTv.context.colorFromAttribute(R.attr.text_primary)

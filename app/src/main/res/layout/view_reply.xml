@@ -42,7 +42,7 @@
         android:ellipsize="end"
         android:gravity="start"
         android:singleLine="true"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="13sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/reply_view_iv"

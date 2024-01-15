@@ -54,6 +54,6 @@
         android:ellipsize="end"
         android:singleLine="true"
         android:textSize="12sp"
-        android:textColor="?attr/text_minor" />
+        android:textColor="?attr/text_assist" />
 
 </RelativeLayout>

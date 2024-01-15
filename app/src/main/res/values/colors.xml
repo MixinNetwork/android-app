@@ -10,8 +10,7 @@
     <color name="colorOnSurface">#212121</color>
 
     <color name="textPrimary">#000000</color>
-    <color name="textMinor">#999999</color>
-    <!-- todo replace -->
+    <color name="textMinor">#333333</color>
     <color name="textAssist">#999999</color>
     <color name="textRemarks">#B3B3B3</color>
     <color name="textSubtitle">#B3B3B3</color>

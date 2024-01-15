@@ -402,7 +402,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 if (currentValue > state.maximum) {
                     info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
                 } else {
-                    info.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
+                    info.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
                 }
             } else {
                 val currentValue = value.toFloat()
@@ -419,7 +419,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 if (currentValue > state.maximum) {
                     info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
                 } else {
-                    info.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
+                    info.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
                 }
             }
             updatePrimarySize()

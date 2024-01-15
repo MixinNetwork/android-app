@@ -39,7 +39,7 @@
             android:layout_below="@id/unlock_title"
             android:layout_marginStart="@dimen/margin16"
             android:layout_marginTop="@dimen/margin10"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:text="@string/unlock_with_fingerprint_desc"/>
 
         <androidx.appcompat.widget.SwitchCompat

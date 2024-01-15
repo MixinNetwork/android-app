@@ -98,7 +98,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:gravity="center"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 android:textSize="14sp" />
         </FrameLayout>
 

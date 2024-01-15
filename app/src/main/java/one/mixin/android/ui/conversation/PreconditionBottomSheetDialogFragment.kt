@@ -158,7 +158,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun checkWithdrawalWithoutAddress(t: WithdrawBiometricItem) {
         binding.titleTv.text = getString(R.string.Withdrawal)
         binding.warningTv.text = t.displayAddress()
-        binding.warningTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_minor))
+        binding.warningTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
         binding.warningBottomTv.isVisible = true
         binding.warningBottomTv.text =
             getString(

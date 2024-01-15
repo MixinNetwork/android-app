@@ -46,7 +46,7 @@
                 android:layout_marginEnd="@dimen/padding8"
                 android:layout_toStartOf="@+id/total_tv"
                 android:text="$"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 tools:ignore="HardcodedText" />
 
             <TextView
@@ -92,7 +92,7 @@
                 android:layout_marginStart="@dimen/padding8"
                 android:layout_toEndOf="@+id/total_as_tv"
                 android:text="BTC"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 tools:ignore="HardcodedText" />
         </RelativeLayout>
 

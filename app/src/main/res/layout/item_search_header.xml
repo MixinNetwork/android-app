@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_alignParentStart="true"
-        android:textColor="?attr/text_minor"/>
+        android:textColor="?attr/text_assist"/>
 
     <TextView
         android:id="@+id/search_header_more"

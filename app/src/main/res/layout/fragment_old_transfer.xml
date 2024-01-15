@@ -140,7 +140,7 @@
                         android:popupBackground="@android:color/transparent"
                         android:singleLine="true"
                         android:textColor="?attr/text_primary"
-                        android:textColorHint="?attr/text_minor"
+                        android:textColorHint="?attr/text_assist"
                         android:textSize="16sp"/>
 
                     <TextView
@@ -178,7 +178,7 @@
                     android:paddingStart="@dimen/margin16"
                     android:paddingEnd="@dimen/margin16"
                     android:singleLine="true"
-                    android:textColor="?attr/text_minor"
+                    android:textColor="?attr/text_assist"
                     android:textSize="12sp"/>
             </RelativeLayout>
 
@@ -229,7 +229,7 @@
                 android:layout_marginEnd="32dp"
                 android:layout_marginBottom="@dimen/margin16"
                 android:lineSpacingExtra="2dp"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 android:textSize="12sp"
                 android:visibility="gone"/>
 
@@ -251,7 +251,7 @@
                     android:layout_height="match_parent"
                     android:gravity="center"
                     android:text="@string/Continue"
-                    android:textColor="?attr/text_minor"
+                    android:textColor="?attr/text_assist"
                     android:textSize="14sp" />
 
                 <ProgressBar

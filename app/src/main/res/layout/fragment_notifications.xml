@@ -39,7 +39,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 tools:ignore="RelativeOverlap" />
         </RelativeLayout>
 
@@ -52,7 +52,7 @@
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:text="@string/setting_notification_transfer_summary"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp" />
 
         <RelativeLayout
@@ -77,7 +77,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 tools:ignore="RelativeOverlap" />
         </RelativeLayout>
 
@@ -90,7 +90,7 @@
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:text="@string/setting_transfer_large_summary"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp" />
 
         <RelativeLayout
@@ -128,7 +128,7 @@
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:text="@string/setting_duplicate_transfer_desc"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp" />
 
         <RelativeLayout
@@ -166,7 +166,7 @@
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:text="@string/setting_stranger_transfer_desc"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp" />
 
 

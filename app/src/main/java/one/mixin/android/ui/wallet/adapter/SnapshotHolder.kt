@@ -27,7 +27,7 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
             SafeSnapshotType.snapshot -> {
                 if (snapshot.opponentId.isBlank()) {
                     binding.name.text = "N/A"
-                    binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_minor)
+                    binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_assist)
                     binding.avatar.setAnonymous()
                 } else {
                     binding.name.text = snapshot.opponentFullName

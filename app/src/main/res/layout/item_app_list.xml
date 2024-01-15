@@ -60,7 +60,7 @@
         android:layout_marginEnd="@dimen/margin16"
         android:ellipsize="end"
         android:maxLines="2"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@id/avatar"
         app:layout_constraintEnd_toEndOf="parent"

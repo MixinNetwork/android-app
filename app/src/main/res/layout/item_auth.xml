@@ -43,7 +43,7 @@
         android:layout_marginTop="2dp"
         android:layout_toEndOf="@id/avatar"
         android:ellipsize="end"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="12sp"
         tools:ignore="RelativeOverlap"/>
 </RelativeLayout>

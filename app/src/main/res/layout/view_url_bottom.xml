@@ -16,7 +16,7 @@
         android:paddingBottom="12dp"
         android:textSize="12sp"
         android:singleLine="true"
-        android:textColor="?attr/text_minor" />
+        android:textColor="?attr/text_assist" />
 
     <TextView
         android:id="@+id/open_tv"

@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp"
             android:text="@string/Secured_by_TIP"
             app:drawableStartCompat="@drawable/ic_secret_tip" />

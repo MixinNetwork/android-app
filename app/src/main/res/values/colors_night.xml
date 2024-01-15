@@ -5,8 +5,7 @@
     <color name="colorAccentNight">#4191FF</color>
 
     <color name="textPrimaryNight">#FFFFFF</color>
-    <color name="textMinorNight">#7F878F</color>
-    <!-- todo replace -->
+    <color name="textMinorNight">#D3D4D5</color>
     <color name="textAssistNight">#7F878F</color>
     <color name="textRemarksNight">#6E7073</color>
     <color name="textSubtitleNight">#6E7073</color>

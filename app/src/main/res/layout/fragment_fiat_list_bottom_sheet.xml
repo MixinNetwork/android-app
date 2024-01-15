@@ -50,7 +50,7 @@
             android:maxLines="1"
             app:circle_clear_icon="true"
             android:textColor="?attr/text_primary"
-            android:textColorHint="?attr/text_minor"
+            android:textColorHint="?attr/text_assist"
             android:textSize="14sp" />
 
         <ProgressBar

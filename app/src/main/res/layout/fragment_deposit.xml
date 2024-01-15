@@ -127,7 +127,7 @@
                 android:background="@drawable/bg_round_8_solid_gray"
                 android:gravity="start"
                 android:padding="10dp"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 android:textSize="13sp" />
         </LinearLayout>
     </ScrollView>

@@ -51,7 +51,7 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="10dp"
                 android:maxLines="1"
-                android:textColor="?attr/text_minor" />
+                android:textColor="?attr/text_assist" />
 
             <one.mixin.android.widget.ExpandableTextView
                 android:id="@+id/detail_tv"
@@ -63,7 +63,7 @@
                 android:layout_marginEnd="32dp"
                 android:layout_marginBottom="16dp"
                 android:gravity="center"
-                android:textColor="?attr/text_primary"
+                android:textColor="?attr/text_minor"
                 android:maxLines="12"
                 android:scrollbars="vertical"
                 app:limitedMaxLines="6"
@@ -79,7 +79,7 @@
                 android:layout_marginBottom="@dimen/margin16"
                 android:maxLines="1"
                 android:textSize="12sp"
-                android:textColor="?attr/text_minor"/>
+                android:textColor="?attr/text_assist"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </RelativeLayout>

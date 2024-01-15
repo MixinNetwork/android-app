@@ -55,6 +55,6 @@
         android:ellipsize="end"
         android:fontFamily="@font/roboto_light"
         android:maxLines="1"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="13sp" />
 </RelativeLayout>

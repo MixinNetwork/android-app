@@ -140,7 +140,7 @@
                         android:layout_toStartOf="@id/chat_time"
                         android:maxWidth="240dp"
                         android:singleLine="true"
-                        android:textColor="?attr/text_minor"
+                        android:textColor="?attr/text_assist"
                         android:textSize="12sp"
                         android:visibility="invisible" />
 

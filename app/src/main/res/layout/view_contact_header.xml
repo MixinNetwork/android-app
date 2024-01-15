@@ -42,7 +42,7 @@
             android:layout_toEndOf="@+id/contact_header_avatar"
             android:maxLines="1"
             android:text="@string/contact_mixin_id"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp"
             tools:ignore="RelativeOverlap" />
 
@@ -56,7 +56,7 @@
             android:layout_toEndOf="@+id/contact_header_avatar"
             android:maxLines="1"
             android:text="@string/contact_mobile"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp" />
 
         <ImageView

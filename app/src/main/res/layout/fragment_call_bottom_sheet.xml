@@ -38,7 +38,7 @@
             android:layout_marginTop="2dp"
             android:gravity="center"
             android:text="@string/End_to_End_Encryption"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp"
             app:drawableStartCompat="@drawable/ic_call_secret"
             app:layout_constraintEnd_toEndOf="parent"
@@ -112,7 +112,7 @@
         android:visibility="gone"
         android:layout_above="@id/bottom_layout"
         android:background="?attr/bg_white"
-        android:textColor="?text_minor"
+        android:textColor="?text_assist"
         android:layout_height="wrap_content" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -190,7 +190,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:layout_height="wrap_content" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

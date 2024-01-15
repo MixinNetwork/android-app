@@ -35,7 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="13sp"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:layout_below="@id/center_place_holder"
         android:layout_toEndOf="@id/asset_icon"
         tool:text="0.005 XIN"/>

@@ -25,7 +25,7 @@
         android:id="@+id/storage_tv"
         android:layout_centerVertical="true"
         android:layout_alignParentEnd="true"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         tools:ignore="RelativeOverlap" />
