@@ -291,11 +291,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         action == "unlock" && signers.isEmpty() -> state = SignatureState.unlocked.name
                     }
                 }
-                val receivers =
-                    multisigs.receivers?.flatMap {
-                        it.members
-                    }
-                if (receivers.isNullOrEmpty()) {
+                val sendersHash = multisigs.sendersHash
+                val receivers = multisigs.receivers?.first {
+                    it.membersHash != sendersHash
+                }
+                if (receivers == null || receivers.members.isEmpty()) {
                     showError()
                     return@launch
                 }
@@ -304,9 +304,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         action = action,
                         traceId = multisigs.requestId,
                         senders = multisigs.senders.toTypedArray(),
-                        receivers = receivers.toTypedArray(),
+                        receivers = receivers.members.toTypedArray(),
                         sendersThreshold = multisigs.sendersThreshold,
-                        receiverThreshold = multisigs.receivers.sumOf { it.threshold },
+                        receiverThreshold = receivers.threshold,
                         asset = asset,
                         amount = multisigs.amount,
                         memo = null,
