@@ -294,6 +294,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val sendersHash = multisigs.sendersHash
                 val receivers = multisigs.receivers?.first {
                     it.membersHash != sendersHash
+                } ?: multisigs.receivers?.first {
+                    it.membersHash == sendersHash
                 }
                 if (receivers == null || receivers.members.isEmpty()) {
                     showError()
