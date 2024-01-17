@@ -20,9 +20,9 @@ class RefreshSnapshotsJob(
         runBlocking {
             val response =
                 if (assetId == null) {
-                    tokenService.getAllSnapshots(offset, opponent = opponent)
+                    tokenService.getAllSnapshots(offset ?: "1970-01-01T00:00:00Z", opponent = opponent)
                 } else {
-                    tokenService.getSnapshotsByAssetId(assetId, offset)
+                    tokenService.getSnapshotsByAssetId(assetId, offset ?: safeSnapshotDao.getLastItemCreate(assetId) ?: "1970-01-01T00:00:00Z")
                 }
             if (response.isSuccess && response.data != null) {
                 val list = response.data as List<SafeSnapshot>
