@@ -118,4 +118,7 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
 
     @Query("SELECT count(1) FROM safe_snapshots WHERE rowid > :rowId")
     fun countSnapshots(rowId: Long): Long
+
+    @Query("SELECT created_at FROM safe_snapshots WHERE asset_id =:assetId ORDER BY created_at DESC LIMIT 1")
+    fun getLastItemCreate(assetId: String): String?
 }
