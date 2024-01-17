@@ -257,6 +257,7 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
 
         binding.titleView.rightAnimator.isVisible = true
         binding.titleView.rightIb.setImageResource(R.drawable.ic_transaction)
+        binding.continueVa.isEnabled = false
         if (isInnerTransfer()) {
             handleInnerTransfer()
         } else {

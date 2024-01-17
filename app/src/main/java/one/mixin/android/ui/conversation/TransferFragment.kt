@@ -188,6 +188,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
         binding.titleView.rightAnimator.isVisible = true
         binding.titleView.rightIb.setImageResource(R.drawable.ic_transaction)
+        binding.continueVa.isEnabled = false
         val t = this.t
         val defaultToken = t.asset
         if (defaultToken != null) {
