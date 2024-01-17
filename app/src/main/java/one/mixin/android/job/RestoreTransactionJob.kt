@@ -20,6 +20,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.OutputState
 import one.mixin.android.vo.safe.RawTransactionType
 import one.mixin.android.vo.safe.SafeSnapshotType
@@ -104,11 +105,14 @@ class RestoreTransactionJob : BaseJob(
         data: TransactionResponse,
         opponentId: String,
     ) {
-        val conversationId = generateConversationId(data.userId, opponentId)
-        initConversation(conversationId, data.userId, opponentId)
-        val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, data.getSnapshotId)
-        appDatabase.insertMessage(message)
-        MessageFlow.insert(message.conversationId, message.messageId)
+        val user = userDao.findUser(opponentId)
+        if (user != null && !user.notMessengerUser()) {
+            val conversationId = generateConversationId(data.userId, opponentId)
+            initConversation(conversationId, data.userId, opponentId)
+            val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, data.getSnapshotId)
+            appDatabase.insertMessage(message)
+            MessageFlow.insert(message.conversationId, message.messageId)
+        }
     }
 
     private fun initConversation(

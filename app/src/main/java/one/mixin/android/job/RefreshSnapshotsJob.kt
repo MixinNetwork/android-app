@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.RxBus
 import one.mixin.android.event.RefreshSnapshotEvent
 import one.mixin.android.vo.safe.SafeSnapshot
+import org.threeten.bp.Instant
 
 class RefreshSnapshotsJob(
     private val assetId: String? = null,
@@ -13,6 +14,7 @@ class RefreshSnapshotsJob(
 ) : BaseJob(Params(PRIORITY_BACKGROUND).addTags(GROUP).requireNetwork()) {
     companion object {
         private const val serialVersionUID = 1L
+        private val TIME_ZERO: String = Instant.ofEpochMilli(0).toString()
         const val GROUP = "RefreshSnapshotsJob"
     }
 
@@ -20,9 +22,9 @@ class RefreshSnapshotsJob(
         runBlocking {
             val response =
                 if (assetId == null) {
-                    tokenService.getAllSnapshots(offset, opponent = opponent)
+                    tokenService.getAllSnapshots(offset ?: TIME_ZERO, opponent = opponent)
                 } else {
-                    tokenService.getSnapshotsByAssetId(assetId, offset)
+                    tokenService.getSnapshotsByAssetId(assetId, offset ?: safeSnapshotDao.getLastItemCreate(assetId) ?: TIME_ZERO)
                 }
             if (response.isSuccess && response.data != null) {
                 val list = response.data as List<SafeSnapshot>

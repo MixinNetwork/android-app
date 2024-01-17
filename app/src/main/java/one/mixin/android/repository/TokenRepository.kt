@@ -50,6 +50,7 @@ import one.mixin.android.db.TokenDao
 import one.mixin.android.db.TokensExtraDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
+import one.mixin.android.db.UserDao
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
@@ -113,6 +114,7 @@ class TokenRepository
         private val depositDao: DepositDao,
         private val rawTransactionDao: RawTransactionDao,
         private val outputDao: OutputDao,
+        private val userDao: UserDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -738,6 +740,8 @@ class TokenRepository
             val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toHex() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, withdrawal)
             safeSnapshotDao.insert(snapshot)
         }
+
+        fun findUser(userId: String) = userDao.findUser(userId)
 
         fun findRawTransaction(traceId: String) = rawTransactionDao.findRawTransaction(traceId)
 
