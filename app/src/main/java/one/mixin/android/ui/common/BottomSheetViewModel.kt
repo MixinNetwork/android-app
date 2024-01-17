@@ -416,7 +416,12 @@ class BottomSheetViewModel
                     tokenRepository.insertOutput(consolidationOutput)
                 }
                 val transactionHash = sign.hash
-                tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("${senderIds.first()}:$transactionHash".toByteArray()).toString(), senderIds.first(), receiverIds.first(), transactionHash, trace, assetId, amount, memo, SafeSnapshotType.snapshot)
+                val opponentId = if (receiverIds.size == 1) {
+                    receiverIds.first()
+                } else {
+                    ""
+                }
+                tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("${senderIds.first()}:$transactionHash".toByteArray()).toString(), senderIds.first(), opponentId, transactionHash, trace, assetId, amount, memo, SafeSnapshotType.snapshot)
                 tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverIds.joinToString(","), RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc()))
                 tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
             }
