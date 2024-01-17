@@ -82,6 +82,7 @@ import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
+import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.OutputState
 import one.mixin.android.vo.safe.RawTransaction
@@ -451,9 +452,12 @@ class BottomSheetViewModel
             if (receiverIds.size == 1 && !isConsolidation) {
                 // Workaround with only the case of a single transfer
                 val receiverId = receiverIds.first()
-                val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)
-                initConversation(conversationId, transactionRsp.data!!.first().userId, receiverId)
-                tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), conversationId)
+                val user = tokenRepository.findUser(receiverId)
+                if (user != null && !user.notMessengerUser()) {
+                    val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)
+                    initConversation(conversationId, transactionRsp.data!!.first().userId, receiverId)
+                    tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), conversationId)
+                }
             } else if (receiverIds.size > 1) {
                 tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), "")
             }
