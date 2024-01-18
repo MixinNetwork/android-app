@@ -440,7 +440,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             binding.continueVa.displayedChild = displayedChild
         }
         val s = binding.amountEt.text
-        binding.continueVa.isEnabled = binding.continueVa.displayedChild == POST_TEXT && s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber()
+        binding.continueVa.isEnabled = s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber()
     }
 
     @SuppressLint("SetTextI18n")
