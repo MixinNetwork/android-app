@@ -126,7 +126,6 @@ import one.mixin.android.ui.common.biometric.buildEmptyTransferBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.home.bot.BotManagerFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.landing.InitializeActivity
@@ -838,8 +837,8 @@ class MainActivity : BlazeBaseActivity() {
         WalletFragment()
     }
 
-    private val botManagerFragment by lazy {
-        BotManagerFragment()
+    private val exploreFragment by lazy {
+        ExploreFragment()
     }
 
     private fun initView() {
@@ -859,8 +858,8 @@ class MainActivity : BlazeBaseActivity() {
                         true
                     }
 
-                    R.id.nav_app -> {
-                        navigationController.navigateToBotManager(botManagerFragment)
+                    R.id.nav_explore -> {
+                        navigationController.navigateToExplore(exploreFragment)
                         conversationListFragment.hideCircles()
                         true
                     }

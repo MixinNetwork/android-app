@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_upper_round"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/title_rl"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize">
+
+        <TextView
+            android:id="@+id/bot_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="12dp"
+            android:text="@string/Explore"
+            android:textColor="?attr/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:ignore="RelativeOverlap" />
+
+        <ImageView
+            android:src="@drawable/ic_search_home"
+            android:background="@drawable/mixin_ripple"
+            android:layout_marginEnd="28dp"
+            android:layout_toStartOf="@+id/scan_iv"
+            android:layout_centerVertical="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+            android:id="@+id/scan_iv"
+            android:src="@drawable/ic_bot_category_scan"
+            android:background="@drawable/mixin_ripple"
+            android:layout_marginEnd="12dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:padding="12dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/bg_white"
+        android:orientation="vertical">
+
+        <RadioGroup
+            android:id="@+id/radio_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radio_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Favorite"
+                android:checked="true"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:background="@drawable/selector_radio"
+                android:layout_marginEnd="12dp"
+                android:button="@null" />
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/bots_title"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:background="@drawable/selector_radio"
+                android:button="@null" />
+
+        </RadioGroup>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="8dp">
+
+            <ImageView
+                android:src="@drawable/ic_bot_camera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_marginStart="12dp"
+                android:text="@string/Camera"
+                android:textColor="?attr/text_primary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="8dp">
+
+            <ImageView
+                android:src="@drawable/ic_bot_buy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_marginStart="12dp"
+                android:text="@string/Buy"
+                android:textColor="?attr/text_primary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="8dp">
+
+            <ImageView
+                android:src="@drawable/ic_bot_desktop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_marginStart="12dp"
+                android:text="@string/desktop"
+                android:textColor="?attr/text_primary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="8dp">
+
+            <ImageView
+                android:src="@drawable/ic_bot_support"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_marginStart="12dp"
+                android:text="@string/Contact_Support"
+                android:textColor="?attr/text_primary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
+

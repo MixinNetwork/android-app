@@ -1316,4 +1316,6 @@
     <string name="Waiting_transaction_description">您有一笔转账或提现未完成，请稍后再试</string>
     <string name="Waiting_transaction">正在等待交易</string>
     <string name="Customer_Service">客服</string>
+    <string name="Explore">探索</string>
+    <string name="Favorite">最爱</string>
 </resources>

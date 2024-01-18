@@ -1346,4 +1346,6 @@
     <string name="Waiting_transaction_description">You have a transfer or withdrawal has not been completed, please try again later</string>
     <string name="Waiting_transaction">Waiting Transaction</string>
     <string name="Customer_Service">Help</string>
+    <string name="Explore">Explore</string>
+    <string name="Favorite">Favorite</string>
 </resources>
