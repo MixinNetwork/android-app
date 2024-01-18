@@ -5,26 +5,27 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.manager.SupportRequestManagerFragment
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentExploreBinding
 import one.mixin.android.databinding.ItemFavoriteBinding
-import one.mixin.android.databinding.ItemSharedAppBinding
-import one.mixin.android.databinding.ItemSharedLocalAppBinding
-import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.event.BotEvent
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.profile.MySharedAppsViewModel
-import one.mixin.android.ui.common.profile.holder.FooterHolder
-import one.mixin.android.ui.common.profile.holder.ItemViewHolder
-import one.mixin.android.ui.common.profile.holder.LocalAppHolder
-import one.mixin.android.ui.common.profile.holder.SharedAppHolder
+import one.mixin.android.ui.home.bot.BotManagerAdapter
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.App
@@ -72,9 +73,30 @@ class ExploreFragment : BaseFragment() {
             icSupport.setOnClickListener {  }
             favoriteRv.adapter = adapter
             favoriteRv.addItemDecoration(SegmentationItemDecoration())
+            radioGroupExplore.setOnCheckedChangeListener { _, checkedId ->
+                when(checkedId){
+                    R.id.radio_favorite -> {
+                        exploreVa.displayedChild = 0
+                    }
+                    R.id.radio_bot -> {
+                        exploreVa.displayedChild = 1
+                    }
+                }
+            }
+            binding.botRv.layoutManager = GridLayoutManager(requireContext(), 4)
+            binding.botRv.adapter = bottomListAdapter
+            botRv.adapter = bottomListAdapter
         }
         loadData()
+        loadBotData()
         refresh()
+
+        RxBus.listen(BotEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe {
+                loadBotData()
+            }
     }
 
     private fun loadData() {
@@ -95,6 +117,24 @@ class ExploreFragment : BaseFragment() {
                 ErrorHandler.handleError(e)
             }
         }
+    }
+
+    private fun loadBotData() {
+        lifecycleScope.launch {
+            val apps = mySharedAppsViewModel.getAllApps()
+            if (apps.isEmpty()) {
+                binding.emptyFl.isVisible = true
+                binding.botRv.isVisible = false
+            } else {
+                binding.emptyFl.isVisible = false
+                binding.botRv.isVisible = true
+            }
+            bottomListAdapter.list = apps
+        }
+    }
+
+    private val bottomListAdapter by lazy {
+        BotManagerAdapter({ id-> })
     }
 
     override fun onDetach() {

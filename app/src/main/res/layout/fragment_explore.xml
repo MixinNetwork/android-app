@@ -51,14 +51,14 @@
 
     <RadioGroup
         android:padding="12dp"
-        android:id="@+id/radio_group"
+        android:id="@+id/radio_group_explore"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/bg_white"
         android:orientation="horizontal">
 
         <RadioButton
-            android:id="@+id/radio_button"
+            android:id="@+id/radio_favorite"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/Favorite"
@@ -69,6 +69,7 @@
             android:button="@null" />
 
         <RadioButton
+            android:id="@+id/radio_bot"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/bots_title"
@@ -78,126 +79,167 @@
 
     </RadioGroup>
 
-    <LinearLayout
-        android:orientation="vertical"
+    <ViewAnimator
+        android:id="@+id/explore_va"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/bg_white">
+        android:layout_height="match_parent">
 
         <LinearLayout
-            android:id="@+id/ic_camera"
             android:layout_width="match_parent"
-            android:layout_height="?listPreferredItemHeight"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:foreground="?selectableItemBackground">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <ImageView
-                android:src="@drawable/ic_bot_camera"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:contentDescription="@null"/>
+                android:background="?attr/bg_white">
 
-            <TextView
-                android:layout_marginStart="12dp"
-                android:text="@string/Camera"
-                android:textColor="?attr/text_primary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                <LinearLayout
+                    android:id="@+id/ic_camera"
+                    android:layout_width="match_parent"
+                    android:layout_height="?listPreferredItemHeight"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:foreground="?selectableItemBackground">
+
+                    <ImageView
+                        android:src="@drawable/ic_bot_camera"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@null" />
+
+                    <TextView
+                        android:layout_marginStart="12dp"
+                        android:text="@string/Camera"
+                        android:textColor="?attr/text_primary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ic_buy"
+                    android:layout_width="match_parent"
+                    android:layout_height="?listPreferredItemHeight"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:foreground="?selectableItemBackground">
+
+                    <ImageView
+                        android:src="@drawable/ic_bot_buy"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@null" />
+
+                    <TextView
+                        android:layout_marginStart="12dp"
+                        android:text="@string/Buy"
+                        android:textColor="?attr/text_primary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ic_desktop"
+                    android:layout_width="match_parent"
+                    android:layout_height="?listPreferredItemHeight"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:foreground="?selectableItemBackground">
+
+                    <ImageView
+                        android:src="@drawable/ic_bot_desktop"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@null" />
+
+                    <TextView
+                        android:layout_marginStart="12dp"
+                        android:text="@string/desktop"
+                        android:textColor="?attr/text_primary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ic_support"
+                    android:layout_width="match_parent"
+                    android:layout_height="?listPreferredItemHeight"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:foreground="?selectableItemBackground">
+
+                    <ImageView
+                        android:src="@drawable/ic_bot_support"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@null" />
+
+                    <TextView
+                        android:layout_marginStart="12dp"
+                        android:text="@string/Contact_Support"
+                        android:textColor="?attr/text_primary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_marginTop="12dp"
+                android:id="@+id/favorite_rv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?attr/bg_white"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_favorite" />
+
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/ic_buy"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="?listPreferredItemHeight"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:foreground="?selectableItemBackground">
+            android:layout_height="match_parent">
 
-            <ImageView
-                android:src="@drawable/ic_bot_buy"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@null"/>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/bot_rv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                app:spanCount="4"
+                tools:listitem="@layout/item_bot_manager" />
 
-            <TextView
-                android:layout_marginStart="12dp"
-                android:text="@string/Buy"
-                android:textColor="?attr/text_primary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
+            <FrameLayout
+                android:id="@+id/empty_fl"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
 
-        <LinearLayout
-            android:id="@+id/ic_desktop"
-            android:layout_width="match_parent"
-            android:layout_height="?listPreferredItemHeight"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:foreground="?selectableItemBackground">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="80dp"
+                    android:layout_marginBottom="80dp"
+                    android:text="@string/NO_BOTS" />
+            </FrameLayout>
+        </FrameLayout>
 
-            <ImageView
-                android:src="@drawable/ic_bot_desktop"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@null"/>
-
-            <TextView
-                android:layout_marginStart="12dp"
-                android:text="@string/desktop"
-                android:textColor="?attr/text_primary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/ic_support"
-            android:layout_width="match_parent"
-            android:layout_height="?listPreferredItemHeight"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:foreground="?selectableItemBackground">
-
-            <ImageView
-                android:src="@drawable/ic_bot_support"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@null" />
-
-            <TextView
-                android:layout_marginStart="12dp"
-                android:text="@string/Contact_Support"
-                android:textColor="?attr/text_primary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:layout_marginTop="12dp"
-        android:id="@+id/favorite_rv"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/bg_white"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/item_favorite" />
-
+    </ViewAnimator>
 </LinearLayout>
 

@@ -427,6 +427,8 @@ class AccountRepository
 
         suspend fun getExternalSchemes() = accountService.getExternalSchemes()
 
+        suspend fun getAllApps() = appDao.getAllApps()
+
         suspend fun validateExternalAddress(
             assetId: String,
             destination: String,
