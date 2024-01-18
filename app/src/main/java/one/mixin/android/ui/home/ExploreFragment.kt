@@ -21,21 +21,30 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentExploreBinding
 import one.mixin.android.databinding.ItemFavoriteBinding
+import one.mixin.android.databinding.ItemFavoriteEditBinding
 import one.mixin.android.event.BotEvent
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.profile.MySharedAppsFragment
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
+import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.ui.home.bot.BotManagerAdapter
 import one.mixin.android.ui.home.bot.BotManagerViewModel
+import one.mixin.android.ui.home.bot.INTERNAL_CAMERA_ID
+import one.mixin.android.ui.home.bot.INTERNAL_SCAN_ID
+import one.mixin.android.ui.home.bot.INTERNAL_SUPPORT_ID
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.App
+import one.mixin.android.vo.BotInterface
 import one.mixin.android.widget.SegmentationItemDecoration
 import javax.inject.Inject
 
@@ -78,28 +87,22 @@ class ExploreFragment : BaseFragment() {
 
             }
             scanIv.setOnClickListener {
-                RxPermissions(requireActivity())
-                    .request(Manifest.permission.CAMERA)
-                    .autoDispose(stopScope)
-                    .subscribe { granted ->
-                        if (granted) {
-                            (requireActivity() as? MainActivity)?.showCapture(true)
-                        } else {
-                            context?.openPermissionSetting()
-                        }
+                RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
+                    if (granted) {
+                        (requireActivity() as? MainActivity)?.showCapture(true)
+                    } else {
+                        context?.openPermissionSetting()
                     }
+                }
             }
             icCamera.setOnClickListener {
-                RxPermissions(requireActivity())
-                    .request(Manifest.permission.CAMERA)
-                    .autoDispose(stopScope)
-                    .subscribe { granted ->
-                        if (granted) {
-                            (requireActivity() as? MainActivity)?.showCapture(false)
-                        } else {
-                            context?.openPermissionSetting()
-                        }
+                RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
+                    if (granted) {
+                        (requireActivity() as? MainActivity)?.showCapture(false)
+                    } else {
+                        context?.openPermissionSetting()
                     }
+                }
             }
             icBuy.setOnClickListener {
                 WalletActivity.showBuy(requireActivity(), null, null)
@@ -120,10 +123,11 @@ class ExploreFragment : BaseFragment() {
             favoriteRv.adapter = adapter
             favoriteRv.addItemDecoration(SegmentationItemDecoration())
             radioGroupExplore.setOnCheckedChangeListener { _, checkedId ->
-                when(checkedId){
+                when (checkedId) {
                     R.id.radio_favorite -> {
                         exploreVa.displayedChild = 0
                     }
+
                     R.id.radio_bot -> {
                         exploreVa.displayedChild = 1
                     }
@@ -137,23 +141,30 @@ class ExploreFragment : BaseFragment() {
         loadBotData()
         refresh()
 
-        RxBus.listen(BotEvent::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(destroyScope)
-            .subscribe {
-                loadBotData()
-            }
+        RxBus.listen(BotEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {
+            loadBotData()
+        }
     }
 
     private fun loadData() {
         lifecycleScope.launch {
-            val favoriteApps =
-                botManagerViewModel.getFavoriteAppsByUserId(Session.getAccountId()!!)
+            val favoriteApps = botManagerViewModel.getFavoriteAppsByUserId(Session.getAccountId()!!)
             adapter.setData(favoriteApps)
         }
     }
 
-    private val adapter by lazy { FavoriteAdapter() }
+    private val adapter by lazy {
+        FavoriteAdapter({
+            activity?.addFragment(
+                this@ExploreFragment,
+                MySharedAppsFragment.newInstance(),
+                MySharedAppsFragment.TAG,
+            )
+        }, { app ->
+            clickAction(app)
+        })
+    }
+
     private fun refresh() {
         lifecycleScope.launch {
             try {
@@ -180,9 +191,19 @@ class ExploreFragment : BaseFragment() {
     }
 
     private val botsAdapter by lazy {
-        BotManagerAdapter({ id->
-            // Todo open bot home uri
-        })
+        BotManagerAdapter(clickAction)
+    }
+
+    private val clickAction: (BotInterface) -> Unit = { app ->
+        if (app is App) {
+            lifecycleScope.launch {
+                botManagerViewModel.findUserByAppId(app.appId)?.let { user ->
+                    showUserBottom(parentFragmentManager, user)
+                }
+            }
+        } else {
+            // do nothing
+        }
     }
 
     override fun onDetach() {
@@ -201,7 +222,7 @@ class ExploreFragment : BaseFragment() {
         }
     }
 
-    class FavoriteAdapter : RecyclerView.Adapter<FavoriteHolder>() {
+    class FavoriteAdapter(private val editAction: () -> Unit, private val botAction: (App) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         private var favoriteApps: List<App>? = null
 
         @SuppressLint("NotifyDataSetChanged")
@@ -215,25 +236,47 @@ class ExploreFragment : BaseFragment() {
         override fun onCreateViewHolder(
             parent: ViewGroup,
             viewType: Int,
-        ): FavoriteHolder {
-            return FavoriteHolder(ItemFavoriteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+        ): RecyclerView.ViewHolder {
+            return if (viewType == 1) {
+                FavoriteEditHolder(ItemFavoriteEditBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            } else {
+                FavoriteHolder(ItemFavoriteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            }
         }
 
         @SuppressLint("ClickableViewAccessibility")
         override fun onBindViewHolder(
-            holder: FavoriteHolder,
+            holder: RecyclerView.ViewHolder,
             position: Int,
         ) {
-            holder.bind(getItem(position))
+            if (getItemViewType(position) == 1) {
+                holder.itemView.setOnClickListener {
+                    editAction.invoke()
+                }
+            } else {
+                getItem(position)?.let { app ->
+                    (holder as FavoriteHolder).bind(app)
+                    holder.itemView.setOnClickListener {
+                        botAction.invoke(app)
+                    }
+                }
+            }
         }
 
         override fun getItemCount(): Int {
-            return favoriteApps?.size ?: 0
+            return (favoriteApps?.size ?: 0) + if (showEdit()) 1 else 0
+        }
+
+        override fun getItemViewType(position: Int): Int {
+            return if (position >= (favoriteApps?.size ?: 0)) 1
+            else 0
         }
 
         fun getItem(position: Int): App? {
             return favoriteApps?.get(position)
         }
+
+        private fun showEdit() = (favoriteApps?.size ?: 0) < 5
     }
 
     class FavoriteHolder(private val itemBinding: ItemFavoriteBinding) : RecyclerView.ViewHolder(itemBinding.root) {
@@ -248,4 +291,6 @@ class ExploreFragment : BaseFragment() {
             }
         }
     }
+
+    class FavoriteEditHolder(private val itemBinding: ItemFavoriteEditBinding) : RecyclerView.ViewHolder(itemBinding.root)
 }
