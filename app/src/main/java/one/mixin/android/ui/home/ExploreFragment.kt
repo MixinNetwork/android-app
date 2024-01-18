@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.uber.autodispose.autoDispose
@@ -24,6 +24,7 @@ import one.mixin.android.databinding.ItemFavoriteBinding
 import one.mixin.android.databinding.ItemFavoriteEditBinding
 import one.mixin.android.event.BotEvent
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
@@ -34,11 +35,10 @@ import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.bot.Bot
-import one.mixin.android.ui.home.bot.BotManagerAdapter
 import one.mixin.android.ui.home.bot.BotManagerViewModel
 import one.mixin.android.ui.home.bot.INTERNAL_CAMERA_ID
 import one.mixin.android.ui.home.bot.INTERNAL_SCAN_ID
-import one.mixin.android.ui.home.bot.INTERNAL_SUPPORT_ID
+import one.mixin.android.ui.search.SearchBotsFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.ErrorHandler
@@ -84,7 +84,11 @@ class ExploreFragment : BaseFragment() {
                 // do nothing
             }
             searchIv.setOnClickListener {
-
+                activity?.addFragment(
+                    this@ExploreFragment,
+                    SearchBotsFragment(),
+                    SearchBotsFragment.TAG,
+                )
             }
             scanIv.setOnClickListener {
                 RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
@@ -133,7 +137,7 @@ class ExploreFragment : BaseFragment() {
                     }
                 }
             }
-            binding.botRv.layoutManager = GridLayoutManager(requireContext(), 4)
+            binding.botRv.layoutManager = LinearLayoutManager(requireContext())
             binding.botRv.adapter = botsAdapter
             botRv.adapter = botsAdapter
         }
@@ -292,5 +296,59 @@ class ExploreFragment : BaseFragment() {
         }
     }
 
-    class FavoriteEditHolder(private val itemBinding: ItemFavoriteEditBinding) : RecyclerView.ViewHolder(itemBinding.root)
+    class FavoriteEditHolder(itemBinding: ItemFavoriteEditBinding) : RecyclerView.ViewHolder(itemBinding.root)
+
+    class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>() {
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): ListViewHolder {
+            val view =
+                LayoutInflater.from(
+                    parent.context,
+                ).inflate(R.layout.item_favorite, parent, false)
+            return ListViewHolder(view)
+        }
+
+        var list: List<BotInterface> = listOf()
+            @SuppressLint("NotifyDataSetChanged")
+            set(value) {
+                field = value
+                notifyDataSetChanged()
+            }
+
+        override fun onBindViewHolder(
+            holder: ListViewHolder,
+            position: Int,
+        ) {
+            val binding = ItemFavoriteBinding.bind(holder.itemView)
+            list[position].let { app ->
+                binding.avatar.renderApp(app)
+                if (app is App) {
+                    binding.name.text = app.name
+                } else if (app is Bot) {
+                    binding.name.text =
+                        when (app.id) {
+                            INTERNAL_CAMERA_ID -> holder.itemView.context.getString(R.string.Camera)
+                            INTERNAL_SCAN_ID -> holder.itemView.context.getString(R.string.Scan_QR)
+                            else -> app.name
+                        }
+                }
+                holder.itemView.setOnClickListener {
+                    botCallBack.invoke(app)
+                }
+                binding.avatar.setOnClickListener {
+                    botCallBack.invoke(app)
+                }
+                binding.avatar.tag = position
+            }
+        }
+
+        override fun getItemCount(): Int {
+            return list.notEmptyWithElse({ it.size }, 0)
+        }
+
+        class ListViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView!!)
+
+    }
 }

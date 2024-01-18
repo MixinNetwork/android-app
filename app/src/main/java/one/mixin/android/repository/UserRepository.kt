@@ -65,6 +65,12 @@ class UserRepository
         ): List<User> =
             DataProvider.fuzzySearchUser(query, query, query, Session.getAccountId() ?: "", appDatabase, cancellationSignal)
 
+        suspend fun fuzzySearchBots(
+            query: String,
+            cancellationSignal: CancellationSignal,
+        ): List<User> =
+            DataProvider.fuzzySearchBots(query, query, Session.getAccountId() ?: "", appDatabase, cancellationSignal)
+
         suspend fun searchSuspend(query: String): MixinResponse<User> = userService.searchSuspend(query)
 
         suspend fun fuzzySearchGroupUser(

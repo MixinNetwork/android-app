@@ -97,6 +97,15 @@ class SearchViewModel
                 }
             }
 
+        suspend fun fuzzyBots(cancellationSignal: CancellationSignal, query: String?): List<User>? {
+            return if (query.isNullOrBlank()) {
+                null
+            } else {
+                val escapedQuery = query.trim().escapeSql()
+                userRepository.fuzzySearchUser(escapedQuery, cancellationSignal)
+            }
+        }
+
         fun findAppsByIds(appIds: List<String>) = userRepository.findAppsByIds(appIds)
 
         fun observeFuzzySearchMessageDetail(
