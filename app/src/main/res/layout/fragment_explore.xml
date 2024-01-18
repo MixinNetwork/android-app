@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_upper_round"
+    android:background="?attr/bg_window"
     android:gravity="center_horizontal"
     android:orientation="vertical">
 
     <RelativeLayout
         android:id="@+id/title_rl"
+        android:background="?attr/bg_white"
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize">
 
@@ -26,6 +28,7 @@
             tools:ignore="RelativeOverlap" />
 
         <ImageView
+            android:id="@+id/search_iv"
             android:src="@drawable/ic_search_home"
             android:background="@drawable/mixin_ripple"
             android:layout_marginEnd="28dp"
@@ -46,52 +49,58 @@
 
     </RelativeLayout>
 
-    <LinearLayout
+    <RadioGroup
         android:padding="12dp"
+        android:id="@+id/radio_group"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/bg_white"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
-        <RadioGroup
-            android:id="@+id/radio_group"
-            android:layout_width="match_parent"
+        <RadioButton
+            android:id="@+id/radio_button"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:text="@string/Favorite"
+            android:checked="true"
+            android:textColor="@drawable/radio_button_text_selector"
+            android:background="@drawable/selector_radio"
+            android:layout_marginEnd="12dp"
+            android:button="@null" />
 
-            <RadioButton
-                android:id="@+id/radio_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/Favorite"
-                android:checked="true"
-                android:textColor="@drawable/radio_button_text_selector"
-                android:background="@drawable/selector_radio"
-                android:layout_marginEnd="12dp"
-                android:button="@null" />
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bots_title"
+            android:textColor="@drawable/radio_button_text_selector"
+            android:background="@drawable/selector_radio"
+            android:button="@null" />
 
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/bots_title"
-                android:textColor="@drawable/radio_button_text_selector"
-                android:background="@drawable/selector_radio"
-                android:button="@null" />
+    </RadioGroup>
 
-        </RadioGroup>
-
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/bg_white">
 
         <LinearLayout
+            android:id="@+id/ic_camera"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="?listPreferredItemHeight"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:padding="8dp">
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:foreground="?selectableItemBackground">
 
             <ImageView
                 android:src="@drawable/ic_bot_camera"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:contentDescription="@null"/>
 
             <TextView
                 android:layout_marginStart="12dp"
@@ -102,16 +111,22 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/ic_buy"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="?listPreferredItemHeight"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:padding="8dp">
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:foreground="?selectableItemBackground">
 
             <ImageView
                 android:src="@drawable/ic_bot_buy"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:contentDescription="@null"/>
 
             <TextView
                 android:layout_marginStart="12dp"
@@ -122,16 +137,22 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/ic_desktop"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="?listPreferredItemHeight"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:padding="8dp">
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:foreground="?selectableItemBackground">
 
             <ImageView
                 android:src="@drawable/ic_bot_desktop"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:contentDescription="@null"/>
 
             <TextView
                 android:layout_marginStart="12dp"
@@ -142,16 +163,22 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/ic_support"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="?listPreferredItemHeight"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:padding="8dp">
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:foreground="?selectableItemBackground">
 
             <ImageView
                 android:src="@drawable/ic_bot_support"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:contentDescription="@null" />
 
             <TextView
                 android:layout_marginStart="12dp"
@@ -162,6 +189,15 @@
         </LinearLayout>
 
     </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_marginTop="12dp"
+        android:id="@+id/favorite_rv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/bg_white"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:listitem="@layout/item_favorite" />
 
 </LinearLayout>
 

@@ -1,0 +1,53 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/item"
+    android:layout_width="match_parent"
+    android:layout_height="?listPreferredItemHeight"
+    android:background="?attr/bg_white"
+    android:clickable="true"
+    android:focusable="true"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:foreground="?selectableItemBackground">
+
+    <one.mixin.android.widget.AvatarView
+        android:layout_alignParentStart="true"
+        android:id="@+id/avatar"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_centerInParent="true" />
+
+    <Space
+        android:id="@+id/center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"/>
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_above="@id/center"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_toEndOf="@id/avatar"
+        android:maxLines="1"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="?attr/text_primary" />
+
+    <TextView
+        android:id="@+id/mixin_id_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_below="@id/center"
+        android:layout_toEndOf="@id/avatar"
+        android:layout_marginStart="16dp"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textSize="12sp"
+        android:textColor="?attr/text_assist" />
+
+</RelativeLayout>
