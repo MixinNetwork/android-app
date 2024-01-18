@@ -65,8 +65,4 @@ class MySharedAppsViewModel
             withContext(Dispatchers.IO) {
                 accountRepository.getApps()
             }
-
-        suspend fun getAllApps() = withContext(Dispatchers.IO) {
-            accountRepository.getAllApps()
-        }
     }
