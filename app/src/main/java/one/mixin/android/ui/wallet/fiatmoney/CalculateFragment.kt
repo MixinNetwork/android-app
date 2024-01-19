@@ -121,13 +121,21 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         }
     }
 
-    private suspend fun refresh() {
+    private suspend fun refresh(errorHandler:(()->Unit)? = null) {
         val currency = fiatMoneyViewModel.currency ?: return
         val asset = fiatMoneyViewModel.asset ?: return
         showLoading()
         requestRouteAPI(
             invokeNetwork = {
                 fiatMoneyViewModel.ticker(RouteTickerRequest(0, currency.name, asset.assetId))
+            },
+            defaultExceptionHandle = {
+                ErrorHandler.handleError(it)
+                errorHandler?.invoke()
+            },
+            defaultErrorHandle = {
+                ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
+                errorHandler?.invoke()
             },
             endBlock = {
                 dismissLoading()
@@ -177,9 +185,14 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         ArrayList(supportAssetIds),
                     ).setOnAssetClick { asset ->
                         this@CalculateFragment.lifecycleScope.launch {
+                            val oldAsset = fiatMoneyViewModel.asset
                             fiatMoneyViewModel.asset = asset
                             requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, asset.assetId)
-                            refresh()
+                            refresh{
+                                fiatMoneyViewModel.asset = oldAsset
+                                requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, oldAsset!!.assetId)
+                                updateUI()
+                            }
                             updateUI()
                         }
                     }.showNow(parentFragmentManager, AssetListFixedBottomSheetDialogFragment.TAG)
@@ -192,10 +205,16 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             object : FiatListBottomSheetDialogFragment.Callback {
                                 override fun onCurrencyClick(currency: Currency) {
                                     this@CalculateFragment.lifecycleScope.launch {
+                                        val oldCurrency = fiatMoneyViewModel.currency
                                         fiatMoneyViewModel.currency = currency
                                         v = "0"
                                         requireContext().defaultSharedPreferences.putString(CURRENT_CURRENCY, currency.name)
-                                        refresh()
+                                        refresh {
+                                            fiatMoneyViewModel.currency = oldCurrency!!
+                                            v = "0"
+                                            requireContext().defaultSharedPreferences.putString(CURRENT_CURRENCY, oldCurrency.name)
+                                            updateUI()
+                                        }
                                         updateUI()
                                     }
                                 }
