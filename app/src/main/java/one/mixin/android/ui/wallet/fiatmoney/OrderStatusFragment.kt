@@ -65,6 +65,7 @@ import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.util.reportEvent
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.cardIcon
 import one.mixin.android.vo.route.RoutePaymentRequest
@@ -307,7 +308,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             Checkout3DSService(
                 MixinApplication.appContext,
                 ENVIRONMENT_3DS,
-                Locale.US,
+                Locale.getDefault(),
                 null,
                 Uri.parse("mixin://buy"), // May jump back to the purchase interface form uri
             )
@@ -355,6 +356,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     val errorCode: String = result.errorCode
 
                     Timber.e("Error $errorType $errorCode")
+                    reportEvent("Error $errorType $errorCode")
                     showError(errorCode)
                 }
             }
