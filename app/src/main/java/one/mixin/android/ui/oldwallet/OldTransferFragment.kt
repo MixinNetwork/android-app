@@ -449,7 +449,6 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
         binding.continueVa.isEnabled = binding.continueVa.displayedChild == POST_TEXT && s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber()
     }
 
-
     private fun filter(s: String) {
         val assetList =
             assets.filter {

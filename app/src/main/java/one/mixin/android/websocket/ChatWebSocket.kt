@@ -104,7 +104,10 @@ class ChatWebSocket(
     }
 
     @Synchronized
-    fun sendMessage(blazeMessage: BlazeMessage, timeout: Long = 5): BlazeMessage? {
+    fun sendMessage(
+        blazeMessage: BlazeMessage,
+        timeout: Long = 5,
+    ): BlazeMessage? {
         var bm: BlazeMessage? = null
         val latch = CountDownLatch(1)
         val transaction =

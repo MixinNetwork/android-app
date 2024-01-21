@@ -323,31 +323,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         checkout3DS.authenticate(authenticationParameters) { result: AuthenticationResult ->
             when (result.resultType) {
                 ResultType.Completed -> {
-                    lifecycleScope.launch(defaultErrorHandler) {
-                        while (isActive) {
-                            val session =
-                                try {
-                                    fiatMoneyViewModel.getSession(sessionResponse.sessionId)
-                                } catch (e: Exception) {
-                                    showError(e.message)
-                                    return@launch
-                                }
-                            if (session.isSuccess) {
-                                if (session.data?.status == RouteSessionStatus.Approved.value) {
-                                    paymentsPrecondition(sessionId = sessionResponse.sessionId, instrumentId = sessionResponse.instrumentId, null)
-                                    break
-                                } else if (session.data?.status != RouteSessionStatus.Pending.value && session.data?.status != RouteSessionStatus.Processing.value) {
-                                    showError(session.data?.status ?: session.errorDescription)
-                                    return@launch
-                                } else {
-                                    delay(REFRESH_INTERVAL)
-                                }
-                            } else {
-                                showError(requireContext().getMixinErrorStringByCode(session.errorCode, session.errorDescription))
-                                return@launch
-                            }
-                        }
-                    }
+                    // TODO
+                    // checkThreeDsResult(sessionResponse)
                 }
 
                 ResultType.Error -> {
@@ -358,6 +335,34 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     Timber.e("Error $errorType $errorCode")
                     reportEvent("Error $errorType $errorCode")
                     showError(errorCode)
+                }
+            }
+        }
+        checkThreeDsResult(sessionResponse)
+    }
+
+    private fun checkThreeDsResult(sessionResponse: RouteSessionResponse) {
+        lifecycleScope.launch(defaultErrorHandler) {
+            while (isActive) {
+                try {
+                    val session = fiatMoneyViewModel.getSession(sessionResponse.sessionId)
+                    if (session.isSuccess) {
+                        if (session.data?.status == RouteSessionStatus.Approved.value) {
+                            paymentsPrecondition(sessionId = sessionResponse.sessionId, instrumentId = sessionResponse.instrumentId, null)
+                            break
+                        } else if (session.data?.status != RouteSessionStatus.Pending.value && session.data?.status != RouteSessionStatus.Processing.value) {
+                            showError(session.data?.status ?: session.errorDescription)
+                            return@launch
+                        } else {
+                            delay(REFRESH_INTERVAL)
+                        }
+                    } else {
+                        delay(REFRESH_INTERVAL)
+                    }
+                } catch (e: Exception) {
+                    delay(REFRESH_INTERVAL)
+                    showError(e.message)
+                    return@launch
                 }
             }
         }
