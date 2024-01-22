@@ -473,6 +473,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         lifecycleScope.launch(Dispatchers.Main) {
             val webView = WebView(requireContext())
             webView.settings.javaScriptEnabled = true
+            webView.settings.domStorageEnabled = true
             webView.webViewClient =
                 object : WebViewClient() {
                     override fun onPageFinished(
@@ -496,7 +497,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         }
                     }
 
-                    override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+                    override fun onReceivedError(
+                        view: WebView?,
+                        request: WebResourceRequest?,
+                        error: WebResourceError?,
+                    ) {
                         Timber.e("onReceivedError")
                         reportException(RiskException("onReceivedSslError ${error?.toString()}"))
                         super.onReceivedError(view, request, error)
@@ -510,7 +515,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         }
                     }
 
-                    override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
+                    override fun onReceivedSslError(
+                        view: WebView?,
+                        handler: SslErrorHandler?,
+                        error: SslError?,
+                    ) {
                         super.onReceivedSslError(view, handler, error)
                         Timber.e("onReceivedSslError")
                         reportException(RiskException("onReceivedSslError ${error?.toString()}"))
@@ -524,7 +533,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         }
                     }
 
-                    override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
+                    override fun onReceivedHttpError(
+                        view: WebView?,
+                        request: WebResourceRequest?,
+                        errorResponse: WebResourceResponse?,
+                    ) {
                         super.onReceivedHttpError(view, request, errorResponse)
                         Timber.e("onReceivedHttpError")
                         reportException(RiskException("onReceivedHttpError ${errorResponse?.statusCode} ${errorResponse?.reasonPhrase}"))
