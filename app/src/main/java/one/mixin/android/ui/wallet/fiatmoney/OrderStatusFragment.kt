@@ -3,10 +3,15 @@ package one.mixin.android.ui.wallet.fiatmoney
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import android.net.http.SslError
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
 import android.webkit.JavascriptInterface
+import android.webkit.SslErrorHandler
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
@@ -66,6 +71,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.reportEvent
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.cardIcon
 import one.mixin.android.vo.route.RoutePaymentRequest
@@ -460,6 +466,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         view: WebView?,
                         url: String?,
                     ) {
+                        Timber.e("onPageFinished")
                         super.onPageFinished(view, url)
                         view?.evaluateJavascript("riskDeviceSessionId()") { _ ->
                             launch {
@@ -473,6 +480,48 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                                     )
                                 }
                             }
+                        }
+                    }
+
+                    override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+                        Timber.e("onReceivedError")
+                        reportException(RiskException("onReceivedSslError ${error?.toString()}"))
+                        super.onReceivedError(view, request, error)
+                        if (paymentExecuted.compareAndSet(false, true)) {
+                            payments(
+                                sessionId, null,
+                                instrumentId,
+                                token,
+                                expectancyAssetAmount,
+                            )
+                        }
+                    }
+
+                    override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
+                        super.onReceivedSslError(view, handler, error)
+                        Timber.e("onReceivedSslError")
+                        reportException(RiskException("onReceivedSslError ${error?.toString()}"))
+                        if (paymentExecuted.compareAndSet(false, true)) {
+                            payments(
+                                sessionId, null,
+                                instrumentId,
+                                token,
+                                expectancyAssetAmount,
+                            )
+                        }
+                    }
+
+                    override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
+                        super.onReceivedHttpError(view, request, errorResponse)
+                        Timber.e("onReceivedHttpError")
+                        reportException(RiskException("onReceivedHttpError ${errorResponse?.statusCode} ${errorResponse?.reasonPhrase}"))
+                        if (paymentExecuted.compareAndSet(false, true)) {
+                            payments(
+                                sessionId, null,
+                                instrumentId,
+                                token,
+                                expectancyAssetAmount,
+                            )
                         }
                     }
                 }
@@ -686,5 +735,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         PROCESSING,
         FAILED,
         SUCCESS,
+    }
+}
+
+class RiskException(message: String) : RuntimeException(message) {
+    companion object {
+        private const val serialVersionUID: Long = 1L
     }
 }
