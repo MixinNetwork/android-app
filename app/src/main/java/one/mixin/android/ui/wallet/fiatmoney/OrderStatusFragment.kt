@@ -463,7 +463,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         super.onPageFinished(view, url)
                         view?.evaluateJavascript("riskDeviceSessionId()") { _ ->
                             launch {
-                                delay(15000)
+                                delay(6000)
                                 if (paymentExecuted.compareAndSet(false, true)) {
                                     payments(
                                         sessionId, null,
