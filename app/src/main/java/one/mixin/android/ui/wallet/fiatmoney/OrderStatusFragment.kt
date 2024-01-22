@@ -133,6 +133,9 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     OrderStatus.PROCESSING -> {
                         processing()
                     }
+                    OrderStatus.APPROVED_PROCESSING -> {
+                        approvedProcessing()
+                    }
                     OrderStatus.SUCCESS -> {
                         success()
                     }
@@ -171,6 +174,15 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         binding.bottomVa.displayedChild = 2
         binding.topVa.displayedChild = 2
         binding.title.setText(R.string.Processing)
+        binding.content.setText(R.string.Processing_desc)
+        binding.transparentMask.isVisible = true
+    }
+
+    private fun approvedProcessing() {
+        binding.bottomVa.isVisible = true
+        binding.bottomVa.displayedChild = 2
+        binding.topVa.displayedChild = 2
+        binding.title.setText(R.string.Approved_Processing)
         binding.content.setText(R.string.Processing_desc)
         binding.transparentMask.isVisible = true
     }
@@ -457,6 +469,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         token: String?,
         expectancyAssetAmount: String? = null,
     ) {
+        status = OrderStatus.APPROVED_PROCESSING
         lifecycleScope.launch(Dispatchers.Main) {
             val webView = WebView(requireContext())
             webView.settings.javaScriptEnabled = true
@@ -469,16 +482,16 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         Timber.e("onPageFinished")
                         super.onPageFinished(view, url)
                         view?.evaluateJavascript("riskDeviceSessionId()") { _ ->
-                            launch {
-                                delay(6000)
-                                if (paymentExecuted.compareAndSet(false, true)) {
-                                    payments(
-                                        sessionId, null,
-                                        instrumentId,
-                                        token,
-                                        expectancyAssetAmount,
-                                    )
-                                }
+                        }
+                        launch {
+                            delay(6000)
+                            if (paymentExecuted.compareAndSet(false, true)) {
+                                payments(
+                                    sessionId, null,
+                                    instrumentId,
+                                    token,
+                                    expectancyAssetAmount,
+                                )
                             }
                         }
                     }
@@ -733,6 +746,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     enum class OrderStatus {
         INITIALIZED,
         PROCESSING,
+        APPROVED_PROCESSING,
         FAILED,
         SUCCESS,
     }

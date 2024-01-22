@@ -1262,6 +1262,7 @@
     <string name="cancel_order">取消订单</string>
     <string name="switch_payment_method">使用其他支付方式</string>
     <string name="Processing">处理中</string>
+    <string name="Approved_Processing">验证通过，处理中…</string>
     <string name="buy_failed">交易失败</string>
     <string name="Processing_desc">支付请求已提交，正在检查您的支付和订单信息，请耐心等待。</string>
     <string name="Success_desc">成功支付 %1$s。%2$s 将直接转入 Mixin 钱包。</string>
