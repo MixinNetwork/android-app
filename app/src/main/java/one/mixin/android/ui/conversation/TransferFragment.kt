@@ -72,6 +72,7 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_TRANSFER
+import one.mixin.android.ui.oldwallet.OldTransferFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
@@ -187,6 +188,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
         binding.titleView.rightAnimator.isVisible = true
         binding.titleView.rightIb.setImageResource(R.drawable.ic_transaction)
+        binding.continueVa.isEnabled = false
         val t = this.t
         val defaultToken = t.asset
         if (defaultToken != null) {
@@ -357,11 +359,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                     dustHtv.isVisible = false
                     reserveHtv.isVisible = false
                     feeHtv.isVisible = false
-                    continueVa.displayedChild = POST_PB
-                    continueVa.setBackgroundResource(R.drawable.selector_round_bn_gray)
+                    updateContinue(POST_PB)
                 }
             } else {
-                binding.continueVa.displayedChild = POST_PB
+                updateContinue(POST_PB)
                 val feeAsset = chatViewModel.refreshAsset(address.feeAssetId)
                 if (feeAsset == null) {
                     jobManager.addJobInBackground(RefreshTokensJob(address.feeAssetId))
@@ -373,7 +374,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                     memoRl.isVisible = isInnerTransfer()
                     networkHtv.isVisible = true
                     feeHtv.isVisible = true
-                    continueVa.setBackgroundResource(R.drawable.bg_round_blue_btn)
                     networkHtv.tail.text = getChainName(token.chainId, token.chainName, token.assetKey)
                     if (dustDouble != null && dustDouble != BigDecimal.ZERO) {
                         dustHtv.isVisible = true
@@ -430,11 +430,17 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                         }
                     }
                 }
-                if (continueVa.displayedChild != POST_TEXT) {
-                    continueVa.displayedChild = POST_TEXT
-                }
+                updateContinue(POST_TEXT)
             }
         }
+    }
+
+    private fun updateContinue(displayedChild: Int) {
+        if (binding.continueVa.displayedChild != displayedChild) {
+            binding.continueVa.displayedChild = displayedChild
+        }
+        val s = binding.amountEt.text
+        binding.continueVa.isEnabled = s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber()
     }
 
     @SuppressLint("SetTextI18n")
@@ -645,7 +651,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             }
             t.memo = memo
 
-            binding.continueVa.displayedChild = POST_PB
+            updateContinue(POST_PB)
             val traceId = t.traceId
             val pair =
                 if (t is TransferBiometricItem && t.users.size == 1) {
@@ -656,7 +662,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                     Pair(null, false)
                 }
             if (pair.second) {
-                binding.continueVa.displayedChild = POST_TEXT
+                updateContinue(POST_TEXT)
                 return@launch
             }
             if (t is TransferBiometricItem && t.users.size == 1) {
@@ -681,7 +687,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 } else if (tx != null) {
                     PaymentStatus.paid.name
                 } else {
-                    binding.continueVa.displayedChild = POST_TEXT
+                    updateContinue(POST_TEXT)
                     return@launch
                 }
 
@@ -690,7 +696,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 t.fee = fee
             }
 
-            binding.continueVa.displayedChild = POST_TEXT
+            updateContinue(POST_TEXT)
             val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(t, FROM_TRANSFER)
             preconditionBottom.callback =
                 object : PreconditionBottomSheetDialogFragment.Callback {
@@ -818,6 +824,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 checkInputForbidden(s)
                 if (s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber()) {
                     binding.continueTv.isEnabled = true
+                    binding.continueVa.isEnabled = binding.continueVa.displayedChild == OldTransferFragment.POST_TEXT
                     binding.continueTv.textColor = requireContext().getColor(R.color.white)
                     if (binding.amountRl.isVisible && t.asset != null) {
                         binding.amountEt.hint = ""
@@ -826,6 +833,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                     }
                 } else {
                     binding.continueTv.isEnabled = false
+                    binding.continueVa.isEnabled = false
                     binding.continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                     if (binding.amountRl.isVisible) {
                         binding.amountEt.hint = "0.00 ${if (swapped) Fiats.getAccountCurrencyAppearance() else t.asset?.symbol}"

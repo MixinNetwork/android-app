@@ -292,11 +292,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 }
                 val sendersHash = multisigs.sendersHash
-                val receiver = multisigs.receivers?.firstOrNull {
-                    it.membersHash != sendersHash
-                } ?: multisigs.receivers?.firstOrNull {
-                    it.membersHash == sendersHash
-                }
+                val receiver =
+                    multisigs.receivers?.firstOrNull {
+                        it.membersHash != sendersHash
+                    } ?: multisigs.receivers?.firstOrNull {
+                        it.membersHash == sendersHash
+                    }
                 if (receiver == null || receiver.members.isEmpty()) {
                     showError()
                     return@launch

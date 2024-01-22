@@ -65,6 +65,7 @@ import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.util.reportEvent
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.cardIcon
 import one.mixin.android.vo.route.RoutePaymentRequest
@@ -307,7 +308,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             Checkout3DSService(
                 MixinApplication.appContext,
                 ENVIRONMENT_3DS,
-                Locale.US,
+                Locale.getDefault(),
                 null,
                 Uri.parse("mixin://buy"), // May jump back to the purchase interface form uri
             )
@@ -322,31 +323,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         checkout3DS.authenticate(authenticationParameters) { result: AuthenticationResult ->
             when (result.resultType) {
                 ResultType.Completed -> {
-                    lifecycleScope.launch(defaultErrorHandler) {
-                        while (isActive) {
-                            val session =
-                                try {
-                                    fiatMoneyViewModel.getSession(sessionResponse.sessionId)
-                                } catch (e: Exception) {
-                                    showError(e.message)
-                                    return@launch
-                                }
-                            if (session.isSuccess) {
-                                if (session.data?.status == RouteSessionStatus.Approved.value) {
-                                    paymentsPrecondition(sessionId = sessionResponse.sessionId, instrumentId = sessionResponse.instrumentId, null)
-                                    break
-                                } else if (session.data?.status != RouteSessionStatus.Pending.value && session.data?.status != RouteSessionStatus.Processing.value) {
-                                    showError(session.data?.status ?: session.errorDescription)
-                                    return@launch
-                                } else {
-                                    delay(REFRESH_INTERVAL)
-                                }
-                            } else {
-                                showError(requireContext().getMixinErrorStringByCode(session.errorCode, session.errorDescription))
-                                return@launch
-                            }
-                        }
-                    }
+                    // TODO
+                    // checkThreeDsResult(sessionResponse)
                 }
 
                 ResultType.Error -> {
@@ -355,7 +333,36 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     val errorCode: String = result.errorCode
 
                     Timber.e("Error $errorType $errorCode")
+                    reportEvent("Error $errorType $errorCode")
                     showError(errorCode)
+                }
+            }
+        }
+        checkThreeDsResult(sessionResponse)
+    }
+
+    private fun checkThreeDsResult(sessionResponse: RouteSessionResponse) {
+        lifecycleScope.launch(defaultErrorHandler) {
+            while (isActive) {
+                try {
+                    val session = fiatMoneyViewModel.getSession(sessionResponse.sessionId)
+                    if (session.isSuccess) {
+                        if (session.data?.status == RouteSessionStatus.Approved.value) {
+                            paymentsPrecondition(sessionId = sessionResponse.sessionId, instrumentId = sessionResponse.instrumentId, null)
+                            break
+                        } else if (session.data?.status != RouteSessionStatus.Pending.value && session.data?.status != RouteSessionStatus.Processing.value) {
+                            showError(session.data?.status ?: session.errorDescription)
+                            return@launch
+                        } else {
+                            delay(REFRESH_INTERVAL)
+                        }
+                    } else {
+                        delay(REFRESH_INTERVAL)
+                    }
+                } catch (e: Exception) {
+                    delay(REFRESH_INTERVAL)
+                    showError(e.message)
+                    return@launch
                 }
             }
         }

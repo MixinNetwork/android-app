@@ -257,6 +257,7 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
 
         binding.titleView.rightAnimator.isVisible = true
         binding.titleView.rightIb.setImageResource(R.drawable.ic_transaction)
+        binding.continueVa.isEnabled = false
         if (isInnerTransfer()) {
             handleInnerTransfer()
         } else {
@@ -307,10 +308,9 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
             if (address.feeAssetId.isBlank()) {
                 binding.memoRl.isVisible = false
                 binding.feeTv.isVisible = false
-                binding.continueVa.displayedChild = POST_PB
-                binding.continueVa.setBackgroundResource(R.drawable.selector_round_bn_gray)
+                updateContinue(POST_PB)
             } else {
-                binding.continueVa.displayedChild = POST_TEXT
+                updateContinue(POST_TEXT)
                 val feeAsset = chatViewModel.refreshAsset(address.feeAssetId)
                 if (feeAsset == null) {
                     jobManager.addJobInBackground(RefreshAssetsJob(address.feeAssetId))
@@ -318,7 +318,6 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
                 }
                 binding.memoRl.isVisible = isInnerTransfer()
                 binding.feeTv.isVisible = true
-                binding.continueVa.setBackgroundResource(R.drawable.bg_round_blue_btn)
 
                 val reserveDouble = address.reserve.toBigDecimalOrNull()
                 val dustDouble = address.dust?.toBigDecimalOrNull()
@@ -440,6 +439,14 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
                 }
             },
         )
+    }
+
+    private fun updateContinue(displayedChild: Int) {
+        if (binding.continueVa.displayedChild != displayedChild) {
+            binding.continueVa.displayedChild = displayedChild
+        }
+        val s = binding.amountEt.text
+        binding.continueVa.isEnabled = binding.continueVa.displayedChild == POST_TEXT && s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber()
     }
 
     private fun filter(s: String) {
@@ -603,11 +610,12 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
                 toast("${binding.transferMemo.hint} ${getString(R.string.Content_too_long)}")
                 return@launch
             }
-            binding.continueVa.displayedChild = POST_PB
+            updateContinue(POST_PB)
+
             val traceId = UUID.randomUUID().toString()
             val pair = chatViewModel.findLatestTrace(user?.userId, address?.destination, address?.tag, amount, currentAsset!!.assetId)
             if (pair.second) {
-                binding.continueVa.displayedChild = POST_TEXT
+                updateContinue(POST_TEXT)
                 return@launch
             }
 
@@ -621,7 +629,7 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
                         currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace,
                     )
                 }
-            binding.continueVa.displayedChild = POST_TEXT
+            updateContinue(POST_TEXT)
 
             val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, FROM_TRANSFER)
             preconditionBottom.callback =
@@ -715,6 +723,7 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
                 checkInputForbidden(s)
                 if (s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber()) {
                     binding.continueTv.isEnabled = true
+                    binding.continueVa.isEnabled = binding.continueVa.displayedChild == POST_TEXT
                     binding.continueTv.textColor = requireContext().getColor(R.color.white)
                     if (binding.amountRl.isVisible && currentAsset != null) {
                         binding.amountEt.hint = ""
@@ -723,6 +732,7 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
                     }
                 } else {
                     binding.continueTv.isEnabled = false
+                    binding.continueVa.isEnabled = false
                     binding.continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                     if (binding.amountRl.isVisible) {
                         binding.amountEt.hint = "0.00 ${if (swapped) Fiats.getAccountCurrencyAppearance() else currentAsset?.symbol}"
