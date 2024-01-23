@@ -136,6 +136,9 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     OrderStatus.APPROVED_PROCESSING -> {
                         approvedProcessing()
                     }
+                    OrderStatus.BUYING -> {
+                        buying()
+                    }
                     OrderStatus.SUCCESS -> {
                         success()
                     }
@@ -183,6 +186,15 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         binding.bottomVa.displayedChild = 2
         binding.topVa.displayedChild = 2
         binding.title.setText(R.string.Approved_Processing)
+        binding.content.setText(R.string.Processing_desc)
+        binding.transparentMask.isVisible = true
+    }
+
+    private fun buying() {
+        binding.bottomVa.isVisible = true
+        binding.bottomVa.displayedChild = 2
+        binding.topVa.displayedChild = 2
+        binding.title.setText(R.string.Buying)
         binding.content.setText(R.string.Processing_desc)
         binding.transparentMask.isVisible = true
     }
@@ -554,7 +566,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             val html = input.source().buffer().readByteString().string(Charset.forName("utf-8")).replace("#CHCEKOUT_ID", BuildConfig.CHCEKOUT_ID)
             webView.loadDataWithBaseURL(Constants.API.DOMAIN, html, "text/html", "UTF-8", null)
             launch {
-                delay(10000)
+                delay(6000)
                 if (paymentExecuted.compareAndSet(false, true)) {
                     payments(
                         sessionId, null,
@@ -576,6 +588,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         expectancyAssetAmount: String? = null,
     ) =
         lifecycleScope.launch(defaultErrorHandler) {
+            status = OrderStatus.BUYING
             val response =
                 fiatMoneyViewModel.payment(
                     RoutePaymentRequest(
@@ -747,6 +760,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         INITIALIZED,
         PROCESSING,
         APPROVED_PROCESSING,
+        BUYING,
         FAILED,
         SUCCESS,
     }

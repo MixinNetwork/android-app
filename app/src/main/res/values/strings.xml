@@ -1292,6 +1292,7 @@
     <string name="switch_payment_method">Switch Payment Method</string>
     <string name="Processing">Processing</string>
     <string name="Approved_Processing">Approved Processing</string>
+    <string name="Buying">Buying</string>
     <string name="buy_failed">Failed</string>
     <string name="Processing_desc">Payment request has been submitted, your payment and order information is being checked, please wait patiently</string>
     <string name="Success_desc">Successful purchase of %1$s ! %2$s will be transferred directly to Mixin wallet.</string>
