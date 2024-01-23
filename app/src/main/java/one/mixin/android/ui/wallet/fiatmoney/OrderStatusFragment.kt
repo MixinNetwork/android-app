@@ -483,17 +483,6 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         super.onPageFinished(view, url)
                         view?.evaluateJavascript("riskDeviceSessionId()") { _ ->
                         }
-                        launch {
-                            delay(6000)
-                            if (paymentExecuted.compareAndSet(false, true)) {
-                                payments(
-                                    sessionId, null,
-                                    instrumentId,
-                                    token,
-                                    expectancyAssetAmount,
-                                )
-                            }
-                        }
                     }
 
                     override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
@@ -564,6 +553,17 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             val input = requireContext().assets.open("risk.html")
             val html = input.source().buffer().readByteString().string(Charset.forName("utf-8")).replace("#CHCEKOUT_ID", BuildConfig.CHCEKOUT_ID)
             webView.loadDataWithBaseURL(Constants.API.DOMAIN, html, "text/html", "UTF-8", null)
+            launch {
+                delay(10000)
+                if (paymentExecuted.compareAndSet(false, true)) {
+                    payments(
+                        sessionId, null,
+                        instrumentId,
+                        token,
+                        expectancyAssetAmount,
+                    )
+                }
+            }
         }
     }
 
