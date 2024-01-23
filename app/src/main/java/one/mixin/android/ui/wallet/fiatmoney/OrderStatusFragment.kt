@@ -3,10 +3,15 @@ package one.mixin.android.ui.wallet.fiatmoney
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import android.net.http.SslError
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
 import android.webkit.JavascriptInterface
+import android.webkit.SslErrorHandler
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
@@ -66,6 +71,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.reportEvent
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.cardIcon
 import one.mixin.android.vo.route.RoutePaymentRequest
@@ -127,6 +133,9 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     OrderStatus.PROCESSING -> {
                         processing()
                     }
+                    OrderStatus.APPROVED_PROCESSING -> {
+                        approvedProcessing()
+                    }
                     OrderStatus.SUCCESS -> {
                         success()
                     }
@@ -165,6 +174,15 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         binding.bottomVa.displayedChild = 2
         binding.topVa.displayedChild = 2
         binding.title.setText(R.string.Processing)
+        binding.content.setText(R.string.Processing_desc)
+        binding.transparentMask.isVisible = true
+    }
+
+    private fun approvedProcessing() {
+        binding.bottomVa.isVisible = true
+        binding.bottomVa.displayedChild = 2
+        binding.topVa.displayedChild = 2
+        binding.title.setText(R.string.Approved_Processing)
         binding.content.setText(R.string.Processing_desc)
         binding.transparentMask.isVisible = true
     }
@@ -451,28 +469,85 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         token: String?,
         expectancyAssetAmount: String? = null,
     ) {
+        status = OrderStatus.APPROVED_PROCESSING
         lifecycleScope.launch(Dispatchers.Main) {
             val webView = WebView(requireContext())
             webView.settings.javaScriptEnabled = true
+            webView.settings.domStorageEnabled = true
             webView.webViewClient =
                 object : WebViewClient() {
                     override fun onPageFinished(
                         view: WebView?,
                         url: String?,
                     ) {
+                        Timber.e("onPageFinished")
                         super.onPageFinished(view, url)
                         view?.evaluateJavascript("riskDeviceSessionId()") { _ ->
-                            launch {
-                                delay(15000)
-                                if (paymentExecuted.compareAndSet(false, true)) {
-                                    payments(
-                                        sessionId, null,
-                                        instrumentId,
-                                        token,
-                                        expectancyAssetAmount,
-                                    )
-                                }
+                        }
+                        launch {
+                            delay(6000)
+                            if (paymentExecuted.compareAndSet(false, true)) {
+                                payments(
+                                    sessionId, null,
+                                    instrumentId,
+                                    token,
+                                    expectancyAssetAmount,
+                                )
                             }
+                        }
+                    }
+
+                    override fun onReceivedError(
+                        view: WebView?,
+                        request: WebResourceRequest?,
+                        error: WebResourceError?,
+                    ) {
+                        Timber.e("onReceivedError")
+                        reportException(RiskException("onReceivedSslError ${error?.toString()}"))
+                        super.onReceivedError(view, request, error)
+                        if (paymentExecuted.compareAndSet(false, true)) {
+                            payments(
+                                sessionId, null,
+                                instrumentId,
+                                token,
+                                expectancyAssetAmount,
+                            )
+                        }
+                    }
+
+                    override fun onReceivedSslError(
+                        view: WebView?,
+                        handler: SslErrorHandler?,
+                        error: SslError?,
+                    ) {
+                        super.onReceivedSslError(view, handler, error)
+                        Timber.e("onReceivedSslError")
+                        reportException(RiskException("onReceivedSslError ${error?.toString()}"))
+                        if (paymentExecuted.compareAndSet(false, true)) {
+                            payments(
+                                sessionId, null,
+                                instrumentId,
+                                token,
+                                expectancyAssetAmount,
+                            )
+                        }
+                    }
+
+                    override fun onReceivedHttpError(
+                        view: WebView?,
+                        request: WebResourceRequest?,
+                        errorResponse: WebResourceResponse?,
+                    ) {
+                        super.onReceivedHttpError(view, request, errorResponse)
+                        Timber.e("onReceivedHttpError")
+                        reportException(RiskException("onReceivedHttpError ${errorResponse?.statusCode} ${errorResponse?.reasonPhrase}"))
+                        if (paymentExecuted.compareAndSet(false, true)) {
+                            payments(
+                                sessionId, null,
+                                instrumentId,
+                                token,
+                                expectancyAssetAmount,
+                            )
                         }
                     }
                 }
@@ -684,7 +759,14 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     enum class OrderStatus {
         INITIALIZED,
         PROCESSING,
+        APPROVED_PROCESSING,
         FAILED,
         SUCCESS,
+    }
+}
+
+class RiskException(message: String) : RuntimeException(message) {
+    companion object {
+        private const val serialVersionUID: Long = 1L
     }
 }
