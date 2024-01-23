@@ -494,8 +494,6 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     ) {
                         Timber.e("onPageFinished")
                         super.onPageFinished(view, url)
-                        view?.evaluateJavascript("riskDeviceSessionId()") { _ ->
-                        }
                     }
 
                     override fun onReceivedError(

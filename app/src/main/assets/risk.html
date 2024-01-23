@@ -24,11 +24,13 @@
         function riskDeviceSessionId() {
            initRisk().then((deviceSessionId) => {
                 console.log('Device Session ID:', deviceSessionId);
-                window.MixinContext.deviceSessionIdCallback(deviceSessionId);
+                window.MixinContext.deviceSessionIdCallback(deviceSessionId ? deviceSessionId : '');
             }).catch((error) => {
-                window.MixinContext.deviceSessionIdCallback(error);
+                window.MixinContext.deviceSessionIdCallback(error ? error : '');
             });
         }
+
+        riskDeviceSessionId()
     </script>
 </head>
 <body>
