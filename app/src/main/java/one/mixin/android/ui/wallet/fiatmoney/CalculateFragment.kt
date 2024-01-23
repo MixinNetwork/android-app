@@ -121,7 +121,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         }
     }
 
-    private suspend fun refresh(errorHandler:(()->Unit)? = null) {
+    private suspend fun refresh(errorHandler: (() -> Unit)? = null) {
         val currency = fiatMoneyViewModel.currency ?: return
         val asset = fiatMoneyViewModel.asset ?: return
         showLoading()
@@ -188,7 +188,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             val oldAsset = fiatMoneyViewModel.asset
                             fiatMoneyViewModel.asset = asset
                             requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, asset.assetId)
-                            refresh{
+                            refresh {
                                 fiatMoneyViewModel.asset = oldAsset
                                 requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, oldAsset!!.assetId)
                                 updateUI()
