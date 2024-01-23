@@ -136,8 +136,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     OrderStatus.APPROVED_PROCESSING -> {
                         approvedProcessing()
                     }
-                    OrderStatus.BUYING -> {
-                        buying()
+                    OrderStatus.PAYING -> {
+                        paying()
                     }
                     OrderStatus.SUCCESS -> {
                         success()
@@ -190,11 +190,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         binding.transparentMask.isVisible = true
     }
 
-    private fun buying() {
+    private fun paying() {
         binding.bottomVa.isVisible = true
         binding.bottomVa.displayedChild = 2
         binding.topVa.displayedChild = 2
-        binding.title.setText(R.string.Buying)
+        binding.title.setText(R.string.Paying)
         binding.content.setText(R.string.Processing_desc)
         binding.transparentMask.isVisible = true
     }
@@ -588,7 +588,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         expectancyAssetAmount: String? = null,
     ) =
         lifecycleScope.launch(defaultErrorHandler) {
-            status = OrderStatus.BUYING
+            status = OrderStatus.PAYING
             val response =
                 fiatMoneyViewModel.payment(
                     RoutePaymentRequest(
@@ -760,7 +760,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         INITIALIZED,
         PROCESSING,
         APPROVED_PROCESSING,
-        BUYING,
+        PAYING,
         FAILED,
         SUCCESS,
     }
