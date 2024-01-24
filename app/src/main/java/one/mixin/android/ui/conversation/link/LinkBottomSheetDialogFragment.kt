@@ -48,6 +48,8 @@ import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.getIconUrlName
 import one.mixin.android.repository.QrCodeType
 import one.mixin.android.session.Session
@@ -121,6 +123,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     @Inject
     lateinit var tip: Tip
+
+    @Inject
+    lateinit var jobManager: MixinJobManager
 
     private var authOrPay = false
 
@@ -1035,6 +1040,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 slideOffset: Float,
             ) {}
         }
+
+    fun syncUtxo(){
+        jobManager.addJobInBackground(SyncOutputJob())
+    }
 
     private val errorHandler =
         CoroutineExceptionHandler { _, error ->

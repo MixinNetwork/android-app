@@ -250,6 +250,7 @@ class NewSchemeParser(
         preconditionBottom.callback =
             object : PreconditionBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
+                    bottomSheet.syncUtxo()
                     val bottom = OutputBottomSheetDialogFragment.newInstance(biometricItem)
                     bottom.show(preconditionBottom.parentFragmentManager, OutputBottomSheetDialogFragment.TAG)
                     bottomSheet.dismiss()
