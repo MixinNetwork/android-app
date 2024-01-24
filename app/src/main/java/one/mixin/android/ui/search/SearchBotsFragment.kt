@@ -1,5 +1,6 @@
 package one.mixin.android.ui.search
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.CancellationSignal
 import android.view.View
@@ -94,7 +95,6 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
                     }
                 }
             }
-        bindData()
 
         binding.searchEt.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
@@ -105,9 +105,20 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
                 },
                 {},
             )
+        lifecycleScope.launch {
+            refreshRecentUsedApps()
+            fuzzySearch(null)
+        }
     }
 
-    private suspend fun recentUsedApps(): List<User>? {
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch {
+            refreshRecentUsedApps()
+        }
+    }
+
+    private suspend fun refreshRecentUsedApps() {
         val apps =
             withContext(Dispatchers.IO) {
                 var botsList =
@@ -125,8 +136,10 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
                     botsList.indexOf(it.appId)
                 }
             }
-        return apps
+        recentUsedBots =  apps
     }
+
+    private var recentUsedBots: List<User>? = null
 
     private fun getPreviousVersionBotsList(): List<String>? {
         defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.let { botsString ->
@@ -134,15 +147,20 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
         } ?: return null
     }
 
-    @Suppress("UNCHECKED_CAST")
+    @SuppressLint("NotifyDataSetChanged")
     private fun fuzzySearch(keyword: String?) =
         lifecycleScope.launch {
             if (viewDestroyed()) return@launch
-            searchAdapter.clear()
-            val cancellationSignal = CancellationSignal()
-
-            val users = searchViewModel.fuzzyBots(cancellationSignal, keyword) ?: recentUsedApps()
-            searchAdapter.userList = users
+            if (keyword.isNullOrBlank()) {
+                searchAdapter.userList = recentUsedBots
+                searchAdapter.notifyDataSetChanged()
+            } else {
+                searchAdapter.clear()
+                val cancellationSignal = CancellationSignal()
+                val users = searchViewModel.fuzzyBots(cancellationSignal, keyword)
+                searchAdapter.userList = users
+                searchAdapter.notifyDataSetChanged()
+            }
         }
 
 
