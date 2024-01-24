@@ -268,7 +268,7 @@ class ExploreFragment : BaseFragment() {
         }
 
         override fun getItemCount(): Int {
-            return (favoriteApps?.size ?: 0) + if (showEdit()) 1 else 0
+            return (favoriteApps?.size ?: 0) + 1
         }
 
         override fun getItemViewType(position: Int): Int {

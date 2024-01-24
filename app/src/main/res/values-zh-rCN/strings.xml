@@ -250,7 +250,7 @@
     <string name="contact_mobile">手机：%1$s</string>
     <string name="contact_mute_title">静音通知</string>
     <string name="contact_new_group_chat_desc">创建一个最多支持 256 人的群</string>
-    <string name="contact_share_bots_title">%1$s分享的机器人</string>
+    <string name="contact_favorite_bots_title">%1$s收藏的机器人</string>
     <string name="CONTACTS">联系人</string>
     <string name="content_audio">[语音]</string>
     <string name="content_contact">[联系人]</string>
@@ -617,7 +617,7 @@
     <string name="My_Contacts">我的联系人</string>
     <string name="my_mixin_id">我的 Mixin ID：%1$s</string>
     <string name="My_QR_Code">我的二维码</string>
-    <string name="My_shared_bots">我分享的机器人</string>
+    <string name="My_favorite_bots">我分享的机器人</string>
     <string name="My_Stickers">我的表情</string>
     <string name="NA">暂无价格</string>
     <string name="Name">名称</string>
@@ -1318,5 +1318,5 @@
     <string name="Waiting_transaction">正在等待交易</string>
     <string name="Customer_Service">客服</string>
     <string name="Explore">探索</string>
-    <string name="Favorite">最爱</string>
+    <string name="Favorite">收藏</string>
 </resources>

@@ -158,7 +158,7 @@
     <string name="contact_mobile">Seluler: %1$s</string>
     <string name="contact_mute_title">Matikan notifikasi selama…</string>
     <string name="contact_new_group_chat_desc">Buat obrolan grup dengan maksimal teman</string>
-    <string name="contact_share_bots_title">Aplikasi Bersama %1$s</string>
+    <string name="contact_favorite_bots_title">Aplikasi Bersama %1$s</string>
     <string name="CONTACTS">KONTAK</string>
     <string name="content_audio">[Audio]</string>
     <string name="content_contact">[Kontak]</string>
@@ -404,7 +404,7 @@
     <string name="My_Contacts">Kontak Saya</string>
     <string name="my_mixin_id">ID Mixin saya: %1$s</string>
     <string name="My_QR_Code">Kode QR saya</string>
-    <string name="My_shared_bots">Aplikasi bersama saya</string>
+    <string name="My_favorite_bots">Aplikasi bersama saya</string>
     <string name="NA">N/A</string>
     <string name="Name">Nama</string>
     <string name="need_background_permission">Memerlukan izin mulai di latar belakang untuk melanjutkan</string>
