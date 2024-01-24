@@ -22,6 +22,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
+import one.mixin.android.Constants.RECENT_USED_BOTS_MAX_COUNT
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchBotsBinding
 import one.mixin.android.databinding.ItemSearchAppBinding
@@ -220,7 +221,7 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
                         }
                     }
                     if (botsList.isEmpty()) return@withContext null
-                    val result = searchViewModel.findAppsByIds(botsList.take(8))
+                    val result = searchViewModel.findAppsByIds(botsList.take(RECENT_USED_BOTS_MAX_COUNT))
                     if (result.isEmpty()) return@withContext null
                     result.sortedBy {
                         botsList.indexOf(it.appId)
@@ -264,7 +265,7 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
 
             val cancellationSignal = CancellationSignal()
 
-            val users = searchViewModel.fuzzyBots(cancellationSignal, keyword) as List<User>?
+            val users = searchViewModel.fuzzyBots(cancellationSignal, keyword)
             searchAdapter.setData(null, users, null)
 
             (requireActivity() as MainActivity).hideSearchLoading()

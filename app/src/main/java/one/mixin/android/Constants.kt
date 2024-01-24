@@ -285,7 +285,7 @@ object Constants {
     const val BIOMETRIC_INTERVAL_DEFAULT: Long = (1000 * 60 * 60 * 2).toLong()
     const val BIOMETRIC_PIN_CHECK = "biometric_pin_check"
 
-    const val RECENT_USED_BOTS_MAX_COUNT = 12
+    const val RECENT_USED_BOTS_MAX_COUNT = 20
     const val RECENT_SEARCH_ASSETS_MAX_COUNT = 8
 
     const val PIN_ERROR_MAX = 5
