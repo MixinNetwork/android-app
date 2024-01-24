@@ -167,7 +167,7 @@
 
                     <TextView
                         android:layout_marginStart="12dp"
-                        android:text="@string/desktop"
+                        android:text="@string/Link_desktop"
                         android:textColor="?attr/text_primary"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />

@@ -38,6 +38,7 @@
     <string name="Add_success">添加成功</string>
     <string name="Add_Tag">点击添加 Tag（标签）</string>
     <string name="Add_to_Home_screen">添加到桌面</string>
+    <string name="add_or_remove_favorite_bots">添加或删除收藏的机器人</string>
     <string name="Added">已添加</string>
     <string name="Adding">正在添加…</string>
     <string name="Address">地址</string>
@@ -549,6 +550,7 @@
     <string name="Learn_More">了解更多</string>
     <string name="Line_busy">忙线未接听</string>
     <string name="Line_busy_remote">对方忙</string>
+    <string name="Link_desktop">链接桌面端</string>
     <string name="Link_desktop_failed">登录桌面端失败</string>
     <string name="Link_desktop_success">登录桌面端成功</string>
     <string name="Links">链接</string>

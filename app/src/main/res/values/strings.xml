@@ -38,6 +38,7 @@
     <string name="Add_success">Add success</string>
     <string name="Add_Tag">Add Tag</string>
     <string name="Add_to_Home_screen">Add to Home screen</string>
+    <string name="add_or_remove_favorite_bots">Add or remove favorite bots</string>
     <string name="Added">Added</string>
     <string name="Adding">Adding…</string>
     <string name="Address">Address</string>
@@ -565,6 +566,7 @@
     <string name="Learn_More">Learn More</string>
     <string name="Line_busy">Line busy</string>
     <string name="Line_busy_remote">Line busy</string>
+    <string name="Link_desktop">Link desktop</string>
     <string name="Link_desktop_failed">Link desktop failed</string>
     <string name="Link_desktop_success">Link desktop success</string>
     <string name="Links">Links</string>

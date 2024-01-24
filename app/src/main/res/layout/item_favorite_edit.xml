@@ -35,7 +35,7 @@
         android:layout_marginEnd="16dp"
         android:layout_toEndOf="@id/avatar"
         android:maxLines="1"
-        android:text="My Favorite Bots"
+        android:text="@string/My_favorite_bots"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="?attr/text_primary" />
 
@@ -50,7 +50,7 @@
         android:ellipsize="end"
         android:singleLine="true"
         android:textSize="12sp"
-        android:text="Add or remove favorite bots"
+        android:text="@string/add_or_remove_favorite_bots"
         android:textColor="?attr/text_assist" />
 
 </RelativeLayout>
