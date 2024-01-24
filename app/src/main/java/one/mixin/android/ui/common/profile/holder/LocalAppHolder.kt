@@ -2,7 +2,6 @@ package one.mixin.android.ui.common.profile.holder
 
 import androidx.core.view.isVisible
 import one.mixin.android.databinding.ItemSharedLocalAppBinding
-import one.mixin.android.vo.App
 import one.mixin.android.vo.ExploreApp
 
 class LocalAppHolder(private val itemBinding: ItemSharedLocalAppBinding) :

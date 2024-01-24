@@ -234,7 +234,8 @@ class DataProvider {
                 cancellationSignal,
                 callableUser(db, _statement, cancellationSignal),
             )
-        } @Suppress("LocalVariableName", "JoinDeclarationAndAssignment")
+        }
+        @Suppress("LocalVariableName", "JoinDeclarationAndAssignment")
         suspend fun fuzzySearchBots(
             username: String?,
             identityNumber: String?,
@@ -243,8 +244,9 @@ class DataProvider {
             cancellationSignal: CancellationSignal,
         ): List<User> {
             val _sql = """
-        SELECT * FROM users 
-        WHERE user_id != ? 
+        SELECT * FROM users
+        WHERE app_id IS NOT NULL 
+        AND user_id != ? 
         AND relationship = 'FRIEND' 
         AND identity_number != '0'
         AND (full_name LIKE '%' || ? || '%'  ESCAPE '\' OR identity_number like '%' || ? || '%'  ESCAPE '\')

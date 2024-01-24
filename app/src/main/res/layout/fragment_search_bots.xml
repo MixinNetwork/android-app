@@ -58,14 +58,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/search_view"
-        tools:listitem="@layout/item_list_conversation" />
+        tools:listitem="@layout/item_search_contact" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/app_rv"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/bg_white"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/search_view" />
 </androidx.constraintlayout.widget.ConstraintLayout>

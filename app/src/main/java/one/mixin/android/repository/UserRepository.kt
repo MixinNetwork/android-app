@@ -210,6 +210,8 @@ class UserRepository
 
         fun findAppsByIds(appIds: List<String>) = appDao.findAppsByIds(appIds)
 
+        suspend fun findBotsByIds(appIds: Set<String>) = userDao.findMultiUsersByIds(appIds)
+
         suspend fun getApps() = appDao.getApps()
 
         suspend fun findMultiUsersByIds(ids: Set<String>) = userDao.findMultiUsersByIds(ids)
