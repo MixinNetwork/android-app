@@ -34,17 +34,14 @@ import one.mixin.android.ui.common.profile.MySharedAppsFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
-import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.ui.home.bot.BotManagerViewModel
-import one.mixin.android.ui.home.bot.INTERNAL_CAMERA_ID
-import one.mixin.android.ui.home.bot.INTERNAL_SCAN_ID
 import one.mixin.android.ui.search.SearchBotsFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.rxpermission.RxPermissions
-import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
+import one.mixin.android.vo.ExploreApp
 import one.mixin.android.widget.SegmentationItemDecoration
 import javax.inject.Inject
 
@@ -182,7 +179,7 @@ class ExploreFragment : BaseFragment() {
 
     private fun loadBotData() {
         lifecycleScope.launch {
-            val apps = botManagerViewModel.getAllApps()
+            val apps = botManagerViewModel.getAllExploreApps()
             if (apps.isEmpty()) {
                 binding.emptyFl.isVisible = true
                 binding.botRv.isVisible = false
@@ -195,11 +192,11 @@ class ExploreFragment : BaseFragment() {
     }
 
     private val botsAdapter by lazy {
-        BotManagerAdapter(clickAction)
+        BotAdapter(clickAction)
     }
 
     private val clickAction: (BotInterface) -> Unit = { app ->
-        if (app is App) {
+        if (app is ExploreApp) {
             lifecycleScope.launch {
                 botManagerViewModel.findUserByAppId(app.appId)?.let { user ->
                     showUserBottom(parentFragmentManager, user)
@@ -226,12 +223,12 @@ class ExploreFragment : BaseFragment() {
         }
     }
 
-    class FavoriteAdapter(private val editAction: () -> Unit, private val botAction: (App) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-        private var favoriteApps: List<App>? = null
+    class FavoriteAdapter(private val editAction: () -> Unit, private val botAction: (ExploreApp) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+        private var favoriteApps: List<ExploreApp>? = null
 
         @SuppressLint("NotifyDataSetChanged")
         fun setData(
-            favoriteApps: List<App>
+            favoriteApps: List<ExploreApp>
         ) {
             this.favoriteApps = favoriteApps
             notifyDataSetChanged()
@@ -276,7 +273,7 @@ class ExploreFragment : BaseFragment() {
             else 0
         }
 
-        fun getItem(position: Int): App? {
+        fun getItem(position: Int): ExploreApp? {
             return favoriteApps?.get(position)
         }
 
@@ -285,20 +282,21 @@ class ExploreFragment : BaseFragment() {
 
     class FavoriteHolder(private val itemBinding: ItemFavoriteBinding) : RecyclerView.ViewHolder(itemBinding.root) {
         fun bind(
-            app: App?
+            app: ExploreApp?
         ) {
             app ?: return
             itemBinding.apply {
                 avatar.setInfo(app.name, app.iconUrl, app.appId)
                 name.text = app.name
                 mixinIdTv.text = app.appNumber
+                verifiedIv.isVisible = app.isVerified ?: false
             }
         }
     }
 
     class FavoriteEditHolder(itemBinding: ItemFavoriteEditBinding) : RecyclerView.ViewHolder(itemBinding.root)
 
-    class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>() {
+    class BotAdapter(private val botCallBack: (ExploreApp) -> Unit) : RecyclerView.Adapter<BotAdapter.ListViewHolder>() {
         override fun onCreateViewHolder(
             parent: ViewGroup,
             viewType: Int,
@@ -310,7 +308,7 @@ class ExploreFragment : BaseFragment() {
             return ListViewHolder(view)
         }
 
-        var list: List<BotInterface> = listOf()
+        var list: List<ExploreApp> = listOf()
             @SuppressLint("NotifyDataSetChanged")
             set(value) {
                 field = value
@@ -324,16 +322,9 @@ class ExploreFragment : BaseFragment() {
             val binding = ItemFavoriteBinding.bind(holder.itemView)
             list[position].let { app ->
                 binding.avatar.renderApp(app)
-                if (app is App) {
-                    binding.name.text = app.name
-                } else if (app is Bot) {
-                    binding.name.text =
-                        when (app.id) {
-                            INTERNAL_CAMERA_ID -> holder.itemView.context.getString(R.string.Camera)
-                            INTERNAL_SCAN_ID -> holder.itemView.context.getString(R.string.Scan_QR)
-                            else -> app.name
-                        }
-                }
+                binding.name.text = app.name
+                binding.mixinIdTv.text = app.appNumber
+                binding.verifiedIv.isVisible = app.isVerified ?: false
                 holder.itemView.setOnClickListener {
                     botCallBack.invoke(app)
                 }
@@ -349,6 +340,5 @@ class ExploreFragment : BaseFragment() {
         }
 
         class ListViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView!!)
-
     }
 }

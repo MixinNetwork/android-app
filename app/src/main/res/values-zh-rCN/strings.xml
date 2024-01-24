@@ -1175,6 +1175,7 @@
     <string name="Make_sure_WiFi">请确保 WiFi 连接</string>
     <string name="connected_dapps">已连接的 Dapp</string>
     <string name="search_placeholder_dapp">名称, URL</string>
+    <string name="search_placeholder_app">名称</string>
     <string name="NO_DAPP">没有 Dapp</string>
     <string name="dapp_description">此 Dapp 已经与你的钱包连接，并被授权查看你的钱包余额及活动，也可向你发出转账请求。</string>
     <string name="disconnect">断开连接</string>

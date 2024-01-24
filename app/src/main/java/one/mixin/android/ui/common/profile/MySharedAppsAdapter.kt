@@ -12,19 +12,19 @@ import one.mixin.android.ui.common.profile.holder.FooterHolder
 import one.mixin.android.ui.common.profile.holder.ItemViewHolder
 import one.mixin.android.ui.common.profile.holder.LocalAppHolder
 import one.mixin.android.ui.common.profile.holder.SharedAppHolder
-import one.mixin.android.vo.App
+import one.mixin.android.vo.ExploreApp
 
 class MySharedAppsAdapter(
-    private val onAddSharedApp: (app: App) -> Unit,
-    private val onRemoveSharedApp: (app: App) -> Unit,
+    private val onAddSharedApp: (app: ExploreApp) -> Unit,
+    private val onRemoveSharedApp: (app: ExploreApp) -> Unit,
 ) : RecyclerView.Adapter<ItemViewHolder>() {
-    private var favoriteApps: List<App>? = null
-    private var unFavoriteApps: List<App>? = null
+    private var favoriteApps: List<ExploreApp>? = null
+    private var unFavoriteApps: List<ExploreApp>? = null
 
     @SuppressLint("NotifyDataSetChanged")
     fun setData(
-        favoriteApps: List<App>,
-        unFavoriteApps: List<App>,
+        favoriteApps: List<ExploreApp>,
+        unFavoriteApps: List<ExploreApp>,
     ) {
         this.favoriteApps = favoriteApps
         this.unFavoriteApps = unFavoriteApps
@@ -77,7 +77,7 @@ class MySharedAppsAdapter(
         }
     }
 
-    fun getItem(position: Int): App {
+    fun getItem(position: Int): ExploreApp {
         val type = getItemViewType(position)
         return if (type == 0) {
             favoriteApps!![position]

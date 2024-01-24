@@ -1,18 +1,21 @@
 package one.mixin.android.ui.common.profile.holder
 
+import androidx.core.view.isVisible
 import one.mixin.android.databinding.ItemSharedLocalAppBinding
 import one.mixin.android.vo.App
+import one.mixin.android.vo.ExploreApp
 
 class LocalAppHolder(private val itemBinding: ItemSharedLocalAppBinding) :
     ItemViewHolder(itemBinding.root) {
     override fun bind(
-        app: App,
-        appAction: (app: App) -> Unit,
+        app: ExploreApp,
+        appAction: (app: ExploreApp) -> Unit,
     ) {
         itemBinding.apply {
             avatar.setInfo(app.name, app.iconUrl, app.appId)
             name.text = app.name
             mixinIdTv.text = app.appNumber
+            verifiedIv.isVisible = app.isVerified ?: false
             icon.setOnClickListener { appAction(app) }
         }
     }

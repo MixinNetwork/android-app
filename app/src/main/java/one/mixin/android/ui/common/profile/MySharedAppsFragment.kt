@@ -16,7 +16,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.App
+import one.mixin.android.vo.ExploreApp
 import one.mixin.android.widget.SegmentationItemDecoration
 
 @AndroidEntryPoint
@@ -74,7 +74,7 @@ class MySharedAppsFragment : BaseFragment() {
         }
     }
 
-    private val onAddSharedApp: (app: App) -> Unit = { app ->
+    private val onAddSharedApp: (app: ExploreApp) -> Unit = { app ->
         lifecycleScope.launch {
             val dialog =
                 indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
@@ -90,7 +90,7 @@ class MySharedAppsFragment : BaseFragment() {
             dialog.dismiss()
         }
     }
-    private val onRemoveSharedApp: (app: App) -> Unit = { app ->
+    private val onRemoveSharedApp: (app: ExploreApp) -> Unit = { app ->
         lifecycleScope.launch {
             val dialog =
                 indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {

@@ -306,8 +306,6 @@ class UserRepository
         suspend fun getCircleConversationCount(conversationId: String) =
             circleConversationDao.getCircleConversationCount(conversationId)
 
-        suspend fun getNotTopApps(appIds: List<String>): List<App> = appDao.getNotTopApps(appIds)
-
         suspend fun findUserByAppId(appId: String): User? = userDao.findUserByAppId(appId)
 
         suspend fun updateMuteUntil(

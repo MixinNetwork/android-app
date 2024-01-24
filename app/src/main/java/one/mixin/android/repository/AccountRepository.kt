@@ -423,11 +423,7 @@ class AccountRepository
             }
         }
 
-        suspend fun modifySessionSecret(request: SessionSecretRequest) = accountService.modifySessionSecret(request)
-
-        suspend fun getExternalSchemes() = accountService.getExternalSchemes()
-
-        suspend fun getAllApps() = appDao.getAllApps()
+        suspend fun getAllExploreApps() = appDao.getAllExploreApps()
 
         suspend fun validateExternalAddress(
             assetId: String,

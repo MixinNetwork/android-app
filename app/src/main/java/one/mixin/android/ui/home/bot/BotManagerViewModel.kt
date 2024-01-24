@@ -12,8 +12,6 @@ import javax.inject.Inject
 class BotManagerViewModel
 @Inject
 internal constructor(val userRepository: UserRepository, val accountRepository: AccountRepository) : ViewModel() {
-    suspend fun getNotTopApps(appIds: List<String>) = userRepository.getNotTopApps(appIds)
-
     suspend fun findAppById(appId: String) = userRepository.findAppById(appId)
 
     suspend fun findUserByAppId(appId: String) = userRepository.findUserByAppId(appId)
@@ -25,8 +23,8 @@ internal constructor(val userRepository: UserRepository, val accountRepository: 
             accountRepository.getFavoriteAppsByUserId(userId)
         }
 
-    suspend fun getAllApps() = withContext(Dispatchers.IO) {
-        accountRepository.getAllApps()
+    suspend fun getAllExploreApps() = withContext(Dispatchers.IO) {
+        accountRepository.getAllExploreApps()
     }
 
     suspend fun refreshFavoriteApps(userId: String) =

@@ -28,20 +28,36 @@
         android:id="@+id/center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"/>
+        android:layout_centerVertical="true" />
 
-    <TextView
-        android:id="@+id/name"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:layout_centerInParent="true"
         android:layout_above="@id/center"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_toEndOf="@id/avatar"
-        android:maxLines="1"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="?attr/text_primary" />
+        android:layout_toEndOf="@id/avatar">
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="?attr/text_primary" />
+
+        <ImageView
+            android:id="@+id/verified_iv"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginStart="6dp"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_user_verified"
+            android:visibility="gone"
+            android:contentDescription="@null" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/mixin_id_tv"

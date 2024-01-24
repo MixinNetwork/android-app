@@ -22,6 +22,7 @@ import one.mixin.android.extension.sp
 import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
+import one.mixin.android.vo.ExploreApp
 
 class AvatarView : ViewAnimator {
     private val binding = ViewAvatarBinding.inflate(LayoutInflater.from(context), this)
@@ -134,7 +135,9 @@ class AvatarView : ViewAnimator {
     }
 
     fun renderApp(app: BotInterface) {
-        if (app is App) {
+        if (app is ExploreApp) {
+            setInfo(app.name, app.iconUrl, app.appId)
+        } else if (app is App) {
             setInfo(app.name, app.iconUrl, app.appId)
         } else if (app is Bot) {
             displayedChild = POS_AVATAR

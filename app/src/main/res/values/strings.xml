@@ -1201,6 +1201,7 @@
     <string name="Make_sure_WiFi">Make sure the WiFi is connected</string>
     <string name="connected_dapps">Connected dapps</string>
     <string name="search_placeholder_dapp">Name, URL</string>
+    <string name="search_placeholder_app">Name</string>
     <string name="NO_DAPP">NO DAPP</string>
     <string name="dapp_description">This dapp has connected to your wallet, it can view your wallet balance, activity and request approval for transactions.</string>
     <string name="disconnect">Disconnect</string>

@@ -110,12 +110,13 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
         }
         binding.searchRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         binding.searchRv.adapter = searchAdapter
-
+        binding.backIb.setOnClickListener {
+            activity?.onBackPressedDispatcher?.onBackPressed()
+        }
         binding.appRv.layoutManager = GridLayoutManager(requireContext(), 4)
         appAdapter.appListener =
             object : AppListener {
                 override fun onItemClick(app: RecentUsedApp) {
-                    (requireActivity() as MainActivity).closeSearch()
                     ConversationActivity.show(requireContext(), null, app.appId)
                 }
             }

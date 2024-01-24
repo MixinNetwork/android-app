@@ -221,7 +221,6 @@
                 android:id="@+id/bot_rv"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:padding="8dp"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_favorite" />
 

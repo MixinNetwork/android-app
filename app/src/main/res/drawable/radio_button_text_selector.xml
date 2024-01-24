@@ -1,4 +1,4 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="?attr/text_blue" android:state_checked="true"/>
-    <item android:color="?attr/text_assist" android:state_checked="false"/>
+    <item android:color="@color/colorAccent" android:state_checked="true"/>
+    <item android:color="?attr/text_primary" android:state_checked="false"/>
 </selector>
