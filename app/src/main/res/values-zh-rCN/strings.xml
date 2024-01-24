@@ -619,7 +619,7 @@
     <string name="My_Contacts">我的联系人</string>
     <string name="my_mixin_id">我的 Mixin ID：%1$s</string>
     <string name="My_QR_Code">我的二维码</string>
-    <string name="My_favorite_bots">我分享的机器人</string>
+    <string name="My_favorite_bots">我收藏的机器人</string>
     <string name="My_Stickers">我的表情</string>
     <string name="NA">暂无价格</string>
     <string name="Name">名称</string>
@@ -1322,4 +1322,5 @@
     <string name="Customer_Service">客服</string>
     <string name="Explore">探索</string>
     <string name="Favorite">收藏</string>
+    <string name="max_favorite_bots_description">最多可以添加 5 个喜欢的机器人，注意其他人可以在你的个人信息弹窗里查看这些你喜欢的机器人。</string>
 </resources>

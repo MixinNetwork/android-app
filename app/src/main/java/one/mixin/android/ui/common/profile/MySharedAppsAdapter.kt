@@ -83,7 +83,7 @@ class MySharedAppsAdapter(
             favoriteApps!![position]
         } else {
             val favoriteSize = favoriteApps.notNullWithElse({ it.size }, 0)
-            unFavoriteApps!![position - favoriteSize]
+            unFavoriteApps!![position - favoriteSize - 1]
         }
     }
 
@@ -91,10 +91,10 @@ class MySharedAppsAdapter(
         val favoriteSize = favoriteApps.notNullWithElse({ it.size }, 0)
         return if (position < favoriteSize) {
             0
-        } else if (position < favoriteSize + unFavoriteApps.notNullWithElse({ it.size }, 0)) {
-            1
-        } else {
+        } else if(position == favoriteSize){
             2
+        } else {
+            1
         }
     }
 }

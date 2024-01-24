@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="120dp"
+    android:layout_height="wrap_content"
     android:background="?attr/bg_window"
     android:gravity="top|center_horizontal"
     android:orientation="vertical"
-    android:padding="16dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
     android:textColor="?attr/text_assist"
-    android:text="@string/profile_share_bot_hint" />
+    android:text="@string/max_favorite_bots_description"
+    tools:ignore="MissingDefaultResource" />
