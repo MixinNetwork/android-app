@@ -13,9 +13,9 @@
         android:background="?attr/bg_white"
         android:clickable="true"
         android:focusable="true"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageButton
             android:id="@+id/back_ib"
@@ -42,22 +42,58 @@
             android:gravity="center_vertical"
             android:hint="@string/search_placeholder_app"
             android:imeOptions="actionSearch|flagNoExtractUi"
+            android:importantForAutofill="no"
             android:inputType="text"
             android:maxLines="1"
             android:textColor="?attr/text_primary"
             android:textColorHint="?attr/text_assist"
-            android:textSize="14sp"
-            android:importantForAutofill="no" />
+            android:textSize="14sp" />
     </RelativeLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/search_rv"
+    <FrameLayout
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/search_view"
-        tools:listitem="@layout/item_search_contact" />
+        app:layout_constraintTop_toBottomOf="@+id/search_view">
 
+        <RelativeLayout
+            android:id="@+id/empty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/bg_window"
+            android:orientation="vertical"
+            android:padding="64dp">
+
+            <ImageView
+                android:id="@+id/empty_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@id/empty_title"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="20dp"
+                android:src="@drawable/ic_empty_file"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/empty_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:layout_marginBottom="8dp"
+                android:text="@string/NO_RESULTS"
+                android:textColor="?attr/text_assist"
+                android:textSize="20sp" />
+
+        </RelativeLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/search_rv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:listitem="@layout/item_search_contact" />
+
+    </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

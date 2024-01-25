@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.CancellationSignal
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -152,6 +153,8 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
         lifecycleScope.launch {
             if (viewDestroyed()) return@launch
             if (keyword.isNullOrBlank()) {
+                binding.searchRv.isVisible = true
+                binding.empty.isVisible = false
                 searchAdapter.userList = recentUsedBots
                 searchAdapter.notifyDataSetChanged()
             } else {
@@ -159,6 +162,13 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
                 val cancellationSignal = CancellationSignal()
                 val users = searchViewModel.fuzzyBots(cancellationSignal, keyword)
                 searchAdapter.userList = users
+                if (users.isNullOrEmpty()) {
+                    binding.searchRv.isVisible = false
+                    binding.empty.isVisible = true
+                } else {
+                    binding.searchRv.isVisible = true
+                    binding.empty.isVisible = false
+                }
                 searchAdapter.notifyDataSetChanged()
             }
         }
