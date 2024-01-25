@@ -31,6 +31,7 @@ class MySharedAppsAdapter(
         notifyDataSetChanged()
     }
 
+    fun isEmpty() = favoriteApps.isNullOrEmpty() && unFavoriteApps.isNullOrEmpty()
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,

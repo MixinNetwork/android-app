@@ -1,9 +1,12 @@
 package one.mixin.android.ui.common.profile
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -50,7 +53,37 @@ class MySharedAppsFragment : BaseFragment() {
         }
         loadData()
         refresh()
+        binding.searchEt.et.addTextChangedListener(
+            object : TextWatcher {
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int,
+                ) {
+                }
+
+                override fun onTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    before: Int,
+                    count: Int,
+                ) {
+                }
+
+                override fun afterTextChanged(s: Editable) {
+                    keyword = s.toString()
+                }
+            },
+        )
     }
+
+    private var keyword: String = ""
+        set(value) {
+            if (field == value) return
+            field = value
+            loadData()
+        }
 
     private fun refresh() {
         lifecycleScope.launch {
@@ -68,9 +101,22 @@ class MySharedAppsFragment : BaseFragment() {
             val favoriteApps =
                 mySharedAppsViewModel.getFavoriteAppsByUserId(Session.getAccountId()!!)
             val unFavoriteApps = mySharedAppsViewModel.getUnfavoriteApps()
-            binding.recyclerView.isVisible = favoriteApps.isNotEmpty() || unFavoriteApps.isNotEmpty()
-            binding.empty.isVisible = favoriteApps.isEmpty() && unFavoriteApps.isEmpty()
-            adapter.setData(favoriteApps, unFavoriteApps)
+            if (keyword.isNotBlank()) {
+                val filterFavoriteApps = favoriteApps.filter { app -> app.name.contains(keyword) || app.appNumber.contains(keyword) }
+                val filterUnFavoriteApps = unFavoriteApps.filter { app -> app.name.contains(keyword) || app.appNumber.contains(keyword) }
+
+                adapter.setData(filterFavoriteApps, filterUnFavoriteApps)
+                binding.empty.isVisible = adapter.isEmpty()
+                binding.emptyTv.isInvisible = true
+                binding.emptyTitle.setText(R.string.NO_RESULTS)
+                binding.recyclerView.isVisible = !adapter.isEmpty()
+            } else {
+                adapter.setData(favoriteApps, unFavoriteApps)
+                binding.empty.isVisible = adapter.isEmpty()
+                binding.emptyTv.isInvisible = false
+                binding.emptyTitle.setText(R.string.NO_BOTS)
+                binding.recyclerView.isVisible = !adapter.isEmpty()
+            }
         }
     }
 
