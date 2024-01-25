@@ -24,6 +24,7 @@ import one.mixin.android.databinding.ItemFavoriteBinding
 import one.mixin.android.databinding.ItemFavoriteDecorationBinding
 import one.mixin.android.databinding.ItemFavoriteEditBinding
 import one.mixin.android.event.BotEvent
+import one.mixin.android.event.FavoriteEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.openPermissionSetting
@@ -126,6 +127,9 @@ class ExploreFragment : BaseFragment() {
 
         RxBus.listen(BotEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {
             loadBotData()
+        }
+        RxBus.listen(FavoriteEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {
+            loadData()
         }
     }
 

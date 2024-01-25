@@ -13,7 +13,10 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentMySharedAppsBinding
+import one.mixin.android.event.BotEvent
+import one.mixin.android.event.FavoriteEvent
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
@@ -127,6 +130,7 @@ class MySharedAppsFragment : BaseFragment() {
                 }
             try {
                 if (mySharedAppsViewModel.addFavoriteApp(app.appId)) {
+                    RxBus.publish(FavoriteEvent())
                     loadData()
                 }
             } catch (e: Exception) {
@@ -143,6 +147,7 @@ class MySharedAppsFragment : BaseFragment() {
                 }
             try {
                 if (mySharedAppsViewModel.removeFavoriteApp(app.appId, Session.getAccountId()!!)) {
+                    RxBus.publish(FavoriteEvent())
                     loadData()
                 }
             } catch (e: Exception) {
