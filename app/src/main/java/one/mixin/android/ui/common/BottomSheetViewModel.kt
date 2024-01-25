@@ -97,6 +97,7 @@ import one.mixin.android.vo.toSimpleChat
 import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.changeToOutput
 import one.mixin.android.vo.utxo.consolidationOutput
+import timber.log.Timber
 import java.io.File
 import java.math.BigDecimal
 import java.util.UUID
@@ -185,6 +186,8 @@ class BottomSheetViewModel
 
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
+            Timber.e("Kernel Withdrawal($traceId): begin")
+            Timber.e("Kernel Withdrawal($traceId): request ghost key")
             val ghostKeyResponse =
                 tokenRepository.ghostKey(
                     if (isDifferentFee) {
@@ -194,6 +197,7 @@ class BottomSheetViewModel
                     },
                 )
             if (ghostKeyResponse.error != null) {
+                Timber.e("Kernel Withdrawal($traceId): request ghost key ${ghostKeyResponse.errorDescription}")
                 return ghostKeyResponse
             }
             val data = ghostKeyResponse.data!!
@@ -217,13 +221,16 @@ class BottomSheetViewModel
                 } else {
                     null
                 }
-
+            Timber.e("Kernel Withdrawal($traceId): request transaction")
             val withdrawalRequestResponse = tokenRepository.transactionRequest(withdrawalRequests)
             if (withdrawalRequestResponse.error != null) {
+                Timber.e("Kernel Withdrawal($traceId): request transaction ${withdrawalRequestResponse.errorDescription}")
                 return withdrawalRequestResponse
             } else if ((withdrawalRequestResponse.data?.size ?: 0) < 1) {
+                Timber.e("Kernel Withdrawal($traceId): request transaction, Parameter exception")
                 throw IllegalArgumentException("Parameter exception")
             } else if (withdrawalRequestResponse.data?.first()?.state != OutputState.unspent.name) {
+                Timber.e("Kernel Withdrawal($traceId): request transaction, Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }
             val (withdrawalData, feeData) = getTransactionResult(withdrawalRequestResponse.data, traceId, feeTraceId)
@@ -238,18 +245,24 @@ class BottomSheetViewModel
                 val signFee = Kernel.signTx(feeTx, feeUtxos.formatKeys, feeViews, spendKey.toHex(), false)
                 val signFeeResult = SignResult(signFee.raw, signFee.change)
                 rawRequest.add(TransactionRequest(signFeeResult.raw, feeTraceId))
+                Timber.e("Kernel Withdrawal($traceId): db begin")
                 runInTransaction {
+                    Timber.e("Kernel Withdrawal($traceId): db update fee Utxo ${feeUtxos.ids}")
                     tokenRepository.updateUtxoToSigned(feeUtxos.ids)
+                    Timber.e("Kernel Withdrawal($traceId): db update Utxo ${withdrawalUtxos.ids}")
                     tokenRepository.updateUtxoToSigned(withdrawalUtxos.ids)
                     if (signWithdrawalResult.change != null) {
                         val changeOutput = changeToOutput(signWithdrawalResult.change, asset, changeMask, data[1].keys, withdrawalUtxos.lastOutput)
+                        Timber.e("Kernel Withdrawal($traceId): db insert change")
                         tokenRepository.insertOutput(changeOutput)
                     }
                     if (signFeeResult.change != null) {
                         val changeOutput = changeToOutput(signFeeResult.change, feeAsset, changeMask, data[2].keys, feeUtxos.lastOutput)
+                        Timber.e("Kernel Withdrawal($traceId): db insert fee change")
                         tokenRepository.insertOutput(changeOutput)
                     }
                     val transactionHash = signWithdrawal.hash
+                    Timber.e("Kernel Withdrawal($traceId): db insert snapshot")
                     tokenRepository.insertSafeSnapshot(
                         UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, traceId, assetId, amount, memo, SafeSnapshotType.withdrawal,
                         withdrawal =
@@ -259,19 +272,27 @@ class BottomSheetViewModel
                             ),
                     )
                     val feeTransactionHash = signFee.hash
+                    Timber.e("Kernel Withdrawal($traceId): db insert fee snapshot")
                     tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$feeTransactionHash".toByteArray()).toString(), senderId, receiverId, feeTransactionHash, feeTraceId, feeAssetId, feeAmount, "", SafeSnapshotType.snapshot)
+                    Timber.e("Kernel Withdrawal($traceId): db raw transaction")
                     tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))
+                    Timber.e("Kernel Withdrawal($traceId): db insert fee raw transaction")
                     tokenRepository.insetRawTransaction(RawTransaction(feeData.requestId, signFeeResult.raw, receiverId, RawTransactionType.FEE, OutputState.unspent, nowInUtc()))
                 }
+                Timber.e("Kernel Withdrawal($traceId): db end")
                 jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId), assetIdToAsset(feeAssetId))))
             } else {
+                Timber.e("Kernel Withdrawal($traceId): db begin")
                 runInTransaction {
                     if (signWithdrawalResult.change != null) {
                         val changeOutput = changeToOutput(signWithdrawalResult.change, asset, changeMask, data.last().keys, withdrawalUtxos.lastOutput)
+                        Timber.e("Kernel Withdrawal($traceId): db insert change")
                         tokenRepository.insertOutput(changeOutput)
                     }
+                    Timber.e("Kernel Withdrawal($traceId): db update Utxo ${withdrawalUtxos.ids}")
                     tokenRepository.updateUtxoToSigned(withdrawalUtxos.ids)
                     val transactionHash = signWithdrawal.hash
+                    Timber.e("Kernel Withdrawal($traceId): db update insert snapshot")
                     tokenRepository.insertSafeSnapshot(
                         UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, traceId, assetId, amount, memo, SafeSnapshotType.withdrawal,
                         withdrawal =
@@ -280,15 +301,20 @@ class BottomSheetViewModel
                                 destination,
                             ),
                     )
+                    Timber.e("Kernel Withdrawal($traceId): db update raw transaction")
                     tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))
                 }
+                Timber.e("Kernel Withdrawal($traceId): db end")
                 jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
             }
+
+            Timber.e("Kernel Withdrawal($traceId): withdrawal")
             val transactionRsp =
                 executeWithRetry(30) {
                     tokenRepository.transactions(rawRequest)
                 }
             if (transactionRsp.error != null) {
+                Timber.e("Kernel Withdrawal($traceId): withdrawal error ${transactionRsp.errorDescription}")
                 reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
                 tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
                 tokenRepository.updateRawTransaction(feeTraceId, OutputState.signed.name)
@@ -298,6 +324,7 @@ class BottomSheetViewModel
                 tokenRepository.updateRawTransaction(feeTraceId, OutputState.signed.name)
             }
             jobManager.addJobInBackground(SyncOutputJob())
+            Timber.e("Kernel Withdrawal($traceId): withdrawal end")
             return withdrawalRequestResponse
         }
 
@@ -314,14 +341,18 @@ class BottomSheetViewModel
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
             val utxoWrapper = UtxoWrapper(packUtxo(asset, amount))
 
+            Timber.e("Kernel Address Transaction($trace): begin")
             val rawTransaction = tokenRepository.findRawTransaction(trace)
             if (rawTransaction?.state == OutputState.unspent) {
+                Timber.e("Kernel Address Transaction($trace): sync restore")
                 return innerTransaction(rawTransaction.rawTransaction, trace, listOf())
             }
 
             val senderId = Session.getAccountId()!!
+            Timber.e("Kernel Address Transaction($trace): request ghost key")
             val ghostKeyResponse = tokenRepository.ghostKey(buildKernelTransferGhostKeyRequest(senderId, trace))
             if (ghostKeyResponse.error != null) {
+                Timber.e("Kernel Address Transaction($trace): request ghost key ${ghostKeyResponse.errorDescription}")
                 return ghostKeyResponse
             }
             val data = ghostKeyResponse.data!!
@@ -332,12 +363,16 @@ class BottomSheetViewModel
             val changeMask = data.first().mask
 
             val tx = Kernel.buildTxToKernelAddress(asset, amount, kernelAddress, input, changeKeys, changeMask, memo)
+            Timber.e("Kernel Address Transaction($trace): request transaction ${utxoWrapper.ids.joinToString(", ")}")
             val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, trace)))
             if (transactionResponse.error != null) {
+                Timber.e("Kernel Address Transaction($trace): request transaction error ${transactionResponse.errorDescription}")
                 return transactionResponse
             } else if ((transactionResponse.data?.size ?: 0) > 1) {
+                Timber.e("Kernel Address Transaction($trace): Parameter exception")
                 throw IllegalArgumentException("Parameter exception")
             } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name) {
+                Timber.e("Kernel Address Transaction($trace): Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }
             // Workaround with only the case of a single transfer
@@ -345,18 +380,26 @@ class BottomSheetViewModel
             val keys = utxoWrapper.formatKeys
             val sign = Kernel.signTx(tx, keys, views, spendKey.toHex(), false)
             val signResult = SignResult(sign.raw, sign.change)
+            Timber.e("Kernel Address Transaction($trace): db begin")
             runInTransaction {
                 if (signResult.change != null) {
                     val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxoWrapper.lastOutput)
+                    Timber.e("Kernel Address Transaction($trace): sign db insert change")
                     tokenRepository.insertOutput(changeOutput)
                 }
                 val transactionHash = sign.hash
+                Timber.e("Kernel Address Transaction($trace): sign db insert snapshot")
                 tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, trace, assetId, amount, memo, SafeSnapshotType.snapshot)
+                Timber.e("Kernel Address Transaction($trace): sign db insert raw transaction")
                 tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, "", RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc()))
+                Timber.e("Kernel Address Transaction($trace): sign db mark utxo ${utxoWrapper.ids.joinToString(", ")}")
                 tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
             }
+            Timber.e("Kernel Address Transaction($trace): db end")
             jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
-            return innerTransaction(signResult.raw, trace, listOf())
+            val innerTransactionResponse = innerTransaction(signResult.raw, trace, listOf())
+            Timber.e("Kernel Address Transaction($trace): end")
+            return innerTransactionResponse
         }
 
         suspend fun kernelTransaction(
@@ -373,15 +416,17 @@ class BottomSheetViewModel
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
             val utxoWrapper = UtxoWrapper(packUtxo(asset, amount))
-
+            Timber.e("Kernel Transaction($trace): begin")
             val rawTransaction = tokenRepository.findRawTransaction(trace)
             if (rawTransaction != null) {
+                Timber.e("Kernel Transaction($trace): sync restore")
                 return innerTransaction(rawTransaction.rawTransaction, trace, receiverIds)
             }
-
+            Timber.e("Kernel Transaction($trace): request ghost key")
             val senderIds = listOf(Session.getAccountId()!!)
             val ghostKeyResponse = tokenRepository.ghostKey(buildGhostKeyRequest(receiverIds, senderIds, trace))
             if (ghostKeyResponse.error != null) {
+                Timber.e("Kernel Transaction($trace): request ghost key ${ghostKeyResponse.errorDescription}")
                 return ghostKeyResponse
             }
             val data = ghostKeyResponse.data!!
@@ -392,14 +437,18 @@ class BottomSheetViewModel
 
             val changeKeys = data.last().keys.joinToString(",")
             val changeMask = data.last().mask
-
             val tx = Kernel.buildTx(asset, amount, threshold.toInt(), receiverKeys, receiverMask, input, changeKeys, changeMask, memo, "")
+
+            Timber.e("Kernel Transaction($trace): request transaction ${utxoWrapper.ids.joinToString(", ")}")
             val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, trace)))
             if (transactionResponse.error != null) {
+                Timber.e("Kernel Transaction($trace): request transaction error ${transactionResponse.errorDescription}")
                 return transactionResponse
             } else if ((transactionResponse.data?.size ?: 0) > 1) {
+                Timber.e("Kernel Transaction($trace): Parameter exception")
                 throw IllegalArgumentException("Parameter exception")
             } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name) {
+                Timber.e("Kernel Transaction($trace): Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }
             // Workaround with only the case of a single transfer
@@ -407,13 +456,16 @@ class BottomSheetViewModel
             val keys = utxoWrapper.formatKeys
             val sign = Kernel.signTx(tx, keys, views, spendKey.toHex(), false)
             val signResult = SignResult(sign.raw, sign.change)
+            Timber.e("Kernel Transaction($trace): db begin")
             runInTransaction {
                 if (signResult.change != null) {
                     val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxoWrapper.lastOutput)
+                    Timber.e("Kernel Transaction($trace): sign db insert change")
                     tokenRepository.insertOutput(changeOutput)
                 }
                 if (isConsolidation) {
                     val consolidationOutput = consolidationOutput(sign.hash, asset, amount, receiverMask, data.first().keys, utxoWrapper.lastOutput)
+                    Timber.e("Kernel Transaction($trace): sign db insert consolidation")
                     tokenRepository.insertOutput(consolidationOutput)
                 }
                 if (!isConsolidation) {
@@ -424,13 +476,19 @@ class BottomSheetViewModel
                         } else {
                             ""
                         }
+                    Timber.e("Kernel Transaction($trace): sign db insert snapshot")
                     tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("${senderIds.first()}:$transactionHash".toByteArray()).toString(), senderIds.first(), opponentId, transactionHash, trace, assetId, amount, memo, SafeSnapshotType.snapshot)
                 }
+                Timber.e("Kernel Transaction($trace): sign db insert raw transaction")
                 tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverIds.joinToString(","), RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc()))
+                Timber.e("Kernel Transaction($trace): sign db mark utxo ${utxoWrapper.ids.joinToString(", ")}")
                 tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
             }
+            Timber.e("Kernel Transaction($trace): db end")
             jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
-            return innerTransaction(signResult.raw, trace, receiverIds, isConsolidation)
+            val innerTransactionResponse = innerTransaction(signResult.raw, trace, receiverIds, isConsolidation)
+            Timber.e("Kernel Transaction($trace): end")
+            return innerTransactionResponse
         }
 
         private suspend fun innerTransaction(
@@ -439,15 +497,18 @@ class BottomSheetViewModel
             receiverIds: List<String>,
             isConsolidation: Boolean = false,
         ): MixinResponse<List<TransactionResponse>> {
+            Timber.e("Kernel Transaction($traceId): innerTransaction")
             val transactionRsp =
                 executeWithRetry(30) {
                     tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
                 }
             if (transactionRsp.error != null) {
+                Timber.e("Kernel Transaction($traceId): innerTransaction error ${transactionRsp.errorDescription}")
                 reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
                 tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, OutputState.signed.name)
                 return transactionRsp
             } else {
+                Timber.e("Kernel Transaction($traceId): innerTransaction update raw transaction")
                 tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, OutputState.signed.name)
             }
             if (receiverIds.size == 1 && !isConsolidation) {
@@ -457,12 +518,15 @@ class BottomSheetViewModel
                 if (user != null && !user.notMessengerUser()) {
                     val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)
                     initConversation(conversationId, transactionRsp.data!!.first().userId, receiverId)
+                    Timber.e("Kernel Transaction($traceId): innerTransaction insertSnapshotMessage $conversationId")
                     tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), conversationId)
                 }
             } else if (receiverIds.size > 1) {
+                Timber.e("Kernel Transaction($traceId): innerTransaction insertSnapshotMessage")
                 tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), "")
             }
             jobManager.addJobInBackground(SyncOutputJob())
+            Timber.e("Kernel Transaction($traceId): innerTransaction end")
             return transactionRsp
         }
 
