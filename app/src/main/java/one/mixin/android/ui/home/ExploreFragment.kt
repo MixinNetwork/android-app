@@ -21,6 +21,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentExploreBinding
 import one.mixin.android.databinding.ItemFavoriteBinding
+import one.mixin.android.databinding.ItemFavoriteDecorationBinding
 import one.mixin.android.databinding.ItemFavoriteEditBinding
 import one.mixin.android.event.BotEvent
 import one.mixin.android.extension.addFragment
@@ -34,7 +35,13 @@ import one.mixin.android.ui.common.profile.MySharedAppsFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
+import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.ui.home.bot.BotManagerViewModel
+import one.mixin.android.ui.home.bot.INTERNAL_BUY_ID
+import one.mixin.android.ui.home.bot.INTERNAL_CAMERA_ID
+import one.mixin.android.ui.home.bot.INTERNAL_LINK_DESKTOP_ID
+import one.mixin.android.ui.home.bot.INTERNAL_SUPPORT_ID
+import one.mixin.android.ui.home.bot.InternalBots
 import one.mixin.android.ui.search.SearchBotsFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
@@ -93,31 +100,6 @@ class ExploreFragment : BaseFragment() {
                         (requireActivity() as? MainActivity)?.showCapture(true)
                     } else {
                         context?.openPermissionSetting()
-                    }
-                }
-            }
-            icCamera.setOnClickListener {
-                RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
-                    if (granted) {
-                        (requireActivity() as? MainActivity)?.showCapture(false)
-                    } else {
-                        context?.openPermissionSetting()
-                    }
-                }
-            }
-            icBuy.setOnClickListener {
-                WalletActivity.showBuy(requireActivity(), null, null)
-            }
-            icDesktop.setOnClickListener {
-                DeviceFragment.newInstance().showNow(parentFragmentManager, DeviceFragment.TAG)
-            }
-            icSupport.setOnClickListener {
-                lifecycleScope.launch {
-                    val userTeamMixin = botManagerViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
-                    if (userTeamMixin == null) {
-                        toast(R.string.Data_error)
-                    } else {
-                        ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
                     }
                 }
             }
@@ -202,6 +184,37 @@ class ExploreFragment : BaseFragment() {
                     showUserBottom(parentFragmentManager, user)
                 }
             }
+        } else if (app is Bot) {
+            when (app.id) {
+                INTERNAL_CAMERA_ID -> {
+                    RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
+                        if (granted) {
+                            (requireActivity() as? MainActivity)?.showCapture(false)
+                        } else {
+                            context?.openPermissionSetting()
+                        }
+                    }
+                }
+
+                INTERNAL_BUY_ID -> {
+                    WalletActivity.showBuy(requireActivity(), null, null)
+                }
+
+                INTERNAL_LINK_DESKTOP_ID -> {
+                    DeviceFragment.newInstance().showNow(parentFragmentManager, DeviceFragment.TAG)
+                }
+
+                INTERNAL_SUPPORT_ID -> {
+                    lifecycleScope.launch {
+                        val userTeamMixin = botManagerViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
+                        if (userTeamMixin == null) {
+                            toast(R.string.Data_error)
+                        } else {
+                            ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
+                        }
+                    }
+                }
+            }
         } else {
             // do nothing
         }
@@ -223,7 +236,7 @@ class ExploreFragment : BaseFragment() {
         }
     }
 
-    class FavoriteAdapter(private val editAction: () -> Unit, private val botAction: (ExploreApp) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    class FavoriteAdapter(private val editAction: () -> Unit, private val botAction: (BotInterface) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         private var favoriteApps: List<ExploreApp>? = null
 
         @SuppressLint("NotifyDataSetChanged")
@@ -238,10 +251,16 @@ class ExploreFragment : BaseFragment() {
             parent: ViewGroup,
             viewType: Int,
         ): RecyclerView.ViewHolder {
-            return if (viewType == 1) {
-                FavoriteEditHolder(ItemFavoriteEditBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-            } else {
-                FavoriteHolder(ItemFavoriteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            return when (viewType) {
+                2 -> {
+                    FavoriteEditHolder(ItemFavoriteEditBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+                }
+                3 -> {
+                    FavoriteDecorationHolder(ItemFavoriteDecorationBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+                }
+                else -> {
+                    FavoriteHolder(ItemFavoriteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+                }
             }
         }
 
@@ -250,11 +269,11 @@ class ExploreFragment : BaseFragment() {
             holder: RecyclerView.ViewHolder,
             position: Int,
         ) {
-            if (getItemViewType(position) == 1) {
+            if (getItemViewType(position) == 2) {
                 holder.itemView.setOnClickListener {
                     editAction.invoke()
                 }
-            } else {
+            } else if(getItemViewType(position) != 3){
                 getItem(position)?.let { app ->
                     (holder as FavoriteHolder).bind(app)
                     holder.itemView.setOnClickListener {
@@ -265,36 +284,54 @@ class ExploreFragment : BaseFragment() {
         }
 
         override fun getItemCount(): Int {
-            return (favoriteApps?.size ?: 0) + 1
+            return InternalBots.size + (favoriteApps?.size ?: 0) + 2
         }
 
         override fun getItemViewType(position: Int): Int {
-            return if (position >= (favoriteApps?.size ?: 0)) 1
-            else 0
+            return if (position < InternalBots.size) {
+                1
+            } else if (position == itemCount - 1) {
+                2
+            } else if (position == InternalBots.size) {
+                3
+            } else 0
         }
 
-        fun getItem(position: Int): ExploreApp? {
-            return favoriteApps?.get(position)
+        fun getItem(position: Int): BotInterface? {
+            return if (position < InternalBots.size) {
+                InternalBots[position]
+            } else {
+                favoriteApps?.get(position - InternalBots.size - 1)
+            }
         }
 
-        private fun showEdit() = (favoriteApps?.size ?: 0) < 5
     }
 
     class FavoriteHolder(private val itemBinding: ItemFavoriteBinding) : RecyclerView.ViewHolder(itemBinding.root) {
         fun bind(
-            app: ExploreApp?
+            app: BotInterface?
         ) {
             app ?: return
-            itemBinding.apply {
-                avatar.setInfo(app.name, app.iconUrl, app.appId)
-                name.text = app.name
-                mixinIdTv.text = app.appNumber
-                verifiedIv.isVisible = app.isVerified ?: false
+            if (app is Bot){
+                itemBinding.apply {
+                    avatar.renderApp(app)
+                    name.text = app.name
+                    mixinIdTv.setText (app.description)
+                    verifiedIv.isVisible = false
+                }
+            } else if (app is ExploreApp) {
+                itemBinding.apply {
+                    avatar.setInfo(app.name, app.iconUrl, app.appId)
+                    name.text = app.name
+                    mixinIdTv.text = app.appNumber
+                    verifiedIv.isVisible = app.isVerified ?: false
+                }
             }
         }
     }
 
     class FavoriteEditHolder(itemBinding: ItemFavoriteEditBinding) : RecyclerView.ViewHolder(itemBinding.root)
+    class FavoriteDecorationHolder(itemBinding: ItemFavoriteDecorationBinding) : RecyclerView.ViewHolder(itemBinding.root)
 
     class BotAdapter(private val botCallBack: (ExploreApp) -> Unit) : RecyclerView.Adapter<BotAdapter.ListViewHolder>() {
         override fun onCreateViewHolder(

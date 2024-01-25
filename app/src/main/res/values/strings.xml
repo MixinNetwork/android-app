@@ -1354,4 +1354,9 @@
     <string name="Explore">Explore</string>
     <string name="Favorite">Favorite</string>
     <string name="max_favorite_bots_description">You can add a maximum of 5 favorite bots. Please be aware that others can view these bots on your profile.</string>
+    <string name="take_a_photo">Take a photo\n</string>
+    <string name="leave_message_to_team_mixin">Leave a message to Team Mixin</string>
+    <string name="link_desktop">Link Desktop</string>
+    <string name="buy_crypto_with_card">Buy crypto with credit or debit card</string>
+    <string name="link_desktop_description">Link Mixin Messenger Desktop by QR code</string>
 </resources>

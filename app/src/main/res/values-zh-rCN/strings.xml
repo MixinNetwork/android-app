@@ -1324,4 +1324,9 @@
     <string name="Explore">探索</string>
     <string name="Favorite">收藏</string>
     <string name="max_favorite_bots_description">最多可以添加 5 个喜欢的机器人，注意其他人可以在你的个人信息弹窗里查看这些你喜欢的机器人。</string>
+    <string name="take_a_photo">拍摄照片</string>
+    <string name="leave_message_to_team_mixin">给 Mixin 客服留言</string>
+    <string name="link_desktop">链接桌面端</string>
+    <string name="buy_crypto_with_card">用信用卡或借记卡买币</string>
+    <string name="link_desktop_description">通过二维码链接桌面端</string>
 </resources>
