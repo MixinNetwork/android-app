@@ -102,10 +102,9 @@ class MySharedAppsFragment : BaseFragment() {
                 mySharedAppsViewModel.getFavoriteAppsByUserId(Session.getAccountId()!!)
             val unFavoriteApps = mySharedAppsViewModel.getUnfavoriteApps()
             if (keyword.isNotBlank()) {
-                val filterFavoriteApps = favoriteApps.filter { app -> app.name.contains(keyword) || app.appNumber.contains(keyword) }
-                val filterUnFavoriteApps = unFavoriteApps.filter { app -> app.name.contains(keyword) || app.appNumber.contains(keyword) }
-
-                adapter.setData(filterFavoriteApps, filterUnFavoriteApps)
+                val filterFavoriteApps = favoriteApps.filter { app -> app.name.contains(keyword, ignoreCase = true) || app.appNumber.contains(keyword, ignoreCase = true) }
+                val filterUnFavoriteApps = unFavoriteApps.filter { app -> app.name.contains(keyword, ignoreCase = true) || app.appNumber.contains(keyword, ignoreCase = true) }
+                adapter.setData(filterFavoriteApps, filterUnFavoriteApps, keyword)
                 binding.empty.isVisible = adapter.isEmpty()
                 binding.emptyTv.isInvisible = true
                 binding.emptyTitle.setText(R.string.NO_RESULTS)

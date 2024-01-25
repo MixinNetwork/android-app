@@ -20,14 +20,17 @@ class MySharedAppsAdapter(
 ) : RecyclerView.Adapter<ItemViewHolder>() {
     private var favoriteApps: List<ExploreApp>? = null
     private var unFavoriteApps: List<ExploreApp>? = null
+    private var target: String? = null
 
     @SuppressLint("NotifyDataSetChanged")
     fun setData(
         favoriteApps: List<ExploreApp>,
         unFavoriteApps: List<ExploreApp>,
+        target: String? = null
     ) {
         this.favoriteApps = favoriteApps
         this.unFavoriteApps = unFavoriteApps
+        this.target = target
         notifyDataSetChanged()
     }
 
@@ -40,9 +43,11 @@ class MySharedAppsAdapter(
             0 -> {
                 SharedAppHolder(ItemSharedAppBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+
             1 -> {
                 LocalAppHolder(ItemSharedLocalAppBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+
             else -> {
                 val view =
                     LayoutInflater.from(parent.context)
@@ -58,10 +63,10 @@ class MySharedAppsAdapter(
         position: Int,
     ) {
         if (getItemViewType(position) == 0) {
-            holder.bind(getItem(position), onRemoveSharedApp)
+            holder.bind(getItem(position), target, onRemoveSharedApp)
         } else if (getItemViewType(position) == 1) {
             holder.itemView.tag = position == favoriteApps.notNullWithElse({ it.size }, 0)
-            holder.bind(getItem(position), onAddSharedApp)
+            holder.bind(getItem(position), target, onAddSharedApp)
         }
     }
 
@@ -69,13 +74,13 @@ class MySharedAppsAdapter(
         return (
             favoriteApps.notNullWithElse({ it.size }, 0) +
                 unFavoriteApps.notNullWithElse({ it.size }, 0)
-        ).run {
-            if (this > 0) {
-                this + 1
-            } else {
-                this
+            ).run {
+                if (this > 0) {
+                    this + 1
+                } else {
+                    this
+                }
             }
-        }
     }
 
     fun getItem(position: Int): ExploreApp {
@@ -92,7 +97,7 @@ class MySharedAppsAdapter(
         val favoriteSize = favoriteApps.notNullWithElse({ it.size }, 0)
         return if (position < favoriteSize) {
             0
-        } else if(position == favoriteSize){
+        } else if (position == favoriteSize) {
             2
         } else {
             1

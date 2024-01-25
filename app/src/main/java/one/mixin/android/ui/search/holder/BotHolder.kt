@@ -19,6 +19,7 @@ class BotHolder(
             normal.text = user.fullName
             normal.highLight(target)
             mixinIdTv.text = user.identityNumber
+            mixinIdTv.highLight(target)
             avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             user.showVerifiedOrBot(verifiedIv, botIv)
             root.setOnClickListener {

@@ -7,6 +7,7 @@ class FooterHolder(itemView: View) :
     ItemViewHolder(itemView) {
     override fun bind(
         app:ExploreApp,
+        target: String?,
         appAction: (app: ExploreApp) -> Unit,
     ) {
     }
