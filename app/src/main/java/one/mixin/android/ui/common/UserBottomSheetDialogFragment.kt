@@ -256,7 +256,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 if (!apps.isNullOrEmpty()) {
                     AppListBottomSheetDialogFragment.newInstance(
                         apps,
-                        getString(R.string.contact_share_bots_title, user.fullName),
+                        getString(R.string.contact_favorite_bots_title, user.fullName),
                     ).showNow(parentFragmentManager, AppListBottomSheetDialogFragment.TAG)
                 }
             }

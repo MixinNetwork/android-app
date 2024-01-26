@@ -39,6 +39,8 @@ class AvatarGroup
                 binding.avatar1.borderColor = color
                 binding.avatar2.borderColor = color
                 binding.avatar3.borderColor = color
+                binding.avatar4.borderColor = color
+                binding.avatar5.borderColor = color
                 ta.recycle()
             }
         }
@@ -64,14 +66,51 @@ class AvatarGroup
                     width = size
                     height = size
                 }
+            binding.avatar4.layoutParams =
+                (binding.avatar4.layoutParams as MarginLayoutParams).apply {
+                    marginStart = margin * 3
+                    width = size
+                    height = size
+                }
+            binding.avatar5.layoutParams =
+                (binding.avatar5.layoutParams as MarginLayoutParams).apply {
+                    marginStart = margin * 4
+                    width = size
+                    height = size
+                }
         }
 
         fun setUrls(urls: List<String?>) {
             when {
+                urls.size >= 5 -> {
+                    binding.avatar1.isVisible = true
+                    binding.avatar2.isVisible = true
+                    binding.avatar3.isVisible = true
+                    binding.avatar4.isVisible = true
+                    binding.avatar5.isVisible = true
+                    binding.avatar1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
+                    binding.avatar2.loadImage(urls[1], R.drawable.ic_avatar_place_holder)
+                    binding.avatar3.loadImage(urls[2], R.drawable.ic_avatar_place_holder)
+                    binding.avatar4.loadImage(urls[3], R.drawable.ic_avatar_place_holder)
+                    binding.avatar5.loadImage(urls[4], R.drawable.ic_avatar_place_holder)
+                }
+                urls.size >= 4 -> {
+                    binding.avatar1.isVisible = true
+                    binding.avatar2.isVisible = true
+                    binding.avatar3.isVisible = true
+                    binding.avatar4.isVisible = true
+                    binding.avatar5.isVisible = false
+                    binding.avatar1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
+                    binding.avatar2.loadImage(urls[1], R.drawable.ic_avatar_place_holder)
+                    binding.avatar3.loadImage(urls[2], R.drawable.ic_avatar_place_holder)
+                    binding.avatar4.loadImage(urls[3], R.drawable.ic_avatar_place_holder)
+                }
                 urls.size >= 3 -> {
                     binding.avatar1.isVisible = true
                     binding.avatar2.isVisible = true
                     binding.avatar3.isVisible = true
+                    binding.avatar4.isVisible = false
+                    binding.avatar5.isVisible = false
                     binding.avatar1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
                     binding.avatar2.loadImage(urls[1], R.drawable.ic_avatar_place_holder)
                     binding.avatar3.loadImage(urls[2], R.drawable.ic_avatar_place_holder)
@@ -80,6 +119,8 @@ class AvatarGroup
                     binding.avatar1.isVisible = true
                     binding.avatar2.isVisible = true
                     binding.avatar3.isVisible = false
+                    binding.avatar4.isVisible = false
+                    binding.avatar5.isVisible = false
                     binding.avatar1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
                     binding.avatar2.loadImage(urls[1], R.drawable.ic_avatar_place_holder)
                 }
@@ -87,12 +128,16 @@ class AvatarGroup
                     binding.avatar1.isVisible = true
                     binding.avatar2.isVisible = false
                     binding.avatar3.isVisible = false
+                    binding.avatar4.isVisible = false
+                    binding.avatar5.isVisible = false
                     binding.avatar1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
                 }
                 else -> {
                     binding.avatar1.isVisible = false
                     binding.avatar2.isVisible = false
                     binding.avatar3.isVisible = false
+                    binding.avatar4.isVisible = false
+                    binding.avatar5.isVisible = false
                 }
             }
         }

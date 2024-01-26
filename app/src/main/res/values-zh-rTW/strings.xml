@@ -227,7 +227,7 @@
     <string name="contact_mobile">手機：%1$s</string>
     <string name="contact_mute_title">靜音通知</string>
     <string name="contact_new_group_chat_desc">建立一個最多支援 256 人的群</string>
-    <string name="contact_share_bots_title">%1$s分享的機器人</string>
+    <string name="contact_favorite_bots_title">%1$s分享的機器人</string>
     <string name="CONTACTS">聯絡人</string>
     <string name="content_audio">[語音]</string>
     <string name="content_contact">[聯絡人]</string>
@@ -560,7 +560,7 @@
     <string name="My_Contacts">我的聯絡人</string>
     <string name="my_mixin_id">我的 Mixin ID：%1$s</string>
     <string name="My_QR_Code">我的二維碼</string>
-    <string name="My_shared_bots">我分享的機器人</string>
+    <string name="My_favorite_bots">我分享的機器人</string>
     <string name="My_Stickers">我的表情</string>
     <string name="NA">暫無價格</string>
     <string name="Name">名稱</string>

@@ -206,7 +206,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             menuList {
                 menuGroup {
                     menu {
-                        title = getString(R.string.My_shared_bots)
+                        title = getString(R.string.My_favorite_bots)
                         action = {
                             activity?.addFragment(
                                 this@ProfileBottomSheetDialogFragment,

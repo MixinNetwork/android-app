@@ -246,7 +246,7 @@
     <string name="contact_mobile">Móvil: %1$s</string>
     <string name="contact_mute_title">Silenciar notificaciones para…</string>
     <string name="contact_new_group_chat_desc">Crea un chat grupal con hasta amigos</string>
-    <string name="contact_share_bots_title">Bots compartidos de %1$s</string>
+    <string name="contact_favorite_bots_title">Bots compartidos de %1$s</string>
     <string name="CONTACTS">CONTACTOS</string>
     <string name="content_audio">[Audio]</string>
     <string name="content_contact">[Contacto]</string>
@@ -602,7 +602,7 @@
     <string name="My_Contacts">Mis contactos</string>
     <string name="my_mixin_id">Mi ID de Mixin: %1$s</string>
     <string name="My_QR_Code">Mi código QR</string>
-    <string name="My_shared_bots">Mis bots compartidos</string>
+    <string name="My_favorite_bots">Mis bots compartidos</string>
     <string name="My_Stickers">Mis pegatinas</string>
     <string name="NA">N/D</string>
     <string name="Name">Nombre</string>

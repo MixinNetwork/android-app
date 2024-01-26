@@ -65,6 +65,12 @@ class UserRepository
         ): List<User> =
             DataProvider.fuzzySearchUser(query, query, query, Session.getAccountId() ?: "", appDatabase, cancellationSignal)
 
+        suspend fun fuzzySearchBots(
+            query: String,
+            cancellationSignal: CancellationSignal,
+        ): List<User> =
+            DataProvider.fuzzySearchBots(query, query, Session.getAccountId() ?: "", appDatabase, cancellationSignal)
+
         suspend fun searchSuspend(query: String): MixinResponse<User> = userService.searchSuspend(query)
 
         suspend fun fuzzySearchGroupUser(
@@ -204,6 +210,8 @@ class UserRepository
 
         fun findAppsByIds(appIds: List<String>) = appDao.findAppsByIds(appIds)
 
+        suspend fun findBotsByIds(appIds: Set<String>) = userDao.findMultiUsersByIds(appIds)
+
         suspend fun getApps() = appDao.getApps()
 
         suspend fun findMultiUsersByIds(ids: Set<String>) = userDao.findMultiUsersByIds(ids)
@@ -299,8 +307,6 @@ class UserRepository
 
         suspend fun getCircleConversationCount(conversationId: String) =
             circleConversationDao.getCircleConversationCount(conversationId)
-
-        suspend fun getNotTopApps(appIds: List<String>): List<App> = appDao.getNotTopApps(appIds)
 
         suspend fun findUserByAppId(appId: String): User? = userDao.findUserByAppId(appId)
 

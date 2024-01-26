@@ -168,7 +168,7 @@
     <string name="contact_mobile">Mudah alih: %1$s</string>
     <string name="contact_mute_title">Senyapkan pemberitahuan untuk…</string>
     <string name="contact_new_group_chat_desc">Buat kumpulan sembang dengan sehingga rakan</string>
-    <string name="contact_share_bots_title">Aplikasi Dikongsi %1$s</string>
+    <string name="contact_favorite_bots_title">Aplikasi Dikongsi %1$s</string>
     <string name="CONTACTS">KENALAN</string>
     <string name="content_audio">[Audio]</string>
     <string name="content_contact">[Hubungi]</string>
@@ -429,7 +429,7 @@
     <string name="My_Contacts">Kenalan Saya</string>
     <string name="my_mixin_id">ID Mixin Saya: %1$s</string>
     <string name="My_QR_Code">Kod QR saya</string>
-    <string name="My_shared_bots">Aplikasi kongsi saya</string>
+    <string name="My_favorite_bots">Aplikasi kongsi saya</string>
     <string name="NA">N/A</string>
     <string name="Name">Nama</string>
     <string name="need_background_permission">Memerlukan kebenaran mula di latar untuk meneruskan</string>
