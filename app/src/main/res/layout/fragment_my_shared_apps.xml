@@ -11,7 +11,29 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/My_shared_bots" />
+        app:titleText="@string/My_favorite_bots" />
+
+    <one.mixin.android.widget.SearchView
+        android:id="@+id/search_et"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="?attr/bg_white"
+        android:drawablePadding="8dp"
+        android:gravity="center_vertical"
+        android:singleLine="true"
+        android:imeOptions="actionSearch"
+        android:hint="@string/search_placeholder_app"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:textColor="?attr/text_primary"
+        android:textColorHint="?attr/text_assist"
+        android:textSize="14sp" />
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height=".5dp"
+        android:background="?attr/bg_window" />
 
     <FrameLayout
         android:layout_width="match_parent"

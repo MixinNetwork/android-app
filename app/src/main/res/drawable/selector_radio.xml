@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="false">
+        <ripple android:color="#33FFFFFF">
+            <item>
+                <shape android:shape="rectangle">
+                    <corners android:radius="20dp" />
+                    <stroke android:color="@color/color_gray" android:width="1dp" />
+                    <padding android:left="12dp" android:right="12dp" android:top="10dp" android:bottom="10dp" />
+                </shape>
+            </item>
+        </ripple>
+    </item>
+    <item android:state_enabled="true">
+        <ripple android:color="#33FFFFFF">
+            <item>
+                <shape android:shape="rectangle">
+                    <corners android:radius="20dp" />
+                    <stroke android:color="@color/colorAccent" android:width="1dp" />
+                    <solid android:color="?attr/bg_clip" />
+                    <padding android:left="12dp" android:right="12dp" android:top="10dp" android:bottom="10dp" />
+                </shape>
+            </item>
+        </ripple>
+    </item>
+</selector>

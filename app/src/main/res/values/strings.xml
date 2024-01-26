@@ -38,6 +38,7 @@
     <string name="Add_success">Add success</string>
     <string name="Add_Tag">Add Tag</string>
     <string name="Add_to_Home_screen">Add to Home screen</string>
+    <string name="add_or_remove_favorite_bots">Add or remove favorite bots</string>
     <string name="Added">Added</string>
     <string name="Adding">Adding…</string>
     <string name="Address">Address</string>
@@ -255,7 +256,7 @@
     <string name="contact_mobile">Mobile: %1$s</string>
     <string name="contact_mute_title">Mute notifications for…</string>
     <string name="contact_new_group_chat_desc">Create a group chat with up to  friends</string>
-    <string name="contact_share_bots_title">%1$s\'s Shared Bots</string>
+    <string name="contact_favorite_bots_title">%1$s\'s Favorite Bots </string>
     <string name="CONTACTS">CONTACTS</string>
     <string name="content_audio">[Audio]</string>
     <string name="content_contact">[Contact]</string>
@@ -565,6 +566,7 @@
     <string name="Learn_More">Learn More</string>
     <string name="Line_busy">Line busy</string>
     <string name="Line_busy_remote">Line busy</string>
+    <string name="Link_desktop">Link desktop</string>
     <string name="Link_desktop_failed">Link desktop failed</string>
     <string name="Link_desktop_success">Link desktop success</string>
     <string name="Links">Links</string>
@@ -635,7 +637,7 @@
     <string name="My_Contacts">My Contacts</string>
     <string name="my_mixin_id">My Mixin ID: %1$s</string>
     <string name="My_QR_Code">My QR Code</string>
-    <string name="My_shared_bots">My shared bots</string>
+    <string name="My_favorite_bots">My Favorite Bots</string>
     <string name="My_Stickers">My Stickers</string>
     <string name="NA">N/A</string>
     <string name="Name">Name</string>
@@ -1199,6 +1201,7 @@
     <string name="Make_sure_WiFi">Make sure the WiFi is connected</string>
     <string name="connected_dapps">Connected dapps</string>
     <string name="search_placeholder_dapp">Name, URL</string>
+    <string name="search_placeholder_app">Search ID or name</string>
     <string name="NO_DAPP">NO DAPP</string>
     <string name="dapp_description">This dapp has connected to your wallet, it can view your wallet balance, activity and request approval for transactions.</string>
     <string name="disconnect">Disconnect</string>
@@ -1348,4 +1351,12 @@
     <string name="Waiting_transaction_description">You have a transfer or withdrawal has not been completed, please try again later</string>
     <string name="Waiting_transaction">Waiting Transaction</string>
     <string name="Customer_Service">Help</string>
+    <string name="Explore">Explore</string>
+    <string name="Favorite">Favorite</string>
+    <string name="max_favorite_bots_description">You can add a maximum of 5 favorite bots. Please be aware that others can view these bots on your profile.</string>
+    <string name="take_a_photo">Take a photo\n</string>
+    <string name="leave_message_to_team_mixin">Leave a message to Team Mixin</string>
+    <string name="link_desktop">Link Desktop</string>
+    <string name="buy_crypto_with_card">Buy crypto with credit or debit card</string>
+    <string name="link_desktop_description">Link Mixin Messenger Desktop by QR code</string>
 </resources>

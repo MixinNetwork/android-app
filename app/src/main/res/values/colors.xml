@@ -35,6 +35,7 @@
     <color name="bgWhite">#FFFFFF</color>
     <color name="bgWindow">#F6F7FA</color>
     <color name="bgPost">#FFFFFF</color>
+    <color name="bgClip">#F5F7FA</color>
     <color name="bgGray">#E5E5E5</color>
     <color name="bgMenu">#F5F7FA</color>
     <color name="bgDark">#999999</color>

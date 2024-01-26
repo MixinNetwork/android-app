@@ -235,6 +235,62 @@ class DataProvider {
                 callableUser(db, _statement, cancellationSignal),
             )
         }
+        @Suppress("LocalVariableName", "JoinDeclarationAndAssignment")
+        suspend fun fuzzySearchBots(
+            username: String?,
+            identityNumber: String?,
+            id: String?,
+            db: MixinDatabase,
+            cancellationSignal: CancellationSignal,
+        ): List<User> {
+            val _sql = """
+        SELECT * FROM users
+        WHERE app_id IS NOT NULL 
+        AND user_id != ? 
+        AND relationship = 'FRIEND' 
+        AND identity_number != '0'
+        AND (full_name LIKE '%' || ? || '%'  ESCAPE '\' OR identity_number like '%' || ? || '%'  ESCAPE '\')
+        ORDER BY 
+            full_name = ? COLLATE NOCASE OR identity_number = ? COLLATE NOCASE DESC
+        """
+            val _statement = RoomSQLiteQuery.acquire(_sql, 5)
+            var _argIndex = 1
+            if (id == null) {
+                _statement.bindNull(_argIndex)
+            } else {
+                _statement.bindString(_argIndex, id)
+            }
+            _argIndex = 2
+            if (username == null) {
+                _statement.bindNull(_argIndex)
+            } else {
+                _statement.bindString(_argIndex, username)
+            }
+            _argIndex = 3
+            if (identityNumber == null) {
+                _statement.bindNull(_argIndex)
+            } else {
+                _statement.bindString(_argIndex, identityNumber)
+            }
+            _argIndex = 4
+            if (username == null) {
+                _statement.bindNull(_argIndex)
+            } else {
+                _statement.bindString(_argIndex, username)
+            }
+            _argIndex = 5
+            if (identityNumber == null) {
+                _statement.bindNull(_argIndex)
+            } else {
+                _statement.bindString(_argIndex, identityNumber)
+            }
+            return CoroutinesRoom.execute(
+                db,
+                false,
+                cancellationSignal,
+                callableUser(db, _statement, cancellationSignal),
+            )
+        }
 
         @Suppress("LocalVariableName", "JoinDeclarationAndAssignment")
         suspend fun fuzzySearchChat(

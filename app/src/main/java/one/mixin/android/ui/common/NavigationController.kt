@@ -10,8 +10,8 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.session.Session
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.home.ConversationListFragment
+import one.mixin.android.ui.home.ExploreFragment
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.home.bot.BotManagerFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
@@ -46,9 +46,9 @@ class NavigationController
                 .commitAllowingStateLoss()
         }
 
-        fun navigateToBotManager(botManagerFragment: BotManagerFragment) {
+        fun navigateToExplore(exploreFragment: ExploreFragment) {
             fragmentManager.beginTransaction()
-                .replace(R.id.root_view, botManagerFragment, BotManagerFragment.TAG)
+                .replace(R.id.root_view, exploreFragment, ExploreFragment.TAG)
                 .commitAllowingStateLoss()
         }
 

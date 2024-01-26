@@ -38,6 +38,7 @@
         <item name="bg_confirmation">@color/bgConfirmationNight</item>
         <item name="bg_block">@color/bgBlockNight</item>
         <item name="bg_post">@color/bgPostNight</item>
+        <item name="bg_clip">@color/bgClipNight</item>
         <item name="bg_bubble">@color/bgBubbleNight</item>
         <item name="bg_choose_network">@color/bgChooseNetworkNight</item>
         <item name="bg_choose_network_yellow">@color/bgChooseNetworkYellowNight</item>

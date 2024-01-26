@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -15,19 +13,12 @@
         android:clickable="true"
         android:focusable="true" />
 
-    <TextView
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="12dp"
         android:background="?attr/bg_window"
-        android:gravity="center_vertical"
-        android:orientation="vertical"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:textColor="?attr/text_assist"
-        android:text="@string/max_favorite_bots_description"
-        tools:ignore="MissingDefaultResource" />
+        android:clickable="true"
+        android:focusable="true" />
 
     <View
         android:layout_width="match_parent"
@@ -35,4 +26,5 @@
         android:background="?attr/bg_white"
         android:clickable="true"
         android:focusable="true" />
+
 </LinearLayout>

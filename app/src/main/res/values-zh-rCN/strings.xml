@@ -38,6 +38,7 @@
     <string name="Add_success">添加成功</string>
     <string name="Add_Tag">点击添加 Tag（标签）</string>
     <string name="Add_to_Home_screen">添加到桌面</string>
+    <string name="add_or_remove_favorite_bots">添加或删除收藏的机器人</string>
     <string name="Added">已添加</string>
     <string name="Adding">正在添加…</string>
     <string name="Address">地址</string>
@@ -250,7 +251,7 @@
     <string name="contact_mobile">手机：%1$s</string>
     <string name="contact_mute_title">静音通知</string>
     <string name="contact_new_group_chat_desc">创建一个最多支持 256 人的群</string>
-    <string name="contact_share_bots_title">%1$s分享的机器人</string>
+    <string name="contact_favorite_bots_title">%1$s收藏的机器人</string>
     <string name="CONTACTS">联系人</string>
     <string name="content_audio">[语音]</string>
     <string name="content_contact">[联系人]</string>
@@ -549,6 +550,7 @@
     <string name="Learn_More">了解更多</string>
     <string name="Line_busy">忙线未接听</string>
     <string name="Line_busy_remote">对方忙</string>
+    <string name="Link_desktop">链接桌面端</string>
     <string name="Link_desktop_failed">登录桌面端失败</string>
     <string name="Link_desktop_success">登录桌面端成功</string>
     <string name="Links">链接</string>
@@ -617,7 +619,7 @@
     <string name="My_Contacts">我的联系人</string>
     <string name="my_mixin_id">我的 Mixin ID：%1$s</string>
     <string name="My_QR_Code">我的二维码</string>
-    <string name="My_shared_bots">我分享的机器人</string>
+    <string name="My_favorite_bots">我收藏的机器人</string>
     <string name="My_Stickers">我的表情</string>
     <string name="NA">暂无价格</string>
     <string name="Name">名称</string>
@@ -1173,6 +1175,7 @@
     <string name="Make_sure_WiFi">请确保 WiFi 连接</string>
     <string name="connected_dapps">已连接的 Dapp</string>
     <string name="search_placeholder_dapp">名称, URL</string>
+    <string name="search_placeholder_app">搜索 ID 或 名字</string>
     <string name="NO_DAPP">没有 Dapp</string>
     <string name="dapp_description">此 Dapp 已经与你的钱包连接，并被授权查看你的钱包余额及活动，也可向你发出转账请求。</string>
     <string name="disconnect">断开连接</string>
@@ -1318,4 +1321,12 @@
     <string name="Waiting_transaction_description">您有一笔转账或提现未完成，请稍后再试</string>
     <string name="Waiting_transaction">正在等待交易</string>
     <string name="Customer_Service">客服</string>
+    <string name="Explore">探索</string>
+    <string name="Favorite">收藏</string>
+    <string name="max_favorite_bots_description">最多可以添加 5 个喜欢的机器人，注意其他人可以在你的个人信息弹窗里查看这些你喜欢的机器人。</string>
+    <string name="take_a_photo">拍摄照片</string>
+    <string name="leave_message_to_team_mixin">给 Mixin 客服留言</string>
+    <string name="link_desktop">链接桌面端</string>
+    <string name="buy_crypto_with_card">用信用卡或借记卡买币</string>
+    <string name="link_desktop_description">通过二维码链接桌面端</string>
 </resources>

@@ -97,7 +97,18 @@ class SearchViewModel
                 }
             }
 
+        suspend fun fuzzyBots(cancellationSignal: CancellationSignal, query: String?): List<User>? {
+            return if (query.isNullOrBlank()) {
+                null
+            } else {
+                val escapedQuery = query.trim().escapeSql()
+                userRepository.fuzzySearchBots(escapedQuery, cancellationSignal)
+            }
+        }
+
         fun findAppsByIds(appIds: List<String>) = userRepository.findAppsByIds(appIds)
+
+        suspend fun findBotsByIds(appIds: Set<String>) = userRepository.findBotsByIds(appIds)
 
         fun observeFuzzySearchMessageDetail(
             query: String,
@@ -212,4 +223,6 @@ class SearchViewModel
             assetIds.pmap {
                 tokenRepository.syncAsset(it)
             }.filterNotNull()
+
+        suspend fun findUserByAppId(appId: String) = userRepository.findUserByAppId(appId)
     }

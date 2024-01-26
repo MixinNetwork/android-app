@@ -9,7 +9,7 @@ import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.showVerifiedOrBot
 
-class ChatHolder constructor(val binding: ItemSearchChatBinding) : NormalHolder(binding.root) {
+class ChatHolder(val binding: ItemSearchChatBinding) : NormalHolder(binding.root) {
     init {
         binding.botIv.visibility = View.GONE
         binding.verifiedIv.visibility = View.GONE

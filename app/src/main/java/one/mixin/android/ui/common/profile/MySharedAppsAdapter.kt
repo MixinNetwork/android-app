@@ -12,25 +12,29 @@ import one.mixin.android.ui.common.profile.holder.FooterHolder
 import one.mixin.android.ui.common.profile.holder.ItemViewHolder
 import one.mixin.android.ui.common.profile.holder.LocalAppHolder
 import one.mixin.android.ui.common.profile.holder.SharedAppHolder
-import one.mixin.android.vo.App
+import one.mixin.android.vo.ExploreApp
 
 class MySharedAppsAdapter(
-    private val onAddSharedApp: (app: App) -> Unit,
-    private val onRemoveSharedApp: (app: App) -> Unit,
+    private val onAddSharedApp: (app: ExploreApp) -> Unit,
+    private val onRemoveSharedApp: (app: ExploreApp) -> Unit,
 ) : RecyclerView.Adapter<ItemViewHolder>() {
-    private var favoriteApps: List<App>? = null
-    private var unFavoriteApps: List<App>? = null
+    private var favoriteApps: List<ExploreApp>? = null
+    private var unFavoriteApps: List<ExploreApp>? = null
+    private var target: String? = null
 
     @SuppressLint("NotifyDataSetChanged")
     fun setData(
-        favoriteApps: List<App>,
-        unFavoriteApps: List<App>,
+        favoriteApps: List<ExploreApp>,
+        unFavoriteApps: List<ExploreApp>,
+        target: String? = null
     ) {
         this.favoriteApps = favoriteApps
         this.unFavoriteApps = unFavoriteApps
+        this.target = target
         notifyDataSetChanged()
     }
 
+    fun isEmpty() = favoriteApps.isNullOrEmpty() && unFavoriteApps.isNullOrEmpty()
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
@@ -39,9 +43,11 @@ class MySharedAppsAdapter(
             0 -> {
                 SharedAppHolder(ItemSharedAppBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+
             1 -> {
                 LocalAppHolder(ItemSharedLocalAppBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+
             else -> {
                 val view =
                     LayoutInflater.from(parent.context)
@@ -57,10 +63,10 @@ class MySharedAppsAdapter(
         position: Int,
     ) {
         if (getItemViewType(position) == 0) {
-            holder.bind(getItem(position), onRemoveSharedApp)
+            holder.bind(getItem(position), target, onRemoveSharedApp)
         } else if (getItemViewType(position) == 1) {
             holder.itemView.tag = position == favoriteApps.notNullWithElse({ it.size }, 0)
-            holder.bind(getItem(position), onAddSharedApp)
+            holder.bind(getItem(position), target, onAddSharedApp)
         }
     }
 
@@ -68,22 +74,22 @@ class MySharedAppsAdapter(
         return (
             favoriteApps.notNullWithElse({ it.size }, 0) +
                 unFavoriteApps.notNullWithElse({ it.size }, 0)
-        ).run {
-            if (this > 0) {
-                this + 1
-            } else {
-                this
+            ).run {
+                if (this > 0) {
+                    this + 1
+                } else {
+                    this
+                }
             }
-        }
     }
 
-    fun getItem(position: Int): App {
+    fun getItem(position: Int): ExploreApp {
         val type = getItemViewType(position)
         return if (type == 0) {
             favoriteApps!![position]
         } else {
             val favoriteSize = favoriteApps.notNullWithElse({ it.size }, 0)
-            unFavoriteApps!![position - favoriteSize]
+            unFavoriteApps!![position - favoriteSize - 1]
         }
     }
 
@@ -91,10 +97,10 @@ class MySharedAppsAdapter(
         val favoriteSize = favoriteApps.notNullWithElse({ it.size }, 0)
         return if (position < favoriteSize) {
             0
-        } else if (position < favoriteSize + unFavoriteApps.notNullWithElse({ it.size }, 0)) {
-            1
-        } else {
+        } else if (position == favoriteSize) {
             2
+        } else {
+            1
         }
     }
 }

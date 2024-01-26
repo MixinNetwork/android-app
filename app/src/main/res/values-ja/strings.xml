@@ -230,7 +230,7 @@
     <string name="contact_mobile">モバイル: %1$s</string>
     <string name="contact_mute_title">通知をミュート</string>
     <string name="contact_new_group_chat_desc">友達と新しいグループチャットを作成</string>
-    <string name="contact_share_bots_title">%1$s\のシェアしたミニアプリ</string>
+    <string name="contact_favorite_bots_title">%1$s\のシェアしたミニアプリ</string>
     <string name="CONTACTS">連絡先</string>
     <string name="content_audio">[音声メッセージ]</string>
     <string name="content_contact">[連絡先]</string>
@@ -572,7 +572,7 @@
     <string name="My_Contacts">連絡先</string>
     <string name="my_mixin_id">マイMixin ID:%1$s</string>
     <string name="My_QR_Code">マイQRコード</string>
-    <string name="My_shared_bots">プロフィールに追加ずみのミニアプリ</string>
+    <string name="My_favorite_bots">プロフィールに追加ずみのミニアプリ</string>
     <string name="My_Stickers">マイスタンプ</string>
     <string name="NA">なし</string>
     <string name="Name">名前</string>

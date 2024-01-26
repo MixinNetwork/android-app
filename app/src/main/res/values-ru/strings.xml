@@ -235,7 +235,7 @@
     <string name="contact_mobile">Мобильный: %1$s</string>
     <string name="contact_mute_title">Отключить уведомления для…</string>
     <string name="contact_new_group_chat_desc">Создайте групповой чат с друзьями</string>
-    <string name="contact_share_bots_title">Общие боты пользователя %1$s</string>
+    <string name="contact_favorite_bots_title">Общие боты пользователя %1$s</string>
     <string name="CONTACTS">КОНТАКТЫ</string>
     <string name="content_audio">[Аудио]</string>
     <string name="content_contact">[Контакт]</string>
@@ -588,7 +588,7 @@
     <string name="My_Contacts">Мои контакты</string>
     <string name="my_mixin_id">Мой Mixin ID: %1$s</string>
     <string name="My_QR_Code">Мой QR-код</string>
-    <string name="My_shared_bots">Мои общие боты</string>
+    <string name="My_favorite_bots">Мои общие боты</string>
     <string name="My_Stickers">Мои стикеры</string>
     <string name="NA">Нет данных</string>
     <string name="Name">Имя</string>

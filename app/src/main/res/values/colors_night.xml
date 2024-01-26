@@ -26,6 +26,7 @@
     <color name="bgWhiteNight">#2c3136</color>
     <color name="bgWindowNight">#23272B</color>
     <color name="bgPostNight">#3B3F44</color>
+    <color name="bgClipNight">#3B3F44</color>
     <color name="bgDarkNight">#121212</color>
     <color name="bgGrayNight">#3B3F44</color>
     <color name="bgBotNight">#4C5053</color>
