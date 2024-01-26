@@ -146,19 +146,6 @@ class MaterialSearchView : FrameLayout {
         typedArray.recycle()
     }
 
-    override fun onSaveInstanceState(): Parcelable? {
-        val parcelable = super.onSaveInstanceState() ?: return null
-        return SavedState(parcelable).apply {
-            this.isOpen = this@MaterialSearchView.isOpen
-        }
-    }
-
-    override fun onRestoreInstanceState(state: Parcelable?) {
-        isOpen = (state as? SavedState)?.isOpen ?: false
-        if (isOpen) openNoAnimate() else closeNoAnimate()
-        super.onRestoreInstanceState(state)
-    }
-
     @SuppressLint("CheckResult")
     private fun initSearchView() {
         (binding.containerCircle.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxHeight =
@@ -350,26 +337,6 @@ class MaterialSearchView : FrameLayout {
         isOpen = true
     }
 
-    private fun openNoAnimate() {
-        binding.logoLayout.isVisible = false
-        binding.searchEt.isVisible = true
-        binding.searchEt.showKeyboard()
-        binding.backIb.isVisible = true
-
-        binding.rightClear.visibility = View.GONE
-
-        binding.searchEt.setText("")
-        oldLeftX = binding.logoLayout.x
-        oldSearchWidth = binding.searchEt.measuredWidth
-        binding.avatar.translationX(context.dpToPx(rightTranslationX).toFloat())
-        binding.searchIb.translationX(context.dpToPx(rightTranslationX).toFloat())
-        if (isDesktopLogin) {
-            binding.desktopIb.translationX(context.dpToPx(rightTranslationX).toFloat())
-        }
-        mSearchViewListener?.onSearchViewOpened()
-        isOpen = true
-    }
-
     fun closeSearch() {
         binding.searchEt.animate().apply {
             setListener(
@@ -418,10 +385,6 @@ class MaterialSearchView : FrameLayout {
                 },
             )
         }.setDuration(150L).alpha(0f).start()
-        closeNoAnimate()
-    }
-
-    private fun closeNoAnimate() {
         binding.rightClear.visibility = View.GONE
         hideLoading()
 

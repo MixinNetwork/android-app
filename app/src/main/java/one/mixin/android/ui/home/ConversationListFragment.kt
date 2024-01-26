@@ -741,11 +741,6 @@ class ConversationListFragment : LinkFragment() {
                     .post()
             messageAdapter.setShowHeader(shown, binding.messageRv)
         }
-        if (binding.searchBar.isOpen) {
-            navigationController.showSearch(parentFragmentManager)
-        } else {
-            navigationController.hideSearch()
-        }
     }
 
     private fun onClose(type: BulletinView.Type) {
