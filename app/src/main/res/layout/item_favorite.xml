@@ -1,7 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/item"
     android:layout_width="match_parent"
-    android:layout_height="?listPreferredItemHeight"
+    android:layout_height="66dp"
     android:background="?attr/bg_white"
     android:clickable="true"
     android:focusable="true"
@@ -52,7 +52,6 @@
             android:src="@drawable/ic_user_verified"
             android:contentDescription="@null" />
     </LinearLayout>
-
 
     <TextView
         android:id="@+id/mixin_id_tv"
