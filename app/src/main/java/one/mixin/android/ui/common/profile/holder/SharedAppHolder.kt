@@ -1,6 +1,7 @@
 package one.mixin.android.ui.common.profile.holder
 
 import androidx.core.view.isVisible
+import one.mixin.android.R
 import one.mixin.android.databinding.ItemSharedAppBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.vo.ExploreApp
@@ -17,7 +18,7 @@ class SharedAppHolder(private val itemBinding: ItemSharedAppBinding) : ItemViewH
             mixinIdTv.text = app.appNumber
             name.highLight(target)
             mixinIdTv.highLight(target)
-            verifiedIv.isVisible = app.isVerified ?: false
+            verifiedIv.setImageResource(if(app.isVerified == true) R.drawable.ic_bot else R.drawable.ic_user_verified)
             icon.setOnClickListener {
                 appAction(app)
             }

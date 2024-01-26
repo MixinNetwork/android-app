@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="16dp"
             android:text="@string/Explore"
             android:textColor="?attr/text_primary"
             android:textSize="18sp"
@@ -35,22 +35,27 @@
             android:layout_toStartOf="@+id/scan_iv"
             android:layout_centerVertical="true"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:contentDescription="@null" />
 
         <ImageView
             android:id="@+id/scan_iv"
             android:src="@drawable/ic_bot_category_scan"
             android:background="@drawable/mixin_ripple"
-            android:layout_marginEnd="12dp"
+            android:layout_marginEnd="16dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:contentDescription="@null" />
 
     </RelativeLayout>
 
     <RadioGroup
-        android:padding="12dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
         android:id="@+id/radio_group_explore"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -65,7 +70,7 @@
             android:checked="true"
             android:textColor="@drawable/radio_button_text_selector"
             android:background="@drawable/selector_radio"
-            android:layout_marginEnd="12dp"
+            android:layout_marginEnd="16dp"
             android:button="@null" />
 
         <androidx.appcompat.widget.AppCompatRadioButton

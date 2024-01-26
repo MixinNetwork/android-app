@@ -42,6 +42,7 @@
     <attr name="bg_confirmation" format="color|reference" />
     <attr name="bg_block" format="color|reference" />
     <attr name="bg_post" format="color|reference" />
+    <attr name="bg_clip" format="color|reference" />
     <attr name="bg_bubble" format="color|reference" />
     <attr name="bg_translucence" format="color|reference" />
     <attr name="bg_bot" format="color|reference" />

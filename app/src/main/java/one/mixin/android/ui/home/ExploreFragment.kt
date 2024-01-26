@@ -328,7 +328,8 @@ class ExploreFragment : BaseFragment() {
                     avatar.setInfo(app.name, app.iconUrl, app.appId)
                     name.text = app.name
                     mixinIdTv.text = app.appNumber
-                    verifiedIv.isVisible = app.isVerified ?: false
+                    verifiedIv.isVisible = true
+                    verifiedIv.setImageResource(if(app.isVerified == true) R.drawable.ic_bot else R.drawable.ic_user_verified)
                 }
             }
         }
@@ -365,7 +366,7 @@ class ExploreFragment : BaseFragment() {
                 binding.avatar.renderApp(app)
                 binding.name.text = app.name
                 binding.mixinIdTv.text = app.appNumber
-                binding.verifiedIv.isVisible = app.isVerified ?: false
+                binding.verifiedIv.setImageResource(if(app.isVerified == true) R.drawable.ic_bot else R.drawable.ic_user_verified)
                 holder.itemView.setOnClickListener {
                     botCallBack.invoke(app)
                 }
