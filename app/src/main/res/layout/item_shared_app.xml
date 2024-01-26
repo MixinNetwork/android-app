@@ -55,7 +55,6 @@
             android:layout_marginStart="6dp"
             android:layout_gravity="center_vertical"
             android:src="@drawable/ic_user_verified"
-            android:visibility="gone"
             android:contentDescription="@null" />
     </LinearLayout>
 

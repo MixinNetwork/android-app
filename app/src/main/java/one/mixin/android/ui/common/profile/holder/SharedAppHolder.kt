@@ -1,6 +1,5 @@
 package one.mixin.android.ui.common.profile.holder
 
-import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemSharedAppBinding
 import one.mixin.android.extension.highLight

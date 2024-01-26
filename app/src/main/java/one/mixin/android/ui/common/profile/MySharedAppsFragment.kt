@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentMySharedAppsBinding
-import one.mixin.android.event.BotEvent
 import one.mixin.android.event.FavoriteEvent
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.session.Session

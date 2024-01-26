@@ -70,7 +70,7 @@
             android:checked="true"
             android:textColor="@drawable/radio_button_text_selector"
             android:background="@drawable/selector_radio"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="12dp"
             android:button="@null" />
 
         <androidx.appcompat.widget.AppCompatRadioButton
