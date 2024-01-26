@@ -7,8 +7,8 @@
     android:focusable="true"
     android:paddingTop="8dp"
     android:paddingBottom="8dp"
-    android:paddingStart="12dp"
-    android:paddingEnd="12dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
     android:foreground="?selectableItemBackground">
 
     <one.mixin.android.widget.AvatarView
