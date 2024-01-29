@@ -9,7 +9,7 @@ data class TokenEntry(
     val assetId: String,
     @SerializedName("balance")
     @ColumnInfo(name = "balance")
-    val balance: String,
+    val balance: String?,
     @SerializedName("chain_id")
     @ColumnInfo(name = "chain_id")
     val chainId: String,
