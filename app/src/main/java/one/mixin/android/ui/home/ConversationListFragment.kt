@@ -490,7 +490,7 @@ class ConversationListFragment : LinkFragment() {
             isDesktopLogin = Session.getExtensionSessionId() != null
             binding.searchBar.updateDesktop(isDesktopLogin)
         }
-        if (!binding.searchBar.isOpen){
+        if (!binding.searchBar.isOpen) {
             navigationController.removeSearch()
         }
     }
