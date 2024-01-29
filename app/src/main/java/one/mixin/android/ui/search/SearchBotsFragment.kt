@@ -15,6 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
@@ -24,6 +25,7 @@ import one.mixin.android.databinding.FragmentSearchBotsBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.showUserBottom
@@ -84,6 +86,12 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
         binding.searchRv.adapter = searchAdapter
         binding.backIb.setOnClickListener {
             activity?.onBackPressedDispatcher?.onBackPressed()
+        }
+        lifecycleScope.launch {
+            delay(200)
+            if (isAdded) {
+                binding.searchEt.showKeyboard()
+            }
         }
 
         searchAdapter.onItemClickListener =
