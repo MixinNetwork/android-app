@@ -79,4 +79,9 @@ class NavigationController
                 )
             }?.alpha(0f)?.start()
         }
+
+        fun removeSearch() {
+            val f = fragmentManager.findFragmentByTag(SearchFragment.TAG) ?: return
+            fragmentManager.beginTransaction().remove(f).commit()
+        }
     }
