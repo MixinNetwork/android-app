@@ -7,7 +7,7 @@
       android:pathData="M27,0.54L27,0.54A26.46,26.46 0,0 1,53.46 27L53.46,27A26.46,26.46 0,0 1,27 53.46L27,53.46A26.46,26.46 0,0 1,0.54 27L0.54,27A26.46,26.46 0,0 1,27 0.54z"
       android:strokeWidth="1.08"
       android:fillColor="?attr/icon_white"
-      android:strokeColor="?attr/icon_gray"/>
+      android:strokeColor="?attr/icon_dark_gray"/>
   <path
       android:pathData="M24,24.5C24,23.026 25.5,22 27,22C29,22 30,23.119 30,24.5C30,26.979 27,26.314 27,28V28.5"
       android:strokeWidth="2"

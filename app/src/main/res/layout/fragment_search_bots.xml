@@ -73,7 +73,7 @@
                 android:layout_above="@id/empty_title"
                 android:layout_centerHorizontal="true"
                 android:layout_marginBottom="20dp"
-                android:src="@drawable/ic_empty_file"
+                android:src="@drawable/ic_search_empty"
                 tools:ignore="ContentDescription" />
 
             <TextView
@@ -84,7 +84,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginBottom="8dp"
                 android:text="@string/NO_RESULTS"
-                android:textColor="?attr/text_assist"
+                android:textColor="?attr/text_remarks"
                 android:textSize="20sp" />
 
         </RelativeLayout>

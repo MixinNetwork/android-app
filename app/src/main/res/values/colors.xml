@@ -22,6 +22,7 @@
     <color name="colorIcon">#FF000000</color>
     <color name="colorIconGoogleBlack">#3C4043</color>
     <color name="colorIconWhite">#FFFFFF</color>
+    <color name="colorLightGray">#99B8BDC7</color>
     <color name="colorIconGray">#D2D4DA</color>
     <color name="colorIconAction">@color/colorGray</color>
 

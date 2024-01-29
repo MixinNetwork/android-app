@@ -16,7 +16,9 @@
 
         <item name="icon_default">@color/colorIconNight</item>
         <item name="icon_white">@color/colorIconWhiteNight</item>
+        <item name="icon_light_gray">@color/colorIconLightGrayNight</item>
         <item name="icon_gray">@color/colorIconGrayNight</item>
+        <item name="icon_dark_gray">@color/colorIconDarkGrayNight</item>
         <item name="icon_black">@color/colorIconBlackNight</item>
         <item name="icon_google_black">@color/colorIconGoogleBlackNight</item>
         <item name="icon_action">@color/colorIconActionNight</item>

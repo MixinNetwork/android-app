@@ -7,7 +7,7 @@
       android:pathData="M25,0.54L25,0.54A24.46,24.46 0,0 1,49.46 25L49.46,25A24.46,24.46 0,0 1,25 49.46L25,49.46A24.46,24.46 0,0 1,0.54 25L0.54,25A24.46,24.46 0,0 1,25 0.54z"
       android:strokeWidth="1.08"
       android:fillColor="?attr/icon_white"
-      android:strokeColor="?attr/icon_gray"/>
+      android:strokeColor="?attr/icon_dark_gray"/>
   <path
       android:pathData="M23,30C23,31.5 21,33 21,33H29C29,33 27,31.5 27,30"
       android:strokeLineJoin="round"

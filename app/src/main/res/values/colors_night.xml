@@ -12,7 +12,9 @@
 
     <color name="colorIconNight">#EAEAEB</color>
     <color name="colorIconWhiteNight">#22272B</color>
+    <color name="colorIconLightGrayNight">#E5E9F0</color>
     <color name="colorIconGrayNight">#808691</color>
+    <color name="colorIconDarkGrayNight">#6E7073</color>
     <color name="colorIconActionNight">@color/white</color>
     <color name="colorIconBlackNight">#FFFFFF</color>
     <color name="colorIconGoogleBlackNight">#FFFFFF</color>
