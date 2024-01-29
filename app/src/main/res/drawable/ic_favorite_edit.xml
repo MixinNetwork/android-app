@@ -6,7 +6,7 @@
   <path
       android:pathData="M25,0.54L25,0.54A24.46,24.46 0,0 1,49.46 25L49.46,25A24.46,24.46 0,0 1,25 49.46L25,49.46A24.46,24.46 0,0 1,0.54 25L0.54,25A24.46,24.46 0,0 1,25 0.54z"
       android:strokeWidth="1.08"
-      android:strokeColor="#DDE9FF"/>
+      android:strokeColor="?attr/icon_edit"/>
   <path
       android:pathData="M16,25H34M25,34L25,16"
       android:strokeWidth="2"

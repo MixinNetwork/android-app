@@ -22,6 +22,7 @@
         <item name="icon_black">@color/colorIconBlackNight</item>
         <item name="icon_google_black">@color/colorIconGoogleBlackNight</item>
         <item name="icon_action">@color/colorIconActionNight</item>
+        <item name="icon_edit">@color/colorIconEditNight</item>
 
         <item name="badger">@color/badger</item>
         <item name="badger_mute">@color/badgeMuteNight</item>

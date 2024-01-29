@@ -25,6 +25,7 @@
     <color name="colorLightGray">#99B8BDC7</color>
     <color name="colorIconGray">#D2D4DA</color>
     <color name="colorIconAction">@color/colorGray</color>
+    <color name="colorIconEdit">#DDE9FF</color>
 
     <color name="badger">#3D75E3</color>
     <color name="badgerMute">#B8BDC7</color>

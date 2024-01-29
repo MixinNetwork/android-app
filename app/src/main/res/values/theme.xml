@@ -26,6 +26,7 @@
     <attr name="icon_black" format="color|reference" />
     <attr name="icon_google_black" format="color|reference" />
     <attr name="icon_action" format="color|reference" />
+    <attr name="icon_edit" format="color|reference" />
 
     <attr name="badger" format="color|reference" />
     <attr name="badger_mute" format="color|reference" />
