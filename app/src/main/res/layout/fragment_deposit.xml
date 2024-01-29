@@ -42,6 +42,28 @@
             android:paddingStart="14dp"
             android:paddingEnd="14dp"
             android:textColor="@color/colorRed" />
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+        <TextView
+            android:id="@+id/contact_support"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:layout_marginBottom="32dp"
+            android:background="@drawable/bg_round_blue_btn"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/Contact_Support"
+            android:textSize="14sp"
+            android:textColor="@color/white"
+            android:visibility="gone" />
     </LinearLayout>
 
     <ScrollView

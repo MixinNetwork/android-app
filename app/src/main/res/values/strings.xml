@@ -690,6 +690,7 @@
     <string name="Not_recognized">Not recognized</string>
     <string name="Not_support">Not support</string>
     <string name="not_supported_deposit">Mixin ceases support for deposit service on the %1$s. You can continue to withdraw and transfer %2$s in the wallet balance. Read the document to **learn more**.</string>
+    <string name="suspended_deposit">The deposit for %1$s has been temporarily suspended. This action has been taken due to potential factors such as low utilization, node failure, blockchain network hard fork, or congestion. We kindly request your attention to the fact that the %2$s assets already stored in the wallet remain transferable.</string>
     <string name="Notice">Notice</string>
     <string name="Notification_and_Confirmation">Notification and Confirmation</string>
     <string name="notification_channel_description">Shows what music is currently playing in Mixin Messenger</string>
