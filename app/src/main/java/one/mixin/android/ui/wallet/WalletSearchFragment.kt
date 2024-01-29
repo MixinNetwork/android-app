@@ -18,6 +18,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -89,7 +90,8 @@ class WalletSearchFragment : BaseFragment() {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
             searchEt.setHint(getString(R.string.search_placeholder_asset))
-            searchEt.post {
+            lifecycleScope.launch {
+                delay(200)
                 if (isAdded) {
                     searchEt.showKeyboard()
                 }
