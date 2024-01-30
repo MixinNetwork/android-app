@@ -22,6 +22,7 @@
             android:paddingEnd="@dimen/activity_horizontal_margin"
             android:text="@string/Net_Diagnosis"
             android:textColor="@color/colorBlue"
+            android:foreground="?android:attr/selectableItemBackground"
             android:textSize="16sp" />
 
     <TextView
@@ -33,6 +34,7 @@
             android:paddingEnd="@dimen/activity_horizontal_margin"
             android:text="@string/Share_Logs"
             android:textColor="@color/colorBlue"
+            android:foreground="?android:attr/selectableItemBackground"
             android:textSize="16sp" />
 
 
@@ -40,7 +42,8 @@
             android:id="@+id/web_debug"
             android:layout_width="match_parent"
             android:layout_height="@dimen/bottom_button_height"
-            android:background="?attr/bg_white">
+            android:background="?attr/bg_white"
+            android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
                 android:textColor="@color/colorBlue"
@@ -71,12 +74,14 @@
             android:paddingEnd="@dimen/activity_horizontal_margin"
             android:text="@string/Debug_database"
             android:textColor="@color/colorBlue"
+            android:foreground="?android:attr/selectableItemBackground"
             android:textSize="16sp" />
 
     <RelativeLayout
             android:id="@+id/database_debug_logs"
             android:layout_width="match_parent"
             android:layout_height="@dimen/bottom_button_height"
+            android:foreground="?android:attr/selectableItemBackground"
             android:background="?attr/bg_white">
 
         <TextView
@@ -87,6 +92,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:text="@string/Debug_database_logs"
+                android:foreground="?android:attr/selectableItemBackground"
                 tools:ignore="RelativeOverlap" />
 
         <androidx.appcompat.widget.SwitchCompat
@@ -103,6 +109,7 @@
         android:id="@+id/wallet_connect_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottom_button_height"
+        android:foreground="?android:attr/selectableItemBackground"
         android:background="?attr/bg_white">
 
         <TextView
@@ -124,4 +131,17 @@
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>
+
+    <TextView
+        android:id="@+id/utxo"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_button_height"
+        android:gravity="center_vertical"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:text="UTXO"
+        android:textColor="@color/colorBlue"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:textSize="16sp" />
+
 </LinearLayout>
