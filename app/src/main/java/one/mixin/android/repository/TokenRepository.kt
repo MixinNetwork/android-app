@@ -195,7 +195,7 @@ class TokenRepository
 
         suspend fun findDepositEntryDestinations() = depositDao.findDepositEntryDestinations()
 
-        suspend fun findAndSyncDepositEntry(chainId: String): Pair<DepositEntry?, Boolean> {
+        suspend fun findAndSyncDepositEntry(chainId: String): Triple<DepositEntry?, Boolean, Int> {
             val oldDeposit = depositDao.findDepositEntry(chainId)
             val (newDeposit, code) = syncDepositEntry(chainId)
             val result =
@@ -204,7 +204,7 @@ class TokenRepository
                 } else {
                     newDeposit ?: oldDeposit
                 }
-            return Pair(result, newDeposit != null && oldDeposit != null && (oldDeposit.destination != newDeposit.destination || oldDeposit.tag != newDeposit.tag))
+            return Triple(result, newDeposit != null && oldDeposit != null && (oldDeposit.destination != newDeposit.destination || oldDeposit.tag != newDeposit.tag), code)
         }
 
         suspend fun syncAsset(assetId: String): TokenItem? {

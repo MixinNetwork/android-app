@@ -141,6 +141,7 @@ open class ErrorHandler {
         const val RECAPTCHA_IS_INVALID = 10004
         const val NEED_CAPTCHA = 10005
         const val OLD_VERSION = 10006
+        const val ADDRESS_GENERATING = 10104
         const val INVALID_UTXO = 10106
         const val USER_NOT_FOUND = 10404
         const val EXPIRED_CARD = 10601

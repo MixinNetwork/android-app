@@ -672,6 +672,7 @@
     <string name="Not_recognized">无法识别</string>
     <string name="Not_support">不支持备份</string>
     <string name="not_supported_deposit">Mixin 已停止支持 %1$s 的充值服务。您可以继续提现和转账钱包余额中的 %2$s。**了解更多**请阅读文档。</string>
+    <string name="suspended_deposit">%1$s 充值已暂停，可能的原因是因为使用率太低、节点故障、区块链网络硬分叉或者拥堵，注意已转入的 %2$s 资产可以继续转账。</string>
     <string name="Notice">注意</string>
     <string name="Notification_and_Confirmation">通知和确认</string>
     <string name="notification_channel_description">显示 Mixin Messenger 中正在播放的音乐</string>

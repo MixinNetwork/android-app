@@ -38,6 +38,8 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.util.ErrorHandler.Companion.ADDRESS_GENERATING
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
 
@@ -238,10 +240,31 @@ class DepositFragment : BaseFragment() {
     private fun refreshDeposit(asset: TokenItem) {
         showLoading()
         lifecycleScope.launch {
-            val (depositEntry, different) = walletViewModel.findAndSyncDepositEntry(asset.chainId)
+            val (depositEntry, different, code) = walletViewModel.findAndSyncDepositEntry(asset.chainId)
             if (depositEntry == null) {
-                delay(500)
-                refreshDeposit(asset)
+                if (code == ADDRESS_GENERATING) {
+                    binding.apply {
+                        notSupportLl.isVisible = true
+                        sv.isVisible = false
+                        val symbol = asset.symbol
+                        val info = getString(R.string.suspended_deposit, symbol, symbol)
+                        notSupportTv.text = info
+                        contactSupport.isVisible = true
+                        contactSupport.setOnClickListener {
+                            lifecycleScope.launch {
+                                val userTeamMixin = walletViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
+                                if (userTeamMixin == null) {
+                                    toast(R.string.Data_error)
+                                } else {
+                                    ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    delay(500)
+                    refreshDeposit(asset)
+                }
             } else {
                 localMap[asset.assetId] = depositEntry
                 showDepositChooseNetworkBottomSheetDialog(asset, depositEntry)
