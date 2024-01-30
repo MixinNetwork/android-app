@@ -85,10 +85,10 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                 walletConnectSc.setOnCheckedChangeListener { _, isChecked ->
                     defaultSharedPreferences.putBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, isChecked)
                 }
-                utxo.setOnClickListener {
+                safe.setOnClickListener {
                     navTo(
-                        UtxoDebugFragment.newInstance(),
-                        UtxoDebugFragment.TAG,
+                        SafeDebugFragment.newInstance(),
+                        SafeDebugFragment.TAG,
                     )
                 }
             }
