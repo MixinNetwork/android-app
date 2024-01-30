@@ -394,6 +394,7 @@ class BottomSheetViewModel
                 tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, "", RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc()))
                 Timber.e("Kernel Address Transaction($trace): sign db mark utxo ${utxoWrapper.ids.joinToString(", ")}")
                 tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
+                Timber.e("Kernel Address Transaction: sign end")
             }
             Timber.e("Kernel Address Transaction($trace): db end")
             jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
@@ -483,6 +484,7 @@ class BottomSheetViewModel
                 tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverIds.joinToString(","), RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc()))
                 Timber.e("Kernel Transaction($trace): sign db mark utxo ${utxoWrapper.ids.joinToString(", ")}")
                 tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
+                Timber.e("Kernel Transaction: sign end")
             }
             Timber.e("Kernel Transaction($trace): db end")
             jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))

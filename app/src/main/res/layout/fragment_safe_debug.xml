@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_white"
+    android:orientation="vertical">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:titleText="UTXO" />
+
+    <TextView
+        android:id="@+id/public_key"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_button_height"
+        android:gravity="center_vertical"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:text="Reveal Public SpendKey"
+        android:textColor="?attr/text_primary"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/delete"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_button_height"
+        android:gravity="center_vertical"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:text="Delete Salt"
+        android:textColor="@color/colorRed"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:textSize="16sp" />
+
+</LinearLayout>
