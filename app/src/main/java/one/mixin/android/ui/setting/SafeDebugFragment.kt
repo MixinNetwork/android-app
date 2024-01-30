@@ -7,6 +7,7 @@ import android.view.View
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.Tip.ALIAS_SPEND_SALT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.crypto.newKeyPairFromSeed
@@ -15,7 +16,9 @@ import one.mixin.android.extension.alert
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toHex
+import one.mixin.android.extension.toast
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.deleteKeyByAlias
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
@@ -46,7 +49,8 @@ class SafeDebugFragment : BaseFragment(R.layout.fragment_safe_debug) {
             reveal()
         }
         binding.delete.setOnClickListener {
-            // todo
+            deleteKeyByAlias(ALIAS_SPEND_SALT)
+            toast("Delete Salt")
         }
     }
 
