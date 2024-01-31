@@ -24,6 +24,10 @@ class BulletinBoard {
         val chain = Bulletin.Chain(bulletins, 0)
         return chain.proceed()
     }
+
+    fun clear() {
+        bulletins.clear()
+    }
 }
 
 fun interface Bulletin {

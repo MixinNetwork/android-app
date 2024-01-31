@@ -736,6 +736,7 @@ class ConversationListFragment : LinkFragment() {
         lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
 
+            bulletinBoard.clear()
             val shown =
                 bulletinBoard
                     .addBulletin(NewWalletBulletin(bulletinView, requireActivity() as MainActivity, ::onClose))
