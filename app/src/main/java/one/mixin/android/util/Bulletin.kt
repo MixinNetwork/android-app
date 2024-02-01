@@ -1,6 +1,5 @@
 package one.mixin.android.util
 
-import android.app.Activity
 import androidx.core.app.NotificationManagerCompat
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.INTERVAL_48_HOURS
@@ -11,8 +10,6 @@ import one.mixin.android.extension.putLong
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.SettingActivity
-import one.mixin.android.ui.tip.TipActivity
-import one.mixin.android.ui.tip.TipType
 import one.mixin.android.widget.BulletinView
 
 class BulletinBoard {
@@ -26,6 +23,10 @@ class BulletinBoard {
     fun post(): Boolean {
         val chain = Bulletin.Chain(bulletins, 0)
         return chain.proceed()
+    }
+
+    fun clear() {
+        bulletins.clear()
     }
 }
 
@@ -160,25 +161,3 @@ class EmergencyContactBulletin(
         }
 }
 
-class UpgradeTipBulletin(
-    private val activity: Activity,
-    private val bulletinView: BulletinView,
-) : Bulletin {
-    override fun show(chain: Bulletin.Chain): Boolean {
-        val tipPub = Session.getTipPub()
-        if (tipPub.isNullOrBlank()) {
-            bulletinView.setTypeAndCallback(BulletinView.Type.TipUpgrade, bulletinUpgradeTipCallback)
-            return true
-        }
-        return chain.proceed()
-    }
-
-    private val bulletinUpgradeTipCallback =
-        object : BulletinView.Callback {
-            override fun onClose() {}
-
-            override fun onSetting() {
-                TipActivity.show(activity, TipType.Upgrade, true)
-            }
-        }
-}

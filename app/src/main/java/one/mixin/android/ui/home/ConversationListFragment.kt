@@ -697,7 +697,6 @@ class ConversationListFragment : LinkFragment() {
                     bottomSheet.dismiss()
                 }
                 .setPositiveButton(R.string.Confirm) { _, _ ->
-                    val lm = binding.messageRv.layoutManager as LinearLayoutManager
                     lifecycleScope.launch {
                         conversationListViewModel.deleteConversation(conversationId)
                     }
@@ -736,6 +735,7 @@ class ConversationListFragment : LinkFragment() {
         lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
 
+            bulletinBoard.clear()
             val shown =
                 bulletinBoard
                     .addBulletin(NewWalletBulletin(bulletinView, requireActivity() as MainActivity, ::onClose))
