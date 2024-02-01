@@ -20,7 +20,6 @@ class BulletinView(context: Context) : ConstraintLayout(context) {
         NewWallet,
         Notification,
         EmergencyContact,
-        TipUpgrade,
     }
 
     private var type: Type = Type.NewWallet
@@ -49,12 +48,6 @@ class BulletinView(context: Context) : ConstraintLayout(context) {
                 titleView.setText(R.string.Turn_On_Notifications)
                 contentView.setText(R.string.notification_content)
                 settingView.setText(R.string.Notifications)
-            }
-            Type.TipUpgrade -> {
-                titleView.setText("Upgrade TIP")
-                contentView.setText("Mixin's PIN based on decentralized key derivation protocol TIP")
-                settingView.setText("Upgrade")
-                closeView.isVisible = false
             }
             else -> {
                 titleView.setText(R.string.Emergency_Contact)
