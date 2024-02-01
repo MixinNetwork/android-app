@@ -144,6 +144,7 @@ import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
+import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.RomUtil
@@ -288,6 +289,8 @@ class MainActivity : BlazeBaseActivity() {
         handlerCode(intent)
 
         checkAsync()
+
+        TransferBottomSheetDialogFragment.newInstance().showNow(supportFragmentManager, TransferBottomSheetDialogFragment.TAG)
 
         RxBus.listen(TipEvent::class.java)
             .autoDispose(destroyScope)

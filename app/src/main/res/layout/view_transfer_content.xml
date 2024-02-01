@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/bg_white"
+    tools:parentTag="android.widget.LinearLayout"
+    android:orientation="vertical">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/content_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
+                android:id="@+id/amount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
+                android:id="@+id/address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
+                android:id="@+id/address_receive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
+                android:id="@+id/network"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
+                android:id="@+id/memo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
+                android:id="@+id/network_fee"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+    </ScrollView>
+</merge>
