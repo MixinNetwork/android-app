@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
+import androidx.annotation.StringRes
 import one.mixin.android.databinding.ViewTransferHeaderBinding
 
 class TransferHeader : LinearLayout {
@@ -15,5 +16,12 @@ class TransferHeader : LinearLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         orientation = VERTICAL
         _binding = ViewTransferHeaderBinding.inflate(LayoutInflater.from(context), this)
+    }
+
+    fun setContent(@StringRes titleResId: Int, @StringRes subTitleResId: Int) {
+        _binding.apply {
+            title.setText(titleResId)
+            subTitle.setText(subTitleResId)
+        }
     }
 }

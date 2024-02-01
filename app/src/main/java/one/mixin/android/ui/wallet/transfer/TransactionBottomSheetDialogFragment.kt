@@ -11,8 +11,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.transfer.data.Transfer
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 
@@ -42,6 +40,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
+        binding.transferAlert
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
