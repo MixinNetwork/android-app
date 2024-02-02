@@ -31,4 +31,18 @@ class TransferHeader : LinearLayout {
             assetIcon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         }
     }
+
+    fun progress() {
+        _binding.icon.displayedChild = 2
+    }
+
+    fun filed() {
+        _binding.icon.displayedChild = 1
+        _binding.statusIcon.setImageResource(R.drawable.ic_transfer_status_failed)
+    }
+
+    fun success() {
+        _binding.icon.displayedChild = 1
+        _binding.statusIcon.setImageResource(R.drawable.ic_transfer_status_success)
+    }
 }

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/bg_white"
+    tools:parentTag="android.widget.ViewAnimator"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    >
+
+    <LinearLayout
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/cancel_button"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:paddingStart="@dimen/margin20"
+            android:paddingEnd="@dimen/margin20"
+            android:layout_gravity="center_horizontal|bottom"
+            android:text="@string/Cancel"
+            android:textColor="?attr/text_primary"
+            android:background="@drawable/bg_round_gray_btn"
+            android:layout_marginEnd="@dimen/margin20"
+            android:textSize="14sp" />
+
+        <Button
+            style="@style/AppTheme.MaterialButton"
+            android:id="@+id/confirm_button"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:paddingStart="@dimen/margin20"
+            android:paddingEnd="@dimen/margin20"
+            android:layout_gravity="center_horizontal|bottom"
+            android:text="@string/Confirm"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/done_btn"
+        style="@style/AppTheme.MaterialButton"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_gravity="center_horizontal"
+        android:paddingStart="@dimen/margin20"
+        android:paddingEnd="@dimen/margin20"
+        android:enabled="true"
+        android:text="@string/Done"
+        android:textSize="14sp" />
+</merge>
