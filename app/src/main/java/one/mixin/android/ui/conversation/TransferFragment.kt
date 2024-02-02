@@ -81,6 +81,7 @@ import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.NetworkFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.UserTransactionBottomSheetFragment
 import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
+import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -746,24 +747,24 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showTransferBottom(biometricItem: BiometricItem) {
-        val bottom = OutputBottomSheetDialogFragment.newInstance(biometricItem)
-        bottom.setCallback(
-            object : BiometricBottomSheetDialogFragment.Callback() {
-                override fun onDismiss(success: Boolean) {
-                    if (success) {
-                        dialog?.dismiss()
-                        callback?.onSuccess()
-                    }
-                }
-            },
-        )
-        bottom.onDestroyListener =
-            object : OutputBottomSheetDialogFragment.OnDestroyListener {
-                override fun onDestroy() {
-                    transferBottomOpened = false
-                }
-            }
-        bottom.show(parentFragmentManager, OutputBottomSheetDialogFragment.TAG)
+        val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
+        // bottom.setCallback(
+        //     object : BiometricBottomSheetDialogFragment.Callback() {
+        //         override fun onDismiss(success: Boolean) {
+        //             if (success) {
+        //                 dialog?.dismiss()
+        //                 callback?.onSuccess()
+        //             }
+        //         }
+        //     },
+        // )
+        // bottom.onDestroyListener =
+        //     object : OutputBottomSheetDialogFragment.OnDestroyListener {
+        //         override fun onDestroy() {
+        //             transferBottomOpened = false
+        //         }
+        //     }
+        bottom.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
         transferBottomOpened = true
     }
 

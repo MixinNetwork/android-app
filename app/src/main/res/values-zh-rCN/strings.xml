@@ -1330,4 +1330,8 @@
     <string name="link_desktop">链接桌面端</string>
     <string name="buy_crypto_with_card">用信用卡或借记卡买币</string>
     <string name="link_desktop_description">通过二维码链接桌面端</string>
+    <string name="Transfer_confirmation">转账确认</string>
+    <string name="Withdrawal_confirmation">提现确认</string>
+    <string name="Transfer_confirmation_desc">请仔细检查收款人、网络和金额，如果您转错了，资产将无法追回！</string>
+    <string name="Withdrawal_confirmation_desc">请仔细检查收款地址、网络和金额，如果您转错了，资产将无法追回！</string>
 </resources>

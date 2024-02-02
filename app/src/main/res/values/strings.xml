@@ -1360,4 +1360,8 @@
     <string name="link_desktop">Link Desktop</string>
     <string name="buy_crypto_with_card">Buy crypto with credit or debit card</string>
     <string name="link_desktop_description">Link Mixin Messenger Desktop by QR code</string>
+    <string name="Transfer_confirmation">Transfer confirmation</string>
+    <string name="Withdrawal_confirmation">Withdrawal confirmation</string>
+    <string name="Transfer_confirmation_desc">Please check the payee, network and amount carefully. If you make a mistake, the asset will not be recovered!</string>
+    <string name="Withdrawal_confirmation_desc">Please check the collection address, network and amount carefully. If you make a mistake, the asset will not be recovered!</string>
 </resources>
