@@ -2,7 +2,6 @@ package one.mixin.android.net
 
 import kotlinx.coroutines.delay
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.ServerErrorException
 
 suspend fun <T> executeWithRetry(
     retries: Int,
@@ -16,7 +15,7 @@ suspend fun <T> executeWithRetry(
         } else {
             response
         }
-    } catch (e: ServerErrorException) {
+    } catch (e: Exception) {
         if (retries > 0) {
             executeWithRetry(retries - 1, executeFunc)
         } else {

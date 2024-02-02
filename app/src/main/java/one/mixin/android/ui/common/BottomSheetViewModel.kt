@@ -310,7 +310,7 @@ class BottomSheetViewModel
 
             Timber.e("Kernel Withdrawal($traceId): withdrawal")
             val transactionRsp =
-                executeWithRetry(30) {
+                executeWithRetry(5) {
                     tokenRepository.transactions(rawRequest)
                 }
             if (transactionRsp.error != null) {
@@ -501,7 +501,7 @@ class BottomSheetViewModel
         ): MixinResponse<List<TransactionResponse>> {
             Timber.e("Kernel Transaction($traceId): innerTransaction")
             val transactionRsp =
-                executeWithRetry(30) {
+                executeWithRetry(5) {
                     tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
                 }
             if (transactionRsp.error != null) {
