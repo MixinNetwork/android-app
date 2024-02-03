@@ -319,8 +319,8 @@ class ExploreFragment : BaseFragment() {
             if (app is Bot){
                 itemBinding.apply {
                     avatar.renderApp(app)
-                    name.text = app.name
-                    mixinIdTv.setText (app.description)
+                    name.setText(app.name)
+                    mixinIdTv.setText(app.description)
                     verifiedIv.isVisible = false
                 }
             } else if (app is ExploreApp) {
