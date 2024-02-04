@@ -54,7 +54,7 @@
             android:layout_alignParentEnd="true"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
-            app:srcCompat="@drawable/ic_home_scan"
+            app:srcCompat="@drawable/ic_bot_category_scan"
             tools:ignore="ContentDescription" />
 
         <FrameLayout
