@@ -2,9 +2,7 @@ package one.mixin.android.ui.home.bot
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.util.getLocalString
 import one.mixin.android.vo.BotInterface
 
 data class Bot(
@@ -25,5 +23,7 @@ val InternalCamera = Bot(INTERNAL_CAMERA_ID, R.string.Camera, R.string.take_a_ph
 val InternalBuy = Bot(INTERNAL_BUY_ID, R.string.Buy, R.string.buy_crypto_with_card, R.drawable.ic_bot_buy)
 val InternalLinkDesktop = Bot(INTERNAL_LINK_DESKTOP_ID, R.string.Link_desktop, R.string.link_desktop_description, R.drawable.ic_bot_desktop)
 val InternalSupport = Bot(INTERNAL_SUPPORT_ID, R.string.Contact_Support, R.string.leave_message_to_team_mixin, R.drawable.ic_bot_support)
+
+val InternalLinkDesktopLogged = Bot(INTERNAL_LINK_DESKTOP_ID, R.string.Link_desktop, R.string.Logined, R.drawable.ic_bot_desktop_logged)
 
 val InternalBots = listOf(InternalCamera, InternalBuy, InternalLinkDesktop, InternalSupport)

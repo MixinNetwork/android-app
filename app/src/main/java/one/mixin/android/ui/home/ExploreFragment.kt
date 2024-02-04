@@ -25,6 +25,7 @@ import one.mixin.android.databinding.ItemFavoriteDecorationBinding
 import one.mixin.android.databinding.ItemFavoriteEditBinding
 import one.mixin.android.event.BotEvent
 import one.mixin.android.event.FavoriteEvent
+import one.mixin.android.event.SessionEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.openPermissionSetting
@@ -43,6 +44,8 @@ import one.mixin.android.ui.home.bot.INTERNAL_CAMERA_ID
 import one.mixin.android.ui.home.bot.INTERNAL_LINK_DESKTOP_ID
 import one.mixin.android.ui.home.bot.INTERNAL_SUPPORT_ID
 import one.mixin.android.ui.home.bot.InternalBots
+import one.mixin.android.ui.home.bot.InternalLinkDesktop
+import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
 import one.mixin.android.ui.search.SearchBotsFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
@@ -120,6 +123,8 @@ class ExploreFragment : BaseFragment() {
             binding.botRv.layoutManager = LinearLayoutManager(requireContext())
             binding.botRv.adapter = botsAdapter
             botRv.adapter = botsAdapter
+
+            adapter.isDesktopLogin = Session.getExtensionSessionId() != null
         }
         loadData()
         loadBotData()
@@ -130,6 +135,9 @@ class ExploreFragment : BaseFragment() {
         }
         RxBus.listen(FavoriteEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {
             loadData()
+        }
+        RxBus.listen(SessionEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {
+            adapter.isDesktopLogin = Session.getExtensionSessionId() != null
         }
     }
 
@@ -243,6 +251,14 @@ class ExploreFragment : BaseFragment() {
     class FavoriteAdapter(private val editAction: () -> Unit, private val botAction: (BotInterface) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         private var favoriteApps: List<ExploreApp>? = null
 
+        var isDesktopLogin = false
+            set(value) {
+                if (value == field) return
+
+                field = value
+                notifyItemChanged(InternalBots.indexOf(InternalLinkDesktop))
+            }
+
         @SuppressLint("NotifyDataSetChanged")
         fun setData(
             favoriteApps: List<ExploreApp>
@@ -279,7 +295,7 @@ class ExploreFragment : BaseFragment() {
                 }
             } else if(getItemViewType(position) != 3){
                 getItem(position)?.let { app ->
-                    (holder as FavoriteHolder).bind(app)
+                    (holder as FavoriteHolder).bind(app, isDesktopLogin)
                     holder.itemView.setOnClickListener {
                         botAction.invoke(app)
                     }
@@ -313,14 +329,18 @@ class ExploreFragment : BaseFragment() {
 
     class FavoriteHolder(private val itemBinding: ItemFavoriteBinding) : RecyclerView.ViewHolder(itemBinding.root) {
         fun bind(
-            app: BotInterface?
+            app: BotInterface?,
+            isDesktopLogin: Boolean,
         ) {
             app ?: return
             if (app is Bot){
+                val a = if (app == InternalLinkDesktop && isDesktopLogin) {
+                    InternalLinkDesktopLogged
+                } else app
                 itemBinding.apply {
-                    avatar.renderApp(app)
-                    name.setText(app.name)
-                    mixinIdTv.setText(app.description)
+                    avatar.renderApp(a)
+                    name.setText(a.name)
+                    mixinIdTv.setText(a.description)
                     verifiedIv.isVisible = false
                 }
             } else if (app is ExploreApp) {
