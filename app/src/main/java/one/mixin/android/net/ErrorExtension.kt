@@ -6,30 +6,32 @@ import java.io.IOException
 import java.net.SocketTimeoutException
 
 suspend fun <T> executeWithRetry(
-    retries: Int,
+    maxRetries: Int,
     executeFunc: suspend () -> MixinResponse<T>,
-    getExecuteFunc: suspend () -> MixinResponse<T>,
+    recoverFunc: suspend () -> MixinResponse<T>
 ): MixinResponse<T> {
     return try {
         val response = executeFunc()
-        if (retries > 0 && response.errorCode == 500) {
+        if (maxRetries > 0 && response.errorCode == 500) {
             delay(200)
-            executeWithRetry(retries - 1, executeFunc, getExecuteFunc)
+            executeWithRetry(maxRetries - 1, executeFunc, recoverFunc)
         } else {
             response
         }
-    } catch (e: SocketTimeoutException) {
-        val response = getExecuteFunc()
+    } catch (socketTimeoutException: SocketTimeoutException) {
+        // When Timeout, try to get data
+        val response = recoverFunc()
         if (response.isSuccess) {
             response
         } else {
-            executeWithRetry(retries - 1, executeFunc, getExecuteFunc)
+            executeWithRetry(maxRetries - 1, executeFunc, recoverFunc)
         }
-    } catch (e: IOException) {
-        if (retries > 0) {
-            executeWithRetry(retries - 1, executeFunc, getExecuteFunc)
+    } catch (ioException: IOException) {
+        if (maxRetries > 0) {
+            executeWithRetry(maxRetries - 1, executeFunc, recoverFunc)
         } else {
-            throw e
+            throw ioException
         }
     }
 }
+
