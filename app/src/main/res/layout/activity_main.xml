@@ -20,7 +20,10 @@
             android:background="?attr/bg_white"
             app:menu="@menu/bottom_navigation"
             app:labelVisibilityMode="labeled"
-            app:itemTextColor="?attr/text_primary" />
+            app:itemTextColor="?attr/text_primary"
+            app:itemTextAppearanceActive="@dimen/design_bottom_navigation_active_text_size"
+            app:itemTextAppearanceInactive="@dimen/design_bottom_navigation_text_size"
+            app:itemTextAppearanceActiveBoldEnabled="false" />
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/root_view"
