@@ -21,8 +21,8 @@
             app:menu="@menu/bottom_navigation"
             app:labelVisibilityMode="labeled"
             app:itemTextColor="?attr/text_primary"
-            app:itemTextAppearanceActive="@dimen/design_bottom_navigation_active_text_size"
-            app:itemTextAppearanceInactive="@dimen/design_bottom_navigation_text_size"
+            app:itemTextAppearanceActive="@style/BottomItemTextAppearance"
+            app:itemTextAppearanceInactive="@style/BottomItemTextAppearance"
             app:itemTextAppearanceActiveBoldEnabled="false" />
 
         <androidx.fragment.app.FragmentContainerView

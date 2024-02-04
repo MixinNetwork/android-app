@@ -46,6 +46,4 @@
     <dimen name="fab_translation_z_pressed">6dp</dimen>
     <dimen name="futuresimple_fab_shadow_offset">3dp</dimen>
 
-    <dimen name="design_bottom_navigation_text_size" tools:override="true">12sp</dimen>
-    <dimen name="design_bottom_navigation_active_text_size" tools:override="true">12sp</dimen>
 </resources>
