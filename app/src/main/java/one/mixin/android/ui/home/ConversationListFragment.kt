@@ -640,6 +640,8 @@ class ConversationListFragment : LinkFragment() {
     }
 
     fun setCircleName(name: String?) {
+        if (viewDestroyed()) return
+
         binding.searchBar.logo.text = name ?: "Mixin"
     }
 

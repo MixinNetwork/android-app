@@ -2740,7 +2740,7 @@ class ConversationFragment() :
         messageId: String,
         findMessageAction: ((index: Int) -> Unit)? = null,
     ) = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
+        if (viewDestroyed() || !::messageAdapter.isInitialized) return@launch
         // Return position if it exists in the cache, otherwise refresh the data according to ID and return position
         val position = messageAdapter.indexMessage(messageId)
         if (position >= 0) {
