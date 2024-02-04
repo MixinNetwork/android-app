@@ -38,7 +38,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_marginEnd="52dp"
+            android:layout_marginEnd="100dp"
             android:layout_alignParentEnd="true"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
@@ -46,7 +46,7 @@
             tools:ignore="ContentDescription" />
 
         <ImageButton
-            android:id="@+id/desktop_ib"
+            android:id="@+id/scan_ib"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
@@ -54,8 +54,7 @@
             android:layout_alignParentEnd="true"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
-            android:visibility="gone"
-            app:srcCompat="@drawable/ic_desktop_login"
+            app:srcCompat="@drawable/ic_bot_category_scan"
             tools:ignore="ContentDescription" />
 
         <FrameLayout

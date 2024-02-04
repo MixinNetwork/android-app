@@ -1136,6 +1136,7 @@
     <string name="Complete">完成</string>
     <string name="cannot_exit_in_backup">备份中无法退出</string>
     <string name="Chat">聊天记录</string>
+    <string name="Chat_bottom">聊天</string>
     <string name="transferring_chat">同步聊天记录中</string>
     <string name="Please_log_in_to_the_desktop_first">请先登录桌面</string>
     <string name="Restore_Your_Chat_History">恢复您的聊天记录</string>
@@ -1330,4 +1331,5 @@
     <string name="link_desktop">链接桌面端</string>
     <string name="buy_crypto_with_card">用信用卡或借记卡买币</string>
     <string name="link_desktop_description">通过二维码链接桌面端</string>
+    <string name="Logined">已登录</string>
 </resources>
