@@ -15,6 +15,10 @@ class MixinResponse<T>() {
         }
     }
 
+    constructor(error:ResponseError) : this() {
+        this.error = error
+    }
+
     constructor(response: Throwable) : this() {
         error = ResponseError(500, 500, response.message ?: "")
     }
