@@ -1027,6 +1027,7 @@
     <string name="Complete">完成</string>
     <string name="cannot_exit_in_backup">備份中無法退出</string>
     <string name="Chat">聊天記錄</string>
+    <string name="Chat_bottom">聊天</string>
     <string name="transferring_chat">同步聊天記錄中</string>
     <string name="Please_log_in_to_the_desktop_first">請先登錄桌面</string>
     <string name="Restore_Your_Chat_History">恢復您的聊天記錄</string>

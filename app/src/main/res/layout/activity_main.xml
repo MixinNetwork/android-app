@@ -17,9 +17,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            app:labelVisibilityMode="unlabeled"
+            android:background="?attr/bg_white"
             app:menu="@menu/bottom_navigation"
-            android:background="?attr/bg_white"/>
+            app:labelVisibilityMode="labeled"
+            app:itemTextColor="?attr/text_primary" />
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/root_view"
