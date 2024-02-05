@@ -74,7 +74,6 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.BulletinBoard
@@ -359,13 +358,6 @@ class ConversationListFragment : LinkFragment() {
                     selectCircle(null, null)
                 }
             }
-        RxBus.listen(SessionEvent::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(destroyScope)
-            .subscribe {
-                isDesktopLogin = Session.getExtensionSessionId() != null
-                binding.searchBar.updateDesktop(isDesktopLogin)
-            }
         initSearch()
     }
 
@@ -408,8 +400,6 @@ class ConversationListFragment : LinkFragment() {
     private val circlesFragment by lazy {
         CirclesFragment.newInstance()
     }
-
-    private var isDesktopLogin = false
 
     fun isOpen() =
         binding.searchBar.isOpen
@@ -471,8 +461,14 @@ class ConversationListFragment : LinkFragment() {
                 hideCircles()
             }
             searchBar.logo.text = defaultSharedPreferences.getString(CIRCLE_NAME, "Mixin")
-            searchBar.desktop.setOnClickListener {
-                DeviceFragment.newInstance().showNow(parentFragmentManager, DeviceFragment.TAG)
+            searchBar.scan.setOnClickListener {
+                RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
+                    if (granted) {
+                        (requireActivity() as? MainActivity)?.showCapture(true)
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }
             }
             root.setOnKeyListener { _, keyCode, _ ->
                 if (keyCode == KeyEvent.KEYCODE_BACK && searchBar.isOpen) {
@@ -487,8 +483,6 @@ class ConversationListFragment : LinkFragment() {
                     parentFragmentManager.beginTransaction().replace(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
                 }
             }
-            isDesktopLogin = Session.getExtensionSessionId() != null
-            binding.searchBar.updateDesktop(isDesktopLogin)
         }
         if (!binding.searchBar.isOpen) {
             navigationController.removeSearch()
@@ -640,6 +634,8 @@ class ConversationListFragment : LinkFragment() {
     }
 
     fun setCircleName(name: String?) {
+        if (viewDestroyed()) return
+
         binding.searchBar.logo.text = name ?: "Mixin"
     }
 

@@ -1162,6 +1162,7 @@
     <string name="Complete">Complete</string>
     <string name="cannot_exit_in_backup">Cannot exit in backup</string>
     <string name="Chat">Chat</string>
+    <string name="Chat_bottom">Chat</string>
     <string name="Restore_Your_Chat_History">Restore Your Chat History</string>
     <string name="Restore_from_Another_Phone">Restore from Another Phone</string>
     <string name="Restore_from_Another_Phone_tip">Transfer your message history from your old device.</string>
@@ -1360,6 +1361,7 @@
     <string name="link_desktop">Link Desktop</string>
     <string name="buy_crypto_with_card">Buy crypto with credit or debit card</string>
     <string name="link_desktop_description">Link Mixin Messenger Desktop by QR code</string>
+    <string name="Logined">Logged in</string>
     <string name="Transfer_confirmation">Transfer confirmation</string>
     <string name="Withdrawal_confirmation">Withdrawal confirmation</string>
     <string name="Transfer_confirmation_desc">Please check the payee, network and amount carefully. If you make a mistake, the asset will not be recovered!</string>
