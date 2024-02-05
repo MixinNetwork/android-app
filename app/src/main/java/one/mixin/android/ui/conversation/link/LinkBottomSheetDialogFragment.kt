@@ -81,7 +81,7 @@ import one.mixin.android.ui.oldwallet.biometric.NftBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.TransferBiometricItem
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.ui.wallet.SafeMultisigsBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
@@ -323,9 +323,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         views = if (multisigs.views.isNullOrEmpty()) null else multisigs.views.joinToString(","),
                         state = state,
                     )
-                SafeMultisigsBottomSheetDialogFragment.newInstance(multisigsBiometricItem).showNow(
+                TransferBottomSheetDialogFragment.newInstance(multisigsBiometricItem).showNow(
                     parentFragmentManager,
-                    SafeMultisigsBottomSheetDialogFragment.TAG,
+                    TransferBottomSheetDialogFragment.TAG,
                 )
                 dismiss()
             }

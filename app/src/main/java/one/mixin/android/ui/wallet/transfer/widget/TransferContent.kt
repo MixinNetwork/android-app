@@ -9,10 +9,12 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferContentBinding
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
+import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.util.getChainName
+import one.mixin.android.vo.User
 
 class TransferContent : LinearLayout {
 
@@ -41,6 +43,10 @@ class TransferContent : LinearLayout {
         }
     }
 
+    fun render(safeMultisigsBiometricItem: SafeMultisigsBiometricItem, sender: List<User>, receiver: List<User>) {
+        renderMultisigsTransfer(safeMultisigsBiometricItem, sender, receiver)
+    }
+
     private fun renderTransfer(transferBiometricItem: TransferBiometricItem) {
         _binding.apply {
             amount.setContent(R.string.Amount, "${transferBiometricItem.amount} ${transferBiometricItem.asset?.symbol}")
@@ -52,7 +58,7 @@ class TransferContent : LinearLayout {
             addressReceive.setContent(R.string.RECEIVER_WILL_RECEIVE, "${transferBiometricItem.amount} ${transferBiometricItem.asset?.symbol}")
 
             networkFee.isVisible = true
-            networkFee.setContent(R.string.network_fee,"0 ${transferBiometricItem.asset?.symbol}")
+            networkFee.setContent(R.string.network_fee, "0 ${transferBiometricItem.asset?.symbol}")
 
             if (!transferBiometricItem.memo.isNullOrBlank()) {
                 memo.isVisible = true
@@ -60,6 +66,31 @@ class TransferContent : LinearLayout {
             }
 
             val tokenItem = transferBiometricItem.asset!!
+            network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+        }
+    }
+
+    private fun renderMultisigsTransfer(safeMultisigsBiometricItem: SafeMultisigsBiometricItem, senders: List<User>, receiver: List<User>) {
+        _binding.apply {
+            amount.setContent(R.string.Amount, "${safeMultisigsBiometricItem.amount} ${safeMultisigsBiometricItem.asset?.symbol}")
+            address.isVisible = false
+            addressReceive.isVisible = false
+            receive.isVisible = true
+            receive.setContent(R.string.Receive, receiver)
+            sender.isVisible = true
+            sender.setContent(R.string.Senders, senders)
+            addressReceive.isVisible = true
+            addressReceive.setContent(R.string.RECEIVER_WILL_RECEIVE, "${safeMultisigsBiometricItem.amount} ${safeMultisigsBiometricItem.asset?.symbol}")
+
+            networkFee.isVisible = true
+            networkFee.setContent(R.string.network_fee, "0 ${safeMultisigsBiometricItem.asset?.symbol}")
+
+            if (!safeMultisigsBiometricItem.memo.isNullOrBlank()) {
+                memo.isVisible = true
+                memo.setContent(R.string.Memo, safeMultisigsBiometricItem.memo ?: "")
+            }
+
+            val tokenItem = safeMultisigsBiometricItem.asset!!
             network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
         }
     }
@@ -88,7 +119,7 @@ class TransferContent : LinearLayout {
             addressReceive.setContent(R.string.ADDRESS_WILL_RECEIVE, "${withdrawBiometricItem.amount} ${withdrawBiometricItem.asset?.symbol}")
             val fee = withdrawBiometricItem.fee!!
             networkFee.isVisible = true
-            networkFee.setContent(R.string.network_fee,"${fee.fee} ${fee.token.symbol}")
+            networkFee.setContent(R.string.network_fee, "${fee.fee} ${fee.token.symbol}")
 
             val tokenItem = withdrawBiometricItem.asset!!
             network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")

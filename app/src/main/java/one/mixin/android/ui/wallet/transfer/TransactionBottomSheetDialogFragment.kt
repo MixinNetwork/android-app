@@ -21,6 +21,7 @@ import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
+import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
@@ -57,7 +58,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
-        binding.content.render(t)
+
 
         binding.bottom.setOnClickListener({
             dismiss()
@@ -78,7 +79,27 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             is AddressTransferBiometricItem -> {
                 binding.header.setContent(R.string.Transfer_confirmation, R.string.Transfer_confirmation_desc, t.asset!!)
             }
+
+            is SafeMultisigsBiometricItem -> {
+                binding.header.setContent(R.string.Transfer_confirmation, R.string.Transfer_confirmation_desc, t.asset!!)
+            }
         }
+
+        binding.content.render(t)
+        if (t is SafeMultisigsBiometricItem) {
+            lifecycleScope.launch {
+                val item = t as SafeMultisigsBiometricItem
+                val result = bottomViewModel.findMultiUsers(item.senders, item.receivers)
+                if (result != null) {
+                    val senders = result.first
+                    val receivers = result.second
+                    binding.content.render(t as SafeMultisigsBiometricItem, senders, receivers)
+                }
+            }
+        } else {
+            binding.content.render(t)
+        }
+
         // Todo
         binding.transferAlert.isVisible = false
         lifecycleScope.launch {

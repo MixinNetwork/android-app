@@ -18,6 +18,7 @@ import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.NetworkFee
+import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.MixAddressPrefix
@@ -251,8 +252,8 @@ class NewSchemeParser(
             object : PreconditionBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
                     bottomSheet.syncUtxo()
-                    val bottom = OutputBottomSheetDialogFragment.newInstance(biometricItem)
-                    bottom.show(preconditionBottom.parentFragmentManager, OutputBottomSheetDialogFragment.TAG)
+                    val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
+                    bottom.show(preconditionBottom.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
                     bottomSheet.dismiss()
                 }
 

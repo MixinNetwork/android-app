@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
+import androidx.annotation.StringRes
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransferReceiveContentBinding
 import one.mixin.android.extension.dp
@@ -28,8 +29,22 @@ class TransferContentReceiveItem : LinearLayout {
     fun setContent(user:User) {
         _binding.apply {
             title.setText(R.string.Receive)
-            name.text = "${user.fullName} (${user.identityNumber})"
-            userAvatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
+            val item = TransferReceiverItem(context)
+            item.setContent(user)
+            userContainer.addView(item)
+
         }
     }
+
+    fun setContent(@StringRes titleRes:Int,users: List<User>) {
+        _binding.apply {
+            title.setText(titleRes)
+            users.forEach { user ->
+                val item = TransferReceiverItem(context)
+                item.setContent(user)
+                userContainer.addView(item)
+            }
+        }
+    }
+
 }
