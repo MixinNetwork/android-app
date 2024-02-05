@@ -773,4 +773,6 @@ class TokenRepository
         }
 
         fun firstUnspentTransaction() = rawTransactionDao.findUnspentTransaction()
+
+        fun find30daysWithdrawByAddress(formatDestination: String) = rawTransactionDao.find30daysWithdrawByAddress(formatDestination)
     }

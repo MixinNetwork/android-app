@@ -307,7 +307,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     showError()
                     return@launch
                 }
-                val BiometricItem =
+                val multisigsBiometricItem =
                     SafeMultisigsBiometricItem(
                         action = action,
                         traceId = multisigs.requestId,

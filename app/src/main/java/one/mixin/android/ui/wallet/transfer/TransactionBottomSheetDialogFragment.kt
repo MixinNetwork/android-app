@@ -27,6 +27,7 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Trace
+import one.mixin.android.vo.safe.formatDestination
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
@@ -126,8 +127,25 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun preCheck() {
-        // Todo
-        binding.transferAlert.isVisible = false
+        lifecycleScope.launch {
+            if (t is WithdrawBiometricItem) {
+                val withdrawBiometricItem = t as WithdrawBiometricItem
+                val exist = withContext(Dispatchers.IO) {
+                    transferViewModel.find30daysWithdrawByAddress(formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag)) != null
+                }
+                if (exist) {
+                    binding.transferAlert.isVisible = false
+                } else {
+                    binding.transferAlert.isVisible = true
+                    binding.transferAlert.warning(R.drawable.ic_transfer_warning, listOf(getString(R.string.transfer_address_warning, formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag)))) {
+                        dismiss()
+                    }
+                }
+            } else {
+                // Todo
+                binding.transferAlert.isVisible = false
+            }
+        }
     }
 
     private fun finishCheck() {

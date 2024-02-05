@@ -34,6 +34,10 @@ fun nowInUtcNano(): Long {
 fun oneWeekAgo() =
     Instant.ofEpochMilli(System.currentTimeMillis() - 60 * 60 * 1000 * 24 * 7).toString()
 
+fun thirtyDaysAgo(): String {
+    return Instant.ofEpochMilli(System.currentTimeMillis() - 60 * 60 * 1000 * 24 * 30).toString()
+}
+
 private const val DAY_DURATION = 24 * 3600 * 1000
 
 private fun localeZone() = ZoneId.systemDefault()
