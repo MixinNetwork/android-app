@@ -8,7 +8,7 @@ import one.mixin.android.vo.BotInterface
 data class Bot(
     val id: String,
     @StringRes val name: Int,
-    @StringRes val description:Int,
+    @StringRes val description: Int,
     @DrawableRes val icon: Int,
 ) : BotInterface {
     override fun getBotId() = id

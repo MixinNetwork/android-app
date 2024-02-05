@@ -10,30 +10,31 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BotManagerViewModel
-@Inject
-internal constructor(val userRepository: UserRepository, val accountRepository: AccountRepository) : ViewModel() {
-    suspend fun findAppById(appId: String) = userRepository.findAppById(appId)
+    @Inject
+    internal constructor(val userRepository: UserRepository, val accountRepository: AccountRepository) : ViewModel() {
+        suspend fun findAppById(appId: String) = userRepository.findAppById(appId)
 
-    suspend fun findUserByAppId(appId: String) = userRepository.findUserByAppId(appId)
+        suspend fun findUserByAppId(appId: String) = userRepository.findUserByAppId(appId)
 
-    suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
+        suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
 
-    suspend fun getFavoriteAppsByUserId(userId: String) =
-        withContext(Dispatchers.IO) {
-            accountRepository.getFavoriteAppsByUserId(userId)
-        }
+        suspend fun getFavoriteAppsByUserId(userId: String) =
+            withContext(Dispatchers.IO) {
+                accountRepository.getFavoriteAppsByUserId(userId)
+            }
 
-    suspend fun getAllExploreApps() = withContext(Dispatchers.IO) {
-        accountRepository.getAllExploreApps()
-    }
+        suspend fun getAllExploreApps() =
+            withContext(Dispatchers.IO) {
+                accountRepository.getAllExploreApps()
+            }
 
-    suspend fun refreshFavoriteApps(userId: String) =
-        withContext(Dispatchers.IO) {
-            val response = accountRepository.getUserFavoriteApps(userId)
-            if (response.isSuccess) {
-                response.data?.let { list ->
-                    accountRepository.insertFavoriteApps(userId, list)
+        suspend fun refreshFavoriteApps(userId: String) =
+            withContext(Dispatchers.IO) {
+                val response = accountRepository.getUserFavoriteApps(userId)
+                if (response.isSuccess) {
+                    response.data?.let { list ->
+                        accountRepository.insertFavoriteApps(userId, list)
+                    }
                 }
             }
-        }
-}
+    }

@@ -45,7 +45,6 @@ import one.mixin.android.databinding.FragmentConversationListBinding
 import one.mixin.android.databinding.ItemListConversationBinding
 import one.mixin.android.databinding.ViewConversationBottomBinding
 import one.mixin.android.event.CircleDeleteEvent
-import one.mixin.android.event.SessionEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.clickVibrate

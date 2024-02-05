@@ -377,5 +377,6 @@ class WalletViewModel
         fun utxoItem(asset: String): LiveData<PagingData<UtxoItem>> {
             return tokenRepository.utxoItem(asset)
         }
+
         suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
     }

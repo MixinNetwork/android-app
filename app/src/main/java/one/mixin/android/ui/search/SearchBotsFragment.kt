@@ -145,7 +145,7 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
                     botsList.indexOf(it.appId)
                 }
             }
-        recentUsedBots =  apps
+        recentUsedBots = apps
     }
 
     private var recentUsedBots: List<User>? = null
@@ -180,7 +180,6 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
                 searchAdapter.notifyDataSetChanged()
             }
         }
-
 
     interface UserListener {
         fun onItemClick(user: User)

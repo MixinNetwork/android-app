@@ -22,7 +22,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import com.jakewharton.rxbinding3.view.clicks
 import com.jakewharton.rxbinding3.widget.textChanges
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -31,7 +30,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewMaterialSearchBinding
 import one.mixin.android.extension.ANIMATION_DURATION_SHORT
 import one.mixin.android.extension.appCompatActionBarHeight
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
