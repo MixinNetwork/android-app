@@ -6,13 +6,15 @@
     android:background="?attr/bg_white"
     tools:parentTag="android.widget.ViewAnimator"
     android:gravity="center_horizontal"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:padding="24dp"
+        android:clipToPadding="false"
+        android:clipChildren="false"
         android:orientation="horizontal">
 
         <Button
@@ -46,6 +48,7 @@
         style="@style/AppTheme.MaterialButton"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
+        android:layout_margin="24dp"
         android:layout_gravity="center_horizontal"
         android:paddingStart="@dimen/margin20"
         android:paddingEnd="@dimen/margin20"

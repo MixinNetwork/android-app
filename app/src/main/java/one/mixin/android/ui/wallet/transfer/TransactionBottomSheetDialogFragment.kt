@@ -2,29 +2,18 @@ package one.mixin.android.ui.wallet.transfer
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.ClipData
-import android.os.Bundle
-import android.view.View
-import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
-import one.mixin.android.extension.alert
-import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.toHex
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -35,11 +24,9 @@ import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
-import one.mixin.android.util.updateShortcuts
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Trace
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
 
 @AndroidEntryPoint
 class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -59,7 +46,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val transferViewModel by viewModels<TransferViewModel>()
-    private val bottomSheetViewModel by viewModels<BottomSheetViewModel>()
 
     private val binding by viewBinding(FragmentTransferBottomSheetBinding::inflate)
 
