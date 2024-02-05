@@ -100,8 +100,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             binding.content.render(t)
         }
 
-        // Todo
-        binding.transferAlert.isVisible = false
         lifecycleScope.launch {
             transferViewModel.status.collect { status ->
                 binding.bottom.updateStatus(status)
@@ -128,9 +126,12 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun preCheck() {
+        // Todo
+        binding.transferAlert.isVisible = false
     }
 
     private fun finishCheck() {
+        // Todo
     }
 
     private fun showPin() {
@@ -154,11 +155,19 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             bottomViewModel.kernelAddressTransaction(asset.assetId, t.address, t.amount, pin, t.traceId, t.memo)
                         }
 
-                        else -> {
-                            t as WithdrawBiometricItem
+                        is SafeMultisigsBiometricItem -> {
+                            trace = Trace(t.traceId, asset.assetId, t.amount, null, null, null, null, nowInUtc())
+                            bottomViewModel.transactionMultisigs(t, pin)
+                        }
+
+                        is WithdrawBiometricItem -> {
                             trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address.destination, t.address.tag, null, nowInUtc())
                             val fee = requireNotNull(t.fee) { "required fee can not be null" }
                             bottomViewModel.kernelWithdrawalTransaction(Constants.MIXIN_FEE_USER_ID, t.traceId, asset.assetId, fee.token.assetId, t.amount, fee.fee, t.address.destination, t.address.tag, t.memo, pin)
+                        }
+
+                        else -> {
+                            throw IllegalArgumentException("Don't support")
                         }
                     }
                 }
