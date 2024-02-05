@@ -580,7 +580,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 delay(6000)
                 if (paymentExecuted.compareAndSet(false, true)) {
                     payments(
-                        sessionId, null,
+                        sessionId,
+                        null,
                         instrumentId,
                         token,
                         expectancyAssetAmount,

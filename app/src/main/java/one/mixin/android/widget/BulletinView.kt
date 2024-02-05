@@ -3,7 +3,6 @@ package one.mixin.android.widget
 import android.content.Context
 import android.view.LayoutInflater
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemListConversationHeaderBinding
 
