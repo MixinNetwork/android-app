@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.graphics.RenderEffect
 import android.graphics.Shader
@@ -20,6 +21,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
@@ -47,6 +49,7 @@ import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openMarket
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -56,6 +59,7 @@ import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.getCurrencyData
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
@@ -67,6 +71,7 @@ import one.mixin.android.ui.wallet.fiatmoney.RouteProfile
 import one.mixin.android.ui.wallet.fiatmoney.getDefaultCurrency
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
@@ -279,6 +284,15 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         jobManager.addJobInBackground(SyncOutputJob())
         binding.apply {
             moreIb.setOnClickListener { showBottom() }
+            scanIb.setOnClickListener {
+                RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
+                    if (granted) {
+                        (requireActivity() as? MainActivity)?.showCapture(true)
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }
+            }
             searchIb.setOnClickListener {
                 WalletActivity.show(requireActivity(), WalletActivity.Destination.Search)
             }

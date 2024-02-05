@@ -235,6 +235,7 @@ class DataProvider {
                 callableUser(db, _statement, cancellationSignal),
             )
         }
+
         @Suppress("LocalVariableName", "JoinDeclarationAndAssignment")
         suspend fun fuzzySearchBots(
             username: String?,

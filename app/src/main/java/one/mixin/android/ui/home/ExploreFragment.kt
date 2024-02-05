@@ -261,7 +261,7 @@ class ExploreFragment : BaseFragment() {
 
         @SuppressLint("NotifyDataSetChanged")
         fun setData(
-            favoriteApps: List<ExploreApp>
+            favoriteApps: List<ExploreApp>,
         ) {
             this.favoriteApps = favoriteApps
             notifyDataSetChanged()
@@ -293,14 +293,15 @@ class ExploreFragment : BaseFragment() {
                 holder.itemView.setOnClickListener {
                     editAction.invoke()
                 }
-            } else if(getItemViewType(position) != 3){
-                getItem(position)?.let { app ->
-                    (holder as FavoriteHolder).bind(app, isDesktopLogin)
-                    holder.itemView.setOnClickListener {
-                        botAction.invoke(app)
+            } else if (getItemViewType(position) != 3)
+                {
+                    getItem(position)?.let { app ->
+                        (holder as FavoriteHolder).bind(app, isDesktopLogin)
+                        holder.itemView.setOnClickListener {
+                            botAction.invoke(app)
+                        }
                     }
                 }
-            }
         }
 
         override fun getItemCount(): Int {
@@ -314,7 +315,9 @@ class ExploreFragment : BaseFragment() {
                 2
             } else if (position == InternalBots.size) {
                 3
-            } else 0
+            } else {
+                0
+            }
         }
 
         fun getItem(position: Int): BotInterface? {
@@ -324,7 +327,6 @@ class ExploreFragment : BaseFragment() {
                 favoriteApps?.get(position - InternalBots.size - 1)
             }
         }
-
     }
 
     class FavoriteHolder(private val itemBinding: ItemFavoriteBinding) : RecyclerView.ViewHolder(itemBinding.root) {
@@ -333,29 +335,34 @@ class ExploreFragment : BaseFragment() {
             isDesktopLogin: Boolean,
         ) {
             app ?: return
-            if (app is Bot){
-                val a = if (app == InternalLinkDesktop && isDesktopLogin) {
-                    InternalLinkDesktopLogged
-                } else app
-                itemBinding.apply {
-                    avatar.renderApp(a)
-                    name.setText(a.name)
-                    mixinIdTv.setText(a.description)
-                    verifiedIv.isVisible = false
-                }
-            } else if (app is ExploreApp) {
+            if (app is Bot)
+                {
+                    val a =
+                        if (app == InternalLinkDesktop && isDesktopLogin) {
+                            InternalLinkDesktopLogged
+                        } else {
+                            app
+                        }
+                    itemBinding.apply {
+                        avatar.renderApp(a)
+                        name.setText(a.name)
+                        mixinIdTv.setText(a.description)
+                        verifiedIv.isVisible = false
+                    }
+                } else if (app is ExploreApp) {
                 itemBinding.apply {
                     avatar.setInfo(app.name, app.iconUrl, app.appId)
                     name.text = app.name
                     mixinIdTv.text = app.appNumber
                     verifiedIv.isVisible = true
-                    verifiedIv.setImageResource(if(app.isVerified == true) R.drawable.ic_bot else R.drawable.ic_user_verified)
+                    verifiedIv.setImageResource(if (app.isVerified == true) R.drawable.ic_bot else R.drawable.ic_user_verified)
                 }
             }
         }
     }
 
     class FavoriteEditHolder(itemBinding: ItemFavoriteEditBinding) : RecyclerView.ViewHolder(itemBinding.root)
+
     class FavoriteDecorationHolder(itemBinding: ItemFavoriteDecorationBinding) : RecyclerView.ViewHolder(itemBinding.root)
 
     class BotAdapter(private val botCallBack: (ExploreApp) -> Unit) : RecyclerView.Adapter<BotAdapter.ListViewHolder>() {
@@ -386,7 +393,7 @@ class ExploreFragment : BaseFragment() {
                 binding.avatar.renderApp(app)
                 binding.name.text = app.name
                 binding.mixinIdTv.text = app.appNumber
-                binding.verifiedIv.setImageResource(if(app.isVerified == true) R.drawable.ic_bot else R.drawable.ic_user_verified)
+                binding.verifiedIv.setImageResource(if (app.isVerified == true) R.drawable.ic_bot else R.drawable.ic_user_verified)
                 holder.itemView.setOnClickListener {
                     botCallBack.invoke(app)
                 }

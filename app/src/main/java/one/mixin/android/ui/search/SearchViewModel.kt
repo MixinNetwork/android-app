@@ -97,7 +97,10 @@ class SearchViewModel
                 }
             }
 
-        suspend fun fuzzyBots(cancellationSignal: CancellationSignal, query: String?): List<User>? {
+        suspend fun fuzzyBots(
+            cancellationSignal: CancellationSignal,
+            query: String?,
+        ): List<User>? {
             return if (query.isNullOrBlank()) {
                 null
             } else {

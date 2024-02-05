@@ -26,7 +26,7 @@ class MySharedAppsAdapter(
     fun setData(
         favoriteApps: List<ExploreApp>,
         unFavoriteApps: List<ExploreApp>,
-        target: String? = null
+        target: String? = null,
     ) {
         this.favoriteApps = favoriteApps
         this.unFavoriteApps = unFavoriteApps
@@ -35,6 +35,7 @@ class MySharedAppsAdapter(
     }
 
     fun isEmpty() = favoriteApps.isNullOrEmpty() && unFavoriteApps.isNullOrEmpty()
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
@@ -74,13 +75,13 @@ class MySharedAppsAdapter(
         return (
             favoriteApps.notNullWithElse({ it.size }, 0) +
                 unFavoriteApps.notNullWithElse({ it.size }, 0)
-            ).run {
-                if (this > 0) {
-                    this + 1
-                } else {
-                    this
-                }
+        ).run {
+            if (this > 0) {
+                this + 1
+            } else {
+                this
             }
+        }
     }
 
     fun getItem(position: Int): ExploreApp {

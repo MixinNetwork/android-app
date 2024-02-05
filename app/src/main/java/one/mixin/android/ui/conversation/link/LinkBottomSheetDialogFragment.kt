@@ -1041,7 +1041,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             ) {}
         }
 
-    fun syncUtxo(){
+    fun syncUtxo() {
         jobManager.addJobInBackground(SyncOutputJob())
     }
 

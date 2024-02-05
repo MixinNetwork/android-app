@@ -19,7 +19,6 @@ import one.mixin.android.api.request.LogoutRequest
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.RawTransactionsRequest
 import one.mixin.android.api.request.SessionRequest
-import one.mixin.android.api.request.SessionSecretRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.AuthorizationResponse
