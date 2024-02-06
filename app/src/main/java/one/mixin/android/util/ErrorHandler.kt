@@ -144,10 +144,18 @@ open class ErrorHandler {
         const val ADDRESS_GENERATING = 10104
         const val INVALID_UTXO = 10106
         const val USER_NOT_FOUND = 10404
+
         const val EXPIRED_CARD = 10601
         const val EXPIRED_PRICE = 10602
         const val CAPTURE_FAILED = 10603
         const val UNSUPPORTED_CARD = 10604
+        const val USE_CARD_SAME_TIME = 10605
+        const val NOT_APPROVED_MANY_TIMES = 10606
+        const val TOO_MANY_CARD = 10607
+        const val CARD_HOLDER_NAME = 10608
+        const val EXPIRED_SESSION = 10609
+        const val INCONSISTENT_COUNTRY = 10610
+
         const val PHONE_INVALID_FORMAT = 20110
         const val INSUFFICIENT_IDENTITY_NUMBER = 20111
         const val INVALID_INVITATION_CODE = 20112
@@ -213,6 +221,24 @@ fun Context.getMixinErrorStringByCode(
         }
         ErrorHandler.UNSUPPORTED_CARD -> {
             getString(R.string.error_not_support_card)
+        }
+        ErrorHandler.USE_CARD_SAME_TIME -> {
+            getString(R.string.error_use_card_same_time)
+        }
+        ErrorHandler.NOT_APPROVED_MANY_TIMES -> {
+            getString(R.string.error_not_approved_many_times)
+        }
+        ErrorHandler.TOO_MANY_CARD -> {
+            getString(R.string.error_too_many_card_added)
+        }
+        ErrorHandler.CARD_HOLDER_NAME -> {
+            getString(R.string.error_card_holder_name_not_same)
+        }
+        ErrorHandler.EXPIRED_SESSION -> {
+            getString(R.string.error_expired_session)
+        }
+        ErrorHandler.INCONSISTENT_COUNTRY -> {
+            getString(R.string.error_inconsistent_country)
         }
         ErrorHandler.PHONE_INVALID_FORMAT -> {
             getString(R.string.error_phone_invalid_format)
