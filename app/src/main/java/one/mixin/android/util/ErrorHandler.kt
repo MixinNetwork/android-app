@@ -54,7 +54,7 @@ open class ErrorHandler {
                         if (throwable.cause is CronetException) {
                             handleCronetException(throwable.cause as CronetException)
                         } else {
-                            toast("ExecutionException: ${throwable.cause?.message ?: throwable.message}")
+                            toast(R.string.error_connection_error)
                         }
                     }
                     else -> toast(getString(R.string.error_unknown_with_message, throwable.message))
