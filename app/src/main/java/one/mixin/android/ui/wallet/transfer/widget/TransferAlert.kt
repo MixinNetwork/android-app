@@ -5,10 +5,12 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferAlertBinding
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.textColorResource
 
@@ -50,12 +52,21 @@ class TransferAlert : ConstraintLayout {
         }
     }
 
-    fun info() {
+    @SuppressLint("SetTextI18n")
+    fun info(
+        @DrawableRes iconRes: Int, info: String, @StringRes prositiveText: Int, @StringRes negativeText: Int,
+        positiveClickLint: OnClickListener, negativeClickListener: OnClickListener,
+    ) {
         _binding.apply {
-            icon.setImageResource(R.drawable.ic_transfer_fingerprint)
-            positive.text = "Done"
-            negative.text = "Enable"
-            content.text = "Do you want to turn on fingerprint payment? After opening, the fingerprint can be verified to complete the payment quickly when the money is transferred."
+            icon.setImageResource(iconRes)
+            content.textColor = context.colorFromAttribute(R.attr.text_primary)
+            index.textColor = context.colorFromAttribute(R.attr.text_primary)
+            index.isVisible = false
+            positive.setText(prositiveText)
+            positive.setOnClickListener(positiveClickLint)
+            negative.setText(negativeText)
+            negative.setOnClickListener(negativeClickListener)
+            content.text = info
             setBackgroundResource(R.drawable.bg_transfer_alert_info)
         }
     }
