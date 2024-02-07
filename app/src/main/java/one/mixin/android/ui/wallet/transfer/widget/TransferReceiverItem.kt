@@ -14,6 +14,7 @@ class TransferReceiverItem : LinearLayout {
 
     private val _binding: ItemReceiverBinding
     private val dp8 = 8.dp
+
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
@@ -29,6 +30,4 @@ class TransferReceiverItem : LinearLayout {
             userAvatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
         }
     }
-
-
 }

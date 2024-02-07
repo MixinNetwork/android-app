@@ -15,6 +15,7 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.User
+import timber.log.Timber
 
 class TransferContent : LinearLayout {
 
@@ -53,7 +54,7 @@ class TransferContent : LinearLayout {
             address.isVisible = false
             addressReceive.isVisible = false
             receive.isVisible = true
-            receive.setContent(transferBiometricItem.users.first())
+            receive.setContent(R.string.Receive, transferBiometricItem.users.first())
             addressReceive.isVisible = true
             addressReceive.setContent(R.string.RECEIVER_WILL_RECEIVE, "${transferBiometricItem.amount} ${transferBiometricItem.asset?.symbol}")
 

@@ -71,7 +71,6 @@ import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogF
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
-import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_TRANSFER
 import one.mixin.android.ui.oldwallet.OldTransferFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
@@ -698,17 +697,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             }
 
             updateContinue(POST_TEXT)
-            val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(t, FROM_TRANSFER)
-            preconditionBottom.callback =
-                object : PreconditionBottomSheetDialogFragment.Callback {
-                    override fun onSuccess() {
-                        showTransferBottom(t)
-                    }
-
-                    override fun onCancel() {
-                    }
-                }
-            preconditionBottom.showNow(parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
+            showTransferBottom(t)
         }
 
     private suspend fun refreshFees(

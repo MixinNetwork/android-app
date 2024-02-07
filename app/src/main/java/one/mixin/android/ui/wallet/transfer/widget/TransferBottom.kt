@@ -22,7 +22,7 @@ class TransferBottom : ViewAnimator {
         setPadding(dp16)
     }
 
-    fun setOnClickListener(cancelClickListener: OnClickListener, confirmClickListener: OnClickListener, doneClickListener: OnClickListener){
+    fun setOnClickListener(cancelClickListener: OnClickListener, confirmClickListener: OnClickListener, doneClickListener: OnClickListener) {
         _binding.cancelButton.setOnClickListener(cancelClickListener)
         _binding.confirmButton.setOnClickListener(confirmClickListener)
         _binding.doneBtn.setOnClickListener(doneClickListener)
@@ -34,15 +34,18 @@ class TransferBottom : ViewAnimator {
                 isInvisible = false
                 displayedChild = 0
             }
+
             TransferStatus.IN_PROGRESS -> {
                 isInvisible = true
                 displayedChild = 0
             }
+
             TransferStatus.SUCCESSFUL -> {
                 isInvisible = false
                 displayedChild = 1
                 _binding.doneBtn.setText(R.string.Done)
             }
+
             TransferStatus.FAILED -> {
                 isInvisible = false
                 displayedChild = 1

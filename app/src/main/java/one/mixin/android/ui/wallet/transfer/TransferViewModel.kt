@@ -12,7 +12,7 @@ import javax.inject.Inject
 class TransferViewModel
 @Inject
 internal constructor(
-    val tokenRepository: TokenRepository
+    val tokenRepository: TokenRepository,
 ) : ViewModel() {
 
     private val _status = MutableStateFlow(TransferStatus.AWAITING_CONFIRMATION)

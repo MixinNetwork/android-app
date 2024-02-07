@@ -22,9 +22,10 @@ class TransferAlert : ConstraintLayout {
         _binding = ViewTransferAlertBinding.inflate(LayoutInflater.from(context), this)
     }
 
-    private var tipIndex:Int = 0
+    private var tipIndex: Int = 0
+
     @SuppressLint("SetTextI18n")
-    fun warning(@DrawableRes iconRes:Int, list: List<String>, cancel:OnClickListener) {
+    fun warning(@DrawableRes iconRes: Int, list: List<String>, cancel: OnClickListener) {
         _binding.apply {
             icon.setImageResource(iconRes)
             content.textColorResource = R.color.text_color_error_tip
