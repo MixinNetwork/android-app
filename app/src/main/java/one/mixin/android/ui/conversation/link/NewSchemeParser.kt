@@ -13,6 +13,7 @@ import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
+import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildAddressBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.conversation.TransferFragment
@@ -231,7 +232,7 @@ class NewSchemeParser(
 
             val address = Address("", "address", asset.assetId, destination, "ExternalAddress", nowInUtc(), "0", result.fee?.toPlainString() ?: "", null, null, asset.chainId)
             val fee = NetworkFee(chain, result.fee!!.toPlainString())
-            val withdrawBiometricItem = one.mixin.android.ui.common.biometric.WithdrawBiometricItem(address, fee, traceId, asset, amount, result.memo, status, null)
+            val withdrawBiometricItem = WithdrawBiometricItem(address, fee, null, traceId, asset, amount, result.memo, status, null)
             showPreconditionBottom(withdrawBiometricItem)
         }
         bottomSheet.dismiss()

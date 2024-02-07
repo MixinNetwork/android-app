@@ -78,6 +78,7 @@ fun buildAddressBiometricItem(
 class WithdrawBiometricItem(
     var address: Address,
     var fee: NetworkFee?,
+    val label: String?,
     override val traceId: String,
     override var asset: TokenItem?,
     override var amount: String,
@@ -98,7 +99,7 @@ fun buildWithdrawalBiometricItem(
     address: Address,
     asset: TokenItem,
 ) =
-    WithdrawBiometricItem(address, null, UUID.randomUUID().toString(), asset, "", null, PaymentStatus.pending.name, null)
+    WithdrawBiometricItem(address, null, address.label, UUID.randomUUID().toString(), asset, "", null, PaymentStatus.pending.name, null)
 
 fun WithdrawBiometricItem.hasAddress() = address.addressId.isNotBlank()
 

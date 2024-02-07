@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet.transfer.widget
 
 import android.content.Context
+import android.text.SpannableString
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
@@ -114,7 +115,13 @@ class TransferContent : LinearLayout {
             address.isVisible = false
             receive.isVisible = false
             address.isVisible = true
-            address.setContent(R.string.Address, withdrawBiometricItem.displayAddress())
+
+            val label = withdrawBiometricItem.label
+            if (label != null) {
+                address.setContentAndLabel(R.string.Address, withdrawBiometricItem.displayAddress(), withdrawBiometricItem.label)
+            } else {
+                address.setContent(R.string.Address, withdrawBiometricItem.displayAddress())
+            }
             addressReceive.isVisible = true
             addressReceive.setContent(R.string.ADDRESS_WILL_RECEIVE, "${withdrawBiometricItem.amount} ${withdrawBiometricItem.asset?.symbol}")
             val fee = withdrawBiometricItem.fee!!
