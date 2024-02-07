@@ -252,7 +252,7 @@ class MaterialSearchView : FrameLayout {
     private var oldLeftX = 0f
     private var oldSearchWidth = 0
 
-    private val rightTranslationX = 132f
+    private val rightTranslationX = 168f
 
     fun dragSearch(progress: Float) {
         binding.avatar.translationX = context.dpToPx(rightTranslationX) * progress
