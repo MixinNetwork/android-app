@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Color
 import android.text.Spannable
 import android.text.SpannableString
-import android.text.style.BackgroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -38,7 +37,7 @@ class TransferContentItem : LinearLayout {
         }
     }
 
-    fun setContentAndLabel(@StringRes titleResId: Int, contentStr: String, label:String) {
+    fun setContentAndLabel(@StringRes titleResId: Int, contentStr: String, label: String) {
         _binding.apply {
             title.setText(context.getString(titleResId).uppercase())
             footer.isVisible = false

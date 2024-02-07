@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.core.view.isVisible
+import java.math.BigDecimal
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferContentBinding
@@ -20,7 +21,6 @@ import one.mixin.android.util.getChainName
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
-import java.math.BigDecimal
 
 class TransferContent : LinearLayout {
 
@@ -53,8 +53,8 @@ class TransferContent : LinearLayout {
         }
     }
 
-    fun render(safeMultisigsBiometricItem: SafeMultisigsBiometricItem, sender: List<User>, receiver: List<User>) {
-        renderMultisigsTransfer(safeMultisigsBiometricItem, sender, receiver)
+    fun render(safeMultisigsBiometricItem: SafeMultisigsBiometricItem, sender: List<User>, receiver: List<User>, userClick: (User) -> Unit) {
+        renderMultisigsTransfer(safeMultisigsBiometricItem, sender, receiver, userClick)
     }
 
     private fun amountAs(amount: String, asset: TokenItem): String {
@@ -78,7 +78,7 @@ class TransferContent : LinearLayout {
             address.isVisible = false
             addressReceive.isVisible = false
             receive.isVisible = true
-            receive.setContent(R.string.Receive, transferBiometricItem.users.first())
+            receive.setContent(R.string.Receive, transferBiometricItem.users.first()) {}
             addressReceive.isVisible = true
             addressReceive.setContent(R.string.RECEIVER_WILL_RECEIVE, "${transferBiometricItem.amount} ${transferBiometricItem.asset?.symbol}")
 
@@ -123,15 +123,15 @@ class TransferContent : LinearLayout {
         }
     }
 
-    private fun renderMultisigsTransfer(safeMultisigsBiometricItem: SafeMultisigsBiometricItem, senders: List<User>, receiver: List<User>) {
+    private fun renderMultisigsTransfer(safeMultisigsBiometricItem: SafeMultisigsBiometricItem, senders: List<User>, receiver: List<User>, userClick: (User) -> Unit) {
         _binding.apply {
             amount.setContent(R.string.Amount, "${safeMultisigsBiometricItem.amount} ${safeMultisigsBiometricItem.asset?.symbol}")
             address.isVisible = false
             addressReceive.isVisible = false
             receive.isVisible = true
-            receive.setContent(R.string.Receive, receiver)
+            receive.setContent(R.string.Receive, receiver, null, userClick)
             sender.isVisible = true
-            sender.setContent(R.string.Senders, senders, safeMultisigsBiometricItem.sendersThreshold)
+            sender.setContent(R.string.Senders, senders, safeMultisigsBiometricItem.sendersThreshold, userClick)
             addressReceive.isVisible = true
             addressReceive.setContent(R.string.RECEIVER_WILL_RECEIVE, "${safeMultisigsBiometricItem.amount} ${safeMultisigsBiometricItem.asset?.symbol}")
 

@@ -42,6 +42,7 @@ import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
@@ -102,7 +103,9 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (result != null) {
                     val senders = result.first
                     val receivers = result.second
-                    binding.content.render(t as SafeMultisigsBiometricItem, senders, receivers)
+                    binding.content.render(t as SafeMultisigsBiometricItem, senders, receivers) { user ->
+                        showUserBottom(parentFragmentManager, user)
+                    }
                 }
             }
         } else {
@@ -522,6 +525,10 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
 
             is AddressManageBiometricItem -> {
+                null
+            }
+
+            is SafeMultisigsBiometricItem -> {
                 null
             }
 
