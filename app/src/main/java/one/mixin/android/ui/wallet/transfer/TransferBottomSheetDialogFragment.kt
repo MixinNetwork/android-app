@@ -50,6 +50,7 @@ import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
+import one.mixin.android.ui.wallet.transfer.data.TransferType
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
@@ -101,6 +102,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             setCustomView(contentView)
             setCustomViewHeight(requireContext().displayHeight())
         }
+        initType()
         transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
         if (t is SafeMultisigsBiometricItem) {
             lifecycleScope.launch {
@@ -131,20 +133,20 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 binding.bottom.updateStatus(status)
                 when (status) {
                     TransferStatus.AWAITING_CONFIRMATION -> {
-                        renderHeader()
+                        binding.header.awaiting(transferType, t.asset!!)
                         preCheck()
                     }
 
                     TransferStatus.FAILED -> {
-                        binding.header.filed(R.string.Transfer_confirmation, transferViewModel.errorMessage)
+                        binding.header.filed(transferType, transferViewModel.errorMessage)
                     }
 
                     TransferStatus.IN_PROGRESS -> {
-                        binding.header.progress(R.string.Transfer_confirmation)
+                        binding.header.progress(transferType)
                     }
 
                     TransferStatus.SUCCESSFUL -> {
-                        binding.header.success(R.string.Transfer_confirmation)
+                        binding.header.success(transferType)
                         finishCheck()
                     }
                 }
@@ -152,43 +154,40 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun renderHeader() {
-        when (t) {
+    private lateinit var transferType: TransferType
+    private fun initType() {
+        transferType = when (t) {
             is TransferBiometricItem -> {
-                binding.header.setContent(R.string.Transfer_confirmation, R.string.Transfer_confirmation_desc, t.asset!!)
+                TransferType.transfer
             }
 
             is WithdrawBiometricItem -> {
-                binding.header.setContent(R.string.Withdrawal_confirmation, R.string.Transfer_confirmation_desc, t.asset!!)
+                TransferType.withdraw
             }
 
             is AddressTransferBiometricItem -> {
-                binding.header.setContent(R.string.Transfer_confirmation, R.string.Transfer_confirmation_desc, t.asset!!)
+                TransferType.addressTransfer
             }
 
             is AddressManageBiometricItem -> {
                 val addressManageBiometricItem = t as AddressManageBiometricItem
-                val title = if (addressManageBiometricItem.type == ADD) {
-                    R.string.Confirm_Adding_Address
+                if (addressManageBiometricItem.type == ADD) {
+                    TransferType.addAddress
                 } else {
-                    R.string.Confirm_Deleting_Address
+                    TransferType.deleteAddress
                 }
-                val description = if (addressManageBiometricItem.type == ADD) {
-                    R.string.Adding_address_description
-                } else {
-                    R.string.delete_address_description
-                }
-                binding.header.setContent(title, description, t.asset!!)
             }
 
             is SafeMultisigsBiometricItem -> {
                 val multisigsBiometricItem = t as SafeMultisigsBiometricItem
-                val title = if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
-                    R.string.Revoke_Multisig_Signature
+                if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
+                    TransferType.unMulSign
                 } else {
-                    R.string.Multisig_Transaction
+                    TransferType.mutlSign
                 }
-                binding.header.setContent(title, R.string.Transfer_confirmation_desc, t.asset!!)
+            }
+            else ->{
+                throw IllegalArgumentException("Unknown type")
             }
         }
     }
