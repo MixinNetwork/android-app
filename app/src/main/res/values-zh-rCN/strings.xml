@@ -1344,7 +1344,8 @@
     <string name="RECEIVER_WILL_RECEIVE">对方将收到</string>
     <string name="Transfer_confirmation_desc">请仔细检查收款人、网络和金额，如果您转错了，资产将无法追回！</string>
     <string name="transfer_address_warning">地址确认提醒：请确认地址 %1$s 仍然有效，您已经超过 30 天没有使用该地址。</string>
-    <string name="Not_now">下次再说</string>
+    <string name="Not_Now">下次再说</string>
     <string name="Enable">启用</string>
-    <string name="enable_biometric">想要开启生物识别支付吗？开启后，转账时可验证生物信息快速完成付款。</string>
+    <string name="enable_biometric_description">想要启用生物识别支付吗？启用后，转账时可通过生物识别快速完成付款。</string>
+    <string name="return_to_merchant_description">来自商家的支付已完成，您可以选择返回商家或者停留在Mixin。</string>
 </resources>

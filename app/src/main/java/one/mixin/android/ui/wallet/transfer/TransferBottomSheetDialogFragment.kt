@@ -23,6 +23,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
@@ -257,14 +258,29 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
     private fun finishCheck() {
-        val open = requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-        val enable = !open && BiometricUtil.isSupport(requireContext())
-        binding.transferAlert.isVisible = enable
-        if (enable) {
-            binding.transferAlert.info(R.drawable.ic_biometric, getString(R.string.enable_biometric), R.string.Not_now, R.string.Enable, {
+        val returnTo = when (val t = this.t) {
+            is TransferBiometricItem -> t.returnTo
+            is AddressTransferBiometricItem -> t.returnTo
+            else -> null
+        }
+        if (returnTo.isNullOrBlank()) {
+            val open = requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
+            val enable = !open && BiometricUtil.isSupport(requireContext())
+            binding.transferAlert.isVisible = enable
+            if (enable) {
+                binding.transferAlert.info(R.drawable.ic_transfer_alert_biometric, getString(R.string.enable_biometric_description), R.string.Not_Now, R.string.Enable, {
+                    binding.transferAlert.isVisible = false
+                }, {
+                    SettingActivity.showPinSetting(requireContext())
+                    binding.transferAlert.isVisible = false
+                })
+            }
+        } else {
+            binding.transferAlert.isVisible = true
+            binding.transferAlert.info(R.drawable.ic_transfer_alert_check, getString(R.string.return_to_merchant_description), R.string.Stay_in_Mixin, R.string.Back_To_Merchant, {
                 binding.transferAlert.isVisible = false
             }, {
-                SettingActivity.showPinSetting(requireContext())
+                requireContext().openExternalUrl(returnTo)
                 binding.transferAlert.isVisible = false
             })
         }
