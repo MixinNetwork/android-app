@@ -22,6 +22,7 @@ class TransferAlert : ConstraintLayout {
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         _binding = ViewTransferAlertBinding.inflate(LayoutInflater.from(context), this)
+        setOnClickListener {  }
     }
 
     private var tipIndex: Int = 0

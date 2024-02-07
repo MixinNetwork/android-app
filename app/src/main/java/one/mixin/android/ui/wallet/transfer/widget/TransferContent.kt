@@ -8,6 +8,7 @@ import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferContentBinding
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
@@ -15,7 +16,11 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.util.getChainName
+import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 class TransferContent : LinearLayout {
 
@@ -48,9 +53,24 @@ class TransferContent : LinearLayout {
         renderMultisigsTransfer(safeMultisigsBiometricItem, sender, receiver)
     }
 
+    private fun amountAs(amount: String, asset: TokenItem): String {
+        val value = try {
+            if (asset.priceFiat().toDouble() == 0.0) {
+                BigDecimal.ZERO
+            } else {
+                BigDecimal(amount) * asset.priceFiat()
+            }
+        } catch (e: ArithmeticException) {
+            BigDecimal.ZERO
+        } catch (e: NumberFormatException) {
+            BigDecimal.ZERO
+        }
+        return "${value.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}"
+    }
+
     private fun renderTransfer(transferBiometricItem: TransferBiometricItem) {
         _binding.apply {
-            amount.setContent(R.string.Amount, "${transferBiometricItem.amount} ${transferBiometricItem.asset?.symbol}")
+            amount.setContent(R.string.Amount, "${transferBiometricItem.amount} ${transferBiometricItem.asset?.symbol}", "${amountAs(transferBiometricItem.amount, transferBiometricItem.asset!!)}")
             address.isVisible = false
             addressReceive.isVisible = false
             receive.isVisible = true
