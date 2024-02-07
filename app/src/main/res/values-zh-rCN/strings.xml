@@ -1352,4 +1352,12 @@
     <string name="Revoke_multisig_transaction">撤销多重签名交易</string>
     <string name="Revoking_Multisig_Failed">撤销多签失败</string>
     <string name="Revoking_Multisig_Signature">正在撤销多签</string>
+    <string name="Confirm_Adding_Address">添加地址确认</string>
+    <string name="Adding_Address">正在添加地址</string>
+    <string name="Adding_Address_Failed">添加地址失败</string>
+    <string name="Adding_address_description">请仔细检查地址、Memo（标签）和网络，如果您转错了，资产将无法追回。</string>
+    <string name="Confirm_Deleting_Address">删除地址确认</string>
+    <string name="Deleting_Address">正在删除地址</string>
+    <string name="Deleting_Address_Failed">删除地址失败</string>
+    <string name="delete_address_description">删除地址不影响资金安全，确认删除该地址吗？</string>
 </resources>

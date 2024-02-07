@@ -61,6 +61,7 @@ import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -71,7 +72,6 @@ import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.OldTransferFragment
 import one.mixin.android.ui.oldwallet.OutputBottomSheetDialogFragment
-import one.mixin.android.ui.oldwallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.PreconditionBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.PreconditionBottomSheetDialogFragment.Companion.FROM_LINK
 import one.mixin.android.ui.oldwallet.TransactionBottomSheetDialogFragment
@@ -598,23 +598,18 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         } else if (address == null) {
                             showError(R.string.error_address_not_sync)
                         } else {
-                            val asset = checkAsset(assetId)
+                            val asset = checkToken(assetId)
                             if (asset != null) {
-                                PinAddrBottomSheetDialogFragment.newInstance(
-                                    assetId = assetId,
-                                    assetUrl = asset.iconUrl,
-                                    assetSymbol = asset.symbol,
-                                    assetKey = asset.assetKey,
-                                    chainId = asset.chainId,
-                                    chainName = asset.chainName,
-                                    chainIconUrl = asset.chainIconUrl,
-                                    assetName = asset.name,
-                                    addressId = addressId,
-                                    label = address.label,
-                                    destination = address.destination,
-                                    tag = address.tag,
-                                    type = PinAddrBottomSheetDialogFragment.DELETE,
-                                ).showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
+                                TransferBottomSheetDialogFragment.newInstance(
+                                    AddressManageBiometricItem(
+                                        asset = asset,
+                                        addressId = addressId,
+                                        label = address.label,
+                                        destination = address.destination,
+                                        tag = address.tag,
+                                        type = TransferBottomSheetDialogFragment.DELETE
+                                    )
+                                ).showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
                                 dismiss()
                             } else {
                                 showError()
@@ -637,23 +632,18 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 if (assetId != null && assetId.isUUID() && !destination.isNullOrEmpty() && !label.isNullOrEmpty()) {
                     lifecycleScope.launch(errorHandler) {
-                        val asset = checkAsset(assetId)
+                        val asset = checkToken(assetId)
                         if (asset != null) {
-                            PinAddrBottomSheetDialogFragment.newInstance(
-                                assetId = assetId,
-                                assetUrl = asset.iconUrl,
-                                assetSymbol = asset.symbol,
-                                assetKey = asset.assetKey,
-                                chainId = asset.chainId,
-                                chainName = asset.chainName,
-                                chainIconUrl = asset.chainIconUrl,
-                                assetName = asset.name,
-                                label = label,
-                                destination = destination,
-                                tag = tag,
-                                type = PinAddrBottomSheetDialogFragment.ADD,
-                            )
-                                .showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
+                            TransferBottomSheetDialogFragment.newInstance(
+                                AddressManageBiometricItem(
+                                    asset = asset,
+                                    label = label,
+                                    destination = destination,
+                                    addressId = null,
+                                    tag = tag,
+                                    type = TransferBottomSheetDialogFragment.ADD
+                                )
+                            ).showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
                             dismiss()
                         } else {
                             showError()

@@ -1,14 +1,15 @@
 package one.mixin.android.ui.wallet.transfer.widget
 
 import android.content.Context
-import android.text.SpannableString
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.core.view.isVisible
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferContentBinding
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
@@ -20,7 +21,6 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 class TransferContent : LinearLayout {
 
@@ -45,6 +45,10 @@ class TransferContent : LinearLayout {
 
             is WithdrawBiometricItem -> {
                 renderWithdrawTransfer(transferItem)
+            }
+
+            is AddressManageBiometricItem -> {
+                renderAddressManage(transferItem)
             }
         }
     }
@@ -87,6 +91,34 @@ class TransferContent : LinearLayout {
             }
 
             val tokenItem = transferBiometricItem.asset!!
+            network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+        }
+    }
+
+    private fun renderAddressManage(addressManageBiometricItem: AddressManageBiometricItem) {
+        _binding.apply {
+            amount.setContent(R.string.Label, addressManageBiometricItem.label ?: "")
+            address.isVisible = true
+            addressReceive.isVisible = false
+            receive.isVisible = false
+            address.setContent(R.string.Address, addressManageBiometricItem.destination ?: "")
+            val tokenItem = addressManageBiometricItem.asset!!
+            val addressMemo = addressManageBiometricItem.tag
+            if (addressMemo.isNullOrBlank()) {
+                memo.isVisible = false
+            } else {
+                memo.isVisible = true
+                memo.setContent(
+                    if (tokenItem.assetId == Constants.ChainId.RIPPLE_CHAIN_ID) {
+                        R.string.Tag
+                    } else {
+                        R.string.withdrawal_memo
+                    },
+                    addressMemo
+                )
+            }
+            space.isVisible = true
+
             network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
         }
     }

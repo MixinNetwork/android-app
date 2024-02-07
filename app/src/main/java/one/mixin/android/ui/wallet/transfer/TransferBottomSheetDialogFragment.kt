@@ -33,6 +33,7 @@ import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricInfo
@@ -48,6 +49,7 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.UserRelationship
@@ -66,6 +68,8 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "TransferBottomSheetDialogFragment"
         const val ARGS_TRANSFER = "args_transfer"
+        const val DELETE = 0
+        const val ADD = 1
 
         inline fun <reified T : BiometricItem> newInstance(t: T) =
             TransferBottomSheetDialogFragment().withArgs {
@@ -151,6 +155,21 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
             is AddressTransferBiometricItem -> {
                 binding.header.setContent(R.string.Transfer_confirmation, R.string.Transfer_confirmation_desc, t.asset!!)
+            }
+
+            is AddressManageBiometricItem -> {
+                val addressManageBiometricItem = t as AddressManageBiometricItem
+                val title = if (addressManageBiometricItem.type == ADD) {
+                    R.string.Confirm_Adding_Address
+                } else {
+                    R.string.Confirm_Deleting_Address
+                }
+                val description = if (addressManageBiometricItem.type == ADD) {
+                    R.string.Adding_address_description
+                } else {
+                    R.string.delete_address_description
+                }
+                binding.header.setContent(title, description, t.asset!!)
             }
 
             is SafeMultisigsBiometricItem -> {
@@ -393,7 +412,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }) {
                 transferViewModel.updateStatus(TransferStatus.IN_PROGRESS)
                 val t = this@TransferBottomSheetDialogFragment.t
-                val trace: Trace
+                val trace: Trace?
                 val asset = requireNotNull(t.asset)
                 val response = withContext(Dispatchers.IO) {
                     when (t) {
@@ -414,6 +433,28 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             bottomViewModel.transactionMultisigs(t, pin)
                         }
 
+                        is AddressManageBiometricItem -> {
+                            val addressManageBiometricItem = t
+                            trace = null
+                            if (addressManageBiometricItem.type == ADD) {
+                                val assetId = addressManageBiometricItem.asset!!.assetId
+                                val destination = addressManageBiometricItem.destination
+                                val label = addressManageBiometricItem.label
+                                val tag = addressManageBiometricItem.tag
+                                bottomViewModel.syncAddr(assetId, destination, label, tag, pin).apply {
+                                    if (isSuccess) {
+                                        bottomViewModel.saveAddr(data as Address)
+                                    }
+                                }
+                            } else {
+                                val addressId = requireNotNull(addressManageBiometricItem.addressId)
+                                bottomViewModel.deleteAddr(addressId, pin).apply {
+                                    if (isSuccess) {
+                                        bottomViewModel.deleteLocalAddr(addressId)
+                                    }
+                                }
+                            }
+                        }
                         is WithdrawBiometricItem -> {
                             trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address.destination, t.address.tag, null, nowInUtc())
                             val fee = requireNotNull(t.fee) { "required fee can not be null" }
@@ -425,7 +466,9 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         }
                     }
                 }
-                bottomViewModel.insertTrace(trace)
+                if (trace != null) {
+                    bottomViewModel.insertTrace(trace)
+                }
                 if (response.isSuccess) {
                     defaultSharedPreferences.putLong(
                         Constants.BIOMETRIC_PIN_CHECK,
@@ -441,7 +484,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
     }
 
-    private fun getBiometricInfo(): BiometricInfo {
+    private fun getBiometricInfo(): BiometricInfo? {
         return when (val t = this.t) {
             is TransferBiometricItem -> {
                 if (t.users.size == 1) {
@@ -475,6 +518,10 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     "",
                     getDescription(),
                 )
+            }
+
+            is AddressManageBiometricItem -> {
+                null
             }
 
             else -> {

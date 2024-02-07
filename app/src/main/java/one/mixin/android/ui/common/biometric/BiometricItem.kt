@@ -63,6 +63,15 @@ class AddressTransferBiometricItem(
     val returnTo: String?,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state)
 
+class AddressManageBiometricItem(
+    override var asset: TokenItem?,
+    val destination: String?,
+    val tag: String?,
+    val addressId: String?,
+    val label: String?,
+    val type: Int,
+) : AssetBiometricItem(asset, "", "0", null, "")
+
 fun buildAddressBiometricItem(
     mainnetAddress: String,
     traceId: String?,

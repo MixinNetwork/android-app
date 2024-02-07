@@ -1383,4 +1383,12 @@
     <string name="Revoke_Multisig_Signature">Revoke Multisig Signature</string>
     <string name="Revoking_Multisig_Signature">Revoking Multisig Signature</string>
     <string name="Revoking_Multisig_Failed">Revoking Multisig Failed</string>
+    <string name="Confirm_Adding_Address">Confirm Adding Address</string>
+    <string name="Adding_Address">Adding Address</string>
+    <string name="Adding_Address_Failed">Adding Address Failed</string>
+    <string name="Adding_address_description">Review the address, Memo (tag), and network. Any mistake may result in irretrievable asset loss.</string>
+    <string name="Confirm_Deleting_Address">Confirm Deleting Address</string>
+    <string name="Deleting_Address">Deleting Address</string>
+    <string name="Deleting_Address_Failed">Deleting Address Failed</string>
+    <string name="delete_address_description">Deleting the address does not compromise security. Are you sure you want to delete this address?</string>
 </resources>
