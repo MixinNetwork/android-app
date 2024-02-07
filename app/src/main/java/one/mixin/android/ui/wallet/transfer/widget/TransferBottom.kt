@@ -26,9 +26,11 @@ class TransferBottom : ViewAnimator {
         _binding.cancelButton.setOnClickListener(cancelClickListener)
         _binding.confirmButton.setOnClickListener(confirmClickListener)
         _binding.doneBtn.setOnClickListener(doneClickListener)
+        _binding.retryCancel.setOnClickListener(cancelClickListener)
+        _binding.retry.setOnClickListener(confirmClickListener)
     }
 
-    fun updateStatus(status: TransferStatus) {
+    fun updateStatus(status: TransferStatus, canretry:Boolean = false) {
         when (status) {
             TransferStatus.AWAITING_CONFIRMATION -> {
                 isInvisible = false
@@ -48,8 +50,12 @@ class TransferBottom : ViewAnimator {
 
             TransferStatus.FAILED -> {
                 isInvisible = false
-                displayedChild = 1
-                _binding.doneBtn.setText(R.string.Got_it)
+                if (canretry) {
+                    displayedChild = 2
+                } else {
+                    displayedChild = 1
+                    _binding.doneBtn.setText(R.string.Got_it)
+                }
             }
         }
     }

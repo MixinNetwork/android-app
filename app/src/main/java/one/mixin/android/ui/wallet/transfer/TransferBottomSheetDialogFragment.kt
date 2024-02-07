@@ -2,7 +2,6 @@ package one.mixin.android.ui.wallet.transfer
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -28,8 +27,6 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.realSize
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -130,7 +127,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         lifecycleScope.launch {
             transferViewModel.status.collect { status ->
-                binding.bottom.updateStatus(status)
+                binding.bottom.updateStatus(status, canRetry)
                 when (status) {
                     TransferStatus.AWAITING_CONFIRMATION -> {
                         binding.header.awaiting(transferType, t.asset!!)
@@ -153,6 +150,8 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
     }
+
+    private var canRetry = true
 
     private lateinit var transferType: TransferType
     private fun initType() {
@@ -323,6 +322,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun handleError(error: ResponseError?) {
         lifecycleScope.launch {
+            canRetry = false
             if (error?.code == ErrorHandler.WITHDRAWAL_SUSPEND) {
                 WithdrawalSuspendedBottomSheet.newInstance(t.asset!!).show(parentFragmentManager, WithdrawalSuspendedBottomSheet.TAG)
                 dismissNow()
@@ -355,6 +355,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         requireContext().getString(R.string.error_pin_check_too_many_request)
                     } else if (errorCode == ErrorHandler.PIN_INCORRECT) {
                         val errorCount = bottomViewModel.errorCount()
+                        canRetry = true
                         requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, errorCount)
                     } else {
                         requireContext().getMixinErrorStringByCode(errorCode, errorDescription)
@@ -367,6 +368,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun handleError(throwable: Throwable) {
+        canRetry = true
         transferViewModel.errorMessage =
             when (throwable) {
                 is IOException ->

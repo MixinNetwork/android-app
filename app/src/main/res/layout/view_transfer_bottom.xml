@@ -21,13 +21,13 @@
             android:id="@+id/cancel_button"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
-            android:paddingStart="32dp"
-            android:paddingEnd="32dp"
+            android:paddingStart="48dp"
+            android:paddingEnd="48dp"
             android:layout_gravity="center_horizontal|bottom"
             android:text="@string/Cancel"
             android:textColor="?attr/text_primary"
             android:background="@drawable/bg_round_gray_btn"
-            android:layout_marginEnd="32dp"
+            android:layout_marginEnd="48dp"
             android:textSize="14sp"
             android:textAllCaps="false"/>
 
@@ -36,8 +36,8 @@
             android:id="@+id/confirm_button"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
-            android:paddingStart="32dp"
-            android:paddingEnd="32dp"
+            android:paddingStart="48dp"
+            android:paddingEnd="48dp"
             android:layout_gravity="center_horizontal|bottom"
             android:text="@string/Confirm"
             android:textAllCaps="false"
@@ -52,9 +52,46 @@
         android:layout_height="40dp"
         android:layout_margin="24dp"
         android:layout_gravity="center_horizontal"
-        android:paddingStart="32dp"
-        android:paddingEnd="32dp"
+        android:paddingStart="48dp"
+        android:paddingEnd="48dp"
         android:enabled="true"
         android:text="@string/Done"
         android:textSize="14sp" />
+
+    <LinearLayout
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:clipToPadding="false"
+        android:clipChildren="false"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/retry_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:paddingStart="48dp"
+            android:paddingEnd="48dp"
+            android:layout_gravity="center_horizontal|bottom"
+            android:text="@string/Cancel"
+            android:textColor="?attr/text_primary"
+            android:background="@drawable/bg_round_gray_btn"
+            android:layout_marginEnd="48dp"
+            android:textSize="14sp"
+            android:textAllCaps="false"/>
+
+        <Button
+            style="@style/AppTheme.MaterialButton"
+            android:id="@+id/retry"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:paddingStart="48dp"
+            android:paddingEnd="48dp"
+            android:layout_gravity="center_horizontal|bottom"
+            android:text="@string/Retry"
+            android:textAllCaps="false"
+            android:textSize="14sp" />
+
+    </LinearLayout>
 </merge>
