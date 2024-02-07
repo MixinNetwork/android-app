@@ -268,7 +268,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             val enable = !open && BiometricUtil.isSupport(requireContext())
             binding.transferAlert.isVisible = enable
             if (enable) {
-                binding.transferAlert.info(R.drawable.ic_transfer_alert_biometric, getString(R.string.enable_biometric_description), R.string.Not_Now, R.string.Enable, {
+                binding.transferAlert.info(R.drawable.ic_transfer_fingerprint, getString(R.string.enable_biometric_description), R.string.Not_Now, R.string.Enable, {
                     binding.transferAlert.isVisible = false
                 }, {
                     SettingActivity.showPinSetting(requireContext())
@@ -277,7 +277,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         } else {
             binding.transferAlert.isVisible = true
-            binding.transferAlert.info(R.drawable.ic_transfer_alert_check, getString(R.string.return_to_merchant_description), R.string.Stay_in_Mixin, R.string.Back_To_Merchant, {
+            binding.transferAlert.info(R.drawable.ic_transfer_done, getString(R.string.return_to_merchant_description), R.string.Stay_in_Mixin, R.string.Back_To_Merchant, {
                 binding.transferAlert.isVisible = false
             }, {
                 requireContext().openExternalUrl(returnTo)
