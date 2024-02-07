@@ -3,6 +3,7 @@ package one.mixin.android.ui.common
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -20,9 +21,38 @@ import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.ui.wallet.WalletFragment
 
 class NavigationController(mainActivity: MainActivity) {
-    private val containerId: Int = R.id.container
     private val fragmentManager: FragmentManager = mainActivity.supportFragmentManager
     private val context = mainActivity
+
+    sealed class Destination(val tag: String)
+
+    data object ConversationList : Destination(ConversationListFragment.TAG)
+
+    data object Wallet : Destination(WalletFragment.TAG)
+
+    data object Explore : Destination(ExploreFragment.TAG)
+
+    private val destinations = listOf(ConversationList, Wallet, Explore)
+
+    fun navigate(
+        destination: Destination,
+        destinationFragment: Fragment,
+    ) {
+        val tx = fragmentManager.beginTransaction()
+        val tag = destination.tag
+        val f = fragmentManager.findFragmentByTag(tag)
+        if (f == null) {
+            tx.add(R.id.root_view, destinationFragment, tag)
+        } else {
+            tx.show(f)
+        }
+        destinations.forEach { d ->
+            if (d != destination) {
+                fragmentManager.findFragmentByTag(d.tag)?.let { tx.hide(it) }
+            }
+        }
+        tx.commitAllowingStateLoss()
+    }
 
     fun pushContacts() {
         ContactsActivity.show(context)
@@ -30,25 +60,11 @@ class NavigationController(mainActivity: MainActivity) {
 
     fun pushWallet(walletFragment: WalletFragment) {
         if (Session.getAccount()?.hasPin == true) {
-            fragmentManager.beginTransaction()
-                .replace(R.id.root_view, walletFragment, WalletFragment.TAG)
-                .commitAllowingStateLoss()
+            navigate(Wallet, walletFragment)
         } else {
             val id = requireNotNull(context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null)) { "required deviceId can not be null" }
             TipActivity.show(context, TipBundle(TipType.Create, id, TryConnecting))
         }
-    }
-
-    fun navigateToMessage(conversationListFragment: ConversationListFragment) {
-        fragmentManager.beginTransaction()
-            .replace(R.id.root_view, conversationListFragment, ConversationListFragment.TAG)
-            .commitAllowingStateLoss()
-    }
-
-    fun navigateToExplore(exploreFragment: ExploreFragment) {
-        fragmentManager.beginTransaction()
-            .replace(R.id.root_view, exploreFragment, ExploreFragment.TAG)
-            .commitAllowingStateLoss()
     }
 
     fun showSearch(fm: FragmentManager) {
