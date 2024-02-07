@@ -417,7 +417,13 @@
     <string name="error_expired_card">错误 10601: 卡片已过期</string>
     <string name="error_expired_price">错误 10602: 价格已过期</string>
     <string name="error_payment_capture">错误 10603: 支付确认失败</string>
-    <string name="error_not_support_card">错误 10604: 不支持此卡片</string>
+    <string name="error_not_support_card">错误 10604: 卡片异常，请稍后尝试正确的卡片</string>
+    <string name="error_use_card_same_time">错误 10605: 卡片异常，请稍后尝试正确的卡片</string>
+    <string name="error_not_approved_many_times">错误 10606: 未批准多次</string>
+    <string name="error_too_many_card_added">错误 10607: 卡片异常，请稍后尝试正确的卡片</string>
+    <string name="error_card_holder_name_not_same">错误 10608: 卡片异常，请稍后尝试正确的卡片</string>
+    <string name="error_expired_session">错误 10609: 交易会话过期</string>
+    <string name="error_inconsistent_country">错误 10610: 国家不一致</string>
     <string name="error_phone_verification_code_expired">错误 20114：验证码已过期</string>
     <string name="error_phone_verification_code_invalid">错误 20113：验证码错误</string>
     <string name="error_pin_check_too_many_request">你已经尝试了超过 5 次，请等待 24 小时后再次尝试。</string>

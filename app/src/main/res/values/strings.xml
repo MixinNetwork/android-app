@@ -427,7 +427,13 @@
     <string name="error_expired_card">ERROR 10601: Card expired</string>
     <string name="error_expired_price">ERROR 10602: Price expired</string>
     <string name="error_payment_capture">ERROR 10603: Payment capture failed</string>
-    <string name="error_not_support_card">ERROR 10604: Card does not support</string>
+    <string name="error_not_support_card">ERROR 10604: Card anomaly, please try correct card later</string>
+    <string name="error_use_card_same_time">ERROR 10605: Card anomaly, please try correct card later</string>
+    <string name="error_not_approved_many_times">ERROR 10606: Not approved too many times</string>
+    <string name="error_too_many_card_added">ERROR 10607: Card anomaly, please try correct card later</string>
+    <string name="error_card_holder_name_not_same">ERROR 10608: Card anomaly, please try correct card later</string>
+    <string name="error_expired_session">ERROR 10609: Session expired</string>
+    <string name="error_inconsistent_country">ERROR 10610: Inconsistent country</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR 20113: Invalid phone verification code</string>
     <string name="error_pin_check_too_many_request">You have tried more than 5 times, please wait at least 24 hours to try again.</string>

@@ -47,6 +47,7 @@ import one.mixin.android.ui.home.bot.InternalBots
 import one.mixin.android.ui.home.bot.InternalLinkDesktop
 import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
 import one.mixin.android.ui.search.SearchBotsFragment
+import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.ErrorHandler
@@ -91,14 +92,14 @@ class ExploreFragment : BaseFragment() {
             root.setOnClickListener {
                 // do nothing
             }
-            searchIv.setOnClickListener {
+            searchIb.setOnClickListener {
                 activity?.addFragment(
                     this@ExploreFragment,
                     SearchBotsFragment(),
                     SearchBotsFragment.TAG,
                 )
             }
-            scanIv.setOnClickListener {
+            scanIb.setOnClickListener {
                 RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
                     if (granted) {
                         (requireActivity() as? MainActivity)?.showCapture(true)
@@ -106,6 +107,9 @@ class ExploreFragment : BaseFragment() {
                         context?.openPermissionSetting()
                     }
                 }
+            }
+            settingIb.setOnClickListener {
+                SettingActivity.show(requireContext(), compose = false)
             }
             favoriteRv.adapter = adapter
             favoriteRv.addItemDecoration(SegmentationItemDecoration())
@@ -293,15 +297,14 @@ class ExploreFragment : BaseFragment() {
                 holder.itemView.setOnClickListener {
                     editAction.invoke()
                 }
-            } else if (getItemViewType(position) != 3)
-                {
-                    getItem(position)?.let { app ->
-                        (holder as FavoriteHolder).bind(app, isDesktopLogin)
-                        holder.itemView.setOnClickListener {
-                            botAction.invoke(app)
-                        }
+            } else if (getItemViewType(position) != 3) {
+                getItem(position)?.let { app ->
+                    (holder as FavoriteHolder).bind(app, isDesktopLogin)
+                    holder.itemView.setOnClickListener {
+                        botAction.invoke(app)
                     }
                 }
+            }
         }
 
         override fun getItemCount(): Int {
@@ -335,21 +338,20 @@ class ExploreFragment : BaseFragment() {
             isDesktopLogin: Boolean,
         ) {
             app ?: return
-            if (app is Bot)
-                {
-                    val a =
-                        if (app == InternalLinkDesktop && isDesktopLogin) {
-                            InternalLinkDesktopLogged
-                        } else {
-                            app
-                        }
-                    itemBinding.apply {
-                        avatar.renderApp(a)
-                        name.setText(a.name)
-                        mixinIdTv.setText(a.description)
-                        verifiedIv.isVisible = false
+            if (app is Bot) {
+                val a =
+                    if (app == InternalLinkDesktop && isDesktopLogin) {
+                        InternalLinkDesktopLogged
+                    } else {
+                        app
                     }
-                } else if (app is ExploreApp) {
+                itemBinding.apply {
+                    avatar.renderApp(a)
+                    name.setText(a.name)
+                    mixinIdTv.setText(a.description)
+                    verifiedIv.isVisible = false
+                }
+            } else if (app is ExploreApp) {
                 itemBinding.apply {
                     avatar.setInfo(app.name, app.iconUrl, app.appId)
                     name.text = app.name
