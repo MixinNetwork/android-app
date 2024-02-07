@@ -52,7 +52,6 @@ import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.safe.formatDestination
 import one.mixin.android.widget.BottomSheet
 import org.chromium.net.CronetException
-import timber.log.Timber
 import java.io.IOException
 import java.math.BigDecimal
 import java.net.SocketTimeoutException
@@ -122,7 +121,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
 
                     TransferStatus.FAILED -> {
-                        Timber.e("${TransferStatus.FAILED} ${transferViewModel.errorMessage}")
                         binding.header.filed(transferViewModel.errorMessage)
                     }
 
@@ -166,7 +164,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 // check DuplicateTransfer by trace
                 // check Large
                 val transferBiometricItem = t as TransferBiometricItem
-                Timber.e("${transferBiometricItem.users.map { it.fullName }}")
                 val tips = mutableListOf<String>()
                 if (!isStrangerTransferDisable() && transferBiometricItem.users.first().relationship != UserRelationship.FRIEND.name) {
                     tips.add(getString(R.string.bottom_transfer_stranger_tip, transferBiometricItem.users.first().identityNumber))
@@ -312,9 +309,8 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         requireContext().getMixinErrorStringByCode(errorCode, errorDescription)
                     }
                 transferViewModel.errorMessage = errorInfo
-                Timber.e("${transferViewModel.errorMessage}")
             } else {
-
+                // do nothing
             }
         }
     }

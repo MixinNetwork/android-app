@@ -27,7 +27,7 @@ class TransferContentReceiveItem : LinearLayout {
     @SuppressLint("SetTextI18n")
     fun setContent(@StringRes titleRes: Int, user: User) {
         _binding.apply {
-            title.setText(titleRes)
+            title.setText(context.getString(titleRes).uppercase())
             val item = TransferReceiverItem(context)
             item.setContent(user)
             userContainer.addView(item)
@@ -36,7 +36,7 @@ class TransferContentReceiveItem : LinearLayout {
 
     fun setContent(@StringRes titleRes: Int, users: List<User>) {
         _binding.apply {
-            title.setText(titleRes)
+            title.setText(context.getString(titleRes).uppercase())
             users.forEach { user ->
                 val item = TransferReceiverItem(context)
                 item.setContent(user)

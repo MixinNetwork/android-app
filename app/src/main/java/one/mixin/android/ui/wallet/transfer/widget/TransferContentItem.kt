@@ -25,7 +25,7 @@ class TransferContentItem : LinearLayout {
 
     fun setContent(@StringRes titleResId: Int, contentStr: String, foot: String? = null) {
         _binding.apply {
-            title.setText(titleResId)
+            title.setText(context.getString(titleResId).uppercase())
             content.text = contentStr
             footer.isVisible = !foot.isNullOrBlank()
             footer.text = foot
