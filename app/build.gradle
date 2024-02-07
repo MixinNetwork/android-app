@@ -382,7 +382,7 @@ dependencies {
     // wallet connect && web3j
     implementation "org.web3j:core:4.10.1" // ⚠️ dependabot unexpected behavior update to version 5.0.0
     implementation "org.web3j:crypto:4.10.1"
-    implementation platform("com.walletconnect:android-bom:1.13.1")
+    implementation platform("com.walletconnect:android-bom:1.22.2")
     implementation "com.walletconnect:android-core"
     implementation "com.walletconnect:web3wallet"
 
