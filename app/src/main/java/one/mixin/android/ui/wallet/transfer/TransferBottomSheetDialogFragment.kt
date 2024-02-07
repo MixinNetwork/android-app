@@ -475,6 +475,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         System.currentTimeMillis(),
                     )
                     context?.updatePinCheck()
+                    isSuccess = true
                     transferViewModel.updateStatus(TransferStatus.SUCCESSFUL)
                 } else {
                     handleError(response.error)
@@ -541,5 +542,22 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val pre = "${t.amount} ${asset.symbol}"
         val post = "≈ ${Fiats.getSymbol()}${(BigDecimal(t.amount) * asset.priceFiat()).numberFormat2()}"
         return "$pre ($post)"
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        callback?.onDismiss(isSuccess)
+    }
+
+    private var isSuccess = false
+    private var callback: Callback? = null
+
+    fun setCallback(cb: Callback) {
+        callback = cb
+    }
+
+    // Keeping these callback methods can only be called at most once.
+    open class Callback {
+        open fun onDismiss(success: Boolean) {}
     }
 }

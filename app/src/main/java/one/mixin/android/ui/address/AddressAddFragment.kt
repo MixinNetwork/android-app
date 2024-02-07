@@ -148,16 +148,15 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                 )
 
             bottomSheet.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
-            // Todo
-            // bottomSheet.setCallback(
-            //     object : BiometricBottomSheetDialogFragment.Callback() {
-            //         override fun onDismiss(success: Boolean) {
-            //             if (success && !viewDestroyed()) {
-            //                 view.navigateUp()
-            //             }
-            //         }
-            //     },
-            // )
+            bottomSheet.setCallback(
+                object : TransferBottomSheetDialogFragment.Callback() {
+                    override fun onDismiss(success: Boolean) {
+                        if (success && !viewDestroyed()) {
+                            view.navigateUp()
+                        }
+                    }
+                },
+            )
         }
 
         if (asset.assetId == RIPPLE_CHAIN_ID) {

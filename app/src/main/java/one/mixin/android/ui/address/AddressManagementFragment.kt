@@ -133,15 +133,15 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                         val deleteItem = adapter.removeItem(viewHolder.bindingAdapterPosition)!!
                         val bottomSheet = showBottomSheet(addr, asset)
                         parentFragmentManager.executePendingTransactions()
-                        // bottomSheet.setCallback(
-                        //     object : BiometricBottomSheetDialogFragment.Callback() {
-                        //         override fun onDismiss(success: Boolean) {
-                        //             if (!success) {
-                        //                 adapter.restoreItem(deleteItem, deletePos)
-                        //             }
-                        //         }
-                        //     },
-                        // )
+                        bottomSheet.setCallback(
+                            object : TransferBottomSheetDialogFragment.Callback() {
+                                override fun onDismiss(success: Boolean) {
+                                    if (!success) {
+                                        adapter.restoreItem(deleteItem, deletePos)
+                                    }
+                                }
+                            },
+                        )
                     }
                 },
             ),
