@@ -202,7 +202,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (!isStrangerTransferDisable() && transferBiometricItem.users.first().relationship != UserRelationship.FRIEND.name) {
                     tips.add(getString(R.string.bottom_transfer_stranger_tip, transferBiometricItem.users.first().identityNumber))
                 }
-                if (isDuplicateTransferDisable() && transferBiometricItem.trace != null) {
+                if (!isDuplicateTransferDisable() && transferBiometricItem.trace != null) {
                     val trace = transferBiometricItem.trace!!
                     val amount = "${t.amount} ${t.asset?.symbol}"
                     val time = trace.createdAt.getRelativeTimeSpan()
