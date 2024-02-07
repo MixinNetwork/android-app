@@ -54,7 +54,7 @@ class TransferAlert : ConstraintLayout {
 
     @SuppressLint("SetTextI18n")
     fun info(
-        @DrawableRes iconRes: Int, info: String, @StringRes prositiveText: Int, @StringRes negativeText: Int,
+        @DrawableRes iconRes: Int, info: String, @StringRes positiveText: Int, @StringRes negativeText: Int,
         positiveClickLint: OnClickListener, negativeClickListener: OnClickListener,
     ) {
         _binding.apply {
@@ -62,7 +62,7 @@ class TransferAlert : ConstraintLayout {
             content.textColor = context.colorFromAttribute(R.attr.text_primary)
             index.textColor = context.colorFromAttribute(R.attr.text_primary)
             index.isVisible = false
-            positive.setText(prositiveText)
+            positive.setText(positiveText)
             positive.setOnClickListener(positiveClickLint)
             negative.setText(negativeText)
             negative.setOnClickListener(negativeClickListener)

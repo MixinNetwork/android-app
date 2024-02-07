@@ -33,7 +33,9 @@ import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
+import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
+import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Trace
@@ -238,7 +240,17 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
     private fun finishCheck() {
-        // Todo
+        val open = requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
+        val enable = !open && BiometricUtil.isSupport(requireContext())
+        binding.transferAlert.isVisible = enable
+        if (enable) {
+            binding.transferAlert.info(R.drawable.ic_biometric, getString(R.string.enable_biometric), R.string.Not_now, R.string.Enable, {
+                binding.transferAlert.isVisible = false
+           }, {
+                SettingActivity.showPinSetting(requireContext())
+                binding.transferAlert.isVisible = false
+            })
+        }
     }
 
     private fun showPin() {

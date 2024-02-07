@@ -1375,4 +1375,7 @@
     <string name="ADDRESS_WILL_RECEIVE">ADDRESS WILL RECEIVE</string>
     <string name="RECEIVER_WILL_RECEIVE">RECEIVER WILL RECEIVE</string>
     <string name="transfer_address_warning">Address confirmation reminder: please make sure that the address %1$s is still valid and that you have not used it for more than 30 days.</string>
+    <string name="Not_now">Not now</string>
+    <string name="Enable">Enable</string>
+    <string name="enable_biometric">Want to enable biometric payment? Once enabled, you can quickly complete payments by verifying your biometric when transferring asset.</string>
 </resources>
