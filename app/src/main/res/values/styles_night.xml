@@ -48,6 +48,11 @@
         <item name="bg_pin_content">@drawable/chat_bubble_pin_message_night</item>
         <item name="bg_flag">@color/bgFlagNight</item>
 
+        <item name="bg_tip_info">@color/bgTipInfoNight</item>
+        <item name="bg_tip_info_border">@color/bgTipInfoBorderNight</item>
+        <item name="bg_tip_warning">@color/bgTipWarningNight</item>
+        <item name="bg_tip_warning_border">@color/bgTipWarningBorderNight</item>
+
         <item name="music_played">@color/musicPlayedNight</item>
         <item name="music_unplayed">@color/musicUnPlayedNight</item>
         <item name="music_buffered">@color/musicBufferedNight</item>

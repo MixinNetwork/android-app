@@ -62,6 +62,10 @@
         <item name="bg_translucence">@color/bgTranslucence</item>
         <item name="bg_pin_content">@drawable/chat_bubble_pin_message</item>
         <item name="bg_flag">@color/bgFlag</item>
+        <item name="bg_tip_info">@color/bgTipInfo</item>
+        <item name="bg_tip_info_border">@color/bgTipInfoBorder</item>
+        <item name="bg_tip_warning">@color/bgTipWarning</item>
+        <item name="bg_tip_warning_border">@color/bgTipWarningBorder</item>
 
         <item name="music_played">@color/musicPlayed</item>
         <item name="music_unplayed">@color/musicUnPlayed</item>

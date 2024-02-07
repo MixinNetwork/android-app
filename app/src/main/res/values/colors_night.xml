@@ -36,6 +36,11 @@
     <color name="bgFlagNight">#3E4148</color>
     <color name="bgTranslucenceNight">#EE2c3136</color>
 
+    <color name="bgTipInfoNight">#383B40</color>
+    <color name="bgTipInfoBorderNight">#999999</color>
+    <color name="bgTipWarningNight">#3E373B</color>
+    <color name="bgTipWarningBorderNight">#E86B67</color>
+
     <color name="bgMenuNight">#23272B</color>
     <color name="bgMenuBorderNight">#3E5264</color>
     <color name="bgGrayLightNight">@color/bgGrayNight</color>

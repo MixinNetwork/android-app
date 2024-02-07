@@ -49,6 +49,11 @@
     <color name="bgChooseNetworkYellow">#4DFFF7AD</color>
     <color name="bgChooseNetwork">#F6F7FA</color>
 
+    <color name="bgTipInfo">#F5F5F5</color>
+    <color name="bgTipInfoBorder">#999999</color>
+    <color name="bgTipWarning">#FBF1F0</color>
+    <color name="bgTipWarningBorder">#E86B67</color>
+
     <color name="musicPlayed">#2F3032</color>
     <color name="musicUnPlayed">#F6F7FA</color>
     <color name="musicBuffered">#442F3032</color>
