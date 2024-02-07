@@ -15,6 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ResponseError
+import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.defaultSharedPreferences
@@ -122,15 +123,15 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
 
                     TransferStatus.FAILED -> {
-                        binding.header.filed(transferViewModel.errorMessage)
+                        binding.header.filed(R.string.Transfer_confirmation, transferViewModel.errorMessage)
                     }
 
                     TransferStatus.IN_PROGRESS -> {
-                        binding.header.progress()
+                        binding.header.progress(R.string.Transfer_confirmation)
                     }
 
                     TransferStatus.SUCCESSFUL -> {
-                        binding.header.success()
+                        binding.header.success(R.string.Transfer_confirmation)
                         finishCheck()
                     }
                 }
@@ -153,7 +154,13 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
 
             is SafeMultisigsBiometricItem -> {
-                binding.header.setContent(R.string.Transfer_confirmation, R.string.Transfer_confirmation_desc, t.asset!!)
+                val multisigsBiometricItem = t as SafeMultisigsBiometricItem
+                val title = if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
+                    R.string.Revoke_Multisig_Signature
+                } else {
+                    R.string.Multisig_Transaction
+                }
+                binding.header.setContent(title, R.string.Transfer_confirmation_desc, t.asset!!)
             }
         }
     }
@@ -229,6 +236,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     )
                 )
                 binding.transferAlert.isVisible = true
+                R.drawable.ic_transfer_fingerprint
                 binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips) {
                     dismiss()
                 }

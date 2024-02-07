@@ -35,19 +35,22 @@ class TransferHeader : LinearLayout {
         }
     }
 
-    fun progress() {
+    fun progress(@StringRes titleResId: Int) {
         _binding.icon.displayedChild = 2
+        _binding.title.setText(titleResId)
     }
 
-    fun filed(errorMessage: String?) {
+    fun filed(@StringRes titleResId: Int, errorMessage: String?) {
         _binding.icon.displayedChild = 1
         _binding.statusIcon.setImageResource(R.drawable.ic_transfer_status_failed)
+        _binding.title.setText(titleResId)
         _binding.subTitle.setText(errorMessage)
         _binding.subTitle.textColorResource = R.color.text_color_error_tip
     }
 
-    fun success() {
+    fun success(@StringRes titleResId: Int) {
         _binding.icon.displayedChild = 1
         _binding.statusIcon.setImageResource(R.drawable.ic_transfer_status_success)
+        _binding.title.setText(titleResId)
     }
 }

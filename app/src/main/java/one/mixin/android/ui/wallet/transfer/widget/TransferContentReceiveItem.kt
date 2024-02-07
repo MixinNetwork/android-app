@@ -34,9 +34,14 @@ class TransferContentReceiveItem : LinearLayout {
         }
     }
 
-    fun setContent(@StringRes titleRes: Int, users: List<User>) {
+    @SuppressLint("SetTextI18n")
+    fun setContent(@StringRes titleRes: Int, users: List<User>, sendersThreshold:Int?=null) {
         _binding.apply {
-            title.setText(context.getString(titleRes).uppercase())
+            if (sendersThreshold != null) {
+                title.text = "${context.getString(titleRes).uppercase()} (${sendersThreshold}/${users.size})"
+            } else {
+                title.text = context.getString(titleRes).uppercase()
+            }
             users.forEach { user ->
                 val item = TransferReceiverItem(context)
                 item.setContent(user)

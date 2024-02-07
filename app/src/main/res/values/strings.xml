@@ -840,7 +840,6 @@
     <string name="Retry">Retry</string>
     <string name="Retry_upload_failed">Retry upload failed.</string>
     <string name="Revoke_access">Revoke access</string>
-    <string name="Revoke_multisig_transaction">Revoke Multisig Transaction</string>
     <string name="Saturday">Saturday</string>
     <string name="Save">Save</string>
     <string name="Save_failure">Save failure</string>
@@ -1379,4 +1378,9 @@
     <string name="Enable">Enable</string>
     <string name="enable_biometric_description">What about biometric? Once enabled, you can expedite authentication with biometric.</string>
     <string name="return_to_merchant_description">Merchant payment is complete. You can opt to return to the merchant or stay in Mixin.</string>
+    <string name="enable_biometric">Want to enable biometric payment? Once enabled, you can quickly complete payments by verifying your biometric when transferring asset.</string>
+    <string name="Revoke_multisig_transaction">Revoke Multisig Transaction</string>
+    <string name="Revoke_Multisig_Signature">Revoke Multisig Signature</string>
+    <string name="Revoking_Multisig_Signature">Revoking Multisig Signature</string>
+    <string name="Revoking_Multisig_Failed">Revoking Multisig Failed</string>
 </resources>

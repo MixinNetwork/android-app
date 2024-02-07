@@ -79,7 +79,7 @@ class TransferContent : LinearLayout {
             receive.isVisible = true
             receive.setContent(R.string.Receive, receiver)
             sender.isVisible = true
-            sender.setContent(R.string.Senders, senders)
+            sender.setContent(R.string.Senders, senders, safeMultisigsBiometricItem.sendersThreshold)
             addressReceive.isVisible = true
             addressReceive.setContent(R.string.RECEIVER_WILL_RECEIVE, "${safeMultisigsBiometricItem.amount} ${safeMultisigsBiometricItem.asset?.symbol}")
 

@@ -821,7 +821,6 @@
     <string name="Retry">重试</string>
     <string name="Retry_upload_failed">重新上传失败。</string>
     <string name="Revoke_access">取消授权</string>
-    <string name="Revoke_multisig_transaction">撤销多重签名交易</string>
     <string name="Saturday">星期六</string>
     <string name="Save">保存</string>
     <string name="Save_failure">保存失败</string>
@@ -1348,4 +1347,9 @@
     <string name="Enable">启用</string>
     <string name="enable_biometric_description">想要启用生物识别支付吗？启用后，转账时可通过生物识别快速完成付款。</string>
     <string name="return_to_merchant_description">来自商家的支付已完成，您可以选择返回商家或者停留在Mixin。</string>
+    <string name="enable_biometric">想要开启生物识别支付吗？开启后，转账时可验证生物信息快速完成付款。</string>
+    <string name="Revoke_Multisig_Signature">撤销多签确认</string>
+    <string name="Revoke_multisig_transaction">撤销多重签名交易</string>
+    <string name="Revoking_Multisig_Failed">撤销多签失败</string>
+    <string name="Revoking_Multisig_Signature">正在撤销多签</string>
 </resources>
