@@ -13,20 +13,26 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.putLong
+import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
+import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
+import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
@@ -236,7 +242,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showPin() {
-        PinInputBottomSheetDialogFragment.newInstance().setOnPinComplete { pin ->
+        PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo()).setOnPinComplete { pin ->
             lifecycleScope.launch {
                 transferViewModel.updateStatus(TransferStatus.IN_PROGRESS)
                 val t = this@TransferBottomSheetDialogFragment.t
@@ -274,6 +280,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
                 bottomViewModel.insertTrace(trace)
                 if (response.isSuccess) {
+                    defaultSharedPreferences.putLong(
+                        Constants.BIOMETRIC_PIN_CHECK,
+                        System.currentTimeMillis(),
+                    )
+                    context?.updatePinCheck()
                     transferViewModel.updateStatus(TransferStatus.SUCCESSFUL)
                 } else {
                     transferViewModel.updateStatus(TransferStatus.FAILED)
@@ -281,5 +292,58 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
+    }
+
+    private fun getBiometricInfo(): BiometricInfo {
+        return when (val t = this.t) {
+            is TransferBiometricItem -> {
+                if (t.users.size == 1) {
+                    val user = t.users.first()
+                    BiometricInfo(
+                        getString(
+                            R.string.transfer_to,
+                            user.fullName,
+                        ),
+                        getString(
+                            R.string.contact_mixin_id,
+                            user.identityNumber,
+                        ),
+                        getDescription(),
+                    )
+                } else {
+                    BiometricInfo(
+                        getString(R.string.Multisig_Transaction),
+                        t.memo ?: "",
+                        getDescription(),
+                    )
+                }
+            }
+            is AddressTransferBiometricItem -> {
+                BiometricInfo(
+                    getString(
+                        R.string.transfer_to,
+                        t.address,
+                    ),
+                    "",
+                    getDescription(),
+                )
+            }
+            else -> {
+                t as WithdrawBiometricItem
+                BiometricInfo(
+                    getString(R.string.withdrawal_to, t.address.label),
+                    t.displayAddress().formatPublicKey(),
+                    getDescription(),
+                )
+            }
+        }
+    }
+
+    private fun getDescription(): String {
+        val t = this.t
+        val asset = t.asset ?: return ""
+        val pre = "${t.amount} ${asset.symbol}"
+        val post = "≈ ${Fiats.getSymbol()}${(BigDecimal(t.amount) * asset.priceFiat()).numberFormat2()}"
+        return "$pre ($post)"
     }
 }

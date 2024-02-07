@@ -1,5 +1,6 @@
 package one.mixin.android.ui.common.biometric
 
+import android.os.Parcelable
 import android.security.keystore.UserNotAuthenticatedException
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricPrompt
@@ -9,6 +10,7 @@ import androidx.biometric.BiometricPrompt.ERROR_LOCKOUT_PERMANENT
 import androidx.biometric.BiometricPrompt.ERROR_USER_CANCELED
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.crypto.Base64
@@ -24,11 +26,12 @@ import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
 import javax.crypto.IllegalBlockSizeException
 
+@Parcelize
 class BiometricInfo(
     val title: String,
     val subTitle: String,
     val description: String,
-)
+):Parcelable
 
 class BiometricDialog(
     private val context: FragmentActivity,

@@ -4,12 +4,17 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
 import android.view.WindowManager
+import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ARGS_TITLE
 import one.mixin.android.databinding.FragmentPinInputBottomSheetBinding
 import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.biometric.BiometricDialog
+import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
@@ -19,14 +24,22 @@ import one.mixin.android.widget.PinView
 class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "PinInputBottomSheetDialogFragment"
+        const val ARGS_BIOMETRIC_INFO = "args_biometric_info"
 
-        fun newInstance(title: String? = null) =
+        fun newInstance(title: String? = null, biometricInfo: BiometricInfo? = null) =
             PinInputBottomSheetDialogFragment().withArgs {
                 title?.let { putString(ARGS_TITLE, it) }
+                biometricInfo?.let { putParcelable(ARGS_BIOMETRIC_INFO, it) }
             }
     }
 
     private val binding by viewBinding(FragmentPinInputBottomSheetBinding::inflate)
+
+    private var biometricDialog: BiometricDialog? = null
+
+    private val biometricInfo: BiometricInfo? by lazy {
+        arguments?.getParcelableCompat(ARGS_BIOMETRIC_INFO, BiometricInfo::class.java)
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
         val dialog = super.onCreateDialog(savedInstanceState)
@@ -37,6 +50,7 @@ class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        biometricDialog?.callback = null
     }
 
     @SuppressLint("RestrictedApi")
@@ -52,6 +66,10 @@ class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             val titleString = arguments?.getString(ARGS_TITLE)
             if (!titleString.isNullOrBlank()) {
                 title.text = titleString
+            }
+            if (biometricInfo != null) {
+                biometricTv.isVisible = BiometricUtil.shouldShowBiometric(requireContext())
+                biometricTv.setOnClickListener { showBiometricPrompt() }
             }
             titleView.rightIv.setOnClickListener { dismiss() }
             pin.setListener(
@@ -97,6 +115,32 @@ class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 } else {
                     binding.pin.append(value)
                 }
+            }
+        }
+
+    private fun showBiometricPrompt() {
+        val info = this.biometricInfo ?: return
+        biometricDialog =
+            BiometricDialog(
+                requireActivity(),
+                info,
+            )
+        biometricDialog?.callback = biometricDialogCallback
+        biometricDialog?.show()
+    }
+
+    private val biometricDialogCallback =
+        object : BiometricDialog.Callback {
+            override fun onPinComplete(pin: String) {
+                onPinComplete?.invoke(pin)
+                dismiss()
+            }
+
+            override fun showPin() {
+                dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            }
+
+            override fun onCancel() {
             }
         }
 
