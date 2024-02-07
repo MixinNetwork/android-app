@@ -275,7 +275,7 @@ class MainActivity : BlazeBaseActivity() {
         setContentView(binding.root)
 
         if (savedInstanceState == null) {
-            navigationController.navigateToMessage(conversationListFragment)
+            navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
         }
 
         val account = Session.getAccount()
@@ -848,7 +848,7 @@ class MainActivity : BlazeBaseActivity() {
             bottomNav.setOnItemSelectedListener {
                 when (it.itemId) {
                     R.id.nav_chat -> {
-                        navigationController.navigateToMessage(conversationListFragment)
+                        navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
                         true
                     }
 
@@ -859,7 +859,7 @@ class MainActivity : BlazeBaseActivity() {
                     }
 
                     R.id.nav_explore -> {
-                        navigationController.navigateToExplore(exploreFragment)
+                        navigationController.navigate(NavigationController.Explore, exploreFragment)
                         conversationListFragment.hideCircles()
                         true
                     }
