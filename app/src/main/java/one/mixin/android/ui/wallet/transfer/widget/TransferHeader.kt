@@ -8,7 +8,9 @@ import android.widget.LinearLayout
 import androidx.annotation.StringRes
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferHeaderBinding
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.safe.TokenItem
 
 class TransferHeader : LinearLayout {
@@ -27,6 +29,7 @@ class TransferHeader : LinearLayout {
         _binding.apply {
             title.setText(titleResId)
             subTitle.setText(subTitleResId)
+            subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
             assetIcon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             assetIcon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         }
@@ -36,9 +39,11 @@ class TransferHeader : LinearLayout {
         _binding.icon.displayedChild = 2
     }
 
-    fun filed() {
+    fun filed(errorMessage: String?) {
         _binding.icon.displayedChild = 1
         _binding.statusIcon.setImageResource(R.drawable.ic_transfer_status_failed)
+        _binding.subTitle.setText(errorMessage)
+        _binding.subTitle.textColorResource = R.color.text_color_error_tip
     }
 
     fun success() {

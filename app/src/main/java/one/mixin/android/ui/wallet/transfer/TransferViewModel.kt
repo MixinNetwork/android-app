@@ -17,6 +17,7 @@ internal constructor(
 
     private val _status = MutableStateFlow(TransferStatus.AWAITING_CONFIRMATION)
     val status = _status.asStateFlow()
+    var errorMessage: String? = null
 
     fun updateStatus(status: TransferStatus) {
         _status.value = status

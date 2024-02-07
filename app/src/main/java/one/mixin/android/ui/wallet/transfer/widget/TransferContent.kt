@@ -15,7 +15,6 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.User
-import timber.log.Timber
 
 class TransferContent : LinearLayout {
 

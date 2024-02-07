@@ -6,11 +6,15 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.DataErrorException
+import one.mixin.android.api.NetworkException
+import one.mixin.android.api.ResponseError
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.defaultSharedPreferences
@@ -23,6 +27,8 @@ import one.mixin.android.extension.putLong
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
+import one.mixin.android.tip.exception.TipNodeException
+import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
@@ -34,16 +40,24 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.safe.formatDestination
 import one.mixin.android.widget.BottomSheet
+import org.chromium.net.CronetException
 import timber.log.Timber
+import java.io.IOException
 import java.math.BigDecimal
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import java.util.concurrent.ExecutionException
 
 @AndroidEntryPoint
 class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -74,33 +88,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
-
-
-        binding.bottom.setOnClickListener({
-            dismiss()
-        }, {
-            showPin()
-        }, {
-            dismiss()
-        })
-        when (t) {
-            is TransferBiometricItem -> {
-                binding.header.setContent(R.string.Transfer_confirmation, R.string.Transfer_confirmation_desc, t.asset!!)
-            }
-
-            is WithdrawBiometricItem -> {
-                binding.header.setContent(R.string.Withdrawal_confirmation, R.string.Transfer_confirmation_desc, t.asset!!)
-            }
-
-            is AddressTransferBiometricItem -> {
-                binding.header.setContent(R.string.Transfer_confirmation, R.string.Transfer_confirmation_desc, t.asset!!)
-            }
-
-            is SafeMultisigsBiometricItem -> {
-                binding.header.setContent(R.string.Transfer_confirmation, R.string.Transfer_confirmation_desc, t.asset!!)
-            }
-        }
-
+        transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
 
         if (t is SafeMultisigsBiometricItem) {
             lifecycleScope.launch {
@@ -116,16 +104,26 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             binding.content.render(t)
         }
 
+        binding.bottom.setOnClickListener({
+            dismiss()
+        }, {
+            showPin()
+        }, {
+            dismiss()
+        })
+
         lifecycleScope.launch {
             transferViewModel.status.collect { status ->
                 binding.bottom.updateStatus(status)
                 when (status) {
                     TransferStatus.AWAITING_CONFIRMATION -> {
+                        renderHeader()
                         preCheck()
                     }
 
                     TransferStatus.FAILED -> {
-                        binding.header.filed()
+                        Timber.e("${TransferStatus.FAILED} ${transferViewModel.errorMessage}")
+                        binding.header.filed(transferViewModel.errorMessage)
                     }
 
                     TransferStatus.IN_PROGRESS -> {
@@ -137,6 +135,26 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         finishCheck()
                     }
                 }
+            }
+        }
+    }
+
+    private fun renderHeader() {
+        when (t) {
+            is TransferBiometricItem -> {
+                binding.header.setContent(R.string.Transfer_confirmation, R.string.Transfer_confirmation_desc, t.asset!!)
+            }
+
+            is WithdrawBiometricItem -> {
+                binding.header.setContent(R.string.Withdrawal_confirmation, R.string.Transfer_confirmation_desc, t.asset!!)
+            }
+
+            is AddressTransferBiometricItem -> {
+                binding.header.setContent(R.string.Transfer_confirmation, R.string.Transfer_confirmation_desc, t.asset!!)
+            }
+
+            is SafeMultisigsBiometricItem -> {
+                binding.header.setContent(R.string.Transfer_confirmation, R.string.Transfer_confirmation_desc, t.asset!!)
             }
         }
     }
@@ -176,6 +194,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (tips.isEmpty()) {
                     binding.transferAlert.isVisible = false
                 } else {
+                    binding.transferAlert.isVisible = true
                     binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips) {
                         dismiss()
                     }
@@ -211,6 +230,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         asset.symbol,
                     )
                 )
+                binding.transferAlert.isVisible = true
                 binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips) {
                     dismiss()
                 }
@@ -246,16 +266,111 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (enable) {
             binding.transferAlert.info(R.drawable.ic_biometric, getString(R.string.enable_biometric), R.string.Not_now, R.string.Enable, {
                 binding.transferAlert.isVisible = false
-           }, {
+            }, {
                 SettingActivity.showPinSetting(requireContext())
                 binding.transferAlert.isVisible = false
             })
         }
     }
 
+    private fun handleError(error: ResponseError?) {
+        lifecycleScope.launch {
+            if (error?.code == ErrorHandler.WITHDRAWAL_SUSPEND) {
+                WithdrawalSuspendedBottomSheet.newInstance(t.asset!!).show(parentFragmentManager, WithdrawalSuspendedBottomSheet.TAG)
+                dismissNow()
+            } else if (error != null) {
+                val errorCode = error.code
+                val errorDescription = error.description
+                if (errorCode in
+                    arrayOf(
+                        ErrorHandler.INSUFFICIENT_BALANCE,
+                        ErrorHandler.INVALID_PIN_FORMAT,
+                        ErrorHandler.PIN_INCORRECT,
+                        ErrorHandler.TOO_SMALL,
+                        ErrorHandler.INSUFFICIENT_TRANSACTION_FEE,
+                        ErrorHandler.BLOCKCHAIN_ERROR,
+                    )
+                ) {
+                    t.traceId.let { traceId ->
+                        bottomViewModel.suspendDeleteTraceById(traceId)
+                    }
+                }
+
+                val errorInfo =
+                    if (errorCode == ErrorHandler.INSUFFICIENT_TRANSACTION_FEE && t is WithdrawBiometricItem) {
+                        val item = t as WithdrawBiometricItem
+                        getString(
+                            R.string.error_insufficient_transaction_fee_with_amount,
+                            "${item.fee} ${t.asset!!.chainSymbol}",
+                        )
+                    } else if (errorCode == ErrorHandler.TOO_MANY_REQUEST) {
+                        requireContext().getString(R.string.error_pin_check_too_many_request)
+                    } else if (errorCode == ErrorHandler.PIN_INCORRECT) {
+                        val errorCount = bottomViewModel.errorCount()
+                        requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, errorCount)
+                    } else {
+                        requireContext().getMixinErrorStringByCode(errorCode, errorDescription)
+                    }
+                transferViewModel.errorMessage = errorInfo
+                Timber.e("${transferViewModel.errorMessage}")
+            } else {
+
+            }
+        }
+    }
+
+    private fun handleError(throwable: Throwable) {
+        transferViewModel.errorMessage =
+            when (throwable) {
+                is IOException ->
+                    when (throwable) {
+                        is SocketTimeoutException -> getString(R.string.error_connection_timeout)
+                        is UnknownHostException -> getString(R.string.No_network_connection)
+                        is NetworkException -> getString(R.string.No_network_connection)
+                        is DataErrorException -> getString(R.string.Data_error)
+                        is CronetException -> {
+                            val extra =
+                                if (throwable is org.chromium.net.NetworkException) {
+                                    val e = throwable
+                                    "${e.errorCode}, ${e.cronetInternalErrorCode}"
+                                } else {
+                                    ""
+                                }
+                            "${getString(R.string.error_connection_error)} $extra"
+                        }
+
+                        else -> getString(R.string.error_unknown_with_message, throwable.message)
+                    }
+
+                is TipNodeException -> {
+                    throwable.getTipExceptionMsg(requireContext())
+                }
+
+                is ExecutionException -> {
+                    if (throwable.cause is CronetException) {
+                        val extra =
+                            if (throwable is org.chromium.net.NetworkException) {
+                                val e = throwable as org.chromium.net.NetworkException
+                                "${e.errorCode}, ${e.cronetInternalErrorCode}"
+                            } else {
+                                ""
+                            }
+                        "${getString(R.string.error_connection_error)} $extra"
+                    } else {
+                        getString(R.string.error_connection_error)
+                    }
+                }
+
+                else -> getString(R.string.error_unknown_with_message, throwable.message)
+            }
+    }
+
     private fun showPin() {
         PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo()).setOnPinComplete { pin ->
-            lifecycleScope.launch {
+            lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+                handleError(error)
+                transferViewModel.updateStatus(TransferStatus.FAILED)
+            }) {
                 transferViewModel.updateStatus(TransferStatus.IN_PROGRESS)
                 val t = this@TransferBottomSheetDialogFragment.t
                 val trace: Trace
@@ -299,8 +414,8 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     context?.updatePinCheck()
                     transferViewModel.updateStatus(TransferStatus.SUCCESSFUL)
                 } else {
+                    handleError(response.error)
                     transferViewModel.updateStatus(TransferStatus.FAILED)
-                    // Todo
                 }
             }
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
@@ -330,6 +445,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     )
                 }
             }
+
             is AddressTransferBiometricItem -> {
                 BiometricInfo(
                     getString(
@@ -340,6 +456,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     getDescription(),
                 )
             }
+
             else -> {
                 t as WithdrawBiometricItem
                 BiometricInfo(
