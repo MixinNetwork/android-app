@@ -12,9 +12,12 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
@@ -26,12 +29,15 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.safe.formatDestination
 import one.mixin.android.widget.BottomSheet
+import java.math.BigDecimal
 
 @AndroidEntryPoint
 class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    constructor() : super()
 
     companion object {
         const val TAG = "TransferBottomSheetDialogFragment"
@@ -128,7 +134,39 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun preCheck() {
         lifecycleScope.launch {
-            if (t is WithdrawBiometricItem) {
+            if (t is TransferBiometricItem) {
+                // Todo Tip list
+                // check Stranger
+                // check DuplicateTransfer by trace
+                // check Large
+                // val transferBiometricItem = t as TransferBiometricItem
+                // val tips = mutableListOf<String>()
+                // if (!isStrangerTransferDisable()) {
+                //
+                // }
+                // if (isDuplicateTransferDisable()) {
+                //
+                // }
+                // val showLarge = checkLargeAmount(t)
+                // if (showLarge) {
+                //     val asset = t.asset ?: return@launch
+                //     binding.titleTv.text = getString(R.string.Large_Amount_Confirmation)
+                //     val fiatAmount =
+                //         (BigDecimal(t.amount) * asset.priceFiat()).numberFormat2()
+                //     binding.warningTv.text =
+                //         getString(
+                //             R.string.wallet_transaction_tip,
+                //             transferBiometricItem.users.first().fullName,
+                //             "${Fiats.getSymbol()}$fiatAmount",
+                //             asset.symbol,
+                //         )
+                // }
+
+                binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips) {
+                    dismiss()
+                }
+            } else if (t is WithdrawBiometricItem) {
+                // Todo check DuplicateTransfer by trace
                 val withdrawBiometricItem = t as WithdrawBiometricItem
                 val exist = withContext(Dispatchers.IO) {
                     transferViewModel.find30daysWithdrawByAddress(formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag)) != null
@@ -141,12 +179,51 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         dismiss()
                     }
                 }
+            } else if (t is AddressTransferBiometricItem) {
+                // Todo check large amount
+                val showLarge = checkLargeAmount(t)
+                val asset = t.asset
+                if(!showLarge || asset == null) {
+                    binding.transferAlert.isVisible = false
+                    return@launch
+                }
+                val fiatAmount =
+                    (BigDecimal(t.amount) * asset.priceFiat()).numberFormat2()
+                val tips = listOf<String>(
+                    getString(
+                        R.string.wallet_transaction_tip, (t as AddressTransferBiometricItem).address,
+                        "${Fiats.getSymbol()}$fiatAmount",
+                        asset!!.symbol,
+                    )
+                )
+                binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips) {
+                    dismiss()
+                }
             } else {
-                // Todo
+                // Other case do nothing
                 binding.transferAlert.isVisible = false
             }
         }
     }
+
+    private fun checkLargeAmount(t: AssetBiometricItem): Boolean {
+        val threshold = BigDecimal(Session.getAccount()!!.transferConfirmationThreshold)
+        if (threshold == BigDecimal.ZERO) return false
+        val price = t.asset?.priceUsd?.toBigDecimalOrNull() ?: return false
+        val amount = BigDecimal(t.amount).multiply(price)
+        return amount > BigDecimal.ZERO && amount >= threshold
+    }
+
+    private suspend fun isDuplicateTransferDisable() =
+        withContext(Dispatchers.IO) {
+            !(PropertyHelper.findValueByKey(Constants.Account.PREF_DUPLICATE_TRANSFER, true))
+        }
+
+    private suspend fun isStrangerTransferDisable() =
+        withContext(Dispatchers.IO) {
+            !(PropertyHelper.findValueByKey(Constants.Account.PREF_STRANGER_TRANSFER, true))
+        }
+
 
     private fun finishCheck() {
         // Todo
