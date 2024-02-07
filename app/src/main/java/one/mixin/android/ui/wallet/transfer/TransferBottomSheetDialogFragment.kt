@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.transfer
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +20,7 @@ import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getRelativeTimeSpan
@@ -26,6 +28,8 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.realSize
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -93,9 +97,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
-        (dialog as BottomSheet).setCustomView(contentView)
+        (dialog as BottomSheet).apply {
+            setCustomView(contentView)
+            setCustomViewHeight(requireContext().displayHeight())
+        }
         transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
-
         if (t is SafeMultisigsBiometricItem) {
             lifecycleScope.launch {
                 val item = t as SafeMultisigsBiometricItem

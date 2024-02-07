@@ -20,6 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="?attr/text_primary"
+        android:layout_marginTop="4dp"
         android:textSize="16sp" />
 
     <TextView
@@ -27,6 +28,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="?attr/text_assist"
+        android:layout_marginTop="2dp"
         android:textSize="12sp"
         android:visibility="gone" />
 

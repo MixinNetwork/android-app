@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet.transfer.widget
 
-import android.R
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
@@ -25,7 +24,7 @@ class TransferReceiverItem : LinearLayout {
         gravity = Gravity.CENTER_VERTICAL
         _binding = ItemReceiverBinding.inflate(LayoutInflater.from(context), this)
         val outValue = TypedValue()
-        getContext().theme.resolveAttribute(R.attr.selectableItemBackground, outValue, true)
+        getContext().theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
         foreground = AppCompatResources.getDrawable(context, outValue.resourceId)
     }
 

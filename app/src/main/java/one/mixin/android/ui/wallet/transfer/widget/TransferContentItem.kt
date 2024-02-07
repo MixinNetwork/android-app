@@ -17,7 +17,8 @@ import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
 class TransferContentItem : LinearLayout {
 
     private val _binding: ItemTransferContentBinding
-    private val dp16 = 16.dp
+
+    private val dp28 = 28.dp
     private val dp8 = 8.dp
 
     constructor(context: Context) : this(context, null)
@@ -25,7 +26,7 @@ class TransferContentItem : LinearLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         orientation = VERTICAL
         _binding = ItemTransferContentBinding.inflate(LayoutInflater.from(context), this)
-        setPadding(dp16, dp8, dp16, dp8)
+        setPadding(dp28, dp8, dp28, dp8)
     }
 
     fun setContent(@StringRes titleResId: Int, contentStr: String, foot: String? = null) {

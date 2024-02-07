@@ -117,7 +117,6 @@ class TransferContent : LinearLayout {
                     addressMemo
                 )
             }
-            space.isVisible = true
 
             network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
         }
@@ -125,7 +124,7 @@ class TransferContent : LinearLayout {
 
     private fun renderMultisigsTransfer(safeMultisigsBiometricItem: SafeMultisigsBiometricItem, senders: List<User>, receiver: List<User>, userClick: (User) -> Unit) {
         _binding.apply {
-            amount.setContent(R.string.Amount, "${safeMultisigsBiometricItem.amount} ${safeMultisigsBiometricItem.asset?.symbol}")
+            amount.setContent(R.string.Amount, "${safeMultisigsBiometricItem.amount} ${safeMultisigsBiometricItem.asset?.symbol}", "${amountAs(safeMultisigsBiometricItem.amount, safeMultisigsBiometricItem.asset!!)}")
             address.isVisible = false
             addressReceive.isVisible = false
             receive.isVisible = true
@@ -150,7 +149,7 @@ class TransferContent : LinearLayout {
 
     private fun renderAddressTransfer(addressTransferBiometricItem: AddressTransferBiometricItem) {
         _binding.apply {
-            amount.setContent(R.string.Amount, "${addressTransferBiometricItem.amount} ${addressTransferBiometricItem.asset?.symbol} ")
+            amount.setContent(R.string.Amount, "${addressTransferBiometricItem.amount} ${addressTransferBiometricItem.asset?.symbol}", "${amountAs(addressTransferBiometricItem.amount, addressTransferBiometricItem.asset!!)}")
             address.isVisible = false
             receive.isVisible = false
             addressReceive.isVisible = true
@@ -163,7 +162,7 @@ class TransferContent : LinearLayout {
 
     private fun renderWithdrawTransfer(withdrawBiometricItem: WithdrawBiometricItem) {
         _binding.apply {
-            amount.setContent(R.string.Amount, "${withdrawBiometricItem.amount} ${withdrawBiometricItem.asset?.symbol}")
+            amount.setContent(R.string.Amount, "${withdrawBiometricItem.amount} ${withdrawBiometricItem.asset?.symbol}", "${amountAs(withdrawBiometricItem.amount, withdrawBiometricItem.asset!!)}")
             address.isVisible = false
             receive.isVisible = false
             address.isVisible = true

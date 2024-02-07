@@ -19,7 +19,8 @@
     <one.mixin.android.widget.FlowLayout
         android:id="@+id/user_container"
         app:flow_max_width="500dp"
-        app:item_offset="8dp"
+        app:item_offset="16dp"
+        android:layout_marginTop="4dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

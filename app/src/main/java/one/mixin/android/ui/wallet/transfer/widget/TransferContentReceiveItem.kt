@@ -13,7 +13,7 @@ import one.mixin.android.vo.User
 class TransferContentReceiveItem : LinearLayout {
 
     private val _binding: ItemTransferReceiveContentBinding
-    private val dp16 = 16.dp
+    private val dp28 = 28.dp
     private val dp8 = 8.dp
 
     constructor(context: Context) : this(context, null)
@@ -21,7 +21,7 @@ class TransferContentReceiveItem : LinearLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         orientation = VERTICAL
         _binding = ItemTransferReceiveContentBinding.inflate(LayoutInflater.from(context), this)
-        setPadding(dp16, dp8, dp16, dp8)
+        setPadding(dp28, dp8, dp28, dp8)
     }
 
     @SuppressLint("SetTextI18n")
