@@ -90,6 +90,7 @@ import one.mixin.android.vo.safe.toPriceAndChange
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.Call
+import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -708,7 +709,11 @@ class TokenRepository
         }
 
         fun updateUtxoToSigned(ids: List<String>) {
-            outputDao.updateUtxoToSigned(ids)
+            val changed = outputDao.updateUtxoToSigned(ids)
+            if (changed != ids.size) {
+                Timber.e("Update failed, ${ids.joinToString(", ")}")
+                throw RuntimeException("Update failed, please try again")
+            }
         }
 
         suspend fun findOldAssets() = assetService.fetchAllAssetSuspend()
