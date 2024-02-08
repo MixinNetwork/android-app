@@ -9,7 +9,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:rightIcon="@drawable/ic_settings_black_24dp"
+        app:rightIcon="@drawable/ic_home_setting"
         app:titleText="@string/Contact" />
 
     <androidx.recyclerview.widget.RecyclerView

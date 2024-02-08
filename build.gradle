@@ -8,7 +8,7 @@ buildscript {
         ext.pagingVersion = '3.2.1'
         ext.collectionx = '1.4.0'
         ext.roomVersion = '2.6.1'
-        ext.navigationVersion = '2.7.5'
+        ext.navigationVersion = '2.7.7'
         ext.workManagerVersion = '2.9.0'
         ext.constraintLayoutVersion = '2.1.4'
         ext.supportLibVersion = '1.0.0'
@@ -101,7 +101,7 @@ buildscript {
 
         ext.bcVersion = '1.70'
         ext.jsonVersion = '20230618'
-        ext.composeVersion = '1.6.0'
+        ext.composeVersion = '1.6.1'
         ext.accompanistVersion = '0.34.0'
         ext.web3jVersion = '4.8.7-android'
 
