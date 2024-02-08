@@ -89,7 +89,7 @@ class TransferHeader : LinearLayout {
                 }
 
                 TransferType.addAddress -> {
-                    title.setText(R.string.Transfer_Failed)
+                    title.setText(R.string.Adding_Address_Failed)
                 }
 
                 TransferType.deleteAddress -> {
