@@ -28,7 +28,7 @@ interface OutputDao : BaseDao<Output> {
     suspend fun findLatestOutputSequence(): Long?
 
     @Query("UPDATE outputs SET state = 'signed' WHERE state = 'unspent' AND output_id IN (:outputIds)")
-    fun updateUtxoToSigned(outputIds: List<String>)
+    fun updateUtxoToSigned(outputIds: List<String>): Int
 
     @Query("SELECT * FROM outputs WHERE asset = :asset ORDER BY created_at DESC, rowid DESC")
     fun utxoItem(asset: String): PagingSource<Int, UtxoItem>
