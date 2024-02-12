@@ -403,6 +403,12 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         checkPin()
     }
 
+    override fun onHiddenChanged(hidden: Boolean) {
+        if (!hidden) {
+            jobManager.addJobInBackground(RefreshTokensJob())
+        }
+    }
+
     override fun onStop() {
         super.onStop()
         snackBar?.dismiss()
