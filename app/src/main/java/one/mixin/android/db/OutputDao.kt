@@ -27,6 +27,9 @@ interface OutputDao : BaseDao<Output> {
     @Query("SELECT sequence FROM outputs ORDER BY sequence DESC LIMIT 1")
     suspend fun findLatestOutputSequence(): Long?
 
+    @Query("SELECT sequence FROM outputs WHERE asset = :asset ORDER BY sequence DESC LIMIT 1")
+    suspend fun findLatestOutputSequenceByAsset(asset: String): Long?
+
     @Query("UPDATE outputs SET state = 'signed' WHERE output_id IN (:outputIds)")
     fun updateUtxoToSigned(outputIds: List<String>): Int
 
