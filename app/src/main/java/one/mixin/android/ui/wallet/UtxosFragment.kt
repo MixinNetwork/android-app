@@ -196,7 +196,7 @@ class UtxosFragment : BaseFragment() {
             }.show()
     }
 
-    private tailrec suspend fun forceSyncUtxo(sequence: Long, kernelAssetId: String): Unit = withContext(Dispatchers.IO) {
+    private suspend fun forceSyncUtxo(sequence: Long, kernelAssetId: String): Unit = withContext(Dispatchers.IO) {
         Timber.d("$TAG sync outputs sequence: $sequence")
         val userId = requireNotNull(Session.getAccountId())
         val members = buildHashMembers(listOf(userId))

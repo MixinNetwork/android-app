@@ -784,7 +784,8 @@ class TokenRepository
         suspend fun insertOutputs(outputs: List<Output>) = outputDao.insertList(outputs)
 
         suspend fun deleteByKernelAssetIdAndOffset(asset: String, offset: Long) = outputDao.deleteByKernelAssetIdAndOffset(asset, offset)
-        suspend fun getOutputs(
+
+    suspend fun getOutputs(
             members: String,
             threshold: Int,
             offset: Long? = null,
