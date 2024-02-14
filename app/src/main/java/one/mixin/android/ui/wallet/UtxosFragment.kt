@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.ClipData
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -166,19 +167,23 @@ class UtxosFragment : BaseFragment() {
         bottomSheet.show()
     }
 
+    private var loadingDialog: Dialog? = null
     private fun forceSyncUtxo() {
         lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
             showError(throwable.message ?: getString(R.string.Unknown))
         }) {
-            val dialog =
+            loadingDialog?.dismiss()
+            loadingDialog = null
+            loadingDialog =
                 indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                     setCancelable(false)
                 }
-            dialog.show()
+            loadingDialog?.show()
             val kernelAssetId = assetIdToAsset(asset.assetId)
             walletViewModel.deleteByKernelAssetIdAndOffset(kernelAssetId, 0)
             forceSyncUtxo(0, assetIdToAsset(asset.assetId))
-            dialog.dismiss()
+            loadingDialog?.dismiss()
+            loadingDialog = null
         }
     }
 
@@ -187,11 +192,23 @@ class UtxosFragment : BaseFragment() {
             .setTitle(R.string.app_name)
             .setMessage(error)
             .setPositiveButton(R.string.Retry) { dialog, _ ->
-                lifecycleScope.launch {
+                lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
+                    dialog.dismiss()
+                    showError(throwable.message ?: getString(R.string.Unknown))
+                }) {
+                    loadingDialog?.dismiss()
+                    loadingDialog = null
+                    loadingDialog =
+                        indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                            setCancelable(false)
+                        }
+                    loadingDialog?.show()
                     val kernelAssetId = assetIdToAsset(asset.assetId)
                     walletViewModel.deleteByKernelAssetIdAndOffset(kernelAssetId, 0)
                     forceSyncUtxo(0, assetIdToAsset(asset.assetId))
                     dialog.dismiss()
+                    loadingDialog?.dismiss()
+                    loadingDialog = null
                 }
             }.show()
     }
