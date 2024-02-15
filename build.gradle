@@ -85,7 +85,7 @@ buildscript {
 
         ext.gsonVersion = '2.10.1'
         ext.serializationVersion = '1.6.2'
-        ext.autodisposeVersion = '1.4.0'
+        ext.autodisposeVersion = '1.4.1'
         ext.jsoupVersion = '1.13.1'
         ext.isoparserVersion = '1.0.6'
         ext.largeImageViewVersion = '1.1.1'
