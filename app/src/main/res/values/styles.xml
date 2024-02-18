@@ -291,8 +291,8 @@
     </style>
 
     <style name="TransactionTitleTextStyle">
-        <item name="android:textSize">12sp</item>
-        <item name="android:textColor">?attr/text_minor</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">?attr/text_assist</item>
         <item name="android:layout_marginStart">20dp</item>
         <item name="android:layout_marginEnd">20dp</item>
         <item name="android:layout_marginTop">12dp</item>

@@ -14,7 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="?attr/text_assist"
-        android:textSize="12sp" />
+        android:textSize="14sp" />
 
     <one.mixin.android.widget.FlowLayout
         android:id="@+id/user_container"
