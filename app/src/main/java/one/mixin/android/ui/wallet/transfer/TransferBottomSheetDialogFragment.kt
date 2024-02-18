@@ -311,7 +311,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         } else {
             binding.transferAlert.isVisible = true
-            binding.transferAlert.info(R.drawable.ic_transfer_done, getString(R.string.return_to_merchant_description), R.string.Stay_in_Mixin, R.string.Back_To_Merchant, {
+            binding.transferAlert.info(R.drawable.ic_transfer_merchant, getString(R.string.return_to_merchant_description), R.string.Stay_in_Mixin, R.string.Back_To_Merchant, {
                 binding.transferAlert.isVisible = false
             }, {
                 requireContext().openExternalUrl(returnTo)
