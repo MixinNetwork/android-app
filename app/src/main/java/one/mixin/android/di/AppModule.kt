@@ -480,9 +480,9 @@ object AppModule {
         httpLoggingInterceptor: HttpLoggingInterceptor?,
     ): RouteService {
         val builder = OkHttpClient.Builder()
-        builder.connectTimeout(10, TimeUnit.SECONDS)
-        builder.writeTimeout(10, TimeUnit.SECONDS)
-        builder.readTimeout(10, TimeUnit.SECONDS)
+        builder.connectTimeout(15, TimeUnit.SECONDS)
+        builder.writeTimeout(15, TimeUnit.SECONDS)
+        builder.readTimeout(15, TimeUnit.SECONDS)
         builder.dns(DNS)
         val client =
             builder.apply {
