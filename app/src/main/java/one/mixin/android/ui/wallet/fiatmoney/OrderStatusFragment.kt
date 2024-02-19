@@ -579,6 +579,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             launch {
                 delay(6000)
                 if (paymentExecuted.compareAndSet(false, true)) {
+                    reportException(RiskException("Timeout"))
                     payments(
                         sessionId,
                         null,
