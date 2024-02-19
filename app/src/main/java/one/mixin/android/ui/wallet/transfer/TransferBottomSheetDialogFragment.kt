@@ -5,25 +5,30 @@ import android.app.Dialog
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ResponseError
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.event.BotCloseEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.navigationBarHeight
+import one.mixin.android.extension.hasNavigationBar
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openExternalUrl
@@ -45,7 +50,6 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.ui.common.showUserBottom
-import one.mixin.android.ui.oldwallet.biometric.displayAddress
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
@@ -99,7 +103,13 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView = binding.root
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
-            setCustomViewHeight(requireContext().displayHeight() - requireContext().navigationBarHeight())
+            setCustomViewHeight(
+                requireContext().displayHeight() - if (requireContext().hasNavigationBar()) {
+                    requireContext().navigationBarHeight()
+                } else {
+                    0
+                }
+            )
         }
         initType()
         transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
@@ -126,6 +136,13 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }, {
             dismiss()
         })
+
+        RxBus.listen(BotCloseEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { _ ->
+                dismiss()
+            }
 
         lifecycleScope.launch {
             transferViewModel.status.collect { status ->
@@ -235,7 +252,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             } else if (t is WithdrawBiometricItem) {
                 // check withdraw within 30 days
-                // check first withdrawal
                 val withdrawBiometricItem = t as WithdrawBiometricItem
                 val tips = mutableListOf<String>()
                 val exist = withContext(Dispatchers.IO) {
@@ -244,10 +260,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                 if (!exist) {
                     tips.add(getString(R.string.transfer_address_warning, formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag)))
-                }
-
-                if (shouldShowWithdrawalTip(withdrawBiometricItem)) {
-                    tips.add(getString(R.string.withdrawal_address_tips))
                 }
 
                 if (tips.isEmpty()) {
@@ -304,20 +316,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         withContext(Dispatchers.IO) {
             !(PropertyHelper.findValueByKey(Constants.Account.PREF_STRANGER_TRANSFER, true))
         }
-
-    private fun shouldShowWithdrawalTip(t: WithdrawBiometricItem): Boolean {
-        val price = t.asset?.priceUsd?.toBigDecimalOrNull() ?: return false
-        val amount = BigDecimal(t.amount).multiply(price)
-        if (amount <= BigDecimal(10)) {
-            return false
-        }
-        val hasWithdrawalAddressSet = defaultSharedPreferences.getStringSet(Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET, null)
-        return if (hasWithdrawalAddressSet == null) {
-            true
-        } else {
-            !hasWithdrawalAddressSet.contains(t.address.addressId)
-        }
-    }
 
     private fun finishCheck() {
         val returnTo = when (val t = this.t) {
