@@ -5,7 +5,6 @@ import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.widget.LinearLayout
-import androidx.annotation.StringRes
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferHeaderBinding
 import one.mixin.android.extension.colorAttr
@@ -137,7 +136,6 @@ class TransferHeader : LinearLayout {
                     title.setText(R.string.Confirm_Deleting_Address)
                     subTitle.setText(R.string.address_deleted_description)
                 }
-
 
                 TransferType.mutlSign -> {
                     title.setText(R.string.Multisig_Transaction)

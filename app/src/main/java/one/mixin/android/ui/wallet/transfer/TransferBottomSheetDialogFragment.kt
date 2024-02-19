@@ -44,6 +44,7 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.ui.common.showUserBottom
+import one.mixin.android.ui.oldwallet.biometric.displayAddress
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
@@ -185,7 +186,8 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     TransferType.mutlSign
                 }
             }
-            else ->{
+
+            else -> {
                 throw IllegalArgumentException("Unknown type")
             }
         }
@@ -231,16 +233,27 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
             } else if (t is WithdrawBiometricItem) {
-                // check withdraw transfer
+                // check withdraw within 30 days
+                // check first withdrawal
                 val withdrawBiometricItem = t as WithdrawBiometricItem
+                val tips = mutableListOf<String>()
                 val exist = withContext(Dispatchers.IO) {
                     transferViewModel.find30daysWithdrawByAddress(formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag)) != null
                 }
-                if (exist) {
+
+                if (!exist) {
+                    tips.add(getString(R.string.transfer_address_warning, formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag)))
+                }
+
+                if (shouldShowWithdrawalTip(withdrawBiometricItem)) {
+                    tips.add(getString(R.string.withdrawal_address_tips))
+                }
+
+                if (tips.isEmpty()) {
                     binding.transferAlert.isVisible = false
                 } else {
                     binding.transferAlert.isVisible = true
-                    binding.transferAlert.warning(R.drawable.ic_transfer_warning, listOf(getString(R.string.transfer_address_warning, formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag)))) {
+                    binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips) {
                         dismiss()
                     }
                 }
@@ -290,6 +303,20 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         withContext(Dispatchers.IO) {
             !(PropertyHelper.findValueByKey(Constants.Account.PREF_STRANGER_TRANSFER, true))
         }
+
+    private fun shouldShowWithdrawalTip(t: WithdrawBiometricItem): Boolean {
+        val price = t.asset?.priceUsd?.toBigDecimalOrNull() ?: return false
+        val amount = BigDecimal(t.amount).multiply(price)
+        if (amount <= BigDecimal(10)) {
+            return false
+        }
+        val hasWithdrawalAddressSet = defaultSharedPreferences.getStringSet(Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET, null)
+        return if (hasWithdrawalAddressSet == null) {
+            true
+        } else {
+            !hasWithdrawalAddressSet.contains(t.address.addressId)
+        }
+    }
 
     private fun finishCheck() {
         val returnTo = when (val t = this.t) {
@@ -465,6 +492,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 }
                             }
                         }
+
                         is WithdrawBiometricItem -> {
                             trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address.destination, t.address.tag, null, nowInUtc())
                             val fee = requireNotNull(t.fee) { "required fee can not be null" }

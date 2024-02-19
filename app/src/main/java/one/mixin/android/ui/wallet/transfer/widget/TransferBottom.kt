@@ -30,7 +30,7 @@ class TransferBottom : ViewAnimator {
         _binding.retry.setOnClickListener(confirmClickListener)
     }
 
-    fun updateStatus(status: TransferStatus, canretry:Boolean = false) {
+    fun updateStatus(status: TransferStatus, canretry: Boolean = false) {
         when (status) {
             TransferStatus.AWAITING_CONFIRMATION -> {
                 isInvisible = false
