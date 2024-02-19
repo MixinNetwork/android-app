@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.isVisible
 import one.mixin.android.databinding.ItemReceiverBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.vo.User
@@ -33,6 +34,16 @@ class TransferReceiverItem : LinearLayout {
         _binding.apply {
             name.text = "${user.fullName} (${user.identityNumber})"
             userAvatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
+            if (user.isVerified == true) {
+                verifiedIv.isVisible = true
+                botIv.isVisible = false
+            } else if (user.isBot()) {
+                verifiedIv.isVisible = false
+                botIv.isVisible = true
+            } else {
+                verifiedIv.isVisible = false
+                botIv.isVisible = false
+            }
         }
     }
 }
