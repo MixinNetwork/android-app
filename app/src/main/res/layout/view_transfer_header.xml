@@ -56,6 +56,7 @@
         android:textColor="?attr/text_assist"
         android:gravity="center_horizontal"
         android:maxLines="2"
+        android:lines="2"
         android:textSize="14sp" />
 
     <View

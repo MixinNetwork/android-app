@@ -23,6 +23,7 @@ import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getRelativeTimeSpan
+import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openExternalUrl
@@ -98,7 +99,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView = binding.root
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
-            setCustomViewHeight(requireContext().displayHeight())
+            setCustomViewHeight(requireContext().displayHeight() - requireContext().navigationBarHeight())
         }
         initType()
         transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
