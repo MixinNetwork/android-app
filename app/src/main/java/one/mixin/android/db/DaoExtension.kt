@@ -1,8 +1,10 @@
 package one.mixin.android.db
 
+import kotlinx.coroutines.withContext
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.session.Session
+import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
@@ -172,7 +174,7 @@ fun JobDao.insertNoReplace(job: Job) {
     }
 }
 
-fun OutputDao.insertUnspentOutputs(outputs: List<Output>) {
+suspend fun OutputDao.insertUnspentOutputs(outputs: List<Output>) = withContext(SINGLE_DB_THREAD) {
     runInTransaction {
         val signed = findSignedOutput(outputs.map { it.outputId })
         if (signed.isEmpty()) {

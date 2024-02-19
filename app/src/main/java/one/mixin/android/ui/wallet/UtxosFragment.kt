@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.ClipData
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,29 +14,41 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentUtxosBinding
 import one.mixin.android.databinding.ItemWalletUtxoBinding
 import one.mixin.android.databinding.ViewWalletUtxoBottomBinding
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
-import one.mixin.android.job.ForceSyncOutputJob
+import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.Session
+import one.mixin.android.session.buildHashMembers
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class UtxosFragment : BaseFragment() {
     companion object {
+
+        private const val syncOutputLimit = 200
+        private const val TAG = "UtxosFragment"
+
         fun newInstance(asset: TokenItem) =
             UtxosFragment().withArgs {
                 putParcelable(ARGS_ASSET, asset)
@@ -146,11 +159,81 @@ class UtxosFragment : BaseFragment() {
         val bottomSheet = builder.create()
         bottomBinding.apply {
             refresh.setOnClickListener {
-                jobManager.addJobInBackground(ForceSyncOutputJob(0, assetIdToAsset(asset.assetId)))
+                forceSyncUtxo()
                 bottomSheet.dismiss()
             }
             cancel.setOnClickListener { bottomSheet.dismiss() }
         }
         bottomSheet.show()
+    }
+
+    private var loadingDialog: Dialog? = null
+    private fun forceSyncUtxo() {
+        lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
+            showError(throwable.message ?: getString(R.string.Unknown))
+        }) {
+            loadingDialog?.dismiss()
+            loadingDialog = null
+            loadingDialog =
+                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                    setCancelable(false)
+                }
+            loadingDialog?.show()
+            val kernelAssetId = assetIdToAsset(asset.assetId)
+            walletViewModel.deleteByKernelAssetIdAndOffset(kernelAssetId, 0)
+            forceSyncUtxo(0, assetIdToAsset(asset.assetId))
+            loadingDialog?.dismiss()
+            loadingDialog = null
+        }
+    }
+
+    private fun showError(error: String) {
+        alertDialogBuilder()
+            .setTitle(R.string.app_name)
+            .setMessage(error)
+            .setPositiveButton(R.string.Retry) { dialog, _ ->
+                lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
+                    dialog.dismiss()
+                    showError(throwable.message ?: getString(R.string.Unknown))
+                }) {
+                    loadingDialog?.dismiss()
+                    loadingDialog = null
+                    loadingDialog =
+                        indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                            setCancelable(false)
+                        }
+                    loadingDialog?.show()
+                    val kernelAssetId = assetIdToAsset(asset.assetId)
+                    walletViewModel.deleteByKernelAssetIdAndOffset(kernelAssetId, 0)
+                    forceSyncUtxo(0, assetIdToAsset(asset.assetId))
+                    dialog.dismiss()
+                    loadingDialog?.dismiss()
+                    loadingDialog = null
+                }
+            }.show()
+    }
+
+    private suspend fun forceSyncUtxo(sequence: Long, kernelAssetId: String): Unit = withContext(Dispatchers.IO) {
+        Timber.d("$TAG sync outputs sequence: $sequence")
+        val userId = requireNotNull(Session.getAccountId())
+        val members = buildHashMembers(listOf(userId))
+        val resp = walletViewModel.getOutputs(members, 1, sequence, syncOutputLimit, asset = kernelAssetId)
+        if (!resp.isSuccess || resp.data.isNullOrEmpty()) {
+            Timber.d("$TAG getOutputs ${resp.isSuccess}, ${resp.data.isNullOrEmpty()}")
+            showError(resp.errorDescription)
+            return@withContext
+        }
+        val outputs = (requireNotNull(resp.data) { "outputs can not be null or empty at this step" })
+        if (outputs.isNotEmpty()) {
+            // Insert replace
+            walletViewModel.insertOutputs(outputs)
+        }
+        Timber.d("$TAG insertOutputs ${outputs.size}")
+        if (outputs.size < syncOutputLimit) {
+            jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(kernelAssetId)))
+        } else {
+            val lastSequence = walletViewModel.findLatestOutputSequenceByAsset(kernelAssetId) ?: 0L
+            forceSyncUtxo(lastSequence, kernelAssetId)
+        }
     }
 }

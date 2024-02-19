@@ -90,6 +90,7 @@ import one.mixin.android.vo.safe.toPriceAndChange
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.Call
+import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -166,7 +167,7 @@ class TokenRepository
                     },
                     failureBlock = {
                         code = it.errorCode
-                        false
+                        code == ErrorHandler.ADDRESS_GENERATING
                     },
                     successBlock = { resp ->
                         val pub = SAFE_PUBLIC_KEY.hexStringToByteArray()
@@ -708,7 +709,11 @@ class TokenRepository
         }
 
         fun updateUtxoToSigned(ids: List<String>) {
-            outputDao.updateUtxoToSigned(ids)
+            val changed = outputDao.updateUtxoToSigned(ids)
+            if (changed != ids.size) {
+                Timber.e("Update failed, ${ids.joinToString(", ")}")
+                throw RuntimeException("Update failed, please try again")
+            }
         }
 
         suspend fun findOldAssets() = assetService.fetchAllAssetSuspend()
@@ -773,4 +778,21 @@ class TokenRepository
         }
 
         fun firstUnspentTransaction() = rawTransactionDao.findUnspentTransaction()
+
+        suspend fun findLatestOutputSequenceByAsset(asset: String) = outputDao.findLatestOutputSequenceByAsset(asset)
+
+        suspend fun insertOutputs(outputs: List<Output>) = outputDao.insertList(outputs)
+
+        suspend fun deleteByKernelAssetIdAndOffset(asset: String, offset: Long) = outputDao.deleteByKernelAssetIdAndOffset(asset, offset)
+
+    suspend fun getOutputs(
+            members: String,
+            threshold: Int,
+            offset: Long? = null,
+            limit: Int = 500,
+            state: String? = null,
+            asset: String? = null,
+        ) = utxoService.getOutputs(
+            members, threshold, offset, limit, state, asset
+        )
     }

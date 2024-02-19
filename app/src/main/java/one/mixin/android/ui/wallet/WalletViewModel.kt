@@ -22,6 +22,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.api.service.UtxoService
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
@@ -39,10 +40,12 @@ import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.safe.DepositEntry
+import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.sumsub.ProfileResponse
+import retrofit2.http.Query
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -379,4 +382,21 @@ class WalletViewModel
         }
 
         suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
+
+        suspend fun findLatestOutputSequenceByAsset(asset: String) = tokenRepository.findLatestOutputSequenceByAsset(asset)
+
+        suspend fun insertOutputs(outputs:List<Output>) = withContext(Dispatchers.IO) { tokenRepository.insertOutputs(outputs) }
+
+        suspend fun deleteByKernelAssetIdAndOffset(kernelAssetId: String, offset: Long) = tokenRepository.deleteByKernelAssetIdAndOffset(kernelAssetId, offset)
+
+        suspend fun getOutputs(
+            members: String,
+            threshold: Int,
+            offset: Long? = null,
+            limit: Int = 500,
+            state: String? = null,
+            asset: String? = null,
+        ) = tokenRepository.getOutputs(
+            members, threshold, offset, limit, state, asset
+        )
     }
