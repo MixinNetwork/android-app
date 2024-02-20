@@ -24,7 +24,6 @@ import one.mixin.android.ui.address.adapter.AddressAdapter
 import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
-import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.buildWithdrawalBiometricItem
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -167,16 +166,17 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
         address: Address,
         asset: TokenItem,
     ): TransferBottomSheetDialogFragment {
-        val bottomSheet = TransferBottomSheetDialogFragment.newInstance(
-            AddressManageBiometricItem(
-                asset = asset,
-                addressId = address.addressId,
-                label = address.label,
-                tag = address.tag,
-                destination = address.destination,
-                type = TransferBottomSheetDialogFragment.DELETE
+        val bottomSheet =
+            TransferBottomSheetDialogFragment.newInstance(
+                AddressManageBiometricItem(
+                    asset = asset,
+                    addressId = address.addressId,
+                    label = address.label,
+                    tag = address.tag,
+                    destination = address.destination,
+                    type = TransferBottomSheetDialogFragment.DELETE,
+                ),
             )
-        )
         bottomSheet.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
         return bottomSheet
     }

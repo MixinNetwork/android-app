@@ -11,7 +11,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.vo.User
 
 class TransferContentReceiveItem : LinearLayout {
-
     private val _binding: ItemTransferReceiveContentBinding
     private val dp28 = 28.dp
     private val dp8 = 8.dp
@@ -25,7 +24,11 @@ class TransferContentReceiveItem : LinearLayout {
     }
 
     @SuppressLint("SetTextI18n")
-    fun setContent(@StringRes titleRes: Int, user: User, userClick: (User) -> Unit) {
+    fun setContent(
+        @StringRes titleRes: Int,
+        user: User,
+        userClick: (User) -> Unit,
+    ) {
         _binding.apply {
             title.setText(context.getString(titleRes).uppercase())
             val item = TransferReceiverItem(context)
@@ -38,7 +41,12 @@ class TransferContentReceiveItem : LinearLayout {
     }
 
     @SuppressLint("SetTextI18n")
-    fun setContent(@StringRes titleRes: Int, users: List<User>, sendersThreshold: Int? = null, userClick: (User) -> Unit) {
+    fun setContent(
+        @StringRes titleRes: Int,
+        users: List<User>,
+        sendersThreshold: Int? = null,
+        userClick: (User) -> Unit,
+    ) {
         _binding.apply {
             if (sendersThreshold != null) {
                 title.text = "${context.getString(titleRes).uppercase()} ($sendersThreshold/${users.size})"

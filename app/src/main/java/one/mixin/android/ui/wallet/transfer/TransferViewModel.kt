@@ -10,18 +10,17 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TransferViewModel
-@Inject
-internal constructor(
-    val tokenRepository: TokenRepository,
-) : ViewModel() {
+    @Inject
+    internal constructor(
+        val tokenRepository: TokenRepository,
+    ) : ViewModel() {
+        private val _status = MutableStateFlow(TransferStatus.AWAITING_CONFIRMATION)
+        val status = _status.asStateFlow()
+        var errorMessage: String? = null
 
-    private val _status = MutableStateFlow(TransferStatus.AWAITING_CONFIRMATION)
-    val status = _status.asStateFlow()
-    var errorMessage: String? = null
+        fun updateStatus(status: TransferStatus) {
+            _status.value = status
+        }
 
-    fun updateStatus(status: TransferStatus) {
-        _status.value = status
+        fun find30daysWithdrawByAddress(formatDestination: String) = tokenRepository.find30daysWithdrawByAddress(formatDestination)
     }
-
-    fun find30daysWithdrawByAddress(formatDestination: String) = tokenRepository.find30daysWithdrawByAddress(formatDestination)
-}

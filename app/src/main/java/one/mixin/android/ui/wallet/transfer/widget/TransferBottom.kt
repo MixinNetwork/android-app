@@ -12,7 +12,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 
 class TransferBottom : ViewAnimator {
-
     private val _binding: ViewTransferBottomBinding
     private val dp16 = 16.dp
 
@@ -22,7 +21,11 @@ class TransferBottom : ViewAnimator {
         setPadding(dp16)
     }
 
-    fun setOnClickListener(cancelClickListener: OnClickListener, confirmClickListener: OnClickListener, doneClickListener: OnClickListener) {
+    fun setOnClickListener(
+        cancelClickListener: OnClickListener,
+        confirmClickListener: OnClickListener,
+        doneClickListener: OnClickListener,
+    ) {
         _binding.cancelButton.setOnClickListener(cancelClickListener)
         _binding.confirmButton.setOnClickListener(confirmClickListener)
         _binding.doneBtn.setOnClickListener(doneClickListener)
@@ -30,7 +33,10 @@ class TransferBottom : ViewAnimator {
         _binding.retry.setOnClickListener(confirmClickListener)
     }
 
-    fun updateStatus(status: TransferStatus, canretry: Boolean = false) {
+    fun updateStatus(
+        status: TransferStatus,
+        canretry: Boolean = false,
+    ) {
         when (status) {
             TransferStatus.AWAITING_CONFIRMATION -> {
                 isInvisible = false

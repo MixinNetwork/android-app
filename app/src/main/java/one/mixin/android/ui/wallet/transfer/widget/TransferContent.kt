@@ -5,7 +5,6 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.core.view.isVisible
-import java.math.BigDecimal
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferContentBinding
@@ -21,9 +20,9 @@ import one.mixin.android.util.getChainName
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
 
 class TransferContent : LinearLayout {
-
     private val _binding: ViewTransferContentBinding
 
     constructor(context: Context) : this(context, null)
@@ -53,22 +52,31 @@ class TransferContent : LinearLayout {
         }
     }
 
-    fun render(safeMultisigsBiometricItem: SafeMultisigsBiometricItem, sender: List<User>, receiver: List<User>, userClick: (User) -> Unit) {
+    fun render(
+        safeMultisigsBiometricItem: SafeMultisigsBiometricItem,
+        sender: List<User>,
+        receiver: List<User>,
+        userClick: (User) -> Unit,
+    ) {
         renderMultisigsTransfer(safeMultisigsBiometricItem, sender, receiver, userClick)
     }
 
-    private fun amountAs(amount: String, asset: TokenItem): String {
-        val value = try {
-            if (asset.priceFiat().toDouble() == 0.0) {
+    private fun amountAs(
+        amount: String,
+        asset: TokenItem,
+    ): String {
+        val value =
+            try {
+                if (asset.priceFiat().toDouble() == 0.0) {
+                    BigDecimal.ZERO
+                } else {
+                    BigDecimal(amount) * asset.priceFiat()
+                }
+            } catch (e: ArithmeticException) {
                 BigDecimal.ZERO
-            } else {
-                BigDecimal(amount) * asset.priceFiat()
+            } catch (e: NumberFormatException) {
+                BigDecimal.ZERO
             }
-        } catch (e: ArithmeticException) {
-            BigDecimal.ZERO
-        } catch (e: NumberFormatException) {
-            BigDecimal.ZERO
-        }
         return "${value.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}"
     }
 
@@ -114,7 +122,7 @@ class TransferContent : LinearLayout {
                     } else {
                         R.string.withdrawal_memo
                     },
-                    addressMemo
+                    addressMemo,
                 )
             }
 
@@ -122,7 +130,12 @@ class TransferContent : LinearLayout {
         }
     }
 
-    private fun renderMultisigsTransfer(safeMultisigsBiometricItem: SafeMultisigsBiometricItem, senders: List<User>, receiver: List<User>, userClick: (User) -> Unit) {
+    private fun renderMultisigsTransfer(
+        safeMultisigsBiometricItem: SafeMultisigsBiometricItem,
+        senders: List<User>,
+        receiver: List<User>,
+        userClick: (User) -> Unit,
+    ) {
         _binding.apply {
             amount.setContent(R.string.Amount, "${safeMultisigsBiometricItem.amount} ${safeMultisigsBiometricItem.asset?.symbol}", "${amountAs(safeMultisigsBiometricItem.amount, safeMultisigsBiometricItem.asset!!)}")
             address.isVisible = false

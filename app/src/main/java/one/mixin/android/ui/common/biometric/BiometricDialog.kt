@@ -31,7 +31,7 @@ class BiometricInfo(
     val title: String,
     val subTitle: String,
     val description: String,
-):Parcelable
+) : Parcelable
 
 class BiometricDialog(
     private val context: FragmentActivity,

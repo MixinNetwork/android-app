@@ -14,7 +14,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.vo.User
 
 class TransferReceiverItem : LinearLayout {
-
     private val _binding: ItemReceiverBinding
     private val dp8 = 8.dp
 

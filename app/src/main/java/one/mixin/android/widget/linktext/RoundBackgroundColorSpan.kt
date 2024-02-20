@@ -14,7 +14,7 @@ class RoundBackgroundColorSpan(private val bgColor: Int, private val textColor: 
         text: CharSequence,
         start: Int,
         end: Int,
-        fm: FontMetricsInt?
+        fm: FontMetricsInt?,
     ): Int {
         return (paint.measureText(text, start, end).toInt() + 8.dp)
     }
@@ -28,20 +28,20 @@ class RoundBackgroundColorSpan(private val bgColor: Int, private val textColor: 
         top: Int,
         y: Int,
         bottom: Int,
-        paint: Paint
+        paint: Paint,
     ) {
         val originalColor = paint.color
         paint.color = bgColor
         canvas.drawRoundRect(
             RectF(
-                x, (top + paint.textSize * 0.05).toFloat(),
+                x,
+                (top + paint.textSize * 0.05).toFloat(),
                 x + (paint.measureText(text, start, end).toInt() + 8.dp),
-                (bottom - paint.textSize * 0.05).toFloat()
+                (bottom - paint.textSize * 0.05).toFloat(),
             ),
-
             4.dp.toFloat(),
             4.dp.toFloat(),
-            paint
+            paint,
         )
         paint.color = textColor
         canvas.drawText(text, start, end, (x + 4.dp), y.toFloat(), paint)

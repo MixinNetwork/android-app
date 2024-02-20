@@ -26,7 +26,10 @@ class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val TAG = "PinInputBottomSheetDialogFragment"
         const val ARGS_BIOMETRIC_INFO = "args_biometric_info"
 
-        fun newInstance(title: String? = null, biometricInfo: BiometricInfo? = null) =
+        fun newInstance(
+            title: String? = null,
+            biometricInfo: BiometricInfo? = null,
+        ) =
             PinInputBottomSheetDialogFragment().withArgs {
                 title?.let { putString(ARGS_TITLE, it) }
                 biometricInfo?.let { putParcelable(ARGS_BIOMETRIC_INFO, it) }

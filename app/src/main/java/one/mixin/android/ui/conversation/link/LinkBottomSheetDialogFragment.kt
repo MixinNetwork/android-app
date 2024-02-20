@@ -607,8 +607,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                         label = address.label,
                                         destination = address.destination,
                                         tag = address.tag,
-                                        type = TransferBottomSheetDialogFragment.DELETE
-                                    )
+                                        type = TransferBottomSheetDialogFragment.DELETE,
+                                    ),
                                 ).showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
                                 dismiss()
                             } else {
@@ -641,8 +641,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     destination = destination,
                                     addressId = null,
                                     tag = tag,
-                                    type = TransferBottomSheetDialogFragment.ADD
-                                )
+                                    type = TransferBottomSheetDialogFragment.ADD,
+                                ),
                             ).showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
                             dismiss()
                         } else {

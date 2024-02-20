@@ -35,7 +35,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
-import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -138,13 +137,13 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                         addressId = null,
                         destination = destination,
                         tag =
-                        if (memoEnabled) {
-                            binding.tagEt.text.toString()
-                        } else {
-                            ""
-                        },
-                        type = TransferBottomSheetDialogFragment.ADD
-                    )
+                            if (memoEnabled) {
+                                binding.tagEt.text.toString()
+                            } else {
+                                ""
+                            },
+                        type = TransferBottomSheetDialogFragment.ADD,
+                    ),
                 )
 
             bottomSheet.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)

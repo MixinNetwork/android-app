@@ -14,7 +14,6 @@ import one.mixin.android.ui.wallet.transfer.data.TransferType
 import one.mixin.android.vo.safe.TokenItem
 
 class TransferHeader : LinearLayout {
-
     private val _binding: ViewTransferHeaderBinding
 
     constructor(context: Context) : this(context, null)
@@ -68,7 +67,10 @@ class TransferHeader : LinearLayout {
         }
     }
 
-    fun filed(type: TransferType, errorMessage: String?) {
+    fun filed(
+        type: TransferType,
+        errorMessage: String?,
+    ) {
         _binding.apply {
             icon.displayedChild = 1
             statusIcon.setImageResource(R.drawable.ic_transfer_status_failed)
@@ -150,7 +152,10 @@ class TransferHeader : LinearLayout {
         }
     }
 
-    fun awaiting(type: TransferType, asset: TokenItem) {
+    fun awaiting(
+        type: TransferType,
+        asset: TokenItem,
+    ) {
         _binding.apply {
             icon.displayedChild = 0
             when (type) {

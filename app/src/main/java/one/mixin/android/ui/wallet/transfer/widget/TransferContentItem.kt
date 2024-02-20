@@ -15,7 +15,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
 
 class TransferContentItem : LinearLayout {
-
     private val _binding: ItemTransferContentBinding
 
     private val dp28 = 28.dp
@@ -29,7 +28,11 @@ class TransferContentItem : LinearLayout {
         setPadding(dp28, dp8, dp28, dp8)
     }
 
-    fun setContent(@StringRes titleResId: Int, contentStr: String, foot: String? = null) {
+    fun setContent(
+        @StringRes titleResId: Int,
+        contentStr: String,
+        foot: String? = null,
+    ) {
         _binding.apply {
             title.setText(context.getString(titleResId).uppercase())
             content.text = contentStr
@@ -38,7 +41,11 @@ class TransferContentItem : LinearLayout {
         }
     }
 
-    fun setContentAndLabel(@StringRes titleResId: Int, contentStr: String, label: String) {
+    fun setContentAndLabel(
+        @StringRes titleResId: Int,
+        contentStr: String,
+        label: String,
+    ) {
         _binding.apply {
             title.setText(context.getString(titleResId).uppercase())
             footer.isVisible = false

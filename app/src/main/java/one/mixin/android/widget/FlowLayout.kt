@@ -126,13 +126,14 @@ open class FlowLayout
                 if (child.visibility == View.GONE) continue
                 val lp = child.layoutParams as MarginLayoutParams
 
-                val childWidth = child.measuredWidth + if (lineWidth == 0) {
-                    0
-                } else {
-                    itemOffset
-                }
+                val childWidth =
+                    child.measuredWidth +
+                        if (lineWidth == 0) {
+                            0
+                        } else {
+                            itemOffset
+                        }
                 val childHeight = child.measuredHeight
-
 
                 if (childWidth + lineWidth + lp.leftMargin + lp.rightMargin > width - paddingLeft - paddingRight) {
                     mLineHeight.add(lineHeight)
@@ -178,11 +179,13 @@ open class FlowLayout
                         child
                             .layoutParams as MarginLayoutParams
 
-                    val lc = left + lp.leftMargin + if (j != 0) {
-                        itemOffset
-                    } else {
-                        0
-                    }
+                    val lc =
+                        left + lp.leftMargin +
+                            if (j != 0) {
+                                itemOffset
+                            } else {
+                                0
+                            }
                     val tc = top + lp.topMargin
                     val rc = lc + child.measuredWidth
                     val bc = tc + child.measuredHeight

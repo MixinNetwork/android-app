@@ -24,7 +24,6 @@ import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.BotCloseEvent
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getRelativeTimeSpan
@@ -73,7 +72,6 @@ import java.util.concurrent.ExecutionException
 
 @AndroidEntryPoint
 class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "TransferBottomSheetDialogFragment"
         const val ARGS_TRANSFER = "args_transfer"
@@ -167,42 +165,44 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var canRetry = true
 
     private lateinit var transferType: TransferType
+
     private fun initType() {
-        transferType = when (t) {
-            is TransferBiometricItem -> {
-                TransferType.transfer
-            }
+        transferType =
+            when (t) {
+                is TransferBiometricItem -> {
+                    TransferType.transfer
+                }
 
-            is WithdrawBiometricItem -> {
-                TransferType.withdraw
-            }
+                is WithdrawBiometricItem -> {
+                    TransferType.withdraw
+                }
 
-            is AddressTransferBiometricItem -> {
-                TransferType.addressTransfer
-            }
+                is AddressTransferBiometricItem -> {
+                    TransferType.addressTransfer
+                }
 
-            is AddressManageBiometricItem -> {
-                val addressManageBiometricItem = t as AddressManageBiometricItem
-                if (addressManageBiometricItem.type == ADD) {
-                    TransferType.addAddress
-                } else {
-                    TransferType.deleteAddress
+                is AddressManageBiometricItem -> {
+                    val addressManageBiometricItem = t as AddressManageBiometricItem
+                    if (addressManageBiometricItem.type == ADD) {
+                        TransferType.addAddress
+                    } else {
+                        TransferType.deleteAddress
+                    }
+                }
+
+                is SafeMultisigsBiometricItem -> {
+                    val multisigsBiometricItem = t as SafeMultisigsBiometricItem
+                    if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
+                        TransferType.unMulSign
+                    } else {
+                        TransferType.mutlSign
+                    }
+                }
+
+                else -> {
+                    throw IllegalArgumentException("Unknown type")
                 }
             }
-
-            is SafeMultisigsBiometricItem -> {
-                val multisigsBiometricItem = t as SafeMultisigsBiometricItem
-                if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
-                    TransferType.unMulSign
-                } else {
-                    TransferType.mutlSign
-                }
-            }
-
-            else -> {
-                throw IllegalArgumentException("Unknown type")
-            }
-        }
     }
 
     private fun preCheck() {
@@ -233,7 +233,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             transferBiometricItem.users.first().fullName,
                             "${Fiats.getSymbol()}$fiatAmount",
                             asset.symbol,
-                        )
+                        ),
                     )
                 }
                 if (tips.isEmpty()) {
@@ -248,9 +248,10 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 // check withdraw within 30 days
                 val withdrawBiometricItem = t as WithdrawBiometricItem
                 val tips = mutableListOf<String>()
-                val exist = withContext(Dispatchers.IO) {
-                    transferViewModel.find30daysWithdrawByAddress(formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag)) != null
-                }
+                val exist =
+                    withContext(Dispatchers.IO) {
+                        transferViewModel.find30daysWithdrawByAddress(formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag)) != null
+                    }
 
                 if (!exist) {
                     tips.add(getString(R.string.transfer_address_warning, formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag)))
@@ -274,13 +275,15 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
                 val fiatAmount =
                     (BigDecimal(t.amount) * asset.priceFiat()).numberFormat2()
-                val tips = listOf<String>(
-                    getString(
-                        R.string.wallet_transaction_tip, (t as AddressTransferBiometricItem).address,
-                        "${Fiats.getSymbol()}$fiatAmount",
-                        asset.symbol,
+                val tips =
+                    listOf<String>(
+                        getString(
+                            R.string.wallet_transaction_tip,
+                            (t as AddressTransferBiometricItem).address,
+                            "${Fiats.getSymbol()}$fiatAmount",
+                            asset.symbol,
+                        ),
                     )
-                )
                 binding.transferAlert.isVisible = true
                 R.drawable.ic_transfer_fingerprint
                 binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips) {
@@ -312,11 +315,12 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
     private fun finishCheck() {
-        val returnTo = when (val t = this.t) {
-            is TransferBiometricItem -> t.returnTo
-            is AddressTransferBiometricItem -> t.returnTo
-            else -> null
-        }
+        val returnTo =
+            when (val t = this.t) {
+                is TransferBiometricItem -> t.returnTo
+                is AddressTransferBiometricItem -> t.returnTo
+                else -> null
+            }
         if (returnTo.isNullOrBlank()) {
             val open = requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
             val lastNotifyEnable = requireContext().defaultSharedPreferences.getLong(Constants.Account.PREF_NOTIFY_ENABLE_BIOMETRIC, 0)
@@ -438,67 +442,70 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun showPin() {
         PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo()).setOnPinComplete { pin ->
-            lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
-                handleError(error)
-                transferViewModel.updateStatus(TransferStatus.FAILED)
-            }) {
+            lifecycleScope.launch(
+                CoroutineExceptionHandler { _, error ->
+                    handleError(error)
+                    transferViewModel.updateStatus(TransferStatus.FAILED)
+                },
+            ) {
                 transferViewModel.updateStatus(TransferStatus.IN_PROGRESS)
                 val t = this@TransferBottomSheetDialogFragment.t
                 val trace: Trace?
                 val asset = requireNotNull(t.asset)
-                val response = withContext(Dispatchers.IO) {
-                    when (t) {
-                        is TransferBiometricItem -> {
-                            val opponentId = if (t.users.size == 1) t.users.first().userId else ""
-                            trace = Trace(t.traceId, asset.assetId, t.amount, opponentId, null, null, null, nowInUtc())
-                            val receiverIds = t.users.map { it.userId }
-                            bottomViewModel.kernelTransaction(asset.assetId, receiverIds, t.threshold, t.amount, pin, t.traceId, t.memo)
-                        }
+                val response =
+                    withContext(Dispatchers.IO) {
+                        when (t) {
+                            is TransferBiometricItem -> {
+                                val opponentId = if (t.users.size == 1) t.users.first().userId else ""
+                                trace = Trace(t.traceId, asset.assetId, t.amount, opponentId, null, null, null, nowInUtc())
+                                val receiverIds = t.users.map { it.userId }
+                                bottomViewModel.kernelTransaction(asset.assetId, receiverIds, t.threshold, t.amount, pin, t.traceId, t.memo)
+                            }
 
-                        is AddressTransferBiometricItem -> {
-                            trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address, null, null, nowInUtc())
-                            bottomViewModel.kernelAddressTransaction(asset.assetId, t.address, t.amount, pin, t.traceId, t.memo)
-                        }
+                            is AddressTransferBiometricItem -> {
+                                trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address, null, null, nowInUtc())
+                                bottomViewModel.kernelAddressTransaction(asset.assetId, t.address, t.amount, pin, t.traceId, t.memo)
+                            }
 
-                        is SafeMultisigsBiometricItem -> {
-                            trace = Trace(t.traceId, asset.assetId, t.amount, null, null, null, null, nowInUtc())
-                            bottomViewModel.transactionMultisigs(t, pin)
-                        }
+                            is SafeMultisigsBiometricItem -> {
+                                trace = Trace(t.traceId, asset.assetId, t.amount, null, null, null, null, nowInUtc())
+                                bottomViewModel.transactionMultisigs(t, pin)
+                            }
 
-                        is AddressManageBiometricItem -> {
-                            val addressManageBiometricItem = t
-                            trace = null
-                            if (addressManageBiometricItem.type == ADD) {
-                                val assetId = addressManageBiometricItem.asset!!.assetId
-                                val destination = addressManageBiometricItem.destination
-                                val label = addressManageBiometricItem.label
-                                val tag = addressManageBiometricItem.tag
-                                bottomViewModel.syncAddr(assetId, destination, label, tag, pin).apply {
-                                    if (isSuccess) {
-                                        bottomViewModel.saveAddr(data as Address)
+                            is AddressManageBiometricItem -> {
+                                val addressManageBiometricItem = t
+                                trace = null
+                                if (addressManageBiometricItem.type == ADD) {
+                                    val assetId = addressManageBiometricItem.asset!!.assetId
+                                    val destination = addressManageBiometricItem.destination
+                                    val label = addressManageBiometricItem.label
+                                    val tag = addressManageBiometricItem.tag
+                                    bottomViewModel.syncAddr(assetId, destination, label, tag, pin).apply {
+                                        if (isSuccess) {
+                                            bottomViewModel.saveAddr(data as Address)
+                                        }
                                     }
-                                }
-                            } else {
-                                val addressId = requireNotNull(addressManageBiometricItem.addressId)
-                                bottomViewModel.deleteAddr(addressId, pin).apply {
-                                    if (isSuccess) {
-                                        bottomViewModel.deleteLocalAddr(addressId)
+                                } else {
+                                    val addressId = requireNotNull(addressManageBiometricItem.addressId)
+                                    bottomViewModel.deleteAddr(addressId, pin).apply {
+                                        if (isSuccess) {
+                                            bottomViewModel.deleteLocalAddr(addressId)
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        is WithdrawBiometricItem -> {
-                            trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address.destination, t.address.tag, null, nowInUtc())
-                            val fee = requireNotNull(t.fee) { "required fee can not be null" }
-                            bottomViewModel.kernelWithdrawalTransaction(Constants.MIXIN_FEE_USER_ID, t.traceId, asset.assetId, fee.token.assetId, t.amount, fee.fee, t.address.destination, t.address.tag, t.memo, pin)
-                        }
+                            is WithdrawBiometricItem -> {
+                                trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address.destination, t.address.tag, null, nowInUtc())
+                                val fee = requireNotNull(t.fee) { "required fee can not be null" }
+                                bottomViewModel.kernelWithdrawalTransaction(Constants.MIXIN_FEE_USER_ID, t.traceId, asset.assetId, fee.token.assetId, t.amount, fee.fee, t.address.destination, t.address.tag, t.memo, pin)
+                            }
 
-                        else -> {
-                            throw IllegalArgumentException("Don't support")
+                            else -> {
+                                throw IllegalArgumentException("Don't support")
+                            }
                         }
                     }
-                }
                 if (trace != null) {
                     bottomViewModel.insertTrace(trace)
                 }

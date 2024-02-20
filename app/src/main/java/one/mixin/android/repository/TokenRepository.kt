@@ -785,7 +785,10 @@ class TokenRepository
 
         suspend fun insertOutputs(outputs: List<Output>) = outputDao.insertList(outputs)
 
-        suspend fun deleteByKernelAssetIdAndOffset(asset: String, offset: Long) = outputDao.deleteByKernelAssetIdAndOffset(asset, offset)
+        suspend fun deleteByKernelAssetIdAndOffset(
+            asset: String,
+            offset: Long,
+        ) = outputDao.deleteByKernelAssetIdAndOffset(asset, offset)
 
         suspend fun getOutputs(
             members: String,
@@ -795,6 +798,11 @@ class TokenRepository
             state: String? = null,
             asset: String? = null,
         ) = utxoService.getOutputs(
-            members, threshold, offset, limit, state, asset
+            members,
+            threshold,
+            offset,
+            limit,
+            state,
+            asset,
         )
     }

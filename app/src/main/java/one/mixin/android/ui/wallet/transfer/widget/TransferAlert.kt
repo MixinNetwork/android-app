@@ -15,20 +15,23 @@ import one.mixin.android.extension.textColor
 import one.mixin.android.extension.textColorResource
 
 class TransferAlert : ConstraintLayout {
-
     private val _binding: ViewTransferAlertBinding
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         _binding = ViewTransferAlertBinding.inflate(LayoutInflater.from(context), this)
-        setOnClickListener {  }
+        setOnClickListener { }
     }
 
     private var tipIndex: Int = 0
 
     @SuppressLint("SetTextI18n")
-    fun warning(@DrawableRes iconRes: Int, list: List<String>, cancel: OnClickListener) {
+    fun warning(
+        @DrawableRes iconRes: Int,
+        list: List<String>,
+        cancel: OnClickListener,
+    ) {
         _binding.apply {
             icon.setImageResource(iconRes)
             content.textColorResource = R.color.text_color_error_tip
@@ -55,8 +58,12 @@ class TransferAlert : ConstraintLayout {
 
     @SuppressLint("SetTextI18n")
     fun info(
-        @DrawableRes iconRes: Int, info: String, @StringRes positiveText: Int, @StringRes negativeText: Int,
-        positiveClickLint: OnClickListener, negativeClickListener: OnClickListener,
+        @DrawableRes iconRes: Int,
+        info: String,
+        @StringRes positiveText: Int,
+        @StringRes negativeText: Int,
+        positiveClickLint: OnClickListener,
+        negativeClickListener: OnClickListener,
     ) {
         _binding.apply {
             icon.setImageResource(iconRes)
