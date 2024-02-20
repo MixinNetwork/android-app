@@ -367,7 +367,7 @@ fun Context.realSize(): Point {
     return size
 }
 
-fun Context.displayHeight() = realSize().y - statusBarHeight()
+fun Context.displayHeight() = realSize().y - statusBarHeight() - navigationBarHeight()
 
 fun Context.isWideScreen(): Boolean {
     val ratio = displayRatio()
