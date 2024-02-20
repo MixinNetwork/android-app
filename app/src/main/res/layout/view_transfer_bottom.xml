@@ -18,6 +18,7 @@
         android:orientation="horizontal">
 
         <Button
+            style="@style/AppTheme.MaterialGrayButton"
             android:id="@+id/cancel_button"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
@@ -25,10 +26,9 @@
             android:paddingEnd="36dp"
             android:layout_gravity="center_horizontal|bottom"
             android:text="@string/Cancel"
-            android:textColor="?attr/text_primary"
-            android:background="@drawable/bg_round_gray_btn"
             android:layout_marginEnd="36dp"
             android:textSize="14sp"
+            android:elevation="2dp"
             android:textAllCaps="false"/>
 
         <Button

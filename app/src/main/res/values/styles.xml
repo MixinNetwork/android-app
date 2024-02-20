@@ -315,6 +315,15 @@
     <style name="AppTheme.MaterialButton">
         <item name="android:background">@drawable/bg_round_blue_btn</item>
         <item name="android:textColor">@color/white</item>
+        <item name="android:elevation">2dp</item>
+        <item name="android:stateListAnimator">@animator/selector_animator</item>
+    </style>
+
+    <style name="AppTheme.MaterialGrayButton">
+        <item name="android:background">@drawable/bg_round_gray_btn</item>
+        <item name="android:textColor">?attr/text_primary</item>
+        <item name="android:elevation">2dp</item>
+        <item name="android:stateListAnimator">@animator/selector_animator</item>
     </style>
 
     <style name="Snackbar" parent="Widget.MaterialComponents.Snackbar">
