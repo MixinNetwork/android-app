@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.DataErrorException
@@ -325,10 +326,12 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         if (returnTo.isNullOrBlank()) {
             val open = requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-            val enable = !open && BiometricUtil.isSupport(requireContext())
+            val lastNotifyEnable = requireContext().defaultSharedPreferences.getLong(Constants.Account.PREF_NOTIFY_ENABLE_BIOMETRIC, 0)
+            val enable = !open && (System.currentTimeMillis() - lastNotifyEnable > INTERVAL_48_HOURS) && BiometricUtil.isSupport(requireContext())
             binding.transferAlert.isVisible = enable
             if (enable) {
                 binding.transferAlert.info(R.drawable.ic_transfer_fingerprint, getString(R.string.enable_biometric_description), R.string.Not_Now, R.string.Enable, {
+                    requireContext().defaultSharedPreferences.putLong(Constants.Account.PREF_NOTIFY_ENABLE_BIOMETRIC, System.currentTimeMillis())
                     binding.transferAlert.isVisible = false
                 }, {
                     SettingActivity.showPinSetting(requireContext())
