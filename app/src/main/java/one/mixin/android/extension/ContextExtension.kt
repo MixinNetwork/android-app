@@ -24,6 +24,7 @@ import android.content.res.Resources
 import android.database.Cursor
 import android.graphics.BitmapFactory
 import android.graphics.Point
+import android.graphics.Rect
 import android.media.MediaMetadataRetriever
 import android.net.ConnectivityManager
 import android.net.Uri
@@ -125,6 +126,17 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
 
 inline val Context.layoutInflater: android.view.LayoutInflater
     get() = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as android.view.LayoutInflater
+
+fun Activity.visibleDisplayHeight(): Int {
+    val outRect = Rect()
+    return try {
+        window.decorView.getWindowVisibleDisplayFrame(outRect)
+        outRect.height()
+    } catch (e: ClassCastException) {
+        Timber.e(e)
+        displayHeight()
+    }
+}
 
 fun Context.runOnUiThread(
     f: Context.() -> Unit,

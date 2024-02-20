@@ -33,6 +33,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.updatePinCheck
+import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.TipNodeException
@@ -102,7 +103,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView = binding.root
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
-            setCustomViewHeight(requireContext().displayHeight())
+            setCustomViewHeight(requireActivity().visibleDisplayHeight())
         }
         initType()
         transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
