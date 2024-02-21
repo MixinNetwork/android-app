@@ -49,6 +49,7 @@ import android.util.DisplayMetrics
 import android.util.TypedValue
 import android.view.Window
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
@@ -127,6 +128,7 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
 inline val Context.layoutInflater: android.view.LayoutInflater
     get() = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as android.view.LayoutInflater
 
+// Please consider whether the soft keyboard is displayed.
 fun Activity.visibleDisplayHeight(): Int {
     val outRect = Rect()
     return try {
@@ -136,6 +138,11 @@ fun Activity.visibleDisplayHeight(): Int {
         Timber.e(e)
         displayHeight()
     }
+}
+
+fun Activity.hideKeyboard() {
+    val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
 }
 
 fun Context.runOnUiThread(

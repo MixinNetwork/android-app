@@ -10,6 +10,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -27,6 +28,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getRelativeTimeSpan
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openExternalUrl
@@ -159,6 +161,19 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
             }
+        }
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        (dialog as BottomSheet).apply {
+            lifecycleScope.launch {
+                delay(200)
+                // Hackfix: The height is not right at the first time.
+                setCustomViewHeight(requireActivity().visibleDisplayHeight())
+            }
+            requireActivity().hideKeyboard()
         }
     }
 
