@@ -2,7 +2,9 @@ package one.mixin.android.db
 
 import androidx.room.Dao
 import androidx.room.Query
+import one.mixin.android.extension.thirtyDaysAgo
 import one.mixin.android.vo.safe.RawTransaction
+import one.mixin.android.vo.safe.RawTransactionType
 
 @Dao
 interface RawTransactionDao : BaseDao<RawTransaction> {
@@ -26,4 +28,11 @@ interface RawTransactionDao : BaseDao<RawTransaction> {
         requestId: String,
         state: String,
     )
+
+    @Query("SELECT request_id FROM raw_transactions WHERE type = :type AND receiver_id = :formatDestination AND created_at >= :time")
+    fun find30daysWithdrawByAddress(
+        formatDestination: String,
+        type: Int = RawTransactionType.WITHDRAWAL.ordinal,
+        time: String = thirtyDaysAgo(),
+    ): String?
 }

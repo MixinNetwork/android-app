@@ -268,10 +268,10 @@ class BottomSheetViewModel
                         tokenRepository.insertSafeSnapshot(
                             UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, traceId, assetId, amount, memo, SafeSnapshotType.withdrawal,
                             withdrawal =
-                            SafeWithdrawal(
-                                "",
-                                destination,
-                            ),
+                                SafeWithdrawal(
+                                    "",
+                                    destination,
+                                ),
                         )
                         val feeTransactionHash = signFee.hash
                         Timber.e("Kernel Withdrawal($traceId): db insert fee snapshot")
@@ -298,10 +298,10 @@ class BottomSheetViewModel
                         tokenRepository.insertSafeSnapshot(
                             UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, traceId, assetId, amount, memo, SafeSnapshotType.withdrawal,
                             withdrawal =
-                            SafeWithdrawal(
-                                "",
-                                destination,
-                            ),
+                                SafeWithdrawal(
+                                    "",
+                                    destination,
+                                ),
                         )
                         Timber.e("Kernel Withdrawal($traceId): db update raw transaction")
                         tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))

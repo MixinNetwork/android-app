@@ -58,20 +58,17 @@ import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.common.OutputBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
-import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment.Companion.ARGS_BIOMETRIC_ITEM
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
-import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_TRANSFER
 import one.mixin.android.ui.oldwallet.OldTransferFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
@@ -81,6 +78,7 @@ import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.NetworkFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.UserTransactionBottomSheetFragment
 import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
+import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -697,17 +695,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             }
 
             updateContinue(POST_TEXT)
-            val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(t, FROM_TRANSFER)
-            preconditionBottom.callback =
-                object : PreconditionBottomSheetDialogFragment.Callback {
-                    override fun onSuccess() {
-                        showTransferBottom(t)
-                    }
-
-                    override fun onCancel() {
-                    }
-                }
-            preconditionBottom.showNow(parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
+            showTransferBottom(t)
         }
 
     private suspend fun refreshFees(
@@ -746,10 +734,11 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showTransferBottom(biometricItem: BiometricItem) {
-        val bottom = OutputBottomSheetDialogFragment.newInstance(biometricItem)
+        val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
         bottom.setCallback(
-            object : BiometricBottomSheetDialogFragment.Callback() {
+            object : TransferBottomSheetDialogFragment.Callback() {
                 override fun onDismiss(success: Boolean) {
+                    transferBottomOpened = false
                     if (success) {
                         dialog?.dismiss()
                         callback?.onSuccess()
@@ -757,13 +746,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 }
             },
         )
-        bottom.onDestroyListener =
-            object : OutputBottomSheetDialogFragment.OnDestroyListener {
-                override fun onDestroy() {
-                    transferBottomOpened = false
-                }
-            }
-        bottom.show(parentFragmentManager, OutputBottomSheetDialogFragment.TAG)
+        bottom.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
         transferBottomOpened = true
     }
 

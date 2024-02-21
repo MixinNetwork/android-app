@@ -66,6 +66,7 @@
             <enum name="right" value="1" />
         </attr>
         <attr name="flow_max_width" format="dimension"/>
+        <attr name="item_offset" format="dimension"/>
     </declare-styleable>
     <declare-styleable name="PlayView">
         <attr name="bg" format="color"/>

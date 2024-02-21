@@ -45,7 +45,6 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class UtxosFragment : BaseFragment() {
     companion object {
-
         private const val syncOutputLimit = 200
         private const val TAG = "UtxosFragment"
 
@@ -168,10 +167,13 @@ class UtxosFragment : BaseFragment() {
     }
 
     private var loadingDialog: Dialog? = null
+
     private fun forceSyncUtxo() {
-        lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
-            showError(throwable.message ?: getString(R.string.Unknown))
-        }) {
+        lifecycleScope.launch(
+            CoroutineExceptionHandler { _, throwable ->
+                showError(throwable.message ?: getString(R.string.Unknown))
+            },
+        ) {
             loadingDialog?.dismiss()
             loadingDialog = null
             loadingDialog =
@@ -192,10 +194,12 @@ class UtxosFragment : BaseFragment() {
             .setTitle(R.string.app_name)
             .setMessage(error)
             .setPositiveButton(R.string.Retry) { dialog, _ ->
-                lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
-                    dialog.dismiss()
-                    showError(throwable.message ?: getString(R.string.Unknown))
-                }) {
+                lifecycleScope.launch(
+                    CoroutineExceptionHandler { _, throwable ->
+                        dialog.dismiss()
+                        showError(throwable.message ?: getString(R.string.Unknown))
+                    },
+                ) {
                     loadingDialog?.dismiss()
                     loadingDialog = null
                     loadingDialog =
@@ -213,27 +217,31 @@ class UtxosFragment : BaseFragment() {
             }.show()
     }
 
-    private suspend fun forceSyncUtxo(sequence: Long, kernelAssetId: String): Unit = withContext(Dispatchers.IO) {
-        Timber.d("$TAG sync outputs sequence: $sequence")
-        val userId = requireNotNull(Session.getAccountId())
-        val members = buildHashMembers(listOf(userId))
-        val resp = walletViewModel.getOutputs(members, 1, sequence, syncOutputLimit, asset = kernelAssetId)
-        if (!resp.isSuccess || resp.data.isNullOrEmpty()) {
-            Timber.d("$TAG getOutputs ${resp.isSuccess}, ${resp.data.isNullOrEmpty()}")
-            showError(resp.errorDescription)
-            return@withContext
+    private suspend fun forceSyncUtxo(
+        sequence: Long,
+        kernelAssetId: String,
+    ): Unit =
+        withContext(Dispatchers.IO) {
+            Timber.d("$TAG sync outputs sequence: $sequence")
+            val userId = requireNotNull(Session.getAccountId())
+            val members = buildHashMembers(listOf(userId))
+            val resp = walletViewModel.getOutputs(members, 1, sequence, syncOutputLimit, asset = kernelAssetId)
+            if (!resp.isSuccess || resp.data.isNullOrEmpty()) {
+                Timber.d("$TAG getOutputs ${resp.isSuccess}, ${resp.data.isNullOrEmpty()}")
+                showError(resp.errorDescription)
+                return@withContext
+            }
+            val outputs = (requireNotNull(resp.data) { "outputs can not be null or empty at this step" })
+            if (outputs.isNotEmpty()) {
+                // Insert replace
+                walletViewModel.insertOutputs(outputs)
+            }
+            Timber.d("$TAG insertOutputs ${outputs.size}")
+            if (outputs.size < syncOutputLimit) {
+                jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(kernelAssetId)))
+            } else {
+                val lastSequence = walletViewModel.findLatestOutputSequenceByAsset(kernelAssetId) ?: 0L
+                forceSyncUtxo(lastSequence, kernelAssetId)
+            }
         }
-        val outputs = (requireNotNull(resp.data) { "outputs can not be null or empty at this step" })
-        if (outputs.isNotEmpty()) {
-            // Insert replace
-            walletViewModel.insertOutputs(outputs)
-        }
-        Timber.d("$TAG insertOutputs ${outputs.size}")
-        if (outputs.size < syncOutputLimit) {
-            jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(kernelAssetId)))
-        } else {
-            val lastSequence = walletViewModel.findLatestOutputSequenceByAsset(kernelAssetId) ?: 0L
-            forceSyncUtxo(lastSequence, kernelAssetId)
-        }
-    }
 }

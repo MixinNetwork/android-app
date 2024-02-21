@@ -31,6 +31,22 @@
         android:layout_marginBottom="16dp"
         app:pin_tipVisible="false" />
 
+    <TextView
+        android:id="@+id/biometric_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="10dp"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="20dp"
+        android:drawablePadding="@dimen/padding8"
+        android:text="@string/Verify_by_Biometric"
+        android:textColor="@color/wallet_blue_secondary"
+        android:textSize="16sp"
+        android:visibility="gone"
+        app:drawableStartCompat="@drawable/ic_biometric" />
+
     <one.mixin.android.widget.Keyboard
         android:id="@+id/keyboard"
         android:layout_width="match_parent"

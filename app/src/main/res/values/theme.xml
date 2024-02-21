@@ -50,6 +50,10 @@
     <attr name="bg_choose_network_yellow" format="color|reference" />
     <attr name="bg_pin_content" format="reference" />
     <attr name="bg_flag" format="color|reference" />
+    <attr name="bg_tip_warning" format="color|reference" />
+    <attr name="bg_tip_warning_border" format="color|reference" />
+    <attr name="bg_tip_info" format="color|reference" />
+    <attr name="bg_tip_info_border" format="color|reference" />
 
     <attr name="music_played" format="color|reference" />
     <attr name="music_unplayed" format="color|reference" />

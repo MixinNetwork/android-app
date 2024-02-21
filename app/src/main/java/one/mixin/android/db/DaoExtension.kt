@@ -174,21 +174,22 @@ fun JobDao.insertNoReplace(job: Job) {
     }
 }
 
-suspend fun OutputDao.insertUnspentOutputs(outputs: List<Output>) = withContext(SINGLE_DB_THREAD) {
-    runInTransaction {
-        val signed = findSignedOutput(outputs.map { it.outputId })
-        if (signed.isEmpty()) {
-            insertList(outputs)
-        } else {
-            // Exclude signed data
-            val list =
-                outputs.filter {
-                    signed.contains(it.outputId)
-                }
-            insertList(list)
+suspend fun OutputDao.insertUnspentOutputs(outputs: List<Output>) =
+    withContext(SINGLE_DB_THREAD) {
+        runInTransaction {
+            val signed = findSignedOutput(outputs.map { it.outputId })
+            if (signed.isEmpty()) {
+                insertList(outputs)
+            } else {
+                // Exclude signed data
+                val list =
+                    outputs.filter {
+                        signed.contains(it.outputId)
+                    }
+                insertList(list)
+            }
         }
     }
-}
 
 // Delete SQL
 fun MixinDatabase.deleteMessageById(messageId: String) {

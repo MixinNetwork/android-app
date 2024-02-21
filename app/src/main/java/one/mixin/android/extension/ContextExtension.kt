@@ -24,6 +24,7 @@ import android.content.res.Resources
 import android.database.Cursor
 import android.graphics.BitmapFactory
 import android.graphics.Point
+import android.graphics.Rect
 import android.media.MediaMetadataRetriever
 import android.net.ConnectivityManager
 import android.net.Uri
@@ -48,6 +49,7 @@ import android.util.DisplayMetrics
 import android.util.TypedValue
 import android.view.Window
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
@@ -125,6 +127,23 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
 
 inline val Context.layoutInflater: android.view.LayoutInflater
     get() = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as android.view.LayoutInflater
+
+// Please consider whether the soft keyboard is displayed.
+fun Activity.visibleDisplayHeight(): Int {
+    val outRect = Rect()
+    return try {
+        window.decorView.getWindowVisibleDisplayFrame(outRect)
+        outRect.height()
+    } catch (e: ClassCastException) {
+        Timber.e(e)
+        displayHeight()
+    }
+}
+
+fun Activity.hideKeyboard() {
+    val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+}
 
 fun Context.runOnUiThread(
     f: Context.() -> Unit,
@@ -367,7 +386,7 @@ fun Context.realSize(): Point {
     return size
 }
 
-fun Context.displayHeight() = realSize().y - statusBarHeight()
+fun Context.displayHeight() = realSize().y - statusBarHeight() - navigationBarHeight()
 
 fun Context.isWideScreen(): Boolean {
     val ratio = displayRatio()

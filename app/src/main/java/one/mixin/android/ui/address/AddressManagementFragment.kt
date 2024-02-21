@@ -23,12 +23,11 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.address.adapter.AddressAdapter
 import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.buildWithdrawalBiometricItem
 import one.mixin.android.ui.conversation.TransferFragment
-import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.DELETE
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.safe.TokenItem
@@ -134,7 +133,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                         val bottomSheet = showBottomSheet(addr, asset)
                         parentFragmentManager.executePendingTransactions()
                         bottomSheet.setCallback(
-                            object : BiometricBottomSheetDialogFragment.Callback() {
+                            object : TransferBottomSheetDialogFragment.Callback() {
                                 override fun onDismiss(success: Boolean) {
                                     if (!success) {
                                         adapter.restoreItem(deleteItem, deletePos)
@@ -166,23 +165,19 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
     private fun showBottomSheet(
         address: Address,
         asset: TokenItem,
-    ): BiometricBottomSheetDialogFragment {
+    ): TransferBottomSheetDialogFragment {
         val bottomSheet =
-            PinAddrBottomSheetDialogFragment.newInstance(
-                addressId = address.addressId,
-                assetUrl = asset.iconUrl,
-                assetSymbol = asset.symbol,
-                assetKey = asset.assetKey,
-                chainId = asset.chainId,
-                chainName = asset.chainName,
-                chainIconUrl = asset.chainIconUrl,
-                destination = address.destination,
-                label = address.label,
-                tag = address.tag,
-                assetName = asset.name,
-                type = DELETE,
+            TransferBottomSheetDialogFragment.newInstance(
+                AddressManageBiometricItem(
+                    asset = asset,
+                    addressId = address.addressId,
+                    label = address.label,
+                    tag = address.tag,
+                    destination = address.destination,
+                    type = TransferBottomSheetDialogFragment.DELETE,
+                ),
             )
-        bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
+        bottomSheet.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
         return bottomSheet
     }
 }

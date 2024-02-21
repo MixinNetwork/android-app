@@ -63,6 +63,15 @@ class AddressTransferBiometricItem(
     val returnTo: String?,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state)
 
+class AddressManageBiometricItem(
+    override var asset: TokenItem?,
+    val destination: String?,
+    val tag: String?,
+    val addressId: String?,
+    val label: String?,
+    val type: Int,
+) : AssetBiometricItem(asset, "", "0", null, "")
+
 fun buildAddressBiometricItem(
     mainnetAddress: String,
     traceId: String?,
@@ -78,6 +87,7 @@ fun buildAddressBiometricItem(
 class WithdrawBiometricItem(
     var address: Address,
     var fee: NetworkFee?,
+    val label: String?,
     override val traceId: String,
     override var asset: TokenItem?,
     override var amount: String,
@@ -98,7 +108,7 @@ fun buildWithdrawalBiometricItem(
     address: Address,
     asset: TokenItem,
 ) =
-    WithdrawBiometricItem(address, null, UUID.randomUUID().toString(), asset, "", null, PaymentStatus.pending.name, null)
+    WithdrawBiometricItem(address, null, address.label, UUID.randomUUID().toString(), asset, "", null, PaymentStatus.pending.name, null)
 
 fun WithdrawBiometricItem.hasAddress() = address.addressId.isNotBlank()
 
