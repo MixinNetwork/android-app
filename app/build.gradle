@@ -421,7 +421,7 @@ dependencies {
     kspAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 
     // ML Kit
-    implementation 'com.google.mlkit:entity-extraction:16.0.0-beta4'
+    implementation 'com.google.mlkit:entity-extraction:16.0.0-beta5'
 
     testImplementation("com.google.protobuf:protobuf-javalite") {
         version {
