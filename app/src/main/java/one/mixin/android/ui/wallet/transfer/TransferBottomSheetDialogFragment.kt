@@ -164,7 +164,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-
     override fun onResume() {
         super.onResume()
         (dialog as BottomSheet).apply {

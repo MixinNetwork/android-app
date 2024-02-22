@@ -2,7 +2,6 @@ package one.mixin.android.ui.conversation.link
 
 import android.net.Uri
 import androidx.core.net.toUri
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -10,7 +9,6 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.pay.parseExternalTransferUri
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
@@ -258,19 +256,22 @@ class NewSchemeParser(
         }
     }
 
-    private suspend fun checkUtxo(t: AssetBiometricItem, callback: () -> Unit) {
+    private suspend fun checkUtxo(
+        t: AssetBiometricItem,
+        callback: () -> Unit,
+    ) {
         val token = t.asset ?: return
-            var amount = t.amount
-            if (amount.isBlank()) {
-                callback.invoke()
-            }
-            val consolidationAmount = linkViewModel.checkUtxoSufficiency(token.assetId, amount)
-            if (consolidationAmount != null) {
-                UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), t.asset, consolidationAmount, UUID.randomUUID().toString(), null, null))
-                    .show(bottomSheet.parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
-            } else {
-                callback.invoke()
-            }
+        var amount = t.amount
+        if (amount.isBlank()) {
+            callback.invoke()
+        }
+        val consolidationAmount = linkViewModel.checkUtxoSufficiency(token.assetId, amount)
+        if (consolidationAmount != null) {
+            UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), t.asset, consolidationAmount, UUID.randomUUID().toString(), null, null))
+                .show(bottomSheet.parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
+        } else {
+            callback.invoke()
+        }
     }
 
     private suspend fun showPreconditionBottom(biometricItem: AssetBiometricItem) {
