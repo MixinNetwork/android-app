@@ -34,7 +34,7 @@ class TransferContentItem : LinearLayout {
         foot: String? = null,
     ) {
         _binding.apply {
-            title.setText(context.getString(titleResId).uppercase())
+            title.text = context.getString(titleResId).uppercase()
             content.text = contentStr
             footer.isVisible = !foot.isNullOrBlank()
             footer.text = foot
@@ -47,7 +47,7 @@ class TransferContentItem : LinearLayout {
         label: String,
     ) {
         _binding.apply {
-            title.setText(context.getString(titleResId).uppercase())
+            title.text = context.getString(titleResId).uppercase()
             footer.isVisible = false
 
             val fullText = "$contentStr $label"
@@ -59,7 +59,7 @@ class TransferContentItem : LinearLayout {
 
             val backgroundColor: Int = Color.parseColor("#8DCC99")
             val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
-            spannableString.setSpan(RelativeSizeSpan(0.8f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            spannableString.setSpan(RelativeSizeSpan(0.75f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             spannableString.setSpan(backgroundColorSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 
             content.text = spannableString
