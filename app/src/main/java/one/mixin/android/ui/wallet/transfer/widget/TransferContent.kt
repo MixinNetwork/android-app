@@ -32,10 +32,10 @@ class TransferContent : LinearLayout {
         _binding = ViewTransferContentBinding.inflate(LayoutInflater.from(context), this)
     }
 
-    fun render(transferItem: BiometricItem) {
+    fun render(transferItem: BiometricItem, userClick: (User) -> Unit) {
         when (transferItem) {
             is TransferBiometricItem -> {
-                renderTransfer(transferItem)
+                renderTransfer(transferItem, userClick)
             }
 
             is AddressTransferBiometricItem -> {
@@ -80,13 +80,13 @@ class TransferContent : LinearLayout {
         return "${value.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}"
     }
 
-    private fun renderTransfer(transferBiometricItem: TransferBiometricItem) {
+    private fun renderTransfer(transferBiometricItem: TransferBiometricItem, userClick: (User) -> Unit) {
         _binding.apply {
             amount.setContent(R.string.Amount, "${transferBiometricItem.amount} ${transferBiometricItem.asset?.symbol}", "${amountAs(transferBiometricItem.amount, transferBiometricItem.asset!!)}")
             address.isVisible = false
             addressReceive.isVisible = false
             receive.isVisible = true
-            receive.setContent(R.string.Receive, transferBiometricItem.users) {}
+            receive.setContent(R.string.Receive, transferBiometricItem.users, null, userClick)
             addressReceive.isVisible = true
             addressReceive.setContent(R.string.RECEIVER_WILL_RECEIVE, "${transferBiometricItem.amount} ${transferBiometricItem.asset?.symbol}")
 

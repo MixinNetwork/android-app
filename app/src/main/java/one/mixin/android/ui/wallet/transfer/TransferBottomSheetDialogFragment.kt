@@ -115,12 +115,16 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     val senders = result.first
                     val receivers = result.second
                     binding.content.render(t as SafeMultisigsBiometricItem, senders, receivers) { user ->
+                        if (user.userId == Session.getAccountId()) return@render
                         showUserBottom(parentFragmentManager, user)
                     }
                 }
             }
         } else {
-            binding.content.render(t)
+            binding.content.render(t) { user ->
+                if (user.userId == Session.getAccountId()) return@render
+                showUserBottom(parentFragmentManager, user)
+            }
         }
 
         binding.bottom.setOnClickListener({
