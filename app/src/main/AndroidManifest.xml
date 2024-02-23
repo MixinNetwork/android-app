@@ -349,7 +349,8 @@
             android:exported="false" />
         <service
             android:name=".fcm.FcmService"
-            android:exported="false">
+            android:exported="false"
+            android:directBootAware="true">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
@@ -367,13 +368,7 @@
         <service
             android:name=".job.BlazeMessageService"
             android:foregroundServiceType="dataSync"
-            android:enabled="true"
-            android:exported="false"
-            android:directBootAware="true">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
+            android:enabled="true" />
         <service
             android:name=".ui.player.MusicService"
             android:foregroundServiceType="mediaPlayback"
