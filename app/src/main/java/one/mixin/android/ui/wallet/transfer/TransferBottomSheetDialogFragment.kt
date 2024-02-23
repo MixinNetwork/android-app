@@ -115,12 +115,16 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     val senders = result.first
                     val receivers = result.second
                     binding.content.render(t as SafeMultisigsBiometricItem, senders, receivers) { user ->
+                        if (user.userId == Session.getAccountId()) return@render
                         showUserBottom(parentFragmentManager, user)
                     }
                 }
             }
         } else {
-            binding.content.render(t)
+            binding.content.render(t) { user ->
+                if (user.userId == Session.getAccountId()) return@render
+                showUserBottom(parentFragmentManager, user)
+            }
         }
 
         binding.bottom.setOnClickListener({
@@ -227,7 +231,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 // check Large
                 val transferBiometricItem = t as TransferBiometricItem
                 val tips = mutableListOf<String>()
-                if (!isStrangerTransferDisable() && transferBiometricItem.users.first().relationship != UserRelationship.FRIEND.name) {
+                if (!isStrangerTransferDisable() && transferBiometricItem.users.size == 1 && transferBiometricItem.users.first().relationship != UserRelationship.FRIEND.name) {
                     tips.add(getString(R.string.bottom_transfer_stranger_tip, transferBiometricItem.users.first().identityNumber))
                 }
                 if (!isDuplicateTransferDisable() && transferBiometricItem.trace != null) {

@@ -23,6 +23,8 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:textColor="?attr/text_primary"
+        android:lines="1"
+        android:ellipsize="middle"
         android:textSize="16sp" />
 
     <ImageView
