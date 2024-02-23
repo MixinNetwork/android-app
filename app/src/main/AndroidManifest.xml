@@ -367,7 +367,13 @@
         <service
             android:name=".job.BlazeMessageService"
             android:foregroundServiceType="dataSync"
-            android:enabled="true" />
+            android:enabled="true"
+            android:exported="false"
+            android:directBootAware="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
         <service
             android:name=".ui.player.MusicService"
             android:foregroundServiceType="mediaPlayback"

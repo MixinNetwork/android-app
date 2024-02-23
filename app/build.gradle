@@ -300,6 +300,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
     implementation 'com.google.firebase:firebase-dynamic-links-ktx'
 
+    implementation "com.google.firebase:firebase-messaging-directboot:${firebaseDirectBootVersion}"
+
     implementation("com.google.protobuf:protobuf-javalite") {
         version {
             strictly '3.11.0'
