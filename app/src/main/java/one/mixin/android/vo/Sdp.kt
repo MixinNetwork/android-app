@@ -9,7 +9,7 @@ data class KrakenData(
     val jsep: String,
     @SerializedName("track_id") val trackId: String,
 ) {
-    fun getSessionDescription(): SessionDescription {
+    fun getSessionDescription(): SessionDescription? {
         val jsep = jsep.decodeBase64()
         return getSdp(jsep)
     }
@@ -17,8 +17,8 @@ data class KrakenData(
 
 data class Sdp(val sdp: String, val type: String)
 
-fun getSdp(json: ByteArray): SessionDescription {
-    val sdp = GsonHelper.customGson.fromJson(String(json), Sdp::class.java)
+fun getSdp(json: ByteArray): SessionDescription? {
+    val sdp = GsonHelper.customGson.fromJson(String(json), Sdp::class.java) ?: return null
     return SessionDescription(getType(sdp.type), sdp.sdp)
 }
 
