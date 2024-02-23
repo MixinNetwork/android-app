@@ -546,10 +546,12 @@ object NotificationGenerator : Injector() {
                     conversation.conversationId,
                     null,
                 )
+            val id = "Bubble-${conversation.conversationId}"
             val shortcut =
-                ShortcutInfoCompat.Builder(context, "Bubble-${conversation.conversationId}")
+                ShortcutInfoCompat.Builder(context, id)
                     .setIntent(shortcutIntent)
                     .setLongLived(true)
+                    .setLocusId(LocusIdCompat(id))
                     .setIcon(icon)
                     .setShortLabel(name).apply {
                         person?.let { setPerson(it) }
