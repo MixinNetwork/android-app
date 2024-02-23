@@ -624,6 +624,8 @@ class ConversationListFragment : LinkFragment() {
         name: String?,
         circleId: String?,
     ) {
+        if (viewDestroyed()) return
+
         setCircleName(name)
         defaultSharedPreferences.putString(CIRCLE_NAME, name)
         defaultSharedPreferences.putString(CIRCLE_ID, circleId)
