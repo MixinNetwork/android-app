@@ -86,7 +86,7 @@ class TransferContent : LinearLayout {
             address.isVisible = false
             addressReceive.isVisible = false
             receive.isVisible = true
-            receive.setContent(R.string.Receive, transferBiometricItem.users.first()) {}
+            receive.setContent(R.string.Receive, transferBiometricItem.users) {}
             addressReceive.isVisible = true
             addressReceive.setContent(R.string.RECEIVER_WILL_RECEIVE, "${transferBiometricItem.amount} ${transferBiometricItem.asset?.symbol}")
 
