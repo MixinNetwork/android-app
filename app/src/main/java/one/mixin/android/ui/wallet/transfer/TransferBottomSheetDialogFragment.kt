@@ -364,7 +364,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun handleError(error: ResponseError?) {
+    private fun handleError(error: ResponseError?, updateState: () -> Unit) {
         lifecycleScope.launch {
             canRetry = false
             if (error?.code == ErrorHandler.WITHDRAWAL_SUSPEND) {
@@ -408,6 +408,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             } else {
                 // do nothing
             }
+            updateState()
         }
     }
 
@@ -536,8 +537,9 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     isSuccess = true
                     transferViewModel.updateStatus(TransferStatus.SUCCESSFUL)
                 } else {
-                    handleError(response.error)
-                    transferViewModel.updateStatus(TransferStatus.FAILED)
+                    handleError(response.error) {
+                        transferViewModel.updateStatus(TransferStatus.FAILED)
+                    }
                 }
             }
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
