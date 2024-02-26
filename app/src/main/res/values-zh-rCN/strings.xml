@@ -871,6 +871,10 @@
     <string name="Send_Without_Sound">静音发送</string>
     <string name="Send_your_Current_Location">发送您当前的位置</string>
     <string name="Senders">交易发起人</string>
+    <plurals name="Sender_title" tools:ignore="UnusedQuantity">
+        <item quantity="one">交易发起人</item>
+        <item quantity="other">交易发起人</item>
+    </plurals>
     <string name="Set">设置</string>
     <string name="set_disappearing_message_time_to">%1$s将限时消息设置为 %2$s</string>
     <string name="Set_new_PIN">设置新的 PIN</string>
@@ -1263,6 +1267,7 @@
     <string name="identity_additional_verification_tip">根据监管需求，我们需要您补充验证材料。感谢您的理解与支持</string>
     <string name="Price">价格</string>
     <string name="Order_Preview">订单预览</string>
+    <string name="Total">总共</string>
     <string name="Pay_with">支付方式</string>
     <string name="Buy_now">立即购买</string>
     <string name="Payment_Services">支付服务</string>
@@ -1344,8 +1349,6 @@
     <string name="Logined">已登录</string>
     <string name="Transfer_confirmation">转账确认</string>
     <string name="Withdrawal_confirmation">提现确认</string>
-    <string name="ADDRESS_WILL_RECEIVE">指定地址将收到</string>
-    <string name="RECEIVER_WILL_RECEIVE">对方将收到</string>
     <string name="Transfer_confirmation_desc">请仔细检查收款人、网络和金额，如果您转错了，资产将无法追回！</string>
     <string name="transfer_address_warning">地址确认提醒：请确认地址 %1$s 仍然有效，您已经超过 30 天没有使用该地址。</string>
     <string name="Not_Now">下次再说</string>

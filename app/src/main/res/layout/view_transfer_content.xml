@@ -44,7 +44,13 @@
                 android:visibility="gone"/>
 
             <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
-                android:id="@+id/address_receive"
+                android:id="@+id/network_fee"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"/>
+
+            <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
+                android:id="@+id/total"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"/>
@@ -53,12 +59,6 @@
                 android:id="@+id/network"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
-
-            <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
-                android:id="@+id/network_fee"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone"/>
 
             <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
                 android:id="@+id/memo"

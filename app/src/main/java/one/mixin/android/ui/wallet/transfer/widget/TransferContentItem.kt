@@ -34,7 +34,7 @@ class TransferContentItem : LinearLayout {
         foot: String? = null,
     ) {
         _binding.apply {
-            title.setText(context.getString(titleResId).uppercase())
+            title.text = context.getString(titleResId).uppercase()
             content.text = contentStr
             footer.isVisible = !foot.isNullOrBlank()
             footer.text = foot
