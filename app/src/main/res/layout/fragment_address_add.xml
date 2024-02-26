@@ -61,6 +61,7 @@
                     android:inputType="text"
                     android:paddingStart="@dimen/activity_horizontal_margin"
                     android:paddingEnd="8dp"
+                    android:maxLength="64"
                     android:textColor="?attr/text_primary"
                     android:textColorHint="?attr/text_assist"
                     android:textSize="16sp"
