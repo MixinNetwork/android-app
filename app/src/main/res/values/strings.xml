@@ -802,6 +802,10 @@
     <string name="Receive_Money">Receive Money</string>
     <string name="Receiver">Receiver</string>
     <string name="Receivers">Receivers</string>
+    <plurals name="Receiver_title">
+        <item quantity="one">Receiver</item>
+        <item quantity="other">Receivers</item>
+    </plurals>
     <string name="recent_chats">CHATS</string>
     <string name="Recent_searches">Recent searches</string>
     <string name="Refresh">Refresh</string>
