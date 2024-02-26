@@ -1361,7 +1361,7 @@
     <string name="Deleting_Address">正在删除地址</string>
     <string name="Deleting_Address_Failed">删除地址失败</string>
     <string name="delete_address_description">确认删除该地址吗？</string>
-     <string name="review_address_hint">请仔细检查地址、Memo（标签）和网络，如果您转错了，资产将无法追回。</string>
+    <string name="review_address_hint">请仔细检查地址、Memo（标签）和网络，如果您转错了，资产将无法追回。</string>
     <string name="review_transfer_hint">请仔细检查收款人、网络和金额，如果您转错了，资产将无法追回。</string>
     <string name="review_withdrawal_hint">请仔细检查收款地址、网络和金额，如果您转错了，资产将无法追回。</string>
     <string name="transfer_sent_description">转账成功，收款人将很快就会收到转账。</string>
