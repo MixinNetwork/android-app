@@ -45,7 +45,7 @@ class TransferHeader : LinearLayout {
                 }
 
                 TransferType.addAddress -> {
-                    title.setText(R.string.Sending_Transfer_Request)
+                    title.setText(R.string.Adding_Address)
                     subTitle.setText(R.string.review_address_hint)
                 }
 
