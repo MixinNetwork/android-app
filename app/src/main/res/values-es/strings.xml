@@ -1102,4 +1102,5 @@
     <string name="You_have_left_the_group">Te has ido del grupo</string>
     <string name="Your_emergency_contact_has_been_changed">Tu contacto de emergencia se ha cambiado</string>
     <string name="your_pin_has_been_created">Tu PIN se ha creado</string>
+    <string name="Receivers">receivers</string>
 </resources>
