@@ -1410,4 +1410,15 @@
     <string name="delete_by_pin">通过 PIN 删除</string>
     <string name="edit_by_pin">通过 PIN 修改</string>
     <string name="Sender">交易发起人</string>
+    <string name="continue_with_pin">输入 PIN 继续</string>
+    <string name="wallet_create_eth">创建以太坊账户</string>
+    <string name="wallet_create_polygon">创建 Polygon 账户</string>
+    <string name="wallet_create_bsc">创建 BSC 账户</string>
+    <string name="wallet_create_eth_title">您的以太坊账户基于 Mixin Messenger  的 MPC 钱包并根据 BIP44 协议派生而来。</string>
+    <string name="wallet_create_polygon_title">您的 Polygon 账户基于 Mixin Messenger  的 MPC 钱包并根据 BIP44 协议派生而来。</string>
+    <string name="wallet_create_bsc_title">您的 BSC 账户基于 Mixin Messenger  的 MPC 钱包并根据 BIP44 协议派生而来。</string>
+    <string name="wallet_create_desc">建议与去中心化应用程序交互完后尽快将资产转回更安全的 Mixin 钱包。</string>
+    <string name="wallet_create_desc_1">以太坊账户与 Mixin 钱包资产隔离但使用同一个 PIN 进行资产管理。</string>
+    <string name="wallet_create_desc_2">在以太坊账户与 Mixin 钱包之间划转资产需要支付网络矿工费。</string>
+    <string name="wallet_create_desc_3">当您创建以太坊账户时，也将自动创建 Polygon、BSC 等 EVM 账户。</string>
 </resources>

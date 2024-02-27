@@ -1443,4 +1443,17 @@
     <string name="Ethereum">Ethereum</string>
     <string name="Polygon">Polygon</string>
     <string name="BSC">BSC</string>
+    <string name="continue_with_pin">Continue with PIN</string>
+    <string name="wallet_create_eth">Create ETH account</string>
+    <string name="wallet_create_polygon">Create Polygon account</string>
+    <string name="wallet_create_bsc">Create BSC account</string>
+    <string name="wallet_create_eth_title">Your Ethernet account is based on Mixin Messenger\'s MPC wallet and is derived from the BIP44 agreement.</string>
+    <string name="wallet_create_polygon_title">Your Polygon account is based on Mixin Messenger\'s MPC wallet and is derived from the BIP44 agreement.</string>
+    <string name="wallet_create_bsc_title">Your BSC account is based on Mixin Messenger\'s MPC wallet and is derived from the BIP44 agreement.</string>
+    <string name="wallet_create_successfully">Created successfully</string>
+    <string name="wallet_create_failed">Created failed</string>
+    <string name="wallet_create_desc">It is recommended that you transfer the assets back to a more secure Mixin wallet as soon as possible after interacting with the decentralized application.</string>
+    <string name="wallet_create_desc_1">Ethereum account is isolated from Mixin Wallet assets but uses the same PIN for asset management.</string>
+    <string name="wallet_create_desc_2">The transfer of assets between Ethereum account and Mixin wallet requires the payment of online miners\' fees.</string>
+    <string name="wallet_create_desc_3">When you create an Ethereum account, you will also automatically create Polygon, BSC and other EVM accounts.</string>
 </resources>
