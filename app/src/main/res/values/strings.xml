@@ -1433,4 +1433,15 @@
     <string name="delete_by_pin">Delete by PIN</string>
     <string name="edit_by_pin">Edit by PIN</string>
     <string name="Sender">Sender</string>
+    <string name="key_desc">Mixin Messenger\'s MPC wallet is built based on the decentralized key protocol TIP. The complete key of the wallet only exists in the TEE security environment of the current device, and there is no risk of disclosure. No other third party, including us, can access the private key. There has not been a single case of private key disclosure since 2017, and we strongly recommend that non-professionals do not manually export the backup private key. Read the documentation to learn more.</string>
+    <string name="key_tip_1">The private key can directly transfer all the assets in the wallet of the current account without the help of SMS or PIN code.</string>
+    <string name="key_tip_2">Mixin Messenger does not support private key import. If you need to use it, please operate it through the main network tool.</string>
+    <string name="key_tip_3">It is strongly not recommended to use this private key when the Mixin Messenger account is available, otherwise the related assets may no longer be used in Mixin Messenger.</string>
+    <string name="key_title">Export private key confirmation</string>
+    <string name="key_sub_title">Please confirm that you have the ability to keep the private key securely and are willing to bear the risk of leakage caused by the export of the private key.</string>
+    <string name="Exporting_private_key">Exporting private key</string>
+    <string name="exporting_private_key_description">Exporting your Mixin wallet private key, please wait!</string>
+    <string name="Exporting_privat_key_Success">Private key exported successfully</string>
+    <string name="exporting_privat_key_Success_description">Please write your private key on a piece of paper and store it in a safe or other safe place. be careful not to take a screenshot or share the key on the network!</string>
+    <string name="Exporting_privat_key_Failed">Failed to export private key</string>
 </resources>

@@ -1402,4 +1402,15 @@
     <string name="delete_by_pin">通过 PIN 删除</string>
     <string name="edit_by_pin">通过 PIN 修改</string>
     <string name="Sender">交易发起人</string>
+    <string name="key_desc">Mixin Messenger 的 MPC 钱包基于去中心化密钥协议 TIP 构建，钱包完整的密钥只存在当前设备的 TEE 安全环境中，没有泄漏风险，其他任何第三方包括我们均无法访问该私钥。自 2017 年以来没有一例私钥泄漏的案例，我们强烈建议非专业人士不要手动导出备份私钥，阅读文档了解更多。</string>
+    <string name="key_tip_1">私钥可直接转移当前账号钱包里所有的资产，不需要借助手机短信或 PIN 码。</string>
+    <string name="key_tip_2">Mixin Messenger 不支持私钥导入，需要使用请通过主网工具来操作。</string>
+    <string name="key_tip_3">强烈不推荐在 Mixin Messenger 账号可用情况下使用该私钥，否则相关资产在 Mixin Messenger 可能无法继续使用。</string>
+    <string name="key_title">导出私钥确认</string>
+    <string name="key_sub_title">请确认您具备安全保管私钥的能力，并且愿意承担导出私钥可能带来的泄漏风险。</string>
+    <string name="Exporting_private_key">正在导出私钥</string>
+    <string name="exporting_private_key_description">正在将导出您 Mixin 钱包的私钥，请稍后！</string>
+    <string name="Exporting_privat_key_Success">导出私钥成功</string>
+    <string name="exporting_privat_key_Success_description">请把私钥写到一张纸上并存在保险柜或其他安全的地方，注意不要截屏或把密钥分享到网络上！</string>
+    <string name="Exporting_privat_key_Failed">导出私钥失败</string>
 </resources>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_upper_round">
+
+    <one.mixin.android.ui.wallet.key.PrivateKeyHeader
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ViewAnimator
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:text="@string/key_desc"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="14sp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <one.mixin.android.widget.DotTextLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp">
+
+                    <ImageView
+                        android:src="@drawable/dot_black"
+                        android:layout_width="wrap_content"
+                        android:layout_height="14sp"
+                        android:padding="4dp"
+                        android:contentDescription="@null" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="3dp"
+                        android:lineSpacingExtra="2dp"
+                        android:text="@string/key_tip_1"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="14sp" />
+                </one.mixin.android.widget.DotTextLayout>
+
+                <one.mixin.android.widget.DotTextLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp">
+
+                    <ImageView
+                        android:src="@drawable/dot_black"
+                        android:layout_width="wrap_content"
+                        android:layout_height="14sp"
+                        android:padding="4dp"
+                        android:contentDescription="@null" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="3dp"
+                        android:lineSpacingExtra="2dp"
+                        android:text="@string/key_tip_2"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="14sp" />
+                </one.mixin.android.widget.DotTextLayout>
+
+                <one.mixin.android.widget.DotTextLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp">
+
+                    <ImageView
+                        android:src="@drawable/dot_black"
+                        android:layout_width="wrap_content"
+                        android:layout_height="14sp"
+                        android:padding="4dp"
+                        android:contentDescription="@null" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="3dp"
+                        android:lineSpacingExtra="2dp"
+                        android:text="@string/key_tip_3"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="14sp" />
+                </one.mixin.android.widget.DotTextLayout>
+            </LinearLayout>
+
+            <one.mixin.android.widget.BlurOverlayView
+                android:id="@+id/blur_overlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </ViewAnimator>
+
+    </ScrollView>
+
+    <one.mixin.android.ui.wallet.transfer.widget.TransferBottom
+        android:id="@+id/bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal" />
+</LinearLayout>
+
