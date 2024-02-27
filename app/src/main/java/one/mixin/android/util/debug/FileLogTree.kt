@@ -1,6 +1,7 @@
 package one.mixin.android.util.debug
 
 import android.util.Log
+import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.nowInUtc
@@ -32,6 +33,11 @@ class FileLogTree : Timber.Tree() {
                     if (file.length() >= MAX_SIZE) {
                         file.delete()
                         file.createNewFile()
+                    }
+                    if (file.length() == 0L) {
+                        file.outputStream().use {
+                            it.write("Mixin${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})\n".toByteArray(Charsets.UTF_8))
+                        }
                     }
                     val fos = FileOutputStream(file, true)
                     fos.write("${nowInUtc()} $message\n".toByteArray(Charsets.UTF_8))
