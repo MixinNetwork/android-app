@@ -114,6 +114,9 @@
     <declare-styleable name="BalanceLayout">
         <attr name="center" format="boolean"/>
     </declare-styleable>
+    <declare-styleable name="TransferContentItem">
+        <attr name="selectable" format="boolean" />
+    </declare-styleable>
     <declare-styleable name="AvatarsView">
         <attr name="avatar_border_width" format="dimension" />
         <attr name="avatar_border_color" format="color" />
