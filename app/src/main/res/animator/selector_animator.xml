@@ -4,7 +4,7 @@
         <objectAnimator
             android:duration="@android:integer/config_shortAnimTime"
             android:propertyName="translationZ"
-            android:valueTo="4dp"
+            android:valueTo="2dp"
             android:valueType="floatType" />
 
     </item>
@@ -12,7 +12,7 @@
         <objectAnimator
             android:duration="@android:integer/config_shortAnimTime"
             android:propertyName="translationZ"
-            android:valueTo="2dp"
+            android:valueTo="0dp"
             android:valueType="floatType" />
     </item>
 </selector>

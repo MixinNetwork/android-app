@@ -25,14 +25,17 @@ class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "PinInputBottomSheetDialogFragment"
         const val ARGS_BIOMETRIC_INFO = "args_biometric_info"
+        const val ARGS_FROM = "args_from"
 
         fun newInstance(
             title: String? = null,
             biometricInfo: BiometricInfo? = null,
+            from: Int = 0
         ) =
             PinInputBottomSheetDialogFragment().withArgs {
                 title?.let { putString(ARGS_TITLE, it) }
                 biometricInfo?.let { putParcelable(ARGS_BIOMETRIC_INFO, it) }
+                putInt(ARGS_FROM, from)
             }
     }
 
@@ -42,6 +45,10 @@ class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private val biometricInfo: BiometricInfo? by lazy {
         arguments?.getParcelableCompat(ARGS_BIOMETRIC_INFO, BiometricInfo::class.java)
+    }
+
+    private val from by lazy {
+        arguments?.getInt(ARGS_FROM) ?: 0
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
@@ -74,6 +81,7 @@ class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 biometricTv.isVisible = BiometricUtil.shouldShowBiometric(requireContext())
                 biometricTv.setOnClickListener { showBiometricPrompt() }
             }
+            icon.isVisible = from != 0
             titleView.rightIv.setOnClickListener { dismiss() }
             pin.setListener(
                 object : PinView.OnPinListener {

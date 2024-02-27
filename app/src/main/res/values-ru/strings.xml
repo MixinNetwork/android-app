@@ -1043,4 +1043,5 @@
     <string name="You_deleted_this_message">Вы удалили это сообщение</string>
     <string name="You_have_left_the_group">Вы вышли из группы</string>
     <string name="your_pin_has_been_created">Ваш PIN-код был создан</string>
+    <string name="Receivers">Получатели</string>
 </resources>

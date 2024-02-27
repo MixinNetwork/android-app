@@ -1037,4 +1037,5 @@
     <string name="You_deleted_this_message">このメッセージを削除しました。</string>
     <string name="You_have_left_the_group">グループから退会しました</string>
     <string name="your_pin_has_been_created">PINコードが生成されました</string>
+    <string name="Receivers">受取人</string>
 </resources>

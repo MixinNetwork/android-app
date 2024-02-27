@@ -61,7 +61,7 @@
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:layout_marginEnd="@dimen/margin16"
-        android:src="@drawable/ic_close_black"
+        android:src="@drawable/ic_circle_close"
         android:background="@drawable/mixin_ripple"
         tools:ignore="ContentDescription"/>
 
