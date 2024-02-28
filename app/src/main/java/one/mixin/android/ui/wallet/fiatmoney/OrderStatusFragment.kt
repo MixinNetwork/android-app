@@ -333,6 +333,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         }
     }
 
+    private var ckoAuthenticationStatus: String? = null
     private fun init3DS(sessionResponse: RouteSessionResponse) {
         val checkout3DS =
             Checkout3DSService(
@@ -349,12 +350,13 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 sessionResponse.sessionSecret,
                 sessionResponse.scheme,
             )
-
+        Timber.e("3DS-${sessionResponse.sessionId} checkout3DS authenticate")
+        ckoAuthenticationStatus = "PENDING"
         checkout3DS.authenticate(authenticationParameters) { result: AuthenticationResult ->
+            ckoAuthenticationStatus = result.toString()
             when (result.resultType) {
                 ResultType.Completed -> {
-                    // TODO
-                    // checkThreeDsResult(sessionResponse)
+                    Timber.e("3DS authenticate Completed")
                 }
 
                 ResultType.Error -> {
@@ -379,11 +381,15 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     if (session.isSuccess) {
                         if (session.data?.status == RouteSessionStatus.Approved.value) {
                             paymentsPrecondition(sessionId = sessionResponse.sessionId, instrumentId = sessionResponse.instrumentId, null)
+                            if (ckoAuthenticationStatus == "PENDING") {
+                                reportException(IllegalStateException("3DS no callback, cko status: $ckoAuthenticationStatus, session(${sessionResponse.sessionId}) status:${session.data?.status}"))
+                            }
                             break
                         } else if (session.data?.status != RouteSessionStatus.Pending.value && session.data?.status != RouteSessionStatus.Processing.value) {
                             showError(session.data?.status ?: session.errorDescription)
                             return@launch
                         } else {
+                            reportException(IllegalStateException("3DS cko status: $ckoAuthenticationStatus, session(${sessionResponse.sessionId}) status:${session.data?.status}"))
                             delay(REFRESH_INTERVAL)
                         }
                     } else {
