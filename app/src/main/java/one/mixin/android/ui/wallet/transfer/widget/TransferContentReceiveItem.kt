@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
+import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import one.mixin.android.databinding.ItemTransferReceiveContentBinding
 import one.mixin.android.extension.dp
@@ -30,7 +31,7 @@ class TransferContentReceiveItem : LinearLayout {
         userClick: (User) -> Unit,
     ) {
         _binding.apply {
-            title.setText(context.getString(titleRes).uppercase())
+            title.text = context.getString(titleRes).uppercase()
             val item = TransferReceiverItem(context)
             item.setContent(user)
             item.setOnClickListener {
@@ -42,16 +43,16 @@ class TransferContentReceiveItem : LinearLayout {
 
     @SuppressLint("SetTextI18n")
     fun setContent(
-        @StringRes titleRes: Int,
+        @PluralsRes titleRes: Int,
         users: List<User>,
         sendersThreshold: Int? = null,
         userClick: (User) -> Unit,
     ) {
         _binding.apply {
             if (sendersThreshold != null) {
-                title.text = "${context.getString(titleRes).uppercase()} ($sendersThreshold/${users.size})"
+                title.text = "${context.resources.getQuantityString(titleRes, users.size).uppercase()} ($sendersThreshold/${users.size})"
             } else {
-                title.text = context.getString(titleRes).uppercase()
+                title.text = context.resources.getQuantityString(titleRes, users.size).uppercase()
             }
             users.forEach { user ->
                 val item = TransferReceiverItem(context)

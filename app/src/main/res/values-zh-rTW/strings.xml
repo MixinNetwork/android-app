@@ -1057,4 +1057,5 @@
     <string name="Version_not_supported">版本不兼容，請升級新版本</string>
     <string name="restore_local_exists">已經有 %1$s 條本地聊天記錄，最後一條消息的時間是 %2$s，確定用備份的聊天數據覆蓋本地數據嗎？</string>
     <string name="Transfer_timeout">長時間未收到數據是否退出？</string>
+    <string name="Receivers">交易接收人</string>
 </resources>

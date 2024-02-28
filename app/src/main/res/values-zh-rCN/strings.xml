@@ -782,6 +782,11 @@
     <string name="RECEIVE">转入</string>
     <string name="Receive_Money">我的收款码</string>
     <string name="Receiver">至</string>
+    <string name="Receivers">交易接收人</string>
+    <plurals name="Receiver_title" tools:ignore="UnusedQuantity">
+        <item quantity="one">交易接收人</item>
+        <item quantity="other">交易接收人</item>
+    </plurals>
     <string name="recent_chats">最近聊天</string>
     <string name="Recent_searches">最近搜索</string>
     <string name="Refresh">刷新</string>
@@ -866,6 +871,10 @@
     <string name="Send_Without_Sound">静音发送</string>
     <string name="Send_your_Current_Location">发送您当前的位置</string>
     <string name="Senders">交易发起人</string>
+    <plurals name="Sender_title" tools:ignore="UnusedQuantity">
+        <item quantity="one">交易发起人</item>
+        <item quantity="other">交易发起人</item>
+    </plurals>
     <string name="Set">设置</string>
     <string name="set_disappearing_message_time_to">%1$s将限时消息设置为 %2$s</string>
     <string name="Set_new_PIN">设置新的 PIN</string>
@@ -1258,6 +1267,7 @@
     <string name="identity_additional_verification_tip">根据监管需求，我们需要您补充验证材料。感谢您的理解与支持</string>
     <string name="Price">价格</string>
     <string name="Order_Preview">订单预览</string>
+    <string name="Total">总共</string>
     <string name="Pay_with">支付方式</string>
     <string name="Buy_now">立即购买</string>
     <string name="Payment_Services">支付服务</string>
@@ -1339,10 +1349,8 @@
     <string name="Logined">已登录</string>
     <string name="Transfer_confirmation">转账确认</string>
     <string name="Withdrawal_confirmation">提现确认</string>
-    <string name="ADDRESS_WILL_RECEIVE">指定地址将收到</string>
-    <string name="RECEIVER_WILL_RECEIVE">对方将收到</string>
     <string name="Transfer_confirmation_desc">请仔细检查收款人、网络和金额，如果您转错了，资产将无法追回！</string>
-    <string name="transfer_address_warning">地址确认提醒：请确认地址 %1$s 仍然有效，您已经超过 30 天没有使用该地址。</string>
+    <string name="transfer_address_warning">请确认地址 %1$s 仍然有效，您已经超过 30 天没有使用该地址。</string>
     <string name="Not_Now">下次再说</string>
     <string name="Enable">启用</string>
     <string name="enable_biometric_description">想要启用生物识别支付吗？启用后，转账时可通过生物识别快速完成付款。</string>
@@ -1360,7 +1368,7 @@
     <string name="Deleting_Address">正在删除地址</string>
     <string name="Deleting_Address_Failed">删除地址失败</string>
     <string name="delete_address_description">确认删除该地址吗？</string>
-     <string name="review_address_hint">请仔细检查地址、Memo（标签）和网络，如果您转错了，资产将无法追回。</string>
+    <string name="review_address_hint">请仔细检查地址、Memo（标签）和网络，如果您转错了，资产将无法追回。</string>
     <string name="review_transfer_hint">请仔细检查收款人、网络和金额，如果您转错了，资产将无法追回。</string>
     <string name="review_withdrawal_hint">请仔细检查收款地址、网络和金额，如果您转错了，资产将无法追回。</string>
     <string name="transfer_sent_description">转账成功，收款人将很快就会收到转账。</string>
@@ -1374,14 +1382,14 @@
     <string name="Confirm_Withdrawal">提现确认</string>
     <string name="Sending_Withdrawal_Request">正在发送提现</string>
     <string name="Withdrawal_Request_Sent">提现请求已提交</string>
-    <string name="address_validity_reminder">地址确认提醒：请确认地址 %1$s（%2$s）仍然有效，您已经超过 30 天没有使用该地址。</string>
+    <string name="address_validity_reminder">请确认地址 %1$s（%2$s）仍然有效，您已经超过 30 天没有使用该地址。</string>
     <string name="withdrawal_sending_description">正在创建提现，请稍候。</string>
     <string name="Confirm_Transfer">转账确认</string>
     <string name="Sending_Transfer_Request">正在发送转账</string>
     <string name="transfer_sending_description">正在创建交易，请稍候。</string>
-    <string name="duplication_reminder">重复转账提醒：您已经在%2$s前给该收款人转账了 %1$s。</string>
-    <string name="large_amount_reminder">大额转账提醒：确定给 %3$s（%4$s）转价值 %1$s 的 %2$s？</string>
-    <string name="unfamiliar_person_reminder">陌生转账提醒：确定给 %1$s（%2$s）转账？他不是你的联系人，如果您转错人，资产将无法追回。</string>
+    <string name="duplication_reminder">您已经在%2$s前给该收款人转账了 %1$s。</string>
+    <string name="large_amount_reminder">确定给 %3$s（%4$s）转价值 %1$s 的 %2$s？</string>
+    <string name="unfamiliar_person_reminder">确定给 %1$s（%2$s）转账？他不是你的联系人，如果您转错人，资产将无法追回。</string>
     <string name="Confirm_Signing_Multisig">多签交易确认</string>
     <string name="Sending_Multisig_Signature">正在发送多签交易</string>
     <string name="Multisig_Signed">多签交易签名成功</string>

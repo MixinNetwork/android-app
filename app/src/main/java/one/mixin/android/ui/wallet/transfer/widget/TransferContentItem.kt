@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.annotation.StringRes
 import androidx.core.view.isVisible
+import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransferContentBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
@@ -25,6 +26,11 @@ class TransferContentItem : LinearLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         orientation = VERTICAL
         _binding = ItemTransferContentBinding.inflate(LayoutInflater.from(context), this)
+        val ta = context.obtainStyledAttributes(attrs, R.styleable.TransferContentItem)
+        val selectable = ta.getBoolean(R.styleable.TransferContentItem_selectable, false)
+        _binding.content.setTextIsSelectable(selectable)
+        ta.recycle()
+
         setPadding(dp28, dp8, dp28, dp8)
     }
 
@@ -34,7 +40,7 @@ class TransferContentItem : LinearLayout {
         foot: String? = null,
     ) {
         _binding.apply {
-            title.setText(context.getString(titleResId).uppercase())
+            title.text = context.getString(titleResId).uppercase()
             content.text = contentStr
             footer.isVisible = !foot.isNullOrBlank()
             footer.text = foot

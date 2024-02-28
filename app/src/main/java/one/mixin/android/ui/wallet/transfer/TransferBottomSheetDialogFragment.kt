@@ -460,7 +460,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showPin() {
-        PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo()).setOnPinComplete { pin ->
+        PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo(), from = 1).setOnPinComplete { pin ->
             lifecycleScope.launch(
                 CoroutineExceptionHandler { _, error ->
                     handleError(error)

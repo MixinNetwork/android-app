@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/bg_white"
@@ -41,10 +42,17 @@
                 android:id="@+id/address"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:selectable="true"/>
+
+            <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
+                android:id="@+id/network_fee"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:visibility="gone"/>
 
             <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
-                android:id="@+id/address_receive"
+                android:id="@+id/total"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"/>
@@ -53,12 +61,6 @@
                 android:id="@+id/network"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
-
-            <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
-                android:id="@+id/network_fee"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone"/>
 
             <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
                 android:id="@+id/memo"
