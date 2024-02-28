@@ -364,7 +364,10 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun handleError(error: ResponseError?, updateState: () -> Unit) {
+    private fun handleError(
+        error: ResponseError?,
+        updateState: () -> Unit,
+    ) {
         lifecycleScope.launch {
             canRetry = false
             if (error?.code == ErrorHandler.WITHDRAWAL_SUSPEND) {

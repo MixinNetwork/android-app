@@ -548,6 +548,7 @@ class TokenRepository
             traceDao.suspendFindTraceById(traceId)
 
         suspend fun getTransactionsById(traceId: String) = utxoService.getTransactionsById(traceId)
+
         suspend fun getListTransactionsById(traceId: String): MixinResponse<List<TransactionResponse>> {
             val response = utxoService.getTransactionsById(traceId)
             return if (response.isSuccess) {

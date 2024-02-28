@@ -1,14 +1,14 @@
 package one.mixin.android.net
 
-import java.io.IOException
-import java.net.SocketTimeoutException
 import kotlinx.coroutines.delay
 import one.mixin.android.api.MixinResponse
+import java.io.IOException
+import java.net.SocketTimeoutException
 
 suspend fun <T> executeWithRetry(
     maxRetries: Int,
     executeFunc: suspend () -> MixinResponse<T>,
-    recoverFunc: suspend () -> MixinResponse<T>
+    recoverFunc: suspend () -> MixinResponse<T>,
 ): MixinResponse<T> {
     return try {
         val response = executeFunc()

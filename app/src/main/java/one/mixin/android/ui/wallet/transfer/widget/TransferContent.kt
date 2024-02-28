@@ -35,7 +35,10 @@ class TransferContent : LinearLayout {
         _binding = ViewTransferContentBinding.inflate(LayoutInflater.from(context), this)
     }
 
-    fun render(transferItem: BiometricItem, userClick: (User) -> Unit) {
+    fun render(
+        transferItem: BiometricItem,
+        userClick: (User) -> Unit,
+    ) {
         when (transferItem) {
             is TransferBiometricItem -> {
                 renderTransfer(transferItem, userClick)
@@ -83,7 +86,7 @@ class TransferContent : LinearLayout {
         return "${value.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}"
     }
 
-    private fun formatWithdrawBiometricItem(withdrawBiometricItem: WithdrawBiometricItem):Pair<String,String> {
+    private fun formatWithdrawBiometricItem(withdrawBiometricItem: WithdrawBiometricItem): Pair<String, String> {
         val asset = withdrawBiometricItem.asset!!
         val feeAsset = withdrawBiometricItem.fee!!.token
         val amount = withdrawBiometricItem.amount
@@ -112,17 +115,21 @@ class TransferContent : LinearLayout {
             } catch (e: NumberFormatException) {
                 BigDecimal.ZERO
             }
-        if (asset.assetId == feeAsset.assetId){
-            val totalAmount = value.plus(feeValue)
-            val total =  asset.priceFiat() * totalAmount
-            return Pair("${totalAmount.numberFormat8()} ${asset.symbol}", "${total.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}")
-        } else {
+        if (asset.assetId == feeAsset.assetId)
+            {
+                val totalAmount = value.plus(feeValue)
+                val total = asset.priceFiat() * totalAmount
+                return Pair("${totalAmount.numberFormat8()} ${asset.symbol}", "${total.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}")
+            } else {
             val total = asset.priceFiat() * value + feeAsset.priceFiat() * feeValue
             return Pair("${withdrawBiometricItem.amount} ${asset.symbol} + $feeAmount ${feeAsset.symbol}", "${total.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}")
         }
     }
 
-    private fun renderTransfer(transferBiometricItem: TransferBiometricItem, userClick: (User) -> Unit) {
+    private fun renderTransfer(
+        transferBiometricItem: TransferBiometricItem,
+        userClick: (User) -> Unit,
+    ) {
         _binding.apply {
             amount.setContent(R.string.Amount, "${transferBiometricItem.amount} ${transferBiometricItem.asset?.symbol}", amountAs(transferBiometricItem.amount, transferBiometricItem.asset!!))
             address.isVisible = false

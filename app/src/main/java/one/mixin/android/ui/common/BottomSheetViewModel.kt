@@ -511,7 +511,7 @@ class BottomSheetViewModel
             val transactionRsp =
                 executeWithRetry(5, {
                     tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
-                },{
+                }, {
                     tokenRepository.getListTransactionsById(traceId)
                 })
             if (transactionRsp.error != null) {

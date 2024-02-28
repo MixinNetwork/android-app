@@ -15,7 +15,7 @@ class MixinResponse<T>() {
         }
     }
 
-    constructor(error:ResponseError) : this() {
+    constructor(error: ResponseError) : this() {
         this.error = error
     }
 
