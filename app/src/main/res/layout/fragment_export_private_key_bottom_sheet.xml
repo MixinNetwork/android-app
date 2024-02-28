@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_upper_round">
 
-    <one.mixin.android.ui.wallet.key.PrivateKeyHeader
+    <one.mixin.android.ui.wallet.key.ExportPrivateKeyHeader
         android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
@@ -29,7 +29,7 @@
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:text="@string/key_desc"
+                    android:text="@string/export_key_desc"
                     android:textColor="?attr/text_primary"
                     android:textSize="14sp"
                     android:layout_width="match_parent"
@@ -52,7 +52,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="3dp"
                         android:lineSpacingExtra="2dp"
-                        android:text="@string/key_tip_1"
+                        android:text="@string/export_key_tip_1"
                         android:textColor="?attr/text_primary"
                         android:textSize="14sp" />
                 </one.mixin.android.widget.DotTextLayout>
@@ -74,7 +74,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="3dp"
                         android:lineSpacingExtra="2dp"
-                        android:text="@string/key_tip_2"
+                        android:text="@string/export_key_tip_2"
                         android:textColor="?attr/text_primary"
                         android:textSize="14sp" />
                 </one.mixin.android.widget.DotTextLayout>
@@ -96,7 +96,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="3dp"
                         android:lineSpacingExtra="2dp"
-                        android:text="@string/key_tip_3"
+                        android:text="@string/export_key_tip_3"
                         android:textColor="?attr/text_primary"
                         android:textSize="14sp" />
                 </one.mixin.android.widget.DotTextLayout>

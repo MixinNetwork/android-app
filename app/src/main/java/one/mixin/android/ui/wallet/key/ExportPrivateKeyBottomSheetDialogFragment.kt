@@ -10,7 +10,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.ipfs.multibase.binary.Base32
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import one.mixin.android.databinding.FragmentPrivateKeyBottomSheetBinding
+import one.mixin.android.databinding.FragmentExportPrivateKeyBottomSheetBinding
 import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
@@ -19,17 +19,17 @@ import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 
 @AndroidEntryPoint
-class PrivateKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class ExportPrivateKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "PrivateKeyBottomSheetDialogFragment"
 
         fun newInstance() =
-            PrivateKeyBottomSheetDialogFragment()
+            ExportPrivateKeyBottomSheetDialogFragment()
     }
 
-    private val keyViewModel by viewModels<KeyViewModel>()
+    private val keyViewModel by viewModels<ExportPrivateKeyViewModel>()
 
-    private val binding by viewBinding(FragmentPrivateKeyBottomSheetBinding::inflate)
+    private val binding by viewBinding(FragmentExportPrivateKeyBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun setupDialog(

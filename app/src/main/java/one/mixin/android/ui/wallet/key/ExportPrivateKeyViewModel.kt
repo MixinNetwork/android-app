@@ -9,7 +9,7 @@ import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import javax.inject.Inject
 
 @HiltViewModel
-class KeyViewModel
+class ExportPrivateKeyViewModel
 @Inject
 internal constructor(
     val tokenRepository: TokenRepository,

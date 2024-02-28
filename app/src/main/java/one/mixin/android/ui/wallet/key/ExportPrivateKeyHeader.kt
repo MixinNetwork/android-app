@@ -6,18 +6,18 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import one.mixin.android.R
-import one.mixin.android.databinding.ViewPrivateKeyHeaderBinding
+import one.mixin.android.databinding.ViewExportPrivateKeyHeaderBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.textColorResource
 
-class PrivateKeyHeader : LinearLayout {
-    private val _binding: ViewPrivateKeyHeaderBinding
+class ExportPrivateKeyHeader : LinearLayout {
+    private val _binding: ViewExportPrivateKeyHeaderBinding
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         orientation = VERTICAL
-        _binding = ViewPrivateKeyHeaderBinding.inflate(LayoutInflater.from(context), this)
+        _binding = ViewExportPrivateKeyHeaderBinding.inflate(LayoutInflater.from(context), this)
         gravity = Gravity.CENTER_HORIZONTAL
     }
 
@@ -57,8 +57,8 @@ class PrivateKeyHeader : LinearLayout {
         _binding.apply {
             iconLayout.displayedChild = 0
 
-            title.setText(R.string.key_title)
-            subTitle.setText(R.string.key_sub_title)
+            title.setText(R.string.export_key_title)
+            subTitle.setText(R.string.export_key_sub_title)
             subTitle.textColorResource = R.color.text_color_error_tip
         }
     }
