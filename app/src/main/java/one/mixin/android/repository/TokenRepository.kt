@@ -552,7 +552,7 @@ class TokenRepository
             val response = utxoService.getTransactionsById(traceId)
             return if (response.isSuccess) {
                 MixinResponse(Response.success(listOf(response.data!!)))
-            }else{
+            } else {
                 MixinResponse(response.error!!)
             }
         }

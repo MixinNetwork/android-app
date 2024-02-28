@@ -1,9 +1,9 @@
 package one.mixin.android.net
 
-import kotlinx.coroutines.delay
-import one.mixin.android.api.MixinResponse
 import java.io.IOException
 import java.net.SocketTimeoutException
+import kotlinx.coroutines.delay
+import one.mixin.android.api.MixinResponse
 
 suspend fun <T> executeWithRetry(
     maxRetries: Int,
@@ -34,4 +34,3 @@ suspend fun <T> executeWithRetry(
         }
     }
 }
-
