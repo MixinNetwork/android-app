@@ -34,12 +34,11 @@ import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
-import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.ADD
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -131,29 +130,25 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                 }
             }
             val bottomSheet =
-                PinAddrBottomSheetDialogFragment.newInstance(
-                    asset.assetId,
-                    asset.name,
-                    assetUrl = asset.iconUrl,
-                    assetSymbol = asset.symbol,
-                    assetKey = asset.assetKey,
-                    chainId = asset.chainId,
-                    chainName = asset.chainName,
-                    chainIconUrl = asset.chainIconUrl,
-                    label = binding.labelEt.text.toString(),
-                    destination = destination,
-                    tag =
-                        if (memoEnabled) {
-                            binding.tagEt.text.toString()
-                        } else {
-                            ""
-                        },
-                    type = ADD,
+                TransferBottomSheetDialogFragment.newInstance(
+                    AddressManageBiometricItem(
+                        asset = asset,
+                        label = binding.labelEt.text.toString(),
+                        addressId = null,
+                        destination = destination,
+                        tag =
+                            if (memoEnabled) {
+                                binding.tagEt.text.toString()
+                            } else {
+                                ""
+                            },
+                        type = TransferBottomSheetDialogFragment.ADD,
+                    ),
                 )
 
-            bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
+            bottomSheet.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
             bottomSheet.setCallback(
-                object : BiometricBottomSheetDialogFragment.Callback() {
+                object : TransferBottomSheetDialogFragment.Callback() {
                     override fun onDismiss(success: Boolean) {
                         if (success && !viewDestroyed()) {
                             view.navigateUp()

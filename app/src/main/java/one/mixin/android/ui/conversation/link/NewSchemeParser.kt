@@ -2,27 +2,33 @@ package one.mixin.android.ui.conversation.link
 
 import android.net.Uri
 import androidx.core.net.toUri
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.pay.parseExternalTransferUri
-import one.mixin.android.ui.common.OutputBottomSheetDialogFragment
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
+import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
+import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
+import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildAddressBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
-import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.NetworkFee
+import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.MixAddressPrefix
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toMixAddress
+import one.mixin.android.vo.toUser
 import java.io.UnsupportedEncodingException
 import java.math.BigDecimal
 import java.net.URLDecoder
@@ -98,7 +104,7 @@ class NewSchemeParser(
                 val user = linkViewModel.refreshUser(lastPath) ?: return false
 
                 val biometricItem = TransferBiometricItem(listOf(user), 1, traceId, token, amount, memo, status, null, returnTo)
-                showPreconditionBottom(biometricItem)
+                checkRawTransaction(biometricItem)
             } else if (payType == PayType.MixAddress) {
                 val mixAddress = lastPath.toMixAddress() ?: return false
                 if (mixAddress.uuidMembers.isNotEmpty()) {
@@ -107,17 +113,17 @@ class NewSchemeParser(
                         return false
                     }
                     val biometricItem = TransferBiometricItem(users, mixAddress.threshold, traceId, token, amount, memo, status, null, returnTo)
-                    showPreconditionBottom(biometricItem)
+                    checkRawTransaction(biometricItem)
                 } else if (mixAddress.xinMembers.isNotEmpty()) {
                     val addressTransferBiometricItem = AddressTransferBiometricItem(mixAddress.xinMembers.first().string(), traceId, token, amount, memo, status, returnTo)
-                    showPreconditionBottom(addressTransferBiometricItem)
+                    checkRawTransaction(addressTransferBiometricItem)
                 } else {
                     return false
                 }
             } else {
                 // TODO verify address?
                 val addressTransferBiometricItem = AddressTransferBiometricItem(lastPath, traceId, token, amount, memo, status, returnTo)
-                showPreconditionBottom(addressTransferBiometricItem)
+                checkRawTransaction(addressTransferBiometricItem)
             }
         } else {
             val token: TokenItem? =
@@ -231,10 +237,41 @@ class NewSchemeParser(
 
             val address = Address("", "address", asset.assetId, destination, "ExternalAddress", nowInUtc(), "0", result.fee?.toPlainString() ?: "", null, null, asset.chainId)
             val fee = NetworkFee(chain, result.fee!!.toPlainString())
-            val withdrawBiometricItem = one.mixin.android.ui.common.biometric.WithdrawBiometricItem(address, fee, traceId, asset, amount, result.memo, status, null)
-            showPreconditionBottom(withdrawBiometricItem)
+            val withdrawBiometricItem = WithdrawBiometricItem(address, fee, null, traceId, asset, amount, result.memo, status, null)
+            checkRawTransaction(withdrawBiometricItem)
         }
         bottomSheet.dismiss()
+    }
+
+    private suspend fun checkRawTransaction(biometricItem: AssetBiometricItem) {
+        val rawTransaction = linkViewModel.firstUnspentTransaction()
+        if (rawTransaction != null) {
+            WaitingBottomSheetDialogFragment.newInstance().showNow(bottomSheet.parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
+        } else {
+            checkUtxo(biometricItem) {
+                linkViewModel.viewModelScope.launch {
+                    showPreconditionBottom(biometricItem)
+                }
+            }
+        }
+    }
+
+    private suspend fun checkUtxo(
+        t: AssetBiometricItem,
+        callback: () -> Unit,
+    ) {
+        val token = t.asset ?: return
+        var amount = t.amount
+        if (amount.isBlank()) {
+            callback.invoke()
+        }
+        val consolidationAmount = linkViewModel.checkUtxoSufficiency(token.assetId, amount)
+        if (consolidationAmount != null) {
+            UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), t.asset, consolidationAmount, UUID.randomUUID().toString(), null, null))
+                .show(bottomSheet.parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
+        } else {
+            callback.invoke()
+        }
     }
 
     private suspend fun showPreconditionBottom(biometricItem: AssetBiometricItem) {
@@ -246,21 +283,10 @@ class NewSchemeParser(
             }
             biometricItem.trace = pair.first
         }
-        val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, PreconditionBottomSheetDialogFragment.FROM_LINK)
-        preconditionBottom.callback =
-            object : PreconditionBottomSheetDialogFragment.Callback {
-                override fun onSuccess() {
-                    bottomSheet.syncUtxo()
-                    val bottom = OutputBottomSheetDialogFragment.newInstance(biometricItem)
-                    bottom.show(preconditionBottom.parentFragmentManager, OutputBottomSheetDialogFragment.TAG)
-                    bottomSheet.dismiss()
-                }
-
-                override fun onCancel() {
-                    bottomSheet.dismiss()
-                }
-            }
-        preconditionBottom.showNow(bottomSheet.parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
+        bottomSheet.syncUtxo()
+        val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
+        bottom.show(bottomSheet.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+        bottomSheet.dismiss()
     }
 
     private suspend fun checkToken(assetId: String): TokenItem? {

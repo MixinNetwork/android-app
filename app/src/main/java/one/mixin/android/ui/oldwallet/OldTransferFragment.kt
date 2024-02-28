@@ -71,7 +71,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
-import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_TRANSFER
+import one.mixin.android.ui.oldwallet.PreconditionBottomSheetDialogFragment.Companion.FROM_TRANSFER
 import one.mixin.android.ui.oldwallet.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.biometric.BiometricItem
 import one.mixin.android.ui.oldwallet.biometric.TransferBiometricItem

@@ -39,6 +39,7 @@ import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.safe.DepositEntry
+import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
@@ -377,5 +378,31 @@ class WalletViewModel
         fun utxoItem(asset: String): LiveData<PagingData<UtxoItem>> {
             return tokenRepository.utxoItem(asset)
         }
+
         suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
+
+        suspend fun findLatestOutputSequenceByAsset(asset: String) = tokenRepository.findLatestOutputSequenceByAsset(asset)
+
+        suspend fun insertOutputs(outputs: List<Output>) = withContext(Dispatchers.IO) { tokenRepository.insertOutputs(outputs) }
+
+        suspend fun deleteByKernelAssetIdAndOffset(
+            kernelAssetId: String,
+            offset: Long,
+        ) = tokenRepository.deleteByKernelAssetIdAndOffset(kernelAssetId, offset)
+
+        suspend fun getOutputs(
+            members: String,
+            threshold: Int,
+            offset: Long? = null,
+            limit: Int = 500,
+            state: String? = null,
+            asset: String? = null,
+        ) = tokenRepository.getOutputs(
+            members,
+            threshold,
+            offset,
+            limit,
+            state,
+            asset,
+        )
     }

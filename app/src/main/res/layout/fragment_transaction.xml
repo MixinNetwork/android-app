@@ -19,7 +19,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/ph"
         app:need_divider="false"
-        app:titleText="@string/Transaction" />
+        app:titleText="@string/Transaction"
+        app:rightIcon="@drawable/ic_support"/>
 
     <ScrollView
         android:layout_width="match_parent"

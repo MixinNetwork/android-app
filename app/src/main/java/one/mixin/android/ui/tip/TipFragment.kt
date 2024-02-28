@@ -6,8 +6,10 @@ import android.security.keystore.UserNotAuthenticatedException
 import android.text.SpannableStringBuilder
 import android.text.method.ScrollingMovementMethod
 import android.view.View
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.text.color
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -100,6 +102,21 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             tipsTv.text = buildBulletLines(requireContext(), tip1, tip2, tip3)
             bottomHintTv.movementMethod = ScrollingMovementMethod()
             bottomHintTv.setTextIsSelectable(true)
+
+            val fontScale = requireActivity().resources.configuration.fontScale
+            if (fontScale >= 1.3) {
+                bottomVa.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                    bottomToTop = -1
+                    topToBottom = tipsTv.id
+                }
+                bottomHintTv.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                    bottomToBottom = -1
+                    topToBottom = bottomVa.id
+                }
+                logoIv.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                    verticalBias = 0f
+                }
+            }
 
             when (tipBundle.tipType) {
                 TipType.Create -> titleTv.setText(R.string.Create_PIN)

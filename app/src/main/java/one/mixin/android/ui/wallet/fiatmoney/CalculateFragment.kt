@@ -387,7 +387,10 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         if (viewDestroyed()) return
         if (loadingShown) {
             loadingShown = false
-            loading.dismiss()
+            try {
+                loading.dismiss()
+            } catch (ignored: IllegalStateException) {
+            }
         }
     }
 

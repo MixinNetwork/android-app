@@ -22,7 +22,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import com.jakewharton.rxbinding3.view.clicks
 import com.jakewharton.rxbinding3.widget.textChanges
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -31,7 +30,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewMaterialSearchBinding
 import one.mixin.android.extension.ANIMATION_DURATION_SHORT
 import one.mixin.android.extension.appCompatActionBarHeight
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
@@ -62,7 +60,7 @@ class MaterialSearchView : FrameLayout {
     val actionVa get() = binding.actionVa
     val logo get() = binding.logo
     val dot get() = binding.dot
-    val desktop get() = binding.desktopIb
+    val scan get() = binding.scanIb
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -194,9 +192,7 @@ class MaterialSearchView : FrameLayout {
     fun hideContainer() {
         containerDisplay = false
         binding.searchIb.fadeIn()
-        if (isDesktopLogin) {
-            binding.desktopIb.fadeIn()
-        }
+        binding.scanIb.fadeIn()
         binding.avatar.fadeIn()
         binding.actionVa.fadeOut()
         ValueAnimator.ofFloat(1f, 0f).apply {
@@ -224,9 +220,7 @@ class MaterialSearchView : FrameLayout {
     fun showContainer() {
         containerDisplay = true
         binding.searchIb.fadeOut()
-        if (isDesktopLogin) {
-            binding.desktopIb.fadeOut()
-        }
+        binding.scanIb.fadeOut()
         binding.avatar.fadeOut()
         binding.actionVa.fadeIn()
         binding.containerCircle.isVisible = true
@@ -258,24 +252,18 @@ class MaterialSearchView : FrameLayout {
     private var oldLeftX = 0f
     private var oldSearchWidth = 0
 
-    private val rightTranslationX = 132f
-
-    private var isDesktopLogin = false
+    private val rightTranslationX = 168f
 
     fun dragSearch(progress: Float) {
         binding.avatar.translationX = context.dpToPx(rightTranslationX) * progress
         binding.searchIb.translationX = context.dpToPx(rightTranslationX) * progress
-        if (isDesktopLogin) {
-            binding.desktopIb.translationX = context.dpToPx(rightTranslationX) * progress
-        }
+        binding.scanIb.translationX = context.dpToPx(rightTranslationX) * progress
         val fastFadeOut = (1 - 2 * progress).coerceAtLeast(0f)
         val fastFadeIn = (progress.coerceAtLeast(.5f) - .5f) * 2
         binding.searchEt.isVisible = true
         binding.searchEt.alpha = fastFadeIn
         binding.searchIb.isVisible = true
-        if (isDesktopLogin) {
-            binding.desktopIb.isVisible = true
-        }
+        binding.scanIb.isVisible = true
         binding.logoLayout.isVisible = true
         binding.backIb.isVisible = true
         binding.logoLayout.alpha = fastFadeOut
@@ -330,9 +318,7 @@ class MaterialSearchView : FrameLayout {
         oldSearchWidth = binding.searchEt.measuredWidth
         binding.avatar.translationX(context.dpToPx(rightTranslationX).toFloat())
         binding.searchIb.translationX(context.dpToPx(rightTranslationX).toFloat())
-        if (isDesktopLogin) {
-            binding.desktopIb.translationX(context.dpToPx(rightTranslationX).toFloat())
-        }
+        binding.scanIb.translationX(context.dpToPx(rightTranslationX).toFloat())
         mSearchViewListener?.onSearchViewOpened()
         isOpen = true
     }
@@ -390,9 +376,7 @@ class MaterialSearchView : FrameLayout {
 
         binding.avatar.translationX(0f)
         binding.searchIb.translationX(0f)
-        if (isDesktopLogin) {
-            binding.desktopIb.translationX(0f)
-        }
+        binding.scanIb.translationX(0f)
         clearFocus()
         binding.searchEt.hideKeyboard()
         binding.searchEt.setText("")
@@ -410,21 +394,6 @@ class MaterialSearchView : FrameLayout {
         if (!isOpen) return
 
         binding.pb.isInvisible = true
-    }
-
-    fun updateDesktop(login: Boolean) {
-        isDesktopLogin = login
-        if (login) {
-            binding.desktopIb.isVisible = true
-            binding.searchIb.updateLayoutParams<MarginLayoutParams> {
-                marginEnd = 100.dp
-            }
-        } else {
-            binding.desktopIb.isVisible = false
-            binding.searchIb.updateLayoutParams<MarginLayoutParams> {
-                marginEnd = 52.dp
-            }
-        }
     }
 
     private fun onTextChanged(newText: CharSequence) {

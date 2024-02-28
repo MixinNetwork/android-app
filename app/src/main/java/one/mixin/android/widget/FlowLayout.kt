@@ -29,11 +29,14 @@ open class FlowLayout
                 }
             }
 
+        private var itemOffset = 0
+
         init {
             val ta = context.obtainStyledAttributes(attrs, R.styleable.FlowLayout)
             mGravity = ta.getInt(R.styleable.FlowLayout_tag_gravity, LEFT)
             singleLine = ta.getBoolean(R.styleable.FlowLayout_singleLine, false)
             maxWidth = ta.getDimensionPixelSize(R.styleable.FlowLayout_flow_max_width, 300.dp)
+            itemOffset = ta.getDimensionPixelSize(R.styleable.FlowLayout_item_offset, 0)
             round(8.dp)
             ta.recycle()
         }
@@ -123,7 +126,13 @@ open class FlowLayout
                 if (child.visibility == View.GONE) continue
                 val lp = child.layoutParams as MarginLayoutParams
 
-                val childWidth = child.measuredWidth
+                val childWidth =
+                    child.measuredWidth +
+                        if (lineWidth == 0) {
+                            0
+                        } else {
+                            itemOffset
+                        }
                 val childHeight = child.measuredHeight
 
                 if (childWidth + lineWidth + lp.leftMargin + lp.rightMargin > width - paddingLeft - paddingRight) {
@@ -170,7 +179,13 @@ open class FlowLayout
                         child
                             .layoutParams as MarginLayoutParams
 
-                    val lc = left + lp.leftMargin
+                    val lc =
+                        left + lp.leftMargin +
+                            if (j != 0) {
+                                itemOffset
+                            } else {
+                                0
+                            }
                     val tc = top + lp.topMargin
                     val rc = lc + child.measuredWidth
                     val bc = tc + child.measuredHeight

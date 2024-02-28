@@ -33,8 +33,10 @@ class SafeDebugFragment : BaseFragment(R.layout.fragment_safe_debug) {
     }
 
     private val binding by viewBinding(FragmentSafeDebugBinding::bind)
+
     @Inject
     lateinit var tip: Tip
+
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(
         view: View,
@@ -54,7 +56,7 @@ class SafeDebugFragment : BaseFragment(R.layout.fragment_safe_debug) {
         }
     }
 
-    private fun reveal(){
+    private fun reveal() {
         PinInputBottomSheetDialogFragment.newInstance("Input PIN to Reveal").setOnPinComplete { pin ->
             lifecycleScope.launch {
                 val dialog =
@@ -72,7 +74,7 @@ class SafeDebugFragment : BaseFragment(R.layout.fragment_safe_debug) {
                         requireContext().getClipboardManager().setPrimaryClip(
                             ClipData.newPlainText(
                                 null,
-                                pkHex
+                                pkHex,
                             ),
                         )
                         dialog.dismiss()

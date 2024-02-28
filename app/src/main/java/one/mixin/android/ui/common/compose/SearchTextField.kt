@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -28,7 +27,6 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SearchTextField(
     text: MutableState<String>,

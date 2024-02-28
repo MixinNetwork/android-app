@@ -47,7 +47,6 @@ interface TransactionInterface {
         tokenItem: TokenItem?,
         snapshotItem: SnapshotItem?,
     ) {
-        contentBinding.titleView.rightAnimator.visibility = View.GONE
         if (snapshotItem == null || tokenItem == null) {
             if (snapshotId != null && assetId != null) {
                 lifecycleScope.launch {

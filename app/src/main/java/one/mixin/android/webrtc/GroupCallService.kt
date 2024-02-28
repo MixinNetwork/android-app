@@ -237,10 +237,11 @@ class GroupCallService : CallService() {
         conversationId: String,
     ) {
         if (callState.isIdle()) return
+        val sdp = data.getSessionDescription() ?: return
 
-        Timber.d("$TAG_CALL subscribe ${data.getSessionDescription().type == SessionDescription.Type.ANSWER}")
-        if (data.getSessionDescription().type == SessionDescription.Type.ANSWER) {
-            peerConnectionClient.setAnswerSdp(data.getSessionDescription())
+        Timber.d("$TAG_CALL subscribe ${sdp.type == SessionDescription.Type.ANSWER}")
+        if (sdp.type == SessionDescription.Type.ANSWER) {
+            peerConnectionClient.setAnswerSdp(sdp)
             callState.trackId = data.trackId
             sendSubscribe(conversationId, data.trackId)
             startCheckPeers(conversationId)
@@ -273,12 +274,13 @@ class GroupCallService : CallService() {
         conversationId: String,
     ) {
         if (callState.isIdle()) return
+        val sdp = krakenData.getSessionDescription() ?: return
 
-        Timber.d("$TAG_CALL answer ${krakenData.getSessionDescription().type == SessionDescription.Type.OFFER}")
-        if (krakenData.getSessionDescription().type == SessionDescription.Type.OFFER) {
+        Timber.d("$TAG_CALL answer ${sdp.type == SessionDescription.Type.OFFER}")
+        if (sdp.type == SessionDescription.Type.OFFER) {
             peerConnectionClient.createAnswer(
                 null,
-                krakenData.getSessionDescription(),
+                sdp,
                 setLocalSuccess = {
                     val blazeMessageParam =
                         BlazeMessageParam(

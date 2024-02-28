@@ -15,7 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
 import one.mixin.android.api.response.PaymentStatus
-import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
+import one.mixin.android.databinding.FragmentOutputBottomSheetBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
@@ -64,7 +64,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
 
     var onDestroyListener: OnDestroyListener? = null
 
-    private val binding by viewBinding(FragmentTransferBottomSheetBinding::inflate)
+    private val binding by viewBinding(FragmentOutputBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun setupDialog(

@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -58,6 +59,7 @@ class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), T
             height = requireContext().statusBarHeight()
         }
         binding.titleView.leftIb.setOnClickListener { dismiss() }
+        binding.titleView.rightAnimator.visibility = View.GONE
         initView(this, binding, lifecycleScope, walletViewModel, assetId, snapshotId, asset, snapshot)
         (dialog as BottomSheet).apply {
             setCustomView(contentView)

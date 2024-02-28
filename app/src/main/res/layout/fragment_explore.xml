@@ -27,28 +27,41 @@
             android:textStyle="bold"
             tools:ignore="RelativeOverlap" />
 
-        <ImageView
-            android:id="@+id/search_iv"
-            android:src="@drawable/ic_search_home"
-            android:background="@drawable/mixin_ripple"
-            android:layout_marginEnd="28dp"
-            android:layout_toStartOf="@+id/scan_iv"
-            android:layout_centerVertical="true"
+        <ImageButton
+            android:id="@+id/search_ib"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@null" />
-
-        <ImageView
-            android:id="@+id/scan_iv"
-            android:src="@drawable/ic_bot_category_scan"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/scan_ib"
+            android:layout_marginEnd="14dp"
             android:background="@drawable/mixin_ripple"
-            android:layout_marginEnd="16dp"
+            android:padding="8dp"
+            app:srcCompat="@drawable/ic_search_home"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:id="@+id/scan_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/setting_ib"
+            android:layout_marginEnd="14dp"
+            android:layout_centerVertical="true"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            app:srcCompat="@drawable/ic_bot_category_scan"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:id="@+id/setting_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@null" />
-
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            app:srcCompat="@drawable/ic_home_setting"
+            tools:ignore="ContentDescription" />
     </RelativeLayout>
 
     <RadioGroup

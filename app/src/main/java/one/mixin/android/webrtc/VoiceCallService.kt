@@ -55,12 +55,13 @@ class VoiceCallService : CallService() {
 
     private fun handleCallIncoming(intent: Intent) {
         val blazeMessageData = intent.getSerializableExtraCompat(EXTRA_BLAZE, BlazeMessageData::class.java) ?: return
+        val sdp = getSdp(blazeMessageData.data.decodeBase64()) ?: return
         val user = intent.getParcelableExtraCompat(ARGS_USER, User::class.java)
 
         if (user?.userId == callState.user?.userId) {
             peerConnectionClient.createAnswer(
                 null,
-                getSdp(blazeMessageData.data.decodeBase64()),
+                sdp,
                 setLocalSuccess = {
                     sendCallMessage(MessageCategory.WEBRTC_AUDIO_ANSWER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
                 },
@@ -175,9 +176,10 @@ class VoiceCallService : CallService() {
                     Timber.e("$TAG_CALL try answer a call, but blazeMessageData is null")
                     return@getTurnServer
                 }
+                val sdp = getSdp(bmd.data.decodeBase64()) ?: return@getTurnServer
                 peerConnectionClient.createAnswer(
                     turns,
-                    getSdp(bmd.data.decodeBase64()),
+                    sdp,
                     setLocalSuccess = {
                         sendCallMessage(MessageCategory.WEBRTC_AUDIO_ANSWER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
                     },
