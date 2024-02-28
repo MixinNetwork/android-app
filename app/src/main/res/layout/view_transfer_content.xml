@@ -58,15 +58,15 @@
                 android:visibility="gone"/>
 
             <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
-                android:id="@+id/network"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
                 android:id="@+id/memo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"/>
+
+            <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
+                android:id="@+id/network"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
         </LinearLayout>
     </ScrollView>
