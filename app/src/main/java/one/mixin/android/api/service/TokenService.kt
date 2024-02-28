@@ -48,22 +48,8 @@ interface TokenService {
     ): MixinResponse<List<WithdrawalResponse>>
 
     @GET("safe/snapshots")
-    suspend fun getSnapshotsByAssetId(
-        @Query("asset") id: String,
-        @Query("offset") offset: String? = null,
-        @Query("limit") limit: Int = LIMIT,
-    ): MixinResponse<List<SafeSnapshot>>
-
-    @GET("safe/snapshots")
-    suspend fun getAllSnapshots(
-        @Query("offset") offset: String? = null,
-        @Query("limit") limit: Int = LIMIT,
-        @Query("opponent") opponent: String? = null,
-    ): MixinResponse<List<SafeSnapshot>>
-
-    @GET("safe/snapshots")
     suspend fun getSnapshots(
-        @Query("asset") assetId: String,
+        @Query("asset") assetId: String? = null,
         @Query("offset") offset: String? = null,
         @Query("limit") limit: Int = LIMIT,
         @Query("opponent") opponent: String? = null,
@@ -71,15 +57,15 @@ interface TokenService {
         @Query("tag") tag: String? = null,
     ): MixinResponse<List<SafeSnapshot>>
 
-    @POST("payments")
-    suspend fun paySuspend(
-        @Body request: TransferRequest,
-    ): MixinResponse<PaymentResponse>
-
     @GET("safe/snapshots/{id}")
     suspend fun getSnapshotById(
         @Path("id") id: String,
     ): MixinResponse<SafeSnapshot>
+
+    @POST("payments")
+    suspend fun paySuspend(
+        @Body request: TransferRequest,
+    ): MixinResponse<PaymentResponse>
 
     @GET("safe/deposits")
     suspend fun allPendingDeposits(): MixinResponse<List<PendingDeposit>>

@@ -31,7 +31,7 @@ class SnapshotsMediator(
                     LoadType.APPEND -> getRemoteKeyForLastItem(state)
                     LoadType.PREPEND -> getRemoteKeyForFirstItem(state)
                 }
-            val resp = assetService.getSnapshotsByAssetId(assetId, offset = offset)
+            val resp = assetService.getSnapshots(assetId = assetId, offset = offset)
             if (!resp.isSuccess) {
                 return MediatorResult.Error(IllegalStateException(resp.error?.toString()))
             }
