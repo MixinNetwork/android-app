@@ -4,23 +4,27 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.widget.FrameLayout
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferAlertBinding
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.textColorResource
+import one.mixin.android.extension.dp
 
-class TransferAlert : ConstraintLayout {
+class TransferAlert : FrameLayout {
     private val _binding: ViewTransferAlertBinding
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         _binding = ViewTransferAlertBinding.inflate(LayoutInflater.from(context), this)
+        setPadding(20.dp, 10.dp, 20.dp, 32.dp)
+        setBackgroundColor(context.colorAttr(R.attr.bg_white))
         setOnClickListener { }
     }
 
@@ -49,7 +53,7 @@ class TransferAlert : ConstraintLayout {
                     content.text = list[tipIndex]
                 }
             }
-            setBackgroundResource(R.drawable.bg_transfer_alert_warning)
+            layout.setBackgroundResource(R.drawable.bg_transfer_alert_warning)
         }
     }
 
@@ -73,7 +77,7 @@ class TransferAlert : ConstraintLayout {
             negative.setText(negativeText)
             negative.setOnClickListener(negativeClickListener)
             content.text = info
-            setBackgroundResource(R.drawable.bg_transfer_alert_info)
+            layout.setBackgroundResource(R.drawable.bg_transfer_alert_info)
         }
     }
 }
