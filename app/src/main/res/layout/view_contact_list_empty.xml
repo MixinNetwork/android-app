@@ -35,6 +35,7 @@
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:text="@string/Phone_Contact"
             android:textColor="@color/colorBlue"
+            android:fontFamily=""
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>
 

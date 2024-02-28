@@ -16,6 +16,7 @@
         android:layout_weight="1">
 
         <ViewAnimator
+            android:id="@+id/content_va"
             android:paddingStart="20dp"
             android:paddingEnd="20dp"
             android:paddingTop="10dp"

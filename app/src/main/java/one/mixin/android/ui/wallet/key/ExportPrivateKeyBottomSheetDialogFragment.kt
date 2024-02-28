@@ -16,7 +16,6 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
 
 @AndroidEntryPoint
 class ExportPrivateKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -58,12 +57,14 @@ class ExportPrivateKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment
             keyViewModel.status.collect { status ->
                 when (status) {
                     TransferStatus.FAILED -> {
+                        binding.contentVa.displayedChild = 0
                         binding.header.filed(keyViewModel.errorMessage)
                         binding.bottom.isInvisible = false
                     }
 
                     TransferStatus.SUCCESSFUL -> {
                         binding.header.success()
+                        binding.contentVa.displayedChild = 1
                         keyViewModel.key?.let {
                             key->
                             binding.blurOverlay.setKey(key)
@@ -72,11 +73,13 @@ class ExportPrivateKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment
                     }
 
                     TransferStatus.IN_PROGRESS -> {
+                        binding.contentVa.displayedChild = 0
                         binding.header.progress()
                         binding.bottom.isInvisible = true
                     }
 
                     else -> {
+                        binding.contentVa.displayedChild = 0
                         binding.bottom.isInvisible = false
                         binding.header.awaiting()
                     }
@@ -87,12 +90,9 @@ class ExportPrivateKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment
 
     // todo test code, remove it
     private fun demoKey() {
-        Timber.e("-------------")
         lifecycleScope.launch {
             keyViewModel.updateStatus(TransferStatus.IN_PROGRESS)
             val encode = Base32().encodeAsString(randomBytes(64))
-            Timber.e("${encode.length}---${encode}")
-            Timber.e(encode.chunked(6).joinToString("-"))
             delay(3000)
             keyViewModel.success(encode)
         }

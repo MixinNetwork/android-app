@@ -24,12 +24,12 @@ internal constructor(
     }
 
     fun fail(error:String) {
-        _status.value = TransferStatus.FAILED
         this.errorMessage = error
+        _status.value = TransferStatus.FAILED
     }
 
     fun success(key:String) {
-        _status.value = TransferStatus.SUCCESSFUL
         this.key = key
+        _status.value = TransferStatus.SUCCESSFUL
     }
 }
