@@ -9,6 +9,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferContentBinding
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
@@ -82,7 +83,11 @@ class TransferContent : LinearLayout {
         return "${value.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}"
     }
 
-    private fun amountPlus(amount: String, feeAmount:String): String {
+    private fun formatWithdrawBiometricItem(withdrawBiometricItem: WithdrawBiometricItem):Pair<String,String> {
+        val asset = withdrawBiometricItem.asset!!
+        val feeAsset = withdrawBiometricItem.fee!!.token
+        val amount = withdrawBiometricItem.amount
+        val feeAmount = withdrawBiometricItem.fee!!.fee
         val value =
             try {
                 if (amount.toDouble() == 0.0) {
@@ -107,41 +112,14 @@ class TransferContent : LinearLayout {
             } catch (e: NumberFormatException) {
                 BigDecimal.ZERO
             }
-        return "${value.plus(feeValue)}"
-    }
-
-    private fun amountAs(
-        withdrawBiometricItem: WithdrawBiometricItem,
-    ): String {
-        val asset = withdrawBiometricItem.asset!!
-        val feeAsset = withdrawBiometricItem.fee!!.token
-        val amount = withdrawBiometricItem.amount
-        val feeAmount = withdrawBiometricItem.fee!!.fee
-        val value =
-            try {
-                if (asset.priceFiat().toDouble() == 0.0) {
-                    BigDecimal.ZERO
-                } else {
-                    BigDecimal(amount) * asset.priceFiat()
-                }
-            } catch (e: ArithmeticException) {
-                BigDecimal.ZERO
-            } catch (e: NumberFormatException) {
-                BigDecimal.ZERO
-            }
-        val feeValue =
-            try {
-                if (feeAsset.priceFiat().toDouble() == 0.0) {
-                    BigDecimal.ZERO
-                } else {
-                    BigDecimal(feeAmount) * feeAsset.priceFiat()
-                }
-            } catch (e: ArithmeticException) {
-                BigDecimal.ZERO
-            } catch (e: NumberFormatException) {
-                BigDecimal.ZERO
-            }
-        return "${value.plus(feeValue).numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}"
+        if (asset.assetId == feeAsset.assetId){
+            val totalAmount = value.plus(feeValue)
+            val total =  asset.priceFiat() * totalAmount
+            return Pair("${totalAmount.numberFormat8()} ${asset.symbol}", "${total.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}")
+        } else {
+            val total = asset.priceFiat() * value + feeAsset.priceFiat() * feeValue
+            return Pair("${withdrawBiometricItem.amount} ${asset.symbol} + $feeAmount ${feeAsset.symbol}", "${total.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}")
+        }
     }
 
     private fun renderTransfer(transferBiometricItem: TransferBiometricItem, userClick: (User) -> Unit) {
@@ -254,14 +232,10 @@ class TransferContent : LinearLayout {
 
             sender.setContent(R.string.Sender, Session.getAccount()!!.toUser()) {}
 
+            val (totalAmount, totalPrice) = formatWithdrawBiometricItem(withdrawBiometricItem)
+            total.setContent(R.string.Total, totalAmount, totalPrice)
+
             val fee = withdrawBiometricItem.fee!!
-
-            if (fee.token.assetId == withdrawBiometricItem.asset?.assetId){
-                total.setContent(R.string.Total, "${amountPlus(withdrawBiometricItem.amount, fee.fee)} ${withdrawBiometricItem.asset?.symbol}", amountAs(withdrawBiometricItem))
-            }else{
-                total.setContent(R.string.Total, "${withdrawBiometricItem.amount} ${withdrawBiometricItem.asset?.symbol} + ${fee.fee} ${fee.token.symbol}", amountAs(withdrawBiometricItem))
-            }
-
             networkFee.isVisible = true
             networkFee.setContent(R.string.Fee, "${fee.fee} ${fee.token.symbol}", amountAs(fee.fee, fee.token))
 
