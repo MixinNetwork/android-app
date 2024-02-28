@@ -30,20 +30,17 @@ class TransferAlert : ConstraintLayout {
     fun warning(
         @DrawableRes iconRes: Int,
         list: List<String>,
-        cancel: OnClickListener,
     ) {
         _binding.apply {
             icon.setImageResource(iconRes)
             content.textColorResource = R.color.text_color_error_tip
             index.textColorResource = R.color.text_color_error_tip
-            positive.setText(R.string.Cancel)
-            positive.setOnClickListener(cancel)
-            negative.setText(R.string.Confirm)
+            positive.setText(R.string.Got_it)
             list.first().let {
                 content.text = it
             }
             index.text = "${tipIndex + 1}/${list.size}"
-            negative.setOnClickListener {
+            positive.setOnClickListener {
                 tipIndex++
                 if (tipIndex == list.size) {
                     isVisible = false
@@ -70,6 +67,7 @@ class TransferAlert : ConstraintLayout {
             content.textColor = context.colorFromAttribute(R.attr.text_primary)
             index.textColor = context.colorFromAttribute(R.attr.text_primary)
             index.isVisible = false
+            negative.isVisible = true
             positive.setText(positiveText)
             positive.setOnClickListener(positiveClickLint)
             negative.setText(negativeText)

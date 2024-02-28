@@ -258,9 +258,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     binding.transferAlert.isVisible = false
                 } else {
                     binding.transferAlert.isVisible = true
-                    binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips) {
-                        dismiss()
-                    }
+                    binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips)
                 }
             } else if (t is WithdrawBiometricItem) {
                 // check withdraw within 30 days
@@ -279,9 +277,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     binding.transferAlert.isVisible = false
                 } else {
                     binding.transferAlert.isVisible = true
-                    binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips) {
-                        dismiss()
-                    }
+                    binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips)
                 }
             } else if (t is AddressTransferBiometricItem) {
                 // check large amount
@@ -304,9 +300,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     )
                 binding.transferAlert.isVisible = true
                 R.drawable.ic_transfer_fingerprint
-                binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips) {
-                    dismiss()
-                }
+                binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips)
             } else {
                 // Other case do nothing
                 binding.transferAlert.isVisible = false
