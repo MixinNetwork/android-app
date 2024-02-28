@@ -232,7 +232,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val transferBiometricItem = t as TransferBiometricItem
                 val tips = mutableListOf<String>()
                 if (!isStrangerTransferDisable() && transferBiometricItem.users.size == 1 && transferBiometricItem.users.first().relationship != UserRelationship.FRIEND.name) {
-                    tips.add(getString(R.string.bottom_transfer_stranger_tip, transferBiometricItem.users.first().identityNumber))
+                    tips.add(getString(R.string.unfamiliar_person_reminder, transferBiometricItem.users.first().fullName, transferBiometricItem.users.first().identityNumber))
                 }
                 if (!isDuplicateTransferDisable() && transferBiometricItem.trace != null) {
                     val trace = transferBiometricItem.trace!!
@@ -247,10 +247,9 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         (BigDecimal(t.amount) * asset.priceFiat()).numberFormat2()
                     tips.add(
                         getString(
-                            R.string.wallet_transaction_tip,
-                            transferBiometricItem.users.first().fullName,
+                            R.string.large_amount_reminder,
+                            "${t.amount}${asset.symbol}",
                             "${Fiats.getSymbol()}$fiatAmount",
-                            asset.symbol,
                         ),
                     )
                 }
@@ -258,9 +257,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     binding.transferAlert.isVisible = false
                 } else {
                     binding.transferAlert.isVisible = true
-                    binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips) {
-                        dismiss()
-                    }
+                    binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips)
                 }
             } else if (t is WithdrawBiometricItem) {
                 // check withdraw within 30 days
@@ -272,16 +269,14 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
 
                 if (!exist) {
-                    tips.add(getString(R.string.transfer_address_warning, formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag)))
+                    tips.add(getString(R.string.transfer_address_warning, formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag), withdrawBiometricItem.address.label))
                 }
 
                 if (tips.isEmpty()) {
                     binding.transferAlert.isVisible = false
                 } else {
                     binding.transferAlert.isVisible = true
-                    binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips) {
-                        dismiss()
-                    }
+                    binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips)
                 }
             } else if (t is AddressTransferBiometricItem) {
                 // check large amount
@@ -296,17 +291,14 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val tips =
                     listOf<String>(
                         getString(
-                            R.string.wallet_transaction_tip,
-                            (t as AddressTransferBiometricItem).address,
+                            R.string.large_amount_reminder,
+                            "${t.amount}${asset.symbol}",
                             "${Fiats.getSymbol()}$fiatAmount",
-                            asset.symbol,
                         ),
                     )
                 binding.transferAlert.isVisible = true
                 R.drawable.ic_transfer_fingerprint
-                binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips) {
-                    dismiss()
-                }
+                binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips)
             } else {
                 // Other case do nothing
                 binding.transferAlert.isVisible = false

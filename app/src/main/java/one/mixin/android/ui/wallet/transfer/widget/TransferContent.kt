@@ -115,12 +115,11 @@ class TransferContent : LinearLayout {
             } catch (e: NumberFormatException) {
                 BigDecimal.ZERO
             }
-        if (asset.assetId == feeAsset.assetId)
-            {
-                val totalAmount = value.plus(feeValue)
-                val total = asset.priceFiat() * totalAmount
-                return Pair("${totalAmount.numberFormat8()} ${asset.symbol}", "${total.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}")
-            } else {
+        if (asset.assetId == feeAsset.assetId) {
+            val totalAmount = value.plus(feeValue)
+            val total = asset.priceFiat() * totalAmount
+            return Pair("${totalAmount.numberFormat8()} ${asset.symbol}", "${total.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}")
+        } else {
             val total = asset.priceFiat() * value + feeAsset.priceFiat() * feeValue
             return Pair("${withdrawBiometricItem.amount} ${asset.symbol} + $feeAmount ${feeAsset.symbol}", "${total.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}")
         }
