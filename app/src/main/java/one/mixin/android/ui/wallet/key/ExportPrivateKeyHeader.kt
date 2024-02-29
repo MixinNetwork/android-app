@@ -25,7 +25,7 @@ class ExportPrivateKeyHeader : LinearLayout {
         _binding.apply {
             iconLayout.displayedChild = 2
             subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
-            title.setText(R.string.Exporting_private_key)
+            title.setText(R.string.Exporting_Private_Key)
             subTitle.setText(R.string.exporting_private_key_description)
         }
     }
@@ -38,7 +38,7 @@ class ExportPrivateKeyHeader : LinearLayout {
             statusIcon.setImageResource(R.drawable.ic_transfer_status_failed)
             subTitle.text = errorMessage
             subTitle.textColorResource = R.color.text_color_error_tip
-            title.setText(R.string.Exporting_privat_key_Failed)
+            title.setText(R.string.Private_Key_Export_Failed)
         }
     }
 
@@ -48,8 +48,8 @@ class ExportPrivateKeyHeader : LinearLayout {
             subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
             statusIcon.setImageResource(R.drawable.ic_transfer_status_success)
 
-            title.setText(R.string.Exporting_privat_key_Success)
-            subTitle.setText(R.string.exporting_privat_key_Success_description)
+            title.setText(R.string.Private_Key_Export_Successful)
+            subTitle.setText(R.string.private_key_export_success_description)
         }
     }
 
@@ -57,8 +57,8 @@ class ExportPrivateKeyHeader : LinearLayout {
         _binding.apply {
             iconLayout.displayedChild = 0
 
-            title.setText(R.string.export_key_title)
-            subTitle.setText(R.string.export_key_sub_title)
+            title.setText(R.string.Export_Private_Key_Confirmation)
+            subTitle.setText(R.string.export_private_key_description)
             subTitle.textColorResource = R.color.text_color_error_tip
         }
     }
