@@ -198,7 +198,7 @@ ksp {
 
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
-    implementation platform("com.google.firebase:firebase-bom:32.7.2")
+    implementation platform("com.google.firebase:firebase-bom:32.7.3")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
     implementation("androidx.activity:activity-ktx:$activity_version")
