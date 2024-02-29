@@ -90,6 +90,7 @@ import one.mixin.android.vo.safe.toPriceAndChange
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.Call
+import retrofit2.Response
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
@@ -547,6 +548,15 @@ class TokenRepository
             traceDao.suspendFindTraceById(traceId)
 
         suspend fun getTransactionsById(traceId: String) = utxoService.getTransactionsById(traceId)
+
+        suspend fun getListTransactionsById(traceId: String): MixinResponse<List<TransactionResponse>> {
+            val response = utxoService.getTransactionsById(traceId)
+            return if (response.isSuccess) {
+                MixinResponse(Response.success(listOf(response.data!!)))
+            } else {
+                MixinResponse(response.error!!)
+            }
+        }
 
         suspend fun findLatestTrace(
             opponentId: String?,

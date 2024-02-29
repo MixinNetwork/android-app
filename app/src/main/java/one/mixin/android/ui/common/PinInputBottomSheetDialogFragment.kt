@@ -30,7 +30,7 @@ class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         fun newInstance(
             title: String? = null,
             biometricInfo: BiometricInfo? = null,
-            from: Int = 0
+            from: Int = 0,
         ) =
             PinInputBottomSheetDialogFragment().withArgs {
                 title?.let { putString(ARGS_TITLE, it) }
