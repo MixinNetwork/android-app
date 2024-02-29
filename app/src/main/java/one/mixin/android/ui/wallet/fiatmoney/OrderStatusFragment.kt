@@ -76,6 +76,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.cardIcon
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.lottie.RLottieDrawable
 import timber.log.Timber
 import java.nio.charset.Charset
 import java.util.Locale
@@ -175,6 +176,19 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     private fun processing() {
         binding.bottomVa.isVisible = true
         binding.bottomVa.displayedChild = 2
+        binding.orderStatus.setImageDrawable(
+            RLottieDrawable(
+                R.raw.order_waiting,
+                "order_waiting",
+                72.dp,
+                72.dp,
+            ).apply {
+                setAllowDecodeSingleFrame(true)
+                setAutoRepeat(1)
+                setAutoRepeatCount(Int.MAX_VALUE)
+                start()
+            }
+        )
         binding.topVa.displayedChild = 2
         binding.title.setText(R.string.Processing)
         binding.content.setText(R.string.Processing_desc)
