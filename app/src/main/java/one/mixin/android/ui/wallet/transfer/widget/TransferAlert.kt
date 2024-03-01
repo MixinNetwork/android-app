@@ -12,9 +12,9 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferAlertBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.textColorResource
-import one.mixin.android.extension.dp
 
 class TransferAlert : FrameLayout {
     private val _binding: ViewTransferAlertBinding
