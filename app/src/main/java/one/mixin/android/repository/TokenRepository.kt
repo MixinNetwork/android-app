@@ -724,7 +724,7 @@ class TokenRepository
                 Timber.e("Update failed, ${ids.joinToString(", ")}")
                 throw RuntimeException("Update failed, please try again")
             }
-            val unSignedOutputs = outputDao.getUnSignedOutputs(ids)
+            val unSignedOutputs = outputDao.getUnsignedOutputs(ids)
             if (unSignedOutputs.isNotEmpty()) {
                 Timber.e("Update failed, ${unSignedOutputs.joinToString(", ")}")
                 throw RuntimeException("Update failed, please try again")
