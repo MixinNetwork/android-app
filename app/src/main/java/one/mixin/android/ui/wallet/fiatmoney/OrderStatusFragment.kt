@@ -26,6 +26,9 @@ import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.checkout.risk.PublishDataResult
+import com.checkout.risk.Risk
+import com.checkout.risk.RiskConfig
 import com.checkout.threeds.Checkout3DSService
 import com.checkout.threeds.domain.model.AuthenticationError
 import com.checkout.threeds.domain.model.AuthenticationErrorType
@@ -49,6 +52,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.CRYPTOGRAM_3DS
 import one.mixin.android.Constants.RouteConfig.ENVIRONMENT_3DS
 import one.mixin.android.Constants.RouteConfig.PAN_ONLY
+import one.mixin.android.Constants.RouteConfig.RISK_ENVIRONMENT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.RouteSessionRequest
@@ -502,111 +506,27 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         expectancyAssetAmount: String? = null,
     ) {
         status = OrderStatus.APPROVED_PROCESSING
-        lifecycleScope.launch(Dispatchers.Main) {
-            val webView = WebView(requireContext())
-            webView.settings.javaScriptEnabled = true
-            webView.settings.domStorageEnabled = true
-            webView.webViewClient =
-                object : WebViewClient() {
-                    override fun onPageFinished(
-                        view: WebView?,
-                        url: String?,
-                    ) {
-                        Timber.e("onPageFinished")
-                        super.onPageFinished(view, url)
+        lifecycleScope.launch {
+            val riskInstance = Risk.getInstance(
+                requireContext(),
+                RiskConfig(
+                    BuildConfig.CHCEKOUT_ID,
+                    RISK_ENVIRONMENT,
+                    false,
+                ),
+            )
+            if (riskInstance == null) {
+                reportException(RiskException("Risk instance null"))
+                payments(sessionId, null, instrumentId, token, expectancyAssetAmount)
+            } else {
+                riskInstance.publishData().let {
+                    if (it is PublishDataResult.Success) {
+                        println("Device session ID: ${it.deviceSessionId}")
+                        payments(sessionId, it.deviceSessionId, instrumentId, token, expectancyAssetAmount)
+                    } else {
+                        reportException(RiskException("Risk failed $it"))
+                        payments(sessionId, null, instrumentId, token, expectancyAssetAmount)
                     }
-
-                    override fun onReceivedError(
-                        view: WebView?,
-                        request: WebResourceRequest?,
-                        error: WebResourceError?,
-                    ) {
-                        Timber.e("onReceivedError")
-                        reportException(RiskException("onReceivedSslError ${error?.toString()}"))
-                        super.onReceivedError(view, request, error)
-                        if (paymentExecuted.compareAndSet(false, true)) {
-                            payments(
-                                sessionId, null,
-                                instrumentId,
-                                token,
-                                expectancyAssetAmount,
-                            )
-                        }
-                    }
-
-                    override fun onReceivedSslError(
-                        view: WebView?,
-                        handler: SslErrorHandler?,
-                        error: SslError?,
-                    ) {
-                        super.onReceivedSslError(view, handler, error)
-                        Timber.e("onReceivedSslError")
-                        reportException(RiskException("onReceivedSslError ${error?.toString()}"))
-                        if (paymentExecuted.compareAndSet(false, true)) {
-                            payments(
-                                sessionId, null,
-                                instrumentId,
-                                token,
-                                expectancyAssetAmount,
-                            )
-                        }
-                    }
-
-                    override fun onReceivedHttpError(
-                        view: WebView?,
-                        request: WebResourceRequest?,
-                        errorResponse: WebResourceResponse?,
-                    ) {
-                        super.onReceivedHttpError(view, request, errorResponse)
-                        Timber.e("onReceivedHttpError")
-                        reportException(RiskException("onReceivedHttpError ${errorResponse?.statusCode} ${errorResponse?.reasonPhrase}"))
-                        if (paymentExecuted.compareAndSet(false, true)) {
-                            payments(
-                                sessionId, null,
-                                instrumentId,
-                                token,
-                                expectancyAssetAmount,
-                            )
-                        }
-                    }
-                }
-
-            class WebAppInterface {
-                @JavascriptInterface
-                fun deviceSessionIdCallback(deviceSessionId: String) {
-                    if (paymentExecuted.compareAndSet(false, true)) {
-                        payments(
-                            sessionId,
-                            if (deviceSessionId.startsWith("dsid_")) {
-                                deviceSessionId
-                            } else {
-                                null
-                            },
-                            instrumentId,
-                            token,
-                            expectancyAssetAmount,
-                        )
-                    }
-                }
-            }
-
-            val webAppInterface = WebAppInterface()
-            webView.addJavascriptInterface(webAppInterface, "MixinContext")
-            binding.root.addView(webView, FrameLayout.LayoutParams(1, 1))
-            val input = requireContext().assets.open("risk.html")
-            val html = input.source().buffer().readByteString().string(Charset.forName("utf-8")).replace("#CHCEKOUT_ID", BuildConfig.CHCEKOUT_ID)
-            webView.loadDataWithBaseURL(Constants.API.DOMAIN, html, "text/html", "UTF-8", null)
-            launch {
-                delay(6000)
-                if (paymentExecuted.compareAndSet(false, true)) {
-                    reportException(RiskException("Timeout"))
-                    payments(
-                        sessionId,
-                        null,
-                        instrumentId,
-                        token,
-                        expectancyAssetAmount,
-                    )
                 }
             }
         }

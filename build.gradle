@@ -107,8 +107,9 @@ buildscript {
 
         ext.sumsubVersion = '1.29.0'
         ext.checkoutFramesVersion = '4.2.0'
-        
         ext.checkoutSecureVersion = '3.2.1'
+        ext.checkoutRiskVersion = '1.0.3'
+
         ext.playWalletVersion = '19.3.0'
         ext.playPayVersion = '16.4.0'
         ext.datastoreVersion = '1.0.0'
@@ -161,7 +162,7 @@ allprojects {
             }
         }
         maven { url "https://maven.sumsub.com/repository/maven-public/" }
-
+        maven { url = uri("https://maven.fpregistry.io/releases") }
         maven {
             url = "https://maven.pkg.github.com/checkout/checkout-3ds-sdk-android"
             credentials {
