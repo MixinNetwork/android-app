@@ -18,6 +18,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.isKraken
 import one.mixin.android.vo.isMine
 import one.mixin.android.vo.safe.Output
+import timber.log.Timber
 
 fun UserDao.insertUpdate(
     user: User,
@@ -181,6 +182,7 @@ suspend fun OutputDao.insertUnspentOutputs(outputs: List<Output>) =
             if (signed.isEmpty()) {
                 insertList(outputs)
             } else {
+                Timber.e("Insert filter ${signed.joinToString(", ") }")
                 // Exclude signed data
                 val list =
                     outputs.filter {
