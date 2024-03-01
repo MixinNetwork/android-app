@@ -3,18 +3,9 @@ package one.mixin.android.ui.wallet.fiatmoney
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
-import android.net.http.SslError
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
-import android.webkit.JavascriptInterface
-import android.webkit.SslErrorHandler
-import android.webkit.WebResourceError
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResult
@@ -41,14 +32,10 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.wallet.PaymentData
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import okio.buffer
-import okio.source
 import one.mixin.android.BuildConfig
-import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.CRYPTOGRAM_3DS
 import one.mixin.android.Constants.RouteConfig.ENVIRONMENT_3DS
 import one.mixin.android.Constants.RouteConfig.PAN_ONLY
@@ -82,9 +69,7 @@ import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.lottie.RLottieDrawable
 import timber.log.Timber
-import java.nio.charset.Charset
 import java.util.Locale
-import java.util.concurrent.atomic.AtomicBoolean
 
 @AndroidEntryPoint
 class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
@@ -191,7 +176,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 setAutoRepeat(1)
                 setAutoRepeatCount(Int.MAX_VALUE)
                 start()
-            }
+            },
         )
         binding.topVa.displayedChild = 2
         binding.title.setText(R.string.Processing)
@@ -352,6 +337,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     }
 
     private var ckoAuthenticationStatus: String? = null
+
     private fun init3DS(sessionResponse: RouteSessionResponse) {
         val checkout3DS =
             Checkout3DSService(
@@ -504,14 +490,15 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     ) {
         status = OrderStatus.APPROVED_PROCESSING
         lifecycleScope.launch {
-            val riskInstance = Risk.getInstance(
-                requireContext(),
-                RiskConfig(
-                    BuildConfig.CHCEKOUT_ID,
-                    RISK_ENVIRONMENT,
-                    false,
-                ),
-            )
+            val riskInstance =
+                Risk.getInstance(
+                    requireContext(),
+                    RiskConfig(
+                        BuildConfig.CHCEKOUT_ID,
+                        RISK_ENVIRONMENT,
+                        false,
+                    ),
+                )
             if (riskInstance == null) {
                 reportException(RiskException("Risk instance null"))
                 payments(sessionId, null, instrumentId, token, expectancyAssetAmount)
