@@ -798,7 +798,7 @@ class TokenRepository
 
         suspend fun findLatestOutputSequenceByAsset(asset: String) = outputDao.findLatestOutputSequenceByAsset(asset)
 
-        suspend fun insertOutputs(outputs: List<Output>) = outputDao.insertList(outputs)
+        fun insertOutputs(outputs: List<Output>) = outputDao.insertList(outputs)
 
         suspend fun deleteByKernelAssetIdAndOffset(
             asset: String,
