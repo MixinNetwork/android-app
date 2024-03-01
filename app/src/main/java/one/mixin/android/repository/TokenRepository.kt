@@ -724,6 +724,11 @@ class TokenRepository
                 Timber.e("Update failed, ${ids.joinToString(", ")}")
                 throw RuntimeException("Update failed, please try again")
             }
+            val unSignedOutputs = outputDao.getUnsignedOutputs(ids)
+            if (unSignedOutputs.isNotEmpty()) {
+                Timber.e("Update failed, ${unSignedOutputs.joinToString(", ")}")
+                throw RuntimeException("Update failed, please try again")
+            }
         }
 
         suspend fun findOldAssets() = assetService.fetchAllAssetSuspend()
@@ -793,7 +798,7 @@ class TokenRepository
 
         suspend fun findLatestOutputSequenceByAsset(asset: String) = outputDao.findLatestOutputSequenceByAsset(asset)
 
-        suspend fun insertOutputs(outputs: List<Output>) = outputDao.insertList(outputs)
+        fun insertOutputs(outputs: List<Output>) = outputDao.insertList(outputs)
 
         suspend fun deleteByKernelAssetIdAndOffset(
             asset: String,
