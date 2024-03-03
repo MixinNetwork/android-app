@@ -37,7 +37,7 @@ suspend fun parseExternalTransferUri(
         return null
     }
     val feeResponse = getFee(assetId, destination) ?: return null
-    val fee = feeResponse.find { it.assetId == assetId } ?: return null
+    val fee = feeResponse.firstOrNull() ?: return null
 
     var amount = uri.getQueryParameter("amount")
     if (amount == null) {
