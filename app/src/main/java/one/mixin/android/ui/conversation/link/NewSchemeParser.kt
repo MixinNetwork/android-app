@@ -261,10 +261,12 @@ class NewSchemeParser(
         if (rawTransaction != null) {
             WaitingBottomSheetDialogFragment.newInstance().showNow(bottomSheet.parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
         } else {
+            if (biometricItem is TransferBiometricItem && biometricItem.users.size == 1) {
+                val pair = linkViewModel.findLatestTrace(biometricItem.users.first().userId, null, null, biometricItem.amount, biometricItem.asset?.assetId ?: "")
+                biometricItem.trace = pair.first
+            }
             checkUtxo(biometricItem) {
-                linkViewModel.viewModelScope.launch {
-                    showPreconditionBottom(biometricItem)
-                }
+                showPreconditionBottom(biometricItem)
             }
         }
     }
@@ -287,12 +289,7 @@ class NewSchemeParser(
         }
     }
 
-    private suspend fun showPreconditionBottom(biometricItem: AssetBiometricItem) {
-        if (biometricItem is TransferBiometricItem && biometricItem.users.size == 1) {
-            val pair = linkViewModel.findLatestTrace(biometricItem.users.first().userId, null, null, biometricItem.amount, biometricItem.asset?.assetId ?: "")
-            biometricItem.trace = pair.first
-        }
-
+    private fun showPreconditionBottom(biometricItem: AssetBiometricItem) {
         bottomSheet.syncUtxo()
         val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
         bottom.show(bottomSheet.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
