@@ -287,15 +287,7 @@ class NewSchemeParser(
         }
     }
 
-    private suspend fun showPreconditionBottom(biometricItem: AssetBiometricItem) {
-        if (biometricItem is TransferBiometricItem && biometricItem.users.size == 1) {
-            val pair = linkViewModel.findLatestTrace(biometricItem.users.first().userId, null, null, biometricItem.amount, biometricItem.asset?.assetId ?: "")
-            if (pair.second) {
-                bottomSheet.showError(bottomSheet.getString(R.string.check_trace_failed))
-                return
-            }
-            biometricItem.trace = pair.first
-        }
+    private fun showPreconditionBottom(biometricItem: AssetBiometricItem) {
         bottomSheet.syncUtxo()
         val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
         bottom.show(bottomSheet.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
