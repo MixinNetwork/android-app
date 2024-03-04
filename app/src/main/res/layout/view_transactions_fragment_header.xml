@@ -30,12 +30,13 @@
                 android:id="@+id/balance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignTop="@+id/avatar"
+                android:layout_alignTop="@id/avatar"
                 android:layout_marginStart="@dimen/margin12"
                 android:layout_marginEnd="42dp"
-                android:layout_toEndOf="@+id/avatar"
+                android:layout_toEndOf="@id/avatar"
                 android:textIsSelectable="true"
                 android:textSize="14sp"
+                tools:text="1234567"
                 tools:ignore="RelativeOverlap" />
 
             <TextView
@@ -44,10 +45,9 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/balance"
                 android:layout_marginStart="@dimen/margin12"
-                android:layout_marginTop="@dimen/margin12"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_marginBottom="@dimen/margin16"
                 android:layout_toEndOf="@id/avatar"
+                android:textSize="12sp"
                 android:textColor="?attr/text_assist" />
 
             <ImageView
@@ -89,7 +89,7 @@
             android:layout_centerVertical="true"
             android:layout_marginEnd="@dimen/margin12"
             android:background="@drawable/mixin_ripple_small"
-            android:padding="8dp"
+            android:padding="6dp"
             android:src="@drawable/ic_sort"
             android:contentDescription="@string/Sort_by" />
 
@@ -97,9 +97,9 @@
             android:id="@+id/group_info_member_title"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:layout_marginBottom="8dp"
             android:layout_toStartOf="@id/group_info_member_title_sort"
-            android:gravity="bottom"
+            android:gravity="center_vertical"
+            android:layout_centerVertical="true"
             android:paddingStart="@dimen/margin20"
             android:paddingEnd="@dimen/margin20"
             android:text="@string/Transactions"
