@@ -97,9 +97,6 @@ import java.util.UUID
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 import kotlin.math.roundToInt
-import one.mixin.android.extension.dp
-import one.mixin.android.util.reportException
-import kotlin.math.max
 
 private val uiHandler = Handler(Looper.getMainLooper())
 
@@ -136,15 +133,8 @@ fun Activity.visibleDisplayHeight(): Int {
     val outRect = Rect()
     return try {
         window.decorView.getWindowVisibleDisplayFrame(outRect)
-        val height = outRect.height()
-        if (height < 300.dp){
-            reportException(IllegalStateException("Small screen height: $height"))
-            return 300.dp
-        } else {
-            return height
-        }
+        outRect.height()
     } catch (e: ClassCastException) {
-        reportException(e)
         Timber.e(e)
         displayHeight()
     }
