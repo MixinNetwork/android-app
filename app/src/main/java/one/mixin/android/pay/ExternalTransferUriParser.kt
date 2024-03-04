@@ -55,7 +55,7 @@ suspend fun parseExternalTransferUri(
         uri.getQueryParameter("memo")?.run {
             Uri.decode(this)
         }
-    return ExternalTransfer(addressResponse.destination, amount, assetId, fee.amount?.toBigDecimalOrNull(), memo)
+    return ExternalTransfer(addressResponse.destination, amount, assetId, fee.amount?.toBigDecimalOrNull(), fee.assetId, memo)
 }
 
 // check amount has scientific E
