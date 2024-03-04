@@ -19,7 +19,7 @@
             android:id="@+id/title_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:rightIcon="@drawable/ic_custom_service"
+            app:rightIcon="@drawable/ic_support"
             app:need_divider="false" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
