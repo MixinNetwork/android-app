@@ -100,7 +100,7 @@ buildscript {
         ext.markdownVersion = '0.6.1'
 
         ext.bcVersion = '1.70'
-        ext.jsonVersion = '20240205'
+        ext.jsonVersion = '20240303'
         ext.composeVersion = '1.6.2'
         ext.accompanistVersion = '0.34.0'
         ext.web3jVersion = '4.8.7-android'
