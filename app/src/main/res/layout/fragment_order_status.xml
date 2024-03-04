@@ -35,9 +35,9 @@
                     android:layout_height="72dp"
                     android:layout_gravity="center_horizontal" />
 
-                <ImageView
+                <one.mixin.android.widget.lottie.RLottieImageView
                     android:src="@drawable/ic_order_waiting"
-                    android:id="@+id/asset_avatar"
+                    android:id="@+id/order_status"
                     android:layout_width="72dp"
                     android:layout_height="72dp"
                     android:layout_gravity="center_horizontal" />

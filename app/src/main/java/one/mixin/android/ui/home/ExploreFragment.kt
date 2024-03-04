@@ -34,7 +34,6 @@ import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.profile.MySharedAppsFragment
-import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.bot.Bot
@@ -50,6 +49,7 @@ import one.mixin.android.ui.search.SearchBotsFragment
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.BotInterface
@@ -196,8 +196,8 @@ class ExploreFragment : BaseFragment() {
     private val clickAction: (BotInterface) -> Unit = { app ->
         if (app is ExploreApp) {
             lifecycleScope.launch {
-                botManagerViewModel.findUserByAppId(app.appId)?.let { user ->
-                    showUserBottom(parentFragmentManager, user)
+                botManagerViewModel.findAppByAppId(app.appId)?.let { app ->
+                    WebActivity.show(requireActivity(), url = app.homeUri, app = app, conversationId = null)
                 }
             }
         } else if (app is Bot) {

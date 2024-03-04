@@ -90,6 +90,7 @@ import one.mixin.android.vo.safe.toPriceAndChange
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.Call
+import retrofit2.Response
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
@@ -548,6 +549,15 @@ class TokenRepository
 
         suspend fun getTransactionsById(traceId: String) = utxoService.getTransactionsById(traceId)
 
+        suspend fun getListTransactionsById(traceId: String): MixinResponse<List<TransactionResponse>> {
+            val response = utxoService.getTransactionsById(traceId)
+            return if (response.isSuccess) {
+                MixinResponse(Response.success(listOf(response.data!!)))
+            } else {
+                MixinResponse(response.error!!)
+            }
+        }
+
         suspend fun findLatestTrace(
             opponentId: String?,
             destination: String?,
@@ -714,6 +724,11 @@ class TokenRepository
                 Timber.e("Update failed, ${ids.joinToString(", ")}")
                 throw RuntimeException("Update failed, please try again")
             }
+            val unSignedOutputs = outputDao.getUnsignedOutputs(ids)
+            if (unSignedOutputs.isNotEmpty()) {
+                Timber.e("Update failed, ${unSignedOutputs.joinToString(", ")}")
+                throw RuntimeException("Update failed, please try again")
+            }
         }
 
         suspend fun findOldAssets() = assetService.fetchAllAssetSuspend()
@@ -783,7 +798,7 @@ class TokenRepository
 
         suspend fun findLatestOutputSequenceByAsset(asset: String) = outputDao.findLatestOutputSequenceByAsset(asset)
 
-        suspend fun insertOutputs(outputs: List<Output>) = outputDao.insertList(outputs)
+        fun insertOutputs(outputs: List<Output>) = outputDao.insertList(outputs)
 
         suspend fun deleteByKernelAssetIdAndOffset(
             asset: String,

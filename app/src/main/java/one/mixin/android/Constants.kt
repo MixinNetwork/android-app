@@ -3,6 +3,7 @@ package one.mixin.android
 import android.graphics.Color
 import com.checkout.base.model.CardScheme
 import com.checkout.base.model.Environment
+import com.checkout.risk.RiskEnvironment
 import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
 import one.mixin.android.net.CustomDns
@@ -350,6 +351,8 @@ object Constants {
         const val PAYMENTS_GATEWAY = "checkoutltd"
 
         val CHECKOUT_ENVIRONMENT: Environment = Environment.PRODUCTION
+
+        val RISK_ENVIRONMENT = RiskEnvironment.PRODUCTION
 
         val ENVIRONMENT_3DS = com.checkout.threeds.Environment.PRODUCTION
     }

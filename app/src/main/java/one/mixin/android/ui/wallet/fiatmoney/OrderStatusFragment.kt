@@ -3,18 +3,9 @@ package one.mixin.android.ui.wallet.fiatmoney
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
-import android.net.http.SslError
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
-import android.webkit.JavascriptInterface
-import android.webkit.SslErrorHandler
-import android.webkit.WebResourceError
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResult
@@ -26,6 +17,9 @@ import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.checkout.risk.PublishDataResult
+import com.checkout.risk.Risk
+import com.checkout.risk.RiskConfig
 import com.checkout.threeds.Checkout3DSService
 import com.checkout.threeds.domain.model.AuthenticationError
 import com.checkout.threeds.domain.model.AuthenticationErrorType
@@ -38,17 +32,14 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.wallet.PaymentData
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import okio.buffer
-import okio.source
 import one.mixin.android.BuildConfig
-import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.CRYPTOGRAM_3DS
 import one.mixin.android.Constants.RouteConfig.ENVIRONMENT_3DS
 import one.mixin.android.Constants.RouteConfig.PAN_ONLY
+import one.mixin.android.Constants.RouteConfig.RISK_ENVIRONMENT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.RouteSessionRequest
@@ -76,10 +67,9 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.cardIcon
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.lottie.RLottieDrawable
 import timber.log.Timber
-import java.nio.charset.Charset
 import java.util.Locale
-import java.util.concurrent.atomic.AtomicBoolean
 
 @AndroidEntryPoint
 class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
@@ -175,6 +165,19 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     private fun processing() {
         binding.bottomVa.isVisible = true
         binding.bottomVa.displayedChild = 2
+        binding.orderStatus.setImageDrawable(
+            RLottieDrawable(
+                R.raw.order_waiting,
+                "order_waiting",
+                72.dp,
+                72.dp,
+            ).apply {
+                setAllowDecodeSingleFrame(true)
+                setAutoRepeat(1)
+                setAutoRepeatCount(Int.MAX_VALUE)
+                start()
+            },
+        )
         binding.topVa.displayedChild = 2
         binding.title.setText(R.string.Processing)
         binding.content.setText(R.string.Processing_desc)
@@ -333,6 +336,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         }
     }
 
+    private var ckoAuthenticationStatus: String? = null
+
     private fun init3DS(sessionResponse: RouteSessionResponse) {
         val checkout3DS =
             Checkout3DSService(
@@ -349,12 +354,13 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 sessionResponse.sessionSecret,
                 sessionResponse.scheme,
             )
-
+        Timber.e("3DS-${sessionResponse.sessionId} checkout3DS authenticate")
+        ckoAuthenticationStatus = "PENDING"
         checkout3DS.authenticate(authenticationParameters) { result: AuthenticationResult ->
+            ckoAuthenticationStatus = result.toString()
             when (result.resultType) {
                 ResultType.Completed -> {
-                    // TODO
-                    // checkThreeDsResult(sessionResponse)
+                    Timber.e("3DS authenticate Completed")
                 }
 
                 ResultType.Error -> {
@@ -379,11 +385,15 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     if (session.isSuccess) {
                         if (session.data?.status == RouteSessionStatus.Approved.value) {
                             paymentsPrecondition(sessionId = sessionResponse.sessionId, instrumentId = sessionResponse.instrumentId, null)
+                            if (ckoAuthenticationStatus == "PENDING") {
+                                reportException(IllegalStateException("3DS no callback, cko status: $ckoAuthenticationStatus, session(${sessionResponse.sessionId}) status:${session.data?.status}"))
+                            }
                             break
                         } else if (session.data?.status != RouteSessionStatus.Pending.value && session.data?.status != RouteSessionStatus.Processing.value) {
                             showError(session.data?.status ?: session.errorDescription)
                             return@launch
                         } else {
+                            reportException(IllegalStateException("3DS cko status: $ckoAuthenticationStatus, session(${sessionResponse.sessionId}) status:${session.data?.status}"))
                             delay(REFRESH_INTERVAL)
                         }
                     } else {
@@ -468,11 +478,8 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         token: String?,
         expectancyAssetAmount: String,
     ) {
-        paymentExecuted.set(false)
         paymentsPrecondition(sessionId, instrumentId, token, expectancyAssetAmount)
     }
-
-    private val paymentExecuted = AtomicBoolean(false)
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun paymentsPrecondition(
@@ -482,111 +489,28 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         expectancyAssetAmount: String? = null,
     ) {
         status = OrderStatus.APPROVED_PROCESSING
-        lifecycleScope.launch(Dispatchers.Main) {
-            val webView = WebView(requireContext())
-            webView.settings.javaScriptEnabled = true
-            webView.settings.domStorageEnabled = true
-            webView.webViewClient =
-                object : WebViewClient() {
-                    override fun onPageFinished(
-                        view: WebView?,
-                        url: String?,
-                    ) {
-                        Timber.e("onPageFinished")
-                        super.onPageFinished(view, url)
+        lifecycleScope.launch {
+            val riskInstance =
+                Risk.getInstance(
+                    requireContext(),
+                    RiskConfig(
+                        BuildConfig.CHCEKOUT_ID,
+                        RISK_ENVIRONMENT,
+                        false,
+                    ),
+                )
+            if (riskInstance == null) {
+                reportException(RiskException("Risk instance null"))
+                payments(sessionId, null, instrumentId, token, expectancyAssetAmount)
+            } else {
+                riskInstance.publishData().let {
+                    if (it is PublishDataResult.Success) {
+                        println("Device session ID: ${it.deviceSessionId}")
+                        payments(sessionId, it.deviceSessionId, instrumentId, token, expectancyAssetAmount)
+                    } else {
+                        reportException(RiskException("Risk failed $it"))
+                        payments(sessionId, null, instrumentId, token, expectancyAssetAmount)
                     }
-
-                    override fun onReceivedError(
-                        view: WebView?,
-                        request: WebResourceRequest?,
-                        error: WebResourceError?,
-                    ) {
-                        Timber.e("onReceivedError")
-                        reportException(RiskException("onReceivedSslError ${error?.toString()}"))
-                        super.onReceivedError(view, request, error)
-                        if (paymentExecuted.compareAndSet(false, true)) {
-                            payments(
-                                sessionId, null,
-                                instrumentId,
-                                token,
-                                expectancyAssetAmount,
-                            )
-                        }
-                    }
-
-                    override fun onReceivedSslError(
-                        view: WebView?,
-                        handler: SslErrorHandler?,
-                        error: SslError?,
-                    ) {
-                        super.onReceivedSslError(view, handler, error)
-                        Timber.e("onReceivedSslError")
-                        reportException(RiskException("onReceivedSslError ${error?.toString()}"))
-                        if (paymentExecuted.compareAndSet(false, true)) {
-                            payments(
-                                sessionId, null,
-                                instrumentId,
-                                token,
-                                expectancyAssetAmount,
-                            )
-                        }
-                    }
-
-                    override fun onReceivedHttpError(
-                        view: WebView?,
-                        request: WebResourceRequest?,
-                        errorResponse: WebResourceResponse?,
-                    ) {
-                        super.onReceivedHttpError(view, request, errorResponse)
-                        Timber.e("onReceivedHttpError")
-                        reportException(RiskException("onReceivedHttpError ${errorResponse?.statusCode} ${errorResponse?.reasonPhrase}"))
-                        if (paymentExecuted.compareAndSet(false, true)) {
-                            payments(
-                                sessionId, null,
-                                instrumentId,
-                                token,
-                                expectancyAssetAmount,
-                            )
-                        }
-                    }
-                }
-
-            class WebAppInterface {
-                @JavascriptInterface
-                fun deviceSessionIdCallback(deviceSessionId: String) {
-                    if (paymentExecuted.compareAndSet(false, true)) {
-                        payments(
-                            sessionId,
-                            if (deviceSessionId.startsWith("dsid_")) {
-                                deviceSessionId
-                            } else {
-                                null
-                            },
-                            instrumentId,
-                            token,
-                            expectancyAssetAmount,
-                        )
-                    }
-                }
-            }
-
-            val webAppInterface = WebAppInterface()
-            webView.addJavascriptInterface(webAppInterface, "MixinContext")
-            binding.root.addView(webView, FrameLayout.LayoutParams(1, 1))
-            val input = requireContext().assets.open("risk.html")
-            val html = input.source().buffer().readByteString().string(Charset.forName("utf-8")).replace("#CHCEKOUT_ID", BuildConfig.CHCEKOUT_ID)
-            webView.loadDataWithBaseURL(Constants.API.DOMAIN, html, "text/html", "UTF-8", null)
-            launch {
-                delay(6000)
-                if (paymentExecuted.compareAndSet(false, true)) {
-                    reportException(RiskException("Timeout"))
-                    payments(
-                        sessionId,
-                        null,
-                        instrumentId,
-                        token,
-                        expectancyAssetAmount,
-                    )
                 }
             }
         }

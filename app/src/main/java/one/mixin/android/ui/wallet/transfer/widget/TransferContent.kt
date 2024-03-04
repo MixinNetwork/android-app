@@ -9,6 +9,8 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferContentBinding
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
@@ -20,6 +22,7 @@ import one.mixin.android.util.getChainName
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.toUser
 import java.math.BigDecimal
 
 class TransferContent : LinearLayout {
@@ -32,7 +35,10 @@ class TransferContent : LinearLayout {
         _binding = ViewTransferContentBinding.inflate(LayoutInflater.from(context), this)
     }
 
-    fun render(transferItem: BiometricItem, userClick: (User) -> Unit) {
+    fun render(
+        transferItem: BiometricItem,
+        userClick: (User) -> Unit,
+    ) {
         when (transferItem) {
             is TransferBiometricItem -> {
                 renderTransfer(transferItem, userClick)
@@ -80,19 +86,17 @@ class TransferContent : LinearLayout {
         return "${value.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}"
     }
 
-    private fun amountAs(
-        withdrawBiometricItem: WithdrawBiometricItem,
-    ): String {
+    private fun formatWithdrawBiometricItem(withdrawBiometricItem: WithdrawBiometricItem): Pair<String, String> {
         val asset = withdrawBiometricItem.asset!!
         val feeAsset = withdrawBiometricItem.fee!!.token
         val amount = withdrawBiometricItem.amount
         val feeAmount = withdrawBiometricItem.fee!!.fee
         val value =
             try {
-                if (asset.priceFiat().toDouble() == 0.0) {
+                if (amount.toDouble() == 0.0) {
                     BigDecimal.ZERO
                 } else {
-                    BigDecimal(amount) * asset.priceFiat()
+                    BigDecimal(amount)
                 }
             } catch (e: ArithmeticException) {
                 BigDecimal.ZERO
@@ -101,30 +105,42 @@ class TransferContent : LinearLayout {
             }
         val feeValue =
             try {
-                if (feeAsset.priceFiat().toDouble() == 0.0) {
+                if (feeAmount.toDouble() == 0.0) {
                     BigDecimal.ZERO
                 } else {
-                    BigDecimal(feeAmount) * feeAsset.priceFiat()
+                    BigDecimal(feeAmount)
                 }
             } catch (e: ArithmeticException) {
                 BigDecimal.ZERO
             } catch (e: NumberFormatException) {
                 BigDecimal.ZERO
             }
-        return "${value.plus(feeValue).numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}"
+        if (asset.assetId == feeAsset.assetId) {
+            val totalAmount = value.plus(feeValue)
+            val total = asset.priceFiat() * totalAmount
+            return Pair("${totalAmount.numberFormat8()} ${asset.symbol}", "${total.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}")
+        } else {
+            val total = asset.priceFiat() * value + feeAsset.priceFiat() * feeValue
+            return Pair("${withdrawBiometricItem.amount} ${asset.symbol} + $feeAmount ${feeAsset.symbol}", "${total.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}")
+        }
     }
 
-    private fun renderTransfer(transferBiometricItem: TransferBiometricItem, userClick: (User) -> Unit) {
+    private fun renderTransfer(
+        transferBiometricItem: TransferBiometricItem,
+        userClick: (User) -> Unit,
+    ) {
         _binding.apply {
             amount.setContent(R.string.Amount, "${transferBiometricItem.amount} ${transferBiometricItem.asset?.symbol}", amountAs(transferBiometricItem.amount, transferBiometricItem.asset!!))
             address.isVisible = false
             receive.isVisible = true
+            sender.isVisible = true
+            sender.setContent(R.string.Sender, Session.getAccount()!!.toUser()) {}
             receive.setContent(R.plurals.Receiver_title, transferBiometricItem.users, null, userClick)
             total.isVisible = true
             total.setContent(R.string.Total, "${transferBiometricItem.amount} ${transferBiometricItem.asset?.symbol}", amountAs(transferBiometricItem.amount, transferBiometricItem.asset!!))
 
             networkFee.isVisible = true
-            networkFee.setContent(R.string.network_fee, "0 ${transferBiometricItem.asset?.symbol}", amountAs("0", transferBiometricItem.asset!!))
+            networkFee.setContent(R.string.Fee, "0 ${transferBiometricItem.asset?.symbol}", amountAs("0", transferBiometricItem.asset!!))
 
             if (!transferBiometricItem.memo.isNullOrBlank()) {
                 memo.isVisible = true
@@ -139,6 +155,8 @@ class TransferContent : LinearLayout {
     private fun renderAddressManage(addressManageBiometricItem: AddressManageBiometricItem) {
         _binding.apply {
             amount.setContent(R.string.Label, addressManageBiometricItem.label ?: "")
+            sender.isVisible = true
+            sender.setContent(R.string.Sender, Session.getAccount()!!.toUser()) {}
             address.isVisible = true
             address.setContent(R.string.Address, addressManageBiometricItem.destination ?: "")
             val tokenItem = addressManageBiometricItem.asset!!
@@ -178,7 +196,7 @@ class TransferContent : LinearLayout {
             total.setContent(R.string.Total, "${safeMultisigsBiometricItem.amount} ${safeMultisigsBiometricItem.asset?.symbol}", amountAs(safeMultisigsBiometricItem.amount, safeMultisigsBiometricItem.asset!!))
 
             networkFee.isVisible = true
-            networkFee.setContent(R.string.network_fee, "0 ${safeMultisigsBiometricItem.asset?.symbol}", amountAs("0", safeMultisigsBiometricItem.asset!!))
+            networkFee.setContent(R.string.Fee, "0 ${safeMultisigsBiometricItem.asset?.symbol}", amountAs("0", safeMultisigsBiometricItem.asset!!))
 
             if (!safeMultisigsBiometricItem.memo.isNullOrBlank()) {
                 memo.isVisible = true
@@ -208,6 +226,7 @@ class TransferContent : LinearLayout {
             amount.setContent(R.string.Amount, "${withdrawBiometricItem.amount} ${withdrawBiometricItem.asset?.symbol}", amountAs(withdrawBiometricItem.amount, withdrawBiometricItem.asset!!))
             receive.isVisible = false
             address.isVisible = true
+            sender.isVisible = true
             total.isVisible = true
 
             val label = withdrawBiometricItem.label
@@ -217,16 +236,14 @@ class TransferContent : LinearLayout {
                 address.setContent(R.string.Receiver, withdrawBiometricItem.displayAddress())
             }
 
+            sender.setContent(R.string.Sender, Session.getAccount()!!.toUser()) {}
+
+            val (totalAmount, totalPrice) = formatWithdrawBiometricItem(withdrawBiometricItem)
+            total.setContent(R.string.Total, totalAmount, totalPrice)
+
             val fee = withdrawBiometricItem.fee!!
-
-            if (fee.token.assetId == withdrawBiometricItem.asset?.assetId){
-                total.setContent(R.string.Total, "${withdrawBiometricItem.amount} ${withdrawBiometricItem.asset?.symbol}", amountAs(withdrawBiometricItem))
-            }else{
-                total.setContent(R.string.Total, "${withdrawBiometricItem.amount} ${withdrawBiometricItem.asset?.symbol} + ${fee.fee} ${fee.token.symbol}", amountAs(withdrawBiometricItem))
-            }
-
             networkFee.isVisible = true
-            networkFee.setContent(R.string.network_fee, "${fee.fee} ${fee.token.symbol}", amountAs(fee.fee, fee.token))
+            networkFee.setContent(R.string.Fee, "${fee.fee} ${fee.token.symbol}", amountAs(fee.fee, fee.token))
 
             val tokenItem = withdrawBiometricItem.asset!!
             network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")

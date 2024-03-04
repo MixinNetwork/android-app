@@ -1350,7 +1350,7 @@
     <string name="Transfer_confirmation">转账确认</string>
     <string name="Withdrawal_confirmation">提现确认</string>
     <string name="Transfer_confirmation_desc">请仔细检查收款人、网络和金额，如果您转错了，资产将无法追回！</string>
-    <string name="transfer_address_warning">请确认地址 %1$s 仍然有效，您已经超过 30 天没有使用该地址。</string>
+    <string name="transfer_address_warning">您已经超过 30 天没有使用地址 %1$s（%2$s），请注意检查地址是否仍然有效。。</string>
     <string name="Not_Now">下次再说</string>
     <string name="Enable">启用</string>
     <string name="enable_biometric_description">想要启用生物识别支付吗？启用后，转账时可通过生物识别快速完成付款。</string>
@@ -1388,8 +1388,8 @@
     <string name="Sending_Transfer_Request">正在发送转账</string>
     <string name="transfer_sending_description">正在创建交易，请稍候。</string>
     <string name="duplication_reminder">您已经在%2$s前给该收款人转账了 %1$s。</string>
-    <string name="large_amount_reminder">确定给 %3$s（%4$s）转价值 %1$s 的 %2$s？</string>
-    <string name="unfamiliar_person_reminder">确定给 %1$s（%2$s）转账？他不是你的联系人，如果您转错人，资产将无法追回。</string>
+    <string name="large_amount_reminder">本次转账 %1$s 的价值高达 %2$s，请注意金额是否正确。</string>
+    <string name="unfamiliar_person_reminder">%1$s（%2$s）不是你的联系人，请注意收款人是否正确。</string>
     <string name="Confirm_Signing_Multisig">多签交易确认</string>
     <string name="Sending_Multisig_Signature">正在发送多签交易</string>
     <string name="Multisig_Signed">多签交易签名成功</string>
