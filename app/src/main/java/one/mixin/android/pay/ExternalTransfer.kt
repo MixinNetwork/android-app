@@ -8,6 +8,7 @@ data class ExternalTransfer(
     val amount: String,
     val assetId: String,
     val fee: BigDecimal?,
+    val feeAssetId: String?,
     val memo: String? = null,
 )
 
