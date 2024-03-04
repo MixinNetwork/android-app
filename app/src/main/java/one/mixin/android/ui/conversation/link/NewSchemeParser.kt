@@ -3,8 +3,6 @@ package one.mixin.android.ui.conversation.link
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
-import androidx.work.Operation.State.FAILURE
-import androidx.work.Operation.State.SUCCESS
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -18,7 +16,6 @@ import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
-import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildAddressBiometricItem
@@ -32,7 +29,6 @@ import one.mixin.android.vo.MixAddressPrefix
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toMixAddress
 import one.mixin.android.vo.toUser
-import timber.log.Timber
 import java.io.UnsupportedEncodingException
 import java.math.BigDecimal
 import java.net.URLDecoder
@@ -111,7 +107,6 @@ class NewSchemeParser(
             val token: TokenItem = checkToken(asset) ?: return FAILURE // TODO 404?
 
             val tokensExtra = linkViewModel.findTokensExtra(asset)
-            Timber.e("${tokensExtra?.balance} $amount")
             if (tokensExtra == null) {
                 return INSUFFICIENT_BALANCE
             } else if (BigDecimal(tokensExtra.balance ?: "0") < BigDecimal(amount)) {
