@@ -2,13 +2,13 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="84dp"
+    android:layout_height="80dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <RelativeLayout
         android:id="@+id/background_rl"
         android:layout_width="match_parent"
-        android:layout_height="84dp"
+        android:layout_height="80dp"
         android:background="@color/wallet_green">
 
         <TextView
@@ -35,13 +35,13 @@
     <one.mixin.android.widget.ConfirmationBgView
         android:id="@+id/foreground_rl"
         android:layout_width="match_parent"
-        android:layout_height="84dp"
+        android:layout_height="80dp"
         android:foreground="?android:attr/selectableItemBackground">
 
         <one.mixin.android.widget.BadgeCircleImageView
             android:id="@+id/avatar"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
             android:layout_marginTop="22dp"
             android:layout_marginStart="20dp"/>
 
@@ -51,15 +51,16 @@
             android:layout_height="wrap_content"
             android:maxWidth="200dp"
             android:fontFamily="@font/mixin_font"
-            app:kv_spacing="0.7"
-            android:textSize="24sp"
+            android:textSize="19sp"
+            android:textFontWeight="700"
             android:layout_alignTop="@+id/avatar"
             android:layout_marginEnd="2dp"
             android:layout_marginStart="@dimen/margin16"
             android:maxLines="1"
             android:ellipsize="end"
             android:layout_toEndOf="@id/avatar"
-            android:textColor="?attr/text_primary"/>
+            android:textColor="?attr/text_primary"
+            app:kv_spacing="0.7"/>
 
         <TextView
             android:id="@+id/symbol_tv"
@@ -68,7 +69,9 @@
             android:minWidth="30dp"
             android:maxWidth="200dp"
             android:layout_toEndOf="@+id/balance"
-            android:layout_alignBaseline="@+id/balance"
+            android:layout_alignTop="@id/balance"
+            android:layout_alignBottom="@id/balance"
+            android:textFontWeight="500"
             android:translationY="-1dp"
             android:textSize="12sp"
             android:textColor="?attr/text_primary"/>
@@ -79,10 +82,9 @@
             android:layout_height="wrap_content"
             android:minWidth="50dp"
             android:maxWidth="200dp"
-            android:layout_below="@+id/balance"
+            android:layout_alignBottom="@id/avatar"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginStart="@dimen/margin16"
-            android:layout_marginTop="6dp"
             android:maxLines="1"
             android:ellipsize="end"
             android:layout_toEndOf="@id/avatar"
@@ -99,6 +101,7 @@
             android:layout_alignParentEnd="true"
             android:gravity="end"
             android:maxLines="1"
+            android:textSize="14sp"
             android:textColor="@color/wallet_green"/>
 
         <TextView
