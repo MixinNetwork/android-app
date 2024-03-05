@@ -2,25 +2,35 @@ package one.mixin.android.net
 
 import kotlinx.coroutines.delay
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.ServerErrorException
+import java.io.IOException
+import java.net.SocketTimeoutException
 
 suspend fun <T> executeWithRetry(
-    retries: Int,
+    maxRetries: Int,
     executeFunc: suspend () -> MixinResponse<T>,
+    recoverFunc: suspend () -> MixinResponse<T>,
 ): MixinResponse<T> {
     return try {
         val response = executeFunc()
-        if (retries > 0 && response.errorCode == 500) {
+        if (maxRetries > 0 && response.errorCode == 500) {
             delay(200)
-            executeWithRetry(retries - 1, executeFunc)
+            executeWithRetry(maxRetries - 1, executeFunc, recoverFunc)
         } else {
             response
         }
-    } catch (e: ServerErrorException) {
-        if (retries > 0) {
-            executeWithRetry(retries - 1, executeFunc)
+    } catch (socketTimeoutException: SocketTimeoutException) {
+        // When Timeout, try to get data
+        val response = recoverFunc()
+        if (response.isSuccess) {
+            response
         } else {
-            throw e
+            executeWithRetry(maxRetries - 1, executeFunc, recoverFunc)
+        }
+    } catch (ioException: IOException) {
+        if (maxRetries > 0) {
+            executeWithRetry(maxRetries - 1, executeFunc, recoverFunc)
+        } else {
+            throw ioException
         }
     }
 }

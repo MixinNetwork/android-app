@@ -1380,7 +1380,7 @@
     <string name="Withdrawal_confirmation">Withdrawal confirmation</string>
     <string name="Transfer_confirmation_desc">Please check the payee, network and amount carefully. If you make a mistake, the asset will not be recovered!</string>
     <string name="Withdrawal_confirmation_desc">Please check the collection address, network and amount carefully. If you make a mistake, the asset will not be recovered!</string>
-    <string name="transfer_address_warning">please make sure that the address %1$s is still valid and that you have not used it for more than 30 days.</string>
+    <string name="transfer_address_warning">The address %1$s(%2$s) has not been used for over 30 days. Please check if the address is still valid.</string>
     <string name="Not_Now">Not Now</string>
     <string name="Enable">Enable</string>
     <string name="enable_biometric_description">What about biometric? Once enabled, you can expedite authentication with biometric.</string>
@@ -1418,8 +1418,8 @@
     <string name="Sending_Transfer_Request">Sending Transfer Request</string>
     <string name="transfer_sending_description">The transfer request is being sent to the Mixin mainnet. Please wait a moment.</string>
     <string name="duplication_reminder">You transferred %1$s to the recipient %2$s ago.</string>
-    <string name="large_amount_reminder">Confirm the transfer of %1$s worth of %2$s to %3$s (%4$s)?</string>
-    <string name="unfamiliar_person_reminder">Confirm the transfer to %1$s (%2$s)? He is not in your contacts. Sending to the wrong person may result in irrecoverable asset loss.</string>
+    <string name="large_amount_reminder">The value of this transfer of %1$s is up to %2$s. Please ensure the amount is correct.</string>
+    <string name="unfamiliar_person_reminder">%1$s (%2$s) is not in your contacts. Please verify if the recipient is correct.</string>
     <string name="Confirm_Signing_Multisig">Confirm Signing Multisig</string>
     <string name="Sending_Multisig_Signature">Sending Multisig Signature</string>
     <string name="Multisig_Signed">Multisig Signed</string>

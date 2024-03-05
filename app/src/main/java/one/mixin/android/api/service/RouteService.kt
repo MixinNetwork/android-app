@@ -63,7 +63,7 @@ interface RouteService {
         @Body tokenRequest: RouteTokenRequest,
     ): MixinResponse<RouteCreateTokenResponse>
 
-    @POST("checkout/ticker")
+    @POST("quote")
     suspend fun ticker(
         @Body ticker: RouteTickerRequest,
     ): MixinResponse<RouteTickerResponse>

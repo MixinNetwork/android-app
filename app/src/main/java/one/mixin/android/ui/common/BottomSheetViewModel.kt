@@ -312,9 +312,11 @@ class BottomSheetViewModel
             }
             Timber.e("Kernel Withdrawal($traceId): withdrawal")
             val transactionRsp =
-                executeWithRetry(30) {
+                executeWithRetry(5, {
                     tokenRepository.transactions(rawRequest)
-                }
+                }, {
+                    tokenRepository.getListTransactionsById(traceId)
+                })
             if (transactionRsp.error != null) {
                 Timber.e("Kernel Withdrawal($traceId): withdrawal error ${transactionRsp.errorDescription}")
                 reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
@@ -507,9 +509,11 @@ class BottomSheetViewModel
         ): MixinResponse<List<TransactionResponse>> {
             Timber.e("Kernel Transaction($traceId): innerTransaction")
             val transactionRsp =
-                executeWithRetry(30) {
+                executeWithRetry(5, {
                     tokenRepository.transactions(listOf(TransactionRequest(raw, traceId)))
-                }
+                }, {
+                    tokenRepository.getListTransactionsById(traceId)
+                })
             if (transactionRsp.error != null) {
                 Timber.e("Kernel Transaction($traceId): innerTransaction error ${transactionRsp.errorDescription}")
                 reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
@@ -1236,4 +1240,5 @@ class BottomSheetViewModel
             }
 
         suspend fun getScheme(id: String) = accountRepository.getScheme(id)
-    }
+        suspend fun findTokensExtra(asset: String) = tokenRepository.findTokensExtra(asset)
+}

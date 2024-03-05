@@ -37,7 +37,7 @@ suspend fun parseExternalTransferUri(
         return null
     }
     val feeResponse = getFee(assetId, destination) ?: return null
-    val fee = feeResponse.find { it.assetId == assetId } ?: return null
+    val fee = feeResponse.firstOrNull() ?: return null
 
     var amount = uri.getQueryParameter("amount")
     if (amount == null) {
@@ -55,7 +55,7 @@ suspend fun parseExternalTransferUri(
         uri.getQueryParameter("memo")?.run {
             Uri.decode(this)
         }
-    return ExternalTransfer(addressResponse.destination, amount, assetId, fee.amount?.toBigDecimalOrNull(), memo)
+    return ExternalTransfer(addressResponse.destination, amount, assetId, fee.amount?.toBigDecimalOrNull(), fee.assetId, memo)
 }
 
 // check amount has scientific E

@@ -1311,7 +1311,7 @@ class ConversationListFragment : LinkFragment() {
 
                 dialog.dismiss()
             }
-            .setSingleChoiceItems(choices, 0) { _, which ->
+            .setSingleChoiceItems(choices, 1) { _, which ->
                 whichItem = which
                 when (which) {
                     0 -> duration = MUTE_1_HOUR

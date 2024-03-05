@@ -33,6 +33,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.oldwallet.AssetRepository
+import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
@@ -362,7 +363,7 @@ class WalletViewModel
 
         suspend fun findLatestOutputSequenceByAsset(asset: String) = tokenRepository.findLatestOutputSequenceByAsset(asset)
 
-        suspend fun insertOutputs(outputs: List<Output>) = withContext(Dispatchers.IO) { tokenRepository.insertOutputs(outputs) }
+        suspend fun insertOutputs(outputs: List<Output>) = withContext(SINGLE_DB_THREAD) { tokenRepository.insertOutputs(outputs) }
 
         suspend fun deleteByKernelAssetIdAndOffset(
             kernelAssetId: String,

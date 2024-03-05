@@ -319,8 +319,8 @@ fun UUID.toByteArray(): ByteArray {
 }
 
 fun String.formatPublicKey(): String {
-    if (this.length <= 10) return this
-    return substring(0, 6) + "..." + substring(length - 4, length)
+    if (this.length <= 14) return this
+    return substring(0, 8) + "..." + substring(length - 6, length)
 }
 
 fun String.numberFormat(): String {

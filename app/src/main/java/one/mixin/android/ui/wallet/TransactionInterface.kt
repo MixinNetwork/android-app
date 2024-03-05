@@ -2,7 +2,6 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -405,9 +404,7 @@ interface TransactionInterface {
         snapshot: SnapshotItem,
         asset: TokenItem,
     ) {
-        val sw = snapshot.withdrawal ?: return
-
-        if (sw.withdrawalHash.isBlank()) {
+        if (!snapshot.hasTransactionDetails()) {
             lifecycleScope.launch {
                 walletViewModel.refreshSnapshot(snapshot.snapshotId)?.let {
                     updateUI(fragment, contentBinding, asset, it)

@@ -9,20 +9,26 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <one.mixin.android.ui.wallet.transfer.widget.TransferHeader
-            android:id="@+id/header"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1">
 
-            <one.mixin.android.ui.wallet.transfer.widget.TransferContent
-                android:id="@+id/content"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <one.mixin.android.ui.wallet.transfer.widget.TransferHeader
+                    android:id="@+id/header"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <one.mixin.android.ui.wallet.transfer.widget.TransferContent
+                    android:id="@+id/content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
         </ScrollView>
 
         <one.mixin.android.ui.wallet.transfer.widget.TransferBottom
@@ -36,9 +42,6 @@
         android:id="@+id/transfer_alert"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginBottom="32dp"
-        android:layout_gravity="bottom|clip_horizontal" />
+        android:layout_gravity="center_horizontal|bottom" />
 
 </FrameLayout>

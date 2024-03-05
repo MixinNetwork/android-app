@@ -282,7 +282,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        jobManager.addJobInBackground(SyncOutputJob())
         binding.apply {
             moreIb.setOnClickListener { showBottom() }
             scanIb.setOnClickListener {
@@ -408,6 +407,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         if (!hidden) {
             jobManager.addJobInBackground(RefreshTokensJob())
             jobManager.addJobInBackground(RefreshSnapshotsJob())
+            jobManager.addJobInBackground(SyncOutputJob())
         }
     }
 
