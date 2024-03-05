@@ -404,8 +404,7 @@ interface TransactionInterface {
         snapshot: SnapshotItem,
         asset: TokenItem,
     ) {
-        val type = snapshot.simulateType()
-        if ((type == SafeSnapshotType.withdrawal && (snapshot.withdrawal?.receiver.isNullOrBlank() || snapshot.withdrawal?.withdrawalHash.isNullOrBlank())) || (type == SafeSnapshotType.deposit && snapshot.deposit?.sender.isNullOrBlank())) {
+        if (!snapshot.hasTransactionDetails()) {
             lifecycleScope.launch {
                 walletViewModel.refreshSnapshot(snapshot.snapshotId)?.let {
                     updateUI(fragment, contentBinding, asset, it)
