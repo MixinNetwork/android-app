@@ -40,6 +40,7 @@ import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewWalletBottomBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.config
 import one.mixin.android.extension.defaultSharedPreferences
@@ -115,6 +116,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         jobManager.addJobInBackground(RefreshTokensJob())
+        jobManager.addJobInBackground(RefreshSnapshotsJob())
+        jobManager.addJobInBackground(SyncOutputJob())
     }
 
     override fun onCreateView(

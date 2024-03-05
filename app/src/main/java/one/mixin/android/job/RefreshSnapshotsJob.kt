@@ -24,13 +24,18 @@ class RefreshSnapshotsJob(
     override fun onRun() =
         runBlocking {
             val response =
-                if (assetId == null) {
-                    val startPosition = offset ?: PropertyHelper.findValueByKey(PREF_SNAPSHOT_OFFSET, TIME_ZERO)
-                    tokenService.getSnapshots(startPosition, opponent = opponent, limit = LIMIT)
-                } else {
-                    // todo maybe remove
-                    tokenService.getSnapshots(assetId = assetId, offset ?: safeSnapshotDao.getLastItemCreate(assetId) ?: TIME_ZERO, limit = LIMIT)
-                }
+            if (assetId == null && opponent ==null) {
+                val startPosition = PropertyHelper.findValueByKey(PREF_SNAPSHOT_OFFSET, TIME_ZERO)
+                tokenService.getSnapshots(offset = startPosition, limit = LIMIT)
+            } else if (opponent != null) {
+                tokenService.getSnapshots(offset = offset ?: TIME_ZERO, opponent = opponent, limit = LIMIT)
+            } else if (assetId !=null){
+                tokenService.getSnapshots(assetId = assetId, offset = offset ?: safeSnapshotDao.getLastItemCreate(assetId) ?: TIME_ZERO, limit = LIMIT)
+            } else{
+                // do noting
+                return@runBlocking
+            }
+
             if (response.isSuccess && response.data != null) {
                 val list = response.data as List<SafeSnapshot>
                 safeSnapshotDao.insertListSuspend(list)
@@ -40,8 +45,10 @@ class RefreshSnapshotsJob(
                     }
                 }
                 list.lastOrNull()?.let {
-                    if (assetId == null) {
-                        PropertyHelper.updateKeyValue(PREF_SNAPSHOT_OFFSET, it.createdAt)
+                    PropertyHelper.updateKeyValue(PREF_SNAPSHOT_OFFSET, it.createdAt)
+                    jobManager.addJobInBackground(RefreshTokensJob())
+                    if (assetId == null && opponent ==null) {
+                        jobManager.addJobInBackground(RefreshSnapshotsJob())
                     }
                     RxBus.publish(RefreshSnapshotEvent(it.createdAt))
                 }
