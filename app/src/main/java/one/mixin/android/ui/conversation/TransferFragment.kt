@@ -169,6 +169,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             t.asset?.let {
                 swapped = !swapped
                 updateAssetUI(it)
+                updateContinue(binding.continueVa.displayedChild)
             }
         }
         binding.memoIv.setOnClickListener {
@@ -438,7 +439,17 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             binding.continueVa.displayedChild = displayedChild
         }
         val s = binding.amountEt.text
-        binding.continueVa.isEnabled = s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber()
+        binding.continueVa.isEnabled = s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber() && checkBalance()
+    }
+
+    private fun checkBalance(): Boolean {
+        val asset = currentAsset ?: return true
+        if (swapped) {
+            val price = asset.priceUsd
+            return BigDecimal(asset.balance) * BigDecimal(price) >= BigDecimal(binding.amountEt.text.toString())
+        } else {
+            return BigDecimal(asset.balance) >= BigDecimal(binding.amountEt.text.toString())
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -486,7 +497,11 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             operateKeyboard(true)
         }
         updateAssetAutoComplete(asset)
+        currentAsset = asset
+        updateContinue(binding.continueVa.displayedChild)
     }
+
+    private var currentAsset: TokenItem? = null
 
     private val autoCompleteAdapter by lazy {
         ArrayAdapter(
@@ -806,8 +821,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 binding.amountEt.clearCharacterStyle()
                 checkInputForbidden(s)
                 if (s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber()) {
-                    binding.continueTv.isEnabled = true
-                    binding.continueVa.isEnabled = binding.continueVa.displayedChild == OldTransferFragment.POST_TEXT
+                    binding.continueTv.isEnabled = s.toString().checkNumber() && checkBalance()
+                    binding.continueVa.isEnabled = binding.continueVa.displayedChild == OldTransferFragment.POST_TEXT && binding.continueTv.isEnabled
                     binding.continueTv.textColor = requireContext().getColor(R.color.white)
                     if (binding.amountRl.isVisible && t.asset != null) {
                         binding.amountEt.hint = ""

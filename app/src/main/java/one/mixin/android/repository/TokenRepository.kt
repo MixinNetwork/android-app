@@ -820,4 +820,6 @@ class TokenRepository
             state,
             asset,
         )
-    }
+
+    suspend fun findTokensExtra(asset: String) = tokensExtraDao.findByAssetId(asset)
+}

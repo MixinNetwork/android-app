@@ -332,7 +332,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } else if (url.startsWith(Scheme.MIXIN_PAY)) {
             if (checkHasPin()) return
             lifecycleScope.launch(errorHandler) {
-                if (!newSchemeParser.parse(url, from)) {
+                val r = newSchemeParser.parse(url, from)
+                if (r == NewSchemeParser.INSUFFICIENT_BALANCE) {
+                    showError(R.string.insufficient_balance)
+                } else if (r != NewSchemeParser.SUCCESS) {
                     showError(R.string.Invalid_payment_link)
                 } else {
                     dismiss()
@@ -349,7 +352,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         showError(R.string.Invalid_payment_link)
                     }
                 } else if (segments.size == (if (url.startsWith(Scheme.HTTPS_PAY, true)) 2 else 1)) {
-                    if (!newSchemeParser.parse(url, from)) {
+                    val r = newSchemeParser.parse(url, from)
+                    if (r == NewSchemeParser.INSUFFICIENT_BALANCE) {
+                        showError(R.string.insufficient_balance)
+                    } else if (r != NewSchemeParser.SUCCESS) {
                         showError(R.string.Invalid_payment_link)
                     } else {
                         dismiss()

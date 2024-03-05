@@ -44,14 +44,19 @@ enum class PayType {
 class NewSchemeParser(
     private val bottomSheet: LinkBottomSheetDialogFragment,
 ) {
+    companion object {
+        const val INSUFFICIENT_BALANCE = -1
+        const val FAILURE = 0
+        const val SUCCESS = 1
+    }
     private val linkViewModel = bottomSheet.linkViewModel
-
+    
     suspend fun parse(
         text: String,
         from: Int,
-    ): Boolean {
+    ): Int {
         val uri = text.toUri()
-        val lastPath = uri.lastPathSegment ?: return false
+        val lastPath = uri.lastPathSegment ?: return FAILURE
 
         val payType =
             if (lastPath.isUUID()) {
@@ -61,17 +66,17 @@ class NewSchemeParser(
             } else if (lastPath.startsWith(MixAddressPrefix)) {
                 PayType.MixAddress
             } else {
-                return false
+                return FAILURE
             }
         val asset = uri.getQueryParameter("asset")
         if (asset != null && !asset.isUUID()) {
-            return false
+            return FAILURE
         }
         var amount = uri.getQueryParameter("amount")
         if (amount != null) {
             val a = amount.toBigDecimalOrNull()
             if (a == null || a <= BigDecimal.ZERO) {
-                return false
+                return FAILURE
             }
             amount = a.stripTrailingZeros().toPlainString()
         }
@@ -81,7 +86,7 @@ class NewSchemeParser(
             }
         val trace = uri.getQueryParameter("trace")
         if (trace != null && !trace.isUUID()) {
-            return false
+            return FAILURE
         }
         val returnTo =
             uri.getQueryParameter("return_to")?.run {
@@ -98,19 +103,27 @@ class NewSchemeParser(
 
         val traceId = trace ?: UUID.randomUUID().toString()
         if (asset != null && amount != null) {
-            val status = getPaymentStatus(traceId) ?: return false
-            val token: TokenItem = checkToken(asset) ?: return false // TODO 404?
+            val status = getPaymentStatus(traceId) ?: return FAILURE
+            val token: TokenItem = checkToken(asset) ?: return FAILURE // TODO 404?
+
+            val tokensExtra = linkViewModel.findTokensExtra(asset)
+            if (tokensExtra == null) {
+                return INSUFFICIENT_BALANCE
+            } else if (BigDecimal(tokensExtra.balance ?: "0") < BigDecimal(amount)) {
+                return INSUFFICIENT_BALANCE
+            }
+
             if (payType == PayType.Uuid) {
-                val user = linkViewModel.refreshUser(lastPath) ?: return false
+                val user = linkViewModel.refreshUser(lastPath) ?: return FAILURE
 
                 val biometricItem = TransferBiometricItem(listOf(user), 1, traceId, token, amount, memo, status, null, returnTo)
                 checkRawTransaction(biometricItem)
             } else if (payType == PayType.MixAddress) {
-                val mixAddress = lastPath.toMixAddress() ?: return false
+                val mixAddress = lastPath.toMixAddress() ?: return FAILURE
                 if (mixAddress.uuidMembers.isNotEmpty()) {
                     val users = linkViewModel.findOrRefreshUsers(mixAddress.uuidMembers)
                     if (users.isEmpty() || users.size < mixAddress.uuidMembers.size) {
-                        return false
+                        return FAILURE
                     }
                     val biometricItem = TransferBiometricItem(users, mixAddress.threshold, traceId, token, amount, memo, status, null, returnTo)
                     checkRawTransaction(biometricItem)
@@ -118,7 +131,7 @@ class NewSchemeParser(
                     val addressTransferBiometricItem = AddressTransferBiometricItem(mixAddress.xinMembers.first().string(), traceId, token, amount, memo, status, returnTo)
                     checkRawTransaction(addressTransferBiometricItem)
                 } else {
-                    return false
+                    return FAILURE
                 }
             } else {
                 // TODO verify address?
@@ -128,25 +141,25 @@ class NewSchemeParser(
         } else {
             val token: TokenItem? =
                 if (asset != null) {
-                    checkToken(asset) ?: return false // TODO 404?
+                    checkToken(asset) ?: return FAILURE // TODO 404?
                 } else {
                     null
                 }
             val transferFragment: TransferFragment? =
                 if (payType == PayType.Uuid) {
-                    val user = linkViewModel.refreshUser(lastPath) ?: return false // TODO 404?
+                    val user = linkViewModel.refreshUser(lastPath) ?: return FAILURE // TODO 404?
                     TransferFragment.newInstance(buildTransferBiometricItem(user, token, amount ?: "", traceId, memo, returnTo))
                 } else if (payType == PayType.MixAddress) {
                     val mixAddress = lastPath.toMixAddress()
                     val members = mixAddress?.uuidMembers
                     if (!members.isNullOrEmpty()) {
                         if (members.size == 1) {
-                            val user = linkViewModel.refreshUser(members.first()) ?: return false // TODO 404?
+                            val user = linkViewModel.refreshUser(members.first()) ?: return FAILURE // TODO 404?
                             TransferFragment.newInstance(buildTransferBiometricItem(user, token, amount ?: "", traceId, memo, returnTo))
                         } else {
                             val users = linkViewModel.findOrRefreshUsers(members)
                             if (users.isEmpty() || users.size < members.size) {
-                                return false
+                                return FAILURE
                             }
                             val item = TransferBiometricItem(users, mixAddress.threshold, traceId, token, amount ?: "", memo, PaymentStatus.pending.name, null, returnTo)
                             TransferFragment.newInstance(item)
@@ -159,10 +172,10 @@ class NewSchemeParser(
                 } else {
                     TransferFragment.newInstance(buildAddressBiometricItem(lastPath, traceId, token, amount ?: "", memo, returnTo, from))
                 }
-            if (transferFragment == null) return false
+            if (transferFragment == null) return FAILURE
             transferFragment.show(bottomSheet.parentFragmentManager, TransferFragment.TAG)
         }
-        return true
+        return SUCCESS
     }
 
     suspend fun parseExternalTransferUrl(url: String) {
@@ -218,8 +231,8 @@ class NewSchemeParser(
                 bottomSheet.dismiss()
                 return
             }
-            val chain = checkToken(asset.chainId)
-            if (chain == null) {
+            val feeAsset = checkToken(result.feeAssetId!!)
+            if (feeAsset == null) {
                 bottomSheet.showError(R.string.Asset_not_found)
                 bottomSheet.dismiss()
                 return
@@ -236,7 +249,7 @@ class NewSchemeParser(
             val destination = result.destination
 
             val address = Address("", "address", asset.assetId, destination, "ExternalAddress", nowInUtc(), "0", result.fee?.toPlainString() ?: "", null, null, asset.chainId)
-            val fee = NetworkFee(chain, result.fee!!.toPlainString())
+            val fee = NetworkFee(feeAsset, result.fee!!.toPlainString())
             val withdrawBiometricItem = WithdrawBiometricItem(address, fee, null, traceId, asset, amount, result.memo, status, null)
             checkRawTransaction(withdrawBiometricItem)
         }
@@ -248,10 +261,12 @@ class NewSchemeParser(
         if (rawTransaction != null) {
             WaitingBottomSheetDialogFragment.newInstance().showNow(bottomSheet.parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
         } else {
+            if (biometricItem is TransferBiometricItem && biometricItem.users.size == 1) {
+                val pair = linkViewModel.findLatestTrace(biometricItem.users.first().userId, null, null, biometricItem.amount, biometricItem.asset?.assetId ?: "")
+                biometricItem.trace = pair.first
+            }
             checkUtxo(biometricItem) {
-                linkViewModel.viewModelScope.launch {
-                    showPreconditionBottom(biometricItem)
-                }
+                showPreconditionBottom(biometricItem)
             }
         }
     }
@@ -274,15 +289,7 @@ class NewSchemeParser(
         }
     }
 
-    private suspend fun showPreconditionBottom(biometricItem: AssetBiometricItem) {
-        if (biometricItem is TransferBiometricItem && biometricItem.users.size == 1) {
-            val pair = linkViewModel.findLatestTrace(biometricItem.users.first().userId, null, null, biometricItem.amount, biometricItem.asset?.assetId ?: "")
-            if (pair.second) {
-                bottomSheet.showError(bottomSheet.getString(R.string.check_trace_failed))
-                return
-            }
-            biometricItem.trace = pair.first
-        }
+    private fun showPreconditionBottom(biometricItem: AssetBiometricItem) {
         bottomSheet.syncUtxo()
         val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
         bottom.show(bottomSheet.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
