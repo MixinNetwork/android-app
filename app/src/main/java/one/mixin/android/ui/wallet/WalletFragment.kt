@@ -40,7 +40,6 @@ import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewWalletBottomBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.config
 import one.mixin.android.extension.defaultSharedPreferences

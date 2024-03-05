@@ -232,11 +232,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
         }
     }
 
-    override fun refreshSnapshots() {
-        // Todo check
-        walletViewModel.refreshSnapshots(asset.assetId, offset = refreshOffset)
-    }
-
     override fun onApplyClick() {
         bindLiveData()
         filtersSheet.dismiss()

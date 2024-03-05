@@ -105,11 +105,6 @@ class UserTransactionBottomSheetFragment : BaseTransactionsBottomSheetFragment<P
         }
     }
 
-    override fun refreshSnapshots() {
-        // Todo check
-        walletViewModel.refreshSnapshots(offset = refreshOffset, opponent = userId)
-    }
-
     override fun onApplyClick() {
         // Left empty
     }

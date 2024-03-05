@@ -129,10 +129,6 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         }
     }
 
-    override fun refreshSnapshots() {
-        walletViewModel.refreshSnapshots(offset = refreshOffset)
-    }
-
     override fun onApplyClick() {
         initialLoadKey = null
         bindLiveData()
