@@ -34,6 +34,7 @@ import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.profile.MySharedAppsFragment
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.bot.Bot
@@ -190,7 +191,13 @@ class ExploreFragment : BaseFragment() {
     }
 
     private val botsAdapter by lazy {
-        BotAdapter(clickAction)
+        BotAdapter { app ->
+            lifecycleScope.launch {
+                botManagerViewModel.findUserByAppId(app.appId)?.let { user ->
+                    showUserBottom(parentFragmentManager, user)
+                }
+            }
+        }
     }
 
     private val clickAction: (BotInterface) -> Unit = { app ->

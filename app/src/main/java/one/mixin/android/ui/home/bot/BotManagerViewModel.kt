@@ -16,6 +16,8 @@ class BotManagerViewModel
 
         suspend fun findAppByAppId(appId: String) = userRepository.findAppById(appId)
 
+        suspend fun findUserByAppId(appId: String) = userRepository.findUserByAppId(appId)
+
         suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
 
         suspend fun getFavoriteAppsByUserId(userId: String) =
