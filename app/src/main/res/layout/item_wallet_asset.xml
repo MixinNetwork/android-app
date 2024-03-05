@@ -40,8 +40,8 @@
 
         <one.mixin.android.widget.BadgeCircleImageView
             android:id="@+id/avatar"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:layout_marginTop="22dp"
             android:layout_marginStart="20dp"/>
 
@@ -51,8 +51,7 @@
             android:layout_height="wrap_content"
             android:maxWidth="200dp"
             android:fontFamily="@font/mixin_font"
-            android:textSize="19sp"
-            android:textFontWeight="700"
+            android:textSize="22sp"
             android:layout_alignTop="@+id/avatar"
             android:layout_marginEnd="2dp"
             android:layout_marginStart="@dimen/margin16"
@@ -70,9 +69,10 @@
             android:maxWidth="200dp"
             android:layout_toEndOf="@+id/balance"
             android:layout_alignTop="@id/balance"
+            android:layout_alignBaseline="@+id/balance"
             android:layout_alignBottom="@id/balance"
-            android:textFontWeight="500"
             android:translationY="-1dp"
+            android:textFontWeight="500"
             android:textSize="12sp"
             android:textColor="?attr/text_primary"/>
 
