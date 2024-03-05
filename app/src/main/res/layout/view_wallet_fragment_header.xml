@@ -69,6 +69,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="20dp">
 
@@ -76,7 +77,7 @@
                 android:id="@+id/total_as_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="8dp"
                 android:fontFamily="@font/mixin_font"
                 android:textIsSelectable="true"
                 android:textColor="?attr/text_primary"
