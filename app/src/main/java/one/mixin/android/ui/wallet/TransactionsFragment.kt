@@ -124,10 +124,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
                 }
                 adapter.submitList(pagedList)
 
-                if (!refreshedSnapshots) {
-                    walletViewModel.refreshSnapshots(asset.assetId)
-                    refreshedSnapshots = true
-                }
             }
         bindLiveData()
         walletViewModel.assetItem(asset.assetId).observe(
@@ -237,6 +233,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
     }
 
     override fun refreshSnapshots() {
+        // Todo check
         walletViewModel.refreshSnapshots(asset.assetId, offset = refreshOffset)
     }
 

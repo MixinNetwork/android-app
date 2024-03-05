@@ -249,27 +249,6 @@ class WalletViewModel
             jobManager.addJobInBackground(RefreshSnapshotsJob(assetId, offset, opponent))
         }
 
-        suspend fun getSnapshots(
-            assetId: String,
-            offset: String?,
-            limit: Int,
-            opponent: String?,
-            destination: String?,
-            tag: String?,
-        ) =
-            tokenRepository.getSnapshots(
-                assetId,
-                offset,
-                limit,
-                opponent,
-                destination,
-                if (tag?.isEmpty() == true) {
-                    null
-                } else {
-                    tag
-                },
-            )
-
         suspend fun findAssetsByIds(ids: List<String>) = tokenRepository.findAssetsByIds(ids)
 
         suspend fun assetItems() = tokenRepository.assetItems()

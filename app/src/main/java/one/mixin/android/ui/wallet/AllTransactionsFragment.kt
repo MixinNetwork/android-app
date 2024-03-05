@@ -86,11 +86,6 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                     showEmpty(true)
                 }
                 adapter.submitList(pagedList)
-
-                if (!refreshedSnapshots) {
-                    walletViewModel.refreshSnapshots()
-                    refreshedSnapshots = true
-                }
             }
         bindLiveData()
 

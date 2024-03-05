@@ -37,7 +37,6 @@ abstract class BaseTransactionsFragment<C>(
     protected var initialLoadKey: Int? = null
 
     protected lateinit var dataObserver: Observer<C>
-    protected var refreshedSnapshots: Boolean = false
 
     private var _filterBinding: FragmentTransactionFiltersBinding? = null
     private val filterBinding get() = requireNotNull(_filterBinding)

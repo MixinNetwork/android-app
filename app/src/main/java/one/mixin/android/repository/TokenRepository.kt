@@ -531,16 +531,6 @@ class TokenRepository
             return result
         }
 
-        suspend fun getSnapshots(
-            assetId: String,
-            offset: String?,
-            limit: Int,
-            opponent: String?,
-            destination: String?,
-            tag: String?,
-        ) =
-            tokenService.getSnapshots(assetId, offset, limit, opponent, destination, tag)
-
         suspend fun insertTrace(trace: Trace) = traceDao.insertSuspend(trace)
 
         suspend fun suspendFindTraceById(traceId: String): Trace? =

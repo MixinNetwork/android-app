@@ -70,11 +70,6 @@ class UserTransactionBottomSheetFragment : BaseTransactionsBottomSheetFragment<P
                     showEmpty(true)
                 }
                 adapter.submitList(it)
-
-                if (!refreshedSnapshots) {
-                    walletViewModel.refreshSnapshots(opponent = userId)
-                    refreshedSnapshots = true
-                }
             }
         bindLiveData(walletViewModel.snapshotsByUserId(userId, initialLoadKey))
     }
@@ -111,6 +106,7 @@ class UserTransactionBottomSheetFragment : BaseTransactionsBottomSheetFragment<P
     }
 
     override fun refreshSnapshots() {
+        // Todo check
         walletViewModel.refreshSnapshots(offset = refreshOffset, opponent = userId)
     }
 
