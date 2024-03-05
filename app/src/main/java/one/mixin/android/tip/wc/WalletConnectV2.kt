@@ -84,13 +84,13 @@ object WalletConnectV2 : WalletConnect() {
                     Timber.d("$TAG onPairingDelete $deletedPairing")
                 }
 
-//                override fun onPairingExpired(expiredPairing: Core.Model.ExpiredPairing) {
-//                    Timber.d("$TAG onPairingExpired $expiredPairing")
-//                }
-//
-//                override fun onPairingState(pairingState: Core.Model.PairingState) {
-//                    Timber.d("$TAG onPairingState $pairingState")
-//                }
+                override fun onPairingExpired(expiredPairing: Core.Model.ExpiredPairing) {
+                    Timber.d("$TAG onPairingExpired $expiredPairing")
+                }
+
+                override fun onPairingState(pairingState: Core.Model.PairingState) {
+                    Timber.d("$TAG onPairingState $pairingState")
+                }
             }
 
         val walletDelegate =
@@ -111,13 +111,13 @@ object WalletConnectV2 : WalletConnect() {
                     RxBus.publish(WCErrorEvent(WCError(error.throwable)))
                 }
 
-//                override fun onProposalExpired(proposal: Wallet.Model.ExpiredProposal) {
-//                    Timber.d("$TAG onProposalExpired $proposal")
-//                }
-//
-//                override fun onRequestExpired(request: Wallet.Model.ExpiredRequest) {
-//                    Timber.d("$TAG onRequestExpired $request")
-//                }
+                override fun onProposalExpired(proposal: Wallet.Model.ExpiredProposal) {
+                    Timber.d("$TAG onProposalExpired")
+                }
+
+                override fun onRequestExpired(request: Wallet.Model.ExpiredRequest) {
+                    Timber.d("$TAG onRequestExpired")
+                }
 
                 override fun onSessionDelete(sessionDelete: Wallet.Model.SessionDelete) {
                     Timber.d("$TAG onSessionDelete $sessionDelete")
