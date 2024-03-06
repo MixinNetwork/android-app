@@ -8,13 +8,9 @@ import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.vo.safe.SafeSnapshot
 import org.threeten.bp.Instant
 
-class RefreshSnapshotsJob(
-    private val assetId: String? = null,
-    private val offset: String? = null,
-    private val opponent: String? = null,
-) : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork()) {
+class RefreshSnapshotsJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork()) {
     companion object {
-        private const val serialVersionUID = 1L
+        private const val serialVersionUID = 2L
         private val TIME_ZERO: String = Instant.ofEpochMilli(0).toString()
         const val GROUP = "RefreshSnapshotsJob"
     }
