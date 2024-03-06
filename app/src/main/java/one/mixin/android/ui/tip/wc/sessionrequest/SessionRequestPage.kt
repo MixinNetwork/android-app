@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
@@ -206,7 +207,7 @@ private fun Transaction(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .height(100.dp)
+                .wrapContentHeight()
                 .padding(horizontal = 20.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(MixinAppTheme.colors.backgroundWindow)

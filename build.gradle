@@ -162,7 +162,11 @@ allprojects {
             }
         }
         maven { url "https://maven.sumsub.com/repository/maven-public/" }
+
+        maven { url "https://artifacts.consensys.net/public/maven/maven/" }
+
         maven { url = uri("https://maven.fpregistry.io/releases") }
+
         maven {
             url = "https://maven.pkg.github.com/checkout/checkout-3ds-sdk-android"
             credentials {

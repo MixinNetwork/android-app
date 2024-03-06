@@ -34,6 +34,7 @@ android {
             exclude '**/*.kotlin_metadata'
             exclude 'META-INF/*.kotlin_module'
             exclude 'META-INF/*.version'
+            exclude 'META-INF/DISCLAIMER'
 
             // https://issuetracker.google.com/issues/127691101 explains bug but the solution is deprecated
             // https://issuetracker.google.com/issues/174695257
@@ -380,9 +381,9 @@ dependencies {
     implementation "com.google.accompanist:accompanist-pager-indicators:${accompanistVersion}"
 
     // wallet connect && web3j
-    implementation "org.web3j:core:4.10.1" // ⚠️ dependabot unexpected behavior update to version 5.0.0
-    implementation "org.web3j:crypto:4.10.1"
-    implementation platform("com.walletconnect:android-bom:1.13.1")
+    implementation "org.web3j:core:4.11.0" // ⚠️ dependabot unexpected behavior update to version 5.0.0
+    implementation "org.web3j:crypto:4.11.0"
+    implementation platform("com.walletconnect:android-bom:1.23.0")
     implementation "com.walletconnect:android-core"
     implementation "com.walletconnect:web3wallet"
 
