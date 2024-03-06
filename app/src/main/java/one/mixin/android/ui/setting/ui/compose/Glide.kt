@@ -22,6 +22,7 @@ import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import one.mixin.android.R
+import timber.log.Timber
 import java.io.File
 
 @Composable
@@ -90,7 +91,11 @@ fun GlideImage(
                             resource: Drawable,
                             transition: Transition<in Drawable>?,
                         ) {
-                            state.value = resource.toBitmap().asImageBitmap()
+                            try {
+                                state.value = resource.toBitmap().asImageBitmap()
+                            } catch (e: Exception) {
+                                Timber.e(e)
+                            }
                         }
 
                         override fun onLoadStarted(placeholder: Drawable?) {
