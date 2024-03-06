@@ -21,9 +21,11 @@
         android:layout_centerVertical="true"
         android:layout_toEndOf="@id/avatar"
         android:layout_toStartOf="@id/value"
+        android:breakStrategy="simple"
+        android:hyphenationFrequency="none"
         android:ellipsize="end"
         android:maxWidth="200dp"
-        android:singleLine="true"
+        android:maxLines="2"
         android:textColor="?attr/text_primary"
         android:textSize="14sp" />
 

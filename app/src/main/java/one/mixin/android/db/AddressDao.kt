@@ -24,4 +24,7 @@ interface AddressDao : BaseDao<Address> {
         addressId: String,
         assetId: String,
     ): Address?
+
+    @Query("SELECT label FROM addresses WHERE destination = :destination AND tag = :tag")
+    fun findAddressByReceiver(destination: String, tag:String): String?
 }
