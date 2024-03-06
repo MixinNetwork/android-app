@@ -54,6 +54,7 @@ import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
@@ -114,6 +115,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         jobManager.addJobInBackground(RefreshTokensJob())
+        jobManager.addJobInBackground(RefreshSnapshotsJob())
+        jobManager.addJobInBackground(SyncOutputJob())
     }
 
     override fun onCreateView(
@@ -405,6 +408,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     override fun onHiddenChanged(hidden: Boolean) {
         if (!hidden) {
             jobManager.addJobInBackground(RefreshTokensJob())
+            jobManager.addJobInBackground(RefreshSnapshotsJob())
             jobManager.addJobInBackground(SyncOutputJob())
         }
     }

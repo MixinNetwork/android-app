@@ -124,10 +124,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
                 }
                 adapter.submitList(pagedList)
 
-                if (!refreshedSnapshots) {
-                    walletViewModel.refreshSnapshots(asset.assetId)
-                    refreshedSnapshots = true
-                }
             }
         bindLiveData()
         walletViewModel.assetItem(asset.assetId).observe(
@@ -234,10 +230,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
                 f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
             }
         }
-    }
-
-    override fun refreshSnapshots() {
-        walletViewModel.refreshSnapshots(asset.assetId, offset = refreshOffset)
     }
 
     override fun onApplyClick() {
