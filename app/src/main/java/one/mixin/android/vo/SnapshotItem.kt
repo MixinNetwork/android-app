@@ -141,6 +141,15 @@ data class SnapshotItem(
         } else {
             SafeSnapshotType.snapshot
         }
+
+    fun hasTransactionDetails(): Boolean {
+        if (type == SafeSnapshotType.withdrawal.name) {
+            return withdrawal?.receiver.isNullOrBlank() || withdrawal?.withdrawalHash.isNullOrBlank()
+        } else if (type == SafeSnapshotType.deposit.name) {
+            return deposit?.sender.isNullOrBlank()
+        }
+        return true
+    }
 }
 
 @Parcelize

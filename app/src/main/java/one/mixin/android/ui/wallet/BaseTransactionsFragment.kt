@@ -9,12 +9,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.uber.autodispose.autoDispose
-import io.reactivex.android.schedulers.AndroidSchedulers
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentTransactionFiltersBinding
-import one.mixin.android.event.RefreshSnapshotEvent
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.widget.BottomSheet
@@ -29,15 +25,10 @@ abstract class BaseTransactionsFragment<C>(
 
     protected val walletViewModel by viewModels<WalletViewModel>()
 
-    protected var refreshPosition = 0
-    protected var refreshOffset: String? = null
-    protected var lastRefreshOffset: String? = null
-
     private var transactionsRv: RecyclerView? = null
     protected var initialLoadKey: Int? = null
 
     protected lateinit var dataObserver: Observer<C>
-    protected var refreshedSnapshots: Boolean = false
 
     private var _filterBinding: FragmentTransactionFiltersBinding? = null
     private val filterBinding get() = requireNotNull(_filterBinding)
@@ -68,19 +59,8 @@ abstract class BaseTransactionsFragment<C>(
     protected var currentType = R.id.filters_radio_all
     protected var currentOrder = R.id.sort_time
 
-    abstract fun refreshSnapshots()
 
     abstract fun onApplyClick()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        RxBus.listen(RefreshSnapshotEvent::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(destroyScope)
-            .subscribe { event ->
-                refreshOffset = event.lastCreatedAt
-            }
-    }
 
     override fun onViewCreated(
         view: View,
@@ -90,22 +70,6 @@ abstract class BaseTransactionsFragment<C>(
         transactionsRv = view.findViewById(R.id.transactions_rv)
         val transactionLayoutManager = LinearLayoutManager(requireContext())
         transactionsRv?.layoutManager = transactionLayoutManager
-        transactionsRv?.addOnScrollListener(
-            object : RecyclerView.OnScrollListener() {
-                override fun onScrolled(
-                    recyclerView: RecyclerView,
-                    dx: Int,
-                    dy: Int,
-                ) {
-                    val lastPos = transactionLayoutManager.findLastVisibleItemPosition()
-                    if (lastPos >= refreshPosition + LIMIT - 1 && lastRefreshOffset != refreshOffset) {
-                        refreshPosition += LIMIT - 1
-                        refreshSnapshots()
-                        lastRefreshOffset = refreshOffset
-                    }
-                }
-            },
-        )
 
         _filterBinding = FragmentTransactionFiltersBinding.bind(View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transaction_filters, null))
         filterBinding.apply {
