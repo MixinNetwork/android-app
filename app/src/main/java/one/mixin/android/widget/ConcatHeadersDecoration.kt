@@ -98,12 +98,12 @@ class ConcatHeadersDecoration private constructor(
         }
     }
 
-    override fun onDraw(
+    override fun onDrawOver(
         canvas: Canvas,
         parent: RecyclerView,
         state: RecyclerView.State,
     ) {
-        super.onDraw(canvas, parent, state)
+        super.onDrawOver(canvas, parent, state)
 
         val childCount = parent.childCount
         if (childCount <= 0 || mAdapter.itemCount <= 0) {
@@ -116,21 +116,15 @@ class ConcatHeadersDecoration private constructor(
             if (position < headerCount) {
                 continue
             }
-            val headerPos = position - headerCount
-            val hasStickyHeader =
-                mHeaderPositionCalculator.hasStickyHeader(
-                    itemView,
-                    mOrientationProvider.getOrientation(parent),
-                    headerPos,
-                )
-            if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(headerPos, mOrientationProvider.isReverseLayout(parent))) {
-                val header = mHeaderProvider.getHeader(parent, headerPos)
-                var headerOffset: Rect? = mHeaderRects.get(headerPos)
+            val headerPosition = position - headerCount
+            val hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(itemView, mOrientationProvider.getOrientation(parent), position)
+            if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(headerPosition, mOrientationProvider.isReverseLayout(parent))) {
+                val header = mHeaderProvider.getHeader(parent, headerPosition)
+                var headerOffset = mHeaderRects[headerPosition]
                 if (headerOffset == null) {
                     headerOffset = Rect()
-                    mHeaderRects.put(headerPos, headerOffset)
+                    mHeaderRects.put(headerPosition, headerOffset)
                 }
-
                 mHeaderPositionCalculator.initHeaderBounds(headerOffset, parent, header, itemView, hasStickyHeader)
                 mRenderer.drawHeader(parent, canvas, header, headerOffset)
             }
