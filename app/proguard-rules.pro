@@ -88,3 +88,5 @@
 
 -keep public class com.walletconnect.android.** { *; }
 -keep public class com.walletconnect.web3.** { *; }
+
+-dontwarn groovy.lang.GroovyShell
