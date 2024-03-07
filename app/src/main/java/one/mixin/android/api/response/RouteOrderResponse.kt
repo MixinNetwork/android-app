@@ -21,6 +21,8 @@ class RouteOrderResponse(
     val session: Session,
     @SerializedName("state")
     val state: String,
+    @SerializedName("status")
+    val status: String,
     @SerializedName("reason")
     val reason: String
 )
