@@ -106,7 +106,7 @@ buildscript {
         ext.web3jVersion = '4.8.7-android'
 
         ext.sumsubVersion = '1.29.0'
-        ext.checkoutFramesVersion = '4.2.0'
+        ext.checkoutFramesVersion = '4.2.1'
         ext.checkoutSecureVersion = '3.2.1'
         ext.checkoutRiskVersion = '1.0.3'
 
