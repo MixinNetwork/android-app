@@ -218,7 +218,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 val tickerResponse =
                     walletViewModel.ticker(
                         RouteTickerRequest(
-                            0,
                             currency,
                             assetId,
                         ),

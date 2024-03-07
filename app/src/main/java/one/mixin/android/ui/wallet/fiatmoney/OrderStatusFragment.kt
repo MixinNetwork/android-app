@@ -36,16 +36,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
-import one.mixin.android.Constants.RouteConfig.CRYPTOGRAM_3DS
 import one.mixin.android.Constants.RouteConfig.ENVIRONMENT_3DS
-import one.mixin.android.Constants.RouteConfig.PAN_ONLY
 import one.mixin.android.Constants.RouteConfig.RISK_ENVIRONMENT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.api.request.RouteSessionRequest
-import one.mixin.android.api.request.RouteTokenRequest
+import one.mixin.android.api.request.OrderRequest
 import one.mixin.android.api.response.RoutePaymentStatus
-import one.mixin.android.api.response.RouteSessionResponse
+import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteSessionStatus
 import one.mixin.android.databinding.FragmentOrderStatusBinding
 import one.mixin.android.extension.bold
@@ -113,7 +110,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         requireArguments().getString(ARGS_SCHEME)
     }
 
-    private var assetAmount = ""
+    private var assetAmount: String = ""
     private lateinit var expectancy: String
     private var status = OrderStatus.INITIALIZED
         private set(value) {
@@ -228,6 +225,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 false,
             )
 
+
         val scheme = requireArguments().getString(OrderConfirmFragment.ARGS_SCHEME)
         info =
             requireNotNull(
@@ -338,7 +336,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
 
     private var ckoAuthenticationStatus: String? = null
 
-    private fun init3DS(sessionResponse: RouteSessionResponse) {
+    private fun init3DS(sessionResponse: RouteOrderResponse) {
         val checkout3DS =
             Checkout3DSService(
                 MixinApplication.appContext,
@@ -350,11 +348,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
 
         val authenticationParameters =
             AuthenticationParameters(
-                sessionResponse.sessionId,
-                sessionResponse.sessionSecret,
-                sessionResponse.scheme,
+                sessionResponse.session.sessionId,
+                sessionResponse.session.sessionSecret,
+                sessionResponse.instrument.scheme,
             )
-        Timber.e("3DS-${sessionResponse.sessionId} checkout3DS authenticate")
+        Timber.e("3DS-${sessionResponse.session.sessionId} checkout3DS authenticate")
         ckoAuthenticationStatus = "PENDING"
         checkout3DS.authenticate(authenticationParameters) { result: AuthenticationResult ->
             ckoAuthenticationStatus = result.toString()
@@ -377,23 +375,23 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         checkThreeDsResult(sessionResponse)
     }
 
-    private fun checkThreeDsResult(sessionResponse: RouteSessionResponse) {
+    private fun checkThreeDsResult(sessionResponse: RouteOrderResponse) {
         lifecycleScope.launch(defaultErrorHandler) {
             while (isActive) {
                 try {
-                    val session = fiatMoneyViewModel.getSession(sessionResponse.sessionId)
+                    val session = fiatMoneyViewModel.getOrder(sessionResponse.orderId)
                     if (session.isSuccess) {
-                        if (session.data?.status == RouteSessionStatus.Approved.value) {
-                            paymentsPrecondition(sessionId = sessionResponse.sessionId, instrumentId = sessionResponse.instrumentId, null)
+                        if (session.data?.session?.status == RouteSessionStatus.Approved.value) {
+                            paymentsPrecondition(orderId = sessionResponse.orderId,sessionId = sessionResponse.session.sessionId, instrumentId = sessionResponse.instrumentId, null)
                             if (ckoAuthenticationStatus == "PENDING") {
-                                reportException(IllegalStateException("3DS no callback, cko status: $ckoAuthenticationStatus, session(${sessionResponse.sessionId}) status:${session.data?.status}"))
+                                reportException(IllegalStateException("3DS no callback, cko status: $ckoAuthenticationStatus, session(${sessionResponse.session.sessionId}) status:${session.data?.session?.status}"))
                             }
                             break
-                        } else if (session.data?.status != RouteSessionStatus.Pending.value && session.data?.status != RouteSessionStatus.Processing.value) {
-                            showError(session.data?.status ?: session.errorDescription)
+                        } else if (session.data?.session?.status != RouteSessionStatus.Pending.value && session.data?.session?.status != RouteSessionStatus.Processing.value) {
+                            showError(session.data?.session?.status ?: session.errorDescription)
                             return@launch
                         } else {
-                            reportException(IllegalStateException("3DS cko status: $ckoAuthenticationStatus, session(${sessionResponse.sessionId}) status:${session.data?.status}"))
+                            reportException(IllegalStateException("3DS cko status: $ckoAuthenticationStatus, session(${sessionResponse.session.sessionId}) status:${session.data?.session?.status}"))
                             delay(REFRESH_INTERVAL)
                         }
                     } else {
@@ -439,7 +437,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     private fun payWithCheckout() =
         lifecycleScope.launch(defaultErrorHandler) {
             status = OrderStatus.PROCESSING
-            createSession(scheme!!, null)
+            createOrder(scheme!!, null)
         }
 
     private fun payWithGoogle() {
@@ -473,16 +471,30 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     }
 
     private fun retry(
+        orderId: String,
         sessionId: String?,
         instrumentId: String?,
         token: String?,
         expectancyAssetAmount: String,
     ) {
-        paymentsPrecondition(sessionId, instrumentId, token, expectancyAssetAmount)
+        lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+            showError(error.message)
+        }) {
+            val response =
+                fiatMoneyViewModel.updatePrice(
+                    orderId, expectancyAssetAmount
+                )
+            if (response.isSuccess) {
+                paymentsPrecondition(orderId, sessionId, instrumentId, token, expectancyAssetAmount)
+            } else {
+                showError(response.errorDescription)
+            }
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun paymentsPrecondition(
+        orderId :String,
         sessionId: String?,
         instrumentId: String?,
         token: String?,
@@ -501,15 +513,15 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 )
             if (riskInstance == null) {
                 reportException(RiskException("Risk instance null"))
-                payments(sessionId, null, instrumentId, token, expectancyAssetAmount)
+                payments(orderId ,sessionId, null, instrumentId, token, expectancyAssetAmount)
             } else {
                 riskInstance.publishData().let {
                     if (it is PublishDataResult.Success) {
                         println("Device session ID: ${it.deviceSessionId}")
-                        payments(sessionId, it.deviceSessionId, instrumentId, token, expectancyAssetAmount)
+                        payments(orderId ,sessionId, it.deviceSessionId, instrumentId, token, expectancyAssetAmount)
                     } else {
                         reportException(RiskException("Risk failed $it"))
-                        payments(sessionId, null, instrumentId, token, expectancyAssetAmount)
+                        payments(orderId ,sessionId, null, instrumentId, token, expectancyAssetAmount)
                     }
                 }
             }
@@ -518,6 +530,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
 
     @SuppressLint("SetTextI18n")
     private fun payments(
+        orderId:String,
         sessionId: String?,
         deviceSessionId: String?,
         instrumentId: String?,
@@ -528,8 +541,9 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             status = OrderStatus.PAYING
             val response =
                 fiatMoneyViewModel.payment(
+                    orderId,
                     RoutePaymentRequest(
-                        amount,
+                        amount.toString(),
                         currency.name,
                         asset.assetId,
                         assetAmount = expectancyAssetAmount ?: expectancy,
@@ -541,17 +555,17 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     ),
                 )
             if (response.isSuccess) {
-                if (response.data?.status == RoutePaymentStatus.Captured.name) {
+                if (response.data?.session?.status == RoutePaymentStatus.Captured.name) {
                     assetAmount = response.data!!.assetAmount
                     status = OrderStatus.SUCCESS
-                } else if (response.data?.status == RoutePaymentStatus.Declined.name) {
+                } else if (response.data?.session?.status == RoutePaymentStatus.Declined.name) {
                     showError(getString(R.string.buy_declined_description))
                 } else {
-                    val paymentId = response.data?.paymentId
-                    if (paymentId == null) {
+                    val oId = response.data?.orderId
+                    if (oId == null) {
                         showError(response.errorDescription)
                     } else {
-                        getPaymentStatus(paymentId)
+                        getOrderPaymentStatus(oId)
                     }
                 }
             } else {
@@ -567,7 +581,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                             ?: throw IllegalArgumentException(getString(R.string.Data_error))
                     this@OrderStatusFragment.binding.priceTv.text = "1 ${asset.symbol} = $assetPrice ${currency.name}"
                     PriceExpiredBottomSheetDialogFragment.newInstance(
-                        amount,
+                        amount.toString(),
                         currency.name,
                         asset,
                         info.purchaseTotal,
@@ -575,7 +589,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         assetPrice,
                     ).apply {
                         continueAction = { assetAmount ->
-                            this@OrderStatusFragment.retry(sessionId, instrumentId, token, assetAmount)
+                            this@OrderStatusFragment.retry(orderId,sessionId, instrumentId, token, assetAmount)
                         }
                         cancelAction = {
                             requireActivity().finish()
@@ -592,15 +606,15 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
             }
         }
 
-    private suspend fun getPaymentStatus(paymentId: String) {
+    private suspend fun getOrderPaymentStatus(orderId: String) {
         lifecycleScope.launch(defaultErrorHandler) {
             while (isActive) {
-                val response = fiatMoneyViewModel.payment(paymentId)
-                if (response.data?.status == RoutePaymentStatus.Captured.name) {
+                val response = fiatMoneyViewModel.payment(orderId)
+                if (response.data?.state == RoutePaymentStatus.Captured.name) {
                     assetAmount = response.data!!.assetAmount
                     status = OrderStatus.SUCCESS
                     break
-                } else if (response.data?.status == RoutePaymentStatus.Declined.name) {
+                } else if (response.data?.state == RoutePaymentStatus.Declined.name) {
                     showError(response.data?.reason)
                 } else if (response.isSuccess) {
                     delay(REFRESH_INTERVAL)
@@ -622,28 +636,17 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         }
 
     private suspend fun createToken(tokenJson: String) {
-        val tokenResponse = fiatMoneyViewModel.token(RouteTokenRequest(tokenJson))
-        if (tokenResponse.isSuccess && tokenResponse.data != null) {
-            val tokenData = requireNotNull(tokenResponse.data)
-            if (tokenData.tokenFormat.equals(PAN_ONLY, true)) {
-                createSession(tokenData.scheme, tokenData.token)
-            } else if (tokenData.tokenFormat.equals(CRYPTOGRAM_3DS, true)) {
-                paymentsPrecondition(null, null, tokenData.token, expectancy)
-            } else {
-                showError(R.string.Unsupported_payment_method)
-            }
-        } else {
-            ErrorHandler.handleMixinError(tokenResponse.errorCode, tokenResponse.errorDescription)
-            showError(tokenResponse.errorDescription)
-        }
+        createOrder(scheme, tokenJson, "googlepay")
     }
 
-    private suspend fun createSession(
-        scheme: String,
+    private suspend fun createOrder(
+        scheme: String?,
         token: String? = null,
+        type:String?=null,
     ) {
-        val sessionResponse = fiatMoneyViewModel.createSession(RouteSessionRequest(token, currency.name, scheme.lowercase(), asset.assetId, amount, instrumentId))
+        val sessionResponse = fiatMoneyViewModel.createOrder(OrderRequest(currency.name, scheme?.lowercase(), asset.assetId, amount.toString(), expectancy, instrumentId, token,type))
         if (sessionResponse.isSuccess && sessionResponse.data != null) {
+            // todo CRYPTOGRAM_3DS
             val session = requireNotNull(sessionResponse.data)
             init3DS(session)
         } else {

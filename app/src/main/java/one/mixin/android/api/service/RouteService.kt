@@ -2,12 +2,12 @@ package one.mixin.android.api.service
 
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.RouteInstrumentRequest
-import one.mixin.android.api.request.RouteSessionRequest
+import one.mixin.android.api.request.OrderRequest
+import one.mixin.android.api.request.RoutePriceRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.response.RouteCreateTokenResponse
-import one.mixin.android.api.response.RoutePaymentResponse
-import one.mixin.android.api.response.RouteSessionResponse
+import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.route.RoutePaymentRequest
@@ -22,23 +22,32 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface RouteService {
-    @POST("checkout/payments")
-    suspend fun payment(
-        @Body request: RoutePaymentRequest,
-    ): MixinResponse<RoutePaymentResponse>
-
-    @GET("checkout/payments/{id}")
-    suspend fun payment(
+    @POST("orders/{id}/payment")
+    suspend fun order(
         @Path("id") id: String,
-    ): MixinResponse<RoutePaymentResponse>
+        @Body request: RoutePaymentRequest,
+    ): MixinResponse<RouteOrderResponse>
 
-    @GET("checkout/payments")
-    suspend fun payments(): MixinResponse<List<RoutePaymentResponse>>
+    @GET("orders/{id}")
+    suspend fun order(
+        @Path("id") id: String,
+    ): MixinResponse<RouteOrderResponse>
 
-    @POST("checkout/sessions")
-    suspend fun createSession(
-        @Body session: RouteSessionRequest,
-    ): MixinResponse<RouteSessionResponse>
+    @GET("orders")
+    suspend fun payments(): MixinResponse<List<RouteOrderResponse>>
+
+    @POST("orders")
+    suspend fun createOrder(
+        @Body orderRequest: OrderRequest,
+    ): MixinResponse<RouteOrderResponse>
+
+    @GET("orders/{id}")
+    suspend fun getOrder(
+        @Path("id") id: String,
+    ): MixinResponse<RouteOrderResponse>
+
+    @POST("orders/{id}/price")
+    suspend fun updateOrderPrice(@Path("id") id: String, @Body request: RoutePriceRequest): MixinResponse<RouteOrderResponse>
 
     @POST("checkout/instruments")
     suspend fun createInstrument(
@@ -52,11 +61,6 @@ interface RouteService {
     suspend fun deleteInstruments(
         @Path("id") id: String,
     ): MixinResponse<Void>
-
-    @GET("checkout/sessions/{id}")
-    suspend fun getSession(
-        @Path("id") id: String,
-    ): MixinResponse<RouteSessionResponse>
 
     @POST("checkout/tokens")
     suspend fun token(

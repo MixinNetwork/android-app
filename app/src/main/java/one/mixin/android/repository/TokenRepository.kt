@@ -23,13 +23,13 @@ import one.mixin.android.api.request.DepositEntryRequest
 import one.mixin.android.api.request.GhostKeyRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.RouteInstrumentRequest
-import one.mixin.android.api.request.RouteSessionRequest
+import one.mixin.android.api.request.OrderRequest
+import one.mixin.android.api.request.RoutePriceRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
-import one.mixin.android.api.response.RoutePaymentResponse
-import one.mixin.android.api.response.RouteSessionResponse
+import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.service.AddressService
@@ -633,24 +633,23 @@ class TokenRepository
 
         suspend fun profile(): MixinResponse<ProfileResponse> = routeService.profile(VERSION_NAME)
 
-        suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> =
-            routeService.payment(traceRequest)
+        suspend fun payment(id:String, paymentRequestst: RoutePaymentRequest): MixinResponse<RouteOrderResponse> = routeService.order(id, paymentRequestst)
 
-        suspend fun payment(paymentId: String): MixinResponse<RoutePaymentResponse> =
-            routeService.payment(paymentId)
+        suspend fun payment(paymentId: String): MixinResponse<RouteOrderResponse> =
+            routeService.order(paymentId)
 
-        suspend fun payments(): MixinResponse<List<RoutePaymentResponse>> = routeService.payments()
+        suspend fun orders(): MixinResponse<List<RouteOrderResponse>> = routeService.payments()
 
-        suspend fun createSession(createSession: RouteSessionRequest): MixinResponse<RouteSessionResponse> =
-            routeService.createSession(createSession)
+        suspend fun createOrder(createSession: OrderRequest): MixinResponse<RouteOrderResponse> =
+            routeService.createOrder(createSession)
 
         suspend fun token(tokenRequest: RouteTokenRequest) = routeService.token(tokenRequest)
 
         suspend fun createInstrument(createInstrument: RouteInstrumentRequest): MixinResponse<Card> =
             routeService.createInstrument(createInstrument)
 
-        suspend fun getSession(sessionId: String): MixinResponse<RouteSessionResponse> =
-            routeService.getSession(sessionId)
+        suspend fun getOrder(orderId: String): MixinResponse<RouteOrderResponse> =
+            routeService.getOrder(orderId)
 
         fun cards(): Flow<SafeBox?> = safeBox.data
 
@@ -812,4 +811,7 @@ class TokenRepository
         )
 
     suspend fun findTokensExtra(asset: String) = tokensExtraDao.findByAssetId(asset)
+
+
+    suspend fun updatePrice(orderId: String, price: String) = routeService.updateOrderPrice(orderId, RoutePriceRequest(price))
 }

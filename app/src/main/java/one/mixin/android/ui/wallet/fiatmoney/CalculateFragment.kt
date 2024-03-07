@@ -127,7 +127,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         showLoading()
         requestRouteAPI(
             invokeNetwork = {
-                fiatMoneyViewModel.ticker(RouteTickerRequest(0, currency.name, asset.assetId))
+                fiatMoneyViewModel.ticker(RouteTickerRequest(currency.name, asset.assetId))
             },
             defaultExceptionHandle = {
                 ErrorHandler.handleError(it)
@@ -284,12 +284,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         val assetPrice = fiatMoneyViewModel.calculateState?.assetPrice ?: 1f
                         val amount =
                             if (fiatMoneyViewModel.isReverse) {
-                                AmountUtil.toAmount(
-                                    getPayAmount(value.toFloat(), assetPrice, feePercent),
-                                    fiatMoneyViewModel.currency!!.name,
-                                )
+                                getPayAmount(value.toFloat(), assetPrice, feePercent)
                             } else {
-                                AmountUtil.toAmount(value, fiatMoneyViewModel.currency!!.name)
+                                value
                             }
                         if (amount == null) {
                             toast("number error")
@@ -308,7 +305,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                                 ARGS_CURRENCY,
                                                 fiatMoneyViewModel.currency,
                                             )
-                                            putLong(ARGS_AMOUNT, amount)
+                                            //Todo
+                                            putLong(ARGS_AMOUNT, amount.toLongOrNull()?:0L)
                                         },
                                     )
                                 } catch (e: Exception) {
@@ -731,7 +729,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 val tickerResponse =
                     fiatMoneyViewModel.ticker(
                         RouteTickerRequest(
-                            0,
                             currency,
                             assetId,
                         ),

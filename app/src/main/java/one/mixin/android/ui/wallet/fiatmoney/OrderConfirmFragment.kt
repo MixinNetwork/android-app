@@ -240,7 +240,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
                 if (time == 10) {
                     val response =
                         try {
-                            fiatMoneyViewModel.ticker(RouteTickerRequest(amount, currency.name, asset.assetId))
+                            fiatMoneyViewModel.ticker(RouteTickerRequest(currency.name, asset.assetId, amount.toString()))
                         } catch (e: Exception) {
                             Timber.e(e)
                             continue
