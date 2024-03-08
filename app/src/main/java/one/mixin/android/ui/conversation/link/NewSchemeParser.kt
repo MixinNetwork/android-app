@@ -2,8 +2,6 @@ package one.mixin.android.ui.conversation.link
 
 import android.net.Uri
 import androidx.core.net.toUri
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.PaymentStatus
@@ -49,8 +47,9 @@ class NewSchemeParser(
         const val FAILURE = 0
         const val SUCCESS = 1
     }
+
     private val linkViewModel = bottomSheet.linkViewModel
-    
+
     suspend fun parse(
         text: String,
         from: Int,
@@ -214,6 +213,22 @@ class NewSchemeParser(
                         return@handleMixinResponse it.data
                     },
                 )
+            }, { assetId, amount, feeAssetId, feeAmount ->
+                if (feeAssetId != null && feeAmount != null) {
+                    val tokensExtra = linkViewModel.findTokensExtra(feeAssetId)
+                    if (tokensExtra == null) {
+                        errorMsg = bottomSheet.getString(R.string.insufficient_balance)
+                    } else if (BigDecimal(tokensExtra.balance ?: "0") < feeAmount) {
+                        errorMsg = bottomSheet.getString(R.string.insufficient_balance)
+                    }
+                }
+
+                val tokensExtra = linkViewModel.findTokensExtra(assetId)
+                if (tokensExtra == null) {
+                    errorMsg = bottomSheet.getString(R.string.insufficient_balance)
+                } else if (BigDecimal(tokensExtra.balance ?: "0") < amount) {
+                    errorMsg = bottomSheet.getString(R.string.insufficient_balance)
+                }
             })
 
         errorMsg?.let {

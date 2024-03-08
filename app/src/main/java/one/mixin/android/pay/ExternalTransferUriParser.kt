@@ -8,6 +8,7 @@ import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toUri
 import one.mixin.android.pay.erc831.isEthereumURLString
 import one.mixin.android.vo.AssetPrecision
+import java.math.BigDecimal
 
 suspend fun parseExternalTransferUri(
     url: String,
@@ -15,9 +16,10 @@ suspend fun parseExternalTransferUri(
     getFee: suspend (String, String) -> List<WithdrawalResponse>?,
     findAssetIdByAssetKey: suspend (String) -> String?,
     getAssetPrecisionById: suspend (String) -> AssetPrecision?,
+    balanceCheck: suspend (String ,BigDecimal, String?, BigDecimal?) -> Unit,
 ): ExternalTransfer? {
     if (url.isEthereumURLString()) {
-        return parseEthereum(url, validateAddress, getFee, findAssetIdByAssetKey, getAssetPrecisionById)
+        return parseEthereum(url, validateAddress, getFee, findAssetIdByAssetKey, getAssetPrecisionById, balanceCheck)
     }
 
     val uri = url.addSlashesIfNeeded().toUri()
@@ -51,6 +53,13 @@ suspend fun parseExternalTransferUri(
     if (amount != amountBD.toPlainString()) {
         return null
     }
+    if (fee.assetId == assetId) {
+        val totalAmount = amountBD + (fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+        balanceCheck(assetId, totalAmount, null, null)
+    } else {
+        balanceCheck(assetId, amountBD, fee.assetId, fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+    }
+
     val memo =
         uri.getQueryParameter("memo")?.run {
             Uri.decode(this)
