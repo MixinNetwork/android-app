@@ -20,6 +20,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ResponseError
+import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.db.property.PropertyHelper
@@ -33,6 +34,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
@@ -427,6 +429,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 }
                             "${getString(R.string.error_connection_error)} $extra"
                         }
+                        is ServerErrorException -> getString(R.string.error_server_5xx_code, throwable.code)
 
                         else -> getString(R.string.error_unknown_with_message, throwable.message)
                     }
