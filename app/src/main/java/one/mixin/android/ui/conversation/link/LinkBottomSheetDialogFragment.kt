@@ -333,12 +333,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             if (checkHasPin()) return
             lifecycleScope.launch(errorHandler) {
                 val r = newSchemeParser.parse(url, from)
-                if (r == NewSchemeParser.INSUFFICIENT_BALANCE) {
-                    showError(R.string.insufficient_balance)
-                } else if (r != NewSchemeParser.SUCCESS) {
-                    showError(R.string.Invalid_payment_link)
-                } else {
+                if (r.isSuccess) {
                     dismiss()
+                } else {
+                    val e = r.exceptionOrNull()
+                    if (e is ParserError && e.symbol != null) {
+                        showError("${e.symbol} ${getString(R.string.insufficient_balance)}")
+                    } else {
+                        showError(getString(R.string.Invalid_payment_link))
+                    }
                 }
             }
         } else if (url.startsWith(Scheme.HTTPS_PAY, true) || url.startsWith(Scheme.PAY, true)) {
@@ -353,12 +356,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 } else if (segments.size == (if (url.startsWith(Scheme.HTTPS_PAY, true)) 2 else 1)) {
                     val r = newSchemeParser.parse(url, from)
-                    if (r == NewSchemeParser.INSUFFICIENT_BALANCE) {
-                        showError(R.string.insufficient_balance)
-                    } else if (r != NewSchemeParser.SUCCESS) {
-                        showError(R.string.Invalid_payment_link)
-                    } else {
+                    if (r.isSuccess) {
                         dismiss()
+                    } else {
+                        val e = r.exceptionOrNull()
+                        if (e is ParserError && e.symbol != null) {
+                            showError("${e.symbol} ${getString(R.string.insufficient_balance)}")
+                        } else {
+                            showError(getString(R.string.Invalid_payment_link))
+                        }
                     }
                 } else {
                     dismiss()
