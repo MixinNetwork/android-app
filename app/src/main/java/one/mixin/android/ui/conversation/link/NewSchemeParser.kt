@@ -70,6 +70,7 @@ class NewSchemeParser(
             } else {
                 return Result.failure(ParserError(FAILURE))
             }
+        bottomSheet.syncUtxo()
         val asset = uri.getQueryParameter("asset")
         if (asset != null && !asset.isUUID()) {
             return Result.failure(ParserError(FAILURE))
@@ -293,7 +294,6 @@ class NewSchemeParser(
     }
 
     private fun showPreconditionBottom(biometricItem: AssetBiometricItem) {
-        bottomSheet.syncUtxo()
         val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
         bottom.show(bottomSheet.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
         bottomSheet.dismiss()
