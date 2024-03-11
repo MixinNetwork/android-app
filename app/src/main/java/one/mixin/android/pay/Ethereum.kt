@@ -18,6 +18,7 @@ internal suspend fun parseEthereum(
     getFee: suspend (String, String) -> List<WithdrawalResponse>?,
     findAssetIdByAssetKey: suspend (String) -> String?,
     getAssetPrecisionById: suspend (String) -> AssetPrecision?,
+    balanceCheck: suspend (String ,BigDecimal, String?, BigDecimal?) -> Unit,
 ): ExternalTransfer? {
     val erc681 = EthereumURI(url).toERC681()
     if (!erc681.valid) return null
@@ -95,6 +96,12 @@ internal suspend fun parseEthereum(
     }
     val feeResponse = getFee(assetId, destination) ?: return null
     val fee = feeResponse.firstOrNull() ?: return null
+    if (fee.assetId == assetId) {
+        val totalAmount = am.toBigDecimal() + (fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+        balanceCheck(assetId, totalAmount, null, null)
+    } else {
+        balanceCheck(assetId, am.toBigDecimal(), fee.assetId, fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+    }
 
     return ExternalTransfer(addressResponse.destination, am, assetId, fee.amount?.toBigDecimalOrNull(), fee.assetId)
 }
