@@ -6,7 +6,6 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.Context
 import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
@@ -30,6 +29,7 @@ import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.activity.ComponentDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnPreDraw
@@ -57,7 +57,7 @@ class BottomSheet(
     context: Context,
     private val focusable: Boolean,
     private val softInputResize: Boolean,
-) : Dialog(context, R.style.TransparentDialog) {
+) : ComponentDialog(context, R.style.TransparentDialog) {
     private var startAnimationRunnable: Runnable? = null
     private var curSheetAnimation: AnimatorSet? = null
     private var isDismissed = false

@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.transfer
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -103,7 +104,9 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
+        dialog.setCanceledOnTouchOutside(false)
         (dialog as BottomSheet).apply {
+            onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
             setCustomView(contentView)
             setCustomViewHeight(requireActivity().visibleDisplayHeight())
         }
@@ -181,6 +184,18 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             requireActivity().hideKeyboard()
         }
     }
+
+    private val onBackPressedCallback =
+        object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (transferViewModel.status.value == TransferStatus.IN_PROGRESS) {
+                    // do noting
+                } else {
+                    isEnabled = false
+                    dismiss()
+                }
+            }
+        }
 
     private var canRetry = true
 
