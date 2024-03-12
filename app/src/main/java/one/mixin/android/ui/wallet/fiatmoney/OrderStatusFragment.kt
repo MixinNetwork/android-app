@@ -41,7 +41,7 @@ import one.mixin.android.Constants.RouteConfig.RISK_ENVIRONMENT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.OrderRequest
-import one.mixin.android.api.response.RoutePaymentStatus
+import one.mixin.android.api.response.OrderState
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteSessionStatus
 import one.mixin.android.databinding.FragmentOrderStatusBinding
@@ -555,10 +555,10 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     ),
                 )
             if (response.isSuccess) {
-                if (response.data?.session?.status == RoutePaymentStatus.Captured.name) {
+                if (response.data?.session?.status == OrderState.Pending.value) {
                     assetAmount = response.data!!.assetAmount
                     status = OrderStatus.SUCCESS
-                } else if (response.data?.session?.status == RoutePaymentStatus.Declined.name) {
+                } else if (response.data?.session?.status == OrderState.Declined.value) {
                     showError(getString(R.string.buy_declined_description))
                 } else {
                     val oId = response.data?.orderId
@@ -610,11 +610,11 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         lifecycleScope.launch(defaultErrorHandler) {
             while (isActive) {
                 val response = fiatMoneyViewModel.payment(orderId)
-                if (response.data?.state == RoutePaymentStatus.Captured.name) {
+                if (response.data?.state == OrderState.Pending.value) {
                     assetAmount = response.data!!.assetAmount
                     status = OrderStatus.SUCCESS
                     break
-                } else if (response.data?.state == RoutePaymentStatus.Declined.name) {
+                } else if (response.data?.state == OrderState.Declined.value) {
                     showError(response.data?.reason)
                 } else if (response.isSuccess) {
                     delay(REFRESH_INTERVAL)
