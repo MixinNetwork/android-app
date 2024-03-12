@@ -10,6 +10,7 @@ private val chainNetworks by lazy {
         "1949e683-6a08-49e2-b087-d6b72398588f" to "BEP-20",
         "6cfe566e-4aad-470b-8c9a-2fd35b49c68d" to "EOS",
         "b7938396-3f94-4e0a-9179-d3440718156f" to "Polygon",
+        "64692c23-8971-4cf4-84a7-4dd1271dd887" to "Solana",
     )
 }
 
