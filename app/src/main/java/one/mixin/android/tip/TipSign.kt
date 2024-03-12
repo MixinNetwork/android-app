@@ -108,8 +108,7 @@ fun tipPrivToPrivateKey(
     priv: ByteArray,
     chainId: String = Constants.ChainId.ETHEREUM_CHAIN_ID,
 ): ByteArray {
-    val seed = priv.sha3Sum256()
-    val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed)
+    val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
     val bip44KeyPair =
         when (chainId) {
             Constants.ChainId.BITCOIN_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Bitcoin)

@@ -46,7 +46,8 @@ class WalletConnectBottomSheetViewModel
             pin: String,
         ): ByteArray {
             val result = tip.getOrRecoverTipPriv(context, pin)
-            return tipPrivToPrivateKey(result.getOrThrow())
+            val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(context), pin, result.getOrThrow())
+            return tipPrivToPrivateKey(spendKey)
         }
 
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
