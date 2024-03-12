@@ -19,12 +19,14 @@ class RouteOrderResponse(
     val instrumentId: String,
     @SerializedName("session")
     val session: Session,
+    @SerializedName("card_token")
+    val cardToken: CardToken,
     @SerializedName("state")
     val state: String,
     @SerializedName("status")
     val status: String,
     @SerializedName("reason")
-    val reason: String
+    val reason: String,
 )
 
 class Instrument(
@@ -41,6 +43,13 @@ class Session(
     val sessionSecret: String,
     @SerializedName("status")
     var status: String,
+)
+
+class CardToken(
+    @SerializedName("token")
+    val token: String,
+    @SerializedName("token_format")
+    val tokenFormat: String,
 )
 
 enum class RouteSessionStatus(val value: String) {

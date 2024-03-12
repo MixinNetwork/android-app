@@ -643,13 +643,16 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     private suspend fun createOrder(
         scheme: String?,
         token: String? = null,
-        type:String?=null,
+        type: String? = null,
     ) {
         val sessionResponse = fiatMoneyViewModel.createOrder(OrderRequest(currency.name, scheme?.lowercase(), asset.assetId, amount.toString(), expectancy, instrumentId, token,type))
         if (sessionResponse.isSuccess && sessionResponse.data != null) {
-            // todo CRYPTOGRAM_3DS
             val session = requireNotNull(sessionResponse.data)
-            init3DS(session)
+            if (session.cardToken.tokenFormat != "pan_only") { // CRYPTOGRAM_3DS
+                paymentsPrecondition(orderId = session.orderId, null, null, session.cardToken.token)
+            } else {
+                init3DS(session)
+            }
         } else {
             ErrorHandler.handleMixinError(sessionResponse.errorCode, sessionResponse.errorDescription)
             showError(sessionResponse.errorDescription)
