@@ -13,6 +13,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemWalletAssetBinding
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
@@ -96,13 +97,13 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<TokenIt
             val asset = data!![getPos(position)]
             binding.balance.text =
                 try {
-                    if (asset.balance.numberFormat8().toFloat() == 0f) {
+                    if (asset.balance.numberFormat().toFloat() == 0f) {
                         "0.00"
                     } else {
-                        asset.balance.numberFormat8()
+                        asset.balance.numberFormat()
                     }
                 } catch (ignored: NumberFormatException) {
-                    asset.balance.numberFormat8()
+                    asset.balance.numberFormat()
                 }
             binding.symbolTv.text = asset.symbol
             binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
