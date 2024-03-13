@@ -1440,4 +1440,7 @@
     <string name="delete_by_pin">Delete by PIN</string>
     <string name="edit_by_pin">Edit by PIN</string>
     <string name="Sender">Sender</string>
+    <string name="Ethereum">Ethereum</string>
+    <string name="Polygon">Polygon</string>
+    <string name="BSC">BSC</string>
 </resources>

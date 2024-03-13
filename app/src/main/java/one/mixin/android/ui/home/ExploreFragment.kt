@@ -123,6 +123,18 @@ class ExploreFragment : BaseFragment() {
                     R.id.radio_bot -> {
                         exploreVa.displayedChild = 1
                     }
+
+                    R.id.radio_eth -> {
+                        exploreVa.displayedChild = 2
+                    }
+
+                    R.id.radio_polygon -> {
+                        exploreVa.displayedChild = 3
+                    }
+
+                    R.id.radio_bsc -> {
+                        exploreVa.displayedChild = 4
+                    }
                 }
             }
             binding.botRv.layoutManager = LinearLayoutManager(requireContext())
