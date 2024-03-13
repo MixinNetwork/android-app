@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -33,6 +34,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.profile.MySharedAppsFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -46,6 +48,9 @@ import one.mixin.android.ui.home.bot.INTERNAL_SUPPORT_ID
 import one.mixin.android.ui.home.bot.InternalBots
 import one.mixin.android.ui.home.bot.InternalLinkDesktop
 import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
+import one.mixin.android.ui.home.web3.BSCFragment
+import one.mixin.android.ui.home.web3.EthereumFragment
+import one.mixin.android.ui.home.web3.PolygonFragment
 import one.mixin.android.ui.search.SearchBotsFragment
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -126,14 +131,17 @@ class ExploreFragment : BaseFragment() {
 
                     R.id.radio_eth -> {
                         exploreVa.displayedChild = 2
+                        navigate(ethereumFragment, EthereumFragment.TAG)
                     }
 
                     R.id.radio_polygon -> {
-                        exploreVa.displayedChild = 3
+                        exploreVa.displayedChild = 2
+                        navigate(polygonFragment, PolygonFragment.TAG)
                     }
 
                     R.id.radio_bsc -> {
-                        exploreVa.displayedChild = 4
+                        exploreVa.displayedChild = 2
+                        navigate(bscFragment, BSCFragment.TAG)
                     }
                 }
             }
@@ -156,6 +164,40 @@ class ExploreFragment : BaseFragment() {
         RxBus.listen(SessionEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {
             adapter.isDesktopLogin = Session.getExtensionSessionId() != null
         }
+    }
+
+    private fun navigate(
+        destinationFragment: Fragment,
+        tag: String
+    ) {
+
+        val tx = parentFragmentManager.beginTransaction()
+        val f = parentFragmentManager.findFragmentByTag(tag)
+        if (f == null) {
+            tx.add(R.id.fragment_container, destinationFragment, tag)
+            destinations.add(destinationFragment)
+        } else {
+            tx.show(f)
+        }
+        destinations.forEach {
+            if (it.tag != tag) {
+                tx.hide(it)
+            }
+        }
+        tx.commitAllowingStateLoss()
+    }
+
+    private val destinations = mutableListOf<Fragment>()
+    private val ethereumFragment by lazy {
+        EthereumFragment()
+    }
+
+    private val polygonFragment by lazy {
+        PolygonFragment()
+    }
+
+    private val bscFragment by lazy {
+        BSCFragment()
     }
 
     private fun loadData() {

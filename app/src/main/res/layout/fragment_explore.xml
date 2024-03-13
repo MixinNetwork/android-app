@@ -131,7 +131,8 @@
                 android:button="@null" />
 
         </RadioGroup>
-   </HorizontalScrollView>
+    </HorizontalScrollView>
+
     <ViewAnimator
         android:id="@+id/explore_va"
         android:layout_width="match_parent"
@@ -180,45 +181,10 @@
             </FrameLayout>
         </FrameLayout>
 
-        <FrameLayout
+        <one.mixin.android.widget.ContainerFrameLayout
+            android:id="@+id/fragment_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/bg_chain_gradient">
-
-            <ImageView
-                android:src="@drawable/ic_ethereum"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="16dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </FrameLayout>
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/bg_chain_gradient">
-
-            <ImageView
-                android:src="@drawable/ic_polygon"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="16dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </FrameLayout>
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/bg_chain_gradient">
-
-            <ImageView
-                android:src="@drawable/ic_bsc"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="16dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </FrameLayout>
-
+            android:layout_height="match_parent"/>
     </ViewAnimator>
 </LinearLayout>
 
