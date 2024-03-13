@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPolygonBinding
 import one.mixin.android.ui.common.BaseFragment
 
@@ -21,6 +22,7 @@ class PolygonFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentPolygonBinding.inflate(inflater, container, false)
+        binding.chainCard.setContent("Polygon Account", "Access dapps and DeFi projects.", R.drawable.ic_polygon)
         return binding.root
     }
 

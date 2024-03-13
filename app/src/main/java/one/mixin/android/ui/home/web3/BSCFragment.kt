@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBscBinding
 import one.mixin.android.ui.common.BaseFragment
 
@@ -20,6 +21,7 @@ class BSCFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentBscBinding.inflate(inflater, container, false)
+        binding.chainCard.setContent("BSC Account", "Access dapps and DeFi projects.", R.drawable.ic_polygon)
         return binding.root
     }
 

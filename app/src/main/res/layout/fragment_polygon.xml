@@ -4,17 +4,10 @@
     android:layout_height="match_parent"
     android:background="?attr/bg_white">
 
-    <FrameLayout
+    <one.mixin.android.widget.ChainCard
+        android:id="@+id/chain_card"
         android:layout_width="match_parent"
-        android:layout_height="114dp"
-        android:layout_margin="12dp"
-        android:background="@drawable/bg_chain_gradient">
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"/>
 
-        <ImageView
-            android:src="@drawable/ic_polygon"
-            android:layout_gravity="bottom|end"
-            android:layout_marginEnd="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </FrameLayout>
 </FrameLayout>
