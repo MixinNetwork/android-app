@@ -77,8 +77,6 @@ val walletConnectChainIdMap =
         Chain.Ethereum.symbol to Constants.ChainId.ETHEREUM_CHAIN_ID,
         Chain.Polygon.symbol to Constants.ChainId.Polygon,
         Chain.BinanceSmartChain.symbol to Constants.ChainId.BinanceSmartChain,
-        Chain.ArbitrumOne.symbol to Constants.ChainId.Arbitrum,
-        Chain.OPMainnet.symbol to Constants.ChainId.Optimism,
     )
 
 fun getSupportedNamespaces(address: String): Map<String, Wallet.Model.Namespace.Session> {
