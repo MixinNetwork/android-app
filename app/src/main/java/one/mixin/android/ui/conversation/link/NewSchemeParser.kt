@@ -39,7 +39,7 @@ enum class PayType {
     MixAddress,
 }
 
-class ParserError(val code: Int, val symbol: String? = null) : Exception()
+class ParserError(val code: Int, val symbol: String? = null, override val message:String? = null) : Exception()
 
 class NewSchemeParser(
     private val bottomSheet: LinkBottomSheetDialogFragment,
@@ -106,6 +106,7 @@ class NewSchemeParser(
         val traceId = trace ?: UUID.randomUUID().toString()
         if (asset != null && amount != null) {
             val status = getPaymentStatus(traceId) ?: return Result.failure(ParserError(FAILURE))
+            if (status == PaymentStatus.paid.name) return Result.failure(ParserError(FAILURE, message = bottomSheet.getString(R.string.pay_paid)))
             val token: TokenItem = checkToken(asset) ?: return Result.failure(ParserError(FAILURE)) // TODO 404?
 
             val tokensExtra = linkViewModel.findTokensExtra(asset)
