@@ -49,29 +49,28 @@
             android:id="@+id/balance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:maxWidth="200dp"
-            android:fontFamily="@font/mixin_font"
-            app:kv_spacing="0.7"
-            android:textSize="24sp"
             android:layout_alignTop="@+id/avatar"
-            android:layout_marginEnd="2dp"
-            android:layout_marginStart="@dimen/margin16"
-            android:maxLines="1"
-            android:ellipsize="end"
             android:layout_toEndOf="@id/avatar"
-            android:textColor="?attr/text_primary"/>
+            android:layout_marginStart="@dimen/margin16"
+            android:layout_marginEnd="2dp"
+            android:ellipsize="end"
+            android:fontFamily="@font/mixin_font"
+            android:maxWidth="240dp"
+            android:maxLines="1"
+            android:textColor="?attr/text_primary"
+            android:textSize="24sp" />
 
         <TextView
             android:id="@+id/symbol_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:minWidth="30dp"
-            android:maxWidth="200dp"
-            android:layout_toEndOf="@+id/balance"
             android:layout_alignBaseline="@+id/balance"
-            android:translationY="-1dp"
+            android:layout_toEndOf="@id/balance"
+            android:maxWidth="200dp"
+            android:minWidth="30dp"
+            android:textColor="?attr/text_primary"
             android:textSize="12sp"
-            android:textColor="?attr/text_primary"/>
+            android:translationY="-1dp" />
 
         <TextView
             android:id="@+id/balance_as"

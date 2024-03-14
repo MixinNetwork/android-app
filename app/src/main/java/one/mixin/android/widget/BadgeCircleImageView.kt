@@ -38,11 +38,11 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
         super.onLayout(changed, left, top, right, bottom)
         val badgeWidth = measuredWidth / 3
         if (pos == START_BOTTOM) {
-            val positionLeft = (measuredWidth * 0.075f).toInt()
-            val positionTop = (measuredWidth * 2 / 3)
+            val positionLeft = (measuredWidth * 0.011f).toInt()
+            val positionTop = (measuredWidth * 0.7f).toInt()
             binding.badge.layout(positionLeft, positionTop, positionLeft + badgeWidth, positionTop + badgeWidth)
         } else if (pos == END_BOTTOM) {
-            val position = (measuredWidth * 2 / 3)
+            val position = (measuredWidth * 0.7f).toInt()
             binding.badge.layout(position, position, position + badgeWidth, position + badgeWidth)
         }
     }
