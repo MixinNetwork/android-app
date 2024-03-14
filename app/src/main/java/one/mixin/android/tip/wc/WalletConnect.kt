@@ -28,7 +28,7 @@ abstract class WalletConnect {
     companion object {
         const val TAG = "WalletConnect"
 
-        internal const val web3jTimeout = 10L
+        internal const val web3jTimeout = 20L
 
         fun isEnabled(context: Context): Boolean =
             Session.getAccount()?.hasPin == true && !Session.getTipPub().isNullOrBlank() &&
