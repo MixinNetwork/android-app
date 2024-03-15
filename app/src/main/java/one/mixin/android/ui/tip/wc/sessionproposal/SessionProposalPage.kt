@@ -3,11 +3,12 @@ package one.mixin.android.ui.tip.wc.sessionproposal
 import GlideImage
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,17 +16,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -35,7 +40,10 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.connections.Loading
+import one.mixin.android.ui.tip.wc.sessionrequest.TransferBottom
+import timber.log.Timber
 
 @Composable
 fun SessionProposalPage(
@@ -47,7 +55,7 @@ fun SessionProposalPage(
     errorInfo: String?,
     onDismissRequest: () -> Unit,
     onBiometricClick: (() -> Unit),
-    onPinComplete: (String) -> Unit,
+    showPin: () -> Unit,
 ) {
     val viewModel = hiltViewModel<SessionProposalViewModel>()
     if (version != WalletConnect.Version.TIP && sessionProposal == null) {
@@ -59,170 +67,116 @@ fun SessionProposalPage(
         Loading()
         return
     }
-
     val chainName = sessionProposalUI.chain.name
     MixinAppTheme {
         Column(
             modifier =
-                Modifier
-                    .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                    .fillMaxWidth()
-                    .background(MixinAppTheme.colors.background),
+            Modifier
+                .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .background(MixinAppTheme.colors.background),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Image(
-                painter = painterResource(R.drawable.ic_close_black),
-                modifier =
-                    Modifier
-                        .size(52.dp, 52.dp)
-                        .align(alignment = Alignment.End)
-                        .padding(horizontal = 14.dp, vertical = 14.dp)
-                        .clip(CircleShape)
-                        .clickable(onClick = {
-                            viewModel.rejectSession(version, topic)
-                            onDismissRequest.invoke()
-                        }),
-                contentDescription = null,
-            )
-            Box(modifier = Modifier.height(12.dp))
+            Box(modifier = Modifier.height(50.dp))
+
+            when (step) {
+                WalletConnectBottomSheetDialogFragment.Step.Loading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(70.dp),
+                        color = MixinAppTheme.colors.accent,
+                    )
+                }
+                WalletConnectBottomSheetDialogFragment.Step.Error -> {
+                    Icon(
+                        modifier = Modifier.size(70.dp),
+                        painter = painterResource(id = R.drawable.ic_transfer_status_failed),
+                        contentDescription = null,
+                        tint = Color.Unspecified
+                    )
+                }
+                WalletConnectBottomSheetDialogFragment.Step.Done -> {
+                    Icon(
+                        modifier = Modifier.size(70.dp),
+                        painter = painterResource(id = R.drawable.ic_transfer_status_success),
+                        contentDescription = null,
+                        tint = Color.Unspecified
+                    )
+                }
+                else -> {
+                    GlideImage(
+                        data = sessionProposalUI.peer.icon,
+                        modifier =
+                        Modifier
+                            .size(70.dp)
+                            .clip(CircleShape),
+                        placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+                    )
+                }
+            }
+            Box(modifier = Modifier.height(16.dp))
             Text(
-                text = stringResource(id = R.string.connect_wallet),
+                text = stringResource(id = if (step == WalletConnectBottomSheetDialogFragment.Step.Done) R.string.link_succeeded  else if(step == WalletConnectBottomSheetDialogFragment.Step.Error) R.string.link_failed else R.string.connect_wallet),
                 style =
-                    TextStyle(
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.W600,
-                    ),
+                TextStyle(
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W500,
+                ),
             )
             Box(modifier = Modifier.height(8.dp))
-            DAppInfo(
-                info = "${sessionProposalUI.peer.name} (${sessionProposalUI.peer.uri})",
-                icon = sessionProposalUI.peer.icon,
+            Text(
+                text = stringResource(id = R.string.allow_dapp_access_address_and_transaction),
+                style =
+                TextStyle(
+                    color = MixinAppTheme.colors.textSubtitle,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W400,
+                ),
             )
-            Box(modifier = Modifier.height(16.dp))
-            Column(
-                modifier =
-                    Modifier
-                        .padding(horizontal = 32.dp)
-                        .fillMaxWidth()
-                        .clip(shape = RoundedCornerShape(8.dp))
-                        .background(MixinAppTheme.colors.backgroundWindow),
-            ) {
-                Scope(
-                    name = stringResource(id = R.string.read_your_public_address),
-                    desc = stringResource(id = R.string.allow_dapp_access_public_address),
-                )
-                Scope(
-                    name = stringResource(id = R.string.request_approval),
-                    desc = stringResource(id = R.string.allow_dapp_request_approval),
-                )
+            Box(modifier = Modifier.height(20.dp))
+            Box(
+                modifier = Modifier
+                    .height(10.dp)
+                    .fillMaxWidth()
+                    .background(MixinAppTheme.colors.backgroundWindow)
+            )
+            Box(modifier = Modifier.height(10.dp))
+            // todo from data
+            ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionProposalUI.peer.name, footer = sessionProposalUI.peer.name)
+            Box(modifier = Modifier.height(20.dp))
+            // todo account data
+            ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = chainName)
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+            )
+            if (step == WalletConnectBottomSheetDialogFragment.Step.Done) {
+                Row(
+                    modifier = Modifier
+                        .background(MixinAppTheme.colors.background)
+                        .padding(20.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Button(
+                        onClick = onDismissRequest,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            backgroundColor = MixinAppTheme.colors.accent,
+                        ),
+                        shape = RoundedCornerShape(20.dp),
+                        contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                    ) {
+                        Text(text = stringResource(id = R.string.Done), color = Color.White)
+                    }
+                }
+            } else if (step != WalletConnectBottomSheetDialogFragment.Step.Connecting){
+                TransferBottom(onDismissRequest, showPin)
             }
-            Network(name = chainName)
-            WCPinBoard(
-                step = step,
-                errorInfo = errorInfo,
-                allowBiometric = true,
-                signUnavailable = false,
-                onNegativeClick = { },
-                onPositiveClick = { },
-                onDoneClick = { onDismissRequest() },
-                onBiometricClick = { onBiometricClick.invoke() },
-                onPinComplete = { pin -> onPinComplete.invoke(pin) },
+            Box(
+                modifier = Modifier.height(32.dp)
             )
         }
     }
 }
 
-@Composable
-fun DAppInfo(
-    modifier: Modifier = Modifier,
-    info: String,
-    icon: String,
-) {
-    Row(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .padding(horizontal = 30.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        GlideImage(
-            data = icon,
-            modifier =
-                Modifier
-                    .size(16.dp)
-                    .clip(CircleShape),
-            placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
-        )
-        Box(modifier = Modifier.width(4.dp))
-        Text(
-            text = info,
-            color = MixinAppTheme.colors.textSubtitle,
-            fontSize = 14.sp,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-    }
-}
-
-@Composable
-private fun Scope(
-    name: String,
-    desc: String,
-) {
-    Row(
-        modifier =
-            Modifier
-                .padding(horizontal = 20.dp, vertical = 12.dp)
-                .fillMaxWidth(),
-    ) {
-        Image(
-            modifier =
-                Modifier
-                    .padding(vertical = 4.dp)
-                    .padding(end = 8.dp),
-            painter = painterResource(id = R.drawable.ic_selected_disable),
-            contentDescription = null,
-        )
-        Column(
-            modifier = Modifier.align(alignment = Alignment.Top),
-        ) {
-            Text(
-                name,
-                fontSize = 16.sp,
-                color = MixinAppTheme.colors.textPrimary,
-            )
-            Text(
-                desc,
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textSubtitle,
-            )
-        }
-    }
-}
-
-@Composable
-private fun Network(
-    name: String,
-) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 28.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(
-            text = stringResource(id = R.string.network),
-            color = MixinAppTheme.colors.textSubtitle,
-            fontSize = 14.sp,
-        )
-        Text(
-            text = name,
-            color = MixinAppTheme.colors.textSubtitle,
-            fontSize = 14.sp,
-        )
-    }
-}

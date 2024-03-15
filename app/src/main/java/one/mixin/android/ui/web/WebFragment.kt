@@ -995,6 +995,7 @@ class WebFragment : BaseFragment() {
                 name = a.name,
                 icon = a.iconUrl,
                 desc = a.description,
+                account = ""
             )
         } else {
             PeerUI(
@@ -1002,6 +1003,7 @@ class WebFragment : BaseFragment() {
                 name = webView.title ?: "",
                 icon = "",
                 desc = "",
+                account = ""
             )
         }
     }

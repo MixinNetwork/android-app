@@ -1196,8 +1196,7 @@
     <string name="dapp_description">此 Dapp 已经与你的钱包连接，并被授权查看你的钱包余额及活动，也可向你发出转账请求。</string>
     <string name="disconnect">断开连接</string>
     <string name="connect_wallet">连接钱包</string>
-    <string name="read_your_public_address">读取你的地址</string>
-    <string name="allow_dapp_access_public_address">允许 Dapp 访问你的钱包余额及活动。</string>
+    <string name="allow_dapp_access_address_and_transaction">允许应用程序查看您的帐户地址，并请求您批准进行交易。</string>
     <string name="request_approval">允许请求</string>
     <string name="allow_dapp_request_approval">允许 Dapp 向你发送请求，如转账请求等</string>
     <string name="signature_request">请求签名</string>
@@ -1421,4 +1420,6 @@
     <string name="wallet_create_desc_1">以太坊账户与 Mixin 钱包资产隔离但使用同一个 PIN 进行资产管理。</string>
     <string name="wallet_create_desc_2">在以太坊账户与 Mixin 钱包之间划转资产需要支付网络矿工费。</string>
     <string name="wallet_create_desc_3">当您创建以太坊账户时，也将自动创建 Polygon、BSC 等 EVM 账户。</string>
+    <string name="link_succeeded">连接成功</string>
+    <string name="link_failed">连接失败</string>
 </resources>

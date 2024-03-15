@@ -1222,8 +1222,7 @@
     <string name="dapp_description">This dapp has connected to your wallet, it can view your wallet balance, activity and request approval for transactions.</string>
     <string name="disconnect">Disconnect</string>
     <string name="connect_wallet">Connect Wallet</string>
-    <string name="read_your_public_address">Read your public address</string>
-    <string name="allow_dapp_access_public_address">Allow dapp to access your wallet balance and activity.</string>
+    <string name="allow_dapp_access_address_and_transaction">Allow the application to view your account address and ask you to approve the transaction.</string>
     <string name="request_approval">Request approval</string>
     <string name="allow_dapp_request_approval">allow dapp to ask for your approval to make a transaction.</string>
     <string name="signature_request">Signature Request</string>
@@ -1456,4 +1455,6 @@
     <string name="wallet_create_desc_1">Ethereum account is isolated from Mixin Wallet assets but uses the same PIN for asset management.</string>
     <string name="wallet_create_desc_2">The transfer of assets between Ethereum account and Mixin wallet requires the payment of online miners\' fees.</string>
     <string name="wallet_create_desc_3">When you create an Ethereum account, you will also automatically create Polygon, BSC and other EVM accounts.</string>
+    <string name="link_succeeded">Connected succeeded</string>
+    <string name="link_failed">Connected failed</string>
 </resources>

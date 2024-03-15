@@ -7,8 +7,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -18,6 +20,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -51,7 +55,6 @@ import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.connections.Loading
-import one.mixin.android.ui.tip.wc.sessionproposal.DAppInfo
 import one.mixin.android.ui.tip.wc.sessionproposal.WCPinBoard
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
@@ -76,7 +79,7 @@ fun SessionRequestPage(
     onDismissRequest: () -> Unit,
     onPositiveClick: (Long?) -> Unit,
     onBiometricClick: () -> Unit,
-    onPinComplete: (String) -> Unit,
+    showPin: () -> Unit,
     onGasItemClick: (GasPriceType) -> Unit,
 ) {
     val viewModel = hiltViewModel<SessionRequestViewModel>()
@@ -94,42 +97,50 @@ fun SessionRequestPage(
 
     MixinAppTheme {
         Column(
-            modifier =
-                Modifier
-                    .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                    .fillMaxWidth()
-                    .background(MixinAppTheme.colors.background),
+            modifier = Modifier
+                .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .background(MixinAppTheme.colors.background),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Image(
-                painter = painterResource(R.drawable.ic_close_black),
-                modifier =
-                    Modifier
-                        .size(52.dp, 52.dp)
-                        .clip(CircleShape)
-                        .clickable(onClick = {
-                            viewModel.rejectRequest(version, topic)
-                            onDismissRequest.invoke()
-                        })
-                        .align(alignment = Alignment.End)
-                        .padding(horizontal = 14.dp, vertical = 14.dp),
-                contentDescription = null,
+            Box(modifier = Modifier.height(50.dp))
+            GlideImage(
+                data = sessionRequestUI.peerUI.icon,
+                modifier = Modifier
+                    .size(70.dp)
+                    .clip(CircleShape),
+                placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
             )
-            Box(modifier = Modifier.height(12.dp))
+            Text(
+                text = stringResource(id = R.string.connect_wallet),
+                style =
+                TextStyle(
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W500,
+                ),
+            )
+            Box(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(id = R.string.allow_dapp_access_address_and_transaction),
+                style =
+                TextStyle(
+                    color = MixinAppTheme.colors.textSubtitle,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W400,
+                ),
+            )
             Text(
                 text = stringResource(id = if (sessionRequestUI.data is WCEthereumSignMessage) R.string.signature_request else R.string.transaction_request),
                 style =
-                    TextStyle(
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.W600,
-                    ),
+                TextStyle(
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W600,
+                ),
             )
             Box(modifier = Modifier.height(8.dp))
-            DAppInfo(
-                info = sessionRequestUI.peerUI.name,
-                icon = sessionRequestUI.peerUI.icon,
-            )
             Box(modifier = Modifier.height(16.dp))
             when (sessionRequestUI.data) {
                 is WCEthereumSignMessage -> {
@@ -139,12 +150,12 @@ fun SessionRequestPage(
                 is WCEthereumTransaction -> {
                     Transaction(
                         balance =
-                            Convert.fromWei(
-                                Numeric.toBigInt(
-                                    sessionRequestUI.data.value ?: "0",
-                                ).toBigDecimal(),
-                                Convert.Unit.ETHER,
-                            ),
+                        Convert.fromWei(
+                            Numeric.toBigInt(
+                                sessionRequestUI.data.value ?: "0",
+                            ).toBigDecimal(),
+                            Convert.Unit.ETHER,
+                        ),
                         sessionRequestUI.chain,
                         asset,
                     )
@@ -165,24 +176,13 @@ fun SessionRequestPage(
             if (step == WalletConnectBottomSheetDialogFragment.Step.Input || step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
                 Warning(isEthSign)
             }
-            if (!isEthSign) {
-                WCPinBoard(
-                    step = step,
-                    errorInfo = errorInfo,
-                    allowBiometric = true,
-                    signUnavailable = tipGas == null && sessionRequestUI.data is WCEthereumTransaction,
-                    onNegativeClick = { onDismissRequest() },
-                    onPositiveClick = {
-                        onPositiveClick(sessionRequestUI.requestId)
-                    },
-                    onDoneClick = { onDismissRequest() },
-                    onBiometricClick = { onBiometricClick.invoke() },
-                    onPinComplete = { pin -> onPinComplete.invoke(pin) },
-                )
-            } else {
-                Box(modifier = Modifier.height(32.dp))
-            }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+            )
+            TransferBottom(onDismissRequest, showPin)
         }
+
         if (openBottomSheet && tipGas != null && asset != null) {
             ChooseGasBottomSheet(
                 tipGas,
@@ -204,14 +204,13 @@ private fun Transaction(
     asset: Token?,
 ) {
     Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(horizontal = 20.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(MixinAppTheme.colors.backgroundWindow)
-                .padding(horizontal = 16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.Start,
     ) {
         Box(modifier = Modifier.height(16.dp))
@@ -223,8 +222,8 @@ private fun Transaction(
         Box(modifier = Modifier.height(12.dp))
         Row(
             modifier =
-                Modifier
-                    .fillMaxWidth(),
+            Modifier
+                .fillMaxWidth(),
             verticalAlignment = Alignment.Bottom,
         ) {
             Text(
@@ -244,10 +243,9 @@ private fun Transaction(
             Box(modifier = Modifier.weight(1f))
             GlideImage(
                 data = asset?.iconUrl ?: "",
-                modifier =
-                    Modifier
-                        .size(32.dp)
-                        .clip(CircleShape),
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape),
                 placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
             )
         }
@@ -266,15 +264,14 @@ private fun Message(
     onPreviewMessage: (String) -> Unit,
 ) {
     Box(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .heightIn(0.dp, 128.dp)
-                .padding(horizontal = 20.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(MixinAppTheme.colors.backgroundWindow)
-                .padding(horizontal = 16.dp)
-                .clickable { onPreviewMessage(content) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(0.dp, 128.dp)
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .padding(horizontal = 16.dp)
+            .clickable { onPreviewMessage(content) },
     ) {
         Text(
             modifier = Modifier.padding(top = 12.dp),
@@ -290,11 +287,10 @@ private fun Message(
         )
         Image(
             painter = painterResource(R.drawable.ic_post),
-            modifier =
-                Modifier
-                    .size(40.dp, 40.dp)
-                    .align(Alignment.TopEnd)
-                    .padding(horizontal = 8.dp),
+            modifier = Modifier
+                .size(40.dp, 40.dp)
+                .align(Alignment.TopEnd)
+                .padding(horizontal = 8.dp),
             contentDescription = null,
         )
     }
@@ -309,62 +305,60 @@ private enum class Hint {
 @Composable
 private fun Hint(hint: Hint) {
     Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(MixinAppTheme.colors.backgroundWindow)
-                .padding(horizontal = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Image(
             painter =
-                painterResource(
-                    when (hint) {
-                        Hint.NoPreview -> R.drawable.ic_warning
-                        Hint.Cancel -> R.drawable.ic_transaction_cancel
-                        Hint.SpeedUp -> R.drawable.ic_transaction_speed
-                    },
-                ),
-            modifier =
-                Modifier
-                    .size(40.dp, 40.dp)
-                    .padding(horizontal = 8.dp),
+            painterResource(
+                when (hint) {
+                    Hint.NoPreview -> R.drawable.ic_warning
+                    Hint.Cancel -> R.drawable.ic_transaction_cancel
+                    Hint.SpeedUp -> R.drawable.ic_transaction_speed
+                },
+            ),
+            modifier = Modifier
+                .size(40.dp, 40.dp)
+                .padding(horizontal = 8.dp),
             contentDescription = null,
         )
         Box(modifier = Modifier.width(8.dp))
         Column(
             modifier =
-                Modifier
-                    .fillMaxWidth(),
+            Modifier
+                .fillMaxWidth(),
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
                 modifier = Modifier.padding(top = 16.dp),
                 text =
-                    stringResource(
-                        id =
-                            when (hint) {
-                                Hint.NoPreview -> R.string.preview_unavailable
-                                Hint.Cancel -> R.string.Cancel_transaction
-                                Hint.SpeedUp -> R.string.Speed_up_transaction
-                            },
-                    ),
+                stringResource(
+                    id =
+                    when (hint) {
+                        Hint.NoPreview -> R.string.preview_unavailable
+                        Hint.Cancel -> R.string.Cancel_transaction
+                        Hint.SpeedUp -> R.string.Speed_up_transaction
+                    },
+                ),
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 14.sp,
             )
             Text(
                 modifier = Modifier.padding(top = 6.dp, bottom = 16.dp),
                 text =
-                    stringResource(
-                        id =
-                            when (hint) {
-                                Hint.NoPreview -> R.string.preview_unavailable_description
-                                Hint.Cancel -> R.string.cancel_transaction_tip
-                                Hint.SpeedUp -> R.string.speed_up_transaction_tip
-                            },
-                    ),
+                stringResource(
+                    id =
+                    when (hint) {
+                        Hint.NoPreview -> R.string.preview_unavailable_description
+                        Hint.Cancel -> R.string.cancel_transaction_tip
+                        Hint.SpeedUp -> R.string.speed_up_transaction_tip
+                    },
+                ),
                 color = MixinAppTheme.colors.textSubtitle,
                 fontSize = 14.sp,
             )
@@ -380,10 +374,9 @@ private fun NetworkInfo(
     onFeeClick: () -> Unit,
 ) {
     Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 28.dp, vertical = 16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 28.dp, vertical = 16.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -403,8 +396,8 @@ private fun NetworkInfo(
         Box(modifier = Modifier.height(16.dp))
         Row(
             modifier =
-                Modifier
-                    .fillMaxWidth(),
+            Modifier
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
@@ -414,8 +407,8 @@ private fun NetworkInfo(
             )
             Row(
                 modifier =
-                    Modifier
-                        .clickable { onFeeClick() },
+                Modifier
+                    .clickable { onFeeClick() },
             ) {
                 Text(
                     text = "≈ $$fee",
@@ -425,8 +418,8 @@ private fun NetworkInfo(
                 Image(
                     painter = painterResource(R.drawable.ic_keyboard_arrow_down),
                     modifier =
-                        Modifier
-                            .size(20.dp, 20.dp),
+                    Modifier
+                        .size(20.dp, 20.dp),
                     contentDescription = null,
                 )
             }
@@ -437,21 +430,19 @@ private fun NetworkInfo(
 @Composable
 private fun Warning(isEthSign: Boolean) {
     Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color(0x66FFF7AD))
-                .padding(horizontal = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color(0x66FFF7AD))
+            .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Image(
             painter = painterResource(R.drawable.ic_warning),
-            modifier =
-                Modifier
-                    .size(40.dp, 40.dp)
-                    .padding(horizontal = 8.dp),
+            modifier = Modifier
+                .size(40.dp, 40.dp)
+                .padding(horizontal = 8.dp),
             contentDescription = null,
         )
         Box(modifier = Modifier.width(8.dp))
@@ -474,17 +465,15 @@ private fun ChooseGasBottomSheet(
 ) {
     MixinBottomSheetDialog(onDismissRequest = onDismissRequest) {
         Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                    .background(MixinAppTheme.colors.background),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                .background(MixinAppTheme.colors.background),
         ) {
             Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .height(66.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(66.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
@@ -496,14 +485,13 @@ private fun ChooseGasBottomSheet(
                 )
                 Image(
                     painter = painterResource(R.drawable.ic_close_black),
-                    modifier =
-                        Modifier
-                            .size(52.dp, 52.dp)
-                            .clip(CircleShape)
-                            .clickable(onClick = {
-                                onDismissRequest.invoke()
-                            })
-                            .padding(horizontal = 14.dp, vertical = 14.dp),
+                    modifier = Modifier
+                        .size(52.dp, 52.dp)
+                        .clip(CircleShape)
+                        .clickable(onClick = {
+                            onDismissRequest.invoke()
+                        })
+                        .padding(horizontal = 14.dp, vertical = 14.dp),
                     contentDescription = null,
                 )
             }
@@ -522,16 +510,15 @@ private fun GasItem(
     onItemClick: (GasPriceType) -> Unit,
 ) {
     Column(
-        modifier =
-            Modifier
-                .padding(horizontal = 16.dp, vertical = 5.dp)
-                .clip(shape = RoundedCornerShape(13.dp))
-                .fillMaxWidth()
-                .background(MixinAppTheme.colors.backgroundWindow)
-                .clickable(onClick = {
-                    onItemClick.invoke(gasPriceType)
-                })
-                .padding(horizontal = 20.dp, vertical = 12.dp),
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 5.dp)
+            .clip(shape = RoundedCornerShape(13.dp))
+            .fillMaxWidth()
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .clickable(onClick = {
+                onItemClick.invoke(gasPriceType)
+            })
+            .padding(horizontal = 20.dp, vertical = 12.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -567,6 +554,40 @@ private fun GasItem(
     }
 }
 
+@Composable
+fun TransferBottom(cancelAction: () -> Unit, confirmAction: () -> Unit) {
+    Row(modifier = Modifier.background(MixinAppTheme.colors.background).padding(20.dp).fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center) {
+        Button(
+            onClick = cancelAction,
+            colors = ButtonDefaults.outlinedButtonColors(
+                backgroundColor = MixinAppTheme.colors.backgroundGray,
+            ),
+            shape = RoundedCornerShape(20.dp),
+            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+        ) {
+            Text(text = stringResource(id = R.string.Cancel), color = MixinAppTheme.colors.textPrimary)
+        }
+        Box(modifier = Modifier.width(36.dp))
+        Button(
+            onClick = confirmAction,
+            colors = ButtonDefaults.outlinedButtonColors(
+                backgroundColor = MixinAppTheme.colors.accent,
+            ),
+            shape = RoundedCornerShape(20.dp),
+            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+        ) {
+            Text(text = stringResource(id = R.string.Confirm), color = Color.White)
+        }
+    }
+}
+
+@Preview
+@Composable
+fun TransferBottomPreview() {
+    TransferBottom({}, {})
+}
+
 @Preview
 @Composable
 private fun TransactionPreview() {
@@ -588,10 +609,10 @@ private fun GasItemPreview() {
         gasPriceType = GasPriceType.Propose,
         tipGas = TipGas("43d61dcd-e413-450d-80b8-101d5e903357", "0.00000002", "0.0000003", "0.000005", "250000"),
         asset =
-            Token(
-                "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "BTC", "Bitcoin",
-                "https://mixin-images.zeromesh.net/HvYGJsV5TGeZ-X9Ek3FEQohQZ3fE9LBEBGcOcn4c4BNHovP4fW4YB97Dg5LcXoQ1hUjMEgjbl1DPlKg1TW7kK6XP=s128",
-                "", "", "1", "30000", "30000", 3, "", "",
-            ),
+        Token(
+            "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "BTC", "Bitcoin",
+            "https://mixin-images.zeromesh.net/HvYGJsV5TGeZ-X9Ek3FEQohQZ3fE9LBEBGcOcn4c4BNHovP4fW4YB97Dg5LcXoQ1hUjMEgjbl1DPlKg1TW7kK6XP=s128",
+            "", "", "1", "30000", "30000", 3, "", "",
+        ),
     ) {}
 }

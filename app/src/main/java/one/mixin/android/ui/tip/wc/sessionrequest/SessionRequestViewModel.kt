@@ -45,6 +45,7 @@ class SessionRequestViewModel
                             icon = peer.icons.firstOrNull() ?: "",
                             uri = peer.url.toUri().host ?: "",
                             desc = peer.description,
+                            account = ""
                         )
                     return SessionRequestUI(
                         peerUI = peerUI,
