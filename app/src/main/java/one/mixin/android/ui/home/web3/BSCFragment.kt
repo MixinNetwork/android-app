@@ -21,7 +21,7 @@ class BSCFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentBscBinding.inflate(inflater, container, false)
-        binding.chainCard.setContent("BSC Account", "Access dapps and DeFi projects.", R.drawable.ic_polygon)
+        binding.chainCard.setContent("BSC Account", "Access dapps and DeFi projects.", R.drawable.ic_bsc)
         return binding.root
     }
 

@@ -41,6 +41,10 @@
     <color name="bgTipWarningNight">#3E373B</color>
     <color name="bgTipWarningBorderNight">#E86B67</color>
 
+    <color name="chainGradientStartNight">#40444A</color>
+    <color name="chainGradientEndNight">#3B3F44</color>
+    <color name="iconChainNight">#12FFFFFF</color>
+
     <color name="bgMenuNight">#23272B</color>
     <color name="bgMenuBorderNight">#3E5264</color>
     <color name="bgGrayLightNight">@color/bgGrayNight</color>
