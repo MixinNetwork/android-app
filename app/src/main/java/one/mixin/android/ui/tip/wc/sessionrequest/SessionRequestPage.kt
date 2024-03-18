@@ -3,6 +3,7 @@ package one.mixin.android.ui.tip.wc.sessionrequest
 import GlideImage
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -142,10 +143,6 @@ fun SessionRequestPage(
                     .background(MixinAppTheme.colors.backgroundWindow)
             )
             when (sessionRequestUI.data) {
-                is WCEthereumSignMessage -> {
-                    Hint(hint = Hint.NoPreview)
-                }
-
                 is WCEthereumTransaction -> {
                     Transaction(
                         balance =
@@ -167,11 +164,19 @@ fun SessionRequestPage(
                 }
             }
             Box(modifier = Modifier.height(20.dp))
-            FeeInfo(
-                amount = "${if (tipGas == null) BigDecimal.ZERO else gasPriceType.calcGas(tipGas)} ${asset?.symbol}",
-                fee = (if (tipGas == null) BigDecimal.ZERO else gasPriceType.calcGas(tipGas)).multiply(asset.priceUSD()).toPlainString(),
-            ) {
-                openBottomSheet = true
+            val fee = if (tipGas == null) BigDecimal.ZERO else gasPriceType.calcGas(tipGas)
+            if (fee == BigDecimal.ZERO) {
+                FeeInfo(
+                    amount = "$fee",
+                    fee = (if (tipGas == null) BigDecimal.ZERO else gasPriceType.calcGas(tipGas)).multiply(asset.priceUSD()).toPlainString(),
+                )
+            } else {
+                FeeInfo(
+                    amount = "$fee ${asset?.symbol}",
+                    fee = (if (tipGas == null) BigDecimal.ZERO else gasPriceType.calcGas(tipGas)).multiply(asset.priceUSD()).toPlainString(),
+                ) {
+                    openBottomSheet = true
+                }
             }
             Box(modifier = Modifier.height(20.dp))
             ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionRequestUI.peerUI.name, footer = sessionRequestUI.peerUI.uri)
@@ -179,9 +184,6 @@ fun SessionRequestPage(
             ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
             Box(modifier = Modifier.height(20.dp))
             ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = chain.name)
-            // if (step == WalletConnectBottomSheetDialogFragment.Step.Input || step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
-            //     Warning(isEthSign)
-            // }
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -268,36 +270,38 @@ private fun Message(
     content: String,
     onPreviewMessage: (String) -> Unit,
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(0.dp, 128.dp)
-            .padding(horizontal = 20.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MixinAppTheme.colors.backgroundWindow)
-            .padding(horizontal = 16.dp)
-            .clickable { onPreviewMessage(content) },
-    ) {
+    Column {
+        Box(modifier = Modifier.height(20.dp).padding(horizontal = 20.dp))
         Text(
-            modifier = Modifier.padding(top = 12.dp),
             text = stringResource(id = R.string.Message),
-            color = MixinAppTheme.colors.textPrimary,
+            color = MixinAppTheme.colors.textSubtitle,
             fontSize = 14.sp,
         )
-        Text(
-            modifier = Modifier.padding(top = 38.dp, bottom = 8.dp),
-            text = content,
-            color = MixinAppTheme.colors.textSubtitle,
-            fontSize = 12.sp,
-        )
-        Image(
-            painter = painterResource(R.drawable.ic_post),
+        Box(modifier = Modifier.height(4.dp))
+        Box(
             modifier = Modifier
-                .size(40.dp, 40.dp)
-                .align(Alignment.TopEnd)
-                .padding(horizontal = 8.dp),
-            contentDescription = null,
-        )
+                .fillMaxWidth()
+                .heightIn(0.dp, 128.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(MixinAppTheme.colors.backgroundWindow)
+                .padding(horizontal = 16.dp)
+                .clickable { onPreviewMessage(content) },
+        ) {
+            Text(
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+                text = content,
+                color = MixinAppTheme.colors.textSubtitle,
+                fontSize = 12.sp,
+            )
+            Image(
+                painter = painterResource(R.drawable.ic_post),
+                modifier = Modifier
+                    .size(40.dp, 40.dp)
+                    .padding(horizontal = 8.dp)
+                    .align(Alignment.TopEnd),
+                contentDescription = null,
+            )
+        }
     }
 }
 
@@ -374,9 +378,9 @@ private fun Hint(hint: Hint) {
 
 @Composable
 private fun FeeInfo(
-    amount:String,
+    amount: String,
     fee: String,
-    onFeeClick: () -> Unit,
+    onFeeClick: (() -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier
@@ -390,7 +394,9 @@ private fun FeeInfo(
         )
         Box(modifier = Modifier.height(4.dp))
         Row(
-            modifier = Modifier.clickable { onFeeClick() }.fillMaxWidth(),
+            modifier = Modifier
+                .clickable { onFeeClick?.invoke() }
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Column {
@@ -406,13 +412,14 @@ private fun FeeInfo(
                     fontSize = 14.sp,
                 )
             }
-            Image(
-                painter = painterResource(R.drawable.ic_keyboard_arrow_down),
-                modifier =
-                Modifier
-                    .size(20.dp, 20.dp),
-                contentDescription = null,
-            )
+            if (onFeeClick != null)
+                Image(
+                    painter = painterResource(R.drawable.ic_keyboard_arrow_down),
+                    modifier =
+                    Modifier
+                        .size(20.dp, 20.dp),
+                    contentDescription = null,
+                )
         }
     }
 }
@@ -497,7 +504,7 @@ private fun ChooseGasBottomSheet(
 @Preview
 @Composable
 private fun NetworkInfoPreview() {
-    FeeInfo("0.0169028 ETH","$7.57") {}
+    FeeInfo("0.0169028 ETH", "$7.57") {}
 }
 
 @Composable
@@ -554,11 +561,13 @@ private fun GasItem(
 
 @Composable
 fun TransferBottom(cancelAction: () -> Unit, confirmAction: () -> Unit) {
-    Row(modifier = Modifier
-        .background(MixinAppTheme.colors.background)
-        .padding(20.dp)
-        .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center) {
+    Row(
+        modifier = Modifier
+            .background(MixinAppTheme.colors.background)
+            .padding(20.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
         Button(
             onClick = cancelAction,
             colors = ButtonDefaults.outlinedButtonColors(
@@ -585,6 +594,26 @@ fun TransferBottom(cancelAction: () -> Unit, confirmAction: () -> Unit) {
 
 @Preview
 @Composable
+fun Message() {
+    Box(modifier = Modifier.background(MixinAppTheme.colors.background)) {
+        Message(
+            content = """
+        {
+          "raw": [
+            "0x9df67f5a05fb594c4357d87221cbd69f1d5a6fbb",
+            "{\"types\":{\"Alias\":[{\"name\":\"from\",\"type\":\"address\"},{\"name\":\"alias\",\"type\":\"address\"},{\"name\":\"timestamp\",\"type\":\"uint64\"}],\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"version\",\"type\":\"string\"}]},\"domain\":{\"name\":\"snapshot\",\"version\":\"0.1.4\"},\"primaryType\":\"Alias\",\"message\":{\"from\":\"0x9df67f5a05fb594c4357d87221cbd69f1d5a6fbb\",\"alias\":\"0x8f14e8dbc7b3619e5210201022f637f271545c90\",\"timestamp\":\"1710766295\"}}"
+          ],
+          "type": "TYPED_MESSAGE"
+        }
+    """
+        ) {
+
+        }
+    }
+}
+
+@Preview
+@Composable
 fun TransferBottomPreview() {
     TransferBottom({}, {})
 }
@@ -598,9 +627,13 @@ private fun TransactionPreview() {
 @Preview
 @Composable
 private fun HintPreview() {
-    Hint(Hint.NoPreview)
-    Hint(Hint.Cancel)
-    Hint(Hint.SpeedUp)
+    Column(modifier = Modifier.padding(8.dp)) {
+        Hint(Hint.NoPreview)
+        Box(modifier = Modifier.height(8.dp))
+        Hint(Hint.Cancel)
+        Box(modifier = Modifier.height(8.dp))
+        Hint(Hint.SpeedUp)
+    }
 }
 
 @Preview
@@ -617,3 +650,4 @@ private fun GasItemPreview() {
         ),
     ) {}
 }
+
