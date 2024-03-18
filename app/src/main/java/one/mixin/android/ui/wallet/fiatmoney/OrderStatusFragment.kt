@@ -36,6 +36,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ENVIRONMENT_3DS
 import one.mixin.android.Constants.RouteConfig.RISK_ENVIRONMENT
 import one.mixin.android.MixinApplication
@@ -49,6 +50,7 @@ import one.mixin.android.databinding.FragmentOrderStatusBinding
 import one.mixin.android.extension.bold
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.textColor
@@ -648,7 +650,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         val sessionResponse = fiatMoneyViewModel.createOrder(OrderRequest(currency.name, scheme?.lowercase(), asset.assetId, amount.toString(), expectancy, instrumentId, token,type))
         if (sessionResponse.isSuccess && sessionResponse.data != null) {
             val session = requireNotNull(sessionResponse.data)
-            if (session.cardToken.tokenFormat != "pan_only") { // CRYPTOGRAM_3DS
+            if (session.cardToken.tokenFormat.equalsIgnoreCase(Constants.RouteConfig.CRYPTOGRAM_3DS)) {
                 paymentsPrecondition(orderId = session.orderId, null, null, session.cardToken.token)
             } else {
                 init3DS(session)
