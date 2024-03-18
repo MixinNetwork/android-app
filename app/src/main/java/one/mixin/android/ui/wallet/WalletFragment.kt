@@ -192,7 +192,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                         .setNegativeButton(R.string.Cancel) { dialog, _ ->
                             dialog.dismiss()
                         }.setPositiveButton(R.string.Update) { dialog, _ ->
-                            requireContext().openMarket()
+                            requireContext().openMarket(parentFragmentManager, lifecycleScope)
                             dialog.dismiss()
                         }.create().show()
                     throw MixinResponseException(
