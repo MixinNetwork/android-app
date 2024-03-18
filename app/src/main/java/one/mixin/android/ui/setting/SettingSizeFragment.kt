@@ -24,6 +24,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.tickVibrate
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.chathistory.holder.TextHolder
 import one.mixin.android.ui.conversation.holder.TimeHolder
@@ -164,11 +165,17 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
             callbackFlow {
                 val onChangeListener =
                     Slider.OnChangeListener { _, value, _ -> trySend(value.toInt()) }
+                if (viewDestroyed()) return@callbackFlow
+
                 binding.slider.addOnChangeListener(onChangeListener)
                 awaitClose {
-                    if (isAdded) binding.slider.removeOnChangeListener(onChangeListener)
+                    if (!viewDestroyed()) {
+                        binding.slider.removeOnChangeListener(onChangeListener)
+                    }
                 }
             }.collect {
+                if (viewDestroyed()) return@collect
+                
                 textSize = it.toFloat()
                 requireContext().defaultSharedPreferences.putInt(PREF_TEXT_SIZE, it)
                 requireContext().tickVibrate()
