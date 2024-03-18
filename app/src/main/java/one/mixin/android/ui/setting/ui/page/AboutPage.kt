@@ -19,11 +19,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -98,6 +101,7 @@ fun AboutPage() {
         ) {
             val navController = LocalSettingNav.current
             val context = LocalContext.current
+            val lifecycleScope = LocalLifecycleOwner.current.lifecycleScope
             Image(
                 modifier =
                     Modifier
@@ -147,7 +151,7 @@ fun AboutPage() {
             AboutTile(
                 text = stringResource(id = R.string.Version_Update),
                 onClick = {
-                    context.openMarket()
+                    context.openMarket((context as FragmentActivity).supportFragmentManager,lifecycleScope)
                 },
             )
             if (showLogDebug.value) {

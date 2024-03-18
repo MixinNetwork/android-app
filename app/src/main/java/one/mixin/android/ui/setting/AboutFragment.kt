@@ -3,6 +3,7 @@ package one.mixin.android.ui.setting
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
@@ -59,7 +60,7 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
             helpCenter.setOnClickListener { context?.openUrl(Constants.HelpLink.CENTER) }
             terms.setOnClickListener { context?.openUrl(getString(R.string.landing_terms_url)) }
             privacy.setOnClickListener { context?.openUrl(getString(R.string.landing_privacy_policy_url)) }
-            checkUpdates.setOnClickListener { context?.openMarket() }
+            checkUpdates.setOnClickListener { context?.openMarket(parentFragmentManager, lifecycleScope) }
             logAndDebug.setOnClickListener {
                 navTo(LogAndDebugFragment.newInstance(), LogAndDebugFragment.TAG)
             }
