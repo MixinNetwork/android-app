@@ -203,7 +203,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
                             onDismissRequest = { dismiss() },
                             onPositiveClick = { onPositiveClick(it) },
-                            onBiometricClick = { showBiometricPrompt() },
                             showPin = { showPin() },
                             onGasItemClick = { type ->
                                 gasPriceType = type

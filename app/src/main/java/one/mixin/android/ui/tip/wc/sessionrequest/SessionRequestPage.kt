@@ -23,6 +23,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -61,6 +63,7 @@ import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
+import timber.log.Timber
 import java.math.BigDecimal
 
 @Composable
@@ -80,10 +83,10 @@ fun SessionRequestPage(
     onPreviewMessage: (String) -> Unit,
     onDismissRequest: () -> Unit,
     onPositiveClick: (Long?) -> Unit,
-    onBiometricClick: () -> Unit,
     showPin: () -> Unit,
     onGasItemClick: (GasPriceType) -> Unit,
 ) {
+    Timber.e("step $step")
     val viewModel = hiltViewModel<SessionRequestViewModel>()
     if (version != WalletConnect.Version.TIP && (signData == null || sessionRequest == null)) {
         Loading()
@@ -107,13 +110,42 @@ fun SessionRequestPage(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(modifier = Modifier.height(50.dp))
-            GlideImage(
-                data = sessionRequestUI.peerUI.icon,
-                modifier = Modifier
-                    .size(70.dp)
-                    .clip(CircleShape),
-                placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
-            )
+            when (step) {
+                WalletConnectBottomSheetDialogFragment.Step.Loading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(70.dp),
+                        color = MixinAppTheme.colors.accent,
+                    )
+                }
+
+                WalletConnectBottomSheetDialogFragment.Step.Error -> {
+                    Icon(
+                        modifier = Modifier.size(70.dp),
+                        painter = painterResource(id = R.drawable.ic_transfer_status_failed),
+                        contentDescription = null,
+                        tint = Color.Unspecified
+                    )
+                }
+
+                WalletConnectBottomSheetDialogFragment.Step.Done -> {
+                    Icon(
+                        modifier = Modifier.size(70.dp),
+                        painter = painterResource(id = R.drawable.ic_transfer_status_success),
+                        contentDescription = null,
+                        tint = Color.Unspecified
+                    )
+                }
+
+                else ->
+                    GlideImage(
+                        data = sessionRequestUI.peerUI.icon,
+                        modifier = Modifier
+                            .size(70.dp)
+                            .clip(CircleShape),
+                        placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+                    )
+            }
+            Box(modifier = Modifier.height(16.dp))
             Text(
                 text = stringResource(id = if (sessionRequestUI.data is WCEthereumSignMessage) R.string.signature_request else R.string.transaction_request),
                 style =
@@ -188,7 +220,9 @@ fun SessionRequestPage(
                 modifier = Modifier
                     .weight(1f)
             )
-            TransferBottom(onDismissRequest, showPin)
+            if (step == WalletConnectBottomSheetDialogFragment.Step.Sign || step == WalletConnectBottomSheetDialogFragment.Step.Send) {
+                TransferBottom(onDismissRequest, showPin)
+            }
             Box(modifier = Modifier.height(32.dp))
         }
 
@@ -270,8 +304,8 @@ private fun Message(
     content: String,
     onPreviewMessage: (String) -> Unit,
 ) {
-    Column {
-        Box(modifier = Modifier.height(20.dp).padding(horizontal = 20.dp))
+    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+        Box(modifier = Modifier.height(20.dp))
         Text(
             text = stringResource(id = R.string.Message),
             color = MixinAppTheme.colors.textSubtitle,
@@ -284,7 +318,6 @@ private fun Message(
                 .heightIn(0.dp, 128.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(MixinAppTheme.colors.backgroundWindow)
-                .padding(horizontal = 16.dp)
                 .clickable { onPreviewMessage(content) },
         ) {
             Text(
