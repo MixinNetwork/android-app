@@ -34,10 +34,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.GasPriceType
 import one.mixin.android.api.response.TipGas
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
@@ -124,7 +126,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var signData: WalletConnect.WCSignData.V2SignData<*>? by mutableStateOf(null)
     private var sessionProposal: Wallet.Model.SessionProposal? by mutableStateOf(null)
     private var sessionRequest: Wallet.Model.SessionRequest? by mutableStateOf(null)
-
+    private var account: String by mutableStateOf("")
     private var signedTransactionData: String? = null
 
     override fun onViewCreated(
@@ -133,6 +135,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     ) {
         super.onViewCreated(view, savedInstanceState)
         lifecycleScope.launch {
+            account = PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, "")
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 snapshotFlow { step }.collect { value ->
                     if (value == Step.Input) {
@@ -142,6 +145,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 }
             }
+
         }
     }
 
@@ -166,6 +170,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     RequestType.SessionProposal -> {
                         SessionProposalPage(
                             version,
+                            account,
                             step,
                             chain,
                             topic,
@@ -185,6 +190,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         SessionRequestPage(
                             gson,
                             version,
+                            account,
                             step,
                             chain,
                             topic,

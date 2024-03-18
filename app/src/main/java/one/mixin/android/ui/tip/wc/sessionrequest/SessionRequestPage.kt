@@ -54,8 +54,8 @@ import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.connections.Loading
-import one.mixin.android.ui.tip.wc.sessionproposal.WCPinBoard
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import org.web3j.utils.Convert
@@ -66,6 +66,7 @@ import java.math.BigDecimal
 fun SessionRequestPage(
     gson: Gson,
     version: WalletConnect.Version,
+    account: String,
     step: WalletConnectBottomSheetDialogFragment.Step,
     chain: Chain,
     topic: String,
@@ -130,6 +131,8 @@ fun SessionRequestPage(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.W400,
                 ),
+                maxLines = 3,
+                minLines = 3,
             )
             Box(modifier = Modifier.height(20.dp))
             Box(
@@ -163,15 +166,22 @@ fun SessionRequestPage(
                     }
                 }
             }
-            NetworkInfo(
-                name = sessionRequestUI.chain.name,
+            Box(modifier = Modifier.height(20.dp))
+            FeeInfo(
+                amount = "${if (tipGas == null) BigDecimal.ZERO else gasPriceType.calcGas(tipGas)} ${asset?.symbol}",
                 fee = (if (tipGas == null) BigDecimal.ZERO else gasPriceType.calcGas(tipGas)).multiply(asset.priceUSD()).toPlainString(),
             ) {
                 openBottomSheet = true
             }
-            if (step == WalletConnectBottomSheetDialogFragment.Step.Input || step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
-                Warning(isEthSign)
-            }
+            Box(modifier = Modifier.height(20.dp))
+            ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionRequestUI.peerUI.name, footer = sessionRequestUI.peerUI.uri)
+            Box(modifier = Modifier.height(20.dp))
+            ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
+            Box(modifier = Modifier.height(20.dp))
+            ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = chain.name)
+            // if (step == WalletConnectBottomSheetDialogFragment.Step.Input || step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
+            //     Warning(isEthSign)
+            // }
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -363,61 +373,46 @@ private fun Hint(hint: Hint) {
 }
 
 @Composable
-private fun NetworkInfo(
-    name: String,
+private fun FeeInfo(
+    amount:String,
     fee: String,
     onFeeClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 28.dp, vertical = 16.dp),
+            .padding(horizontal = 20.dp),
     ) {
+        Text(
+            text = stringResource(id = R.string.network_fee).uppercase(),
+            color = MixinAppTheme.colors.textSubtitle,
+            fontSize = 14.sp,
+        )
+        Box(modifier = Modifier.height(4.dp))
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.clickable { onFeeClick() }.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(
-                text = stringResource(id = R.string.network),
-                color = MixinAppTheme.colors.textSubtitle,
-                fontSize = 14.sp,
-            )
-            Text(
-                text = name,
-                color = MixinAppTheme.colors.textSubtitle,
-                fontSize = 14.sp,
-            )
-        }
-        Box(modifier = Modifier.height(16.dp))
-        Row(
-            modifier =
-            Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = stringResource(id = R.string.network_fee),
-                color = MixinAppTheme.colors.textSubtitle,
-                fontSize = 14.sp,
-            )
-            Row(
-                modifier =
-                Modifier
-                    .clickable { onFeeClick() },
-            ) {
+            Column {
+                Text(
+                    text = amount,
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 14.sp,
+                )
+                Box(modifier = Modifier.height(4.dp))
                 Text(
                     text = "≈ $$fee",
                     color = MixinAppTheme.colors.textSubtitle,
                     fontSize = 14.sp,
                 )
-                Image(
-                    painter = painterResource(R.drawable.ic_keyboard_arrow_down),
-                    modifier =
-                    Modifier
-                        .size(20.dp, 20.dp),
-                    contentDescription = null,
-                )
             }
+            Image(
+                painter = painterResource(R.drawable.ic_keyboard_arrow_down),
+                modifier =
+                Modifier
+                    .size(20.dp, 20.dp),
+                contentDescription = null,
+            )
         }
     }
 }
@@ -497,6 +492,12 @@ private fun ChooseGasBottomSheet(
             Box(modifier = Modifier.height(32.dp))
         }
     }
+}
+
+@Preview
+@Composable
+private fun NetworkInfoPreview() {
+    FeeInfo("0.0169028 ETH","$7.57") {}
 }
 
 @Composable

@@ -74,6 +74,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.databinding.FragmentWebBinding
 import one.mixin.android.databinding.ViewWebBottomMenuBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.colorFromAttribute
@@ -886,7 +887,8 @@ class WebFragment : BaseFragment() {
             }
         }
         lifecycleScope.launch {
-            WalletConnectTIP.peer = getPeerUI()
+
+            WalletConnectTIP.peer = getPeerUI(PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS,""))
             showWalletConnectBottomSheetDialogFragment(
                 tip,
                 requireActivity(),
@@ -964,7 +966,6 @@ class WebFragment : BaseFragment() {
         if (!WalletConnect.isEnabled(requireContext())) return
 
         lifecycleScope.launch {
-            WalletConnectTIP.peer = getPeerUI()
             WalletConnectTIP.signData = WalletConnect.WCSignData.TIPSignData(message)
             showWalletConnectBottomSheetDialogFragment(
                 tip,
@@ -987,7 +988,7 @@ class WebFragment : BaseFragment() {
         }
     }
 
-    private fun getPeerUI(): PeerUI {
+    private fun getPeerUI(account:String): PeerUI {
         val a = app
         return if (a != null) {
             PeerUI(
@@ -995,7 +996,7 @@ class WebFragment : BaseFragment() {
                 name = a.name,
                 icon = a.iconUrl,
                 desc = a.description,
-                account = ""
+                account = account
             )
         } else {
             PeerUI(
@@ -1003,7 +1004,7 @@ class WebFragment : BaseFragment() {
                 name = webView.title ?: "",
                 icon = "",
                 desc = "",
-                account = ""
+                account = account
             )
         }
     }

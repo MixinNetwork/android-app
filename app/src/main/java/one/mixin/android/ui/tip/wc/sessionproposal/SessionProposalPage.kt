@@ -22,6 +22,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.walletconnect.web3.wallet.client.Wallet
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
@@ -48,6 +50,7 @@ import timber.log.Timber
 @Composable
 fun SessionProposalPage(
     version: WalletConnect.Version,
+    account: String,
     step: WalletConnectBottomSheetDialogFragment.Step,
     chain: Chain,
     topic: String,
@@ -62,6 +65,7 @@ fun SessionProposalPage(
         Loading()
         return
     }
+
     val sessionProposalUI = viewModel.getSessionProposalUI(version, chain, sessionProposal)
     if (sessionProposalUI == null) {
         Loading()
@@ -147,7 +151,7 @@ fun SessionProposalPage(
             Box(modifier = Modifier.height(20.dp))
             ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionProposalUI.peer.name, footer = sessionProposalUI.peer.uri)
             Box(modifier = Modifier.height(20.dp))
-            ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = chainName)
+            ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
             Box(
                 modifier = Modifier
                     .weight(1f)

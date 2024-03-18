@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.walletconnect.web3.wallet.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
+import one.mixin.android.Constants
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
@@ -16,6 +18,11 @@ import javax.inject.Inject
 class SessionRequestViewModel
     @Inject
     internal constructor() : ViewModel() {
+
+        private var account: String = ""
+        suspend fun init() {
+            account = PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, "")
+        }
         fun rejectRequest(
             version: WalletConnect.Version,
             topic: String,
@@ -29,7 +36,7 @@ class SessionRequestViewModel
             }
         }
 
-        fun getSessionRequestUI(
+    fun getSessionRequestUI(
             version: WalletConnect.Version,
             chain: Chain,
             signData: WalletConnect.WCSignData.V2SignData<*>?,
@@ -45,7 +52,7 @@ class SessionRequestViewModel
                             icon = peer.icons.firstOrNull() ?: "",
                             uri = peer.url.toUri().host ?: "",
                             desc = peer.description,
-                            account = ""
+                            account = account
                         )
                     return SessionRequestUI(
                         peerUI = peerUI,

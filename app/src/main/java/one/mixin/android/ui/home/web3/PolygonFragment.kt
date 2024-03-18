@@ -11,6 +11,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPolygonBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.formatPublicKey
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletCreateBottomSheetDialogFragment
@@ -43,10 +44,10 @@ class PolygonFragment : BaseFragment() {
                     WalletCreateBottomSheetDialogFragment.newInstance(WalletCreateBottomSheetDialogFragment.TYPE_ETH).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
                 }
             } else {
-                // Todo
-                binding.chainCard.setContent(address.formatPublicKey(), BigDecimal("1.234566"), R.drawable.ic_ethereum)
+                binding.chainCard.setContent(address.formatPublicKey(), BigDecimal("1.234566"), R.drawable.ic_polygon)
                 binding.chainCard.setOnCreateListener {
                     // Todo
+                    toast("Todo")
                 }
             }
         }
