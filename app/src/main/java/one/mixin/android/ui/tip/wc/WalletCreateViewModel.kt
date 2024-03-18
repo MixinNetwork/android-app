@@ -22,7 +22,7 @@ internal constructor(
     private val _status = MutableStateFlow(TransferStatus.AWAITING_CONFIRMATION)
     val status = _status.asStateFlow()
     var errorMessage: String? = null
-    var key: String? = null
+    var address: String? = null
 
     fun updateStatus(status: TransferStatus) {
         _status.value = status
@@ -34,7 +34,7 @@ internal constructor(
     }
 
     fun success(key:String) {
-        this.key = key
+        this.address = key
         _status.value = TransferStatus.SUCCESSFUL
     }
 
@@ -45,7 +45,6 @@ internal constructor(
     ): String {
         val result = tip.getOrRecoverTipPriv(context, pin)
         val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(context), pin, result.getOrThrow())
-        val privateKey = tipPrivToPrivateKey(spendKey)
-        return tipPrivToAddress(privateKey, chainId)
+        return tipPrivToAddress(spendKey, chainId)
     }
 }

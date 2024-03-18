@@ -145,10 +145,8 @@ fun SessionProposalPage(
                     .background(MixinAppTheme.colors.backgroundWindow)
             )
             Box(modifier = Modifier.height(20.dp))
-            // todo from data
-            ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionProposalUI.peer.name, footer = sessionProposalUI.peer.name)
+            ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionProposalUI.peer.name, footer = sessionProposalUI.peer.uri)
             Box(modifier = Modifier.height(20.dp))
-            // todo account data
             ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = chainName)
             Box(
                 modifier = Modifier

@@ -9,6 +9,7 @@ import androidx.annotation.DrawableRes
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewChainCardBinding
+import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import java.math.BigDecimal
@@ -40,9 +41,10 @@ class ChainCard: FrameLayout {
         _binding.subTitle.isVisible = false
         _binding.address.isVisible = true
         _binding.amount.isVisible = true
-        _binding.address.text = address
+        _binding.address.text = address.formatPublicKey()
         _binding.amount.text = amount.numberFormat8()
         _binding.icon.setImageResource(icon)
+        _binding.createTv.text = "View Polygon Account"
     }
 
     fun setOnCreateListener(onClickListener: OnClickListener) {

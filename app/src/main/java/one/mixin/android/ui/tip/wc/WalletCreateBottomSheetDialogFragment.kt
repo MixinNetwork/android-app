@@ -7,19 +7,19 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.databinding.FragmentWalletCreateBottomSheetBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
-import one.mixin.android.tip.tipPrivToAddress
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
@@ -88,7 +88,7 @@ class WalletCreateBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     TransferStatus.SUCCESSFUL -> {
                         binding.header.success()
                         binding.contentVa.displayedChild = 1
-                        keyViewModel.key?.let { key ->
+                        keyViewModel.address?.let { key ->
                             binding.key.text = key
                         }
                         binding.bottom.isInvisible = false
@@ -168,8 +168,8 @@ class WalletCreateBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             ) {
                 // todo difference chain ?
                 val address = keyViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
-                keyViewModel.key = address
-                keyViewModel.updateStatus(TransferStatus.SUCCESSFUL)
+                PropertyHelper.updateKeyValue(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, address)
+                keyViewModel.success(address)
             }
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
     }
