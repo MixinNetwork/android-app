@@ -113,12 +113,12 @@ fun SessionRequestPage(
                 placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
             )
             Text(
-                text = stringResource(id = R.string.connect_wallet),
+                text = stringResource(id = if (sessionRequestUI.data is WCEthereumSignMessage) R.string.signature_request else R.string.transaction_request),
                 style =
                 TextStyle(
                     color = MixinAppTheme.colors.textPrimary,
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.W500,
+                    fontWeight = FontWeight.W600,
                 ),
             )
             Box(modifier = Modifier.height(8.dp))
@@ -131,17 +131,13 @@ fun SessionRequestPage(
                     fontWeight = FontWeight.W400,
                 ),
             )
-            Text(
-                text = stringResource(id = if (sessionRequestUI.data is WCEthereumSignMessage) R.string.signature_request else R.string.transaction_request),
-                style =
-                TextStyle(
-                    color = MixinAppTheme.colors.textPrimary,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.W600,
-                ),
+            Box(modifier = Modifier.height(20.dp))
+            Box(
+                modifier = Modifier
+                    .height(10.dp)
+                    .fillMaxWidth()
+                    .background(MixinAppTheme.colors.backgroundWindow)
             )
-            Box(modifier = Modifier.height(8.dp))
-            Box(modifier = Modifier.height(16.dp))
             when (sessionRequestUI.data) {
                 is WCEthereumSignMessage -> {
                     Hint(hint = Hint.NoPreview)
@@ -181,6 +177,7 @@ fun SessionRequestPage(
                     .weight(1f)
             )
             TransferBottom(onDismissRequest, showPin)
+            Box(modifier = Modifier.height(32.dp))
         }
 
         if (openBottomSheet && tipGas != null && asset != null) {
@@ -207,19 +204,17 @@ private fun Transaction(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(horizontal = 20.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MixinAppTheme.colors.backgroundWindow)
-            .padding(horizontal = 16.dp),
+            .background(MixinAppTheme.colors.background)
+            .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.Start,
     ) {
         Box(modifier = Modifier.height(16.dp))
         Text(
             text = stringResource(id = R.string.Balance_Change),
-            color = MixinAppTheme.colors.textPrimary,
+            color = MixinAppTheme.colors.textSubtitle,
             fontSize = 14.sp,
         )
-        Box(modifier = Modifier.height(12.dp))
+        Box(modifier = Modifier.height(8.dp))
         Row(
             modifier =
             Modifier
@@ -480,11 +475,12 @@ private fun ChooseGasBottomSheet(
                 Text(
                     modifier = Modifier.padding(start = 20.dp),
                     text = stringResource(id = R.string.network_fee),
-                    fontSize = 20.sp,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight(600),
                     color = MixinAppTheme.colors.textPrimary,
                 )
                 Image(
-                    painter = painterResource(R.drawable.ic_close_black),
+                    painter = painterResource(R.drawable.ic_circle_close),
                     modifier = Modifier
                         .size(52.dp, 52.dp)
                         .clip(CircleShape)
@@ -498,6 +494,7 @@ private fun ChooseGasBottomSheet(
             GasItem(gasPriceType = GasPriceType.Fast, tipGas = tipGas, asset = asset, onItemClick)
             GasItem(gasPriceType = GasPriceType.Propose, tipGas = tipGas, asset = asset, onItemClick)
             GasItem(gasPriceType = GasPriceType.Safe, tipGas = tipGas, asset = asset, onItemClick)
+            Box(modifier = Modifier.height(32.dp))
         }
     }
 }
@@ -556,7 +553,10 @@ private fun GasItem(
 
 @Composable
 fun TransferBottom(cancelAction: () -> Unit, confirmAction: () -> Unit) {
-    Row(modifier = Modifier.background(MixinAppTheme.colors.background).padding(20.dp).fillMaxWidth(),
+    Row(modifier = Modifier
+        .background(MixinAppTheme.colors.background)
+        .padding(20.dp)
+        .fillMaxWidth(),
         horizontalArrangement = Arrangement.Center) {
         Button(
             onClick = cancelAction,
@@ -612,7 +612,7 @@ private fun GasItemPreview() {
         Token(
             "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "BTC", "Bitcoin",
             "https://mixin-images.zeromesh.net/HvYGJsV5TGeZ-X9Ek3FEQohQZ3fE9LBEBGcOcn4c4BNHovP4fW4YB97Dg5LcXoQ1hUjMEgjbl1DPlKg1TW7kK6XP=s128",
-            "", "", "1", "30000", "30000", 3, "", "",
+            "", "1", "1", "30000", "30000", 3, "", "",
         ),
     ) {}
 }

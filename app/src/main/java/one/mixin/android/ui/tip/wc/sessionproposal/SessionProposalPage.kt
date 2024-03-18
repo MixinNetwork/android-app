@@ -123,6 +123,7 @@ fun SessionProposalPage(
                     fontSize = 18.sp,
                     fontWeight = FontWeight.W500,
                 ),
+
             )
             Box(modifier = Modifier.height(8.dp))
             Text(
@@ -133,6 +134,8 @@ fun SessionProposalPage(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.W400,
                 ),
+                minLines = 3,
+                maxLines = 3
             )
             Box(modifier = Modifier.height(20.dp))
             Box(
@@ -141,7 +144,7 @@ fun SessionProposalPage(
                     .fillMaxWidth()
                     .background(MixinAppTheme.colors.backgroundWindow)
             )
-            Box(modifier = Modifier.height(10.dp))
+            Box(modifier = Modifier.height(20.dp))
             // todo from data
             ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionProposalUI.peer.name, footer = sessionProposalUI.peer.name)
             Box(modifier = Modifier.height(20.dp))
