@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBscBinding
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.WalletCreateBottomSheetDialogFragment
 
 class BSCFragment : BaseFragment() {
     companion object {
@@ -22,6 +24,9 @@ class BSCFragment : BaseFragment() {
     ): View {
         _binding = FragmentBscBinding.inflate(inflater, container, false)
         binding.chainCard.setContent("BSC Account", "Access dapps and DeFi projects.", R.drawable.ic_bsc)
+        binding.chainCard.setOnCreateListener {
+            WalletCreateBottomSheetDialogFragment.newInstance(WalletCreateBottomSheetDialogFragment.TYPE_BSC).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
+        }
         return binding.root
     }
 

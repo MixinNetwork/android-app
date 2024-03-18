@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPolygonBinding
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.WalletCreateBottomSheetDialogFragment
 
 class PolygonFragment : BaseFragment() {
     companion object {
@@ -23,6 +25,9 @@ class PolygonFragment : BaseFragment() {
     ): View {
         _binding = FragmentPolygonBinding.inflate(inflater, container, false)
         binding.chainCard.setContent("Polygon Account", "Access dapps and DeFi projects.", R.drawable.ic_polygon)
+        binding.chainCard.setOnCreateListener {
+            WalletCreateBottomSheetDialogFragment.newInstance(WalletCreateBottomSheetDialogFragment.TYPE_POLYGON).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
+        }
         return binding.root
     }
 

@@ -9,6 +9,7 @@ import one.mixin.android.databinding.FragmentEthereumBinding
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletCreateBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.WalletCreateBottomSheetDialogFragment.Companion.TYPE_ETH
 
 class EthereumFragment : BaseFragment() {
     companion object {
@@ -25,8 +26,8 @@ class EthereumFragment : BaseFragment() {
     ): View {
         _binding = FragmentEthereumBinding.inflate(inflater, container, false)
         binding.chainCard.setContent("Ethereum Account", "Access dapps and DeFi projects.", R.drawable.ic_ethereum)
-        binding.chainCard.setOnClickListener {
-            WalletCreateBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
+        binding.chainCard.setOnCreateListener {
+            WalletCreateBottomSheetDialogFragment.newInstance(TYPE_ETH).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
         }
         return binding.root
     }

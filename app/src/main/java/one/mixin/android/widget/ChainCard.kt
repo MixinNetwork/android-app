@@ -44,4 +44,8 @@ class ChainCard: FrameLayout {
         _binding.amount.text = amount.numberFormat8()
         _binding.icon.setImageResource(icon)
     }
+
+    fun setOnCreateListener(onClickListener: OnClickListener) {
+        _binding.createTv.setOnClickListener(onClickListener)
+    }
 }
