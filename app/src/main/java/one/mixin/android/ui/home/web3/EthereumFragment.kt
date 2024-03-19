@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -40,6 +41,9 @@ class EthereumFragment : BaseFragment() {
         _binding = FragmentEthereumBinding.inflate(inflater, container, false)
         binding.apply {
             walletRv.adapter = WalletAdapter()
+                .apply {
+                    connections = connectionsViewModel.getLatestActiveSignSessions()
+                }
             walletRv.addItemDecoration(SpacesItemDecoration(4.dp, true))
         }
         updateUI()

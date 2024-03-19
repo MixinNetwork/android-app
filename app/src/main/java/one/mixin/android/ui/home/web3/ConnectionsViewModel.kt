@@ -23,7 +23,19 @@ import javax.inject.Inject
 class ConnectionsViewModel
     @Inject
     internal constructor() : ViewModel() {
-        private fun getLatestActiveSignSessions(): List<ConnectionUI> {
+    fun disconnect(
+        version: WalletConnect.Version,
+        topic: String,
+    ) {
+        when (version) {
+            WalletConnect.Version.V2 -> {
+                WalletConnectV2.disconnect(topic)
+            }
+            WalletConnect.Version.TIP -> {}
+        }
+    }
+
+    fun getLatestActiveSignSessions(): List<ConnectionUI> {
             val v2List =
                 WalletConnectV2.getListOfActiveSessions().filter { wcSession ->
                     wcSession.metaData != null
