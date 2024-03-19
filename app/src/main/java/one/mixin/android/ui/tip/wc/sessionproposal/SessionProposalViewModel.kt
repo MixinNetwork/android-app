@@ -48,7 +48,7 @@ class SessionProposalViewModel
                                 name = sessionProposal.name,
                                 desc = sessionProposal.description,
                                 uri = sessionProposal.url.toUri().host ?: "",
-                                account =account
+                                account = account
                             ),
                         chain = chain,
                     )

@@ -1469,4 +1469,5 @@
     <string name="web3_send_signature_description">Tap the send button to immediately broadcast the message or tap the discard button to discard the signed message.</string>
     <string name="unlimited_authorization_warning">This application can access all %3$s in your %1$s account (%2$s).</string>
     <string name="withdraw_all_of_token_warning">This dapp can withdraw all your %1$s.</string>
+    <string name="Unlocking">Unlocking</string>
 </resources>

@@ -10,7 +10,7 @@ import one.mixin.android.databinding.ViewWalletCreateHeaderBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.textColorResource
 
-class CreateHeader : LinearLayout {
+class UnlockHeader : LinearLayout {
     private val _binding: ViewWalletCreateHeaderBinding
 
     constructor(context: Context) : this(context, null)
@@ -25,6 +25,7 @@ class CreateHeader : LinearLayout {
         _binding.apply {
             iconLayout.displayedChild = 2
             subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
+            title.setText(R.string.Unlocking)
         }
     }
 

@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_upper_round">
 
-    <one.mixin.android.ui.tip.wc.CreateHeader
+    <one.mixin.android.ui.tip.wc.UnlockHeader
         android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

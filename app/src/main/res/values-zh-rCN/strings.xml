@@ -1436,4 +1436,5 @@
     <string name="web3_send_signature_description">点发送按钮立刻广播消息或点丢弃按钮丢弃已签名的消息。</string>
     <string name="unlimited_authorization_warning">这个应用可以提取你 %1$s 账号（%2$s）里所有的 %3$s 资产。</string>
     <string name="withdraw_all_of_token_warning">这个应用可以提取你所有的 %1$s。</string>
+    <string name="Unlocking">正在解锁</string>
 </resources>
