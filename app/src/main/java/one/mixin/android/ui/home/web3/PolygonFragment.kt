@@ -11,13 +11,14 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPolygonBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletCreateBottomSheetDialogFragment
-import java.math.BigDecimal
+import one.mixin.android.widget.SpacesItemDecoration
 
 class PolygonFragment : BaseFragment() {
     companion object {
@@ -33,6 +34,10 @@ class PolygonFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentPolygonBinding.inflate(inflater, container, false)
+        binding.apply {
+            walletRv.adapter = WalletAdapter()
+            walletRv.addItemDecoration(SpacesItemDecoration(4.dp, true))
+        }
         updateUI()
         return binding.root
     }

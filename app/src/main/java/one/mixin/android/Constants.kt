@@ -8,6 +8,7 @@ import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
 import one.mixin.android.net.CustomDns
 import one.mixin.android.net.SequentialDns
+import one.mixin.android.vo.InternalWeb3
 
 object Constants {
     object API {
@@ -321,6 +322,11 @@ object Constants {
     // Only for third-party messenger user
     const val TEAM_BOT_ID = ""
     const val TEAM_BOT_NAME = ""
+
+    val InternalWeb3Wallet = listOf(
+        InternalWeb3(R.drawable.ic_uniswap, "Uniswap", "app.uniswap.org"),
+        InternalWeb3(R.drawable.ic_snapshot, "Snapshot", "snapshot.org")
+    )
 
     object RouteConfig {
         const val PAN_ONLY = "pan_only"

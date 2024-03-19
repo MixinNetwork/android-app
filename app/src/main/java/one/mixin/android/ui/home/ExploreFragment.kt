@@ -34,7 +34,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.profile.MySharedAppsFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity

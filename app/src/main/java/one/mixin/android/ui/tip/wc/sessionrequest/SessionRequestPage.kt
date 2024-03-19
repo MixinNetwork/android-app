@@ -324,7 +324,7 @@ private fun Message(
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
                 text = content,
                 color = MixinAppTheme.colors.textSubtitle,
-                fontSize = 12.sp,
+                fontSize = 16.sp,
             )
             Image(
                 painter = painterResource(R.drawable.ic_post),
