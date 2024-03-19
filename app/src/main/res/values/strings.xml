@@ -880,6 +880,7 @@
     <string name="Select">Select</string>
     <string name="Select_Emergency_Contact">Select Emergency Contact</string>
     <string name="Send">Send</string>
+    <string name="Sending">Sending</string>
     <string name="Send_as_file">Send as file</string>
     <string name="send_file_group">Send \"%1$s\" to \"%2$s\"?</string>
     <string name="Send_Message">Send Message</string>

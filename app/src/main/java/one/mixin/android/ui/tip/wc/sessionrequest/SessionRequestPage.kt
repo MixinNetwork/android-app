@@ -41,6 +41,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -111,7 +112,7 @@ fun SessionRequestPage(
         ) {
             Box(modifier = Modifier.height(50.dp))
             when (step) {
-                WalletConnectBottomSheetDialogFragment.Step.Loading -> {
+                WalletConnectBottomSheetDialogFragment.Step.Loading, WalletConnectBottomSheetDialogFragment.Step.Sending -> {
                     CircularProgressIndicator(
                         modifier = Modifier.size(70.dp),
                         color = MixinAppTheme.colors.accent,
@@ -154,6 +155,7 @@ fun SessionRequestPage(
                             WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_signing_success
                             WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
                             WalletConnectBottomSheetDialogFragment.Step.Send -> R.string.signature_request
+                            WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
                             else -> R.string.signature_request
 
                         }
@@ -163,6 +165,7 @@ fun SessionRequestPage(
                             WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_signing_success
                             WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
                             WalletConnectBottomSheetDialogFragment.Step.Send -> R.string.transaction_request
+                            WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
                             else -> R.string.transaction_request
                         }
                     }
@@ -176,7 +179,9 @@ fun SessionRequestPage(
             )
             Box(modifier = Modifier.height(8.dp))
             Text(
+                modifier = Modifier.padding(horizontal = 16.dp),
                 text = errorInfo ?: stringResource(id = R.string.allow_dapp_access_address_and_transaction),
+                textAlign = TextAlign.Center,
                 style =
                 TextStyle(
                     color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textSubtitle,
