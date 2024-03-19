@@ -1457,4 +1457,5 @@
     <string name="wallet_create_desc_3">When you create an Ethereum account, you will also automatically create Polygon, BSC and other EVM accounts.</string>
     <string name="link_succeeded">Connected succeeded</string>
     <string name="link_failed">Connected failed</string>
+    <string name="Unlock">Unlock</string>
 </resources>

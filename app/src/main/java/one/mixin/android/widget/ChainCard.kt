@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewChainCardBinding
@@ -27,27 +28,19 @@ class ChainCard: FrameLayout {
     }
 
     fun setContent(title: String, subTitle: String, @DrawableRes icon: Int) {
-        _binding.title.isVisible = true
-        _binding.subTitle.isVisible = true
-        _binding.address.isVisible = false
-        _binding.amount.isVisible = false
         _binding.title.text = title
         _binding.subTitle.text = subTitle
         _binding.icon.setImageResource(icon)
     }
 
-    fun setContent(address: String, amount: BigDecimal, @DrawableRes icon: Int) {
-        _binding.title.isVisible = false
-        _binding.subTitle.isVisible = false
-        _binding.address.isVisible = true
-        _binding.amount.isVisible = true
-        _binding.address.text = address.formatPublicKey()
-        _binding.amount.text = amount.numberFormat8()
+    fun setContent(title: String, address: String, @StringRes action: Int, @DrawableRes icon: Int) {
+        _binding.title.text = title
+        _binding.subTitle.text = address.formatPublicKey()
         _binding.icon.setImageResource(icon)
-        _binding.createTv.text = "View Polygon Account"
+        _binding.actionTv.setText(action)
     }
 
     fun setOnCreateListener(onClickListener: OnClickListener) {
-        _binding.createTv.setOnClickListener(onClickListener)
+        _binding.actionTv.setOnClickListener(onClickListener)
     }
 }

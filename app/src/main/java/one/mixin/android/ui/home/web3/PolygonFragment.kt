@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3
 
+import android.content.ClipData
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPolygonBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.formatPublicKey
+import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
@@ -44,10 +46,11 @@ class PolygonFragment : BaseFragment() {
                     WalletCreateBottomSheetDialogFragment.newInstance(WalletCreateBottomSheetDialogFragment.TYPE_ETH).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
                 }
             } else {
-                binding.chainCard.setContent(address.formatPublicKey(), BigDecimal("1.234566"), R.drawable.ic_polygon)
+                binding.chainCard.setContent("Polygon Account", address.formatPublicKey(), R.string.Copy, R.drawable.ic_polygon)
                 binding.chainCard.setOnCreateListener {
-                    // Todo
-                    toast("Todo")
+                    requireContext().getClipboardManager()
+                        .setPrimaryClip(ClipData.newPlainText(null, address))
+                    toast(R.string.copied_to_clipboard)
                 }
             }
         }

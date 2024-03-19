@@ -44,31 +44,11 @@
                 android:layout_height="wrap_content" />
 
             <TextView
-                android:id="@+id/address"
-                android:textSize="14sp"
-                android:textColor="?attr/text_assist"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textFontWeight="400"
-                android:visibility="gone" />
-
-            <TextView
-                android:id="@+id/amount"
-                android:textSize="18sp"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="13dp"
-                android:textColor="?attr/text_primary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textFontWeight="500"
-                android:visibility="gone" />
-
-            <TextView
-                android:id="@+id/create_tv"
+                android:id="@+id/action_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
-                android:text="@string/Create"
+                android:text="@string/Unlock"
                 android:textFontWeight="500"
                 android:textColor="@color/selector_blue_tv" />
         </LinearLayout>
