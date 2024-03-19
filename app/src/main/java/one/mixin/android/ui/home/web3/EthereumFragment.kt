@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -28,6 +29,8 @@ class EthereumFragment : BaseFragment() {
 
     private var _binding: FragmentEthereumBinding? = null
     private val binding get() = requireNotNull(_binding)
+
+    private val connectionsViewModel by viewModels<ConnectionsViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,

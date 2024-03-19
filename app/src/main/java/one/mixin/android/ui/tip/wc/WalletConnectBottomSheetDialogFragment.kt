@@ -45,7 +45,6 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.TipNetworkException
@@ -62,7 +61,7 @@ import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricDialog
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.preview.TextPreviewActivity
-import one.mixin.android.ui.tip.wc.connections.Loading
+import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
 import one.mixin.android.ui.url.UrlInterpreterActivity

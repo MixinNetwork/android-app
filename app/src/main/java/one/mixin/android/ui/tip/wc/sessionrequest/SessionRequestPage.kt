@@ -58,7 +58,7 @@ import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
-import one.mixin.android.ui.tip.wc.connections.Loading
+import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import org.web3j.utils.Convert
@@ -153,6 +153,7 @@ fun SessionRequestPage(
                             WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.signaturing_request
                             WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.signature_request_success
                             WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.signature_request_failed
+                            WalletConnectBottomSheetDialogFragment.Step.Send -> R.string.signaturing_request
                             else -> R.string.signature_request
 
                         }
@@ -161,6 +162,7 @@ fun SessionRequestPage(
                             WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.transaction_request
                             WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.transaction_request_success
                             WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.transaction_request_failed
+                            WalletConnectBottomSheetDialogFragment.Step.Send -> R.string.transaction_request
                             else -> R.string.transaction_request
                         }
                     }

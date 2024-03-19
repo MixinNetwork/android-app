@@ -8,7 +8,7 @@ import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
 import one.mixin.android.net.CustomDns
 import one.mixin.android.net.SequentialDns
-import one.mixin.android.vo.InternalWeb3
+import one.mixin.android.vo.ConnectionUI
 
 object Constants {
     object API {
@@ -324,8 +324,8 @@ object Constants {
     const val TEAM_BOT_NAME = ""
 
     val InternalWeb3Wallet = listOf(
-        InternalWeb3(R.drawable.ic_uniswap, "Uniswap", "app.uniswap.org"),
-        InternalWeb3(R.drawable.ic_snapshot, "Snapshot", "snapshot.org")
+        ConnectionUI(-2, "", "Uniswap", "app.uniswap.org", internalIcon = R.drawable.ic_uniswap),
+        ConnectionUI(-1, "", "Snapshot", "snapshot.org", internalIcon = R.drawable.ic_snapshot)
     )
 
     object RouteConfig {
