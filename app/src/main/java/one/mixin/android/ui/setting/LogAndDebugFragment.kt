@@ -81,10 +81,6 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                         DatabaseMonitor.reset()
                     }
                 }
-                walletConnectSc.isChecked = defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false)
-                walletConnectSc.setOnCheckedChangeListener { _, isChecked ->
-                    defaultSharedPreferences.putBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, isChecked)
-                }
                 safe.setOnClickListener {
                     navTo(
                         SafeDebugFragment.newInstance(),

@@ -31,8 +31,7 @@ abstract class WalletConnect {
         internal const val web3jTimeout = 10L
 
         fun isEnabled(context: Context): Boolean =
-            Session.getAccount()?.hasPin == true && !Session.getTipPub().isNullOrBlank() &&
-                (context.defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false) || Session.isTipFeatureEnabled())
+            Session.getAccount()?.hasPin == true && !Session.getTipPub().isNullOrBlank()
 
         fun connect(
             url: String,
