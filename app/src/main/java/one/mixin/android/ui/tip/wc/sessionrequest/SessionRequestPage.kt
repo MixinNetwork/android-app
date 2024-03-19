@@ -147,7 +147,24 @@ fun SessionRequestPage(
             }
             Box(modifier = Modifier.height(16.dp))
             Text(
-                text = stringResource(id = if (sessionRequestUI.data is WCEthereumSignMessage) R.string.signature_request else R.string.transaction_request),
+                text = stringResource(
+                    id = if (sessionRequestUI.data is WCEthereumSignMessage) {
+                        when (step) {
+                            WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.signaturing_request
+                            WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.signature_request_success
+                            WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.signature_request_failed
+                            else -> R.string.signature_request
+
+                        }
+                    } else {
+                        when (step) {
+                            WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.transaction_request
+                            WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.transaction_request_success
+                            WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.transaction_request_failed
+                            else -> R.string.transaction_request
+                        }
+                    }
+                ),
                 style =
                 TextStyle(
                     color = MixinAppTheme.colors.textPrimary,
@@ -157,10 +174,10 @@ fun SessionRequestPage(
             )
             Box(modifier = Modifier.height(8.dp))
             Text(
-                text = stringResource(id = R.string.allow_dapp_access_address_and_transaction),
+                text = errorInfo ?: stringResource(id = R.string.allow_dapp_access_address_and_transaction),
                 style =
                 TextStyle(
-                    color = MixinAppTheme.colors.textSubtitle,
+                    color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textSubtitle,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.W400,
                 ),
@@ -221,10 +238,15 @@ fun SessionRequestPage(
                     .weight(1f)
             )
             if (step == WalletConnectBottomSheetDialogFragment.Step.Sign || step == WalletConnectBottomSheetDialogFragment.Step.Send) {
-                TransferBottom(onDismissRequest, showPin)
+                TransferBottom({
+                    viewModel.rejectRequest(version, topic)
+                    onDismissRequest.invoke()
+                }, showPin, { onPositiveClick.invoke(sessionRequestUI.requestId) }, step == WalletConnectBottomSheetDialogFragment.Step.Send)
             }
             Box(modifier = Modifier.height(32.dp))
         }
+
+        Timber.e("Step $step")
 
         if (openBottomSheet && tipGas != null && asset != null) {
             ChooseGasBottomSheet(
@@ -300,6 +322,11 @@ private fun Transaction(
 }
 
 @Composable
+private fun WarningPreview() {
+    Warning(false)
+}
+
+@Composable
 private fun Message(
     content: String,
     onPreviewMessage: (String) -> Unit,
@@ -321,9 +348,9 @@ private fun Message(
                 .clickable { onPreviewMessage(content) },
         ) {
             Text(
-                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                 text = content,
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textPrimary,
                 fontSize = 16.sp,
             )
             Image(
@@ -464,7 +491,8 @@ private fun Warning(isEthSign: Boolean) {
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0x66FFF7AD))
+            .background(MixinAppTheme.colors.tipWarning)
+            .border(1.dp, MixinAppTheme.colors.tipWarningBorder)
             .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -593,7 +621,7 @@ private fun GasItem(
 }
 
 @Composable
-fun TransferBottom(cancelAction: () -> Unit, confirmAction: () -> Unit) {
+fun TransferBottom(cancelAction: () -> Unit, confirmAction: () -> Unit, sendAction: () -> Unit, isSend: Boolean) {
     Row(
         modifier = Modifier
             .background(MixinAppTheme.colors.background)
@@ -601,26 +629,29 @@ fun TransferBottom(cancelAction: () -> Unit, confirmAction: () -> Unit) {
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
     ) {
-        Button(
-            onClick = cancelAction,
-            colors = ButtonDefaults.outlinedButtonColors(
-                backgroundColor = MixinAppTheme.colors.backgroundGray,
-            ),
-            shape = RoundedCornerShape(20.dp),
-            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
-        ) {
-            Text(text = stringResource(id = R.string.Cancel), color = MixinAppTheme.colors.textPrimary)
+
+        if (!isSend) {
+            Button(
+                onClick = cancelAction,
+                colors = ButtonDefaults.outlinedButtonColors(
+                    backgroundColor = MixinAppTheme.colors.backgroundGray,
+                ),
+                shape = RoundedCornerShape(20.dp),
+                contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+            ) {
+                Text(text = stringResource(id = R.string.Cancel), color = MixinAppTheme.colors.textPrimary)
+            }
+            Box(modifier = Modifier.width(36.dp))
         }
-        Box(modifier = Modifier.width(36.dp))
         Button(
-            onClick = confirmAction,
+            onClick = if (isSend) sendAction else confirmAction,
             colors = ButtonDefaults.outlinedButtonColors(
                 backgroundColor = MixinAppTheme.colors.accent,
             ),
             shape = RoundedCornerShape(20.dp),
             contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
         ) {
-            Text(text = stringResource(id = R.string.Confirm), color = Color.White)
+            Text(text = stringResource(id = if (isSend) R.string.Send else R.string.Confirm), color = Color.White)
         }
     }
 }
@@ -630,8 +661,7 @@ fun TransferBottom(cancelAction: () -> Unit, confirmAction: () -> Unit) {
 fun Message() {
     Box(modifier = Modifier.background(MixinAppTheme.colors.background)) {
         Message(
-            content = """
-        {
+            content = """{
           "raw": [
             "0x9df67f5a05fb594c4357d87221cbd69f1d5a6fbb",
             "{\"types\":{\"Alias\":[{\"name\":\"from\",\"type\":\"address\"},{\"name\":\"alias\",\"type\":\"address\"},{\"name\":\"timestamp\",\"type\":\"uint64\"}],\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"version\",\"type\":\"string\"}]},\"domain\":{\"name\":\"snapshot\",\"version\":\"0.1.4\"},\"primaryType\":\"Alias\",\"message\":{\"from\":\"0x9df67f5a05fb594c4357d87221cbd69f1d5a6fbb\",\"alias\":\"0x8f14e8dbc7b3619e5210201022f637f271545c90\",\"timestamp\":\"1710766295\"}}"
@@ -648,7 +678,10 @@ fun Message() {
 @Preview
 @Composable
 fun TransferBottomPreview() {
-    TransferBottom({}, {})
+    Column {
+        TransferBottom({}, {}, {},false)
+        TransferBottom({}, {}, {},true)
+    }
 }
 
 @Preview

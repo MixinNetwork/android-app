@@ -1422,4 +1422,10 @@
     <string name="wallet_create_desc_3">当您创建以太坊账户时，也将自动创建 Polygon、BSC 等 EVM 账户。</string>
     <string name="link_succeeded">连接成功</string>
     <string name="link_failed">连接失败</string>
+    <string name="signaturing_request">正在签名</string>
+    <string name="transacting_request">正在交易</string>
+    <string name="signature_request_success">签名成功</string>
+    <string name="transaction_request_success">交易成功</string>
+    <string name="transaction_request_failed">交易失败</string>
+    <string name="signature_request_failed">签名失败</string>
 </resources>

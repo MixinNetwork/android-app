@@ -177,7 +177,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             sessionProposal,
                             errorInfo,
                             onDismissRequest = { dismiss() },
-                            onBiometricClick = { showBiometricPrompt() },
                             showPin = { showPin() },
                         )
                     }

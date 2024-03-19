@@ -57,7 +57,6 @@ fun SessionProposalPage(
     sessionProposal: Wallet.Model.SessionProposal?,
     errorInfo: String?,
     onDismissRequest: () -> Unit,
-    onBiometricClick: (() -> Unit),
     showPin: () -> Unit,
 ) {
     val viewModel = hiltViewModel<SessionProposalViewModel>()
@@ -131,15 +130,15 @@ fun SessionProposalPage(
             )
             Box(modifier = Modifier.height(8.dp))
             Text(
-                text = stringResource(id = R.string.allow_dapp_access_address_and_transaction),
+                text = errorInfo ?: stringResource(id = R.string.allow_dapp_access_address_and_transaction),
                 style =
                 TextStyle(
-                    color = MixinAppTheme.colors.textSubtitle,
+                    color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textSubtitle,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.W400,
                 ),
+                maxLines = 3,
                 minLines = 3,
-                maxLines = 3
             )
             Box(modifier = Modifier.height(20.dp))
             Box(
@@ -175,8 +174,11 @@ fun SessionProposalPage(
                         Text(text = stringResource(id = R.string.Done), color = Color.White)
                     }
                 }
-            } else if (step != WalletConnectBottomSheetDialogFragment.Step.Connecting){
-                TransferBottom(onDismissRequest, showPin)
+            } else if (step != WalletConnectBottomSheetDialogFragment.Step.Loading){
+                TransferBottom({
+                    viewModel.rejectSession(version, topic)
+                    onDismissRequest.invoke()
+                }, showPin, {}, false)
             }
             Box(
                 modifier = Modifier.height(32.dp)

@@ -1458,4 +1458,10 @@
     <string name="link_succeeded">Connected succeeded</string>
     <string name="link_failed">Connected failed</string>
     <string name="Unlock">Unlock</string>
+    <string name="signaturing_request">Signaturing</string>
+    <string name="transacting_request">Transacting</string>
+    <string name="signature_request_success">Signature successful</string>
+    <string name="transaction_request_success">Transaction successful</string>
+    <string name="transaction_request_failed">Transaction failed</string>
+    <string name="signature_request_failed">Signature failed</string>
 </resources>
