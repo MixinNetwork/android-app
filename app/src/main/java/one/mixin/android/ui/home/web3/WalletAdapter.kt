@@ -9,7 +9,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.ConnectionUI
 
-class WalletAdapter : RecyclerView.Adapter<Web3Holder>(){
+class WalletAdapter : RecyclerView.Adapter<Web3Holder>() {
     var connections: List<ConnectionUI> = emptyList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Web3Holder {
@@ -39,7 +39,7 @@ class WalletAdapter : RecyclerView.Adapter<Web3Holder>(){
                 }
                 name.text = web3.name
                 url.text = web3.uri
-                root.setOnClickListener{
+                root.setOnClickListener {
                     WebActivity.show(it.context, web3.uri, null)
                 }
             }
