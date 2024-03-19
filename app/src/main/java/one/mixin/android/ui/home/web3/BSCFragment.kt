@@ -52,12 +52,12 @@ class BSCFragment : BaseFragment() {
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, "")
             if (address.isBlank()) {
-                binding.chainCard.setContent("BSC Account", "Access dapps and DeFi projects.", R.drawable.ic_bsc)
+                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.BSC)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_bsc)
                 binding.chainCard.setOnCreateListener {
-                    WalletCreateBottomSheetDialogFragment.newInstance(WalletCreateBottomSheetDialogFragment.TYPE_ETH).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
+                    WalletCreateBottomSheetDialogFragment.newInstance(WalletCreateBottomSheetDialogFragment.TYPE_BSC).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
                 }
             } else {
-                binding.chainCard.setContent("BSC Account", address.formatPublicKey(), R.string.Copy, R.drawable.ic_bsc)
+                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.BSC)), address.formatPublicKey(), R.string.Copy, R.drawable.ic_bsc)
                 binding.chainCard.setOnCreateListener {
                     requireContext().getClipboardManager()
                         .setPrimaryClip(ClipData.newPlainText(null, address))

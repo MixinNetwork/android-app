@@ -150,18 +150,18 @@ fun SessionRequestPage(
                 text = stringResource(
                     id = if (sessionRequestUI.data is WCEthereumSignMessage) {
                         when (step) {
-                            WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.signaturing_request
-                            WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.signature_request_success
-                            WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.signature_request_failed
-                            WalletConnectBottomSheetDialogFragment.Step.Send -> R.string.signaturing_request
+                            WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing
+                            WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_signing_success
+                            WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
+                            WalletConnectBottomSheetDialogFragment.Step.Send -> R.string.signature_request
                             else -> R.string.signature_request
 
                         }
                     } else {
                         when (step) {
-                            WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.transaction_request
-                            WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.transaction_request_success
-                            WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.transaction_request_failed
+                            WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing
+                            WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_signing_success
+                            WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
                             WalletConnectBottomSheetDialogFragment.Step.Send -> R.string.transaction_request
                             else -> R.string.transaction_request
                         }

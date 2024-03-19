@@ -113,7 +113,7 @@ fun SessionProposalPage(
             }
             Box(modifier = Modifier.height(16.dp))
             Text(
-                text = stringResource(id = if (step == WalletConnectBottomSheetDialogFragment.Step.Done) R.string.link_succeeded  else if(step == WalletConnectBottomSheetDialogFragment.Step.Error) R.string.link_failed else R.string.connect_wallet),
+                text = stringResource(id = if (step == WalletConnectBottomSheetDialogFragment.Step.Done) R.string.connect_wallet_success  else if(step == WalletConnectBottomSheetDialogFragment.Step.Error) R.string.connect_wallet_failed else R.string.connect_wallet),
                 style =
                 TextStyle(
                     color = MixinAppTheme.colors.textPrimary,

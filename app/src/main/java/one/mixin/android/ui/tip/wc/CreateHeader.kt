@@ -25,8 +25,6 @@ class CreateHeader : LinearLayout {
         _binding.apply {
             iconLayout.displayedChild = 2
             subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
-            title.setText(R.string.Creating)
-            subTitle.setText(R.string.wallet_create_eth_title)
         }
     }
 
@@ -37,8 +35,8 @@ class CreateHeader : LinearLayout {
             iconLayout.displayedChild = 1
             statusIcon.setImageResource(R.drawable.ic_transfer_status_failed)
             subTitle.text = errorMessage
-            subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
-            title.setText(R.string.wallet_create_failed)
+            subTitle.textColorResource = R.color.text_color_error_tip
+            title.setText(R.string.unlock_web3_account_failed)
         }
     }
 
@@ -47,19 +45,16 @@ class CreateHeader : LinearLayout {
             iconLayout.displayedChild = 1
             subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
             statusIcon.setImageResource(R.drawable.ic_transfer_status_success)
-
-            title.setText(R.string.wallet_create_successfully)
-            subTitle.setText(R.string.wallet_create_eth_title)
+            title.setText(R.string.unlock_web3_account_success)
         }
     }
 
-    fun awaiting() {
+    fun awaiting(titleStr: String, subTitleStr: String) {
         _binding.apply {
             iconLayout.displayedChild = 0
-
-            title.setText(R.string.wallet_create_eth)
+            title.text = titleStr
+            subTitle.text = subTitleStr
             subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
-            subTitle.textColorResource = R.color.text_color_error_tip
         }
     }
 }

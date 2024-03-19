@@ -54,7 +54,7 @@ class WalletCreateBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private val binding by viewBinding(FragmentWalletCreateBottomSheetBinding::inflate)
 
-    @SuppressLint("RestrictedApi", "SetTextI18n")
+    @SuppressLint("RestrictedApi", "SetTextI18n", "StringFormatMatches")
     override fun setupDialog(
         dialog: Dialog,
         style: Int,
@@ -65,8 +65,20 @@ class WalletCreateBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             setCustomView(contentView)
             setCustomViewHeight(requireActivity().visibleDisplayHeight())
         }
-
+        val chain = when (type) {
+            TYPE_POLYGON -> getString(R.string.Polygon)
+            TYPE_BSC -> getString(R.string.BSC)
+            else -> getString(R.string.Ethereum)
+        }
+        val otherChain = when (type) {
+            TYPE_POLYGON -> arrayOf(getString(R.string.Polygon), getString(R.string.Ethereum), getString(R.string.BSC))
+            TYPE_BSC -> arrayOf(getString(R.string.BSC), getString(R.string.Ethereum), getString(R.string.Polygon))
+            else -> arrayOf(getString(R.string.Ethereum), getString(R.string.Polygon), getString(R.string.BSC))
+        }
         binding.apply {
+            agreement1.text = getString(R.string.unlock_web3_account_agreement_1, chain)
+            agreement2.text = getString(R.string.unlock_web3_account_agreement_2, chain)
+            agreement3.text = getString(R.string.unlock_web3_account_agreement_3, *otherChain)
             bottom.setOnClickListener({
                 dismiss()
             }, {
@@ -82,7 +94,7 @@ class WalletCreateBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     TransferStatus.FAILED -> {
                         binding.contentVa.displayedChild = 0
                         binding.header.filed(keyViewModel.errorMessage)
-                        binding.bottom.isInvisible = false
+                        binding.bottom.updateStatus(TransferStatus.FAILED)
                     }
 
                     TransferStatus.SUCCESSFUL -> {
@@ -91,19 +103,18 @@ class WalletCreateBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         keyViewModel.address?.let { key ->
                             binding.key.text = key
                         }
-                        binding.bottom.isInvisible = false
+                        binding.bottom.updateStatus(TransferStatus.SUCCESSFUL)
                     }
 
                     TransferStatus.IN_PROGRESS -> {
                         binding.contentVa.displayedChild = 0
                         binding.header.progress()
-                        binding.bottom.isInvisible = true
+                        binding.bottom.updateStatus(TransferStatus.IN_PROGRESS)
                     }
 
                     else -> {
                         binding.contentVa.displayedChild = 0
-                        binding.bottom.isInvisible = false
-                        binding.header.awaiting()
+                        binding.header.awaiting(getString(R.string.unlock_web3_account, chain), getString(R.string.unlock_web3_account_description, chain))
                     }
                 }
             }
@@ -166,7 +177,6 @@ class WalletCreateBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     keyViewModel.updateStatus(TransferStatus.FAILED)
                 },
             ) {
-                // todo difference chain ?
                 val address = keyViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
                 PropertyHelper.updateKeyValue(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, address)
                 keyViewModel.success(address)

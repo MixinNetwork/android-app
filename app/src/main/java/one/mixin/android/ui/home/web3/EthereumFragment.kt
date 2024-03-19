@@ -40,6 +40,7 @@ class EthereumFragment : BaseFragment() {
     ): View {
         _binding = FragmentEthereumBinding.inflate(inflater, container, false)
         binding.apply {
+
             walletRv.adapter = WalletAdapter()
                 .apply {
                     connections = connectionsViewModel.getLatestActiveSignSessions()
@@ -54,12 +55,12 @@ class EthereumFragment : BaseFragment() {
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, "")
             if (address.isBlank()) {
-                binding.chainCard.setContent("Ethereum Account", "Access dapps and DeFi projects.", R.drawable.ic_ethereum)
+                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_ethereum)
                 binding.chainCard.setOnCreateListener {
                     WalletCreateBottomSheetDialogFragment.newInstance(TYPE_ETH).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
                 }
             } else {
-                binding.chainCard.setContent("Ethereum Account", address.formatPublicKey(), R.string.Copy, R.drawable.ic_ethereum)
+                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), address.formatPublicKey(), R.string.Copy, R.drawable.ic_ethereum)
                 binding.chainCard.setOnCreateListener {
                     requireContext().getClipboardManager()
                         .setPrimaryClip(ClipData.newPlainText(null, address))

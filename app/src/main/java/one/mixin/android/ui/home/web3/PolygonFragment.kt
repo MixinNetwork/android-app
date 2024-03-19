@@ -52,12 +52,12 @@ class PolygonFragment : BaseFragment() {
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, "")
             if (address.isBlank()) {
-                binding.chainCard.setContent("Polygon Account", "Access dapps and DeFi projects.", R.drawable.ic_polygon)
+                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Polygon)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_polygon)
                 binding.chainCard.setOnCreateListener {
-                    WalletCreateBottomSheetDialogFragment.newInstance(WalletCreateBottomSheetDialogFragment.TYPE_ETH).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
+                    WalletCreateBottomSheetDialogFragment.newInstance(WalletCreateBottomSheetDialogFragment.TYPE_POLYGON).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
                 }
             } else {
-                binding.chainCard.setContent("Polygon Account", address.formatPublicKey(), R.string.Copy, R.drawable.ic_polygon)
+                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Polygon)), address.formatPublicKey(), R.string.Copy, R.drawable.ic_polygon)
                 binding.chainCard.setOnCreateListener {
                     requireContext().getClipboardManager()
                         .setPrimaryClip(ClipData.newPlainText(null, address))
