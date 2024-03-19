@@ -2,6 +2,7 @@ package one.mixin.android.ui.landing
 
 import android.os.Bundle
 import android.view.View
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentOldVersionBinding
@@ -28,7 +29,7 @@ class OldVersionFragment : BaseFragment(R.layout.fragment_old_version) {
             desTv.text =
                 getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName)
             updateTv.setOnClickListener {
-                requireContext().openMarket()
+                requireContext().openMarket(parentFragmentManager, lifecycleScope)
             }
         }
     }

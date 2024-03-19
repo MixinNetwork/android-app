@@ -69,6 +69,7 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailabilityLight
 import com.google.android.gms.common.GooglePlayServicesUtil
 import com.google.firebase.installations.FirebaseInstallations
+import kotlinx.coroutines.CoroutineScope
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -1115,7 +1116,10 @@ fun PackageManager.getPackageInfoCompat(
         getPackageInfo(packageName, flags)
     }
 
-fun Context.openMarket() {
+fun Context.openMarket(
+    fragmentManager: FragmentManager,
+    scope: CoroutineScope,
+) {
     if (isPlayStoreInstalled()) {
         try {
             val intent = Intent(Intent.ACTION_VIEW)
@@ -1123,10 +1127,10 @@ fun Context.openMarket() {
             intent.setPackage(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE)
             startActivity(intent)
         } catch (e: Exception) {
-            openUrl(getString(R.string.website))
+            getString(R.string.website).openAsUrlOrWeb(this, null, fragmentManager, scope)
         }
     } else {
-        openUrl(getString(R.string.website))
+        getString(R.string.website).openAsUrlOrWeb(this, null, fragmentManager, scope)
     }
 }
 
