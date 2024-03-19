@@ -18,7 +18,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
-import one.mixin.android.ui.tip.wc.WalletCreateBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.widget.SpacesItemDecoration
 
 class BSCFragment : BaseFragment() {
@@ -54,7 +54,7 @@ class BSCFragment : BaseFragment() {
             if (address.isBlank()) {
                 binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.BSC)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_bsc)
                 binding.chainCard.setOnCreateListener {
-                    WalletCreateBottomSheetDialogFragment.newInstance(WalletCreateBottomSheetDialogFragment.TYPE_BSC).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
+                    WalletUnlockBottomSheetDialogFragment.newInstance(WalletUnlockBottomSheetDialogFragment.TYPE_BSC).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
                 }
             } else {
                 binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.BSC)), address.formatPublicKey(), R.string.Copy, R.drawable.ic_bsc)

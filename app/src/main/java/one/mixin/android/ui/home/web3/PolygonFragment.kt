@@ -18,7 +18,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
-import one.mixin.android.ui.tip.wc.WalletCreateBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.widget.SpacesItemDecoration
 
 class PolygonFragment : BaseFragment() {
@@ -54,7 +54,7 @@ class PolygonFragment : BaseFragment() {
             if (address.isBlank()) {
                 binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Polygon)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_polygon)
                 binding.chainCard.setOnCreateListener {
-                    WalletCreateBottomSheetDialogFragment.newInstance(WalletCreateBottomSheetDialogFragment.TYPE_POLYGON).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
+                    WalletUnlockBottomSheetDialogFragment.newInstance(WalletUnlockBottomSheetDialogFragment.TYPE_POLYGON).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
                 }
             } else {
                 binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Polygon)), address.formatPublicKey(), R.string.Copy, R.drawable.ic_polygon)

@@ -12,7 +12,7 @@ import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import javax.inject.Inject
 
 @HiltViewModel
-class WalletCreateViewModel
+class WalletUnlockViewModel
 @Inject
 internal constructor(
     private val tip: Tip,

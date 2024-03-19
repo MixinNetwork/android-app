@@ -2,7 +2,6 @@ package one.mixin.android.ui.tip.wc
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import androidx.core.view.isInvisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -14,7 +13,7 @@ import one.mixin.android.R
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
-import one.mixin.android.databinding.FragmentWalletCreateBottomSheetBinding
+import one.mixin.android.databinding.FragmentWalletUnlockBottomSheetBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
@@ -32,16 +31,16 @@ import java.net.UnknownHostException
 import java.util.concurrent.ExecutionException
 
 @AndroidEntryPoint
-class WalletCreateBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
-        const val TAG = "WalletCreateBottomSheetDialogFragment"
+        const val TAG = "WalletUnlockBottomSheetDialogFragment"
         const val ARGS_TYPE = "type"
         const val TYPE_ETH = "eth"
         const val TYPE_POLYGON = "polygon"
         const val TYPE_BSC = "bsc"
 
         fun newInstance(type:String) =
-            WalletCreateBottomSheetDialogFragment().withArgs {
+            WalletUnlockBottomSheetDialogFragment().withArgs {
                 putString(ARGS_TYPE, type)
             }
     }
@@ -50,9 +49,9 @@ class WalletCreateBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         requireArguments().getString(ARGS_TYPE, TYPE_ETH)
     }
 
-    private val keyViewModel by viewModels<WalletCreateViewModel>()
+    private val keyViewModel by viewModels<WalletUnlockViewModel>()
 
-    private val binding by viewBinding(FragmentWalletCreateBottomSheetBinding::inflate)
+    private val binding by viewBinding(FragmentWalletUnlockBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi", "SetTextI18n", "StringFormatMatches")
     override fun setupDialog(

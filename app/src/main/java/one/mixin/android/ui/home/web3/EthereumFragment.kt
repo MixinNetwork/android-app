@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -19,8 +18,8 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
-import one.mixin.android.ui.tip.wc.WalletCreateBottomSheetDialogFragment
-import one.mixin.android.ui.tip.wc.WalletCreateBottomSheetDialogFragment.Companion.TYPE_ETH
+import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_ETH
 import one.mixin.android.widget.SpacesItemDecoration
 
 class EthereumFragment : BaseFragment() {
@@ -57,7 +56,7 @@ class EthereumFragment : BaseFragment() {
             if (address.isBlank()) {
                 binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_ethereum)
                 binding.chainCard.setOnCreateListener {
-                    WalletCreateBottomSheetDialogFragment.newInstance(TYPE_ETH).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
+                    WalletUnlockBottomSheetDialogFragment.newInstance(TYPE_ETH).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
                 }
             } else {
                 binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), address.formatPublicKey(), R.string.Copy, R.drawable.ic_ethereum)
