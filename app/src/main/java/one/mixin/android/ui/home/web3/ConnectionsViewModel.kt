@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import one.mixin.android.Constants
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.vo.ConnectionUI
@@ -38,7 +39,7 @@ class ConnectionsViewModel
     fun getLatestActiveSignSessions(): List<ConnectionUI> {
             val v2List =
                 WalletConnectV2.getListOfActiveSessions().filter { wcSession ->
-                    wcSession.metaData != null
+                    wcSession.metaData != null && !Constants.InternalWeb3Wallet.any { it.name == wcSession.metaData?.name || it.uri == wcSession.metaData?.url }
                 }.mapIndexed { index, wcSession ->
                     ConnectionUI(
                         index = index,
