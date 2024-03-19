@@ -237,11 +237,35 @@ fun SessionRequestPage(
                 modifier = Modifier
                     .weight(1f)
             )
-            if (step == WalletConnectBottomSheetDialogFragment.Step.Sign || step == WalletConnectBottomSheetDialogFragment.Step.Send) {
-                TransferBottom({
+            if (step == WalletConnectBottomSheetDialogFragment.Step.Done || step == WalletConnectBottomSheetDialogFragment.Step.Error) {
+                Row(
+                    modifier = Modifier
+                        .background(MixinAppTheme.colors.background)
+                        .padding(20.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Button(
+                        onClick = onDismissRequest,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            backgroundColor = MixinAppTheme.colors.accent,
+                        ),
+                        shape = RoundedCornerShape(20.dp),
+                        contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                    ) {
+                        Text(text = stringResource(id = R.string.Done), color = Color.White)
+                    }
+                }
+            } else if (step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
+                TransferBottom(stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
                     viewModel.rejectRequest(version, topic)
                     onDismissRequest.invoke()
-                }, showPin, { onPositiveClick.invoke(sessionRequestUI.requestId) }, step == WalletConnectBottomSheetDialogFragment.Step.Send)
+                }, showPin)
+            } else if (step == WalletConnectBottomSheetDialogFragment.Step.Send) {
+                TransferBottom(stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {
+                    viewModel.rejectRequest(version, topic)
+                    onDismissRequest.invoke()
+                }, { onPositiveClick.invoke(sessionRequestUI.requestId) })
             }
             Box(modifier = Modifier.height(32.dp))
         }
@@ -621,7 +645,7 @@ private fun GasItem(
 }
 
 @Composable
-fun TransferBottom(cancelAction: () -> Unit, confirmAction: () -> Unit, sendAction: () -> Unit, isSend: Boolean) {
+fun TransferBottom(cancelTitle:String, confirmTitle:String,cancelAction: () -> Unit, confirmAction: () -> Unit) {
     Row(
         modifier = Modifier
             .background(MixinAppTheme.colors.background)
@@ -630,28 +654,26 @@ fun TransferBottom(cancelAction: () -> Unit, confirmAction: () -> Unit, sendActi
         horizontalArrangement = Arrangement.Center
     ) {
 
-        if (!isSend) {
-            Button(
-                onClick = cancelAction,
-                colors = ButtonDefaults.outlinedButtonColors(
-                    backgroundColor = MixinAppTheme.colors.backgroundGray,
-                ),
-                shape = RoundedCornerShape(20.dp),
-                contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
-            ) {
-                Text(text = stringResource(id = R.string.Cancel), color = MixinAppTheme.colors.textPrimary)
-            }
-            Box(modifier = Modifier.width(36.dp))
-        }
         Button(
-            onClick = if (isSend) sendAction else confirmAction,
+            onClick = cancelAction,
+            colors = ButtonDefaults.outlinedButtonColors(
+                backgroundColor = MixinAppTheme.colors.backgroundGray,
+            ),
+            shape = RoundedCornerShape(20.dp),
+            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+        ) {
+            Text(text = cancelTitle, color = MixinAppTheme.colors.textPrimary)
+        }
+        Box(modifier = Modifier.width(36.dp))
+        Button(
+            onClick = confirmAction,
             colors = ButtonDefaults.outlinedButtonColors(
                 backgroundColor = MixinAppTheme.colors.accent,
             ),
             shape = RoundedCornerShape(20.dp),
             contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
         ) {
-            Text(text = stringResource(id = if (isSend) R.string.Send else R.string.Confirm), color = Color.White)
+            Text(text = confirmTitle, color = Color.White)
         }
     }
 }
@@ -679,8 +701,8 @@ fun Message() {
 @Composable
 fun TransferBottomPreview() {
     Column {
-        TransferBottom({}, {}, {},false)
-        TransferBottom({}, {}, {},true)
+        TransferBottom(stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {}, {})
+        TransferBottom(stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {}, {})
     }
 }
 

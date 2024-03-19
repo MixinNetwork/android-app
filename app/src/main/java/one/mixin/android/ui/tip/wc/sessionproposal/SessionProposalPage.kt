@@ -155,7 +155,7 @@ fun SessionProposalPage(
                 modifier = Modifier
                     .weight(1f)
             )
-            if (step == WalletConnectBottomSheetDialogFragment.Step.Done) {
+            if (step == WalletConnectBottomSheetDialogFragment.Step.Done || step == WalletConnectBottomSheetDialogFragment.Step.Error) {
                 Row(
                     modifier = Modifier
                         .background(MixinAppTheme.colors.background)
@@ -175,10 +175,10 @@ fun SessionProposalPage(
                     }
                 }
             } else if (step != WalletConnectBottomSheetDialogFragment.Step.Loading){
-                TransferBottom({
+                TransferBottom(stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
                     viewModel.rejectSession(version, topic)
                     onDismissRequest.invoke()
-                }, showPin, {}, false)
+                }, showPin)
             }
             Box(
                 modifier = Modifier.height(32.dp)
