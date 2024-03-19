@@ -67,8 +67,6 @@ class FiatMoneyViewModel
 
         suspend fun payment(id:String,paymentRequest: RoutePaymentRequest): MixinResponse<RouteOrderResponse> = tokenRepository.payment(id,paymentRequest)
 
-        suspend fun payment(paymentId: String): MixinResponse<RouteOrderResponse> = tokenRepository.payment(paymentId)
-
         suspend fun orders(): MixinResponse<List<RouteOrderResponse>> = tokenRepository.orders()
 
         suspend fun createOrder(createSession: OrderRequest): MixinResponse<RouteOrderResponse> = tokenRepository.createOrder(createSession)

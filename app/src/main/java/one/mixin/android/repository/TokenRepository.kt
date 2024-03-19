@@ -635,9 +635,6 @@ class TokenRepository
 
         suspend fun payment(id:String, paymentRequestst: RoutePaymentRequest): MixinResponse<RouteOrderResponse> = routeService.order(id, paymentRequestst)
 
-        suspend fun payment(paymentId: String): MixinResponse<RouteOrderResponse> =
-            routeService.order(paymentId)
-
         suspend fun orders(): MixinResponse<List<RouteOrderResponse>> = routeService.payments()
 
         suspend fun createOrder(createSession: OrderRequest): MixinResponse<RouteOrderResponse> =

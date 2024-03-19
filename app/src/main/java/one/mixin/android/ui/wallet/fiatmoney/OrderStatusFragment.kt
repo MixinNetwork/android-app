@@ -384,13 +384,13 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 try {
                     val session = fiatMoneyViewModel.getOrder(sessionResponse.orderId)
                     if (session.isSuccess) {
-                        if (session.data?.session?.status == RouteSessionStatus.Approved.value) {
-                            paymentsPrecondition(orderId = sessionResponse.orderId,sessionId = sessionResponse.session.sessionId, instrumentId = sessionResponse.instrumentId, null)
+                        if (session.data?.session?.status.equalsIgnoreCase(RouteSessionStatus.Approved.value)) {
+                            paymentsPrecondition(orderId = sessionResponse.orderId, sessionId = sessionResponse.session.sessionId, instrumentId = sessionResponse.instrumentId, null)
                             if (ckoAuthenticationStatus == "PENDING") {
                                 reportException(IllegalStateException("3DS no callback, cko status: $ckoAuthenticationStatus, session(${sessionResponse.session.sessionId}) status:${session.data?.session?.status}"))
                             }
                             break
-                        } else if (session.data?.session?.status != RouteSessionStatus.Pending.value && session.data?.session?.status != RouteSessionStatus.Processing.value) {
+                        } else if (!session.data?.session?.status.equalsIgnoreCase(RouteSessionStatus.Pending.value) && !session.data?.session?.status.equalsIgnoreCase(RouteSessionStatus.Processing.value)) {
                             showError(session.data?.session?.status ?: session.errorDescription)
                             return@launch
                         } else {
@@ -398,7 +398,13 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                             delay(REFRESH_INTERVAL)
                         }
                     } else {
-                        delay(REFRESH_INTERVAL)
+                        showError(
+                            requireContext().getMixinErrorStringByCode(
+                                session.errorCode,
+                                session.errorDescription,
+                            ),
+                        )
+                        return@launch
                     }
                 } catch (e: Exception) {
                     delay(REFRESH_INTERVAL)
@@ -558,10 +564,10 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     ),
                 )
             if (response.isSuccess) {
-                if (response.data?.session?.status == RoutePaymentStatus.Captured.name) {
+                if (response.data?.session?.status.equalsIgnoreCase(RoutePaymentStatus.Captured.name)) {
                     assetAmount = response.data!!.assetAmount
                     status = OrderStatus.SUCCESS
-                } else if (response.data?.session?.status == RoutePaymentStatus.Declined.name) {
+                } else if (response.data?.session?.status.equalsIgnoreCase(RoutePaymentStatus.Declined.name)) {
                     showError(getString(R.string.buy_declined_description))
                 } else {
                     val oId = response.data?.orderId
@@ -612,13 +618,14 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     private suspend fun getOrderPaymentStatus(orderId: String) {
         lifecycleScope.launch(defaultErrorHandler) {
             while (isActive) {
-                val response = fiatMoneyViewModel.payment(orderId)
-                if (response.data?.status == RoutePaymentStatus.Captured.name) {
+                val response = fiatMoneyViewModel.getOrder(orderId)
+                if (response.data?.status.equalsIgnoreCase(RoutePaymentStatus.Captured.name)) {
                     assetAmount = response.data!!.assetAmount
                     status = OrderStatus.SUCCESS
                     break
-                } else if (response.data?.state == OrderState.Declined.value) {
+                } else if (response.data?.status.equalsIgnoreCase(OrderState.Declined.value)) {
                     showError(response.data?.reason)
+                    break
                 } else if (response.isSuccess) {
                     delay(REFRESH_INTERVAL)
                 } else {
