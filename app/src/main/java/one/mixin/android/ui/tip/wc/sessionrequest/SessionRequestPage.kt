@@ -179,7 +179,7 @@ fun SessionRequestPage(
             )
             Box(modifier = Modifier.height(8.dp))
             Text(
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier.padding(horizontal = 24.dp),
                 text = errorInfo ?: stringResource(id = R.string.allow_dapp_access_address_and_transaction),
                 textAlign = TextAlign.Center,
                 style =

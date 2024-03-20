@@ -28,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -124,6 +125,7 @@ fun SessionProposalPage(
             )
             Box(modifier = Modifier.height(8.dp))
             Text(
+                modifier = Modifier.padding(horizontal = 24.dp),
                 text = errorInfo ?: stringResource(id = R.string.allow_dapp_access_address_and_transaction),
                 style =
                 TextStyle(
@@ -131,6 +133,7 @@ fun SessionProposalPage(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.W400,
                 ),
+                textAlign = TextAlign.Center,
                 maxLines = 3,
                 minLines = 3,
             )
