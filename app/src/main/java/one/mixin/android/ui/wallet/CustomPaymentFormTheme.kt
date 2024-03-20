@@ -74,13 +74,11 @@ object CustomPaymentFormTheme {
                     addBillingSummaryButton =
                         PaymentFormComponentBuilder()
                             .setIsFieldOptional(true)
-                            .setIsFieldHidden(true)
                             .setPaymentFormField(PaymentFormComponentField.AddBillingSummaryButton)
                             .build(),
                     editBillingSummaryButton =
                         PaymentFormComponentBuilder()
                             .setIsFieldOptional(true)
-                            .setIsFieldHidden(true)
                             .setPaymentFormField(PaymentFormComponentField.AddBillingSummaryButton)
                             .build(),
                     cardHolderName =
