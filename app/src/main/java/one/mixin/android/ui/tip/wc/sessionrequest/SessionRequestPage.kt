@@ -29,6 +29,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -353,11 +354,6 @@ private fun Transaction(
 }
 
 @Composable
-private fun WarningPreview() {
-    Warning(false)
-}
-
-@Composable
 private fun Message(
     content: String,
     onPreviewMessage: (String) -> Unit,
@@ -517,6 +513,9 @@ private fun FeeInfo(
 
 @Composable
 private fun Warning(isEthSign: Boolean) {
+    var isVisible by remember { mutableStateOf(true) }
+
+    if (isVisible){
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -524,24 +523,34 @@ private fun Warning(isEthSign: Boolean) {
             .clip(RoundedCornerShape(8.dp))
             .background(MixinAppTheme.colors.tipWarning)
             .border(1.dp, MixinAppTheme.colors.tipWarningBorder)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(20.dp),
     ) {
         Image(
             painter = painterResource(R.drawable.ic_warning),
             modifier = Modifier
                 .size(40.dp, 40.dp)
-                .padding(horizontal = 8.dp),
+                .padding(horizontal = 7.dp),
             contentDescription = null,
         )
-        Box(modifier = Modifier.width(8.dp))
-        Text(
-            modifier = Modifier.padding(vertical = 12.dp),
-            text = if (isEthSign) stringResource(id = R.string.blocked_action, "eth_sign") else stringResource(id = R.string.signature_request_warning),
-            color = if (isEthSign) MixinAppTheme.colors.red else MixinAppTheme.colors.textPrimary,
-            fontSize = 14.sp,
-        )
-        Box(modifier = Modifier.width(16.dp))
+        Box(modifier = Modifier.width(20.dp))
+        Column {
+            Text(
+                text = if (isEthSign) stringResource(id = R.string.blocked_action, "eth_sign") else stringResource(id = R.string.signature_request_warning),
+                color = MixinAppTheme.colors.tipError,
+                fontSize = 14.sp,
+            )
+            Box(modifier = Modifier.width(8.dp))
+            Row(modifier = Modifier.align(Alignment.End)) {
+                Text(
+                    modifier = Modifier.clickable {
+                        isVisible = false
+                    },
+                    text = stringResource(id = R.string.Got_it), color = MixinAppTheme.colors.textBlue, fontSize = 14.sp
+                )
+            }
+        }
+
+    }
     }
 }
 
@@ -597,6 +606,16 @@ private fun ChooseGasBottomSheet(
 @Composable
 private fun NetworkInfoPreview() {
     FeeInfo("0.0169028 ETH", "$7.57") {}
+}
+
+@Preview
+@Composable
+private fun WarningPreview() {
+    Column {
+        Warning(false)
+        Box(modifier = Modifier.height(8.dp))
+        Warning(true)
+    }
 }
 
 @Composable
