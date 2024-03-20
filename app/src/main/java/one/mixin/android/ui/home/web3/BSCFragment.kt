@@ -7,15 +7,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.uber.autodispose.autoDispose
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentBscBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.toast
+import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
@@ -44,6 +47,11 @@ class BSCFragment : BaseFragment() {
 
             walletRv.addItemDecoration(SpacesItemDecoration(4.dp, true))
         }
+        RxBus.listen(WCUnlockEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                updateUI()
+            }
         updateUI()
         return binding.root
     }
@@ -54,7 +62,7 @@ class BSCFragment : BaseFragment() {
             if (address.isBlank()) {
                 binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.BSC)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_bsc)
                 binding.chainCard.setOnCreateListener {
-                    WalletUnlockBottomSheetDialogFragment.newInstance(WalletUnlockBottomSheetDialogFragment.TYPE_BSC).showNow(parentFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
+                    WalletUnlockBottomSheetDialogFragment.getInstance(WalletUnlockBottomSheetDialogFragment.TYPE_BSC).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
                 }
             } else {
                 binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.BSC)), address.formatPublicKey(), R.string.Copy, R.drawable.ic_bsc)

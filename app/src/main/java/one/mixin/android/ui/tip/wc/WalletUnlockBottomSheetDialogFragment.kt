@@ -2,6 +2,7 @@ package one.mixin.android.ui.tip.wc
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -10,6 +11,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
@@ -19,6 +21,8 @@ import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
+import one.mixin.android.tip.wc.WCEvent
+import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
@@ -39,11 +43,33 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val TYPE_POLYGON = "polygon"
         const val TYPE_BSC = "bsc"
 
-        fun newInstance(type:String) =
-            WalletUnlockBottomSheetDialogFragment().withArgs {
-                putString(ARGS_TYPE, type)
+        @SuppressLint("StaticFieldLeak")
+        private var instance: WalletUnlockBottomSheetDialogFragment? = null
+
+        @Synchronized
+        fun getInstance(type: String): WalletUnlockBottomSheetDialogFragment {
+            if (instance == null) {
+                instance = WalletUnlockBottomSheetDialogFragment().withArgs {
+                    putString(ARGS_TYPE, type)
+                }
             }
+            return instance!!
+        }
     }
+
+    fun showIfNotShowing(manager: FragmentManager, tag: String) {
+        if (!isShowing) {
+            instance!!.showNow(manager, tag)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        instance = null
+    }
+
+    private val isShowing: Boolean
+        get() = instance != null && instance!!.isAdded
 
     private val type by lazy {
         requireArguments().getString(ARGS_TYPE, TYPE_ETH)
@@ -178,6 +204,7 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             ) {
                 val address = keyViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
                 PropertyHelper.updateKeyValue(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, address)
+                RxBus.publish(WCUnlockEvent())
                 keyViewModel.success(address)
             }
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
