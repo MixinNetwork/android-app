@@ -31,6 +31,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignTop="@+id/avatar"
+                android:layout_marginTop="4dp"
                 android:layout_marginStart="@dimen/margin12"
                 android:layout_marginEnd="42dp"
                 android:layout_toEndOf="@+id/avatar"
@@ -44,8 +45,8 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/balance"
                 android:layout_marginStart="@dimen/margin12"
-                android:layout_marginTop="@dimen/margin12"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="4dp"
                 android:layout_marginBottom="@dimen/margin16"
                 android:layout_toEndOf="@id/avatar"
                 android:textColor="?attr/text_assist" />
