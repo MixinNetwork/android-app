@@ -30,7 +30,7 @@ internal fun buildAmountSymbol(
     @ColorInt amountColor: Int,
     @ColorInt symbolColor: Int,
 ) = buildSpannedString {
-    scale(3f) {
+    scale(2.43f) { // 34/14
         font(
             ResourcesCompat.getFont(context, R.font.mixin_font),
         ) {
