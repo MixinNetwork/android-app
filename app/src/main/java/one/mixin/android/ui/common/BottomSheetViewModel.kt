@@ -1240,5 +1240,6 @@ class BottomSheetViewModel
             }
 
         suspend fun getScheme(id: String) = accountRepository.getScheme(id)
+
         suspend fun findTokensExtra(asset: String) = tokenRepository.findTokensExtra(asset)
-}
+    }

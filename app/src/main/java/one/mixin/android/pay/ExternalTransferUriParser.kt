@@ -16,7 +16,7 @@ suspend fun parseExternalTransferUri(
     getFee: suspend (String, String) -> List<WithdrawalResponse>?,
     findAssetIdByAssetKey: suspend (String) -> String?,
     getAssetPrecisionById: suspend (String) -> AssetPrecision?,
-    balanceCheck: suspend (String ,BigDecimal, String?, BigDecimal?) -> Unit,
+    balanceCheck: suspend (String, BigDecimal, String?, BigDecimal?) -> Unit,
 ): ExternalTransfer? {
     if (url.isEthereumURLString()) {
         return parseEthereum(url, validateAddress, getFee, findAssetIdByAssetKey, getAssetPrecisionById, balanceCheck)

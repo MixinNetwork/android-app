@@ -29,6 +29,8 @@ class AppColors(
     val tipError: Color = Color(0xFFF67070),
     val shadow: Color = Color(0x33AAAAAA),
     val unchecked: Color,
+    val tipWarning: Color,
+    val tipWarningBorder: Color,
 )
 
 class AppDrawables(
@@ -62,6 +64,8 @@ private val LightColorPalette =
         backgroundDark = Color(0xFF999999),
         backgroundGray = Color(0xFFF5F7FA),
         unchecked = Color(0xFFECECEC),
+        tipWarning = Color(0xFFFBF1F0),
+        tipWarningBorder = Color(0xFFE86B67),
     )
 
 private val DarkColorPalette =
@@ -78,6 +82,8 @@ private val DarkColorPalette =
         backgroundDark = Color(0xFF121212),
         backgroundGray = Color(0xFF3B3F44),
         unchecked = Color(0xFFECECEC),
+        tipWarning = Color(0xFF3E373B),
+        tipWarningBorder = Color(0xFFE86B67),
     )
 
 private val LightDrawablePalette =

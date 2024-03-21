@@ -3,13 +3,11 @@ package one.mixin.android.tip.wc
 import android.content.Context
 import android.util.LruCache
 import com.walletconnect.web3.wallet.client.Wallet
-import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.GasPriceType
 import one.mixin.android.api.response.TipGas
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.toUri
 import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.internal.Chain
@@ -28,11 +26,10 @@ abstract class WalletConnect {
     companion object {
         const val TAG = "WalletConnect"
 
-        internal const val web3jTimeout = 10L
+        internal const val web3jTimeout = 20L
 
         fun isEnabled(context: Context): Boolean =
-            Session.getAccount()?.hasPin == true && !Session.getTipPub().isNullOrBlank() &&
-                (context.defaultSharedPreferences.getBoolean(Constants.Debug.WALLET_CONNECT_DEBUG, false) || Session.isTipFeatureEnabled())
+            Session.getAccount()?.hasPin == true && !Session.getTipPub().isNullOrBlank()
 
         fun connect(
             url: String,

@@ -78,6 +78,9 @@ data class SnapshotItem(
     @SerialName("withdrawal")
     @ColumnInfo(name = "withdrawal")
     val withdrawal: SafeWithdrawal?,
+    @SerializedName("label")
+    @ColumnInfo(name = "label")
+    var label: String?,
 ) : Parcelable {
     val formatMemo: FormatMemo?
         get() {
@@ -128,6 +131,7 @@ data class SnapshotItem(
                 closingBalance = snapshot.closingBalance,
                 deposit = snapshot.deposit,
                 withdrawal = snapshot.withdrawal,
+                label = null,
             )
     }
 

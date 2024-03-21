@@ -18,7 +18,7 @@ internal suspend fun parseEthereum(
     getFee: suspend (String, String) -> List<WithdrawalResponse>?,
     findAssetIdByAssetKey: suspend (String) -> String?,
     getAssetPrecisionById: suspend (String) -> AssetPrecision?,
-    balanceCheck: suspend (String ,BigDecimal, String?, BigDecimal?) -> Unit,
+    balanceCheck: suspend (String, BigDecimal, String?, BigDecimal?) -> Unit,
 ): ExternalTransfer? {
     val erc681 = EthereumURI(url).toERC681()
     if (!erc681.valid) return null

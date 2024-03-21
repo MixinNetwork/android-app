@@ -141,6 +141,8 @@ import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
+import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_ETH
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
@@ -297,7 +299,13 @@ class MainActivity : BlazeBaseActivity() {
         RxBus.listen(WCEvent::class.java)
             .autoDispose(destroyScope)
             .subscribe { e ->
-                WalletConnectActivity.show(this, e)
+                lifecycleScope.launch {
+                    if (PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, "").isBlank()) {
+                        WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_ETH).showIfNotShowing(supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                    } else {
+                        WalletConnectActivity.show(this@MainActivity, e)
+                    }
+                }
             }
         RxBus.listen(WCErrorEvent::class.java)
             .autoDispose(destroyScope)

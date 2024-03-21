@@ -1,5 +1,9 @@
 package one.mixin.android.ui.wallet.adapter
 
+import android.graphics.Color
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.RelativeSizeSpan
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
@@ -14,6 +18,7 @@ import one.mixin.android.extension.timeAgoDay
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.SafeSnapshotType
+import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
 
 open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
     private val binding = ItemWalletTransactionsBinding.bind(itemView)
@@ -60,14 +65,23 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                 } else {
                     binding.avatar.setWithdrawal()
                     val receiver = snapshot.withdrawal?.receiver
-                    binding.name.text =
-                        (
-                            if (receiver.isNullOrBlank()) {
-                                "N/A"
-                            } else {
-                                receiver
-                            }
-                        ).formatPublicKey()
+                    val label = snapshot.label
+                    if (receiver.isNullOrBlank()) {
+                        binding.name.text = "N/A"
+                    } else if (label.isNullOrBlank()) {
+                        binding.name.text = receiver.formatPublicKey()
+                    } else {
+                        val fullText = "${snapshot.withdrawal.receiver} $label"
+                        val spannableString = SpannableString(fullText)
+                        val start = fullText.lastIndexOf(label)
+                        val end = start + label.length
+
+                        val backgroundColor: Int = Color.parseColor("#8DCC99")
+                        val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
+                        spannableString.setSpan(RelativeSizeSpan(0.8f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                        spannableString.setSpan(backgroundColorSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                        binding.name.text = spannableString
+                    }
                 }
                 binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_primary)
                 binding.bg.setConfirmation(0, 0)

@@ -233,6 +233,9 @@ class ExternalTransferUriParserTest {
             { assetId ->
                 return@parseExternalTransferUri AssetPrecision(assetId, Constants.ChainId.ETHEREUM_CHAIN_ID, mockAssetPrecision[assetId] ?: 0)
             },
+            { _, _, _, _ ->
+                // do nothing
+            },
         )
 
     private val mockGetAddressResponse: suspend (String, String) -> AddressResponse? = { assetId, destination ->

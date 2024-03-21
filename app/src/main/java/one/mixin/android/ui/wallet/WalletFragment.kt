@@ -192,7 +192,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                         .setNegativeButton(R.string.Cancel) { dialog, _ ->
                             dialog.dismiss()
                         }.setPositiveButton(R.string.Update) { dialog, _ ->
-                            requireContext().openMarket()
+                            requireContext().openMarket(parentFragmentManager, lifecycleScope)
                             dialog.dismiss()
                         }.create().show()
                     throw MixinResponseException(
@@ -605,10 +605,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         }
         bottomBinding.transactionsTv.setOnClickListener {
             WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions)
-            bottomSheet.dismiss()
-        }
-        bottomBinding.connectedTv.setOnClickListener {
-            WalletActivity.show(requireActivity(), WalletActivity.Destination.WalletConnect)
             bottomSheet.dismiss()
         }
 

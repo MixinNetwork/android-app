@@ -59,7 +59,6 @@ abstract class BaseTransactionsFragment<C>(
     protected var currentType = R.id.filters_radio_all
     protected var currentOrder = R.id.sort_time
 
-
     abstract fun onApplyClick()
 
     override fun onViewCreated(

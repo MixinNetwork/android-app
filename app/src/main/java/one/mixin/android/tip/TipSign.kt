@@ -3,7 +3,6 @@ package one.mixin.android.tip
 import one.mixin.android.Constants
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
-import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
@@ -108,8 +107,7 @@ fun tipPrivToPrivateKey(
     priv: ByteArray,
     chainId: String = Constants.ChainId.ETHEREUM_CHAIN_ID,
 ): ByteArray {
-    val seed = priv.sha3Sum256()
-    val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed)
+    val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
     val bip44KeyPair =
         when (chainId) {
             Constants.ChainId.BITCOIN_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Bitcoin)
@@ -123,8 +121,7 @@ fun tipPrivToAddress(
     priv: ByteArray,
     chainId: String,
 ): String {
-    val seed = priv.sha3Sum256()
-    val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed)
+    val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
     val bip44KeyPair =
         when (chainId) {
             Constants.ChainId.BITCOIN_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Bitcoin)

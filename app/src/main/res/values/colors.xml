@@ -54,6 +54,10 @@
     <color name="bgTipWarning">#FBF1F0</color>
     <color name="bgTipWarningBorder">#E86B67</color>
 
+    <color name="chainGradientStart">#F6F7FA</color>
+    <color name="chainGradientEnd">#EEF0F3</color>
+    <color name="iconChain">#AAFFFFFF</color>
+
     <color name="musicPlayed">#2F3032</color>
     <color name="musicUnPlayed">#F6F7FA</color>
     <color name="musicBuffered">#442F3032</color>

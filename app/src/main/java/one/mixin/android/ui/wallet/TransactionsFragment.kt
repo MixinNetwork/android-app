@@ -123,7 +123,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
                     headerAdapter.show = true
                 }
                 adapter.submitList(pagedList)
-
             }
         bindLiveData()
         walletViewModel.assetItem(asset.assetId).observe(

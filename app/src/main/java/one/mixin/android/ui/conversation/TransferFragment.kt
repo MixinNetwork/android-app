@@ -69,7 +69,6 @@ import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogF
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
-import one.mixin.android.ui.oldwallet.OldTransferFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
@@ -439,7 +438,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             binding.continueVa.displayedChild = displayedChild
         }
         val s = binding.amountEt.text
-        binding.continueVa.isEnabled = s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber() && checkBalance()
+        binding.continueTv.isEnabled = s.toString().checkNumber() && checkBalance()
+        binding.continueVa.isEnabled = binding.continueVa.displayedChild == POST_TEXT && binding.continueTv.isEnabled
     }
 
     private fun checkBalance(): Boolean {
@@ -822,7 +822,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 checkInputForbidden(s)
                 if (s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber()) {
                     binding.continueTv.isEnabled = s.toString().checkNumber() && checkBalance()
-                    binding.continueVa.isEnabled = binding.continueVa.displayedChild == OldTransferFragment.POST_TEXT && binding.continueTv.isEnabled
+                    binding.continueVa.isEnabled = binding.continueVa.displayedChild == POST_TEXT && binding.continueTv.isEnabled
                     binding.continueTv.textColor = requireContext().getColor(R.color.white)
                     if (binding.amountRl.isVisible && t.asset != null) {
                         binding.amountEt.hint = ""
