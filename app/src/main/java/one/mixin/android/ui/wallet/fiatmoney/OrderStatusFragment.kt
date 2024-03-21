@@ -623,7 +623,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     assetAmount = response.data!!.assetAmount
                     status = OrderStatus.SUCCESS
                     break
-                } else if (response.data?.status.equalsIgnoreCase(OrderState.Declined.value)) {
+                } else if (response.data?.state.equalsIgnoreCase(OrderState.Failed.value)) {
                     showError(response.data?.reason)
                     break
                 } else if (response.isSuccess) {
