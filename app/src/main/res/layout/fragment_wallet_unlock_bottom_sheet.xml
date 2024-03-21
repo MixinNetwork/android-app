@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_upper_round">
+
+    <one.mixin.android.ui.tip.wc.UnlockHeader
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ViewAnimator
+            android:id="@+id/content_va"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/agreement"
+                    android:text="@string/unlock_web3_account_agreement"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="14sp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <one.mixin.android.widget.DotTextLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp">
+
+                    <ImageView
+                        android:src="@drawable/dot_black"
+                        android:layout_width="wrap_content"
+                        android:layout_height="14sp"
+                        android:padding="4dp"
+                        android:contentDescription="@null" />
+
+                    <TextView
+                        android:id="@+id/agreement_1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="3dp"
+                        android:lineSpacingExtra="2dp"
+                        android:text="@string/unlock_web3_account_agreement_1"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="14sp" />
+                </one.mixin.android.widget.DotTextLayout>
+
+                <one.mixin.android.widget.DotTextLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp">
+
+                    <ImageView
+                        android:src="@drawable/dot_black"
+                        android:layout_width="wrap_content"
+                        android:layout_height="14sp"
+                        android:padding="4dp"
+                        android:contentDescription="@null" />
+
+                    <TextView
+                        android:id="@+id/agreement_2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="3dp"
+                        android:lineSpacingExtra="2dp"
+                        android:text="@string/unlock_web3_account_agreement_2"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="14sp" />
+                </one.mixin.android.widget.DotTextLayout>
+
+                <one.mixin.android.widget.DotTextLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp">
+
+                    <ImageView
+                        android:src="@drawable/dot_black"
+                        android:layout_width="wrap_content"
+                        android:layout_height="14sp"
+                        android:padding="4dp"
+                        android:contentDescription="@null" />
+
+                    <TextView
+                        android:id="@+id/agreement_3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="3dp"
+                        android:lineSpacingExtra="2dp"
+                        android:text="@string/unlock_web3_account_agreement_3"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="14sp" />
+                </one.mixin.android.widget.DotTextLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:text="@string/Account"
+                    android:textColor="?attr/text_assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_marginTop="4dp"
+                    android:id="@+id/key"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="16sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+        </ViewAnimator>
+
+    </ScrollView>
+
+    <one.mixin.android.ui.wallet.transfer.widget.TransferBottom
+        android:id="@+id/bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal" />
+</LinearLayout>
+

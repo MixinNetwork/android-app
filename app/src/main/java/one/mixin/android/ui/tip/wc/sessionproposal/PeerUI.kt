@@ -5,4 +5,5 @@ data class PeerUI(
     val name: String,
     val icon: String,
     val desc: String,
+    val account: String,
 )

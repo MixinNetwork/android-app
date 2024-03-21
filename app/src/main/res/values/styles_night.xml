@@ -53,6 +53,10 @@
         <item name="bg_tip_warning">@color/bgTipWarningNight</item>
         <item name="bg_tip_warning_border">@color/bgTipWarningBorderNight</item>
 
+        <item name="bg_chain_gradient_start">@color/chainGradientStartNight</item>
+        <item name="bg_chain_gradient_end">@color/chainGradientEndNight</item>
+        <item name="icon_chain">@color/iconChainNight</item>
+
         <item name="music_played">@color/musicPlayedNight</item>
         <item name="music_unplayed">@color/musicUnPlayedNight</item>
         <item name="music_buffered">@color/musicBufferedNight</item>

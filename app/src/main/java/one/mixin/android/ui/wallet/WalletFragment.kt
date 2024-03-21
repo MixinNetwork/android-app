@@ -608,10 +608,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions)
             bottomSheet.dismiss()
         }
-        bottomBinding.connectedTv.setOnClickListener {
-            WalletActivity.show(requireActivity(), WalletActivity.Destination.WalletConnect)
-            bottomSheet.dismiss()
-        }
 
         bottomSheet.show()
     }

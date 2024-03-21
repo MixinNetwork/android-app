@@ -78,7 +78,12 @@
         <item name="music_floating_bg">@color/musicFloatingBg</item>
         <item name="music_play_pause_bg">@color/musicPlayPauseBg</item>
 
-        <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
+        <item name="bg_chain_gradient_start">@color/chainGradientStart</item>
+        <item name="bg_chain_gradient_end">@color/chainGradientEnd</item>
+        <item name="icon_chain">@color/iconChain</item>
+
+
+    <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
 
         <item name="code_border">@color/codeBorder</item>

@@ -207,8 +207,6 @@ object Session {
 
     fun getTipCounter(): Int = getAccount()?.tipCounter ?: 0
 
-    fun isTipFeatureEnabled(): Boolean = getAccount()?.features?.contains("tip") == true
-
     fun checkToken() = getAccount() != null && !getPinToken().isNullOrBlank()
 
     fun shouldUpdateKey() =
