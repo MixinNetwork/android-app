@@ -12,7 +12,7 @@ data class WCEthereumTransaction(
     val gas: String?,
     val gasLimit: String?,
     val value: String?,
-    val data: String,
+    val data: String?,
 )
 
 val ethTransactionSerializer =
