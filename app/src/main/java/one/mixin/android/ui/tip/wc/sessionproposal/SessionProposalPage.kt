@@ -40,7 +40,7 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
-import one.mixin.android.ui.tip.wc.sessionrequest.TransferBottom
+import one.mixin.android.ui.tip.wc.sessionrequest.ActionBottom
 
 @Composable
 fun SessionProposalPage(
@@ -172,7 +172,7 @@ fun SessionProposalPage(
                     }
                 }
             } else if (step != WalletConnectBottomSheetDialogFragment.Step.Loading){
-                TransferBottom(stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
+                ActionBottom(modifier = Modifier, stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
                     viewModel.rejectSession(version, topic)
                     onDismissRequest.invoke()
                 }, showPin)

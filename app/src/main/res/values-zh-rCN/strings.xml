@@ -1437,4 +1437,5 @@
     <string name="unlimited_authorization_warning">这个应用可以提取你 %1$s 账号（%2$s）里所有的 %3$s 资产。</string>
     <string name="withdraw_all_of_token_warning">这个应用可以提取你所有的 %1$s。</string>
     <string name="Unlocking">正在解锁</string>
+    <string name="decode_transaction_failed">交易解析失败，无法估计资产变化，注意只给您信任的应用程序签名。</string>
 </resources>

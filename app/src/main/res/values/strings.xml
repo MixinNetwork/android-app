@@ -1470,4 +1470,5 @@
     <string name="unlimited_authorization_warning">This application can access all %3$s in your %1$s account (%2$s).</string>
     <string name="withdraw_all_of_token_warning">This dapp can withdraw all your %1$s.</string>
     <string name="Unlocking">Unlocking</string>
+    <string name="decode_transaction_failed">Transaction decoding failed, making it impossible to estimate asset changes. Be cautious and only sign transactions for dapps you trust.</string>
 </resources>

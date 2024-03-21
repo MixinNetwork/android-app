@@ -101,7 +101,13 @@ fun SessionRequestPage(
         Loading()
         return
     }
-    val isEthSign = (sessionRequestUI.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.MESSAGE
+    val warningType = if ((sessionRequestUI.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.MESSAGE) {
+        0
+    } else if(sessionRequestUI.data is WCEthereumTransaction && sessionRequestUI.data.value == null){
+        2
+    } else {
+        1
+    }
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
 
     MixinAppTheme {
@@ -209,17 +215,23 @@ fun SessionRequestPage(
                 )
                 when (sessionRequestUI.data) {
                     is WCEthereumTransaction -> {
-                        Transaction(
-                            balance =
-                            Convert.fromWei(
-                                Numeric.toBigInt(
-                                    sessionRequestUI.data.value ?: "0",
-                                ).toBigDecimal(),
-                                Convert.Unit.ETHER,
-                            ),
-                            sessionRequestUI.chain,
-                            asset,
-                        )
+                        if (warningType == 2) {
+                            Message(content = viewModel.getContent(version, gson, sessionRequestUI.data)) {
+                                onPreviewMessage.invoke(it)
+                            }
+                        } else {
+                            Transaction(
+                                balance =
+                                Convert.fromWei(
+                                    Numeric.toBigInt(
+                                        sessionRequestUI.data.value ?: "0",
+                                    ).toBigDecimal(),
+                                    Convert.Unit.ETHER,
+                                ),
+                                sessionRequestUI.chain,
+                                asset,
+                            )
+                        }
                     }
 
                     else -> {
@@ -254,35 +266,43 @@ fun SessionRequestPage(
                         .weight(1f)
                 )
             }
-            if (step == WalletConnectBottomSheetDialogFragment.Step.Done || step == WalletConnectBottomSheetDialogFragment.Step.Error) {
-                Row(
-                    modifier = Modifier
-                        .background(MixinAppTheme.colors.background)
-                        .padding(20.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Button(
-                        onClick = onDismissRequest,
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            backgroundColor = MixinAppTheme.colors.accent,
-                        ),
-                        shape = RoundedCornerShape(20.dp),
-                        contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+
+            Box(modifier = Modifier
+                .fillMaxWidth()
+            ) {
+                if (step == WalletConnectBottomSheetDialogFragment.Step.Done || step == WalletConnectBottomSheetDialogFragment.Step.Error) {
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .background(MixinAppTheme.colors.background)
+                            .padding(20.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
                     ) {
-                        Text(text = stringResource(id = R.string.Done), color = Color.White)
+                        Button(
+                            onClick = onDismissRequest,
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                backgroundColor = MixinAppTheme.colors.accent,
+                            ),
+                            shape = RoundedCornerShape(20.dp),
+                            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                        ) {
+                            Text(text = stringResource(id = R.string.Done), color = Color.White)
+                        }
                     }
+                } else if (step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
+                    ActionBottom(modifier = Modifier.align(Alignment.BottomCenter), stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
+                        viewModel.rejectRequest(version, topic)
+                        onDismissRequest.invoke()
+                    }, showPin)
+                } else if (step == WalletConnectBottomSheetDialogFragment.Step.Send) {
+                    ActionBottom(modifier = Modifier.align(Alignment.BottomCenter), stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {
+                        viewModel.rejectRequest(version, topic)
+                        onDismissRequest.invoke()
+                    }, { onPositiveClick.invoke(sessionRequestUI.requestId) })
                 }
-            } else if (step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
-                TransferBottom(stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
-                    viewModel.rejectRequest(version, topic)
-                    onDismissRequest.invoke()
-                }, showPin)
-            } else if (step == WalletConnectBottomSheetDialogFragment.Step.Send) {
-                TransferBottom(stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {
-                    viewModel.rejectRequest(version, topic)
-                    onDismissRequest.invoke()
-                }, { onPositiveClick.invoke(sessionRequestUI.requestId) })
+
+                Warning(modifier = Modifier.align(Alignment.BottomCenter), warningType = warningType)
             }
             Box(modifier = Modifier.height(32.dp))
         }
@@ -521,17 +541,15 @@ private fun FeeInfo(
 }
 
 @Composable
-private fun Warning(isEthSign: Boolean) {
+private fun Warning(modifier:Modifier, warningType: Int) {
     var isVisible by remember { mutableStateOf(true) }
-
     if (isVisible) {
         Row(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
-                .clip(RoundedCornerShape(8.dp))
                 .background(MixinAppTheme.colors.tipWarning)
-                .border(1.dp, MixinAppTheme.colors.tipWarningBorder)
+                .border(1.dp, MixinAppTheme.colors.tipWarningBorder, shape = RoundedCornerShape(8.dp))
                 .padding(20.dp),
         ) {
             Image(
@@ -544,7 +562,7 @@ private fun Warning(isEthSign: Boolean) {
             Box(modifier = Modifier.width(20.dp))
             Column {
                 Text(
-                    text = if (isEthSign) stringResource(id = R.string.blocked_action, "eth_sign") else stringResource(id = R.string.signature_request_warning),
+                    text = if (warningType == 0) stringResource(id = R.string.blocked_action, "eth_sign") else if (warningType == 1) stringResource(id = R.string.signature_request_warning) else stringResource(id = R.string.decode_transaction_failed),
                     color = MixinAppTheme.colors.tipError,
                     fontSize = 14.sp,
                 )
@@ -620,10 +638,18 @@ private fun NetworkInfoPreview() {
 @Preview
 @Composable
 private fun WarningPreview() {
-    Column {
-        Warning(false)
-        Box(modifier = Modifier.height(8.dp))
-        Warning(true)
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .height(300.dp)
+    ) {
+
+        ActionBottom(modifier = Modifier.align(Alignment.BottomCenter),
+            cancelTitle = stringResource(id = R.string.Cancel),
+            confirmTitle = stringResource(id = R.string.Confirm),
+            cancelAction = { }) {
+        }
+
+        Warning(modifier = Modifier.align(Alignment.BottomCenter), 2)
     }
 }
 
@@ -680,9 +706,9 @@ private fun GasItem(
 }
 
 @Composable
-fun TransferBottom(cancelTitle: String, confirmTitle: String, cancelAction: () -> Unit, confirmAction: () -> Unit) {
+fun ActionBottom(modifier: Modifier, cancelTitle: String, confirmTitle: String, cancelAction: () -> Unit, confirmAction: () -> Unit) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .background(MixinAppTheme.colors.background)
             .padding(20.dp)
             .fillMaxWidth(),
@@ -736,8 +762,8 @@ fun Message() {
 @Composable
 fun TransferBottomPreview() {
     Column {
-        TransferBottom(stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {}, {})
-        TransferBottom(stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {}, {})
+        ActionBottom(modifier = Modifier, stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {}, {})
+        ActionBottom(modifier = Modifier, stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {}, {})
     }
 }
 
@@ -773,4 +799,3 @@ private fun GasItemPreview() {
         ),
     ) {}
 }
-
