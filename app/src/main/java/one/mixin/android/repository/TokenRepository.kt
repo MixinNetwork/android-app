@@ -300,6 +300,19 @@ class TokenRepository
                 } else {
                     safeSnapshotDao.snapshotsByType(id, type, otherType)
                 }
+            }.map {
+                if (!it.withdrawal?.receiver.isNullOrBlank()) {
+                    val receiver = it.withdrawal!!.receiver
+                    val index: Int = receiver.indexOf(":")
+                    if (index == -1) {
+                        it.label = addressDao.findAddressByReceiver(receiver, "")
+                    } else {
+                        val destination: String = receiver.substring(0, index)
+                        val tag: String = receiver.substring(index + 1)
+                        it.label = addressDao.findAddressByReceiver(destination, tag)
+                    }
+                }
+                it
             }
         }
 

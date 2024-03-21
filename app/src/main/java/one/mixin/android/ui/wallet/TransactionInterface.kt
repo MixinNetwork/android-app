@@ -1,7 +1,11 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.RelativeSizeSpan
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -33,6 +37,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Ticker
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
 import java.math.BigDecimal
 
 interface TransactionInterface {
@@ -386,7 +391,21 @@ interface TransactionInterface {
                         }
                         fromTitle.text = fragment.getString(R.string.To)
                         if (snapshot.withdrawal.receiver.isNotBlank()) {
-                            fromTv.text = snapshot.withdrawal.receiver
+                            val label = snapshot.label
+                            if (!label.isNullOrBlank()) {
+                                val fullText = "${snapshot.withdrawal.receiver} ${label}"
+                                val spannableString = SpannableString(fullText)
+                                val start = fullText.lastIndexOf(label)
+                                val end = start + label.length
+
+                                val backgroundColor: Int = Color.parseColor("#8DCC99")
+                                val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
+                                spannableString.setSpan(RelativeSizeSpan(0.8f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                                spannableString.setSpan(backgroundColorSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                                fromTv.text = spannableString
+                            } else {
+                                fromTv.text = snapshot.withdrawal.receiver
+                            }
                         } else {
                             fromTv.text = "N/A"
                         }
