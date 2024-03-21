@@ -496,7 +496,7 @@ object WalletConnectV2 : WalletConnect() {
                     gasLimit,
                     transaction.to,
                     v,
-                    transaction.data,
+                    transaction.data ?: transaction.value,
                 )
             } else {
                 RawTransaction.createTransaction(
