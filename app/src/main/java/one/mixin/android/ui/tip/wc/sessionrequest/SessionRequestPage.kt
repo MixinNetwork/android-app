@@ -19,8 +19,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
@@ -109,142 +111,149 @@ fun SessionRequestPage(
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .background(MixinAppTheme.colors.background),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Box(modifier = Modifier.height(50.dp))
-            when (step) {
-                WalletConnectBottomSheetDialogFragment.Step.Loading, WalletConnectBottomSheetDialogFragment.Step.Sending -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(70.dp),
-                        color = MixinAppTheme.colors.accent,
-                    )
-                }
 
-                WalletConnectBottomSheetDialogFragment.Step.Error -> {
-                    Icon(
-                        modifier = Modifier.size(70.dp),
-                        painter = painterResource(id = R.drawable.ic_transfer_status_failed),
-                        contentDescription = null,
-                        tint = Color.Unspecified
-                    )
-                }
-
-                WalletConnectBottomSheetDialogFragment.Step.Done -> {
-                    Icon(
-                        modifier = Modifier.size(70.dp),
-                        painter = painterResource(id = R.drawable.ic_transfer_status_success),
-                        contentDescription = null,
-                        tint = Color.Unspecified
-                    )
-                }
-
-                else ->
-                    GlideImage(
-                        data = sessionRequestUI.peerUI.icon,
-                        modifier = Modifier
-                            .size(70.dp)
-                            .clip(CircleShape),
-                        placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
-                    )
-            }
-            Box(modifier = Modifier.height(16.dp))
-            Text(
-                text = stringResource(
-                    id = if (sessionRequestUI.data is WCEthereumSignMessage) {
-                        when (step) {
-                            WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing
-                            WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_signing_success
-                            WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
-                            WalletConnectBottomSheetDialogFragment.Step.Send -> R.string.signature_request
-                            WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
-                            else -> R.string.signature_request
-
-                        }
-                    } else {
-                        when (step) {
-                            WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing
-                            WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_signing_success
-                            WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
-                            WalletConnectBottomSheetDialogFragment.Step.Send -> R.string.transaction_request
-                            WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
-                            else -> R.string.transaction_request
-                        }
-                    }
-                ),
-                style =
-                TextStyle(
-                    color = MixinAppTheme.colors.textPrimary,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.W600,
-                ),
-            )
-            Box(modifier = Modifier.height(8.dp))
-            Text(
-                modifier = Modifier.padding(horizontal = 24.dp),
-                text = errorInfo ?: stringResource(id = R.string.allow_dapp_access_address_and_transaction),
-                textAlign = TextAlign.Center,
-                style =
-                TextStyle(
-                    color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textSubtitle,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.W400,
-                ),
-                maxLines = 3,
-                minLines = 3,
-            )
-            Box(modifier = Modifier.height(20.dp))
-            Box(
+            ) {
+            Column(
                 modifier = Modifier
-                    .height(10.dp)
-                    .fillMaxWidth()
-                    .background(MixinAppTheme.colors.backgroundWindow)
-            )
-            when (sessionRequestUI.data) {
-                is WCEthereumTransaction -> {
-                    Transaction(
-                        balance =
-                        Convert.fromWei(
-                            Numeric.toBigInt(
-                                sessionRequestUI.data.value ?: "0",
-                            ).toBigDecimal(),
-                            Convert.Unit.ETHER,
-                        ),
-                        sessionRequestUI.chain,
-                        asset,
-                    )
-                }
-
-                else -> {
-                    Message(content = viewModel.getContent(version, gson, sessionRequestUI.data)) {
-                        onPreviewMessage.invoke(it)
+                    .verticalScroll(rememberScrollState())
+                    .weight(weight = 1f, fill = false),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Box(modifier = Modifier.height(50.dp))
+                when (step) {
+                    WalletConnectBottomSheetDialogFragment.Step.Loading, WalletConnectBottomSheetDialogFragment.Step.Sending -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(70.dp),
+                            color = MixinAppTheme.colors.accent,
+                        )
                     }
+
+                    WalletConnectBottomSheetDialogFragment.Step.Error -> {
+                        Icon(
+                            modifier = Modifier.size(70.dp),
+                            painter = painterResource(id = R.drawable.ic_transfer_status_failed),
+                            contentDescription = null,
+                            tint = Color.Unspecified
+                        )
+                    }
+
+                    WalletConnectBottomSheetDialogFragment.Step.Done -> {
+                        Icon(
+                            modifier = Modifier.size(70.dp),
+                            painter = painterResource(id = R.drawable.ic_transfer_status_success),
+                            contentDescription = null,
+                            tint = Color.Unspecified
+                        )
+                    }
+
+                    else ->
+                        GlideImage(
+                            data = sessionRequestUI.peerUI.icon,
+                            modifier = Modifier
+                                .size(70.dp)
+                                .clip(CircleShape),
+                            placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+                        )
                 }
-            }
-            Box(modifier = Modifier.height(20.dp))
-            val fee = if (tipGas == null) BigDecimal.ZERO else gasPriceType.calcGas(tipGas)
-            if (fee == BigDecimal.ZERO) {
-                FeeInfo(
-                    amount = "$fee",
-                    fee = (if (tipGas == null) BigDecimal.ZERO else gasPriceType.calcGas(tipGas)).multiply(asset.priceUSD()).toPlainString(),
+                Box(modifier = Modifier.height(16.dp))
+                Text(
+                    text = stringResource(
+                        id = if (sessionRequestUI.data is WCEthereumSignMessage) {
+                            when (step) {
+                                WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing
+                                WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_signing_success
+                                WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
+                                WalletConnectBottomSheetDialogFragment.Step.Send -> R.string.signature_request
+                                WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
+                                else -> R.string.signature_request
+
+                            }
+                        } else {
+                            when (step) {
+                                WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing
+                                WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_signing_success
+                                WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
+                                WalletConnectBottomSheetDialogFragment.Step.Send -> R.string.transaction_request
+                                WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
+                                else -> R.string.transaction_request
+                            }
+                        }
+                    ),
+                    style =
+                    TextStyle(
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W600,
+                    ),
                 )
-            } else {
-                FeeInfo(
-                    amount = "$fee ${asset?.symbol}",
-                    fee = (if (tipGas == null) BigDecimal.ZERO else gasPriceType.calcGas(tipGas)).multiply(asset.priceUSD()).toPlainString(),
-                ) {
-                    openBottomSheet = true
+                Box(modifier = Modifier.height(8.dp))
+                Text(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    text = errorInfo ?: stringResource(id = R.string.allow_dapp_access_address_and_transaction),
+                    textAlign = TextAlign.Center,
+                    style =
+                    TextStyle(
+                        color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textSubtitle,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.W400,
+                    ),
+                    maxLines = 3,
+                    minLines = 3,
+                )
+                Box(modifier = Modifier.height(20.dp))
+                Box(
+                    modifier = Modifier
+                        .height(10.dp)
+                        .fillMaxWidth()
+                        .background(MixinAppTheme.colors.backgroundWindow)
+                )
+                when (sessionRequestUI.data) {
+                    is WCEthereumTransaction -> {
+                        Transaction(
+                            balance =
+                            Convert.fromWei(
+                                Numeric.toBigInt(
+                                    sessionRequestUI.data.value ?: "0",
+                                ).toBigDecimal(),
+                                Convert.Unit.ETHER,
+                            ),
+                            sessionRequestUI.chain,
+                            asset,
+                        )
+                    }
+
+                    else -> {
+                        Message(content = viewModel.getContent(version, gson, sessionRequestUI.data)) {
+                            onPreviewMessage.invoke(it)
+                        }
+                    }
                 }
+                Box(modifier = Modifier.height(20.dp))
+                val fee = if (tipGas == null) BigDecimal.ZERO else gasPriceType.calcGas(tipGas)
+                if (fee == BigDecimal.ZERO) {
+                    FeeInfo(
+                        amount = "$fee",
+                        fee = (if (tipGas == null) BigDecimal.ZERO else gasPriceType.calcGas(tipGas)).multiply(asset.priceUSD()).toPlainString(),
+                    )
+                } else {
+                    FeeInfo(
+                        amount = "$fee ${asset?.symbol}",
+                        fee = (if (tipGas == null) BigDecimal.ZERO else gasPriceType.calcGas(tipGas)).multiply(asset.priceUSD()).toPlainString(),
+                    ) {
+                        openBottomSheet = true
+                    }
+                }
+                Box(modifier = Modifier.height(20.dp))
+                ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionRequestUI.peerUI.name, footer = sessionRequestUI.peerUI.uri)
+                Box(modifier = Modifier.height(20.dp))
+                ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
+                Box(modifier = Modifier.height(20.dp))
+                ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = chain.name)
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                )
             }
-            Box(modifier = Modifier.height(20.dp))
-            ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionRequestUI.peerUI.name, footer = sessionRequestUI.peerUI.uri)
-            Box(modifier = Modifier.height(20.dp))
-            ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
-            Box(modifier = Modifier.height(20.dp))
-            ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = chain.name)
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-            )
             if (step == WalletConnectBottomSheetDialogFragment.Step.Done || step == WalletConnectBottomSheetDialogFragment.Step.Error) {
                 Row(
                     modifier = Modifier
@@ -515,42 +524,42 @@ private fun FeeInfo(
 private fun Warning(isEthSign: Boolean) {
     var isVisible by remember { mutableStateOf(true) }
 
-    if (isVisible){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(MixinAppTheme.colors.tipWarning)
-            .border(1.dp, MixinAppTheme.colors.tipWarningBorder)
-            .padding(20.dp),
-    ) {
-        Image(
-            painter = painterResource(R.drawable.ic_warning),
+    if (isVisible) {
+        Row(
             modifier = Modifier
-                .size(40.dp, 40.dp)
-                .padding(horizontal = 7.dp),
-            contentDescription = null,
-        )
-        Box(modifier = Modifier.width(20.dp))
-        Column {
-            Text(
-                text = if (isEthSign) stringResource(id = R.string.blocked_action, "eth_sign") else stringResource(id = R.string.signature_request_warning),
-                color = MixinAppTheme.colors.tipError,
-                fontSize = 14.sp,
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(MixinAppTheme.colors.tipWarning)
+                .border(1.dp, MixinAppTheme.colors.tipWarningBorder)
+                .padding(20.dp),
+        ) {
+            Image(
+                painter = painterResource(R.drawable.ic_warning),
+                modifier = Modifier
+                    .size(40.dp, 40.dp)
+                    .padding(horizontal = 7.dp),
+                contentDescription = null,
             )
-            Box(modifier = Modifier.width(8.dp))
-            Row(modifier = Modifier.align(Alignment.End)) {
+            Box(modifier = Modifier.width(20.dp))
+            Column {
                 Text(
-                    modifier = Modifier.clickable {
-                        isVisible = false
-                    },
-                    text = stringResource(id = R.string.Got_it), color = MixinAppTheme.colors.textBlue, fontSize = 14.sp
+                    text = if (isEthSign) stringResource(id = R.string.blocked_action, "eth_sign") else stringResource(id = R.string.signature_request_warning),
+                    color = MixinAppTheme.colors.tipError,
+                    fontSize = 14.sp,
                 )
+                Box(modifier = Modifier.width(8.dp))
+                Row(modifier = Modifier.align(Alignment.End)) {
+                    Text(
+                        modifier = Modifier.clickable {
+                            isVisible = false
+                        },
+                        text = stringResource(id = R.string.Got_it), color = MixinAppTheme.colors.textBlue, fontSize = 14.sp
+                    )
+                }
             }
-        }
 
-    }
+        }
     }
 }
 
@@ -671,7 +680,7 @@ private fun GasItem(
 }
 
 @Composable
-fun TransferBottom(cancelTitle:String, confirmTitle:String,cancelAction: () -> Unit, confirmAction: () -> Unit) {
+fun TransferBottom(cancelTitle: String, confirmTitle: String, cancelAction: () -> Unit, confirmAction: () -> Unit) {
     Row(
         modifier = Modifier
             .background(MixinAppTheme.colors.background)
