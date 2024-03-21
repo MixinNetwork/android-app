@@ -18,11 +18,12 @@ import javax.inject.Inject
 class SessionRequestViewModel
     @Inject
     internal constructor() : ViewModel() {
-
         private var account: String = ""
+
         suspend fun init() {
             account = PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, "")
         }
+
         fun rejectRequest(
             version: WalletConnect.Version,
             topic: String,
@@ -36,7 +37,7 @@ class SessionRequestViewModel
             }
         }
 
-    fun getSessionRequestUI(
+        fun getSessionRequestUI(
             version: WalletConnect.Version,
             chain: Chain,
             signData: WalletConnect.WCSignData.V2SignData<*>?,
@@ -52,7 +53,7 @@ class SessionRequestViewModel
                             icon = peer.icons.firstOrNull() ?: "",
                             uri = peer.url.toUri().host ?: "",
                             desc = peer.description,
-                            account = account
+                            account = account,
                         )
                     return SessionRequestUI(
                         peerUI = peerUI,

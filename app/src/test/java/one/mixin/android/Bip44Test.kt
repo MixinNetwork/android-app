@@ -1,20 +1,15 @@
 package one.mixin.android
 
-import com.walletconnect.util.randomBytes
-import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
-import one.mixin.android.extension.toHex
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
 import org.junit.Test
 import org.web3j.crypto.Bip32ECKeyPair
-import org.web3j.crypto.Credentials
 import org.web3j.crypto.Keys
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class Bip44Test {
-
     @Test
     fun testBip44() {
         val seed = "f01a27c0cafc921b3a1e1e4bd5c8cc9e1fe8e7cf2edcd9a846233d1e55462768"

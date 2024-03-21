@@ -167,9 +167,8 @@ class ExploreFragment : BaseFragment() {
 
     private fun navigate(
         destinationFragment: Fragment,
-        tag: String
+        tag: String,
     ) {
-
         val tx = parentFragmentManager.beginTransaction()
         val f = parentFragmentManager.findFragmentByTag(tag)
         if (f == null) {

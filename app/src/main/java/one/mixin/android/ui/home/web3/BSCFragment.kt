@@ -20,7 +20,6 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.toast
 import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.widget.SpacesItemDecoration
 
@@ -41,9 +40,10 @@ class BSCFragment : BaseFragment() {
     ): View {
         _binding = FragmentBscBinding.inflate(inflater, container, false)
         binding.apply {
-            walletRv.adapter = WalletAdapter().apply {
-                connections = connectionsViewModel.getLatestActiveSignSessions()
-            }
+            walletRv.adapter =
+                WalletAdapter().apply {
+                    connections = connectionsViewModel.getLatestActiveSignSessions()
+                }
 
             walletRv.addItemDecoration(SpacesItemDecoration(4.dp, true))
         }

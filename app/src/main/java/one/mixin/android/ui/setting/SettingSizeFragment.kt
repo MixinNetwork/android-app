@@ -175,7 +175,7 @@ class SettingSizeFragment : BaseFragment(R.layout.fragment_size) {
                 }
             }.collect {
                 if (viewDestroyed()) return@collect
-                
+
                 textSize = it.toFloat()
                 requireContext().defaultSharedPreferences.putInt(PREF_TEXT_SIZE, it)
                 requireContext().tickVibrate()

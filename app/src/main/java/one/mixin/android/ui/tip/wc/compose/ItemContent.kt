@@ -16,13 +16,13 @@ import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 fun ItemContent(
     title: String,
     subTitle: String,
-    footer: String? = null
+    footer: String? = null,
 ) {
     Column(
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
     ) {
         Text(
             text = title,

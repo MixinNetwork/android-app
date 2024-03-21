@@ -393,7 +393,7 @@ interface TransactionInterface {
                         if (snapshot.withdrawal.receiver.isNotBlank()) {
                             val label = snapshot.label
                             if (!label.isNullOrBlank()) {
-                                val fullText = "${snapshot.withdrawal.receiver} ${label}"
+                                val fullText = "${snapshot.withdrawal.receiver} $label"
                                 val spannableString = SpannableString(fullText)
                                 val start = fullText.lastIndexOf(label)
                                 val end = start + label.length

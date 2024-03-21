@@ -824,5 +824,5 @@ class TokenRepository
             asset,
         )
 
-    suspend fun findTokensExtra(asset: String) = tokensExtraDao.findByAssetId(asset)
-}
+        suspend fun findTokensExtra(asset: String) = tokensExtraDao.findByAssetId(asset)
+    }

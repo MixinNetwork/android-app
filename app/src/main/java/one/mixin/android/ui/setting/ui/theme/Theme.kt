@@ -65,7 +65,7 @@ private val LightColorPalette =
         backgroundGray = Color(0xFFF5F7FA),
         unchecked = Color(0xFFECECEC),
         tipWarning = Color(0xFFFBF1F0),
-        tipWarningBorder = Color(0xFFE86B67)
+        tipWarningBorder = Color(0xFFE86B67),
     )
 
 private val DarkColorPalette =
@@ -83,7 +83,7 @@ private val DarkColorPalette =
         backgroundGray = Color(0xFF3B3F44),
         unchecked = Color(0xFFECECEC),
         tipWarning = Color(0xFF3E373B),
-        tipWarningBorder = Color(0xFFE86B67)
+        tipWarningBorder = Color(0xFFE86B67),
     )
 
 private val LightDrawablePalette =

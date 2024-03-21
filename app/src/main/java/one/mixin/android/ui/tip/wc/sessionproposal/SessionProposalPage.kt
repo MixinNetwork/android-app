@@ -69,11 +69,11 @@ fun SessionProposalPage(
     MixinAppTheme {
         Column(
             modifier =
-            Modifier
-                .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .background(MixinAppTheme.colors.background),
+                Modifier
+                    .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .background(MixinAppTheme.colors.background),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(modifier = Modifier.height(50.dp))
@@ -90,7 +90,7 @@ fun SessionProposalPage(
                         modifier = Modifier.size(70.dp),
                         painter = painterResource(id = R.drawable.ic_transfer_status_failed),
                         contentDescription = null,
-                        tint = Color.Unspecified
+                        tint = Color.Unspecified,
                     )
                 }
                 WalletConnectBottomSheetDialogFragment.Step.Done -> {
@@ -98,89 +98,102 @@ fun SessionProposalPage(
                         modifier = Modifier.size(70.dp),
                         painter = painterResource(id = R.drawable.ic_transfer_status_success),
                         contentDescription = null,
-                        tint = Color.Unspecified
+                        tint = Color.Unspecified,
                     )
                 }
                 else -> {
                     GlideImage(
                         data = sessionProposalUI.peer.icon,
                         modifier =
-                        Modifier
-                            .size(70.dp)
-                            .clip(CircleShape),
+                            Modifier
+                                .size(70.dp)
+                                .clip(CircleShape),
                         placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
                     )
                 }
             }
             Box(modifier = Modifier.height(16.dp))
             Text(
-                text = stringResource(id = if (step == WalletConnectBottomSheetDialogFragment.Step.Done) R.string.connect_wallet_success  else if(step == WalletConnectBottomSheetDialogFragment.Step.Error) R.string.connect_wallet_failed else R.string.connect_wallet),
+                text =
+                    stringResource(
+                        id =
+                            if (step == WalletConnectBottomSheetDialogFragment.Step.Done) {
+                                R.string.connect_wallet_success
+                            } else if (step == WalletConnectBottomSheetDialogFragment.Step.Error) {
+                                R.string.connect_wallet_failed
+                            } else {
+                                R.string.connect_wallet
+                            },
+                    ),
                 style =
-                TextStyle(
-                    color = MixinAppTheme.colors.textPrimary,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.W500,
-                ),
-
+                    TextStyle(
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W500,
+                    ),
             )
             Box(modifier = Modifier.height(8.dp))
             Text(
                 modifier = Modifier.padding(horizontal = 24.dp),
                 text = errorInfo ?: stringResource(id = R.string.allow_dapp_access_address_and_transaction),
                 style =
-                TextStyle(
-                    color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textSubtitle,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.W400,
-                ),
+                    TextStyle(
+                        color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textSubtitle,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.W400,
+                    ),
                 textAlign = TextAlign.Center,
                 maxLines = 3,
                 minLines = 3,
             )
             Box(modifier = Modifier.height(20.dp))
             Box(
-                modifier = Modifier
-                    .height(10.dp)
-                    .fillMaxWidth()
-                    .background(MixinAppTheme.colors.backgroundWindow)
+                modifier =
+                    Modifier
+                        .height(10.dp)
+                        .fillMaxWidth()
+                        .background(MixinAppTheme.colors.backgroundWindow),
             )
             Box(modifier = Modifier.height(20.dp))
             ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionProposalUI.peer.name, footer = sessionProposalUI.peer.uri)
             Box(modifier = Modifier.height(20.dp))
             ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
             Box(
-                modifier = Modifier
-                    .weight(1f)
+                modifier =
+                    Modifier
+                        .weight(1f),
             )
             if (step == WalletConnectBottomSheetDialogFragment.Step.Done || step == WalletConnectBottomSheetDialogFragment.Step.Error) {
                 Row(
-                    modifier = Modifier
-                        .background(MixinAppTheme.colors.background)
-                        .padding(20.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                    modifier =
+                        Modifier
+                            .background(MixinAppTheme.colors.background)
+                            .padding(20.dp)
+                            .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     Button(
                         onClick = onDismissRequest,
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            backgroundColor = MixinAppTheme.colors.accent,
-                        ),
+                        colors =
+                            ButtonDefaults.outlinedButtonColors(
+                                backgroundColor = MixinAppTheme.colors.accent,
+                            ),
                         shape = RoundedCornerShape(20.dp),
                         contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
                     ) {
                         Text(text = stringResource(id = R.string.Done), color = Color.White)
                     }
                 }
-            } else if (step != WalletConnectBottomSheetDialogFragment.Step.Loading){
-                ActionBottom(modifier = Modifier, stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
-                    viewModel.rejectSession(version, topic)
-                    onDismissRequest.invoke()
-                }, showPin)
-            }
+            } else if (step != WalletConnectBottomSheetDialogFragment.Step.Loading)
+                {
+                    ActionBottom(modifier = Modifier, stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
+                        viewModel.rejectSession(version, topic)
+                        onDismissRequest.invoke()
+                    }, showPin)
+                }
             Box(
-                modifier = Modifier.height(32.dp)
+                modifier = Modifier.height(32.dp),
             )
         }
     }
 }
-

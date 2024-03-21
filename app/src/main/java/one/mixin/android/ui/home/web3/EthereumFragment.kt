@@ -20,7 +20,6 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.toast
 import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_ETH
 import one.mixin.android.widget.SpacesItemDecoration
@@ -42,11 +41,11 @@ class EthereumFragment : BaseFragment() {
     ): View {
         _binding = FragmentEthereumBinding.inflate(inflater, container, false)
         binding.apply {
-
-            walletRv.adapter = WalletAdapter()
-                .apply {
-                    connections = connectionsViewModel.getLatestActiveSignSessions()
-                }
+            walletRv.adapter =
+                WalletAdapter()
+                    .apply {
+                        connections = connectionsViewModel.getLatestActiveSignSessions()
+                    }
             walletRv.addItemDecoration(SpacesItemDecoration(4.dp, true))
         }
         RxBus.listen(WCUnlockEvent::class.java)
@@ -88,5 +87,4 @@ class EthereumFragment : BaseFragment() {
         super.onResume()
         updateUI()
     }
-
 }

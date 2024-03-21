@@ -887,8 +887,7 @@ class WebFragment : BaseFragment() {
             }
         }
         lifecycleScope.launch {
-
-            WalletConnectTIP.peer = getPeerUI(PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS,""))
+            WalletConnectTIP.peer = getPeerUI(PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, ""))
             showWalletConnectBottomSheetDialogFragment(
                 tip,
                 requireActivity(),
@@ -988,7 +987,7 @@ class WebFragment : BaseFragment() {
         }
     }
 
-    private fun getPeerUI(account:String): PeerUI {
+    private fun getPeerUI(account: String): PeerUI {
         val a = app
         return if (a != null) {
             PeerUI(
@@ -996,7 +995,7 @@ class WebFragment : BaseFragment() {
                 name = a.name,
                 icon = a.iconUrl,
                 desc = a.description,
-                account = account
+                account = account,
             )
         } else {
             PeerUI(
@@ -1004,7 +1003,7 @@ class WebFragment : BaseFragment() {
                 name = webView.title ?: "",
                 icon = "",
                 desc = "",
-                account = account
+                account = account,
             )
         }
     }

@@ -80,7 +80,7 @@ data class SnapshotItem(
     val withdrawal: SafeWithdrawal?,
     @SerializedName("label")
     @ColumnInfo(name = "label")
-    var label:String?,
+    var label: String?,
 ) : Parcelable {
     val formatMemo: FormatMemo?
         get() {

@@ -17,6 +17,7 @@ class SessionProposalViewModel
     @Inject
     internal constructor() : ViewModel() {
         private var account: String = ""
+
         suspend fun init() {
             account = PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, "")
         }
@@ -33,7 +34,7 @@ class SessionProposalViewModel
             }
         }
 
-    fun getSessionProposalUI(
+        fun getSessionProposalUI(
             version: WalletConnect.Version,
             chain: Chain,
             sessionProposal: Wallet.Model.SessionProposal?,
@@ -48,7 +49,7 @@ class SessionProposalViewModel
                                 name = sessionProposal.name,
                                 desc = sessionProposal.description,
                                 uri = sessionProposal.url.toUri().host ?: "",
-                                account = account
+                                account = account,
                             ),
                         chain = chain,
                     )

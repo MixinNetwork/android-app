@@ -151,7 +151,7 @@ fun AboutPage() {
             AboutTile(
                 text = stringResource(id = R.string.Version_Update),
                 onClick = {
-                    context.openMarket((context as FragmentActivity).supportFragmentManager,lifecycleScope)
+                    context.openMarket((context as FragmentActivity).supportFragmentManager, lifecycleScope)
                 },
             )
             if (showLogDebug.value) {

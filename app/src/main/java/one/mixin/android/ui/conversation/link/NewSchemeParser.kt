@@ -39,7 +39,7 @@ enum class PayType {
     MixAddress,
 }
 
-class ParserError(val code: Int, val symbol: String? = null, override val message:String? = null) : Exception()
+class ParserError(val code: Int, val symbol: String? = null, override val message: String? = null) : Exception()
 
 class NewSchemeParser(
     private val bottomSheet: LinkBottomSheetDialogFragment,

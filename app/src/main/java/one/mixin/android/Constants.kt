@@ -323,10 +323,11 @@ object Constants {
     const val TEAM_BOT_ID = ""
     const val TEAM_BOT_NAME = ""
 
-    val InternalWeb3Wallet = listOf(
-        ConnectionUI(-2, "", "Uniswap", "https://app.uniswap.org", internalIcon = R.drawable.ic_uniswap),
-        ConnectionUI(-1, "", "Snapshot", "https://snapshot.org", internalIcon = R.drawable.ic_snapshot)
-    )
+    val InternalWeb3Wallet =
+        listOf(
+            ConnectionUI(-2, "", "Uniswap", "https://app.uniswap.org", internalIcon = R.drawable.ic_uniswap),
+            ConnectionUI(-1, "", "Snapshot", "https://snapshot.org", internalIcon = R.drawable.ic_snapshot),
+        )
 
     object RouteConfig {
         const val PAN_ONLY = "pan_only"

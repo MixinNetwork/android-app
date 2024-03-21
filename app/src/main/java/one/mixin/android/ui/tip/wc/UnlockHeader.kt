@@ -50,7 +50,10 @@ class UnlockHeader : LinearLayout {
         }
     }
 
-    fun awaiting(titleStr: String, subTitleStr: String) {
+    fun awaiting(
+        titleStr: String,
+        subTitleStr: String,
+    ) {
         _binding.apply {
             iconLayout.displayedChild = 0
             title.text = titleStr

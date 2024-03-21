@@ -92,23 +92,23 @@ fun AuthBottomSheetDialogCompose(
     MixinAppTheme {
         Column(
             modifier =
-            Modifier
-                .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                .fillMaxWidth()
-                .height(690.dp)
-                .background(MixinAppTheme.colors.background)
-                .padding(top = 16.dp),
+                Modifier
+                    .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                    .fillMaxWidth()
+                    .height(690.dp)
+                    .background(MixinAppTheme.colors.background)
+                    .padding(top = 16.dp),
         ) {
             Image(
                 painter = painterResource(R.drawable.ic_circle_close),
                 modifier =
-                Modifier
-                    .align(alignment = Alignment.End)
-                    .padding(horizontal = 8.dp)
-                    .clip(CircleShape)
-                    .clickable {
-                        onDismissRequest()
-                    },
+                    Modifier
+                        .align(alignment = Alignment.End)
+                        .padding(horizontal = 8.dp)
+                        .clip(CircleShape)
+                        .clickable {
+                            onDismissRequest()
+                        },
                 contentDescription = null,
             )
             Text(
@@ -120,18 +120,18 @@ fun AuthBottomSheetDialogCompose(
             )
             Row(
                 modifier =
-                Modifier
-                    .align(alignment = CenterHorizontally)
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                    Modifier
+                        .align(alignment = CenterHorizontally)
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (iconUrl != null) {
                     GlideImage(
                         data = iconUrl,
                         modifier =
-                        Modifier
-                            .size(16.dp)
-                            .clip(CircleShape),
+                            Modifier
+                                .size(16.dp)
+                                .clip(CircleShape),
                         placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
                     )
                     Spacer(modifier = Modifier.width(3.dp))
@@ -139,7 +139,7 @@ fun AuthBottomSheetDialogCompose(
                 Text(
                     name,
                     color = MixinAppTheme.colors.textMinor,
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
                 )
             }
             AnimatedContent(
@@ -157,13 +157,13 @@ fun AuthBottomSheetDialogCompose(
                     LazyColumn(
                         state = state,
                         modifier =
-                        Modifier
-                            .padding(vertical = 16.dp, horizontal = 32.dp)
-                            .fillMaxWidth()
-                            .wrapContentHeight(Alignment.Top)
-                            .clip(shape = RoundedCornerShape(8.dp))
-                            .background(MixinAppTheme.colors.backgroundWindow)
-                            .verticalScrollbar(state, color = Color(0x99E5E7EB)),
+                            Modifier
+                                .padding(vertical = 16.dp, horizontal = 32.dp)
+                                .fillMaxWidth()
+                                .wrapContentHeight(Alignment.Top)
+                                .clip(shape = RoundedCornerShape(8.dp))
+                                .background(MixinAppTheme.colors.backgroundWindow)
+                                .verticalScrollbar(state, color = Color(0x99E5E7EB)),
                     ) {
                         items(scopes) { scope ->
                             ScopeCheckLayout(scope, savedScopes.contains(scope)) { checked ->

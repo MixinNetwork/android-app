@@ -5,6 +5,6 @@ data class ConnectionUI(
     val data: String,
     val name: String,
     val uri: String,
-    val internalIcon:Int? = null,
-    val icon: String? = null
+    val internalIcon: Int? = null,
+    val icon: String? = null,
 )

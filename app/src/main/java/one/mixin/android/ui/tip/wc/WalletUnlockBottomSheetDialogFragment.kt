@@ -21,7 +21,6 @@ import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
-import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
@@ -49,15 +48,19 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         @Synchronized
         fun getInstance(type: String): WalletUnlockBottomSheetDialogFragment {
             if (instance == null) {
-                instance = WalletUnlockBottomSheetDialogFragment().withArgs {
-                    putString(ARGS_TYPE, type)
-                }
+                instance =
+                    WalletUnlockBottomSheetDialogFragment().withArgs {
+                        putString(ARGS_TYPE, type)
+                    }
             }
             return instance!!
         }
     }
 
-    fun showIfNotShowing(manager: FragmentManager, tag: String) {
+    fun showIfNotShowing(
+        manager: FragmentManager,
+        tag: String,
+    ) {
         if (!isShowing) {
             instance!!.showNow(manager, tag)
         }
@@ -90,16 +93,18 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             setCustomView(contentView)
             setCustomViewHeight(requireActivity().visibleDisplayHeight())
         }
-        val chain = when (type) {
-            TYPE_POLYGON -> getString(R.string.Polygon)
-            TYPE_BSC -> getString(R.string.BSC)
-            else -> getString(R.string.Ethereum)
-        }
-        val otherChain = when (type) {
-            TYPE_POLYGON -> arrayOf(getString(R.string.Polygon), getString(R.string.Ethereum), getString(R.string.BSC))
-            TYPE_BSC -> arrayOf(getString(R.string.BSC), getString(R.string.Ethereum), getString(R.string.Polygon))
-            else -> arrayOf(getString(R.string.Ethereum), getString(R.string.Polygon), getString(R.string.BSC))
-        }
+        val chain =
+            when (type) {
+                TYPE_POLYGON -> getString(R.string.Polygon)
+                TYPE_BSC -> getString(R.string.BSC)
+                else -> getString(R.string.Ethereum)
+            }
+        val otherChain =
+            when (type) {
+                TYPE_POLYGON -> arrayOf(getString(R.string.Polygon), getString(R.string.Ethereum), getString(R.string.BSC))
+                TYPE_BSC -> arrayOf(getString(R.string.BSC), getString(R.string.Ethereum), getString(R.string.Polygon))
+                else -> arrayOf(getString(R.string.Ethereum), getString(R.string.Polygon), getString(R.string.BSC))
+            }
         binding.apply {
             agreement1.text = getString(R.string.unlock_web3_account_agreement_1, chain)
             agreement2.text = getString(R.string.unlock_web3_account_agreement_2, chain)
