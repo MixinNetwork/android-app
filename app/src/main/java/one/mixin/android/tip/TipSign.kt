@@ -112,6 +112,7 @@ fun tipPrivToPrivateKey(
         when (chainId) {
             Constants.ChainId.BITCOIN_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Bitcoin)
             Constants.ChainId.ETHEREUM_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+            Constants.ChainId.SOLANA_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Solana)
             else -> throw IllegalArgumentException("Not supported chainId")
         }
     return Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
@@ -126,6 +127,7 @@ fun tipPrivToAddress(
         when (chainId) {
             Constants.ChainId.BITCOIN_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Bitcoin)
             Constants.ChainId.ETHEREUM_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+            Constants.ChainId.SOLANA_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Solana)
             else -> throw IllegalArgumentException("Not supported chainId")
         }
     return Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))

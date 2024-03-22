@@ -23,6 +23,15 @@ object Bip44Path {
             0,
             0,
         )
+
+    // m/44'/501'/0'/0'
+    val Solana =
+        intArrayOf(
+            44 or HARDENED_BIT,
+            501 or HARDENED_BIT,
+            0 or HARDENED_BIT,
+            0,
+        )
 }
 
 fun generateBip44Key(
