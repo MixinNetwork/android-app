@@ -1,8 +1,8 @@
 package one.mixin.android.api.service
 
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.OrderRequest
+import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RoutePriceRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
@@ -47,7 +47,10 @@ interface RouteService {
     ): MixinResponse<RouteOrderResponse>
 
     @POST("orders/{id}/price")
-    suspend fun updateOrderPrice(@Path("id") id: String, @Body request: RoutePriceRequest): MixinResponse<RouteOrderResponse>
+    suspend fun updateOrderPrice(
+        @Path("id") id: String,
+        @Body request: RoutePriceRequest,
+    ): MixinResponse<RouteOrderResponse>
 
     @POST("checkout/instruments")
     suspend fun createInstrument(

@@ -184,13 +184,12 @@ fun SessionProposalPage(
                         Text(text = stringResource(id = R.string.Done), color = Color.White)
                     }
                 }
-            } else if (step != WalletConnectBottomSheetDialogFragment.Step.Loading)
-                {
-                    ActionBottom(modifier = Modifier, stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
-                        viewModel.rejectSession(version, topic)
-                        onDismissRequest.invoke()
-                    }, showPin)
-                }
+            } else if (step != WalletConnectBottomSheetDialogFragment.Step.Loading) {
+                ActionBottom(modifier = Modifier, stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
+                    viewModel.rejectSession(version, topic)
+                    onDismissRequest.invoke()
+                }, showPin)
+            }
             Box(
                 modifier = Modifier.height(32.dp),
             )

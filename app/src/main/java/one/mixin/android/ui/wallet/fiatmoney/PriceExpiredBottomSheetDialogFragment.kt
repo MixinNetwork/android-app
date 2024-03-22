@@ -85,7 +85,7 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
-        amount = requireArguments().getString(ARGS_AMOUNT,"0")
+        amount = requireArguments().getString(ARGS_AMOUNT, "0")
         asset =
             requireNotNull(
                 requireArguments().getParcelableCompat(

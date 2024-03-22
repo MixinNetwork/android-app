@@ -305,8 +305,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                                 ARGS_CURRENCY,
                                                 fiatMoneyViewModel.currency,
                                             )
-                                            //Todo
-                                            putLong(ARGS_AMOUNT, amount.toLongOrNull()?:0L)
+                                            // Todo
+                                            putLong(ARGS_AMOUNT, amount.toLongOrNull() ?: 0L)
                                         },
                                     )
                                 } catch (e: Exception) {

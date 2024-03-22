@@ -43,8 +43,8 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.OrderRequest
 import one.mixin.android.api.response.OrderState
-import one.mixin.android.api.response.RoutePaymentStatus
 import one.mixin.android.api.response.RouteOrderResponse
+import one.mixin.android.api.response.RoutePaymentStatus
 import one.mixin.android.api.response.RouteSessionStatus
 import one.mixin.android.databinding.FragmentOrderStatusBinding
 import one.mixin.android.extension.bold
@@ -227,7 +227,6 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 ARGS_GOOGLE_PAY,
                 false,
             )
-
 
         val scheme = requireArguments().getString(OrderConfirmFragment.ARGS_SCHEME)
         info =
@@ -486,12 +485,15 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         token: String?,
         expectancyAssetAmount: String,
     ) {
-        lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
-            showError(error.message)
-        }) {
+        lifecycleScope.launch(
+            CoroutineExceptionHandler { _, error ->
+                showError(error.message)
+            },
+        ) {
             val response =
                 fiatMoneyViewModel.updatePrice(
-                    orderId, expectancyAssetAmount
+                    orderId,
+                    expectancyAssetAmount,
                 )
             if (response.isSuccess) {
                 paymentsPrecondition(orderId, sessionId, instrumentId, token, expectancyAssetAmount)
@@ -503,7 +505,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun paymentsPrecondition(
-        orderId :String,
+        orderId: String,
         sessionId: String?,
         instrumentId: String?,
         token: String?,
@@ -522,15 +524,15 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                 )
             if (riskInstance == null) {
                 reportException(RiskException("Risk instance null"))
-                payments(orderId ,sessionId, null, instrumentId, token, expectancyAssetAmount)
+                payments(orderId, sessionId, null, instrumentId, token, expectancyAssetAmount)
             } else {
                 riskInstance.publishData().let {
                     if (it is PublishDataResult.Success) {
                         println("Device session ID: ${it.deviceSessionId}")
-                        payments(orderId ,sessionId, it.deviceSessionId, instrumentId, token, expectancyAssetAmount)
+                        payments(orderId, sessionId, it.deviceSessionId, instrumentId, token, expectancyAssetAmount)
                     } else {
                         reportException(RiskException("Risk failed $it"))
-                        payments(orderId ,sessionId, null, instrumentId, token, expectancyAssetAmount)
+                        payments(orderId, sessionId, null, instrumentId, token, expectancyAssetAmount)
                     }
                 }
             }
@@ -539,7 +541,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
 
     @SuppressLint("SetTextI18n")
     private fun payments(
-        orderId:String,
+        orderId: String,
         sessionId: String?,
         deviceSessionId: String?,
         instrumentId: String?,
@@ -598,7 +600,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         assetPrice,
                     ).apply {
                         continueAction = { assetAmount ->
-                            this@OrderStatusFragment.retry(orderId,sessionId, instrumentId, token, assetAmount)
+                            this@OrderStatusFragment.retry(orderId, sessionId, instrumentId, token, assetAmount)
                         }
                         cancelAction = {
                             requireActivity().finish()
@@ -654,7 +656,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         token: String? = null,
         type: String? = null,
     ) {
-        val sessionResponse = fiatMoneyViewModel.createOrder(OrderRequest(currency.name, scheme?.lowercase(), asset.assetId, amount.toString(), expectancy, instrumentId, token,type))
+        val sessionResponse = fiatMoneyViewModel.createOrder(OrderRequest(currency.name, scheme?.lowercase(), asset.assetId, amount.toString(), expectancy, instrumentId, token, type))
         if (sessionResponse.isSuccess && sessionResponse.data != null) {
             val session = requireNotNull(sessionResponse.data)
             if (session.cardToken.tokenFormat.equalsIgnoreCase(Constants.RouteConfig.CRYPTOGRAM_3DS)) {

@@ -25,8 +25,8 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.OrderRequest
+import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.response.RouteCreateTokenResponse
@@ -65,7 +65,10 @@ class FiatMoneyViewModel
 
         fun callSumsubToken(): Call<MixinResponse<RouteTokenResponse>> = tokenRepository.callSumsubToken()
 
-        suspend fun payment(id:String,paymentRequest: RoutePaymentRequest): MixinResponse<RouteOrderResponse> = tokenRepository.payment(id,paymentRequest)
+        suspend fun payment(
+            id: String,
+            paymentRequest: RoutePaymentRequest,
+        ): MixinResponse<RouteOrderResponse> = tokenRepository.payment(id, paymentRequest)
 
         suspend fun orders(): MixinResponse<List<RouteOrderResponse>> = tokenRepository.orders()
 
@@ -77,7 +80,10 @@ class FiatMoneyViewModel
 
         suspend fun getOrder(orderId: String) = tokenRepository.getOrder(orderId)
 
-        suspend fun updatePrice(orderId: String,price:String) = tokenRepository.updatePrice(orderId,price)
+        suspend fun updatePrice(
+            orderId: String,
+            price: String,
+        ) = tokenRepository.updatePrice(orderId, price)
 
         fun cards(): Flow<SafeBox?> = tokenRepository.cards()
 

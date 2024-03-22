@@ -21,9 +21,9 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.DepositEntryRequest
 import one.mixin.android.api.request.GhostKeyRequest
+import one.mixin.android.api.request.OrderRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.RouteInstrumentRequest
-import one.mixin.android.api.request.OrderRequest
 import one.mixin.android.api.request.RoutePriceRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
@@ -646,7 +646,10 @@ class TokenRepository
 
         suspend fun profile(): MixinResponse<ProfileResponse> = routeService.profile(VERSION_NAME)
 
-        suspend fun payment(id:String, paymentRequestst: RoutePaymentRequest): MixinResponse<RouteOrderResponse> = routeService.order(id, paymentRequestst)
+        suspend fun payment(
+            id: String,
+            paymentRequestst: RoutePaymentRequest,
+        ): MixinResponse<RouteOrderResponse> = routeService.order(id, paymentRequestst)
 
         suspend fun orders(): MixinResponse<List<RouteOrderResponse>> = routeService.payments()
 
@@ -820,9 +823,10 @@ class TokenRepository
             asset,
         )
 
-    suspend fun findTokensExtra(asset: String) = tokensExtraDao.findByAssetId(asset)
+        suspend fun findTokensExtra(asset: String) = tokensExtraDao.findByAssetId(asset)
 
-
-    suspend fun updatePrice(orderId: String, price: String) = routeService.updateOrderPrice(orderId, RoutePriceRequest(price))
-
+        suspend fun updatePrice(
+            orderId: String,
+            price: String,
+        ) = routeService.updateOrderPrice(orderId, RoutePriceRequest(price))
     }

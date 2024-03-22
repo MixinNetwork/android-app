@@ -104,10 +104,9 @@ fun SessionRequestPage(
     val warningType =
         if ((sessionRequestUI.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.MESSAGE) {
             0
-        } else if (sessionRequestUI.data is WCEthereumTransaction && sessionRequestUI.data.value == null)
-            {
-                2
-            } else {
+        } else if (sessionRequestUI.data is WCEthereumTransaction && sessionRequestUI.data.value == null) {
+            2
+        } else {
             1
         }
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
